@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
 import { useState, useRef } from 'react'
 import type { Biography } from '@/lib/types'
+import bandPhotoAI from '@/assets/images/NK_AI.jpeg'
 
 interface BiographySectionProps {
   biography?: Biography
@@ -62,11 +63,24 @@ export default function BiographySection({ biography = defaultBiography, editMod
 
           <div className="grid md:grid-cols-3 gap-8">
             <motion.div 
-              className="md:col-span-2"
+              className="md:col-span-2 space-y-8"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >
+              <motion.div
+                className="relative overflow-hidden rounded-lg aspect-square md:aspect-video group"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <img
+                  src={bandPhotoAI}
+                  alt="NEUROKLAST AI"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg" />
+              </motion.div>
+
               <Card className="bg-card border-border p-8 hover:border-primary/50 transition-colors duration-300">
                 <div className="prose prose-invert max-w-none">
                   {biography.story.split('\n\n').map((paragraph, index) => (
