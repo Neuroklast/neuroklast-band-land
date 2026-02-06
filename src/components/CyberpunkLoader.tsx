@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import logoImage from '@/assets/images/NK_BAPHOMET.png'
+import logoImage from '@/assets/images/baphomet no text.svg'
 
 interface CyberpunkLoaderProps {
   onLoadComplete: () => void
