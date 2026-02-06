@@ -271,3 +271,14 @@ h1, h2, h3, h4, h5, h6 {
     animation: red-glitch 0.2s ease-in-out;
   }
 }
+
+.chromatic-aberration {
+  position: relative;
+  display: inline-block;
+}
+
+.chromatic-aberration-text {
+  position: relative;
+  display: inline-block;
+  transition: text-shadow 0.1s ease-out;
+}

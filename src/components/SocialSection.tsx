@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { ChromaticText } from '@/components/ChromaticText'
 import type { SocialLinks } from '@/lib/types'
 import { useState, useRef } from 'react'
 import SocialEditDialog from './SocialEditDialog'
@@ -51,7 +52,9 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
-            CONNECT
+            <ChromaticText intensity={1.5}>
+              CONNECT
+            </ChromaticText>
           </motion.h2>
           {editMode && (
             <Button

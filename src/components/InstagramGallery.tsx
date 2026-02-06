@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Images } from '@phosphor-icons/react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import { ChromaticText } from '@/components/ChromaticText'
 
 const galleryModules = import.meta.glob('/src/assets/images/gallery/*.{jpg,jpeg,png,gif,webp}', { eager: true })
 
@@ -61,7 +62,9 @@ export default function InstagramGallery() {
               <Images size={32} className="text-primary" weight="fill" />
             </motion.div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono">
-              {displayedTitle}
+              <ChromaticText intensity={1.5}>
+                {displayedTitle}
+              </ChromaticText>
               <span className="animate-pulse">_</span>
             </h2>
           </div>

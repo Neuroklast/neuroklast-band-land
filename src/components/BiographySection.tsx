@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import { ChromaticText } from '@/components/ChromaticText'
 import type { Biography } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
@@ -96,7 +97,9 @@ export default function BiographySection({ biography = defaultBiography, editMod
               animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              &gt; {displayedTitle}
+              <ChromaticText intensity={1.5}>
+                &gt; {displayedTitle}
+              </ChromaticText>
               <span className="animate-pulse">_</span>
             </motion.h2>
             {editMode && (

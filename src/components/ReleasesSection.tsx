@@ -3,6 +3,7 @@ import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, Arrow
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { ChromaticText } from '@/components/ChromaticText'
 import type { Release } from '@/lib/types'
 import { useState, useEffect, useRef } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
@@ -127,7 +128,9 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
-            &gt; {displayedTitle}
+            <ChromaticText intensity={1.5}>
+              &gt; {displayedTitle}
+            </ChromaticText>
             <span className="animate-pulse">_</span>
           </motion.h2>
           {editMode && (

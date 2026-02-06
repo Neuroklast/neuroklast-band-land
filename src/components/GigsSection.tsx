@@ -3,6 +3,7 @@ import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise } from '@pho
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { ChromaticText } from '@/components/ChromaticText'
 import type { Gig } from '@/lib/types'
 import { useState, useEffect, useRef } from 'react'
 import GigEditDialog from './GigEditDialog'
@@ -111,7 +112,9 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
-            &gt; {displayedTitle}
+            <ChromaticText intensity={1.5}>
+              &gt; {displayedTitle}
+            </ChromaticText>
             <span className="animate-pulse">_</span>
           </motion.h2>
           <div className="flex gap-2 flex-wrap">
