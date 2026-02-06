@@ -46,12 +46,12 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
 
   useEffect(() => {
     if (!hasLoadedOnce) {
-      loadGigsFromAPI()
+      loadGigsFromAPI(true)
       setHasLoadedOnce(true)
     }
   }, [])
 
-  const loadGigsFromAPI = async () => {
+  const loadGigsFromAPI = async (isAutoLoad = false) => {
     setIsLoading(true)
     try {
       const apiGigs = await fetchUpcomingGigs()
@@ -63,16 +63,20 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
         
         if (newGigs.length > 0) {
           onUpdate([...currentGigs, ...newGigs])
-          toast.success(`${newGigs.length} upcoming gig${newGigs.length > 1 ? 's' : ''} loaded from concert APIs`)
-        } else {
+          if (!isAutoLoad) {
+            toast.success(`${newGigs.length} upcoming gig${newGigs.length > 1 ? 's' : ''} loaded from concert APIs`)
+          }
+        } else if (!isAutoLoad) {
           toast.info('No new gigs found')
         }
-      } else {
+      } else if (!isAutoLoad) {
         toast.info('No upcoming concerts found at this time')
       }
     } catch (error) {
       console.error('Failed to load gigs:', error)
-      toast.error('Failed to load upcoming gigs')
+      if (!isAutoLoad) {
+        toast.error('Failed to load upcoming gigs')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -112,7 +116,7 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
           </motion.h2>
           <div className="flex gap-2 flex-wrap">
             <Button
-              onClick={loadGigsFromAPI}
+              onClick={() => loadGigsFromAPI(false)}
               disabled={isLoading}
               variant="outline"
               className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"

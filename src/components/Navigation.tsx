@@ -37,6 +37,7 @@ export default function Navigation() {
   const navItems = [
     { label: 'HOME', id: 'hero' },
     { label: 'BIO', id: 'biography' },
+    { label: 'GALLERY', id: 'gallery' },
     { label: 'SHOWS', id: 'gigs' },
     { label: 'RELEASES', id: 'releases' },
     { label: 'CONTACT', id: 'social' }
