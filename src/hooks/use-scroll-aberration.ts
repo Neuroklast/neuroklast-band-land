@@ -9,16 +9,16 @@ export function useScrollAberration() {
     let rafId: number
 
     const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const scrollDelta = Math.abs(currentScrollY - lastScrollY)
+      const intensity = Math.min(scrollDelta / 100, 1)
+
+      lastScrollY = currentScrollY
+
       cancelAnimationFrame(rafId)
-      
       rafId = requestAnimationFrame(() => {
-        const currentScrollY = window.scrollY
-        const scrollDelta = Math.abs(currentScrollY - lastScrollY)
-        const intensity = Math.min(scrollDelta / 100, 1)
-        
         setScrollY(currentScrollY)
         setAberrationIntensity(intensity)
-        lastScrollY = currentScrollY
       })
     }
 
