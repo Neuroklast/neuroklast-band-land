@@ -12,9 +12,9 @@ const defaultBandData: BandData = {
   name: 'NEUROKLAST',
   genres: ['HARD TECHNO', 'INDUSTRIAL', 'DNB', 'DARK ELECTRO'],
   socialLinks: {
-    instagram: 'https://instagram.com/neuroklast',
-    facebook: 'https://facebook.com/neuroklast',
-    spotify: 'https://open.spotify.com/artist/neuroklast',
+    instagram: 'https://instagram.com/neuroklast_music',
+    facebook: 'https://www.facebook.com/Neuroklast/',
+    spotify: 'https://open.spotify.com/intl-de/artist/5xfQSijbVetvH1QAS58n30',
     soundcloud: 'https://soundcloud.com/neuroklast',
     youtube: 'https://youtube.com/@neuroklast',
     bandcamp: 'https://neuroklast.bandcamp.com',

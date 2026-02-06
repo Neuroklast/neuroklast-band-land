@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
+import logoSvg from '@/assets/images/neuroklast-logo.svg'
 
 interface HeroProps {
   name: string
@@ -37,6 +38,19 @@ export default function Hero({ name, genres }: HeroProps) {
       </div>
 
       <div className="relative z-10 text-center max-w-4xl mx-auto">
+        <motion.div
+          className="flex justify-center mb-12"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+        >
+          <img 
+            src={logoSvg} 
+            alt="NEUROKLAST Logo" 
+            className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80"
+          />
+        </motion.div>
+
         <motion.h1
           className="text-6xl md:text-8xl lg:text-9xl font-bold mb-8 tracking-tight"
           initial={{ opacity: 0, y: 20 }}
