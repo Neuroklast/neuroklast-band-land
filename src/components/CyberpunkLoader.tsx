@@ -1,17 +1,17 @@
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 
+interface CyberpunkLoaderProps {
+  onLoadComplete: () => void
+}
 
+export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps) {
+  const [progress, setProgress] = useState(0)
+  const [glitchActive, setGlitchActive] = useState(false)
+  const [scanlineY, setScanlineY] = useState(0)
 
-  const [progress, setProgre
- 
-
-      setProgress((prev) => {
-          clearInterval(progressInterval)
-          return 100
-        return prev + 2
-
-    const glitchInt
-      setTimeout(() => setGlitchActive(false), 1
+  useEffect(() => {
+    const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(progressInterval)
@@ -19,106 +19,82 @@ import { motion } from 'framer-motion'
           return 100
         }
         return prev + 2
-      cl
-    }
+      })
+    }, 50)
 
-    <motion.div
-      initial={{ opacity: 1
-      transition={{ duration: 0.5 }}
-      <div 
+    const glitchInterval = setInterval(() => {
+      setGlitchActive(true)
+      setTimeout(() => setGlitchActive(false), 100)
+    }, 1000)
 
-            top: `${scanlineY}%`,
-        />
-        <d
+    const scanlineInterval = setInterval(() => {
+      setScanlineY((prev) => (prev + 1) % 100)
+    }, 20)
 
-              tran
+    return () => {
       clearInterval(progressInterval)
-            ),
-              90deg,
-     
-              oklch(0.
+      clearInterval(glitchInterval)
+      clearInterval(scanlineInterval)
+    }
+  }, [onLoadComplete])
 
   return (
-          <moti
-            className="absolute h-px bg-primary"
-              top: `${i * 12.5
-              width: '100%'
-            initial={{ scaleX: 0, op
-     
-            }}
-        <motion.div
-              delay: i * 0.2
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          className="absolute h-1 w-full bg-primary/20 blur-sm"
           style={{
-      </div>
+            top: `${scanlineY}%`,
+            transition: 'top 0.02s linear'
           }}
-        an
+        />
 
-      >
-          <motion.div
-            animate={{
-              0deg,
-                    '-5px 
-              transparent 2px,
-            }}
-          >
-          </mo
-
-          <div class
-              className="a
-              animate={{
-                  ? '0 0 20px oklch(0.55 0.2
+        <div className="absolute inset-0 opacity-10">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-px bg-primary"
+              style={{
+                top: `${i * 12.5}%`,
+                width: '100%'
               }}
-            )
-          <
-        }} />
-
-            LOADING {progress}%
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{
+                scaleX: 1,
+                opacity: [0.2, 0.5, 0.2]
+              }}
+              transition={{
+                duration: 2,
+                delay: i * 0.2,
+                repeat: Infinity,
+                repeatType: 'reverse'
+              }}
+            />
+          ))}
         </div>
-            key={i}
-}
+      </div>
 
-
-
-
-            }}
-
-            animate={{
-
-
-
-            transition={{
-
-              repeat: Infinity,
-
-
-
-        ))}
-
-
-
-        className="text-center"
-
-
-
-
-
-
-
-
-
-
-
-                    '5px 0 10px oklch(0.55 0.22 25), -5px 0 10px oklch(0.65 0.25 190)',
-
-
-
-
-
-            transition={{ duration: 0.3 }}
-          >
-            NEUROKLAST
-          </motion.div>
-        </div>
+      <div className="relative z-10">
+        <motion.div
+          className="text-6xl sm:text-8xl font-bold text-primary mb-12 text-center"
+          animate={{
+            textShadow: glitchActive
+              ? [
+                  '5px 0 10px oklch(0.55 0.22 25), -5px 0 10px oklch(0.65 0.25 190)',
+                  '-5px 0 10px oklch(0.55 0.22 25), 5px 0 10px oklch(0.65 0.25 190)',
+                  '0 0 20px oklch(0.55 0.22 25)'
+                ]
+              : '0 0 20px oklch(0.55 0.22 25)'
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          NEUROKLAST
+        </motion.div>
 
         <div className="w-64 sm:w-80 mx-auto">
           <div className="relative h-2 bg-card border border-border overflow-hidden">
@@ -142,7 +118,7 @@ import { motion } from 'framer-motion'
             LOADING {progress}%
           </motion.div>
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   )
 }
