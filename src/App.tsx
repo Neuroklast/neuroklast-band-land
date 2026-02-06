@@ -30,7 +30,12 @@ const defaultBandData: BandData = {
     story: `NEUROKLAST emerged from the underground, forging a relentless sound that merges hard techno, industrial, drum and bass, and dark electro into a singular sonic assault. Born from a vision to push boundaries and challenge the status quo, NEUROKLAST delivers raw, uncompromising energy designed for the darkest dancefloors and most intense festival stages.
 
 With a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.`,
-    founded: '2020'
+    founded: '2020',
+    members: [
+      'Member 1',
+      'Member 2',
+      'Member 3'
+    ]
   }
 }
 

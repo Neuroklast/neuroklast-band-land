@@ -95,6 +95,7 @@ export default function Footer({ socialLinks }: FooterProps) {
 
           <div className="text-xs md:text-sm text-muted-foreground space-y-2 px-4">
             <p className="tracking-wider">HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO</p>
+            <p className="text-[10px] md:text-xs">Darktunes Music Group</p>
             <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
           </div>
         </motion.div>

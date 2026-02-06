@@ -20,11 +20,11 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Success criteria**: Logo is prominently displayed, genre tags are readable, visual hierarchy is clear
 
 ### Biography Section
-- **Functionality**: Display band history, story, founding year, members, and achievements with edit capabilities
-- **Purpose**: Tell the band's story and build connection with fans through narrative and background
+- **Functionality**: Display band history, story, founding year, members, achievements, and a swipeable photo gallery with edit capabilities
+- **Purpose**: Tell the band's story, showcase all 3 members, and build connection with fans through narrative and visual content
 - **Trigger**: User scrolls to biography section
-- **Progression**: Section appears → User reads band story → Views founding year and members → Explores achievements
-- **Success criteria**: Story is readable and engaging, founding year is displayed, members list is clear, achievements are formatted as bullet points
+- **Progression**: Section appears → User views photo gallery (can swipe through photos) → Reads band story → Views founding year and all 3 members → Explores achievements
+- **Success criteria**: Story is readable and engaging, photo gallery is swipeable and loads images from assets/images/photos directory, founding year is displayed, all 3 members are listed clearly, achievements are formatted as bullet points
 
 ### Upcoming Gigs Display
 - **Functionality**: List of upcoming show dates with venue, location, and ticket links
@@ -34,11 +34,11 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Success criteria**: Dates are chronologically sorted, past dates are filtered out, ticket links are functional
 
 ### Releases Section
-- **Functionality**: Grid/carousel of recent releases with artwork, title, and streaming links. Automatic syncing with Apple iTunes API to fetch latest releases.
-- **Purpose**: Promote music and drive streams/purchases, keeping release catalog up-to-date automatically
+- **Functionality**: Grid/carousel of recent releases with artwork, title, and streaming links (Spotify, SoundCloud, YouTube, Bandcamp). Automatic syncing with Apple iTunes API to fetch latest releases.
+- **Purpose**: Promote music and drive streams/purchases, keeping release catalog up-to-date automatically. Label: Darktunes Music Group.
 - **Trigger**: User scrolls to releases section, or owner clicks "Sync iTunes" button
-- **Progression**: Release artwork displays → User clicks on release → Opens streaming/purchase link | Owner clicks sync → System fetches latest releases from iTunes → New releases merge with existing → Success notification appears
-- **Success criteria**: Album art is high quality, links open to correct platforms, layout is visually appealing, iTunes sync successfully imports new releases without duplicates
+- **Progression**: Release artwork displays → User clicks on release → Opens streaming/purchase link (excludes Apple Music) | Owner clicks sync → System fetches latest releases from iTunes → New releases merge with existing → Success notification appears
+- **Success criteria**: Album art is high quality, links open to correct platforms (no Apple Music links shown), layout is visually appealing, iTunes sync successfully imports new releases without duplicates, Darktunes Music Group label is displayed in footer
 
 ### Social Media Hub
 - **Functionality**: Comprehensive social media link collection (Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, Linktr.ee) plus an Instagram gallery displaying the first 3 posts from the NEUROKLAST Instagram profile

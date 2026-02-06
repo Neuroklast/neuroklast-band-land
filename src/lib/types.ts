@@ -37,6 +37,7 @@ export interface Biography {
   founded?: string
   members?: string[]
   achievements?: string[]
+  photos?: string[]
 }
 
 export interface BandData {

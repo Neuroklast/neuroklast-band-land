@@ -1,11 +1,10 @@
 import { motion, useInView } from 'framer-motion'
-import { PencilSimple } from '@phosphor-icons/react'
+import { PencilSimple, CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { Biography } from '@/lib/types'
-import bandPhotoAI from '@/assets/images/NK_AI.jpeg'
 
 interface BiographySectionProps {
   biography?: Biography
@@ -18,17 +17,72 @@ const defaultBiography: Biography = {
 
 With a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.`,
   founded: '2020',
+  members: [
+    'Member 1',
+    'Member 2',
+    'Member 3'
+  ],
   achievements: []
 }
 
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [photos, setPhotos] = useState<string[]>([])
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+
+  useEffect(() => {
+    const loadPhotos = async () => {
+      try {
+        const photoModules = import.meta.glob('/src/assets/images/photos/**/*.{png,jpg,jpeg,webp}', { eager: true })
+        const photoUrls = Object.entries(photoModules).map(([, module]: [string, any]) => module.default)
+        
+        if (photoUrls.length === 0) {
+          const fallbackModules = import.meta.glob('/src/assets/images/*.{png,jpg,jpeg,webp}', { eager: true })
+          const fallbackUrls = Object.entries(fallbackModules).map(([, module]: [string, any]) => module.default)
+          setPhotos(fallbackUrls)
+        } else {
+          setPhotos(photoUrls)
+        }
+      } catch (error) {
+        console.error('Error loading photos:', error)
+        setPhotos([])
+      }
+    }
+    loadPhotos()
+  }, [])
 
   const handleUpdate = (updatedBiography: Biography) => {
     onUpdate?.(updatedBiography)
     setIsEditDialogOpen(false)
+  }
+
+  const nextPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)
+  }
+
+  const prevPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) {
+      nextPhoto()
+    }
+    if (touchStart - touchEnd < -75) {
+      prevPhoto()
+    }
   }
 
   return (
@@ -68,18 +122,54 @@ export default function BiographySection({ biography = defaultBiography, editMod
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >
-              <motion.div
-                className="relative overflow-hidden rounded-lg aspect-square md:aspect-video group"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-              >
-                <img
-                  src={bandPhotoAI}
-                  alt="NEUROKLAST AI"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg" />
-              </motion.div>
+              {photos.length > 0 && (
+                <motion.div
+                  className="relative overflow-hidden rounded-lg aspect-square md:aspect-video group"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <img
+                    src={photos[currentPhotoIndex]}
+                    alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg" />
+                  
+                  {photos.length > 1 && (
+                    <>
+                      <Button
+                        onClick={prevPhoto}
+                        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground backdrop-blur-sm w-10 h-10 md:w-12 md:h-12 p-0 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 touch-manipulation"
+                      >
+                        <CaretLeft size={24} weight="bold" />
+                      </Button>
+                      <Button
+                        onClick={nextPhoto}
+                        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground backdrop-blur-sm w-10 h-10 md:w-12 md:h-12 p-0 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 touch-manipulation"
+                      >
+                        <CaretRight size={24} weight="bold" />
+                      </Button>
+                      <div className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {photos.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentPhotoIndex(index)}
+                            className={`w-2 h-2 rounded-full transition-all touch-manipulation ${
+                              index === currentPhotoIndex 
+                                ? 'bg-primary w-6' 
+                                : 'bg-foreground/30 hover:bg-foreground/50'
+                            }`}
+                            aria-label={`Go to photo ${index + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              )}
 
               <Card className="bg-card border-border p-4 md:p-8 hover:border-primary/50 active:border-primary transition-all duration-300 touch-manipulation">
                 <div className="prose prose-invert max-w-none">
