@@ -25,15 +25,16 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
 
   useEffect(() => {
     if (release) {
+      const links = release.streamingLinks || {}
       setFormData({
         title: release.title,
         artwork: release.artwork || '',
         releaseDate: release.releaseDate,
-        spotify: release.streamingLinks.spotify || '',
-        soundcloud: release.streamingLinks.soundcloud || '',
-        bandcamp: release.streamingLinks.bandcamp || '',
-        youtube: release.streamingLinks.youtube || '',
-        appleMusic: release.streamingLinks.appleMusic || ''
+        spotify: links.spotify || '',
+        soundcloud: links.soundcloud || '',
+        bandcamp: links.bandcamp || '',
+        youtube: links.youtube || '',
+        appleMusic: links.appleMusic || ''
       })
     }
   }, [release])

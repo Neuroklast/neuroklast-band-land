@@ -93,8 +93,8 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
             ...existing,
             artwork: iTunesMatch.artwork || existing.artwork,
             streamingLinks: {
-              ...existing.streamingLinks,
-              appleMusic: iTunesMatch.streamingLinks.appleMusic,
+              ...(existing.streamingLinks || {}),
+              appleMusic: iTunesMatch.streamingLinks?.appleMusic,
             }
           }
         }
@@ -196,7 +196,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                       </p>
                     </div>
 
-                    {!editMode && (
+                    {!editMode && release.streamingLinks && (
                       <div className="grid grid-cols-2 gap-2">
                         {release.streamingLinks.spotify && (
                           <Button
