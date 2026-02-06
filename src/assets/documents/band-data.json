@@ -1,28 +1,28 @@
 {
   "biography": {
-    "story": "NEUROKLAST emerged from the underground, forging a relentless sound that merges hard techno, industrial, drum and bass, and dark electro into a singular sonic assault. Born from a vision to push boundaries and challenge the status quo, NEUROKLAST delivers raw, uncompromising energy designed for the darkest dancefloors and most intense festival stages.\n\nWith a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.",
+    "story": "Neuroklast is hard techno, industrial, DnB, dark electro, whatever breaks the surface. It’s noisy, heavy, emotional, sometimes a bit fucked up; just like life. We started this in 2020. Not to fit into a scene, but to build something that feels real. There's a story behind it. A visual world. A lot of weird lore. It's not just for show, but it’s part of how we deal with things. Mental health is a big one. Inner shit. No masks. No fake shit. Operating under the darkTunes banner and the mastering of Zardonic we continue to develop our sound, we're not stuck to genres. A Neuroklast show is loud, physical and dark, but there’s space in it. It’s not about being brutal all the time. It’s about honesty. If it leaves a mark, good. If not, that’s fine too. This isn’t for everyone. And it’s not trying to be.",
     "founded": "2020",
     "members": [
-      "Member 1",
-      "Member 2",
-      "Member 3"
+      "Kay (Production)",
+      "markus (Production / Live)",
+      "Rage (Vocals)"
     ],
     "achievements": [
-      "Performed at major underground techno festivals across Europe",
-      "Released on renowned industrial and techno labels",
-      "Built a dedicated following in the hard techno and industrial scene",
-      "Collaborated with prominent artists in the experimental electronic music space"
+      "Performed at WGT/SSM/RESISTANZ",
+      "Signed with Darktunes Music Group",
+      "Collabed with ESA, iVardensphere, Zardonic, Mechanical Vein, grabyourface and many more"
+      
     ]
   },
   "band": {
     "name": "NEUROKLAST",
     "genres": [
       "HARD TECHNO",
-      "INDUSTRIAL",
-      "DNB",
+      "CYBERPUNK",
+      "D'n'B",
       "DARK ELECTRO"
     ],
-    "location": "Europe",
+    "location": "Germany",
     "description": "An uncompromising force in the underground electronic music scene, pushing the boundaries of hard techno and industrial sound design."
   }
 }
