@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
-import logoPng from '@/assets/images/neuroklast-logo.png'
+import logoPng from '@/assets/images/NK_BAPHOMET.png'
 
 interface HeroProps {
   name: string
