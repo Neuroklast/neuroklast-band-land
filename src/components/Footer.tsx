@@ -65,9 +65,9 @@ export default function Footer({ socialLinks }: FooterProps) {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-8">NEUROKLAST</h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 md:mb-8">NEUROKLAST</h2>
           
-          <div className="flex items-center justify-center gap-6 mb-8">
+          <div className="flex items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8 flex-wrap">
             {socialIcons
               .filter(social => social.url)
               .map((social, index) => {
@@ -78,7 +78,7 @@ export default function Footer({ socialLinks }: FooterProps) {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`text-foreground transition-colors ${social.color}`}
+                    className={`text-foreground transition-all touch-manipulation ${social.color}`}
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, y: 20 }}
@@ -86,15 +86,16 @@ export default function Footer({ socialLinks }: FooterProps) {
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
                   >
-                    <Icon size={32} weight="fill" />
+                    <Icon size={28} className="md:hidden" weight="fill" />
+                    <Icon size={32} className="hidden md:block" weight="fill" />
                   </motion.a>
                 )
               })}
           </div>
 
-          <div className="text-sm text-muted-foreground space-y-2">
-            <p>HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO</p>
-            <p className="text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
+          <div className="text-xs md:text-sm text-muted-foreground space-y-2 px-4">
+            <p className="tracking-wider">HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO</p>
+            <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
           </div>
         </motion.div>
       </div>

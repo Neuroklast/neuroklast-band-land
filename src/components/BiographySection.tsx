@@ -39,7 +39,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.7 }}
         >
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
             <motion.h2 
               className="text-4xl md:text-5xl text-foreground"
               initial={{ opacity: 0, x: -20 }}
@@ -53,7 +53,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 onClick={() => setIsEditDialogOpen(true)}
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="gap-2 active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
               >
                 <PencilSimple size={16} />
                 Edit
@@ -81,10 +81,10 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg" />
               </motion.div>
 
-              <Card className="bg-card border-border p-8 hover:border-primary/50 transition-colors duration-300">
+              <Card className="bg-card border-border p-4 md:p-8 hover:border-primary/50 active:border-primary transition-all duration-300 touch-manipulation">
                 <div className="prose prose-invert max-w-none">
                   {biography.story.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className="text-foreground/90 leading-relaxed mb-4 last:mb-0">
+                    <p key={index} className="text-sm md:text-base text-foreground/90 leading-relaxed mb-4 last:mb-0">
                       {paragraph}
                     </p>
                   ))}

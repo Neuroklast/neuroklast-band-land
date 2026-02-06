@@ -41,10 +41,10 @@ export default function Navigation() {
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={() => scrollToSection('hero')}
-            className="text-xl font-bold tracking-tight hover:text-primary transition-colors"
+            className="text-lg md:text-xl font-bold tracking-tight hover:text-primary active:text-primary/80 transition-colors touch-manipulation"
           >
             NEUROKLAST
           </button>
@@ -54,9 +54,10 @@ export default function Navigation() {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className="text-sm font-medium tracking-wider hover:text-primary transition-colors"
+                className="text-sm font-medium tracking-wider hover:text-primary active:text-primary/80 transition-colors relative group"
               >
                 {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </button>
             ))}
           </div>
@@ -64,7 +65,7 @@ export default function Navigation() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden active:scale-95 transition-transform touch-manipulation"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <List size={24} />}
@@ -74,22 +75,28 @@ export default function Navigation() {
 
       {isMobileMenuOpen && (
         <motion.div
-          className="fixed inset-0 z-40 bg-background md:hidden pt-20"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-40 bg-background md:hidden pt-16"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
         >
-          <div className="flex flex-col gap-6 p-8">
-            {navItems.map((item) => (
-              <button
+          <div className="flex flex-col gap-4 p-6">
+            {navItems.map((item, index) => (
+              <motion.button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className="text-2xl font-bold tracking-tight hover:text-primary transition-colors text-left"
+                className="text-xl font-bold tracking-tight hover:text-primary active:text-primary/80 active:scale-95 transition-all text-left py-3 border-b border-border touch-manipulation"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 {item.label}
-              </button>
+              </motion.button>
             ))}
           </div>
+          
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
         </motion.div>
       )}
     </>

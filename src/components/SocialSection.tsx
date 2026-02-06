@@ -43,7 +43,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
   return (
     <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-background to-secondary/10" id="social">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
           <motion.h2 
             className="text-4xl md:text-5xl lg:text-6xl font-bold"
             initial={{ opacity: 0, x: -20 }}
@@ -55,7 +55,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
           {editMode && (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-primary hover:bg-accent"
+              className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
             >
               Edit Links
             </Button>
@@ -79,12 +79,13 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
                 <Button
                   asChild
                   variant="outline"
-                  className="w-full h-32 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 transition-all group relative overflow-hidden"
+                  className="w-full h-28 md:h-32 flex flex-col items-center justify-center gap-2 md:gap-3 border-border hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-95 transition-all group relative overflow-hidden touch-manipulation"
                 >
                   <a href={url} target="_blank" rel="noopener noreferrer">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <Icon size={40} className="text-primary group-hover:scale-110 transition-transform duration-300" weight="fill" />
-                    <span className="text-xs font-medium tracking-wider uppercase relative z-10">{platform.label}</span>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
+                    <Icon size={32} className="md:hidden text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-300" weight="fill" />
+                    <Icon size={40} className="hidden md:block text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-300" weight="fill" />
+                    <span className="text-[10px] md:text-xs font-medium tracking-wider uppercase relative z-10">{platform.label}</span>
                   </a>
                 </Button>
               </motion.div>

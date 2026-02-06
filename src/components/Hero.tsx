@@ -43,7 +43,7 @@ export default function Hero({ name, genres }: HeroProps) {
   }
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 py-20">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.55_0.22_25/0.05)_0%,transparent_70%)]" />
         
@@ -89,7 +89,7 @@ export default function Hero({ name, genres }: HeroProps) {
 
       <div className="relative z-10 text-center max-w-5xl mx-auto">
         <motion.div
-          className="flex justify-center mb-12"
+          className="flex justify-center mb-8 md:mb-12"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.2, type: 'spring', stiffness: 100 }}
@@ -97,12 +97,12 @@ export default function Hero({ name, genres }: HeroProps) {
           <img 
             src={logoPng} 
             alt="NEUROKLAST Logo" 
-            className={`w-64 h-auto md:w-80 lg:w-96 xl:w-[28rem] drop-shadow-[0_0_40px_rgba(220,38,38,0.4)] ${glitchLogo ? 'glitch-effect' : ''}`}
+            className={`w-48 h-auto sm:w-64 md:w-80 lg:w-96 xl:w-[28rem] drop-shadow-[0_0_40px_rgba(220,38,38,0.4)] ${glitchLogo ? 'glitch-effect' : ''}`}
           />
         </motion.div>
 
         <motion.h1
-          className={`text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold mb-6 tracking-wide ${glitchText ? 'glitch-text-effect' : ''}`}
+          className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold mb-4 md:mb-6 tracking-wide ${glitchText ? 'glitch-text-effect' : ''}`}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
@@ -111,7 +111,7 @@ export default function Hero({ name, genres }: HeroProps) {
         </motion.h1>
 
         <motion.div
-          className="flex flex-wrap items-center justify-center gap-3 mb-12"
+          className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8 md:mb-12 px-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.9 }}
@@ -125,7 +125,7 @@ export default function Hero({ name, genres }: HeroProps) {
             >
               <Badge
                 variant="outline"
-                className="border-primary/50 text-primary px-5 py-2 text-xs font-medium tracking-widest hover:bg-primary/10 transition-colors"
+                className="border-primary/50 text-primary px-3 py-1.5 md:px-5 md:py-2 text-[10px] md:text-xs font-medium tracking-widest hover:bg-primary/10 active:bg-primary/20 transition-colors touch-manipulation"
               >
                 {genre}
               </Badge>
@@ -141,7 +141,7 @@ export default function Hero({ name, genres }: HeroProps) {
           <Button
             onClick={scrollToGigs}
             variant="outline"
-            className="group border-primary/50 text-foreground hover:bg-primary/10 hover:border-primary px-8 py-6 text-sm tracking-wider"
+            className="group border-primary/50 text-foreground hover:bg-primary/10 hover:border-primary active:bg-primary/20 active:scale-95 active:border-primary px-6 py-5 md:px-8 md:py-6 text-xs md:text-sm tracking-wider transition-all touch-manipulation"
           >
             EXPLORE
             <motion.div
@@ -155,7 +155,7 @@ export default function Hero({ name, genres }: HeroProps) {
       </div>
 
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1.5 }}
@@ -165,7 +165,8 @@ export default function Hero({ name, genres }: HeroProps) {
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           className="text-primary/50"
         >
-          <CaretDown size={24} />
+          <CaretDown size={20} className="md:hidden" />
+          <CaretDown size={24} className="hidden md:block" />
         </motion.div>
       </motion.div>
     </section>

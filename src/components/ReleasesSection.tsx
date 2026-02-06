@@ -100,7 +100,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   return (
     <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-secondary/5 via-background to-background" id="releases">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-12 flex-wrap gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
           <motion.h2 
             className="text-4xl md:text-5xl lg:text-6xl font-bold"
             initial={{ opacity: 0, x: -20 }}
@@ -110,22 +110,22 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
             RELEASES
           </motion.h2>
           {editMode && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 onClick={() => handleFetchITunesReleases(false)}
                 disabled={isFetching}
                 variant="outline"
-                className="border-primary/30 hover:bg-primary/10"
+                className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
               >
-                <ArrowsClockwise className={`mr-2 ${isFetching ? 'animate-spin' : ''}`} size={20} />
-                {isFetching ? 'Fetching...' : 'Sync iTunes'}
+                <ArrowsClockwise className={`${isFetching ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
+                <span className="hidden md:inline">{isFetching ? 'Fetching...' : 'Sync iTunes'}</span>
               </Button>
               <Button
                 onClick={() => setIsAdding(true)}
-                className="bg-primary hover:bg-accent"
+                className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
               >
-                <Plus className="mr-2" size={20} />
-                Add Release
+                <Plus className="mr-0 md:mr-2" size={20} />
+                <span className="hidden md:inline">Add Release</span>
               </Button>
             </div>
           )}
@@ -153,39 +153,40 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group">
+                <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.98] touch-manipulation">
                   <div className="aspect-square bg-secondary/30 flex items-center justify-center relative overflow-hidden">
                     {release.artwork ? (
                       <img
                         src={release.artwork}
                         alt={release.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 group-active:scale-110 transition-transform duration-500"
                       />
                     ) : (
                       <MusicNote size={72} className="text-muted-foreground opacity-30" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
                   </div>
                   
-                  <div className="p-5 space-y-4">
+                  <div className="p-4 md:p-5 space-y-3 md:space-y-4">
                     <div>
-                      <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{release.title}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg md:text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{release.title}</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">
                         {format(new Date(release.releaseDate), 'MMMM yyyy')}
                       </p>
                     </div>
 
                     {!editMode && (
-                      <div className="flex gap-2 flex-wrap">
+                      <div className="grid grid-cols-2 gap-2">
                         {release.streamingLinks.appleMusic && (
                           <Button
                             size="sm"
                             variant="outline"
                             asChild
-                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
+                            className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
                           >
                             <a href={release.streamingLinks.appleMusic} target="_blank" rel="noopener noreferrer">
-                              <AppleLogo size={18} weight="fill" />
+                              <AppleLogo size={18} weight="fill" className="mr-1" />
+                              <span className="text-xs">Apple</span>
                             </a>
                           </Button>
                         )}
@@ -194,10 +195,11 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                             size="sm"
                             variant="outline"
                             asChild
-                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
+                            className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
                           >
                             <a href={release.streamingLinks.spotify} target="_blank" rel="noopener noreferrer">
-                              <SpotifyLogo size={18} weight="fill" />
+                              <SpotifyLogo size={18} weight="fill" className="mr-1" />
+                              <span className="text-xs">Spotify</span>
                             </a>
                           </Button>
                         )}
@@ -206,10 +208,11 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                             size="sm"
                             variant="outline"
                             asChild
-                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
+                            className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
                           >
                             <a href={release.streamingLinks.soundcloud} target="_blank" rel="noopener noreferrer">
-                              <SoundcloudLogo size={18} weight="fill" />
+                              <SoundcloudLogo size={18} weight="fill" className="mr-1" />
+                              <span className="text-xs">SoundCloud</span>
                             </a>
                           </Button>
                         )}
@@ -218,10 +221,11 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                             size="sm"
                             variant="outline"
                             asChild
-                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
+                            className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
                           >
                             <a href={release.streamingLinks.youtube} target="_blank" rel="noopener noreferrer">
-                              <YoutubeLogo size={18} weight="fill" />
+                              <YoutubeLogo size={18} weight="fill" className="mr-1" />
+                              <span className="text-xs">YouTube</span>
                             </a>
                           </Button>
                         )}
@@ -234,7 +238,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingRelease(release)}
-                          className="flex-1 border-primary/30 hover:bg-primary/10"
+                          className="flex-1 border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
                         >
                           Edit
                         </Button>
@@ -242,6 +246,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(release.id)}
+                          className="active:scale-95 transition-transform touch-manipulation"
                         >
                           <Trash size={18} />
                         </Button>
