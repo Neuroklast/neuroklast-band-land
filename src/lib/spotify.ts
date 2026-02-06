@@ -5,30 +5,32 @@ const SPOTIFY_ARTIST_ID = '5xfQSijbVetvH1QAS58n30'
 export async function fetchSpotifyReleases(): Promise<Release[]> {
   try {
     const artistId = SPOTIFY_ARTIST_ID
-    const promptText = `You are a Spotify API assistant. Fetch the latest albums and singles from the Spotify artist with ID ${artistId} (NEUROKLAST).
+    
+    const promptText = `You are a Spotify data fetcher. Get the latest albums and singles from Spotify artist ID ${artistId} (NEUROKLAST).
 
-Please make a request to the Spotify Web API endpoint: https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&limit=50
+Fetch from Spotify Web API: https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&limit=50
 
-You need to:
-1. Get a Spotify access token using client credentials flow
-2. Fetch the artist's albums
-3. Return the data in this exact JSON format (root object with "releases" property containing an array):
+Steps:
+1. Get Spotify access token (client credentials flow)
+2. Fetch artist albums/singles
+3. For each album/single, extract: id, name, release_date, external_urls.spotify, and images (use largest image)
 
+Return data as JSON with this structure:
 {
   "releases": [
     {
-      "id": "album_id",
-      "title": "Album Title",
-      "artwork": "image_url",
+      "id": "spotify_album_id",
+      "title": "Track/Album Name",
+      "artwork": "https://i.scdn.co/image/...",
       "releaseDate": "YYYY-MM-DD",
-      "spotifyUrl": "spotify_url"
+      "spotifyUrl": "https://open.spotify.com/..."
     }
   ]
 }
 
-Important: Return ONLY the JSON object, no additional text or explanations.`
+Return ONLY valid JSON, no explanations.`
 
-    const response = await window.spark.llm(promptText, 'gpt-4o-mini', true)
+    const response = await window.spark.llm(promptText, 'gpt-4o', true)
     const data = JSON.parse(response)
     
     if (!data.releases || !Array.isArray(data.releases)) {
@@ -48,6 +50,6 @@ Important: Return ONLY the JSON object, no additional text or explanations.`
     return releases
   } catch (error) {
     console.error('Error fetching Spotify releases:', error)
-    return []
+    throw error
   }
 }

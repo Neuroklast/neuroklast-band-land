@@ -1,23 +1,44 @@
-# ✨ Welcome to Your Spark Template!
-You've just launched your brand-new Spark Template Codespace — everything’s fired up and ready for you to explore, build, and create with Spark!
+# NEUROKLAST - Official Band Website
 
-This template is your blank canvas. It comes with a minimal setup to help you get started quickly with Spark development.
+A dark, minimal landing page for the hard techno/industrial band NEUROKLAST featuring automatic Spotify integration, upcoming gigs, releases, and social media presence.
 
-🚀 What's Inside?
-- A clean, minimal Spark environment
-- Pre-configured for local development
-- Ready to scale with your ideas
-  
-🧠 What Can You Do?
+## 🎵 Features
 
-Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
+- **Automatic Spotify Integration**: Latest releases are automatically fetched from Spotify with cover art
+- **Biography Section**: Band story, history, and background
+- **Upcoming Gigs**: Display of upcoming shows with venue, location, and ticket links
+- **Releases Gallery**: Grid of recent releases with artwork and streaming links
+- **Social Media Hub**: Links to Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, and more
+- **Content Management**: Owner-only edit mode for updating content without code changes
 
-🧹 Just Exploring?
-No problem! If you were just checking things out and don’t need to keep this code:
+## 🚀 Tech Stack
 
-- Simply delete your Spark.
-- Everything will be cleaned up — no traces left behind.
+- React 19 with TypeScript
+- Tailwind CSS v4
+- Framer Motion for animations
+- shadcn/ui components
+- Spotify API integration via LLM
+- Spark KV for data persistence
 
-📄 License For Spark Template Resources 
+## 🎨 Design
+
+Bold industrial aesthetic with:
+- Pure black background
+- Crimson red accents
+- Rajdhani + Inter typography
+- Minimal, geometric layouts
+- Aggressive, high-energy visual impact
+
+## 🔧 Development
+
+The site automatically loads releases from Spotify on first visit. Owners can:
+- Click "Edit Mode" to update content
+- Manually sync Spotify releases
+- Add/edit/delete gigs, releases, and social links
+- Update biography
+
+All changes persist automatically using Spark KV storage.
+
+## 📄 License
 
 The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.

@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { Release } from '@/lib/types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
 import { fetchSpotifyReleases } from '@/lib/spotify'
@@ -20,6 +20,14 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
+  const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!hasAutoLoaded && releases.length === 0) {
+      setHasAutoLoaded(true)
+      handleFetchSpotifyReleases(true)
+    }
+  }, [hasAutoLoaded, releases.length])
 
   const sortedReleases = [...releases].sort(
     (a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
@@ -39,13 +47,15 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
     setIsAdding(false)
   }
 
-  const handleFetchSpotifyReleases = async () => {
+  const handleFetchSpotifyReleases = async (isAutoLoad = false) => {
     setIsFetching(true)
     try {
       const spotifyReleases = await fetchSpotifyReleases()
       
       if (spotifyReleases.length === 0) {
-        toast.error('No releases found on Spotify')
+        if (!isAutoLoad) {
+          toast.error('No releases found on Spotify')
+        }
         return
       }
 
@@ -70,9 +80,13 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
       const mergedReleases = [...updatedReleases, ...newReleases]
       onUpdate(mergedReleases)
       
-      toast.success(`Imported ${newReleases.length} new releases from Spotify`)
+      if (!isAutoLoad) {
+        toast.success(`Imported ${newReleases.length} new releases from Spotify`)
+      }
     } catch (error) {
-      toast.error('Failed to fetch releases from Spotify')
+      if (!isAutoLoad) {
+        toast.error('Failed to fetch releases from Spotify')
+      }
       console.error(error)
     } finally {
       setIsFetching(false)
@@ -95,7 +109,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
           {editMode && (
             <div className="flex gap-2">
               <Button
-                onClick={handleFetchSpotifyReleases}
+                onClick={() => handleFetchSpotifyReleases(false)}
                 disabled={isFetching}
                 variant="outline"
                 className="border-primary/30 hover:bg-primary/10"
