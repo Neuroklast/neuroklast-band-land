@@ -61,7 +61,12 @@ export default function InstagramGallery() {
             >
               <Images size={32} className="text-primary" weight="fill" />
             </motion.div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
+              data-text={displayedTitle}
+              style={{
+                textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
+              }}
+            >
               <ChromaticText intensity={1.5}>
                 {displayedTitle}
               </ChromaticText>

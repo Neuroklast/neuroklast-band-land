@@ -15,6 +15,7 @@ import { ChromaticText } from '@/components/ChromaticText'
 import type { SocialLinks } from '@/lib/types'
 import { useState, useRef } from 'react'
 import SocialEditDialog from './SocialEditDialog'
+import { useTypingEffect } from '@/hooks/use-typing-effect'
 
 interface SocialSectionProps {
   socialLinks: SocialLinks
@@ -38,6 +39,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
   const [isEditing, setIsEditing] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const { displayedText } = useTypingEffect('CONNECT', 100, 300)
 
   const safeSocialLinks = socialLinks || {}
   const activePlatforms = socialPlatforms.filter(platform => safeSocialLinks[platform.key])
@@ -47,13 +49,18 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
           <motion.h2 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold scanline-text dot-matrix-text"
+            data-text={displayedText}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
+            style={{
+              textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
+            }}
           >
             <ChromaticText intensity={1.5}>
-              CONNECT
+              {displayedText}
+              {displayedText.length < 7 && <span className="terminal-cursor"></span>}
             </ChromaticText>
           </motion.h2>
           {editMode && (
