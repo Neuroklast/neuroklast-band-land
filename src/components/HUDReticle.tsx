@@ -1,100 +1,78 @@
 import { useEffect, useState } from 'react'
 import { motion, useSpring } from 'framer-motion'
 
-export default function HUDReticle() {
+export const CyberpunkCursor = () => {
+  // Koordinaten mit Spring-Physics für weiche Bewegung
+  const springConfig = { stiffness: 500, damping: 28 }
+  const x = useSpring(0, springConfig)
+  const y = useSpring(0, springConfig)
+  
   const [isActive, setIsActive] = useState(false)
-  const x = useSpring(0, { stiffness: 500, damping: 28 })
-  const y = useSpring(0, { stiffness: 500, damping: 28 })
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setIsActive(true)
+      // Setzt die Zielkoordinaten für die Springs
       x.set(e.clientX)
       y.set(e.clientY)
     }
 
-    const handleMouseLeave = () => {
-      setIsActive(false)
-    }
+    const handleMouseDown = () => setIsActive(true)
+    const handleMouseUp = () => setIsActive(false)
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseleave', handleMouseLeave)
-    
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousedown', handleMouseDown)
+    window.addEventListener('mouseup', handleMouseUp)
+
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseleave', handleMouseLeave)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('mouseup', handleMouseUp)
     }
   }, [x, y])
 
-  if (!isActive) return null
-
   return (
-    <>
+    <motion.div
+      style={{
+        x,
+        y,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 9999,
+        pointerEvents: 'none', // Wichtig: Damit Klicks durchgehen
+        translateX: '-50%',
+        translateY: '-50%',
+      }}
+    >
+      {/* Inneres Fadenkreuz (skaliert bei Klick) */}
       <motion.div
-        className="fixed pointer-events-none z-[9999] mix-blend-screen"
-        style={{
-          left: x,
-          top: y,
-          x: '-50%',
-          y: '-50%',
-        }}
+        animate={{ scale: isActive ? 0.8 : 1 }}
+        transition={{ duration: 0.1 }}
+        className="relative flex items-center justify-center"
       >
-        <svg width="60" height="60" viewBox="0 0 60 60" className="drop-shadow-[0_0_8px_oklch(0.50_0.22_25)]">
-          <circle
-            cx="30"
-            cy="30"
-            r="25"
-            fill="none"
-            stroke="oklch(0.50 0.22 25)"
-            strokeWidth="1"
-            strokeDasharray="4 4"
-            className="animate-[spin_8s_linear_infinite]"
-          />
-          <circle
-            cx="30"
-            cy="30"
-            r="15"
-            fill="none"
-            stroke="oklch(0.60 0.24 25)"
-            strokeWidth="1"
-            className="animate-[spin_4s_linear_infinite_reverse]"
-          />
-          <line x1="30" y1="0" x2="30" y2="10" stroke="oklch(0.50 0.22 25)" strokeWidth="1" />
-          <line x1="30" y1="50" x2="30" y2="60" stroke="oklch(0.50 0.22 25)" strokeWidth="1" />
-          <line x1="0" y1="30" x2="10" y2="30" stroke="oklch(0.50 0.22 25)" strokeWidth="1" />
-          <line x1="50" y1="30" x2="60" y2="30" stroke="oklch(0.50 0.22 25)" strokeWidth="1" />
-          <line x1="12" y1="12" x2="18" y2="18" stroke="oklch(0.60 0.24 25)" strokeWidth="1" />
-          <line x1="48" y1="12" x2="42" y2="18" stroke="oklch(0.60 0.24 25)" strokeWidth="1" />
-          <line x1="12" y1="48" x2="18" y2="42" stroke="oklch(0.60 0.24 25)" strokeWidth="1" />
-          <line x1="48" y1="48" x2="42" y2="42" stroke="oklch(0.60 0.24 25)" strokeWidth="1" />
-          <circle cx="30" cy="30" r="2" fill="oklch(0.50 0.22 25)" className="animate-pulse" />
+        <svg width="60" height="60" viewBox="0 0 60 60">
+          <circle cx="30" cy="30" r="20" fill="none" stroke="oklch(0.60 0.24 20)" strokeWidth="1" opacity="0.8" />
+          <circle cx="30" cy="30" r="2" fill="oklch(0.60 0.24 20)" />
+
+          {/* Dekorative Linien aus deinem Fragment */}
+          <line x1="30" y1="5" x2="30" y2="15" stroke="oklch(0.60 0.24 20)" />
+          <line x1="30" y1="55" x2="30" y2="45" stroke="oklch(0.60 0.24 20)" />
+          <line x1="5" y1="30" x2="15" y2="30" stroke="oklch(0.60 0.24 20)" />
+          <line x1="55" y1="30" x2="45" y2="30" stroke="oklch(0.60 0.24 20)" />
+          
+          {/* Diagonale Linie (aus deinem Code-Schnipsel) */}
+          <line x1="48" y1="12" x2="42" y2="18" stroke="oklch(0.60 0.24 20)" strokeWidth="2" />
         </svg>
       </motion.div>
 
-      <motion.div
-        className="fixed pointer-events-none z-[9998] mix-blend-screen"
-        style={{
-          left: x,
-          top: y,
-          x: '-50%',
-          y: '-50%',
-        }}
-      >
-        <svg width="120" height="120" viewBox="0 0 120 120" className="opacity-30">
-          <rect x="5" y="5" width="15" height="15" fill="none" stroke="oklch(0.50 0.22 25)" strokeWidth="1">
-            <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
-          </rect>
-          <rect x="100" y="5" width="15" height="15" fill="none" stroke="oklch(0.50 0.22 25)" strokeWidth="1">
-            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" />
-          </rect>
-          <rect x="5" y="100" width="15" height="15" fill="none" stroke="oklch(0.50 0.22 25)" strokeWidth="1">
-            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
-          </rect>
-          <rect x="100" y="100" width="15" height="15" fill="none" stroke="oklch(0.50 0.22 25)" strokeWidth="1">
-            <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+      {/* Äußerer rotierender Rahmen (HUD Effekt) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <rect x="10" y="10" width="100" height="100" fill="none" stroke="currentColor" strokeDasharray="4 4" strokeWidth="1">
+            <animate attributeName="stroke-dashoffset" from="0" to="8" dur="2s" repeatCount="indefinite" />
           </rect>
         </svg>
-      </motion.div>
-    </>
+      </div>
+    </motion.div>
   )
 }
