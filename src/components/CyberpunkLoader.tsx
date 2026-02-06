@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
-interface CyberpunkLoaderProps {
-  onLoadComplete: () => void
-}
+
+  const [progress, setProgre
+ 
 
 export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps) {
   const [progress, setProgress] = useState(0)
@@ -12,50 +12,50 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
 
   useEffect(() => {
     const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval)
-          setTimeout(() => onLoadComplete(), 500)
-          return 100
-        }
-        return prev + 2
-      })
-    }, 50)
 
-    const glitchInterval = setInterval(() => {
-      setGlitchActive(true)
-      setTimeout(() => setGlitchActive(false), 100)
-    }, 1000)
+      setScanlineY((prev) 
 
-    const scanlineInterval = setInterval(() => {
-      setScanlineY((prev) => (prev + 1) % 100)
-    }, 20)
-
-    return () => {
       clearInterval(progressInterval)
-      clearInterval(glitchInterval)
-      clearInterval(scanlineInterval)
-    }
-  }, [onLoadComplete])
-
+      clearInterval(
+  }, [onL
   return (
-    <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background"
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="absolute inset-0 overflow-hidden">
+      cl
+      exit
+
         <div
-          className="absolute h-1 w-full bg-primary/20 blur-sm"
           style={{
-            top: `${scanlineY}%`,
             transition: 'top 0.02s linear'
-          }}
         />
 
-        <div className="absolute inset-0 opacity-10">
-          {[...Array(8)].map((_, i) => (
+            <motion.div
+              className="absolute h-px bg-prim
+          
+
+              anim
+                opacity: [0.2, 0.5, 0
+              transition={{
+                delay: i * 0.2,
+     
+            />
+
+
+        <motion
+          animate={{
+              ? [
+                  '-5px 0 1
+                ]
+     
+        >
+        </mo
+        <div className="w-64 sm:w-80 mx-auto">
+            <motio
+              style={{ width: `${
+                boxShadow: glitchActive
+            
+          
+
+            className="mt-4 text-sm tracking-wider te
+              opacity: glitchActive ? [1
             <motion.div
               key={i}
               className="absolute h-px bg-primary"
@@ -114,11 +114,11 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
             animate={{
               opacity: glitchActive ? [1, 0.3, 1] : 1
             }}
-          >
+
             LOADING {progress}%
           </motion.div>
         </div>
-      </div>
+
     </motion.div>
-  )
+
 }
