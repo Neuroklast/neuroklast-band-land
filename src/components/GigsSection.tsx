@@ -24,7 +24,7 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const isInView = useInView(sectionRef, { once: true })
 
   const titleText = 'UPCOMING GIGS'
   const { displayedText: displayedTitle } = useTypingEffect(
