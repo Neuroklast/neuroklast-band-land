@@ -11,31 +11,47 @@ export default function EditControls({ editMode, onToggleEdit }: EditControlsPro
   return (
     <motion.div
       className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50"
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 260, damping: 20 }}
     >
       <AnimatePresence mode="wait">
         {editMode ? (
-          <Button
+          <motion.div
             key="exit"
-            onClick={onToggleEdit}
-            className="bg-destructive hover:bg-destructive/90 active:bg-destructive/80 active:scale-95 w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg shadow-destructive/30 hover:shadow-destructive/50 transition-all touch-manipulation"
-            size="icon"
+            initial={{ scale: 0, rotate: -90 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={{ scale: 0, rotate: 90 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           >
-            <X size={20} className="md:hidden" weight="bold" />
-            <X size={24} className="hidden md:block" weight="bold" />
-          </Button>
+            <Button
+              onClick={onToggleEdit}
+              className="bg-destructive hover:bg-destructive/90 active:bg-destructive/80 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-destructive/40 hover:shadow-destructive/60 active:shadow-destructive/80 transition-all touch-manipulation relative overflow-hidden group"
+              size="icon"
+            >
+              <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
+              <X size={24} className="md:hidden relative z-10" weight="bold" />
+              <X size={28} className="hidden md:block relative z-10" weight="bold" />
+            </Button>
+          </motion.div>
         ) : (
-          <Button
+          <motion.div
             key="edit"
-            onClick={onToggleEdit}
-            className="bg-primary hover:bg-accent active:bg-accent/90 active:scale-95 w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all touch-manipulation"
-            size="icon"
+            initial={{ scale: 0, rotate: -90 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={{ scale: 0, rotate: 90 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           >
-            <PencilSimple size={20} className="md:hidden" weight="bold" />
-            <PencilSimple size={24} className="hidden md:block" weight="bold" />
-          </Button>
+            <Button
+              onClick={onToggleEdit}
+              className="bg-primary hover:bg-accent active:bg-accent/90 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-primary/40 hover:shadow-primary/60 active:shadow-primary/80 transition-all touch-manipulation relative overflow-hidden group"
+              size="icon"
+            >
+              <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
+              <PencilSimple size={24} className="md:hidden relative z-10" weight="bold" />
+              <PencilSimple size={28} className="hidden md:block relative z-10" weight="bold" />
+            </Button>
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.div>

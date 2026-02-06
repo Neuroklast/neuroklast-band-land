@@ -177,18 +177,20 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.98] touch-manipulation">
+                <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation">
                   <div className="aspect-square bg-secondary/30 flex items-center justify-center relative overflow-hidden">
                     {release.artwork ? (
                       <img
                         src={release.artwork}
                         alt={release.title}
-                        className="w-full h-full object-cover group-hover:scale-105 group-active:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 group-active:scale-110 transition-transform duration-500 select-none"
+                        draggable={false}
                       />
                     ) : (
                       <MusicNote size={72} className="text-muted-foreground opacity-30" />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
                   </div>
                   
                   <div className="p-4 md:p-5 space-y-3 md:space-y-4">

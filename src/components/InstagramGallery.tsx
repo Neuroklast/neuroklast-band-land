@@ -84,19 +84,20 @@ export default function InstagramGallery() {
           {photos.map((photo, index) => (
             <motion.div
               key={photo.id}
-              className={`relative group overflow-hidden rounded-md bg-card aspect-square ${glitchIndex === index ? 'glitch-effect' : ''}`}
+              className={`relative group overflow-hidden rounded-md bg-card aspect-square cursor-pointer touch-manipulation ${glitchIndex === index ? 'glitch-effect' : ''}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
               whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               <img
                 src={photo.imageUrl}
                 alt={photo.caption}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-active:scale-105"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300">
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <div className="flex items-center gap-2 text-white">
                     <Images size={20} weight="fill" />
@@ -104,7 +105,8 @@ export default function InstagramGallery() {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-md cyber-border" />
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 group-active:border-primary transition-colors duration-300 rounded-md cyber-border" />
+              <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-150 pointer-events-none" />
             </motion.div>
           ))}
         </div>

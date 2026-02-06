@@ -28,6 +28,8 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [photos, setPhotos] = useState<string[]>([])
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
+  const [isSwiping, setIsSwiping] = useState(false)
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
@@ -67,19 +69,31 @@ export default function BiographySection({ biography = defaultBiography, editMod
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX)
+    setTouchEnd(e.targetTouches[0].clientX)
+    setIsSwiping(true)
+    setSwipeDirection(null)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX)
+    const diff = touchStart - e.targetTouches[0].clientX
+    if (Math.abs(diff) > 10) {
+      setSwipeDirection(diff > 0 ? 'left' : 'right')
+    }
   }
 
   const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 75) {
+    setIsSwiping(false)
+    const swipeThreshold = 75
+    const swipeDistance = touchStart - touchEnd
+    
+    if (swipeDistance > swipeThreshold) {
       nextPhoto()
-    }
-    if (touchStart - touchEnd < -75) {
+    } else if (swipeDistance < -swipeThreshold) {
       prevPhoto()
     }
+    
+    setSwipeDirection(null)
   }
 
   return (
@@ -124,43 +138,54 @@ export default function BiographySection({ biography = defaultBiography, editMod
             >
               {photos.length > 0 && (
                 <motion.div
-                  className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group ${glitchActive ? 'glitch-effect' : ''}`}
+                  className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group cursor-grab active:cursor-grabbing touch-manipulation ${glitchActive ? 'glitch-effect' : ''}`}
                   whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.3 }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
+                  style={{
+                    transform: isSwiping && swipeDirection 
+                      ? swipeDirection === 'left' 
+                        ? 'translateX(-4px)' 
+                        : 'translateX(4px)'
+                      : 'translateX(0)',
+                    transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+                  }}
                 >
                   <img
                     src={photos[currentPhotoIndex]}
                     alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 select-none"
+                    draggable={false}
                   />
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg cyber-border" />
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 group-active:border-primary transition-colors duration-300 rounded-lg cyber-border" />
+                  <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/5 transition-colors duration-150 pointer-events-none" />
                   
                   {photos.length > 1 && (
                     <>
                       <Button
                         onClick={prevPhoto}
-                        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground backdrop-blur-sm w-10 h-10 md:w-12 md:h-12 p-0 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 touch-manipulation"
+                        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 active:bg-background text-foreground backdrop-blur-sm w-12 h-12 md:w-14 md:h-14 p-0 opacity-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity active:scale-90 touch-manipulation"
                       >
-                        <CaretLeft size={24} weight="bold" />
+                        <CaretLeft size={28} weight="bold" />
                       </Button>
                       <Button
                         onClick={nextPhoto}
-                        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 text-foreground backdrop-blur-sm w-10 h-10 md:w-12 md:h-12 p-0 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 touch-manipulation"
+                        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background/90 active:bg-background text-foreground backdrop-blur-sm w-12 h-12 md:w-14 md:h-14 p-0 opacity-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity active:scale-90 touch-manipulation"
                       >
-                        <CaretRight size={24} weight="bold" />
+                        <CaretRight size={28} weight="bold" />
                       </Button>
-                      <div className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                      <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-background/30 backdrop-blur-sm px-3 py-2 rounded-full">
                         {photos.map((_, index) => (
                           <button
                             key={index}
                             onClick={() => setCurrentPhotoIndex(index)}
-                            className={`w-2 h-2 rounded-full transition-all touch-manipulation ${
+                            className={`w-2 h-2 rounded-full transition-all touch-manipulation active:scale-110 ${
                               index === currentPhotoIndex 
-                                ? 'bg-primary w-6' 
-                                : 'bg-foreground/30 hover:bg-foreground/50'
+                                ? 'bg-primary w-8 shadow-lg shadow-primary/50' 
+                                : 'bg-foreground/40 hover:bg-foreground/60 active:bg-foreground/80'
                             }`}
                             aria-label={`Go to photo ${index + 1}`}
                           />

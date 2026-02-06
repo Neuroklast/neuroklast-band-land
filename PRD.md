@@ -156,3 +156,9 @@ Animations should feel minimal and glitchy, like corrupted data transmissions wi
   - Social: 3-4 icons per row on mobile vs 6-8 on desktop
   - Navigation: Sticky header with smooth scroll navigation
   - Touch targets: Minimum 44px for all interactive elements
+  - Touch Interactions: Swipe gestures for galleries, pull-to-refresh behaviors, haptic-like visual feedback
+  - Active States: Immediate visual response with scale transforms (0.95-0.98x) for all tappable elements
+  - Touch Feedback: Ripple effects on cards, enhanced active states with increased opacity/glow
+  - Gesture Support: Horizontal swipe for photo gallery navigation (75px threshold), pinch-to-zoom on images
+  - Scroll Behavior: Momentum scrolling, smooth snap points for carousels, overscroll bounce effects
+  - Mobile Menu: Full-screen overlay with staggered animations, tap-outside-to-close functionality

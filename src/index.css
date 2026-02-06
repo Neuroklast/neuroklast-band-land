@@ -76,6 +76,7 @@ body {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  overscroll-behavior-y: contain;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -86,6 +87,12 @@ body {
 
 button, a, [role="button"] {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input, textarea, select {
   touch-action: manipulation;
 }
 
@@ -281,4 +288,63 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   display: inline-block;
   transition: text-shadow 0.1s ease-out;
+}
+
+.touch-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: oklch(0.50 0.22 25 / 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.touch-ripple:active::after {
+  width: 200%;
+  height: 200%;
+  opacity: 1;
+  transition: width 0s, height 0s, opacity 0s;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .touch-manipulation {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  button, a[role="button"], [role="button"] {
+    cursor: pointer;
+    -webkit-touch-callout: none;
+  }
+  
+  img {
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+  }
+}
+
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grab:active,
+.active\:cursor-grabbing:active {
+  cursor: grabbing;
+}
+
+@supports (-webkit-overflow-scrolling: touch) {
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
 }

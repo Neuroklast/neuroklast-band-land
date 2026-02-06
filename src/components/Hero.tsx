@@ -132,14 +132,14 @@ export default function Hero({ name, genres }: HeroProps) {
           <Button
             onClick={scrollToGigs}
             variant="outline"
-            className="group border-primary/40 text-foreground/80 hover:bg-primary/5 hover:border-primary/60 hover:text-foreground active:bg-primary/10 px-6 py-5 md:px-8 md:py-6 text-xs md:text-sm font-mono tracking-[0.08em] transition-all touch-manipulation"
+            className="group border-primary/40 text-foreground/80 hover:bg-primary/5 hover:border-primary/60 hover:text-foreground active:bg-primary/10 active:scale-95 active:border-primary px-8 py-6 md:px-10 md:py-7 text-sm md:text-base font-mono tracking-[0.08em] transition-all touch-manipulation shadow-lg shadow-primary/5 hover:shadow-primary/10 active:shadow-primary/20"
           >
             ENTER
             <motion.div
               animate={{ y: [0, 3, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <CaretDown className="ml-2" size={14} />
+              <CaretDown className="ml-2" size={16} />
             </motion.div>
           </Button>
         </motion.div>
