@@ -88,7 +88,7 @@ export default function InstagramGallery() {
           {photos.map((photo, index) => (
             <motion.div
               key={photo.id}
-              className={`relative group overflow-hidden bg-card aspect-square cursor-pointer touch-manipulation hud-element hud-corner hud-scanline ${glitchIndex === index ? 'glitch-effect' : ''}`}
+              className={`relative group overflow-hidden bg-card aspect-square cursor-pointer touch-manipulation hud-element hud-corner hud-scanline ${glitchIndex === index ? 'red-glitch-element' : ''}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}

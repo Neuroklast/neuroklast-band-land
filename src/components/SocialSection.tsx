@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { SocialLinks } from '@/lib/types'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 
@@ -37,6 +37,7 @@ const socialPlatforms = [
 
 export default function SocialSection({ socialLinks, editMode, onUpdate }: SocialSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const titleText = 'CONNECT'
@@ -45,6 +46,17 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
     50,
     100
   )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.8) {
+        setGlitchActive(true)
+        setTimeout(() => setGlitchActive(false), 300)
+      }
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   const safeSocialLinks = socialLinks || {}
   const activePlatforms = socialPlatforms.filter(platform => safeSocialLinks[platform.key])
