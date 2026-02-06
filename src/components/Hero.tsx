@@ -150,7 +150,7 @@ export default function Hero({ name, genres }: HeroProps) {
           transition={{ duration: 1, delay: 0.2 }}
         >
           <div 
-            className="relative cursor-pointer touch-manipulation"
+            className="relative cursor-pointer touch-manipulation chromatic-aberration-hover"
             onClick={() => {
               setGlitchLogo(true)
               setTimeout(() => setGlitchLogo(false), 300)
@@ -197,7 +197,7 @@ export default function Hero({ name, genres }: HeroProps) {
           transition={{ duration: 0.8, delay: 0.4 }}
         >
           <div 
-            className="relative w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl cursor-pointer touch-manipulation"
+            className="relative w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl cursor-pointer touch-manipulation chromatic-aberration-hover"
             onClick={() => {
               setGlitchTitle(true)
               setTimeout(() => setGlitchTitle(false), 300)
