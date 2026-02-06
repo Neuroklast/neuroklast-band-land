@@ -40,7 +40,7 @@ export default function Footer({ socialLinks, genres, label }: FooterProps) {
               <img 
                 src={titleImage} 
                 alt="NEUROKLAST" 
-                className="h-16 md:h-20 lg:h-24 w-auto red-glitch-element chromatic-aberration-hover transition-all duration-200 group-hover:scale-105"
+                className="h-16 md:h-20 lg:h-24 w-auto red-glitch-element chromatic-aberration-hover transition-all duration-200 group-hover:scale-100"
               />
             </div>
           </div>
