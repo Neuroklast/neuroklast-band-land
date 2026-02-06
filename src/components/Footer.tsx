@@ -36,11 +36,11 @@ export default function Footer({ socialLinks, genres, label }: FooterProps) {
           transition={{ duration: 0.6 }}
         >
           <div className="flex justify-center mb-6 md:mb-8">
-            <div className="relative scanline-text hud-scanline">
+            <div className="relative scanline-text hud-scanline cursor-pointer group">
               <img 
                 src={titleImage} 
                 alt="NEUROKLAST" 
-                className="h-16 md:h-20 lg:h-24 w-auto red-glitch-element"
+                className="h-16 md:h-20 lg:h-24 w-auto red-glitch-element chromatic-aberration-hover transition-all duration-200 group-hover:scale-105"
               />
             </div>
           </div>
