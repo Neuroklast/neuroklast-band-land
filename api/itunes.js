@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=50`);
+    const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=6`);
     
     if (!response.ok) {
       throw new Error(`iTunes API responded with ${response.status}`);
@@ -19,3 +19,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to fetch from iTunes API' });
   }
 }
+
