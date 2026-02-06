@@ -1,0 +1,28 @@
+{
+  "biography": {
+    "story": "NEUROKLAST emerged from the underground, forging a relentless sound that merges hard techno, industrial, drum and bass, and dark electro into a singular sonic assault. Born from a vision to push boundaries and challenge the status quo, NEUROKLAST delivers raw, uncompromising energy designed for the darkest dancefloors and most intense festival stages.\n\nWith a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.",
+    "founded": "2020",
+    "members": [
+      "Member 1",
+      "Member 2",
+      "Member 3"
+    ],
+    "achievements": [
+      "Performed at major underground techno festivals across Europe",
+      "Released on renowned industrial and techno labels",
+      "Built a dedicated following in the hard techno and industrial scene",
+      "Collaborated with prominent artists in the experimental electronic music space"
+    ]
+  },
+  "band": {
+    "name": "NEUROKLAST",
+    "genres": [
+      "HARD TECHNO",
+      "INDUSTRIAL",
+      "DNB",
+      "DARK ELECTRO"
+    ],
+    "location": "Europe",
+    "description": "An uncompromising force in the underground electronic music scene, pushing the boundaries of hard techno and industrial sound design."
+  }
+}
