@@ -2,6 +2,7 @@ import { useKV } from '@github/spark/hooks'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
+import { toast } from 'sonner'
 import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
 import BiographySection from '@/components/BiographySection'
@@ -13,6 +14,10 @@ import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
 import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
+import HUDReticle from '@/components/HUDReticle'
+import AudioVisualizer from '@/components/AudioVisualizer'
+import SecretTerminal from '@/components/SecretTerminal'
+import KonamiListener from '@/components/KonamiListener'
 import type { BandData } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
@@ -43,6 +48,7 @@ function App() {
   const [isOwner, setIsOwner] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [terminalOpen, setTerminalOpen] = useState(false)
 
   useEffect(() => {
     window.spark.user().then(user => {
@@ -54,11 +60,21 @@ function App() {
     })
   }, [])
 
+  const handleTerminalActivation = () => {
+    setTerminalOpen(true)
+    toast.success('TERMINAL ACCESS GRANTED', {
+      description: 'Secret code activated'
+    })
+  }
+
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
 
   return (
     <>
+      <KonamiListener onCodeActivated={handleTerminalActivation} />
+      <SecretTerminal isOpen={terminalOpen} onClose={() => setTerminalOpen(false)} />
+      
       <AnimatePresence>
         {loading && (
           <CyberpunkLoader onLoadComplete={() => setLoading(false)} />
@@ -72,6 +88,9 @@ function App() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
+          <HUDReticle />
+          <AudioVisualizer />
+          
           <div className="fixed inset-0 pointer-events-none z-[100]">
             <div className="absolute inset-0 hud-scanline opacity-30" />
           </div>

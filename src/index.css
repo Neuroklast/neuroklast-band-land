@@ -78,6 +78,11 @@ body {
   touch-action: manipulation;
   overscroll-behavior-y: contain;
   overflow-x: hidden;
+  text-shadow: 
+    0 0 3px oklch(1 0 0 / 0.3),
+    0 0 6px oklch(0.50 0.22 25 / 0.15),
+    1px 0 0 oklch(0.50 0.22 25 / 0.1),
+    -1px 0 0 oklch(0.50 0.22 25 / 0.1);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -143,6 +148,64 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  text-shadow: 
+    0 0 4px oklch(1 0 0 / 0.4),
+    0 0 8px oklch(0.50 0.22 25 / 0.2),
+    1.5px 0 0 oklch(0.50 0.22 25 / 0.15),
+    -1.5px 0 0 oklch(0.50 0.22 25 / 0.15);
+}
+
+.dot-matrix-text {
+  position: relative;
+  text-shadow: 
+    0 0 4px oklch(1 0 0 / 0.5),
+    0 0 8px oklch(0.50 0.22 25 / 0.25),
+    2px 0 0 oklch(0.50 0.22 25 / 0.2),
+    -2px 0 0 oklch(0.50 0.22 25 / 0.2);
+}
+
+.dot-matrix-text::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      oklch(0 0 0 / 0.08) 1px,
+      oklch(0 0 0 / 0.08) 2px
+    );
+  -webkit-background-clip: text;
+  background-clip: text;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.scanline-text {
+  position: relative;
+}
+
+.scanline-text::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      oklch(0 0 0 / 0.06) 2px,
+      oklch(0 0 0 / 0.06) 3px
+    );
+  pointer-events: none;
+  z-index: 2;
 }
 
 @keyframes red-glitch {

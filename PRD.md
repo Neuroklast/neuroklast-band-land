@@ -98,6 +98,10 @@ Typography should convey monospace terminal aesthetics and occult minimalism whi
 Animations should feel like a cyberpunk HUD system with glitchy data corruption, featuring red chromatic aberration, scan lines, and data stream effects.
 
 - **Page Load**: Minimal fade-in with scan line overlay and HUD grid appearing (300ms)
+- **HUD Targeting Reticles**: Animated circular targeting reticles that smoothly track mouse movement with spring physics, featuring rotating rings and crosshairs
+- **Audio Visualizer**: Subtle glitched audio visualization bars in the background with horizontal displacement glitches and red chromatic aberration
+- **Secret Terminal Mode**: Hidden terminal interface activated by Konami code (↑↑↓↓←→←→BA), featuring command line interface with system commands
+- **Enhanced Text Effects**: All white text features dot matrix texture, subtle scanlines, chromatic aberration (red channel separation), and minimal red glow
 - **HUD Elements**: Persistent corner brackets, data readouts (time, status, frequency), and animated system indicators throughout the interface
 - **Scan Lines**: Continuous horizontal scan line animation across the entire viewport, creating CRT monitor effect
 - **Logo Animation**: Monospace logo with occasional red glitch distortion (every 4-6 seconds), only red channel separation
