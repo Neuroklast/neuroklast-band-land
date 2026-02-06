@@ -149,16 +149,52 @@ export default function Hero({ name, genres }: HeroProps) {
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
         >
-          <img 
-            src={logoPng} 
-            alt="NEUROKLAST Logo" 
-            className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] cursor-pointer touch-manipulation ${glitchLogo ? 'red-glitch-element' : ''}`}
-            style={{ filter: 'drop-shadow(0 0 30px oklch(0.50 0.22 25 / 0.2))' }}
+          <div 
+            className="relative cursor-pointer touch-manipulation"
             onClick={() => {
               setGlitchLogo(true)
               setTimeout(() => setGlitchLogo(false), 300)
             }}
-          />
+          >
+            <img 
+              src={logoPng} 
+              alt="NEUROKLAST Logo" 
+              className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
+              style={{ filter: 'drop-shadow(0 0 30px oklch(0.50 0.22 25 / 0.2))' }}
+            />
+            <div className="absolute inset-0 pointer-events-none">
+              <div 
+                className="absolute inset-0 bg-repeat opacity-10"
+                style={{
+                  backgroundImage: `repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 1px,
+                    oklch(0 0 0 / 0.5) 1px,
+                    oklch(0 0 0 / 0.5) 2px
+                  )`
+                }}
+              />
+              <div 
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: `repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    oklch(0.50 0.22 25 / 0.1) 2px,
+                    oklch(0.50 0.22 25 / 0.1) 3px
+                  )`
+                }}
+              />
+              <div 
+                className="absolute inset-0"
+                style={{
+                  boxShadow: '0 0 40px oklch(0.50 0.22 25 / 0.3), inset 0 0 20px oklch(0.50 0.22 25 / 0.1)'
+                }}
+              />
+            </div>
+          </div>
         </motion.div>
 
         <motion.div
@@ -167,11 +203,51 @@ export default function Hero({ name, genres }: HeroProps) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <img 
-            src={titlePng} 
-            alt="NEUROKLAST" 
-            className={`w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl h-auto ${glitchTitle ? 'red-glitch-element' : ''}`}
-          />
+          <div 
+            className="relative w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl cursor-pointer touch-manipulation"
+            onClick={() => {
+              setGlitchTitle(true)
+              setTimeout(() => setGlitchTitle(false), 300)
+            }}
+          >
+            <img 
+              src={titlePng} 
+              alt="NEUROKLAST" 
+              className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
+            />
+            <div className="absolute inset-0 pointer-events-none">
+              <div 
+                className="absolute inset-0 bg-repeat opacity-10"
+                style={{
+                  backgroundImage: `repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 1px,
+                    oklch(0 0 0 / 0.5) 1px,
+                    oklch(0 0 0 / 0.5) 2px
+                  )`
+                }}
+              />
+              <div 
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: `repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    oklch(0.50 0.22 25 / 0.1) 2px,
+                    oklch(0.50 0.22 25 / 0.1) 3px
+                  )`
+                }}
+              />
+              <div 
+                className="absolute inset-0"
+                style={{
+                  boxShadow: '0 0 40px oklch(0.50 0.22 25 / 0.3), inset 0 0 20px oklch(0.50 0.22 25 / 0.1)'
+                }}
+              />
+            </div>
+          </div>
         </motion.div>
 
         <motion.div
