@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 
+export function useTypingEffect(
+  text: string,
   speed: number = 30,
+  startDelay: number = 0
 ) {
-  const [isComplete, 
-  useEffect(() => {
-   
-    if (!text) {
+  const [displayedText, setDisplayedText] = useState('')
   const [isComplete, setIsComplete] = useState(false)
 
   useEffect(() => {
@@ -14,7 +14,7 @@ import { useState, useEffect } from 'react'
 
     if (!text) {
       setIsComplete(true)
-          se
+      return
     }
 
     const startTimeout = setTimeout(() => {
@@ -28,13 +28,13 @@ import { useState, useEffect } from 'react'
           clearInterval(intervalId)
           setIsComplete(true)
         }
+      }, speed)
 
+      return () => clearInterval(intervalId)
+    }, startDelay)
 
+    return () => clearTimeout(startTimeout)
+  }, [text, speed, startDelay])
 
-
-
-
-
-
-
-
+  return { displayedText, isComplete }
+}
