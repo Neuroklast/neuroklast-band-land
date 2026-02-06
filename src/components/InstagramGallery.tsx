@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
-import { motion, useInView } from 'framer-motion'
+
 import { useRef } from 'react'
-import { InstagramLogo } from '@phosphor-icons/react'
+export defau
 
 interface InstagramPost {
   id: string
   imageUrl: string
   permalink: string
   caption?: string
-}
+ 
 
 export default function InstagramGallery() {
   const [posts, setPosts] = useState<InstagramPost[]>([])
@@ -18,30 +18,30 @@ export default function InstagramGallery() {
 
   useEffect(() => {
     const fetchInstagramPosts = async () => {
-      try {
-        const promptText = `You are helping to fetch Instagram posts for the NEUROKLAST music artist. Generate 3 realistic placeholder Instagram posts that would appear on a hard techno/industrial music artist's profile. Each post should have:
-        - A unique ID
-        - A descriptive image URL (use placeholder images that fit the dark/industrial aesthetic)
-        - A realistic Instagram permalink
-        - A caption related to music production, gigs, or releases
-        
-        Return ONLY a valid JSON object with this exact structure:
-        {
-          "posts": [
-            {
-              "id": "1",
-              "imageUrl": "https://images.unsplash.com/photo-1...",
-              "permalink": "https://instagram.com/p/...",
-              "caption": "..."
-            }
-          ]
-        }
-        
-        Use dark, moody, industrial-themed images from Unsplash that match the aesthetic. Make the captions authentic to electronic music culture.`
 
-        const result = await window.spark.llm(promptText, 'gpt-4o-mini', true)
+
+
+         
+
+          <
+
+
+         
+
+             
+           
+                <div className="absolute inset-0 bg-gradient-to-t f
+                      <span classN
+          
+
+     
+
+
+          </a
+
+        const result = await spark.llm(prompt, 'gpt-4o-mini', true)
         const data = JSON.parse(result)
-        
+
         if (data.posts && Array.isArray(data.posts)) {
           setPosts(data.posts.slice(0, 3))
         }
@@ -80,13 +80,13 @@ export default function InstagramGallery() {
       id="instagram" 
       ref={sectionRef}
       className="py-20 px-4 relative"
-    >
+
       <div className="max-w-6xl mx-auto">
-        <motion.div
+
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <InstagramLogo size={32} className="text-primary" weight="fill" />
@@ -94,19 +94,19 @@ export default function InstagramGallery() {
           </div>
           <p className="text-muted-foreground">
             Follow us for the latest updates
-          </p>
+
         </motion.div>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div 
+
                 key={i} 
-                className="aspect-square bg-card animate-pulse rounded-md"
+
               />
-            ))}
+
           </div>
-        ) : (
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {posts.map((post, index) => (
               <motion.a
@@ -114,7 +114,7 @@ export default function InstagramGallery() {
                 href={post.permalink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative aspect-square overflow-hidden rounded-md bg-card"
+
                 initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -136,9 +136,9 @@ export default function InstagramGallery() {
                 </div>
                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-md" />
               </motion.a>
-            ))}
+
           </div>
-        )}
+
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -146,7 +146,7 @@ export default function InstagramGallery() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center mt-8"
         >
-          <a
+
             href="https://instagram.com/neuroklast_music"
             target="_blank"
             rel="noopener noreferrer"
@@ -156,7 +156,7 @@ export default function InstagramGallery() {
             <span className="text-sm tracking-wider">@neuroklast_music</span>
           </a>
         </motion.div>
-      </div>
+
     </section>
-  )
+
 }
