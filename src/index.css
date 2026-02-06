@@ -36,15 +36,15 @@
   --input: oklch(0.2 0 0);
   --ring: oklch(0.55 0.22 25);
 
-  --radius: 0.75rem;
+  --radius: 0.25rem;
 
   --font-sans: Oxanium;
 
-  --font-serif: IBM Plex Serif;
+  --font-serif: Source Serif 4;
 
-  --font-mono: "Geist Mono";
+  --font-mono: Source Code Pro;
 
-  --spacing: 0.25rem;
+  --spacing: 0.3rem;
 }
 
 @theme {
