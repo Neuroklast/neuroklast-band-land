@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import logoImage from '@/assets/images/neuroklast-logo.png'
+import logoImage from '@/assets/images/NK_BAPHOMET.png'
 
 interface CyberpunkLoaderProps {
   onLoadComplete: () => void
@@ -37,7 +37,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
           className="w-32 h-32 object-contain"
           animate={{ 
             opacity: [0.5, 1, 0.5],
-            scale: [0.95, 1.05, 0.95],
+            scale: [1.95, 2.05, 1.95],
           }}
           transition={{
             duration: 2,
@@ -60,7 +60,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          LOADING... {progress}%
+          ACESSING... {progress}%
         </motion.div>
       </div>
     </motion.div>

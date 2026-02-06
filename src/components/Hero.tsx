@@ -98,7 +98,7 @@ export default function Hero({ name, genres }: HeroProps) {
           <img 
             src={logoPng} 
             alt="NEUROKLAST Logo" 
-            className={`w-48 h-auto sm:w-64 md:w-80 lg:w-96 xl:w-[28rem] drop-shadow-[0_0_40px_rgba(220,38,38,0.4)] ${glitchLogo ? 'glitch-effect' : ''}`}
+            className={`w-68 h-auto sm:w-84 md:w-80 lg:w-96 xl:w-[28rem] drop-shadow-[0_0_80px_rgba(220,38,38,0.4)] ${glitchLogo ? 'glitch-effect' : ''}`}
           />
         </motion.div>
 
