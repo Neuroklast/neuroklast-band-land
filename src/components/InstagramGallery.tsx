@@ -34,7 +34,7 @@ export default function InstagramGallery() {
     return {
       id: `gallery-${index}`,
       imageUrl: module.default as string,
-      caption: filename.replace(/-|_/g, ' ').toUpperCase()
+      caption: 'NK//00' + index
     }
   })
 

@@ -41,7 +41,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev + Math.random() * 8
+        const newProgress = prev + Math.random() * 20
         const progressIndex = Math.floor((newProgress / 100) * hackingTexts.length)
         if (progressIndex < hackingTexts.length) {
           setHackingText(hackingTexts[progressIndex])
@@ -76,7 +76,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-background overflow-hidden"
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.8 }}
     >
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="grid grid-cols-10 gap-2 p-4 text-primary font-mono text-xs">

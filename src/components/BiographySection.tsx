@@ -49,26 +49,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    const loadPhotos = async () => {
-      try {
-        const photoModules = import.meta.glob('/src/assets/images/photos/**/*.{png,jpg,jpeg,webp}', { eager: true })
-        const photoUrls = Object.entries(photoModules).map(([, module]: [string, any]) => module.default)
-        
-        if (photoUrls.length === 0) {
-          const fallbackModules = import.meta.glob('/src/assets/images/*.{png,jpg,jpeg,webp}', { eager: true })
-          const fallbackUrls = Object.entries(fallbackModules).map(([, module]: [string, any]) => module.default)
-          setPhotos(fallbackUrls)
-        } else {
-          setPhotos(photoUrls)
-        }
-      } catch (error) {
-        console.error('Error loading photos:', error)
-        setPhotos([])
-      }
-    }
-    loadPhotos()
-  }, [])
+
 
   const handleUpdate = (updatedBiography: Biography) => {
     onUpdate?.(updatedBiography)
