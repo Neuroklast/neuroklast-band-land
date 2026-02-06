@@ -156,43 +156,36 @@ export default function Hero({ name, genres }: HeroProps) {
               setTimeout(() => setGlitchLogo(false), 300)
             }}
           >
-            <img 
-              src={logoPng} 
-              alt="NEUROKLAST Logo" 
-              className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
-              style={{ filter: 'drop-shadow(0 0 30px oklch(0.50 0.22 25 / 0.2))' }}
-            />
-            <div className="absolute inset-0 pointer-events-none">
-              <div 
-                className="absolute inset-0 bg-repeat opacity-10"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 1px,
-                    oklch(0 0 0 / 0.5) 1px,
-                    oklch(0 0 0 / 0.5) 2px
-                  )`
+            <div className="relative">
+              <img 
+                src={logoPng} 
+                alt="NEUROKLAST Logo" 
+                className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
+                style={{ 
+                  filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
                 }}
               />
-              <div 
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 2px,
-                    oklch(0.50 0.22 25 / 0.1) 2px,
-                    oklch(0.50 0.22 25 / 0.1) 3px
-                  )`
-                }}
-              />
-              <div 
-                className="absolute inset-0"
-                style={{
-                  boxShadow: '0 0 40px oklch(0.50 0.22 25 / 0.3), inset 0 0 20px oklch(0.50 0.22 25 / 0.1)'
-                }}
-              />
+              <div className="absolute inset-0 pointer-events-none z-20">
+                <div 
+                  className="absolute inset-0 bg-repeat opacity-15"
+                  style={{
+                    backgroundImage: `repeating-linear-gradient(
+                      0deg,
+                      transparent,
+                      transparent 2px,
+                      oklch(0 0 0 / 0.8) 2px,
+                      oklch(0 0 0 / 0.8) 3px
+                    )`
+                  }}
+                />
+                <div 
+                  className="absolute inset-0 opacity-12"
+                  style={{
+                    backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.5) 1px, transparent 1px)`,
+                    backgroundSize: '4px 4px'
+                  }}
+                />
+              </div>
             </div>
           </div>
         </motion.div>
@@ -210,42 +203,36 @@ export default function Hero({ name, genres }: HeroProps) {
               setTimeout(() => setGlitchTitle(false), 300)
             }}
           >
-            <img 
-              src={titlePng} 
-              alt="NEUROKLAST" 
-              className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
-            />
-            <div className="absolute inset-0 pointer-events-none">
-              <div 
-                className="absolute inset-0 bg-repeat opacity-10"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 1px,
-                    oklch(0 0 0 / 0.5) 1px,
-                    oklch(0 0 0 / 0.5) 2px
-                  )`
+            <div className="relative">
+              <img 
+                src={titlePng} 
+                alt="NEUROKLAST" 
+                className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
+                style={{ 
+                  filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
                 }}
               />
-              <div 
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 2px,
-                    oklch(0.50 0.22 25 / 0.1) 2px,
-                    oklch(0.50 0.22 25 / 0.1) 3px
-                  )`
-                }}
-              />
-              <div 
-                className="absolute inset-0"
-                style={{
-                  boxShadow: '0 0 40px oklch(0.50 0.22 25 / 0.3), inset 0 0 20px oklch(0.50 0.22 25 / 0.1)'
-                }}
-              />
+              <div className="absolute inset-0 pointer-events-none z-20">
+                <div 
+                  className="absolute inset-0 bg-repeat opacity-15"
+                  style={{
+                    backgroundImage: `repeating-linear-gradient(
+                      0deg,
+                      transparent,
+                      transparent 2px,
+                      oklch(0 0 0 / 0.8) 2px,
+                      oklch(0 0 0 / 0.8) 3px
+                    )`
+                  }}
+                />
+                <div 
+                  className="absolute inset-0 opacity-12"
+                  style={{
+                    backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.5) 1px, transparent 1px)`,
+                    backgroundSize: '4px 4px'
+                  }}
+                />
+              </div>
             </div>
           </div>
         </motion.div>
