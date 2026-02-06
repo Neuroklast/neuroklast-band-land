@@ -6,6 +6,7 @@ import Hero from '@/components/Hero'
 import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
+import GallerySection from '@/components/GallerySection'
 import SocialSection from '@/components/SocialSection'
 import Footer from '@/components/Footer'
 import type { BandData } from '@/lib/types'
@@ -71,6 +72,8 @@ function App() {
             editMode={editMode}
             onUpdate={(releases) => setBandData((current) => ({ ...(current || defaultBandData), releases }))}
           />
+
+          <GallerySection />
 
           <SocialSection 
             socialLinks={data.socialLinks}

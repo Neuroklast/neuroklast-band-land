@@ -1,5 +1,5 @@
 import { motion, useInView } from 'framer-motion'
-import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise, AppleLogo } from '@phosphor-icons/react'
+import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -22,7 +22,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   const [isFetching, setIsFetching] = useState(false)
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
   const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const isInView = useInView(sectionRef, { once: true, amount: 0.05 })
 
   useEffect(() => {
     if (!hasAutoLoaded && (!releases || releases.length === 0)) {
@@ -177,19 +177,6 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
 
                     {!editMode && (
                       <div className="grid grid-cols-2 gap-2">
-                        {release.streamingLinks.appleMusic && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            asChild
-                            className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
-                          >
-                            <a href={release.streamingLinks.appleMusic} target="_blank" rel="noopener noreferrer">
-                              <AppleLogo size={18} weight="fill" className="mr-1" />
-                              <span className="text-xs">Apple</span>
-                            </a>
-                          </Button>
-                        )}
                         {release.streamingLinks.spotify && (
                           <Button
                             size="sm"

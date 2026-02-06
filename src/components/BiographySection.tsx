@@ -3,7 +3,7 @@ import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { Biography } from '@/lib/types'
 import bandPhotoAI from '@/assets/images/NK_AI.jpeg'
 
@@ -14,16 +14,36 @@ interface BiographySectionProps {
 }
 
 const defaultBiography: Biography = {
-  story: `Neuroklast is hard techno, industrial, DnB, dark electro, whatever breaks the surface. It’s noisy, heavy, emotional, sometimes a bit fucked up; just like life. We started this in 2020. Not to fit into a scene, but to build something that feels real. There's a story behind it. A visual world. A lot of weird lore. It's not just for show, but it’s part of how we deal with things. Mental health is a big one. Inner shit. No masks. No fake shit. Operating under the darkTunes banner and the mastering of  we continue to develop our sound, we're not stuck to genres. A Neuroklast show is loud, physical and dark, but there’s space in it. It’s not about being brutal all the time. It’s about honesty. If it leaves a mark, good. If not, that’s fine too. This isn’t for everyone. And it’s not trying to be.
-`,
+  story: '',
   founded: '2020',
   achievements: []
 }
 
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [bioText, setBioText] = useState(biography.story)
   const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const isInView = useInView(sectionRef, { once: true, amount: 0.1 })
+
+  useEffect(() => {
+    fetch('/content/biography.txt')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load biography')
+        return res.text()
+      })
+      .then(text => {
+        const trimmed = text.trim()
+        setBioText(trimmed)
+        if (onUpdate && trimmed) {
+          onUpdate({ ...biography, story: trimmed })
+        }
+      })
+      .catch(() => {
+        if (biography.story) {
+          setBioText(biography.story)
+        }
+      })
+  }, [])
 
   const handleUpdate = (updatedBiography: Biography) => {
     onUpdate?.(updatedBiography)
@@ -82,7 +102,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
 
               <Card className="bg-card border-border p-4 md:p-8 hover:border-primary/50 active:border-primary transition-all duration-300 touch-manipulation">
                 <div className="prose prose-invert max-w-none">
-                  {biography.story.split('\n\n').map((paragraph, index) => (
+                  {(bioText || biography.story).split('\n\n').map((paragraph, index) => (
                     <p key={index} className="text-sm md:text-base text-foreground/90 leading-relaxed mb-4 last:mb-0">
                       {paragraph}
                     </p>
