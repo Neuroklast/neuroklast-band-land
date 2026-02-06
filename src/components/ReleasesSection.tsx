@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise } from '@phosphor-icons/react'
+import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise, AppleLogo } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -7,7 +7,7 @@ import type { Release } from '@/lib/types'
 import { useState, useEffect } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
-import { fetchSpotifyReleases } from '@/lib/spotify'
+import { fetchITunesReleases } from '@/lib/itunes'
 import { toast } from 'sonner'
 
 interface ReleasesSectionProps {
@@ -25,7 +25,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   useEffect(() => {
     if (!hasAutoLoaded && (!releases || releases.length === 0)) {
       setHasAutoLoaded(true)
-      handleFetchSpotifyReleases(true)
+      handleFetchITunesReleases(true)
     }
   }, [hasAutoLoaded, releases])
 
@@ -48,31 +48,31 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
     setIsAdding(false)
   }
 
-  const handleFetchSpotifyReleases = async (isAutoLoad = false) => {
+  const handleFetchITunesReleases = async (isAutoLoad = false) => {
     setIsFetching(true)
     try {
-      const spotifyReleases = await fetchSpotifyReleases()
+      const iTunesReleases = await fetchITunesReleases()
       
-      if (spotifyReleases.length === 0) {
+      if (iTunesReleases.length === 0) {
         if (!isAutoLoad) {
-          toast.error('No releases found on Spotify')
+          toast.error('No releases found on iTunes')
         }
         return
       }
 
       const currentReleases = releases || []
       const existingIds = new Set(currentReleases.map(r => r.id))
-      const newReleases = spotifyReleases.filter(r => !existingIds.has(r.id))
+      const newReleases = iTunesReleases.filter(r => !existingIds.has(r.id))
       
       const updatedReleases = currentReleases.map(existing => {
-        const spotifyMatch = spotifyReleases.find(s => s.id === existing.id)
-        if (spotifyMatch) {
+        const iTunesMatch = iTunesReleases.find(s => s.id === existing.id)
+        if (iTunesMatch) {
           return {
             ...existing,
-            artwork: spotifyMatch.artwork || existing.artwork,
+            artwork: iTunesMatch.artwork || existing.artwork,
             streamingLinks: {
               ...existing.streamingLinks,
-              spotify: spotifyMatch.streamingLinks.spotify,
+              appleMusic: iTunesMatch.streamingLinks.appleMusic,
             }
           }
         }
@@ -83,11 +83,11 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
       onUpdate(mergedReleases)
       
       if (!isAutoLoad) {
-        toast.success(`Imported ${newReleases.length} new releases from Spotify`)
+        toast.success(`Imported ${newReleases.length} new releases from iTunes`)
       }
     } catch (error) {
       if (!isAutoLoad) {
-        toast.error('Failed to fetch releases from Spotify')
+        toast.error('Failed to fetch releases from iTunes')
       }
       console.error(error)
     } finally {
@@ -111,13 +111,13 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
           {editMode && (
             <div className="flex gap-2">
               <Button
-                onClick={() => handleFetchSpotifyReleases(false)}
+                onClick={() => handleFetchITunesReleases(false)}
                 disabled={isFetching}
                 variant="outline"
                 className="border-primary/30 hover:bg-primary/10"
               >
                 <ArrowsClockwise className={`mr-2 ${isFetching ? 'animate-spin' : ''}`} size={20} />
-                {isFetching ? 'Fetching...' : 'Sync Spotify'}
+                {isFetching ? 'Fetching...' : 'Sync iTunes'}
               </Button>
               <Button
                 onClick={() => setIsAdding(true)}
@@ -177,6 +177,18 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
 
                     {!editMode && (
                       <div className="flex gap-2 flex-wrap">
+                        {release.streamingLinks.appleMusic && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            asChild
+                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
+                          >
+                            <a href={release.streamingLinks.appleMusic} target="_blank" rel="noopener noreferrer">
+                              <AppleLogo size={18} weight="fill" />
+                            </a>
+                          </Button>
+                        )}
                         {release.streamingLinks.spotify && (
                           <Button
                             size="sm"

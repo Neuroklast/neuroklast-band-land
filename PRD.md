@@ -34,11 +34,11 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Success criteria**: Dates are chronologically sorted, past dates are filtered out, ticket links are functional
 
 ### Releases Section
-- **Functionality**: Grid/carousel of recent releases with artwork, title, and streaming links. Automatic syncing with Spotify API to fetch latest releases.
+- **Functionality**: Grid/carousel of recent releases with artwork, title, and streaming links. Automatic syncing with Apple iTunes API to fetch latest releases.
 - **Purpose**: Promote music and drive streams/purchases, keeping release catalog up-to-date automatically
-- **Trigger**: User scrolls to releases section, or owner clicks "Sync Spotify" button
-- **Progression**: Release artwork displays → User clicks on release → Opens streaming/purchase link | Owner clicks sync → System fetches latest releases from Spotify → New releases merge with existing → Success notification appears
-- **Success criteria**: Album art is high quality, links open to correct platforms, layout is visually appealing, Spotify sync successfully imports new releases without duplicates
+- **Trigger**: User scrolls to releases section, or owner clicks "Sync iTunes" button
+- **Progression**: Release artwork displays → User clicks on release → Opens streaming/purchase link | Owner clicks sync → System fetches latest releases from iTunes → New releases merge with existing → Success notification appears
+- **Success criteria**: Album art is high quality, links open to correct platforms, layout is visually appealing, iTunes sync successfully imports new releases without duplicates
 
 ### Social Media Hub
 - **Functionality**: Comprehensive social media link collection (Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, Linktr.ee)
@@ -62,8 +62,8 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Slow Image Loading**: Skeleton loaders for images, blur-up effect on load
 - **Empty Biography**: Show default placeholder text encouraging owner to add their story
 - **Long Biography Text**: Proper text wrapping and readable line lengths with prose formatting
-- **Spotify Sync Failures**: Display error toast if API fails, gracefully handle empty responses
-- **Duplicate Releases**: Smart merging prevents duplicate entries when syncing from Spotify
+- **iTunes Sync Failures**: Display error toast if API fails, gracefully handle empty responses
+- **Duplicate Releases**: Smart merging prevents duplicate entries when syncing from iTunes
 - **Rate Limiting**: Handle API rate limits gracefully with appropriate error messages
 
 ## Design Direction
