@@ -1,18 +1,18 @@
 import { useState, useCallback } from 'react'
 
-interface SwipeOptions {
-  onSwipeLeft?: () => void
-  onSwipeRight?: () => void
-  onSwipeUp?: () => void
+  onSwipeRight?: () => v
   onSwipeDown?: () => void
-  threshold?: number
 }
+interface SwipeHandlers 
+  onTouchMove: (e: React.T
+}
+e
 
-interface SwipeHandlers {
-  onTouchStart: (e: React.TouchEvent) => void
-  onTouchMove: (e: React.TouchEvent) => void
-  onTouchEnd: () => void
-}
+  onSwipeDown,
+}: SwipeOptions): SwipeHandlers {
+  const [touchEnd, setTouchEnd] = useState<{
+  const handleTouchStart
+ 
 
 export function useTouchSwipe({
   onSwipeLeft,
@@ -30,13 +30,13 @@ export function useTouchSwipe({
       x: e.targetTouches[0].clientX,
       y: e.targetTouches[0].clientY,
     })
-  }, [])
+
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     setTouchEnd({
       x: e.targetTouches[0].clientX,
       y: e.targetTouches[0].clientY,
-    })
+      
   }, [])
 
   const handleTouchEnd = useCallback(() => {
@@ -44,21 +44,21 @@ export function useTouchSwipe({
 
     const deltaX = touchStart.x - touchEnd.x
     const deltaY = touchStart.y - touchEnd.y
-    const absDeltaX = Math.abs(deltaX)
+}
     const absDeltaY = Math.abs(deltaY)
 
     if (absDeltaX > absDeltaY) {
       if (deltaX > threshold && onSwipeLeft) {
         onSwipeLeft()
-      } else if (deltaX < -threshold && onSwipeRight) {
+
         onSwipeRight()
-      }
+
     } else {
       if (deltaY > threshold && onSwipeUp) {
         onSwipeUp()
       } else if (deltaY < -threshold && onSwipeDown) {
         onSwipeDown()
-      }
+
     }
   }, [touchStart, touchEnd, threshold, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown])
 
@@ -66,5 +66,5 @@ export function useTouchSwipe({
     onTouchStart: handleTouchStart,
     onTouchMove: handleTouchMove,
     onTouchEnd: handleTouchEnd,
-  }
+
 }
