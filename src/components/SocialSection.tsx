@@ -39,10 +39,18 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
   const activePlatforms = socialPlatforms.filter(platform => socialLinks[platform.key])
 
   return (
-    <section className="py-20 px-4" id="social">
+    <section className="py-24 px-4 bg-gradient-to-b from-background to-secondary/10" id="social">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold">FOLLOW</h2>
+          <motion.h2 
+            className="text-4xl md:text-5xl lg:text-6xl font-bold"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            CONNECT
+          </motion.h2>
           {editMode && (
             <Button
               onClick={() => setIsEditing(true)}
@@ -53,9 +61,9 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
           )}
         </div>
 
-        <Separator className="bg-primary mb-12" />
+        <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-16 h-0.5" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {activePlatforms.map((platform, index) => {
             const Icon = platform.icon
             const url = socialLinks[platform.key]
@@ -63,19 +71,20 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
             return (
               <motion.div
                 key={platform.key}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
               >
                 <Button
                   asChild
                   variant="outline"
-                  className="w-full h-24 flex flex-col items-center justify-center gap-2 border-border hover:border-primary hover:bg-primary/10 transition-all"
+                  className="w-full h-32 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 transition-all group relative overflow-hidden"
                 >
                   <a href={url} target="_blank" rel="noopener noreferrer">
-                    <Icon size={32} className="text-primary" />
-                    <span className="text-xs font-medium">{platform.label}</span>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <Icon size={40} className="text-primary group-hover:scale-110 transition-transform duration-300" weight="fill" />
+                    <span className="text-xs font-medium tracking-wider uppercase relative z-10">{platform.label}</span>
                   </a>
                 </Button>
               </motion.div>
@@ -84,9 +93,15 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
         </div>
 
         {activePlatforms.length === 0 && (
-          <div className="text-center py-16">
+          <motion.div 
+            className="text-center py-20"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <p className="text-muted-foreground text-lg">No social links added yet.</p>
-          </div>
+          </motion.div>
         )}
       </div>
 

@@ -37,10 +37,18 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
   }
 
   return (
-    <section className="py-20 px-4" id="gigs">
+    <section className="py-24 px-4 bg-gradient-to-b from-background via-background to-secondary/5" id="gigs">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold">UPCOMING SHOWS</h2>
+          <motion.h2 
+            className="text-4xl md:text-5xl lg:text-6xl font-bold"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            UPCOMING SHOWS
+          </motion.h2>
           {editMode && (
             <Button
               onClick={() => setIsAdding(true)}
@@ -52,48 +60,67 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
           )}
         </div>
 
-        <Separator className="bg-primary mb-12" />
+        <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-12 h-0.5" />
 
         {upcomingGigs.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground text-lg">No upcoming shows scheduled.</p>
-            <p className="text-muted-foreground text-sm mt-2">Check back soon for tour dates.</p>
-          </div>
+          <motion.div 
+            className="text-center py-20"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <CalendarDots size={64} className="mx-auto mb-6 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground text-lg mb-2">No upcoming shows scheduled.</p>
+            <p className="text-muted-foreground text-sm">Check back soon for tour dates.</p>
+          </motion.div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-4">
             {upcomingGigs.map((gig, index) => (
               <motion.div
                 key={gig.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="p-6 bg-card border-border hover:border-primary transition-all duration-300 group">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <CalendarDots size={24} className="text-primary" />
-                        <time className="text-lg font-semibold">
-                          {format(new Date(gig.date), 'MMMM d, yyyy · HH:mm')}
-                        </time>
+                <Card className="p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0">
+                          <CalendarDots size={28} className="text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <time className="text-lg md:text-xl font-semibold text-foreground/90 block mb-2">
+                            {format(new Date(gig.date), 'EEEE, MMMM d, yyyy')}
+                          </time>
+                          <time className="text-sm text-muted-foreground">
+                            {format(new Date(gig.date), 'HH:mm')}
+                          </time>
+                        </div>
                       </div>
                       
-                      <h3 className="text-2xl font-bold mb-2">{gig.venue}</h3>
-                      
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin size={18} />
-                        <span>{gig.location}</span>
+                      <div className="pl-12">
+                        <h3 className="text-2xl md:text-3xl font-bold mb-2 group-hover:text-primary transition-colors">{gig.venue}</h3>
+                        
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin size={18} />
+                          <span className="text-sm md:text-base">{gig.location}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 md:flex-col md:items-end">
                       {editMode && (
                         <>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setEditingGig(gig)}
+                            className="border-primary/30 hover:bg-primary/10"
                           >
                             Edit
                           </Button>
@@ -109,11 +136,11 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
                       {gig.ticketUrl && !editMode && (
                         <Button
                           asChild
-                          className="bg-primary hover:bg-accent"
+                          className="bg-primary hover:bg-accent transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40"
                         >
                           <a href={gig.ticketUrl} target="_blank" rel="noopener noreferrer">
                             <Ticket className="mr-2" size={20} />
-                            Tickets
+                            GET TICKETS
                           </a>
                         </Button>
                       )}

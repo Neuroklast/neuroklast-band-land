@@ -37,10 +37,18 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   }
 
   return (
-    <section className="py-20 px-4 bg-secondary/20" id="releases">
+    <section className="py-24 px-4 bg-gradient-to-b from-secondary/5 via-background to-background" id="releases">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold">RELEASES</h2>
+          <motion.h2 
+            className="text-4xl md:text-5xl lg:text-6xl font-bold"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            RELEASES
+          </motion.h2>
           {editMode && (
             <Button
               onClick={() => setIsAdding(true)}
@@ -52,13 +60,19 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
           )}
         </div>
 
-        <Separator className="bg-primary mb-12" />
+        <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-12 h-0.5" />
 
         {sortedReleases.length === 0 ? (
-          <div className="text-center py-16">
-            <MusicNote size={64} className="mx-auto mb-4 text-muted-foreground" />
+          <motion.div 
+            className="text-center py-20"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <MusicNote size={64} className="mx-auto mb-6 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground text-lg">No releases yet.</p>
-          </div>
+          </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedReleases.map((release, index) => (
@@ -67,26 +81,29 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden bg-card border-border hover:border-primary transition-all duration-300 group">
-                  <div className="aspect-square bg-secondary/50 flex items-center justify-center relative overflow-hidden">
+                <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group">
+                  <div className="aspect-square bg-secondary/30 flex items-center justify-center relative overflow-hidden">
                     {release.artwork ? (
                       <img
                         src={release.artwork}
                         alt={release.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <MusicNote size={64} className="text-muted-foreground" />
+                      <MusicNote size={72} className="text-muted-foreground opacity-30" />
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                   
-                  <div className="p-4">
-                    <h3 className="text-xl font-bold mb-2 line-clamp-2">{release.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {format(new Date(release.releaseDate), 'MMMM yyyy')}
-                    </p>
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{release.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(release.releaseDate), 'MMMM yyyy')}
+                      </p>
+                    </div>
 
                     {!editMode && (
                       <div className="flex gap-2 flex-wrap">
@@ -95,10 +112,10 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                             size="sm"
                             variant="outline"
                             asChild
-                            className="flex-1"
+                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
                           >
                             <a href={release.streamingLinks.spotify} target="_blank" rel="noopener noreferrer">
-                              <SpotifyLogo size={18} />
+                              <SpotifyLogo size={18} weight="fill" />
                             </a>
                           </Button>
                         )}
@@ -107,10 +124,10 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                             size="sm"
                             variant="outline"
                             asChild
-                            className="flex-1"
+                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
                           >
                             <a href={release.streamingLinks.soundcloud} target="_blank" rel="noopener noreferrer">
-                              <SoundcloudLogo size={18} />
+                              <SoundcloudLogo size={18} weight="fill" />
                             </a>
                           </Button>
                         )}
@@ -119,10 +136,10 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                             size="sm"
                             variant="outline"
                             asChild
-                            className="flex-1"
+                            className="flex-1 min-w-[80px] border-primary/30 hover:bg-primary/10 hover:border-primary"
                           >
                             <a href={release.streamingLinks.youtube} target="_blank" rel="noopener noreferrer">
-                              <YoutubeLogo size={18} />
+                              <YoutubeLogo size={18} weight="fill" />
                             </a>
                           </Button>
                         )}
@@ -135,7 +152,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingRelease(release)}
-                          className="flex-1"
+                          className="flex-1 border-primary/30 hover:bg-primary/10"
                         >
                           Edit
                         </Button>

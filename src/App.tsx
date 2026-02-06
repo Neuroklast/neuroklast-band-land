@@ -1,10 +1,12 @@
 import { useKV } from '@github/spark/hooks'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
 import SocialSection from '@/components/SocialSection'
+import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
 import type { BandData } from '@/lib/types'
 
@@ -41,6 +43,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <Navigation />
+      
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -70,6 +74,8 @@ function App() {
             onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
           />
         </main>
+
+        <Footer socialLinks={data.socialLinks} />
 
         {isOwner && (
           <EditControls 
