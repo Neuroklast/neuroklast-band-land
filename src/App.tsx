@@ -8,15 +8,18 @@ import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
 import SocialSection from '@/components/SocialSection'
+import InstagramGallery from '@/components/InstagramGallery'
 import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
 import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import type { BandData } from '@/lib/types'
+import bandDataJson from '@/assets/documents/band-data.json'
 
+// Load default data from band-data.json
 const defaultBandData: BandData = {
-  name: 'NEUROKLAST',
-  genres: ['HARD TECHNO', 'INDUSTRIAL', 'DNB', 'DARK ELECTRO'],
+  name: bandDataJson.band.name,
+  genres: bandDataJson.band.genres,
   socialLinks: {
     instagram: 'https://instagram.com/neuroklast_music',
     facebook: 'https://www.facebook.com/Neuroklast/',
@@ -29,15 +32,10 @@ const defaultBandData: BandData = {
   gigs: [],
   releases: [],
   biography: {
-    story: `NEUROKLAST emerged from the underground, forging a relentless sound that merges hard techno, industrial, drum and bass, and dark electro into a singular sonic assault. Born from a vision to push boundaries and challenge the status quo, NEUROKLAST delivers raw, uncompromising energy designed for the darkest dancefloors and most intense festival stages.
-
-With a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.`,
-    founded: '2020',
-    members: [
-      'Member 1',
-      'Member 2',
-      'Member 3'
-    ]
+    story: bandDataJson.biography.story,
+    founded: bandDataJson.biography.founded,
+    members: bandDataJson.biography.members,
+    achievements: bandDataJson.biography.achievements
   }
 }
 
@@ -140,6 +138,14 @@ function App() {
                   editMode={editMode && isOwner}
                   onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
                 />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.5 }}
+              >
+                <InstagramGallery />
               </motion.div>
             </main>
 

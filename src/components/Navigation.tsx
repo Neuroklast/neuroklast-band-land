@@ -39,6 +39,7 @@ export default function Navigation() {
     { label: 'BIO', id: 'biography' },
     { label: 'SHOWS', id: 'gigs' },
     { label: 'RELEASES', id: 'releases' },
+    { label: 'GALLERY', id: 'gallery' },
     { label: 'CONTACT', id: 'social' }
   ]
 
