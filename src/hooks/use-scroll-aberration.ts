@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 
-export function useScrollAberration() {
-  const [scrollY, setScrollY] = useState(0)
+  const [aberrationIntensity, setAberra
+  useEffect(() => {
   const [aberrationIntensity, setAberrationIntensity] = useState(0)
 
   useEffect(() => {
     let rafId: number
-    let lastScrollY = window.scrollY
-    let scrollVelocity = 0
+      rafId = requestAnimationFrame(
+        const intensity = 
 
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      scrollVelocity = Math.abs(currentScrollY - lastScrollY)
-      lastScrollY = currentScrollY
+
+      setAberrationIntensity((prev) => {
+        return prev * 0.85
+      rafId = requestAnimationFram
 
       rafId = requestAnimationFrame(() => {
         setScrollY(currentScrollY)
@@ -32,11 +32,11 @@ export function useScrollAberration() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     rafId = requestAnimationFrame(decayAberration)
 
-    return () => {
+
       window.removeEventListener('scroll', handleScroll)
-      cancelAnimationFrame(rafId)
+
     }
-  }, [])
+
 
   return { scrollY, aberrationIntensity }
 }
