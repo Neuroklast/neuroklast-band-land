@@ -84,28 +84,49 @@ export default function InstagramGallery() {
           {photos.map((photo, index) => (
             <motion.div
               key={photo.id}
-              className={`relative group overflow-hidden rounded-md bg-card aspect-square cursor-pointer touch-manipulation ${glitchIndex === index ? 'glitch-effect' : ''}`}
+              className={`relative group overflow-hidden bg-card aspect-square cursor-pointer touch-manipulation hud-element hud-corner hud-scanline ${glitchIndex === index ? 'glitch-effect' : ''}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <img
-                src={photo.imageUrl}
-                alt={photo.caption}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-active:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300">
+              <span className="corner-bl"></span>
+              <span className="corner-br"></span>
+              
+              <div className="absolute top-2 left-2 z-10 data-readout">
+                IMG_{String(index).padStart(3, '0')}
+              </div>
+              
+              <div className="absolute top-2 right-2 z-10">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 8px oklch(0.50 0.22 25)' }}></div>
+              </div>
+              
+              <div className="relative w-full h-full red-tint-strong">
+                <img
+                  src={photo.imageUrl}
+                  alt={photo.caption}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-active:scale-105"
+                  loading="lazy"
+                  style={{ filter: 'contrast(1.1) brightness(0.9)' }}
+                />
+              </div>
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 z-10">
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="flex items-center gap-2 text-white">
-                    <Images size={20} weight="fill" />
+                  <div className="flex items-center gap-2 text-white hud-text">
+                    <Images size={20} weight="fill" className="text-primary" />
                     <span className="text-xs font-mono line-clamp-2">{photo.caption}</span>
+                  </div>
+                  <div className="mt-2 flex gap-2 text-[9px] text-primary/60">
+                    <span>SECTOR: {String.fromCharCode(65 + (index % 26))}</span>
+                    <span>•</span>
+                    <span>STATUS: ACTIVE</span>
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 group-active:border-primary transition-colors duration-300 rounded-md cyber-border" />
+              
+              <div className="absolute inset-0 border border-transparent group-hover:border-primary/50 group-active:border-primary transition-colors duration-300 hud-border-glow pointer-events-none" />
               <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-150 pointer-events-none" />
             </motion.div>
           ))}

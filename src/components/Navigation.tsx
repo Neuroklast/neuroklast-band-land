@@ -47,7 +47,7 @@ export default function Navigation() {
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-background/90 backdrop-blur-sm border-b border-primary/10' : 'bg-transparent'
+          isScrolled ? 'bg-background/90 backdrop-blur-sm border-b border-primary/20 hud-element' : 'bg-transparent'
         } ${glitch ? 'red-glitch-element' : ''}`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -56,9 +56,9 @@ export default function Navigation() {
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={() => scrollToSection('hero')}
-            className={`text-base md:text-lg font-mono tracking-[0.08em] hover:text-primary/80 active:text-primary transition-colors touch-manipulation ${glitch ? 'red-glitch-text' : ''}`}
+            className={`text-base md:text-lg font-mono tracking-[0.08em] hover:text-primary/80 active:text-primary transition-colors touch-manipulation hud-text ${glitch ? 'red-glitch-text' : ''}`}
           >
-            NEUROKLAST
+            <span className="text-primary/60">&gt;</span> NEUROKLAST
           </button>
 
           <div className="hidden md:flex items-center gap-6">
@@ -68,7 +68,7 @@ export default function Navigation() {
                 onClick={() => scrollToSection(item.id)}
                 className="text-xs font-mono tracking-[0.08em] hover:text-primary active:text-primary/80 transition-colors relative group"
               >
-                {item.label}
+                <span className="text-primary/40">[</span>{item.label}<span className="text-primary/40">]</span>
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
@@ -83,12 +83,16 @@ export default function Navigation() {
             {isMobileMenuOpen ? <X size={20} /> : <List size={20} />}
           </Button>
         </div>
+        
+        {isScrolled && (
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        )}
       </motion.nav>
 
       {isMobileMenuOpen && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-background/95 backdrop-blur-md md:hidden"
+            className="fixed inset-0 z-40 bg-background/95 backdrop-blur-md md:hidden hud-grid-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -96,7 +100,7 @@ export default function Navigation() {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <motion.div
-            className="fixed inset-x-0 top-0 z-40 bg-background md:hidden pt-16 pb-8 border-b border-primary/20"
+            className="fixed inset-x-0 top-0 z-40 bg-background md:hidden pt-16 pb-8 border-b border-primary/20 hud-element"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -114,7 +118,7 @@ export default function Navigation() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-active:opacity-100 transition-opacity duration-150" />
-                  <span className="relative z-10">{item.label}</span>
+                  <span className="relative z-10"><span className="text-primary/40">&gt;</span> {item.label}</span>
                 </motion.button>
               ))}
             </div>

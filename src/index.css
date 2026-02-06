@@ -77,6 +77,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   overscroll-behavior-y: contain;
+  overflow-x: hidden;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -347,4 +348,183 @@ h1, h2, h3, h4, h5, h6 {
   body {
     -webkit-overflow-scrolling: touch;
   }
+}
+
+@keyframes scan-horizontal {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes hud-flicker {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes data-stream {
+  0% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-100vh) scaleY(0.5);
+    opacity: 0;
+  }
+}
+
+.hud-element {
+  position: relative;
+  border: 1px solid oklch(0.50 0.22 25 / 0.3);
+  background: linear-gradient(135deg, oklch(0.05 0 0) 0%, oklch(0.02 0 0) 100%);
+}
+
+.hud-element::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, oklch(0.50 0.22 25 / 0.5), transparent);
+  animation: scan-horizontal 3s linear infinite;
+}
+
+.hud-corner {
+  position: relative;
+}
+
+.hud-corner::before,
+.hud-corner::after,
+.hud-corner .corner-tl,
+.hud-corner .corner-tr,
+.hud-corner .corner-bl,
+.hud-corner .corner-br {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: oklch(0.50 0.22 25);
+}
+
+.hud-corner::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.hud-corner::after {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.hud-corner .corner-bl {
+  position: absolute;
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.hud-corner .corner-br {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.red-tint {
+  position: relative;
+}
+
+.red-tint::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: oklch(0.50 0.22 25 / 0.25);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.red-tint-strong {
+  position: relative;
+}
+
+.red-tint-strong::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, oklch(0.50 0.22 25 / 0.35) 0%, oklch(0.60 0.24 25 / 0.25) 100%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.hud-scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-scanline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, oklch(0.50 0.22 25 / 0.6), transparent);
+  animation: scan-line 8s linear infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hud-grid-overlay {
+  position: relative;
+}
+
+.hud-grid-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(0deg, oklch(0.50 0.22 25 / 0.03) 0px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(90deg, oklch(0.50 0.22 25 / 0.03) 0px, transparent 1px, transparent 20px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.data-readout {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: oklch(0.50 0.22 25 / 0.6);
+  text-transform: uppercase;
+  animation: hud-flicker 2s ease-in-out infinite;
+}
+
+.hud-border-glow {
+  box-shadow: 
+    0 0 10px oklch(0.50 0.22 25 / 0.2),
+    inset 0 0 10px oklch(0.50 0.22 25 / 0.05);
+}
+
+.hud-text {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px oklch(0.50 0.22 25 / 0.3);
 }

@@ -177,15 +177,28 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation">
+                <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation hud-element hud-corner hud-scanline">
+                  <span className="corner-bl"></span>
+                  <span className="corner-br"></span>
+                  
                   <div className="aspect-square bg-secondary/30 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute top-2 left-2 z-10 data-readout text-[8px]">
+                      REL_{String(index).padStart(2, '0')}
+                    </div>
+                    <div className="absolute top-2 right-2 z-10">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 6px oklch(0.50 0.22 25)' }}></div>
+                    </div>
+                    
                     {release.artwork ? (
-                      <img
-                        src={release.artwork}
-                        alt={release.title}
-                        className="w-full h-full object-cover group-hover:scale-105 group-active:scale-110 transition-transform duration-500 select-none"
-                        draggable={false}
-                      />
+                      <div className="relative w-full h-full red-tint">
+                        <img
+                          src={release.artwork}
+                          alt={release.title}
+                          className="w-full h-full object-cover group-hover:scale-105 group-active:scale-110 transition-transform duration-500 select-none"
+                          draggable={false}
+                          style={{ filter: 'contrast(1.15) brightness(0.85)' }}
+                        />
+                      </div>
                     ) : (
                       <MusicNote size={72} className="text-muted-foreground opacity-30" />
                     )}

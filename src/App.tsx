@@ -67,11 +67,15 @@ function App() {
 
       {!loading && (
         <motion.div 
-          className="min-h-screen bg-background text-foreground overflow-x-hidden"
+          className="min-h-screen bg-background text-foreground overflow-x-hidden relative"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
+          <div className="fixed inset-0 pointer-events-none z-[100]">
+            <div className="absolute inset-0 hud-scanline opacity-30" />
+          </div>
+          
           <CyberpunkBackground />
           <Toaster position="top-right" />
           

@@ -138,7 +138,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
             >
               {photos.length > 0 && (
                 <motion.div
-                  className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group cursor-grab active:cursor-grabbing touch-manipulation ${glitchActive ? 'glitch-effect' : ''}`}
+                  className={`relative overflow-hidden aspect-square md:aspect-video group cursor-grab active:cursor-grabbing touch-manipulation hud-element hud-corner hud-scanline ${glitchActive ? 'glitch-effect' : ''}`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.3 }}
@@ -154,13 +154,24 @@ export default function BiographySection({ biography = defaultBiography, editMod
                     transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
                   }}
                 >
-                  <img
-                    src={photos[currentPhotoIndex]}
-                    alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 select-none"
-                    draggable={false}
-                  />
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 group-active:border-primary transition-colors duration-300 rounded-lg cyber-border" />
+                  <span className="corner-bl"></span>
+                  <span className="corner-br"></span>
+                  
+                  <div className="absolute top-2 left-2 z-20 data-readout">
+                    BIO_IMG_{String(currentPhotoIndex + 1).padStart(2, '0')}
+                  </div>
+                  
+                  <div className="relative w-full h-full red-tint-strong">
+                    <img
+                      src={photos[currentPhotoIndex]}
+                      alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 select-none"
+                      draggable={false}
+                      style={{ filter: 'contrast(1.15) brightness(0.85)' }}
+                    />
+                  </div>
+                  
+                  <div className="absolute inset-0 border border-transparent group-hover:border-primary/50 group-active:border-primary transition-colors duration-300 hud-border-glow pointer-events-none" />
                   <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/5 transition-colors duration-150 pointer-events-none" />
                   
                   {photos.length > 1 && (

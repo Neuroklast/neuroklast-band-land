@@ -56,10 +56,16 @@ export default function Footer({ socialLinks }: FooterProps) {
   ]
 
   return (
-    <footer className="relative border-t border-border bg-background">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+    <footer className="relative border-t border-primary/20 bg-background hud-element">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="max-w-7xl mx-auto px-4 py-16 relative">
+        <div className="absolute top-4 left-4 hidden md:block">
+          <div className="data-readout text-[8px]">
+            FOOTER_SECTION
+          </div>
+        </div>
+        
         <motion.div
           className="text-center"
           initial={{ opacity: 0, y: 20 }}
@@ -67,7 +73,7 @@ export default function Footer({ socialLinks }: FooterProps) {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 md:mb-8">NEUROKLAST</h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 md:mb-8 hud-text">NEUROKLAST</h2>
           
           <div className="flex items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8 flex-wrap">
             {socialIcons
@@ -80,7 +86,7 @@ export default function Footer({ socialLinks }: FooterProps) {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`text-foreground transition-all touch-manipulation ${social.color}`}
+                    className={`text-foreground transition-all touch-manipulation hover:text-primary active:text-primary/80 relative group`}
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, y: 20 }}
@@ -90,14 +96,15 @@ export default function Footer({ socialLinks }: FooterProps) {
                   >
                     <Icon size={28} className="md:hidden" weight="fill" />
                     <Icon size={32} className="hidden md:block" weight="fill" />
+                    <span className="absolute -inset-2 border border-primary/0 group-hover:border-primary/30 transition-colors pointer-events-none"></span>
                   </motion.a>
                 )
               })}
           </div>
 
-          <div className="text-xs md:text-sm text-muted-foreground space-y-2 px-4">
-            <p className="tracking-wider">HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO</p>
-            <p className="text-[10px] md:text-xs">Darktunes Music Group</p>
+          <div className="text-xs md:text-sm text-muted-foreground space-y-2 px-4 font-mono">
+            <p className="tracking-wider"><span className="text-primary/40">&gt;</span> HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO</p>
+            <p className="text-[10px] md:text-xs">LABEL: Darktunes Music Group</p>
             <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
           </div>
         </motion.div>

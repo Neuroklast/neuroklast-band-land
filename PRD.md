@@ -67,7 +67,7 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Rate Limiting**: Handle API rate limits gracefully with appropriate error messages
 
 ## Design Direction
-The design should evoke minimal occult symbolism merged with cyberpunk hacking culture - mysterious, austere, and ritualistic. Think digital ceremonies, encrypted transmissions, and blood-red sigils in the void. The interface should feel like a forbidden terminal: minimal, precise, with glitch artifacts and noise textures revealing hidden dimensions through red chromatic aberrations.
+The design should evoke a cyberpunk HUD interface merged with minimal occult symbolism - like a hacker's terminal meets forbidden ritual space. The interface should feel like a futuristic command center: precise geometric HUD elements, scan lines, data readouts, corner brackets, persistent system status displays, and blood-red chromatic aberrations revealing hidden dimensions through glitch artifacts.
 
 ## Color Selection
 An ascetic occult palette with blood-red accents emerging from darkness:
@@ -95,17 +95,21 @@ Typography should convey monospace terminal aesthetics and occult minimalism whi
   - Labels (Genre Tags): JetBrains Mono/11px/wide (0.08em) spacing, uppercase
 
 ## Animations
-Animations should feel minimal and glitchy, like corrupted data transmissions with red chromatic aberration. Noise textures add analog corruption throughout.
+Animations should feel like a cyberpunk HUD system with glitchy data corruption, featuring red chromatic aberration, scan lines, and data stream effects.
 
-- **Page Load**: Minimal fade-in with subtle noise overlay appearing (300ms)
+- **Page Load**: Minimal fade-in with scan line overlay and HUD grid appearing (300ms)
+- **HUD Elements**: Persistent corner brackets, data readouts (time, status, frequency), and animated system indicators throughout the interface
+- **Scan Lines**: Continuous horizontal scan line animation across the entire viewport, creating CRT monitor effect
 - **Logo Animation**: Monospace logo with occasional red glitch distortion (every 4-6 seconds), only red channel separation
 - **Text Glitch**: Band name and headings glitch with red chromatic aberration only - no blue/green channels (200ms duration)
-- **Section Headings**: Minimal terminal cursor blink effect, no typing animation
+- **Data Streams**: Vertical data streams falling down the screen in red/white, simulating active data transmission
 - **Element Glitch**: Rare red glitch artifacts on cards and images (every 6-8 seconds), horizontal displacement with red trails
-- **Noise Texture**: Persistent subtle red-tinted noise overlay on entire page using SVG filter
+- **HUD Corners**: Animated corner brackets on all major cards and images, with scan line effects
+- **Grid Overlay**: Subtle red grid pattern overlaying the background, creating depth and HUD aesthetic
 - **Section Reveals**: Simple fade-in on scroll (200ms), no elaborate transitions
-- **Hover States**: Minimal red glow (100ms) and slight red glitch distortion on interactive elements
-- **Red Accent Lines**: Subtle geometric occult symbols (pentagrams, triangles) fade in occasionally as decorative elements
+- **Hover States**: Minimal red glow (100ms) and HUD border activation on interactive elements
+- **Status Indicators**: Pulsing red dots indicating "system online" or "active" states
+- **Image Tint**: All photos and gallery images have a strong red color tint/filter applied for cohesive cyberpunk aesthetic
 - **Social Icons**: Minimal scale (1.03x) on hover with red outline (80ms)
 - **Glitch Direction**: All glitches are horizontal displacement only, creating red chromatic aberration trails
 - **Noise Pattern**: SVG noise filter with red tint applied globally, subtle grain effect

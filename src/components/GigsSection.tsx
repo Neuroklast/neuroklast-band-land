@@ -172,7 +172,14 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="p-4 md:p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group relative overflow-hidden touch-manipulation active:scale-[0.99]">
+                <Card className="p-4 md:p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group relative overflow-hidden touch-manipulation active:scale-[0.99] hud-element hud-corner hud-scanline">
+                  <span className="corner-bl"></span>
+                  <span className="corner-br"></span>
+                  
+                  <div className="absolute top-2 right-2 data-readout text-[8px]">
+                    GIG_{String(index).padStart(2, '0')}
+                  </div>
+                  
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
                   <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/5 transition-colors duration-100 pointer-events-none" />
                   
