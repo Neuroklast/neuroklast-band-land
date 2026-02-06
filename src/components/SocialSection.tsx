@@ -38,7 +38,8 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
-  const activePlatforms = socialPlatforms.filter(platform => socialLinks[platform.key])
+  const safeSocialLinks = socialLinks || {}
+  const activePlatforms = socialPlatforms.filter(platform => safeSocialLinks[platform.key])
 
   return (
     <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-background to-secondary/10" id="social">
@@ -67,7 +68,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {activePlatforms.map((platform, index) => {
             const Icon = platform.icon
-            const url = socialLinks[platform.key]
+            const url = safeSocialLinks[platform.key]
 
             return (
               <motion.div
@@ -108,7 +109,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
 
       {isEditing && (
         <SocialEditDialog
-          socialLinks={socialLinks}
+          socialLinks={safeSocialLinks}
           onSave={(updated) => {
             onUpdate(updated)
             setIsEditing(false)

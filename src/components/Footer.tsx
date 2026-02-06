@@ -14,40 +14,42 @@ interface FooterProps {
 }
 
 export default function Footer({ socialLinks }: FooterProps) {
+  const safeSocialLinks = socialLinks || {}
+  
   const socialIcons = [
     { 
       icon: InstagramLogo, 
-      url: socialLinks.instagram, 
+      url: safeSocialLinks.instagram, 
       label: 'Instagram',
       color: 'hover:text-[#E4405F]'
     },
     { 
       icon: FacebookLogo, 
-      url: socialLinks.facebook, 
+      url: safeSocialLinks.facebook, 
       label: 'Facebook',
       color: 'hover:text-[#1877F2]'
     },
     { 
       icon: SpotifyLogo, 
-      url: socialLinks.spotify, 
+      url: safeSocialLinks.spotify, 
       label: 'Spotify',
       color: 'hover:text-[#1DB954]'
     },
     { 
       icon: SoundcloudLogo, 
-      url: socialLinks.soundcloud, 
+      url: safeSocialLinks.soundcloud, 
       label: 'SoundCloud',
       color: 'hover:text-[#FF5500]'
     },
     { 
       icon: YoutubeLogo, 
-      url: socialLinks.youtube, 
+      url: safeSocialLinks.youtube, 
       label: 'YouTube',
       color: 'hover:text-[#FF0000]'
     },
     { 
       icon: LinkIcon, 
-      url: socialLinks.linktr, 
+      url: safeSocialLinks.linktr, 
       label: 'Linktree',
       color: 'hover:text-primary'
     }

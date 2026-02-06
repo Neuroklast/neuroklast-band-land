@@ -55,6 +55,7 @@ function App() {
   }, [])
 
   const data = bandData || defaultBandData
+  const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
 
   return (
     <>
@@ -143,7 +144,7 @@ function App() {
                 transition={{ duration: 0.6, delay: 1.4 }}
               >
                 <SocialSection 
-                  socialLinks={data.socialLinks}
+                  socialLinks={safeSocialLinks}
                   editMode={editMode && isOwner}
                   onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
                 />
@@ -155,7 +156,7 @@ function App() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 1.6 }}
             >
-              <Footer socialLinks={data.socialLinks} />
+              <Footer socialLinks={safeSocialLinks} />
             </motion.div>
 
             {isOwner && (
