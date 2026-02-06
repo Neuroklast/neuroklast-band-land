@@ -18,7 +18,7 @@ import bandDataJson from '@/assets/documents/band-data.json'
 
 const defaultBandData: BandData = {
   name: 'NEUROKLAST',
-  genres: ['HARD TECHNO', 'INDUSTRIAL', 'DNB', 'DARK ELECTRO'],
+  genres: ['HARD TECHNO', 'CYBERPUNK', 'DNB', 'DARK ELECTRO'],
   socialLinks: {
     instagram: 'https://instagram.com/neuroklast_music',
     facebook: 'https://www.facebook.com/Neuroklast/',
