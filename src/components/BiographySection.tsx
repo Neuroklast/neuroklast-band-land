@@ -24,6 +24,10 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [bioText, setBioText] = useState(biography.story)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.1 })
+  const onUpdateRef = useRef(onUpdate)
+  const biographyRef = useRef(biography)
+  onUpdateRef.current = onUpdate
+  biographyRef.current = biography
 
   useEffect(() => {
     fetch('/content/biography.txt')
@@ -34,13 +38,13 @@ export default function BiographySection({ biography = defaultBiography, editMod
       .then(text => {
         const trimmed = text.trim()
         setBioText(trimmed)
-        if (onUpdate && trimmed) {
-          onUpdate({ ...biography, story: trimmed })
+        if (onUpdateRef.current && trimmed) {
+          onUpdateRef.current({ ...biographyRef.current, story: trimmed })
         }
       })
       .catch(() => {
-        if (biography.story) {
-          setBioText(biography.story)
+        if (biographyRef.current.story) {
+          setBioText(biographyRef.current.story)
         }
       })
   }, [])

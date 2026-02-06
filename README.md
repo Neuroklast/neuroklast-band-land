@@ -18,7 +18,12 @@ A dark, minimal landing page for the hard techno/industrial act NEUROKLAST featu
 Edit the file `public/content/biography.txt` directly in the repository to update the biography text.
 
 ### Photos
-Add image files (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`) to the `public/photos/` folder. They will automatically appear in the gallery section on the website.
+Add image files (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`) to the `public/photos/` folder and list their filenames in `public/photos/photos.json`. They will automatically appear in the gallery section on the website.
+
+Example `photos.json`:
+```json
+["photo1.jpg", "photo2.png", "live-show.webp"]
+```
 
 ## 🚀 Tech Stack
 
