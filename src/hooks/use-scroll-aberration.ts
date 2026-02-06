@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
-export function useScrollAberration() {
+export const useScrollAberration = () => {
   const [scrollY, setScrollY] = useState(0)
   const [aberrationIntensity, setAberrationIntensity] = useState(0)
 
   useEffect(() => {
-    let lastScrollY = window.scrollY
     let rafId: number
+    let lastScrollY = window.scrollY
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const scrollDelta = Math.abs(currentScrollY - lastScrollY)
+      // Begrenzt die Intensität auf maximal 1
       const intensity = Math.min(scrollDelta / 100, 1)
 
       lastScrollY = currentScrollY
@@ -22,20 +23,17 @@ export function useScrollAberration() {
       })
     }
 
-    const decayAberration = () => {
-      setAberrationIntensity(prev => {
-        if (prev <= 0.01) return 0
-        return prev * 0.95
-      })
-    }
+    // Reduziert die Intensität schrittweise, wenn nicht gescrollt wird
+    const decayInterval = setInterval(() => {
+      setAberrationIntensity((prev) => (prev > 0.001 ? prev * 0.95 : 0))
+    }, 50)
 
-    const decayInterval = setInterval(decayAberration, 50)
     window.addEventListener('scroll', handleScroll, { passive: true })
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      clearInterval(decayInterval)
       cancelAnimationFrame(rafId)
+      clearInterval(decayInterval)
     }
   }, [])
 
