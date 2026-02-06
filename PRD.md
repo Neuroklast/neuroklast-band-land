@@ -67,47 +67,48 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Rate Limiting**: Handle API rate limits gracefully with appropriate error messages
 
 ## Design Direction
-The design should evoke the raw energy of industrial techno - dark, aggressive, and unapologetically bold. Think underground clubs, distorted basslines, and neon in the darkness. The interface should feel like a digital manifestation of hard techno culture: precise, minimal, with sudden bursts of intensity through the red accent color.
+The design should evoke minimal occult symbolism merged with cyberpunk hacking culture - mysterious, austere, and ritualistic. Think digital ceremonies, encrypted transmissions, and blood-red sigils in the void. The interface should feel like a forbidden terminal: minimal, precise, with glitch artifacts and noise textures revealing hidden dimensions through red chromatic aberrations.
 
 ## Color Selection
-A strictly minimal palette emphasizing contrast and aggression:
+An ascetic occult palette with blood-red accents emerging from darkness:
 
-- **Primary Color**: Pure Black (#000000 / oklch(0 0 0)) - The void, the foundation, representing the dark underground aesthetic
-- **Secondary Color**: Crimson Red (oklch(0.55 0.22 25)) - Aggressive accent for CTAs, borders, and highlights; evokes energy, danger, and passion
-- **Accent Color**: Bright Red (oklch(0.65 0.25 25)) - Used for hover states and active elements, slightly brighter than secondary
+- **Primary Color**: Pure Black (oklch(0 0 0)) - The void, the abyss, representing emptiness and the unknown
+- **Secondary Color**: Blood Red (oklch(0.50 0.22 25)) - Ritualistic accent for glitch effects, borders, and occult symbols; evokes blood, warning, forbidden knowledge
+- **Accent Color**: Crimson Glitch (oklch(0.60 0.24 25)) - Used exclusively for glitch chromatic aberrations and hover states
+- **Noise Overlay**: Subtle red-tinted noise texture (oklch(0.50 0.22 25 / 0.05)) - Adds analog distortion and occult grain
 - **Foreground/Background Pairings**:
-  - Primary Black (#000000): White text (oklch(1 0 0)) - Ratio ∞:1 ✓
-  - Secondary Red (oklch(0.55 0.22 25)): White text (oklch(1 0 0)) - Ratio 5.2:1 ✓
-  - Card backgrounds (oklch(0.08 0 0)): White text (oklch(1 0 0)) - Ratio 17.8:1 ✓
+  - Primary Black (oklch(0 0 0)): White text (oklch(1 0 0)) - Ratio ∞:1 ✓
+  - Blood Red (oklch(0.50 0.22 25)): White text (oklch(1 0 0)) - Ratio 6.1:1 ✓
+  - Card backgrounds (oklch(0.05 0 0)): White text (oklch(1 0 0)) - Ratio 19.2:1 ✓
 
 ## Font Selection
-Typography should convey technical precision and industrial strength while maintaining excellent readability.
+Typography should convey monospace terminal aesthetics and occult minimalism while maintaining readability.
 
-- **Primary Font**: Bebas Neue - Bold, condensed, industrial letterforms perfect for headers and the band name; evokes power and raw energy
-- **Secondary Font**: Inter (Regular/Medium) - Clean, highly readable for body text and dates; ensures information clarity
+- **Primary Font**: JetBrains Mono - Monospaced coding font for headers and band name; evokes terminal interfaces and hacker culture
+- **Secondary Font**: Space Grotesk - Geometric sans-serif for body text; clean and slightly technical
 
 - **Typographic Hierarchy**:
-  - H1 (Band Name): Bebas Neue/72px/wide (0.02em) letter spacing, uppercase
-  - H2 (Section Headers): Bebas Neue/36px/normal spacing, uppercase
-  - H3 (Event Venues): Bebas Neue/24px/normal spacing, uppercase
-  - Body (Dates/Info): Inter Medium/16px/relaxed (1.6 line-height)
-  - Labels (Genre Tags): Inter Medium/12px/wide (0.1em) spacing, uppercase
+  - H1 (Band Name): JetBrains Mono/64px/wide (0.05em) letter spacing, uppercase
+  - H2 (Section Headers): JetBrains Mono/32px/wide (0.03em) spacing, uppercase
+  - H3 (Event Venues): Space Grotesk Medium/20px/normal spacing
+  - Body (Dates/Info): Space Grotesk/16px/relaxed (1.6 line-height)
+  - Labels (Genre Tags): JetBrains Mono/11px/wide (0.08em) spacing, uppercase
 
 ## Animations
-Animations should feel deliberate and mechanical, like industrial machinery - precise timing with occasional aggressive bursts. The site features dynamic glitch effects on all major elements and terminal-style typing animations for section headings that create a cyberpunk aesthetic.
+Animations should feel minimal and glitchy, like corrupted data transmissions with red chromatic aberration. Noise textures add analog corruption throughout.
 
-- **Page Load**: Staggered fade-in from top to bottom, hero elements cascade in (200ms delays)
-- **Logo Animation**: Larger logo (up to 28rem on desktop) with periodic glitch effects that trigger randomly every 3-4 seconds
-- **Text Glitch**: Band name and all section headings glitch with RGB color separation effect occasionally for energy
-- **Section Headings**: Terminal-style typing effect (40-50ms per character) that types out heading text when sections scroll into view, with animated cursor
-- **Element Glitch**: Random glitch effects on images and cards throughout the page (every 3-5 seconds)
-- **Section Reveals**: Slide-up with fade on scroll intersection using framer-motion's useInView hook (300ms ease-out), combined with scale-in for glitch aesthetic
-- **Hover States**: Sharp, quick color transitions (150ms) for links and buttons; scale slightly (1.02-1.05x) for cards
-- **Red Accent Lines**: Draw in on load using SVG line animation (800ms)
-- **Social Icons**: Quick pop on hover with color shift (100ms), scale-in on reveal
-- **Skeleton to Content**: Smooth cross-fade when images load (400ms)
-- **Scroll Effects**: All major sections (Biography, Gigs, Releases, Instagram, Social) animate into view with staggered child animations
-- **Cyber Borders**: Pulsing cyber-glow effects on hovered elements using CSS animations
+- **Page Load**: Minimal fade-in with subtle noise overlay appearing (300ms)
+- **Logo Animation**: Monospace logo with occasional red glitch distortion (every 4-6 seconds), only red channel separation
+- **Text Glitch**: Band name and headings glitch with red chromatic aberration only - no blue/green channels (200ms duration)
+- **Section Headings**: Minimal terminal cursor blink effect, no typing animation
+- **Element Glitch**: Rare red glitch artifacts on cards and images (every 6-8 seconds), horizontal displacement with red trails
+- **Noise Texture**: Persistent subtle red-tinted noise overlay on entire page using SVG filter
+- **Section Reveals**: Simple fade-in on scroll (200ms), no elaborate transitions
+- **Hover States**: Minimal red glow (100ms) and slight red glitch distortion on interactive elements
+- **Red Accent Lines**: Subtle geometric occult symbols (pentagrams, triangles) fade in occasionally as decorative elements
+- **Social Icons**: Minimal scale (1.03x) on hover with red outline (80ms)
+- **Glitch Direction**: All glitches are horizontal displacement only, creating red chromatic aberration trails
+- **Noise Pattern**: SVG noise filter with red tint applied globally, subtle grain effect
 
 ## Component Selection
 

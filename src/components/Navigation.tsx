@@ -18,11 +18,11 @@ export default function Navigation() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.95) {
+      if (Math.random() > 0.9) {
         setGlitch(true)
         setTimeout(() => setGlitch(false), 200)
       }
-    }, 3000)
+    }, 5000)
     return () => clearInterval(interval)
   }, [])
 
@@ -47,35 +47,29 @@ export default function Navigation() {
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-background/95 backdrop-blur-sm border-b border-primary/20' : 'bg-transparent'
-        } ${glitch ? 'glitch-effect' : ''}`}
+          isScrolled ? 'bg-background/90 backdrop-blur-sm border-b border-primary/10' : 'bg-transparent'
+        } ${glitch ? 'red-glitch-element' : ''}`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
-        style={{
-          boxShadow: isScrolled ? '0 0 20px oklch(0.55 0.22 25 / 0.1)' : 'none',
-        }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={() => scrollToSection('hero')}
-            className={`text-lg md:text-xl font-bold tracking-tight hover:text-primary active:text-primary/80 transition-colors touch-manipulation ${glitch ? 'glitch-text-effect' : ''}`}
-            style={{
-              textShadow: '0 0 10px oklch(0.55 0.22 25 / 0.3)',
-            }}
+            className={`text-base md:text-lg font-mono tracking-[0.08em] hover:text-primary/80 active:text-primary transition-colors touch-manipulation ${glitch ? 'red-glitch-text' : ''}`}
           >
             NEUROKLAST
           </button>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className="text-sm font-medium tracking-wider hover:text-primary active:text-primary/80 transition-colors relative group"
+                className="text-xs font-mono tracking-[0.08em] hover:text-primary active:text-primary/80 transition-colors relative group"
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full shadow-[0_0_10px_oklch(0.55_0.22_25)]"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
           </div>
@@ -86,7 +80,7 @@ export default function Navigation() {
             className="md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? <X size={24} /> : <List size={24} />}
+            {isMobileMenuOpen ? <X size={20} /> : <List size={20} />}
           </Button>
         </div>
       </motion.nav>
@@ -99,11 +93,11 @@ export default function Navigation() {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="flex flex-col gap-4 p-6">
+          <div className="flex flex-col gap-2 p-6">
             {navItems.map((item, index) => (
               <motion.button
                 key={item.id}
-                className="text-left py-3 border-b border-border touch-manipulation"
+                className="text-left py-3 border-b border-border/50 touch-manipulation font-mono text-sm tracking-[0.08em]"
                 onClick={() => scrollToSection(item.id)}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
