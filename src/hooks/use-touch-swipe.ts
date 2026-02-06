@@ -1,64 +1,64 @@
 import { useState, useCallback } from 'react'
 
-interface SwipeHandlers {
-  onTouchStart: (e: React.TouchEvent) => void
+  onTouchMove: (e: React.
+}
   onTouchMove: (e: React.TouchEvent) => void
   onTouchEnd: () => void
 }
 
-interface SwipeOptions {
-  onSwipeLeft?: () => void
-  onSwipeRight?: () => void
-  onSwipeUp?: () => void
-  onSwipeDown?: () => void
-  threshold?: number
-}
-
-export function useTouchSwipe({
-  onSwipeLeft,
+export function useTouch
   onSwipeRight,
-  onSwipeUp,
   onSwipeDown,
-  threshold = 75
-}: SwipeOptions): SwipeHandlers {
-  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 })
-  const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 })
+}: SwipeOptions): SwipeH
+  const [touchEnd, setTouc
+  const handleTouchS
+ 
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.targetTouches[0]
-    setTouchStart({ x: touch.clientX, y: touch.clientY })
-    setTouchEnd({ x: touch.clientX, y: touch.clientY })
-  }, [])
+  const handleTouchMove = useCa
+    setTouchEn
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const touch = e.targetTouches[0]
-    setTouchEnd({ x: touch.clientX, y: touch.clientY })
-  }, [])
+    const de
+    const absD
 
-  const handleTouchEnd = useCallback(() => {
-    const deltaX = touchStart.x - touchEnd.x
-    const deltaY = touchStart.y - touchEnd.y
-    const absDeltaX = Math.abs(deltaX)
-    const absDeltaY = Math.abs(deltaY)
-
-    if (absDeltaX > absDeltaY) {
-      if (deltaX > threshold && onSwipeLeft) {
-        onSwipeLeft()
+      if (deltaX > threshold && o
       } else if (deltaX < -threshold && onSwipeRight) {
-        onSwipeRight()
       }
-    } else {
-      if (deltaY > threshold && onSwipeUp) {
-        onSwipeUp()
-      } else if (deltaY < -threshold && onSwipeDown) {
-        onSwipeDown()
-      }
-    }
-  }, [touchStart, touchEnd, threshold, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown])
 
+      } else if (deltaY < -threshold && onSwipeDown) {
+      }
+  }, [touchStart, touchEnd, threshold, onSwipeLeft, onSwi
   return {
-    onTouchStart: handleTouchStart,
-    onTouchMove: handleTouchMove,
-    onTouchEnd: handleTouchEnd
-  }
-}
+    onTo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
