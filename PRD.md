@@ -41,11 +41,11 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Success criteria**: Album art is high quality, links open to correct platforms, layout is visually appealing, iTunes sync successfully imports new releases without duplicates
 
 ### Social Media Hub
-- **Functionality**: Comprehensive social media link collection (Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, Linktr.ee)
-- **Purpose**: Increase social following and provide easy access to all platforms
-- **Trigger**: User scrolls to footer or clicks social icon
-- **Progression**: Icons displayed → User clicks icon → Opens in new tab
-- **Success criteria**: All links work, icons are recognizable, hover states provide feedback
+- **Functionality**: Comprehensive social media link collection (Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, Linktr.ee) plus an Instagram gallery displaying the first 3 posts from the NEUROKLAST Instagram profile
+- **Purpose**: Increase social following, provide easy access to all platforms, and showcase visual content from Instagram
+- **Trigger**: User scrolls to Instagram gallery or social footer section
+- **Progression**: Gallery images display with hover effects → User clicks image → Opens Instagram post | User clicks social icon → Opens in new tab
+- **Success criteria**: All links work, icons are recognizable, hover states provide feedback, Instagram images load properly with captions
 
 ### Content Management
 - **Functionality**: Editable sections for biography, gigs, releases, and social links (owner-only)
@@ -83,25 +83,28 @@ A strictly minimal palette emphasizing contrast and aggression:
 ## Font Selection
 Typography should convey technical precision and industrial strength while maintaining excellent readability.
 
-- **Primary Font**: Rajdhani (Bold/SemiBold) - Angular, technical letterforms perfect for the band name and headers; evokes industrial machinery and precision
+- **Primary Font**: Bebas Neue - Bold, condensed, industrial letterforms perfect for headers and the band name; evokes power and raw energy
 - **Secondary Font**: Inter (Regular/Medium) - Clean, highly readable for body text and dates; ensures information clarity
 
 - **Typographic Hierarchy**:
-  - H1 (Band Name): Rajdhani Bold/72px/tight (-0.02em) letter spacing, uppercase
-  - H2 (Section Headers): Rajdhani SemiBold/36px/tight letter spacing, uppercase
-  - H3 (Event Venues): Rajdhani SemiBold/24px/normal spacing
+  - H1 (Band Name): Bebas Neue/72px/wide (0.02em) letter spacing, uppercase
+  - H2 (Section Headers): Bebas Neue/36px/normal spacing, uppercase
+  - H3 (Event Venues): Bebas Neue/24px/normal spacing, uppercase
   - Body (Dates/Info): Inter Medium/16px/relaxed (1.6 line-height)
   - Labels (Genre Tags): Inter Medium/12px/wide (0.1em) spacing, uppercase
 
 ## Animations
-Animations should feel deliberate and mechanical, like industrial machinery - precise timing with occasional aggressive bursts.
+Animations should feel deliberate and mechanical, like industrial machinery - precise timing with occasional aggressive bursts. The site feels alive with glitch effects and smooth scroll-triggered animations throughout.
 
 - **Page Load**: Staggered fade-in from top to bottom, hero elements cascade in (200ms delays)
-- **Section Reveals**: Slide-up with fade on scroll intersection (300ms ease-out)
+- **Logo Animation**: Larger logo (up to 28rem on desktop) with periodic glitch effects that trigger randomly every 3-4 seconds
+- **Text Glitch**: Band name glitches with RGB color separation effect occasionally for energy
+- **Section Reveals**: Slide-up with fade on scroll intersection using framer-motion's useInView hook (300ms ease-out)
 - **Hover States**: Sharp, quick color transitions (150ms) for links and buttons; scale slightly (1.02x) for cards
 - **Red Accent Lines**: Draw in on load using SVG line animation (800ms)
 - **Social Icons**: Quick pop on hover with color shift (100ms)
 - **Skeleton to Content**: Smooth cross-fade when images load (400ms)
+- **Scroll Effects**: All major sections (Biography, Gigs, Releases, Instagram, Social) animate into view with staggered child animations
 
 ## Component Selection
 

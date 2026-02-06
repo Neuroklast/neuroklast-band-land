@@ -7,6 +7,7 @@ import Hero from '@/components/Hero'
 import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
+import InstagramGallery from '@/components/InstagramGallery'
 import SocialSection from '@/components/SocialSection'
 import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
@@ -82,6 +83,8 @@ function App() {
             editMode={editMode && isOwner}
             onUpdate={(releases) => setBandData((current) => ({ ...(current || defaultBandData), releases }))}
           />
+
+          <InstagramGallery />
 
           <SocialSection 
             socialLinks={data.socialLinks}

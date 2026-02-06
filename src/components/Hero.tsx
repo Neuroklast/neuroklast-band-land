@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaretDown } from '@phosphor-icons/react'
@@ -10,6 +11,30 @@ interface HeroProps {
 }
 
 export default function Hero({ name, genres }: HeroProps) {
+  const [glitchLogo, setGlitchLogo] = useState(false)
+  const [glitchText, setGlitchText] = useState(false)
+
+  useEffect(() => {
+    const logoInterval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        setGlitchLogo(true)
+        setTimeout(() => setGlitchLogo(false), 300)
+      }
+    }, 3000)
+
+    const textInterval = setInterval(() => {
+      if (Math.random() > 0.8) {
+        setGlitchText(true)
+        setTimeout(() => setGlitchText(false), 300)
+      }
+    }, 4000)
+
+    return () => {
+      clearInterval(logoInterval)
+      clearInterval(textInterval)
+    }
+  }, [])
+
   const scrollToGigs = () => {
     const element = document.getElementById('gigs')
     if (element) {
@@ -72,12 +97,12 @@ export default function Hero({ name, genres }: HeroProps) {
           <img 
             src={logoPng} 
             alt="NEUROKLAST Logo" 
-            className="w-40 h-auto md:w-56 lg:w-72 drop-shadow-[0_0_30px_rgba(220,38,38,0.3)]"
+            className={`w-64 h-auto md:w-80 lg:w-96 xl:w-[28rem] drop-shadow-[0_0_40px_rgba(220,38,38,0.4)] ${glitchLogo ? 'glitch-effect' : ''}`}
           />
         </motion.div>
 
         <motion.h1
-          className="text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold mb-6 tracking-tight"
+          className={`text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold mb-6 tracking-wide ${glitchText ? 'glitch-text-effect' : ''}`}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}

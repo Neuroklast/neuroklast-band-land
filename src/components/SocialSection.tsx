@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import {
   InstagramLogo,
   FacebookLogo,
@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { SocialLinks } from '@/lib/types'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 
 interface SocialSectionProps {
@@ -35,18 +35,19 @@ const socialPlatforms = [
 
 export default function SocialSection({ socialLinks, editMode, onUpdate }: SocialSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
   const activePlatforms = socialPlatforms.filter(platform => socialLinks[platform.key])
 
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-background to-secondary/10" id="social">
+    <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-background to-secondary/10" id="social">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <motion.h2 
             className="text-4xl md:text-5xl lg:text-6xl font-bold"
             initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
             CONNECT
@@ -72,9 +73,8 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
               <motion.div
                 key={platform.key}
                 initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.08 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
               >
                 <Button
                   asChild

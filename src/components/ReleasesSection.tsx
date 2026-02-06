@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise, AppleLogo } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { Release } from '@/lib/types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
 import { fetchITunesReleases } from '@/lib/itunes'
@@ -21,6 +21,8 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
   useEffect(() => {
     if (!hasAutoLoaded && (!releases || releases.length === 0)) {
@@ -96,14 +98,13 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   }
 
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-secondary/5 via-background to-background" id="releases">
+    <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-secondary/5 via-background to-background" id="releases">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-12 flex-wrap gap-4">
           <motion.h2 
             className="text-4xl md:text-5xl lg:text-6xl font-bold"
             initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
             RELEASES
@@ -148,10 +149,9 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
             {sortedReleases.map((release, index) => (
               <motion.div
                 key={release.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
               >
                 <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group">
                   <div className="aspect-square bg-secondary/30 flex items-center justify-center relative overflow-hidden">

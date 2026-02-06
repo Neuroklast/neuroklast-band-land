@@ -60,7 +60,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-heading: 'Rajdhani', sans-serif;
+  --font-heading: 'Bebas Neue', sans-serif;
   --font-body: 'Inter', sans-serif;
 
   --radius-sm: calc(var(--radius) * 0.5);
@@ -78,8 +78,8 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -94,4 +94,56 @@ h1, h2, h3, h4, h5, h6 {
 
 .glow-primary {
   animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes glitch-text {
+  0% {
+    text-shadow: 0 0 0 transparent;
+  }
+  20% {
+    text-shadow: -2px 0 0 oklch(0.55 0.22 25), 2px 0 0 oklch(0.65 0.25 190);
+  }
+  40% {
+    text-shadow: 2px 0 0 oklch(0.55 0.22 25), -2px 0 0 oklch(0.65 0.25 190);
+  }
+  60% {
+    text-shadow: -2px 0 0 oklch(0.65 0.25 190), 2px 0 0 oklch(0.55 0.22 25);
+  }
+  80% {
+    text-shadow: 2px 0 0 oklch(0.65 0.25 190), -2px 0 0 oklch(0.55 0.22 25);
+  }
+  100% {
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+.glitch-effect {
+  animation: glitch 0.3s ease-in-out;
+}
+
+.glitch-text-effect {
+  animation: glitch-text 0.3s ease-in-out;
 }

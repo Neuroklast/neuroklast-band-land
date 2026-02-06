@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { Gig } from '@/lib/types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
 import { fetchUpcomingGigs } from '@/lib/spotify'
@@ -21,6 +21,8 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
   useEffect(() => {
     if (!hasLoadedOnce) {
@@ -76,14 +78,13 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
   }
 
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-background via-background to-secondary/5" id="gigs">
+    <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-background via-background to-secondary/5" id="gigs">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <motion.h2 
             className="text-4xl md:text-5xl lg:text-6xl font-bold"
             initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
             UPCOMING SHOWS
@@ -139,10 +140,9 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
             {upcomingGigs.map((gig, index) => (
               <motion.div
                 key={gig.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
               >
                 <Card className="p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import type { Biography } from '@/lib/types'
 
 interface BiographySectionProps {
@@ -22,6 +22,8 @@ With a commitment to innovation and experimentation, each performance is a journ
 
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
   const handleUpdate = (updatedBiography: Biography) => {
     onUpdate?.(updatedBiography)
@@ -29,16 +31,22 @@ export default function BiographySection({ biography = defaultBiography, editMod
   }
 
   return (
-    <section id="biography" className="relative py-20 px-4 border-t border-border">
+    <section id="biography" ref={sectionRef} className="relative py-20 px-4 border-t border-border">
       <div className="max-w-6xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          transition={{ duration: 0.7 }}
         >
           <div className="flex items-center justify-between mb-12">
-            <h2 className="text-4xl md:text-5xl text-foreground">BIOGRAPHY</h2>
+            <motion.h2 
+              className="text-4xl md:text-5xl text-foreground"
+              initial={{ opacity: 0, x: -20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              BIOGRAPHY
+            </motion.h2>
             {editMode && (
               <Button
                 onClick={() => setIsEditDialogOpen(true)}
@@ -53,7 +61,12 @@ export default function BiographySection({ biography = defaultBiography, editMod
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
+            <motion.div 
+              className="md:col-span-2"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
               <Card className="bg-card border-border p-8 hover:border-primary/50 transition-colors duration-300">
                 <div className="prose prose-invert max-w-none">
                   {biography.story.split('\n\n').map((paragraph, index) => (
@@ -63,47 +76,65 @@ export default function BiographySection({ biography = defaultBiography, editMod
                   ))}
                 </div>
               </Card>
-            </div>
+            </motion.div>
 
             <div className="space-y-6">
               {biography.founded && (
-                <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
-                  <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-2">
-                    Founded
-                  </h3>
-                  <p className="text-2xl font-heading text-primary">{biography.founded}</p>
-                </Card>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                  transition={{ duration: 0.7, delay: 0.3 }}
+                >
+                  <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                    <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-2">
+                      Founded
+                    </h3>
+                    <p className="text-2xl font-heading text-primary">{biography.founded}</p>
+                  </Card>
+                </motion.div>
               )}
 
               {biography.members && biography.members.length > 0 && (
-                <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
-                  <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                    Members
-                  </h3>
-                  <ul className="space-y-2">
-                    {biography.members.map((member, index) => (
-                      <li key={index} className="text-foreground/90">
-                        {member}
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                  transition={{ duration: 0.7, delay: 0.4 }}
+                >
+                  <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                    <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                      Members
+                    </h3>
+                    <ul className="space-y-2">
+                      {biography.members.map((member, index) => (
+                        <li key={index} className="text-foreground/90">
+                          {member}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                </motion.div>
               )}
 
               {biography.achievements && biography.achievements.length > 0 && (
-                <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
-                  <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                    Achievements
-                  </h3>
-                  <ul className="space-y-3">
-                    {biography.achievements.map((achievement, index) => (
-                      <li key={index} className="text-foreground/90 text-sm flex gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span className="flex-1">{achievement}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                  transition={{ duration: 0.7, delay: 0.5 }}
+                >
+                  <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                    <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                      Achievements
+                    </h3>
+                    <ul className="space-y-3">
+                      {biography.achievements.map((achievement, index) => (
+                        <li key={index} className="text-foreground/90 text-sm flex gap-2">
+                          <span className="text-primary mt-1">•</span>
+                          <span className="flex-1">{achievement}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                </motion.div>
               )}
             </div>
           </div>
