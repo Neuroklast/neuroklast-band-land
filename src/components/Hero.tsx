@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaretDown } from '@phosphor-icons/react'
 import logoPng from '@/assets/images/NK_BAPHOMET.png'
+import NeuroklastTitle from '@/components/NeuroklastTitle'
 
 interface HeroProps {
   name: string
@@ -12,7 +13,7 @@ interface HeroProps {
 
 export default function Hero({ name, genres }: HeroProps) {
   const [glitchLogo, setGlitchLogo] = useState(false)
-  const [glitchText, setGlitchText] = useState(false)
+  const [glitchTitle, setGlitchTitle] = useState(false)
 
   useEffect(() => {
     const logoInterval = setInterval(() => {
@@ -22,16 +23,16 @@ export default function Hero({ name, genres }: HeroProps) {
       }
     }, 3000)
 
-    const textInterval = setInterval(() => {
+    const titleInterval = setInterval(() => {
       if (Math.random() > 0.8) {
-        setGlitchText(true)
-        setTimeout(() => setGlitchText(false), 300)
+        setGlitchTitle(true)
+        setTimeout(() => setGlitchTitle(false), 300)
       }
     }, 4000)
 
     return () => {
       clearInterval(logoInterval)
-      clearInterval(textInterval)
+      clearInterval(titleInterval)
     }
   }, [])
 
@@ -101,14 +102,16 @@ export default function Hero({ name, genres }: HeroProps) {
           />
         </motion.div>
 
-        <motion.h1
-          className={`text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold mb-4 md:mb-6 tracking-wide ${glitchText ? 'glitch-text-effect' : ''}`}
+        <motion.div
+          className="mb-4 md:mb-6 flex justify-center w-full px-4"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          {name}
-        </motion.h1>
+          <div className={`w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl holographic-effect ${glitchTitle ? 'glitch-effect' : ''}`}>
+            <NeuroklastTitle className="w-full h-auto" />
+          </div>
+        </motion.div>
 
         <motion.div
           className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8 md:mb-12 px-2"

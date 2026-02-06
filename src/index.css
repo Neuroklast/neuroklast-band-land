@@ -150,6 +150,43 @@ button, a, [role="button"] {
   pointer-events: none;
   z-index: 9999;
   opacity: 0.5;
+  animation: scanline-move 8s linear infinite;
+}
+
+@keyframes scanline-move {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(40px);
+  }
+}
+
+#root::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 80px,
+      oklch(0.55 0.22 25 / 0.02) 80px,
+      oklch(0.55 0.22 25 / 0.02) 81px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 80px,
+      oklch(0.55 0.22 25 / 0.02) 80px,
+      oklch(0.55 0.22 25 / 0.02) 81px
+    );
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.3;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -410,4 +447,80 @@ h1, h2, h3, h4, h5, h6 {
 
 .glitch-text-effect {
   animation: glitch-text 0.3s ease-in-out;
+}
+
+@keyframes holographic-shimmer {
+  0% {
+    filter: drop-shadow(0 0 20px oklch(0.55 0.22 25 / 0.6)) hue-rotate(0deg);
+  }
+  25% {
+    filter: drop-shadow(0 0 30px oklch(0.65 0.25 190 / 0.5)) hue-rotate(15deg);
+  }
+  50% {
+    filter: drop-shadow(0 0 25px oklch(0.55 0.22 25 / 0.7)) hue-rotate(0deg);
+  }
+  75% {
+    filter: drop-shadow(0 0 30px oklch(0.65 0.25 25 / 0.5)) hue-rotate(-15deg);
+  }
+  100% {
+    filter: drop-shadow(0 0 20px oklch(0.55 0.22 25 / 0.6)) hue-rotate(0deg);
+  }
+}
+
+.holographic-effect {
+  animation: holographic-shimmer 4s ease-in-out infinite;
+  position: relative;
+}
+
+@media (hover: hover) {
+  .holographic-effect:hover {
+    animation: holographic-shimmer 1s ease-in-out infinite;
+  }
+}
+
+@keyframes cyber-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 10px oklch(0.55 0.22 25 / 0.3),
+      inset 0 0 10px oklch(0.55 0.22 25 / 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 20px oklch(0.55 0.22 25 / 0.5),
+      inset 0 0 15px oklch(0.55 0.22 25 / 0.2);
+  }
+}
+
+.cyber-border {
+  position: relative;
+}
+
+.cyber-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid oklch(0.55 0.22 25 / 0.3);
+  pointer-events: none;
+  animation: cyber-pulse 3s ease-in-out infinite;
+}
+
+@keyframes data-stream {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.data-stream {
+  animation: data-stream 3s linear infinite;
 }
