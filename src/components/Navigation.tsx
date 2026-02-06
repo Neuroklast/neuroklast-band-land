@@ -65,9 +65,8 @@ export default function Navigation() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden active:scale-95 transition-transform touch-manipulation"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             {isMobileMenuOpen ? <X size={24} /> : <List size={24} />}
           </Button>
         </div>
@@ -76,29 +75,33 @@ export default function Navigation() {
       {isMobileMenuOpen && (
         <motion.div
           className="fixed inset-0 z-40 bg-background md:hidden pt-16"
-          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
           <div className="flex flex-col gap-4 p-6">
-            {navItems.map((item, index) => (
+        >
               <motion.button
                 key={item.id}
+              <motion.button
+                key={item.id}-left py-3 border-b border-border touch-manipulation"
                 onClick={() => scrollToSection(item.id)}
-                className="text-xl font-bold tracking-tight hover:text-primary active:text-primary/80 active:scale-95 transition-all text-left py-3 border-b border-border touch-manipulation"
-                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 {item.label}
-              </motion.button>
-            ))}
+              >
+                {item.label}
           </div>
-          
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+            ))}
+          </div>assName="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
         </motion.div>
       )}
+        </motion.div>
+      )}
+    </>
+  )
+}
     </>
   )
 }
