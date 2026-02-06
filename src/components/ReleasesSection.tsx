@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo } from '@phosphor-icons/react'
+import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -7,6 +7,8 @@ import type { Release } from '@/lib/types'
 import { useState } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
+import { fetchSpotifyReleases } from '@/lib/spotify'
+import { toast } from 'sonner'
 
 interface ReleasesSectionProps {
   releases: Release[]
@@ -17,6 +19,7 @@ interface ReleasesSectionProps {
 export default function ReleasesSection({ releases, editMode, onUpdate }: ReleasesSectionProps) {
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
 
   const sortedReleases = [...releases].sort(
     (a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
@@ -36,10 +39,50 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
     setIsAdding(false)
   }
 
+  const handleFetchSpotifyReleases = async () => {
+    setIsFetching(true)
+    try {
+      const spotifyReleases = await fetchSpotifyReleases()
+      
+      if (spotifyReleases.length === 0) {
+        toast.error('No releases found on Spotify')
+        return
+      }
+
+      const existingIds = new Set(releases.map(r => r.id))
+      const newReleases = spotifyReleases.filter(r => !existingIds.has(r.id))
+      
+      const updatedReleases = releases.map(existing => {
+        const spotifyMatch = spotifyReleases.find(s => s.id === existing.id)
+        if (spotifyMatch) {
+          return {
+            ...existing,
+            artwork: spotifyMatch.artwork || existing.artwork,
+            streamingLinks: {
+              ...existing.streamingLinks,
+              spotify: spotifyMatch.streamingLinks.spotify,
+            }
+          }
+        }
+        return existing
+      })
+
+      const mergedReleases = [...updatedReleases, ...newReleases]
+      onUpdate(mergedReleases)
+      
+      toast.success(`Imported ${newReleases.length} new releases from Spotify`)
+    } catch (error) {
+      toast.error('Failed to fetch releases from Spotify')
+      console.error(error)
+    } finally {
+      setIsFetching(false)
+    }
+  }
+
   return (
     <section className="py-24 px-4 bg-gradient-to-b from-secondary/5 via-background to-background" id="releases">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center justify-between mb-12 flex-wrap gap-4">
           <motion.h2 
             className="text-4xl md:text-5xl lg:text-6xl font-bold"
             initial={{ opacity: 0, x: -20 }}
@@ -50,13 +93,24 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
             RELEASES
           </motion.h2>
           {editMode && (
-            <Button
-              onClick={() => setIsAdding(true)}
-              className="bg-primary hover:bg-accent"
-            >
-              <Plus className="mr-2" size={20} />
-              Add Release
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleFetchSpotifyReleases}
+                disabled={isFetching}
+                variant="outline"
+                className="border-primary/30 hover:bg-primary/10"
+              >
+                <ArrowsClockwise className={`mr-2 ${isFetching ? 'animate-spin' : ''}`} size={20} />
+                {isFetching ? 'Fetching...' : 'Sync Spotify'}
+              </Button>
+              <Button
+                onClick={() => setIsAdding(true)}
+                className="bg-primary hover:bg-accent"
+              >
+                <Plus className="mr-2" size={20} />
+                Add Release
+              </Button>
+            </div>
           )}
         </div>
 

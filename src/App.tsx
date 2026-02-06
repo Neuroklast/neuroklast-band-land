@@ -1,6 +1,7 @@
 import { useKV } from '@github/spark/hooks'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Toaster } from '@/components/ui/sonner'
 import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
 import BiographySection from '@/components/BiographySection'
@@ -50,6 +51,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <Toaster position="top-right" />
       <Navigation />
       
       <motion.div
