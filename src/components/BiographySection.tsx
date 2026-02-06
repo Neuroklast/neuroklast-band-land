@@ -91,17 +91,21 @@ export default function BiographySection({ biography = defaultBiography, editMod
           transition={{ duration: 0.7 }}
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
-            <motion.h2 
-              className={`text-4xl md:text-5xl text-foreground font-mono ${glitchActive ? 'glitch-text-effect' : ''}`}
-              initial={{ opacity: 0, x: -20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <ChromaticText intensity={1.5}>
-                &gt; {displayedTitle}
-              </ChromaticText>
-              <span className="animate-pulse">_</span>
-            </motion.h2>
+          <motion.h2 
+            className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text ${glitchActive ? 'glitch-text-effect' : ''}`}
+            data-text={`> ${displayedTitle}`}
+            initial={{ opacity: 0, x: -20 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
+            }}
+          >
+            <ChromaticText intensity={1.5}>
+              &gt; {displayedTitle}
+            </ChromaticText>
+            <span className="animate-pulse">_</span>
+          </motion.h2>
             {editMode && (
               <Button
                 onClick={() => setIsEditDialogOpen(true)}

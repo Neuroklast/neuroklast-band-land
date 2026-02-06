@@ -14,7 +14,6 @@ import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
 import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
-import HUDReticle from '@/components/HUDReticle'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import SecretTerminal from '@/components/SecretTerminal'
 import KonamiListener from '@/components/KonamiListener'
@@ -89,7 +88,6 @@ function App() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-          <HUDReticle />
           <AudioVisualizer />
           
           <div className="fixed inset-0 pointer-events-none z-[100]">
