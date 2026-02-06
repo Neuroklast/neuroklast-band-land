@@ -24,6 +24,7 @@ import bandDataJson from '@/assets/documents/band-data.json'
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
   genres: bandDataJson.band.genres,
+  label: bandDataJson.band.label || 'Darktunes Music Group',
   socialLinks: {
     instagram: 'https://instagram.com/neuroklast_music',
     facebook: 'https://www.facebook.com/Neuroklast/',
@@ -179,7 +180,11 @@ function App() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 1.6 }}
             >
-              <Footer socialLinks={safeSocialLinks} />
+              <Footer 
+                socialLinks={safeSocialLinks} 
+                genres={data.genres}
+                label={data.label}
+              />
             </motion.div>
 
             {isOwner && (

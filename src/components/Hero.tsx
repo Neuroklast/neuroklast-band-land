@@ -152,8 +152,12 @@ export default function Hero({ name, genres }: HeroProps) {
           <img 
             src={logoPng} 
             alt="NEUROKLAST Logo" 
-            className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] ${glitchLogo ? 'red-glitch-element' : ''}`}
+            className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] cursor-pointer touch-manipulation ${glitchLogo ? 'red-glitch-element' : ''}`}
             style={{ filter: 'drop-shadow(0 0 30px oklch(0.50 0.22 25 / 0.2))' }}
+            onClick={() => {
+              setGlitchLogo(true)
+              setTimeout(() => setGlitchLogo(false), 300)
+            }}
           />
         </motion.div>
 

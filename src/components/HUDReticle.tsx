@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion, useSpring } from 'framer-motion'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export const CyberpunkCursor = () => {
-  // Koordinaten mit Spring-Physics für weiche Bewegung
+  const isMobile = useIsMobile()
   const springConfig = { stiffness: 500, damping: 28 }
   const x = useSpring(0, springConfig)
   const y = useSpring(0, springConfig)
@@ -11,7 +12,6 @@ export const CyberpunkCursor = () => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Setzt die Zielkoordinaten für die Springs
       x.set(e.clientX)
       y.set(e.clientY)
     }
@@ -30,6 +30,10 @@ export const CyberpunkCursor = () => {
     }
   }, [x, y])
 
+  if (isMobile) {
+    return null
+  }
+
   return (
     <motion.div
       style={{
@@ -39,7 +43,7 @@ export const CyberpunkCursor = () => {
         top: 0,
         left: 0,
         zIndex: 9999,
-        pointerEvents: 'none', // Wichtig: Damit Klicks durchgehen
+        pointerEvents: 'none',
         translateX: '-50%',
         translateY: '-50%',
       }}

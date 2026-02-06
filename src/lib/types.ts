@@ -47,4 +47,5 @@ export interface BandData {
   gigs: Gig[]
   releases: Release[]
   biography?: Biography
+  label?: string
 }

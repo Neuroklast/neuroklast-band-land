@@ -3,9 +3,11 @@ import type { SocialLinks } from '@/lib/types'
 
 interface FooterProps {
   socialLinks: SocialLinks
+  genres?: string[]
+  label?: string
 }
 
-export default function Footer({ socialLinks }: FooterProps) {
+export default function Footer({ socialLinks, genres, label }: FooterProps) {
   const safeSocialLinks = socialLinks || {}
 
   return (
@@ -29,8 +31,12 @@ export default function Footer({ socialLinks }: FooterProps) {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 md:mb-8 hud-text">NEUROKLAST</h2>
 
           <div className="text-xs md:text-sm text-muted-foreground space-y-2 px-4 font-mono">
-            <p className="tracking-wider"><span className="text-primary/40">&gt;</span> HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO</p>
-            <p className="text-[10px] md:text-xs">LABEL: Darktunes Music Group</p>
+            <p className="tracking-wider">
+              <span className="text-primary/40">&gt;</span> {genres?.join(' · ') || 'HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO'}
+            </p>
+            {label && (
+              <p className="text-[10px] md:text-xs">LABEL: {label}</p>
+            )}
             <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
           </div>
         </motion.div>
