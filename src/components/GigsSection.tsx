@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion'
-import { CalendarDots, MapPin, Ticket, Plus, Trash } from '@phosphor-icons/react'
+import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { Gig } from '@/lib/types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
+import { fetchUpcomingGigs } from '@/lib/spotify'
+import { toast } from 'sonner'
 
 interface GigsSectionProps {
   gigs: Gig[]
@@ -17,6 +19,41 @@ interface GigsSectionProps {
 export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionProps) {
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+
+  useEffect(() => {
+    if (!hasLoadedOnce) {
+      loadGigsFromAPI()
+      setHasLoadedOnce(true)
+    }
+  }, [])
+
+  const loadGigsFromAPI = async () => {
+    setIsLoading(true)
+    try {
+      const apiGigs = await fetchUpcomingGigs()
+      
+      if (apiGigs.length > 0) {
+        const existingIds = new Set(gigs.map(g => g.id))
+        const newGigs = apiGigs.filter(g => !existingIds.has(g.id))
+        
+        if (newGigs.length > 0) {
+          onUpdate([...gigs, ...newGigs])
+          toast.success(`${newGigs.length} upcoming gig${newGigs.length > 1 ? 's' : ''} loaded from concert APIs`)
+        } else {
+          toast.info('No new gigs found')
+        }
+      } else {
+        toast.info('No upcoming concerts found at this time')
+      }
+    } catch (error) {
+      console.error('Failed to load gigs:', error)
+      toast.error('Failed to load upcoming gigs')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const upcomingGigs = gigs
     .filter(gig => !isPast(new Date(gig.date)))
@@ -49,20 +86,41 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
           >
             UPCOMING SHOWS
           </motion.h2>
-          {editMode && (
+          <div className="flex gap-2">
             <Button
-              onClick={() => setIsAdding(true)}
-              className="bg-primary hover:bg-accent"
+              onClick={loadGigsFromAPI}
+              disabled={isLoading}
+              variant="outline"
+              className="border-primary/30 hover:bg-primary/10"
             >
-              <Plus className="mr-2" size={20} />
-              Add Gig
+              <ArrowsClockwise className={`mr-2 ${isLoading ? 'animate-spin' : ''}`} size={20} />
+              {isLoading ? 'Loading...' : 'Refresh Gigs'}
             </Button>
-          )}
+            {editMode && (
+              <Button
+                onClick={() => setIsAdding(true)}
+                className="bg-primary hover:bg-accent"
+              >
+                <Plus className="mr-2" size={20} />
+                Add Gig
+              </Button>
+            )}
+          </div>
         </div>
 
         <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-12 h-0.5" />
 
-        {upcomingGigs.length === 0 ? (
+        {isLoading && upcomingGigs.length === 0 ? (
+          <motion.div 
+            className="text-center py-20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <ArrowsClockwise size={64} className="mx-auto mb-6 text-primary animate-spin" />
+            <p className="text-muted-foreground text-lg">Loading upcoming shows...</p>
+          </motion.div>
+        ) : upcomingGigs.length === 0 ? (
           <motion.div 
             className="text-center py-20"
             initial={{ opacity: 0 }}

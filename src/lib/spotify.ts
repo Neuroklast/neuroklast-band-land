@@ -1,6 +1,7 @@
-import type { Release } from './types'
+import type { Release, Gig } from './types'
 
 const SPOTIFY_ARTIST_ID = '5xfQSijbVetvH1QAS58n30'
+const ARTIST_NAME = 'NEUROKLAST'
 
 export async function fetchSpotifyReleases(): Promise<Release[]> {
   try {
@@ -51,5 +52,59 @@ Return ONLY valid JSON, no explanations.`
   } catch (error) {
     console.error('Error fetching Spotify releases:', error)
     throw error
+  }
+}
+
+export async function fetchUpcomingGigs(): Promise<Gig[]> {
+  try {
+    const artistName = ARTIST_NAME
+    
+    const promptText = `You are a concert data fetcher. Find upcoming concerts and tour dates for the artist "${artistName}".
+
+Search for upcoming concerts using these sources:
+1. Songkick API (https://www.songkick.com/developer) - search for artist and get upcoming events
+2. Bandsintown API - search for artist events
+3. Any other available concert/event APIs
+
+For the artist "${artistName}", find all upcoming concerts (future dates only).
+
+Return data as JSON with this structure:
+{
+  "gigs": [
+    {
+      "id": "unique_id",
+      "date": "YYYY-MM-DDTHH:mm:ss",
+      "venue": "Venue Name",
+      "location": "City, Country",
+      "ticketUrl": "https://ticket-url.com"
+    }
+  ]
+}
+
+IMPORTANT: 
+- Only include future dates (after today)
+- date must be in ISO 8601 format (YYYY-MM-DDTHH:mm:ss)
+- If no concerts found, return empty array: {"gigs": []}
+- Return ONLY valid JSON, no explanations.`
+
+    const response = await window.spark.llm(promptText, 'gpt-4o', true)
+    const data = JSON.parse(response)
+    
+    if (!data.gigs || !Array.isArray(data.gigs)) {
+      return []
+    }
+
+    const gigs: Gig[] = data.gigs.map((item: any) => ({
+      id: item.id || `gig-${Date.now()}-${Math.random()}`,
+      date: item.date,
+      venue: item.venue,
+      location: item.location,
+      ticketUrl: item.ticketUrl,
+    }))
+
+    return gigs
+  } catch (error) {
+    console.error('Error fetching upcoming gigs:', error)
+    return []
   }
 }
