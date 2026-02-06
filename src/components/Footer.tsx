@@ -20,6 +20,12 @@ export default function Footer({ socialLinks, genres, label }: FooterProps) {
             FOOTER_SECTION
           </div>
         </div>
+
+        <div className="absolute bottom-4 left-4">
+          <div className="font-mono text-[10px] md:text-xs text-primary/60 tracking-wider">
+            PROTOCOL: HELLFIRE
+          </div>
+        </div>
         
         <motion.div
           className="text-center"

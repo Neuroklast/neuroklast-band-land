@@ -161,9 +161,28 @@ export default function Hero({ name, genres }: HeroProps) {
                 src={logoPng} 
                 alt="NEUROKLAST Logo" 
                 className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
-
               />
-             
+              <div className="absolute inset-0 pointer-events-none z-20">
+                <div 
+                  className="absolute inset-0 bg-repeat opacity-15"
+                  style={{
+                    backgroundImage: `repeating-linear-gradient(
+                      0deg,
+                      transparent,
+                      transparent 2px,
+                      oklch(0 0 0 / 0.8) 2px,
+                      oklch(0 0 0 / 0.8) 3px
+                    )`
+                  }}
+                />
+                <div 
+                  className="absolute inset-0 opacity-12"
+                  style={{
+                    backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.5) 1px, transparent 1px)`,
+                    backgroundSize: '4px 4px'
+                  }}
+                />
+              </div>
             </div>
           </div>
         </motion.div>
