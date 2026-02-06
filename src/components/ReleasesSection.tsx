@@ -24,7 +24,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const isInView = useInView(sectionRef, { once: true })
 
   const titleText = 'RELEASES'
   const { displayedText: displayedTitle } = useTypingEffect(

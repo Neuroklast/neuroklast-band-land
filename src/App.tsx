@@ -17,8 +17,8 @@ import type { BandData } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
 const defaultBandData: BandData = {
-  name: 'NEUROKLAST',
-  genres: ['HARD TECHNO', 'CYBERPUNK', 'DNB', 'DARK ELECTRO'],
+  name: bandDataJson.band.name,
+  genres: bandDataJson.band.genres,
   socialLinks: {
     instagram: 'https://instagram.com/neuroklast_music',
     facebook: 'https://www.facebook.com/Neuroklast/',
