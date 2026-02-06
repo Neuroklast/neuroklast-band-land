@@ -29,19 +29,20 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
     }
   }, [hasAutoLoaded, releases.length])
 
-  const sortedReleases = [...releases].sort(
+  const sortedReleases = [...(releases || [])].sort(
     (a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
   )
 
   const handleDelete = (id: string) => {
-    onUpdate(releases.filter(r => r.id !== id))
+    onUpdate((releases || []).filter(r => r.id !== id))
   }
 
   const handleSave = (release: Release) => {
+    const currentReleases = releases || []
     if (editingRelease) {
-      onUpdate(releases.map(r => r.id === release.id ? release : r))
+      onUpdate(currentReleases.map(r => r.id === release.id ? release : r))
     } else {
-      onUpdate([...releases, release])
+      onUpdate([...currentReleases, release])
     }
     setEditingRelease(null)
     setIsAdding(false)
@@ -59,10 +60,11 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
         return
       }
 
-      const existingIds = new Set(releases.map(r => r.id))
+      const currentReleases = releases || []
+      const existingIds = new Set(currentReleases.map(r => r.id))
       const newReleases = spotifyReleases.filter(r => !existingIds.has(r.id))
       
-      const updatedReleases = releases.map(existing => {
+      const updatedReleases = currentReleases.map(existing => {
         const spotifyMatch = spotifyReleases.find(s => s.id === existing.id)
         if (spotifyMatch) {
           return {

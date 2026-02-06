@@ -35,11 +35,12 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
       const apiGigs = await fetchUpcomingGigs()
       
       if (apiGigs.length > 0) {
-        const existingIds = new Set(gigs.map(g => g.id))
+        const currentGigs = gigs || []
+        const existingIds = new Set(currentGigs.map(g => g.id))
         const newGigs = apiGigs.filter(g => !existingIds.has(g.id))
         
         if (newGigs.length > 0) {
-          onUpdate([...gigs, ...newGigs])
+          onUpdate([...currentGigs, ...newGigs])
           toast.success(`${newGigs.length} upcoming gig${newGigs.length > 1 ? 's' : ''} loaded from concert APIs`)
         } else {
           toast.info('No new gigs found')
@@ -55,19 +56,20 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
     }
   }
 
-  const upcomingGigs = gigs
+  const upcomingGigs = (gigs || [])
     .filter(gig => !isPast(new Date(gig.date)))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   const handleDelete = (id: string) => {
-    onUpdate(gigs.filter(g => g.id !== id))
+    onUpdate((gigs || []).filter(g => g.id !== id))
   }
 
   const handleSave = (gig: Gig) => {
+    const currentGigs = gigs || []
     if (editingGig) {
-      onUpdate(gigs.map(g => g.id === gig.id ? gig : g))
+      onUpdate(currentGigs.map(g => g.id === gig.id ? gig : g))
     } else {
-      onUpdate([...gigs, gig])
+      onUpdate([...currentGigs, gig])
     }
     setEditingGig(null)
     setIsAdding(false)
