@@ -4,13 +4,14 @@ const ARTIST_NAME = 'NEUROKLAST'
 
 export async function fetchITunesReleases(): Promise<Release[]> {
   try {
-    const searchTerm = encodeURIComponent(ARTIST_NAME)
     const response = await fetch(
-      `https://itunes.apple.com/search?term=${searchTerm}&entity=song&limit=50`
+      `/api/itunes?term=${encodeURIComponent(ARTIST_NAME)}`
     )
     
     if (!response.ok) {
-      throw new Error(`iTunes API error: ${response.status}`)
+      const errorText = await response.text()
+      console.error('Internal iTunes API call failed:', response.status, errorText)
+      throw new Error(`Internal iTunes API error: ${response.status}`)
     }
 
     const data = await response.json()
@@ -48,7 +49,10 @@ export async function fetchITunesReleases(): Promise<Release[]> {
 
     return releases
   } catch (error) {
-    console.error('Error fetching iTunes releases:', error)
+    console.error('Error fetching iTunes releases from internal API:', error)
+    if (error instanceof Error) {
+      console.error('Error details:', error.message)
+    }
     return []
   }
 }
