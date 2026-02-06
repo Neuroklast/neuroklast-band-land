@@ -39,7 +39,12 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
   const [isEditing, setIsEditing] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-  const { displayedText } = useTypingEffect('CONNECT', 100, 300)
+  const titleText = 'CONNECT'
+  const { displayedText: displayedTitle } = useTypingEffect(
+    isInView ? titleText : '',
+    50,
+    100
+  )
 
   const safeSocialLinks = socialLinks || {}
   const activePlatforms = socialPlatforms.filter(platform => safeSocialLinks[platform.key])
@@ -49,8 +54,8 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
           <motion.h2 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold scanline-text dot-matrix-text"
-            data-text={displayedText}
+            className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text ${glitchActive ? 'glitch-text-effect' : ''}`}
+            data-text={`> ${displayedTitle}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
@@ -59,9 +64,9 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
             }}
           >
             <ChromaticText intensity={1.5}>
-              {displayedText}
-              {displayedText.length < 7 && <span className="terminal-cursor"></span>}
+              &gt; {displayedTitle}
             </ChromaticText>
+            <span className="animate-pulse">_</span>
           </motion.h2>
           {editMode && (
             <Button

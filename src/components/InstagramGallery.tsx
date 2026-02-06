@@ -46,7 +46,7 @@ export default function InstagramGallery() {
       className="py-20 px-4 relative"
     >
       <div className="max-w-6xl mx-auto">
-        <motion.div
+         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6 }}
@@ -62,7 +62,7 @@ export default function InstagramGallery() {
               <Images size={32} className="text-primary" weight="fill" />
             </motion.div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
-              data-text={displayedTitle}
+
               style={{
                 textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
               }}
@@ -77,7 +77,6 @@ export default function InstagramGallery() {
             &gt; Visual identity of NEUROKLAST
           </p>
         </motion.div>
-
         {photos.length === 0 && (
           <div className="text-center text-muted-foreground py-12">
             <p className="font-mono">&gt; No images found in gallery folder</p>

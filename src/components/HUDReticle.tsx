@@ -76,3 +76,5 @@ export const CyberpunkCursor = () => {
     </motion.div>
   )
 }
+
+export default CyberpunkCursor
