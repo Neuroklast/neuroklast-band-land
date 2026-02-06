@@ -19,6 +19,13 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Progression**: Logo animates in → Genre tags fade in → Red accent lines draw attention
 - **Success criteria**: Logo is prominently displayed, genre tags are readable, visual hierarchy is clear
 
+### Biography Section
+- **Functionality**: Display band history, story, founding year, members, and achievements with edit capabilities
+- **Purpose**: Tell the band's story and build connection with fans through narrative and background
+- **Trigger**: User scrolls to biography section
+- **Progression**: Section appears → User reads band story → Views founding year and members → Explores achievements
+- **Success criteria**: Story is readable and engaging, founding year is displayed, members list is clear, achievements are formatted as bullet points
+
 ### Upcoming Gigs Display
 - **Functionality**: List of upcoming show dates with venue, location, and ticket links
 - **Purpose**: Drive ticket sales and inform fans of tour schedule
@@ -41,7 +48,7 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Success criteria**: All links work, icons are recognizable, hover states provide feedback
 
 ### Content Management
-- **Functionality**: Editable sections for gigs, releases, and social links (owner-only)
+- **Functionality**: Editable sections for biography, gigs, releases, and social links (owner-only)
 - **Purpose**: Allow band to update content without code changes
 - **Trigger**: Band owner accesses page and sees edit controls
 - **Progression**: Owner clicks edit → Modal/form appears → Enters data → Saves → Content updates
@@ -53,6 +60,8 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Broken Social Links**: Validate URLs on save, show warning for invalid links
 - **Mobile Navigation**: Hamburger menu for smaller screens, collapsible sections
 - **Slow Image Loading**: Skeleton loaders for images, blur-up effect on load
+- **Empty Biography**: Show default placeholder text encouraging owner to add their story
+- **Long Biography Text**: Proper text wrapping and readable line lengths with prose formatting
 
 ## Design Direction
 The design should evoke the raw energy of industrial techno - dark, aggressive, and unapologetically bold. Think underground clubs, distorted basslines, and neon in the darkness. The interface should feel like a digital manifestation of hard techno culture: precise, minimal, with sudden bursts of intensity through the red accent color.

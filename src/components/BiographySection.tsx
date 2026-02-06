@@ -1,0 +1,123 @@
+import { motion } from 'framer-motion'
+import { PencilSimple } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import BiographyEditDialog from '@/components/BiographyEditDialog'
+import { useState } from 'react'
+import type { Biography } from '@/lib/types'
+
+interface BiographySectionProps {
+  biography?: Biography
+  editMode?: boolean
+  onUpdate?: (biography: Biography) => void
+}
+
+const defaultBiography: Biography = {
+  story: `NEUROKLAST emerged from the underground, forging a relentless sound that merges hard techno, industrial, drum and bass, and dark electro into a singular sonic assault. Born from a vision to push boundaries and challenge the status quo, NEUROKLAST delivers raw, uncompromising energy designed for the darkest dancefloors and most intense festival stages.
+
+With a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.`,
+  founded: '2020',
+  achievements: []
+}
+
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  const handleUpdate = (updatedBiography: Biography) => {
+    onUpdate?.(updatedBiography)
+    setIsEditDialogOpen(false)
+  }
+
+  return (
+    <section id="biography" className="relative py-20 px-4 border-t border-border">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-4xl md:text-5xl text-foreground">BIOGRAPHY</h2>
+            {editMode && (
+              <Button
+                onClick={() => setIsEditDialogOpen(true)}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <PencilSimple size={16} />
+                Edit
+              </Button>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="md:col-span-2">
+              <Card className="bg-card border-border p-8 hover:border-primary/50 transition-colors duration-300">
+                <div className="prose prose-invert max-w-none">
+                  {biography.story.split('\n\n').map((paragraph, index) => (
+                    <p key={index} className="text-foreground/90 leading-relaxed mb-4 last:mb-0">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              {biography.founded && (
+                <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                  <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-2">
+                    Founded
+                  </h3>
+                  <p className="text-2xl font-heading text-primary">{biography.founded}</p>
+                </Card>
+              )}
+
+              {biography.members && biography.members.length > 0 && (
+                <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                  <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                    Members
+                  </h3>
+                  <ul className="space-y-2">
+                    {biography.members.map((member, index) => (
+                      <li key={index} className="text-foreground/90">
+                        {member}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
+
+              {biography.achievements && biography.achievements.length > 0 && (
+                <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                  <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                    Achievements
+                  </h3>
+                  <ul className="space-y-3">
+                    {biography.achievements.map((achievement, index) => (
+                      <li key={index} className="text-foreground/90 text-sm flex gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span className="flex-1">{achievement}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {editMode && (
+        <BiographyEditDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          biography={biography}
+          onSave={handleUpdate}
+        />
+      )}
+    </section>
+  )
+}

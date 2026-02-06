@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
+import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
 import SocialSection from '@/components/SocialSection'
@@ -23,7 +24,13 @@ const defaultBandData: BandData = {
     linktr: 'https://linktr.ee/neuroklast'
   },
   gigs: [],
-  releases: []
+  releases: [],
+  biography: {
+    story: `NEUROKLAST emerged from the underground, forging a relentless sound that merges hard techno, industrial, drum and bass, and dark electro into a singular sonic assault. Born from a vision to push boundaries and challenge the status quo, NEUROKLAST delivers raw, uncompromising energy designed for the darkest dancefloors and most intense festival stages.
+
+With a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.`,
+    founded: '2020'
+  }
 }
 
 function App() {
@@ -56,6 +63,12 @@ function App() {
         />
 
         <main className="relative">
+          <BiographySection
+            biography={data.biography}
+            editMode={editMode && isOwner}
+            onUpdate={(biography) => setBandData((current) => ({ ...(current || defaultBandData), biography }))}
+          />
+
           <GigsSection 
             gigs={data.gigs}
             editMode={editMode && isOwner}

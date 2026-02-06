@@ -32,10 +32,18 @@ export interface SocialLinks {
   twitter?: string
 }
 
+export interface Biography {
+  story: string
+  founded?: string
+  members?: string[]
+  achievements?: string[]
+}
+
 export interface BandData {
   name: string
   genres: string[]
   socialLinks: SocialLinks
   gigs: Gig[]
   releases: Release[]
+  biography?: Biography
 }
