@@ -150,7 +150,7 @@ export default function Hero({ name, genres }: HeroProps) {
           transition={{ duration: 1, delay: 0.2 }}
         >
           <div 
-            className="relative cursor-pointer touch-manipulation chromatic-aberration-hover"
+            className="relative cursor-pointer touch-manipulation"
             onClick={() => {
               setGlitchLogo(true)
               setTimeout(() => setGlitchLogo(false), 300)
