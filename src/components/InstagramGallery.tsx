@@ -3,7 +3,7 @@ import { motion, useInView } from 'framer-motion'
 import { Images } from '@phosphor-icons/react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 
-const galleryImages = import.meta.glob('@/assets/images/gallery/*.(jpg|jpeg|png|gif|webp)', { eager: true, as: 'url' })
+const galleryModules = import.meta.glob('/src/assets/images/gallery/*.{jpg,jpeg,png,gif,webp}', { eager: true })
 
 export default function InstagramGallery() {
   const sectionRef = useRef(null)
@@ -29,11 +29,11 @@ export default function InstagramGallery() {
     return () => clearInterval(interval)
   }, [])
 
-  const photos = Object.entries(galleryImages).map(([path, url], index) => {
+  const photos = Object.entries(galleryModules).map(([path, module]: [string, any], index) => {
     const filename = path.split('/').pop()?.split('.')[0] || `image-${index}`
     return {
       id: `gallery-${index}`,
-      imageUrl: url as string,
+      imageUrl: module.default as string,
       caption: filename.replace(/-|_/g, ' ').toUpperCase()
     }
   })

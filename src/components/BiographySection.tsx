@@ -6,6 +6,7 @@ import BiographyEditDialog from '@/components/BiographyEditDialog'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import type { Biography } from '@/lib/types'
+import bandDataJson from '@/assets/documents/band-data.json'
 
 interface BiographySectionProps {
   biography?: Biography
@@ -14,16 +15,10 @@ interface BiographySectionProps {
 }
 
 const defaultBiography: Biography = {
-  story: `NEUROKLAST emerged from the underground, forging a relentless sound that merges hard techno, industrial, drum and bass, and dark electro into a singular sonic assault. Born from a vision to push boundaries and challenge the status quo, NEUROKLAST delivers raw, uncompromising energy designed for the darkest dancefloors and most intense festival stages.
-
-With a commitment to innovation and experimentation, each performance is a journey through distorted rhythms, heavy basslines, and hypnotic atmospheres. NEUROKLAST represents the collision of machine precision and human emotion, creating an experience that transcends typical electronic music boundaries.`,
-  founded: '2020',
-  members: [
-    'Member 1',
-    'Member 2',
-    'Member 3'
-  ],
-  achievements: []
+  story: bandDataJson.biography.story,
+  founded: bandDataJson.biography.founded,
+  members: bandDataJson.biography.members,
+  achievements: bandDataJson.biography.achievements
 }
 
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
