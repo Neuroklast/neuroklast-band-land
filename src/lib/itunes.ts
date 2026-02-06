@@ -6,7 +6,7 @@ export async function fetchITunesReleases(): Promise<Release[]> {
   try {
     const searchTerm = encodeURIComponent(ARTIST_NAME)
     const response = await fetch(
-      `https://itunes.apple.com/search?term=${searchTerm}&entity=song&limit=50`
+      `https://corsproxy.io/?${encodeURIComponent(`https://itunes.apple.com/search?term=${searchTerm}&entity=song&limit=50`)}`
     )
     
     if (!response.ok) {

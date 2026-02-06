@@ -1,14 +1,12 @@
 import { motion, useInView } from 'framer-motion'
-import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise } from '@phosphor-icons/react'
+import { CalendarDots, MapPin, Ticket, Plus, Trash } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { Gig } from '@/lib/types'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
-import { fetchUpcomingGigs } from '@/lib/spotify'
-import { toast } from 'sonner'
 
 interface GigsSectionProps {
   gigs: Gig[]
@@ -19,44 +17,8 @@ interface GigsSectionProps {
 export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionProps) {
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-
-  useEffect(() => {
-    if (!hasLoadedOnce) {
-      loadGigsFromAPI()
-      setHasLoadedOnce(true)
-    }
-  }, [])
-
-  const loadGigsFromAPI = async () => {
-    setIsLoading(true)
-    try {
-      const apiGigs = await fetchUpcomingGigs()
-      
-      if (apiGigs.length > 0) {
-        const currentGigs = gigs || []
-        const existingIds = new Set(currentGigs.map(g => g.id))
-        const newGigs = apiGigs.filter(g => !existingIds.has(g.id))
-        
-        if (newGigs.length > 0) {
-          onUpdate([...currentGigs, ...newGigs])
-          toast.success(`${newGigs.length} upcoming gig${newGigs.length > 1 ? 's' : ''} loaded from concert APIs`)
-        } else {
-          toast.info('No new gigs found')
-        }
-      } else {
-        toast.info('No upcoming concerts found at this time')
-      }
-    } catch (error) {
-      console.error('Failed to load gigs:', error)
-      toast.error('Failed to load upcoming gigs')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const upcomingGigs = (gigs || [])
     .filter(gig => !isPast(new Date(gig.date)))
@@ -89,17 +51,8 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
           >
             UPCOMING SHOWS
           </motion.h2>
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              onClick={loadGigsFromAPI}
-              disabled={isLoading}
-              variant="outline"
-              className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
-            >
-              <ArrowsClockwise className={`${isLoading ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
-              <span className="hidden md:inline">{isLoading ? 'Loading...' : 'Refresh'}</span>
-            </Button>
-            {editMode && (
+          {editMode && (
+            <div className="flex gap-2 flex-wrap">
               <Button
                 onClick={() => setIsAdding(true)}
                 className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
@@ -107,23 +60,13 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
                 <Plus className="mr-0 md:mr-2" size={20} />
                 <span className="hidden md:inline">Add Gig</span>
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-12 h-0.5" />
 
-        {isLoading && upcomingGigs.length === 0 ? (
-          <motion.div 
-            className="text-center py-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <ArrowsClockwise size={64} className="mx-auto mb-6 text-primary animate-spin" />
-            <p className="text-muted-foreground text-lg">Loading upcoming shows...</p>
-          </motion.div>
-        ) : upcomingGigs.length === 0 ? (
+        {upcomingGigs.length === 0 ? (
           <motion.div 
             className="text-center py-20"
             initial={{ opacity: 0 }}
