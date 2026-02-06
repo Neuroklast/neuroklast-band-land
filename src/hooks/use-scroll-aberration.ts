@@ -2,40 +2,34 @@ import { useEffect, useState } from 'react'
 
 export function useScrollAberration() {
   const [scrollY, setScrollY] = useState(0)
-  useEffect(() => {
+  const [aberrationIntensity, setAberrationIntensity] = useState(0)
 
   useEffect(() => {
     let lastScrollY = window.scrollY
-      const currentScrollY = 
     let rafId: number
 
-
-      lastTime = currentTime
+    const handleScroll = () => {
       cancelAnimationFrame(rafId)
+      
+      rafId = requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY
+        const scrollDelta = Math.abs(currentScrollY - lastScrollY)
+        const intensity = Math.min(scrollDelta / 100, 1)
+        
         setScrollY(currentScrollY)
         setAberrationIntensity(intensity)
+        lastScrollY = currentScrollY
+      })
     }
 
-        if (prev <= 0.01) return 0
-      })
-
-
-    
-      window.removeEventListener('
-      cancelAnimationFrame(rafId)
-  }, [])
-      })
-
-
-
+    const decayAberration = () => {
       setAberrationIntensity(prev => {
-
+        if (prev <= 0.01) return 0
         return prev * 0.95
       })
     }
 
     const decayInterval = setInterval(decayAberration, 50)
-
     window.addEventListener('scroll', handleScroll, { passive: true })
     
     return () => {
