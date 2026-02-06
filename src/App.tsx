@@ -1,5 +1,4 @@
-import { useKV } from '@github/spark/hooks'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import Navigation from '@/components/Navigation'
@@ -9,7 +8,6 @@ import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
 import SocialSection from '@/components/SocialSection'
 import Footer from '@/components/Footer'
-import EditControls from '@/components/EditControls'
 import type { BandData } from '@/lib/types'
 
 const defaultBandData: BandData = {
@@ -35,17 +33,8 @@ With a commitment to innovation and experimentation, each performance is a journ
 }
 
 function App() {
-  const [bandData, setBandData] = useKV<BandData>('band-data', defaultBandData)
-  const [isOwner, setIsOwner] = useState(false)
+  const [bandData, setBandData] = useState<BandData>(defaultBandData)
   const [editMode, setEditMode] = useState(false)
-
-  useEffect(() => {
-    window.spark.user().then(user => {
-      if (user) {
-        setIsOwner(user.isOwner)
-      }
-    })
-  }, [])
 
   const data = bandData || defaultBandData
 
@@ -67,37 +56,30 @@ function App() {
         <main className="relative">
           <BiographySection
             biography={data.biography}
-            editMode={editMode && isOwner}
+            editMode={editMode}
             onUpdate={(biography) => setBandData((current) => ({ ...(current || defaultBandData), biography }))}
           />
 
           <GigsSection 
             gigs={data.gigs}
-            editMode={editMode && isOwner}
+            editMode={editMode}
             onUpdate={(gigs) => setBandData((current) => ({ ...(current || defaultBandData), gigs }))}
           />
 
           <ReleasesSection 
             releases={data.releases}
-            editMode={editMode && isOwner}
+            editMode={editMode}
             onUpdate={(releases) => setBandData((current) => ({ ...(current || defaultBandData), releases }))}
           />
 
           <SocialSection 
             socialLinks={data.socialLinks}
-            editMode={editMode && isOwner}
+            editMode={editMode}
             onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
           />
         </main>
 
         <Footer socialLinks={data.socialLinks} />
-
-        {isOwner && (
-          <EditControls 
-            editMode={editMode}
-            onToggleEdit={() => setEditMode(!editMode)}
-          />
-        )}
       </motion.div>
     </div>
   )
