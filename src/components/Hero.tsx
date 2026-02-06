@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaretDown } from '@phosphor-icons/react'
 import logoPng from '@/assets/images/NK_BAPHOMET.png'
-import NeuroklastTitle from '@/components/NeuroklastTitle'
+import titlePng from '@/assets/images/titel.png'
 
 interface HeroProps {
   name: string
@@ -98,7 +98,7 @@ export default function Hero({ name, genres }: HeroProps) {
           <img 
             src={logoPng} 
             alt="NEUROKLAST Logo" 
-            className={`w-68 h-auto sm:w-84 md:w-80 lg:w-96 xl:w-[28rem] drop-shadow-[0_0_80px_rgba(220,38,38,0.4)] ${glitchLogo ? 'glitch-effect' : ''}`}
+            className={`w-[25.5rem] h-auto sm:w-[31.5rem] md:w-[30rem] lg:w-[36rem] xl:w-[42rem] drop-shadow-[0_0_80px_rgba(220,38,38,0.4)] ${glitchLogo ? 'glitch-effect' : ''}`}
           />
         </motion.div>
 
@@ -108,9 +108,11 @@ export default function Hero({ name, genres }: HeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <div className={`w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl holographic-effect ${glitchTitle ? 'glitch-effect' : ''}`}>
-            <NeuroklastTitle className="w-full h-auto" />
-          </div>
+          <img 
+            src={titlePng} 
+            alt="NEUROKLAST" 
+            className={`w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl h-auto holographic-effect ${glitchTitle ? 'glitch-effect' : ''}`}
+          />
         </motion.div>
 
         <motion.div
