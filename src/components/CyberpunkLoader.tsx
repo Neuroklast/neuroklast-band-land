@@ -35,13 +35,13 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
     const glitchInterval = setInterval(() => {
       if (Math.random() > 0.6) {
         setGlitch(true)
-        setTimeout(() => setGlitch(false), 150)
+        setTimeout(() => setGlitch(false), 50)
       }
-    }, 800)
+    }, 400)
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev + Math.random() * 5
+        const newProgress = prev + Math.random() * 8
         const progressIndex = Math.floor((newProgress / 100) * hackingTexts.length)
         if (progressIndex < hackingTexts.length) {
           setHackingText(hackingTexts[progressIndex])
