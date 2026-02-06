@@ -23,11 +23,11 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
 
   useEffect(() => {
-    if (!hasAutoLoaded && releases.length === 0) {
+    if (!hasAutoLoaded && (!releases || releases.length === 0)) {
       setHasAutoLoaded(true)
       handleFetchSpotifyReleases(true)
     }
-  }, [hasAutoLoaded, releases.length])
+  }, [hasAutoLoaded, releases])
 
   const sortedReleases = [...(releases || [])].sort(
     (a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()

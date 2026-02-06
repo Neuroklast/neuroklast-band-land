@@ -91,7 +91,7 @@ export default function Hero({ name, genres }: HeroProps) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.9 }}
         >
-          {genres.map((genre, index) => (
+          {(genres || []).map((genre, index) => (
             <motion.div
               key={genre}
               initial={{ opacity: 0, y: 10 }}

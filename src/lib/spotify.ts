@@ -32,26 +32,41 @@ Return data as JSON with this structure:
 Return ONLY valid JSON, no explanations.`
 
     const response = await window.spark.llm(promptText, 'gpt-4o', true)
-    const data = JSON.parse(response)
     
-    if (!data.releases || !Array.isArray(data.releases)) {
-      throw new Error('Invalid response format')
+    let data
+    try {
+      data = JSON.parse(response)
+    } catch (parseError) {
+      console.error('Failed to parse Spotify API response:', parseError)
+      return []
+    }
+    
+    if (!data || typeof data !== 'object') {
+      console.warn('Invalid data format from Spotify API')
+      return []
     }
 
-    const releases: Release[] = data.releases.map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      artwork: item.artwork,
-      releaseDate: item.releaseDate,
-      streamingLinks: {
-        spotify: item.spotifyUrl,
-      },
-    }))
+    if (!data.releases || !Array.isArray(data.releases)) {
+      console.warn('No releases array in response')
+      return []
+    }
+
+    const releases: Release[] = data.releases
+      .filter((item: any) => item && item.id && item.title)
+      .map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        artwork: item.artwork || '',
+        releaseDate: item.releaseDate || new Date().toISOString().split('T')[0],
+        streamingLinks: {
+          spotify: item.spotifyUrl || '',
+        },
+      }))
 
     return releases
   } catch (error) {
     console.error('Error fetching Spotify releases:', error)
-    throw error
+    return []
   }
 }
 
@@ -88,19 +103,34 @@ IMPORTANT:
 - Return ONLY valid JSON, no explanations.`
 
     const response = await window.spark.llm(promptText, 'gpt-4o', true)
-    const data = JSON.parse(response)
     
-    if (!data.gigs || !Array.isArray(data.gigs)) {
+    let data
+    try {
+      data = JSON.parse(response)
+    } catch (parseError) {
+      console.error('Failed to parse concert API response:', parseError)
+      return []
+    }
+    
+    if (!data || typeof data !== 'object') {
+      console.warn('Invalid data format from concert APIs')
       return []
     }
 
-    const gigs: Gig[] = data.gigs.map((item: any) => ({
-      id: item.id || `gig-${Date.now()}-${Math.random()}`,
-      date: item.date,
-      venue: item.venue,
-      location: item.location,
-      ticketUrl: item.ticketUrl,
-    }))
+    if (!data.gigs || !Array.isArray(data.gigs)) {
+      console.warn('No gigs array in response')
+      return []
+    }
+
+    const gigs: Gig[] = data.gigs
+      .filter((item: any) => item && item.venue && item.location && item.date)
+      .map((item: any) => ({
+        id: item.id || `gig-${Date.now()}-${Math.random()}`,
+        date: item.date,
+        venue: item.venue,
+        location: item.location,
+        ticketUrl: item.ticketUrl || undefined,
+      }))
 
     return gigs
   } catch (error) {
