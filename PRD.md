@@ -41,11 +41,11 @@ This is a content showcase with interactive elements - social links, upcoming da
 - **Success criteria**: Album art is high quality, links open to correct platforms (no Apple Music links shown), layout is visually appealing, iTunes sync successfully imports new releases without duplicates, Darktunes Music Group label is displayed in footer
 
 ### Social Media Hub
-- **Functionality**: Comprehensive social media link collection (Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, Linktr.ee) plus an Instagram gallery displaying the first 3 posts from the NEUROKLAST Instagram profile
-- **Purpose**: Increase social following, provide easy access to all platforms, and showcase visual content from Instagram
-- **Trigger**: User scrolls to Instagram gallery or social footer section
-- **Progression**: Gallery images display with hover effects → User clicks image → Opens Instagram post | User clicks social icon → Opens in new tab
-- **Success criteria**: All links work, icons are recognizable, hover states provide feedback, Instagram images load properly with captions
+- **Functionality**: Comprehensive social media link collection (Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, Linktr.ee) plus an Instagram-style gallery displaying images exclusively from the `/src/assets/images/gallery/` directory with glitch effects
+- **Purpose**: Increase social following, provide easy access to all platforms, and showcase visual content in a dedicated gallery
+- **Trigger**: User scrolls to gallery or social footer section
+- **Progression**: Gallery images display with glitch/scale-in effects → User hovers image (random glitch may trigger) → User clicks image → Opens full image | User clicks social icon → Opens in new tab
+- **Success criteria**: All links work, icons are recognizable, hover states provide feedback, gallery loads only images from gallery subdirectory with proper naming, glitch effects trigger periodically
 
 ### Content Management
 - **Functionality**: Editable sections for biography, gigs, releases, and social links (owner-only)
@@ -94,17 +94,20 @@ Typography should convey technical precision and industrial strength while maint
   - Labels (Genre Tags): Inter Medium/12px/wide (0.1em) spacing, uppercase
 
 ## Animations
-Animations should feel deliberate and mechanical, like industrial machinery - precise timing with occasional aggressive bursts. The site feels alive with glitch effects and smooth scroll-triggered animations throughout.
+Animations should feel deliberate and mechanical, like industrial machinery - precise timing with occasional aggressive bursts. The site features dynamic glitch effects on all major elements and terminal-style typing animations for section headings that create a cyberpunk aesthetic.
 
 - **Page Load**: Staggered fade-in from top to bottom, hero elements cascade in (200ms delays)
 - **Logo Animation**: Larger logo (up to 28rem on desktop) with periodic glitch effects that trigger randomly every 3-4 seconds
-- **Text Glitch**: Band name glitches with RGB color separation effect occasionally for energy
-- **Section Reveals**: Slide-up with fade on scroll intersection using framer-motion's useInView hook (300ms ease-out)
-- **Hover States**: Sharp, quick color transitions (150ms) for links and buttons; scale slightly (1.02x) for cards
+- **Text Glitch**: Band name and all section headings glitch with RGB color separation effect occasionally for energy
+- **Section Headings**: Terminal-style typing effect (40-50ms per character) that types out heading text when sections scroll into view, with animated cursor
+- **Element Glitch**: Random glitch effects on images and cards throughout the page (every 3-5 seconds)
+- **Section Reveals**: Slide-up with fade on scroll intersection using framer-motion's useInView hook (300ms ease-out), combined with scale-in for glitch aesthetic
+- **Hover States**: Sharp, quick color transitions (150ms) for links and buttons; scale slightly (1.02-1.05x) for cards
 - **Red Accent Lines**: Draw in on load using SVG line animation (800ms)
-- **Social Icons**: Quick pop on hover with color shift (100ms)
+- **Social Icons**: Quick pop on hover with color shift (100ms), scale-in on reveal
 - **Skeleton to Content**: Smooth cross-fade when images load (400ms)
 - **Scroll Effects**: All major sections (Biography, Gigs, Releases, Instagram, Social) animate into view with staggered child animations
+- **Cyber Borders**: Pulsing cyber-glow effects on hovered elements using CSS animations
 
 ## Component Selection
 

@@ -9,6 +9,7 @@ import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
 import { fetchITunesReleases } from '@/lib/itunes'
 import { toast } from 'sonner'
+import { useTypingEffect } from '@/hooks/use-typing-effect'
 
 interface ReleasesSectionProps {
   releases: Release[]
@@ -21,8 +22,27 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
+  const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+
+  const titleText = 'RELEASES'
+  const { displayedText: displayedTitle } = useTypingEffect(
+    isInView ? titleText : '',
+    50,
+    100
+  )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.8) {
+        setGlitchActive(true)
+        setTimeout(() => setGlitchActive(false), 300)
+      }
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     if (!hasAutoLoaded && (!releases || releases.length === 0)) {
@@ -102,12 +122,13 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
           <motion.h2 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold"
+            className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono ${glitchActive ? 'glitch-text-effect' : ''}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
-            RELEASES
+            &gt; {displayedTitle}
+            <span className="animate-pulse">_</span>
           </motion.h2>
           {editMode && (
             <div className="flex gap-2 flex-wrap">

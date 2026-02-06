@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
 import { useState, useRef, useEffect } from 'react'
+import { useTypingEffect } from '@/hooks/use-typing-effect'
 import type { Biography } from '@/lib/types'
 
 interface BiographySectionProps {
@@ -31,8 +32,27 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [photos, setPhotos] = useState<string[]>([])
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
+  const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+
+  const titleText = 'BIOGRAPHY'
+  const { displayedText: displayedTitle } = useTypingEffect(
+    isInView ? titleText : '',
+    50,
+    100
+  )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.8) {
+        setGlitchActive(true)
+        setTimeout(() => setGlitchActive(false), 300)
+      }
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     const loadPhotos = async () => {
@@ -95,12 +115,13 @@ export default function BiographySection({ biography = defaultBiography, editMod
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
             <motion.h2 
-              className="text-4xl md:text-5xl text-foreground"
+              className={`text-4xl md:text-5xl text-foreground font-mono ${glitchActive ? 'glitch-text-effect' : ''}`}
               initial={{ opacity: 0, x: -20 }}
               animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              BIOGRAPHY
+              &gt; {displayedTitle}
+              <span className="animate-pulse">_</span>
             </motion.h2>
             {editMode && (
               <Button
@@ -124,7 +145,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
             >
               {photos.length > 0 && (
                 <motion.div
-                  className="relative overflow-hidden rounded-lg aspect-square md:aspect-video group"
+                  className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group ${glitchActive ? 'glitch-effect' : ''}`}
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                   onTouchStart={handleTouchStart}
@@ -136,7 +157,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                     alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg" />
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg cyber-border" />
                   
                   {photos.length > 1 && (
                     <>

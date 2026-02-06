@@ -9,6 +9,7 @@ import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
 import { fetchUpcomingGigs } from '@/lib/spotify'
 import { toast } from 'sonner'
+import { useTypingEffect } from '@/hooks/use-typing-effect'
 
 interface GigsSectionProps {
   gigs: Gig[]
@@ -21,8 +22,27 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+  const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+
+  const titleText = 'UPCOMING GIGS'
+  const { displayedText: displayedTitle } = useTypingEffect(
+    isInView ? titleText : '',
+    40,
+    100
+  )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.75) {
+        setGlitchActive(true)
+        setTimeout(() => setGlitchActive(false), 300)
+      }
+    }, 3500)
+
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     if (!hasLoadedOnce) {
@@ -82,12 +102,13 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4">
           <motion.h2 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold"
+            className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono ${glitchActive ? 'glitch-text-effect' : ''}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
           >
-            UPCOMING SHOWS
+            &gt; {displayedTitle}
+            <span className="animate-pulse">_</span>
           </motion.h2>
           <div className="flex gap-2 flex-wrap">
             <Button
