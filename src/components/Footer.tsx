@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
-import { LockSimple } from '@phosphor-icons/react'
+import { LockSimple, ArrowUp } from '@phosphor-icons/react'
 import type { SocialLinks } from '@/lib/types'
-import titleImage from '@/assets/images/titel.png'
 
 interface FooterProps {
   socialLinks: SocialLinks
@@ -9,10 +8,15 @@ interface FooterProps {
   label?: string
   onAdminLogin?: () => void
   onImpressum?: () => void
+  onDatenschutz?: () => void
 }
 
-export default function Footer({ socialLinks, genres, label, onAdminLogin, onImpressum }: FooterProps) {
+export default function Footer({ socialLinks, genres, label, onAdminLogin, onImpressum, onDatenschutz }: FooterProps) {
   const safeSocialLinks = socialLinks || {}
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <footer className="relative border-t border-primary/20 bg-background hud-element">
@@ -47,24 +51,49 @@ export default function Footer({ socialLinks, genres, label, onAdminLogin, onImp
               <p className="text-[10px] md:text-xs">LABEL: {label}</p>
             )}
             <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
-            {onImpressum && (
+            <div className="flex flex-col items-center gap-2 pt-2">
+              <div className="flex items-center gap-3">
+                {onImpressum && (
+                  <button
+                    onClick={onImpressum}
+                    className="inline-block text-[10px] md:text-xs text-muted-foreground/60 hover:text-primary/80 transition-colors font-mono tracking-wider"
+                  >
+                    IMPRESSUM
+                  </button>
+                )}
+                {onImpressum && onDatenschutz && (
+                  <span className="text-muted-foreground/30 text-[10px]">|</span>
+                )}
+                {onDatenschutz && (
+                  <button
+                    onClick={onDatenschutz}
+                    className="inline-block text-[10px] md:text-xs text-muted-foreground/60 hover:text-primary/80 transition-colors font-mono tracking-wider"
+                  >
+                    DATENSCHUTZ
+                  </button>
+                )}
+              </div>
+              {onAdminLogin && (
+                <button
+                  onClick={onAdminLogin}
+                  className="inline-flex items-center gap-1 text-[10px] md:text-xs text-muted-foreground/30 hover:text-primary/60 transition-colors font-mono"
+                  aria-label="Admin login"
+                >
+                  <LockSimple size={12} />
+                  <span>ADMIN</span>
+                </button>
+              )}
+            </div>
+            <div className="pt-6">
               <button
-                onClick={onImpressum}
-                className="inline-block text-[10px] md:text-xs text-muted-foreground/60 hover:text-primary/80 transition-colors mt-1 font-mono tracking-wider"
+                onClick={scrollToTop}
+                className="inline-flex items-center gap-1.5 text-[10px] md:text-xs text-muted-foreground/50 hover:text-primary/80 transition-colors font-mono tracking-wider border border-primary/20 hover:border-primary/40 px-4 py-2"
+                aria-label="Back to top"
               >
-                IMPRESSUM
+                <ArrowUp size={14} />
+                <span>BACK TO TOP</span>
               </button>
-            )}
-            {onAdminLogin && (
-              <button
-                onClick={onAdminLogin}
-                className="inline-flex items-center gap-1 text-[10px] md:text-xs text-muted-foreground/30 hover:text-primary/60 transition-colors mt-2 font-mono"
-                aria-label="Admin login"
-              >
-                <LockSimple size={12} />
-                <span>ADMIN</span>
-              </button>
-            )}
+            </div>
           </div>
         </motion.div>
       </div>

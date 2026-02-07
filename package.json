@@ -76,6 +76,8 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.21.0",
+        "@fontsource/jetbrains-mono": "^5.2.8",
+        "@fontsource/space-grotesk": "^5.2.10",
         "@tailwindcss/postcss": "^4.1.8",
         "@types/react": "^19.0.10",
         "@types/react-dom": "^19.0.4",

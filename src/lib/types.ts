@@ -48,12 +48,30 @@ export interface Member {
   bio?: string
 }
 
+export interface Friend {
+  id: string
+  name: string
+  photo?: string
+  description?: string
+  url?: string
+  socials?: {
+    instagram?: string
+    facebook?: string
+    spotify?: string
+    soundcloud?: string
+    youtube?: string
+    bandcamp?: string
+    website?: string
+  }
+}
+
 export interface Biography {
   story: string
   founded?: string
   members?: (string | Member)[]
   achievements?: string[]
   photos?: string[]
+  friends?: Friend[]
 }
 
 export interface TerminalCommand {
@@ -75,6 +93,16 @@ export interface Impressum {
   responsibleAddress?: string
 }
 
+export interface GalleryImage {
+  id: string
+  url: string
+  caption?: string
+}
+
+export interface Datenschutz {
+  customText?: string
+}
+
 export interface BandData {
   name: string
   genres: string[]
@@ -85,4 +113,16 @@ export interface BandData {
   label?: string
   terminalCommands?: TerminalCommand[]
   impressum?: Impressum
+  galleryImages?: GalleryImage[]
+  datenschutz?: Datenschutz
+  fontSizes?: FontSizeSettings
+}
+
+export interface FontSizeSettings {
+  biographyStory?: string
+  biographyHeadings?: string
+  gigsText?: string
+  releasesText?: string
+  connectText?: string
+  footerText?: string
 }

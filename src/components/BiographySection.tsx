@@ -1,18 +1,24 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { PencilSimple, CaretLeft, CaretRight, User, CaretDown } from '@phosphor-icons/react'
+import { PencilSimple, CaretLeft, CaretRight, User, CaretDown, Plus, Trash, InstagramLogo, FacebookLogo, SpotifyLogo, SoundcloudLogo, YoutubeLogo, MusicNote, Globe, Link } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
+import FontSizePicker from '@/components/FontSizePicker'
+import ProgressiveImage from '@/components/ProgressiveImage'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
-import type { Biography, Member } from '@/lib/types'
+import type { Biography, Member, Friend, FontSizeSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
 interface BiographySectionProps {
   biography?: Biography
   editMode?: boolean
   onUpdate?: (biography: Biography) => void
+  fontSizes?: FontSizeSettings
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
 }
 
 const defaultBiography: Biography = {
@@ -24,7 +30,143 @@ const defaultBiography: Biography = {
 
 const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
+const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: any; label: string }[] = [
+  { key: 'instagram', icon: InstagramLogo, label: 'Instagram' },
+  { key: 'facebook', icon: FacebookLogo, label: 'Facebook' },
+  { key: 'spotify', icon: SpotifyLogo, label: 'Spotify' },
+  { key: 'soundcloud', icon: SoundcloudLogo, label: 'SoundCloud' },
+  { key: 'youtube', icon: YoutubeLogo, label: 'YouTube' },
+  { key: 'bandcamp', icon: MusicNote, label: 'Bandcamp' },
+  { key: 'website', icon: Globe, label: 'Website' },
+]
+
+function FriendCard({ friend, editMode, onUpdate, onDelete }: {
+  friend: Friend
+  editMode?: boolean
+  onUpdate: (friend: Friend) => void
+  onDelete: () => void
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState(friend)
+
+  const handleSave = () => {
+    onUpdate(editData)
+    setIsEditing(false)
+  }
+
+  if (isEditing && editMode) {
+    return (
+      <Card className="bg-card border-primary/30 p-4 space-y-3">
+        <div className="space-y-2">
+          <div>
+            <Label className="text-[10px]">Name</Label>
+            <Input value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className="text-xs h-8" />
+          </div>
+          <div>
+            <Label className="text-[10px]">Photo URL</Label>
+            <Input value={editData.photo || ''} onChange={(e) => setEditData({ ...editData, photo: e.target.value })} className="text-xs h-8" placeholder="https://..." />
+          </div>
+          <div>
+            <Label className="text-[10px]">Description</Label>
+            <Input value={editData.description || ''} onChange={(e) => setEditData({ ...editData, description: e.target.value })} className="text-xs h-8" />
+          </div>
+          <div>
+            <Label className="text-[10px]">Main URL</Label>
+            <Input value={editData.url || ''} onChange={(e) => setEditData({ ...editData, url: e.target.value })} className="text-xs h-8" placeholder="https://..." />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {friendSocialIcons.map(({ key, label }) => (
+              <div key={key}>
+                <Label className="text-[10px]">{label}</Label>
+                <Input
+                  value={editData.socials?.[key] || ''}
+                  onChange={(e) => setEditData({ ...editData, socials: { ...editData.socials, [key]: e.target.value } })}
+                  className="text-xs h-8"
+                  placeholder="https://..."
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleSave} className="flex-1">Save</Button>
+          <Button size="sm" variant="outline" onClick={() => { setEditData(friend); setIsEditing(false) }}>Cancel</Button>
+        </div>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="bg-card/50 border-border hover:border-primary/50 transition-all duration-300 overflow-hidden group hud-element hud-corner">
+      <span className="corner-bl"></span>
+      <span className="corner-br"></span>
+      <div className="flex gap-3 p-4">
+        {friend.photo ? (
+          <div className="w-16 h-16 flex-shrink-0 overflow-hidden border border-border">
+            <ProgressiveImage
+              src={friend.photo}
+              alt={friend.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-16 h-16 flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center">
+            <User size={24} className="text-muted-foreground/40" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              {friend.url ? (
+                <a href={friend.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold hover:text-primary transition-colors line-clamp-1 flex items-center gap-1">
+                  {friend.name}
+                  <Link size={12} className="text-primary/40 flex-shrink-0" />
+                </a>
+              ) : (
+                <p className="text-sm font-bold line-clamp-1">{friend.name}</p>
+              )}
+              {friend.description && (
+                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{friend.description}</p>
+              )}
+            </div>
+            {editMode && (
+              <div className="flex gap-1 flex-shrink-0">
+                <button onClick={() => { setEditData(friend); setIsEditing(true) }} className="p-1 text-muted-foreground hover:text-primary transition-colors">
+                  <PencilSimple size={14} />
+                </button>
+                <button onClick={onDelete} className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+                  <Trash size={14} />
+                </button>
+              </div>
+            )}
+          </div>
+          {friend.socials && (
+            <div className="flex gap-1.5 mt-2 flex-wrap">
+              {friendSocialIcons.map(({ key, icon: Icon, label }) => {
+                const url = friend.socials?.[key]
+                if (!url) return null
+                return (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground/60 hover:text-primary transition-colors"
+                    title={label}
+                  >
+                    <Icon size={16} weight="fill" />
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>([])
@@ -179,9 +321,14 @@ export default function BiographySection({ biography = defaultBiography, editMod
               )}
 
               <Card className="bg-card border-border p-4 md:p-8 hover:border-primary/50 active:border-primary transition-all duration-300 touch-manipulation">
+                {editMode && onFontSizeChange && (
+                  <div className="mb-3 flex gap-2 flex-wrap">
+                    <FontSizePicker label="BIO" value={fontSizes?.biographyStory} onChange={(v) => onFontSizeChange('biographyStory', v)} />
+                  </div>
+                )}
                 <div className="prose prose-invert max-w-none">
                   {biography.story.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className="text-sm md:text-base text-foreground/90 leading-relaxed mb-4 last:mb-0">
+                    <p key={index} className={`${fontSizes?.biographyStory || 'text-sm md:text-base'} text-foreground/90 leading-relaxed mb-4 last:mb-0`}>
                       {paragraph}
                     </p>
                   ))}
@@ -308,6 +455,64 @@ export default function BiographySection({ biography = defaultBiography, editMod
               )}
             </div>
           </div>
+
+          {/* Friends / Partners Section */}
+          {((biography.friends && biography.friends.length > 0) || editMode) && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              transition={{ duration: 0.7, delay: 0.6 }}
+              className="mt-12"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg md:text-xl font-mono uppercase tracking-wider text-muted-foreground">
+                  <span className="text-primary/40">&gt;</span> Friends &amp; Partners
+                </h3>
+                {editMode && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-primary/30 hover:bg-primary/10 gap-1"
+                    onClick={() => {
+                      const newFriend: Friend = {
+                        id: `friend-${Date.now()}`,
+                        name: 'New Friend',
+                      }
+                      handleUpdate({
+                        ...biography,
+                        friends: [...(biography.friends || []), newFriend]
+                      })
+                    }}
+                  >
+                    <Plus size={16} />
+                    <span className="hidden md:inline">Add</span>
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(biography.friends || []).map((friend) => (
+                  <FriendCard
+                    key={friend.id}
+                    friend={friend}
+                    editMode={editMode}
+                    onUpdate={(updated) => {
+                      handleUpdate({
+                        ...biography,
+                        friends: (biography.friends || []).map(f => f.id === updated.id ? updated : f)
+                      })
+                    }}
+                    onDelete={() => {
+                      handleUpdate({
+                        ...biography,
+                        friends: (biography.friends || []).filter(f => f.id !== friend.id)
+                      })
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 

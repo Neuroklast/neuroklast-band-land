@@ -19,8 +19,10 @@ import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import SecretTerminal from '@/components/SecretTerminal'
 import ImpressumWindow from '@/components/ImpressumWindow'
+import DatenschutzWindow from '@/components/DatenschutzWindow'
+import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
-import type { BandData } from '@/lib/types'
+import type { BandData, FontSizeSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
 const defaultBandData: BandData = {
@@ -61,6 +63,7 @@ function App() {
   const [showSetupDialog, setShowSetupDialog] = useState(false)
   const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
   const [impressumOpen, setImpressumOpen] = useState(false)
+  const [datenschutzOpen, setDatenschutzOpen] = useState(false)
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
   const wantsSetup = useRef(false)
@@ -71,6 +74,13 @@ function App() {
       // Clean up URL immediately
       const url = new URL(window.location.href)
       url.searchParams.delete('admin-setup')
+      window.history.replaceState({}, '', url.toString())
+    }
+    // Secret terminal access via URL
+    if (params.has('access-secret-terminal-NK-666')) {
+      setTerminalOpen(true)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('access-secret-terminal-NK-666')
       window.history.replaceState({}, '', url.toString())
     }
   }, [])
@@ -91,6 +101,13 @@ function App() {
       return true
     }
     return false
+  }
+
+  const handleFontSizeChange = (key: keyof FontSizeSettings, value: string) => {
+    setBandData((current) => ({
+      ...(current || defaultBandData),
+      fontSizes: { ...(current || defaultBandData).fontSizes, [key]: value }
+    }))
   }
 
   const handleSetAdminPassword = async (password: string): Promise<void> => {
@@ -139,6 +156,15 @@ function App() {
         editMode={editMode && isOwner}
         onSave={(impressum) => setBandData((current) => ({ ...(current || defaultBandData), impressum }))}
       />
+      <DatenschutzWindow
+        isOpen={datenschutzOpen}
+        onClose={() => setDatenschutzOpen(false)}
+        datenschutz={data.datenschutz}
+        impressumName={data.impressum?.name}
+        editMode={editMode && isOwner}
+        onSave={(datenschutz) => setBandData((current) => ({ ...(current || defaultBandData), datenschutz }))}
+      />
+      <CookieBanner />
       
       <AnimatePresence>
         {loading && (
@@ -192,6 +218,8 @@ function App() {
                   biography={data.biography}
                   editMode={editMode && isOwner}
                   onUpdate={(biography) => setBandData((current) => ({ ...(current || defaultBandData), biography }))}
+                  fontSizes={data.fontSizes}
+                  onFontSizeChange={handleFontSizeChange}
                 />
               </motion.div>
 
@@ -200,7 +228,11 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.9 }}
               >
-                <InstagramGallery />
+                <InstagramGallery
+                  galleryImages={data.galleryImages}
+                  editMode={editMode && isOwner}
+                  onUpdate={(galleryImages) => setBandData((current) => ({ ...(current || defaultBandData), galleryImages }))}
+                />
               </motion.div>
 
               <motion.div
@@ -212,6 +244,8 @@ function App() {
                   gigs={data.gigs}
                   editMode={editMode && isOwner}
                   onUpdate={(gigs) => setBandData((current) => ({ ...(current || defaultBandData), gigs }))}
+                  fontSizes={data.fontSizes}
+                  onFontSizeChange={handleFontSizeChange}
                 />
               </motion.div>
 
@@ -224,6 +258,8 @@ function App() {
                   releases={data.releases}
                   editMode={editMode && isOwner}
                   onUpdate={(releases) => setBandData((current) => ({ ...(current || defaultBandData), releases }))}
+                  fontSizes={data.fontSizes}
+                  onFontSizeChange={handleFontSizeChange}
                 />
               </motion.div>
 
@@ -236,6 +272,8 @@ function App() {
                   socialLinks={safeSocialLinks}
                   editMode={editMode && isOwner}
                   onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
+                  fontSizes={data.fontSizes}
+                  onFontSizeChange={handleFontSizeChange}
                 />
               </motion.div>
             </main>
@@ -251,6 +289,7 @@ function App() {
                 label={data.label}
                 onAdminLogin={!isOwner && adminPasswordHash ? () => setShowLoginDialog(true) : undefined}
                 onImpressum={() => setImpressumOpen(true)}
+                onDatenschutz={() => setDatenschutzOpen(true)}
               />
             </motion.div>
 

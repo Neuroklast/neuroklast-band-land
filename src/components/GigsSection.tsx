@@ -4,7 +4,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
-import type { Gig } from '@/lib/types'
+import FontSizePicker from '@/components/FontSizePicker'
+import type { Gig, FontSizeSettings } from '@/lib/types'
 import { useState, useEffect, useRef } from 'react'
 import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
@@ -16,9 +17,11 @@ interface GigsSectionProps {
   gigs: Gig[]
   editMode: boolean
   onUpdate: (gigs: Gig[]) => void
+  fontSizes?: FontSizeSettings
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
 }
 
-export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionProps) {
+export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange }: GigsSectionProps) {
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -144,6 +147,12 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
         </div>
 
         <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-12 h-0.5" />
+
+        {editMode && onFontSizeChange && (
+          <div className="mb-6 flex gap-2 flex-wrap">
+            <FontSizePicker label="GIGS" value={fontSizes?.gigsText} onChange={(v) => onFontSizeChange('gigsText', v)} />
+          </div>
+        )}
 
         {isLoading && upcomingGigs.length === 0 ? (
           <motion.div 
