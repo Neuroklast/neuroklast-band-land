@@ -1,8 +1,17 @@
 import { kv } from '@vercel/kv'
 
+// Constant-time string comparison to prevent timing attacks on hash comparison
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false
+  let result = 0
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  return result === 0
+}
+
 export default async function handler(req, res) {
-  // CORS headers for API access
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  // Only allow same-origin requests by not setting permissive CORS
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token')
 
@@ -29,13 +38,13 @@ export default async function handler(req, res) {
         // Allow setting password if none exists (initial setup)
         // Require auth to change an existing password
         const existingHash = await kv.get('admin-password-hash')
-        if (existingHash && token !== existingHash) {
+        if (existingHash && !timingSafeEqual(token, existingHash)) {
           return res.status(403).json({ error: 'Unauthorized' })
         }
       } else {
         // All other writes require a valid admin token
         const adminHash = await kv.get('admin-password-hash')
-        if (adminHash && token !== adminHash) {
+        if (adminHash && !timingSafeEqual(token, adminHash)) {
           return res.status(403).json({ error: 'Unauthorized' })
         }
       }

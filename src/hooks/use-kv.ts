@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 /**
- * Custom KV hook that replaces @github/spark's useKV.
+ * Custom KV hook backed by Vercel KV API routes, with localStorage fallback for local dev.
  * Uses /api/kv (Vercel KV) for persistence, with localStorage fallback for local dev.
  * The admin token from sessionStorage is sent with write requests for auth.
  */

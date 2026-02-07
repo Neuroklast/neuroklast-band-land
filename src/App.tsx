@@ -69,28 +69,6 @@ function App() {
     }
   }, [])
 
-  // Primary auth: Spark platform owner detection (only works on Spark)
-  useEffect(() => {
-    if (typeof window.spark === 'undefined') return
-    try {
-      window.spark.user().then(user => {
-        if (user && user.isOwner) {
-          setIsOwner(true)
-          if (!adminPasswordHash) {
-            toast.info('TIP: Set an admin password', {
-              description: 'Use the key icon in edit mode to set a password for login from other devices.',
-              duration: 8000
-            })
-          }
-        }
-      }).catch(() => {
-        // Spark auth not available
-      })
-    } catch {
-      // Spark runtime not available (Vercel deployment)
-    }
-  }, [adminPasswordHash])
-
   // Open setup dialog once KV data has loaded and confirms no password exists
   useEffect(() => {
     if (wantsSetup.current && adminPasswordHash !== undefined && !adminPasswordHash) {
