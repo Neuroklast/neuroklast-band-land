@@ -18,9 +18,7 @@ import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import SecretTerminal from '@/components/SecretTerminal'
-import TerminalEditDialog from '@/components/TerminalEditDialog'
 import ImpressumWindow from '@/components/ImpressumWindow'
-import ImpressumEditDialog from '@/components/ImpressumEditDialog'
 import KonamiListener from '@/components/KonamiListener'
 import type { BandData } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
@@ -62,9 +60,7 @@ function App() {
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showSetupDialog, setShowSetupDialog] = useState(false)
   const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
-  const [showTerminalEdit, setShowTerminalEdit] = useState(false)
   const [impressumOpen, setImpressumOpen] = useState(false)
-  const [showImpressumEdit, setShowImpressumEdit] = useState(false)
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
   const wantsSetup = useRef(false)
@@ -134,14 +130,14 @@ function App() {
         onClose={() => setTerminalOpen(false)}
         customCommands={data.terminalCommands || []}
         editMode={editMode && isOwner}
-        onEdit={() => setShowTerminalEdit(true)}
+        onSaveCommands={(terminalCommands) => setBandData((current) => ({ ...(current || defaultBandData), terminalCommands }))}
       />
       <ImpressumWindow
         isOpen={impressumOpen}
         onClose={() => setImpressumOpen(false)}
         impressum={data.impressum}
         editMode={editMode && isOwner}
-        onEdit={() => setShowImpressumEdit(true)}
+        onSave={(impressum) => setBandData((current) => ({ ...(current || defaultBandData), impressum }))}
       />
       
       <AnimatePresence>
@@ -290,20 +286,6 @@ function App() {
               genres={data.genres}
               label={data.label}
               onSave={({ name, genres, label }) => setBandData((current) => ({ ...(current || defaultBandData), name, genres, label }))}
-            />
-
-            <TerminalEditDialog
-              open={showTerminalEdit}
-              onOpenChange={setShowTerminalEdit}
-              commands={data.terminalCommands || []}
-              onSave={(terminalCommands) => setBandData((current) => ({ ...(current || defaultBandData), terminalCommands }))}
-            />
-
-            <ImpressumEditDialog
-              open={showImpressumEdit}
-              onOpenChange={setShowImpressumEdit}
-              impressum={data.impressum}
-              onSave={(impressum) => setBandData((current) => ({ ...(current || defaultBandData), impressum }))}
             />
           </motion.div>
         </motion.div>
