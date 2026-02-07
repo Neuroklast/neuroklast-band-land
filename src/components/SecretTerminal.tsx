@@ -65,6 +65,14 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
         ...customCmd.output.map(text => ({ type: 'output' as const, text })),
         { type: 'output' as const, text: '' }
       ]
+      if (customCmd.fileUrl) {
+        const fileName = customCmd.fileName || 'download'
+        output.push({ type: 'output' as const, text: `INITIATING DOWNLOAD: ${fileName}...` })
+        const a = document.createElement('a')
+        a.href = customCmd.fileUrl
+        a.download = fileName
+        a.click()
+      }
     } else {
       switch (trimmedCmd) {
         case 'help': {
@@ -152,7 +160,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     if (expandedIdx === index) setExpandedIdx(null)
   }
 
-  const updateField = (index: number, field: 'name' | 'description', value: string) => {
+  const updateField = (index: number, field: 'name' | 'description' | 'fileUrl' | 'fileName', value: string) => {
     setCmds(cmds.map((c, i) => i === index ? { ...c, [field]: value } : c))
   }
 
@@ -290,6 +298,19 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
                           <Button variant="outline" size="sm" onClick={() => addOutputLine(idx)} className="text-xs">
                             <Plus size={12} className="mr-1" /> Add line
                           </Button>
+                          <Label className="text-xs text-muted-foreground mt-2">File Download (optional)</Label>
+                          <Input
+                            value={cmd.fileUrl || ''}
+                            onChange={(e) => updateField(idx, 'fileUrl', e.target.value)}
+                            placeholder="File URL"
+                            className="flex-1 text-xs"
+                          />
+                          <Input
+                            value={cmd.fileName || ''}
+                            onChange={(e) => updateField(idx, 'fileName', e.target.value)}
+                            placeholder="File Name"
+                            className="flex-1 text-xs"
+                          />
                         </div>
                       )}
                     </div>

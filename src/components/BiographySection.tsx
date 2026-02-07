@@ -1,12 +1,12 @@
-import { motion, useInView } from 'framer-motion'
-import { PencilSimple, CaretLeft, CaretRight } from '@phosphor-icons/react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { PencilSimple, CaretLeft, CaretRight, User, CaretDown } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
-import type { Biography } from '@/lib/types'
+import type { Biography, Member } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
 interface BiographySectionProps {
@@ -22,6 +22,8 @@ const defaultBiography: Biography = {
   achievements: bandDataJson.biography.achievements
 }
 
+const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
+
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -29,6 +31,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
   const [glitchActive, setGlitchActive] = useState(false)
+  const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set())
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
@@ -212,13 +215,72 @@ export default function BiographySection({ biography = defaultBiography, editMod
                     <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
                       Members
                     </h3>
-                    <ul className="space-y-2">
-                      {biography.members.map((member, index) => (
-                        <li key={index} className="text-foreground/90">
-                          {member}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="space-y-3">
+                      {biography.members.map((rawMember, index) => {
+                        const member = normalizeMember(rawMember)
+                        const isExpanded = expandedMembers.has(index)
+                        const toggleExpanded = () => {
+                          setExpandedMembers(prev => {
+                            const next = new Set(prev)
+                            if (next.has(index)) next.delete(index)
+                            else next.add(index)
+                            return next
+                          })
+                        }
+                        return (
+                          <div key={index} className="border border-border/50 rounded-lg p-3 hover:border-primary/30 transition-colors duration-200">
+                            <div className="flex items-center gap-3">
+                              {member.photo ? (
+                                <div className={`w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ${glitchActive ? 'glitch-effect' : ''} red-tint`}>
+                                  <img
+                                    src={member.photo}
+                                    alt={member.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                  <User size={20} className="text-muted-foreground" />
+                                </div>
+                              )}
+                              <span className="flex-1 text-foreground/90 font-medium">
+                                <ChromaticText intensity={0.5}>{member.name}</ChromaticText>
+                              </span>
+                              {member.bio && (
+                                <button
+                                  onClick={toggleExpanded}
+                                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                                  aria-label={isExpanded ? 'Collapse bio' : 'Expand bio'}
+                                >
+                                  <motion.span
+                                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="block"
+                                  >
+                                    <CaretDown size={16} />
+                                  </motion.span>
+                                </button>
+                              )}
+                            </div>
+                            <AnimatePresence>
+                              {isExpanded && member.bio && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="overflow-hidden"
+                                >
+                                  <p className="text-sm text-foreground/70 mt-2 pl-[52px]">
+                                    {member.bio}
+                                  </p>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </Card>
                 </motion.div>
               )}
