@@ -53,7 +53,7 @@ const defaultBandData: BandData = {
 }
 
 function App() {
-  const [bandData, setBandData] = useKV<BandData>('band-data', defaultBandData)
+  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
   const [adminPasswordHash, setAdminPasswordHash] = useKV<string>('admin-password-hash', '')
   const [isOwner, setIsOwner] = useState(false)
   const [editMode, setEditMode] = useState(false)
