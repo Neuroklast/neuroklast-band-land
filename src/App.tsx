@@ -55,13 +55,19 @@ function App() {
 
   useEffect(() => {
     window.spark.user().then(user => {
-      if (user) {
-        setIsOwner(user.isOwner)
+      if (user && user.isOwner) {
+        setIsOwner(true)
+        if (!adminPasswordHash) {
+          toast.info('TIP: Set an admin password', {
+            description: 'Use the key icon in edit mode to set a password for login from other devices.',
+            duration: 8000
+          })
+        }
       }
     }).catch(err => {
       console.warn('Failed to fetch user data:', err)
     })
-  }, [])
+  }, [adminPasswordHash])
 
   const handleAdminLogin = async (password: string): Promise<boolean> => {
     const hash = await hashPassword(password)
@@ -75,7 +81,6 @@ function App() {
   const handleSetAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
     setAdminPasswordHash(hash)
-    setIsOwner(true)
   }
 
   const handleChangeAdminPassword = async (password: string): Promise<void> => {
@@ -205,7 +210,7 @@ function App() {
                 socialLinks={safeSocialLinks} 
                 genres={data.genres}
                 label={data.label}
-                onAdminLogin={!isOwner ? () => setShowLoginDialog(true) : undefined}
+                onAdminLogin={!isOwner && adminPasswordHash ? () => setShowLoginDialog(true) : undefined}
               />
             </motion.div>
 
@@ -222,7 +227,7 @@ function App() {
             <AdminLoginDialog
               open={showLoginDialog}
               onOpenChange={setShowLoginDialog}
-              hasPassword={!!adminPasswordHash}
+              mode="login"
               onLogin={handleAdminLogin}
               onSetPassword={handleSetAdminPassword}
             />

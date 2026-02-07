@@ -2,7 +2,7 @@ import { PencilSimple, X, Key } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import AdminLoginDialog, { hashPassword } from '@/components/AdminLoginDialog'
+import AdminLoginDialog from '@/components/AdminLoginDialog'
 
 interface EditControlsProps {
   editMode: boolean
@@ -87,15 +87,8 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
         <AdminLoginDialog
           open={showPasswordDialog}
           onOpenChange={setShowPasswordDialog}
-          hasPassword={false}
-          onLogin={async () => false}
-          onSetPassword={async (password) => {
-            if (hasPassword) {
-              await onChangePassword(password)
-            } else {
-              await onSetPassword(password)
-            }
-          }}
+          mode="setup"
+          onSetPassword={hasPassword ? onChangePassword : onSetPassword}
         />
       )}
     </>

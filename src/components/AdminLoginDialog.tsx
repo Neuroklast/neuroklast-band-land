@@ -9,8 +9,8 @@ import { toast } from 'sonner'
 interface AdminLoginDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  hasPassword: boolean
-  onLogin: (password: string) => Promise<boolean>
+  mode: 'login' | 'setup'
+  onLogin?: (password: string) => Promise<boolean>
   onSetPassword: (password: string) => Promise<void>
 }
 
@@ -24,7 +24,8 @@ async function hashPassword(password: string): Promise<string> {
 
 export { hashPassword }
 
-export default function AdminLoginDialog({ open, onOpenChange, hasPassword, onLogin, onSetPassword }: AdminLoginDialogProps) {
+export default function AdminLoginDialog({ open, onOpenChange, mode, onLogin, onSetPassword }: AdminLoginDialogProps) {
+  const isLoginMode = mode === 'login'
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -38,7 +39,7 @@ export default function AdminLoginDialog({ open, onOpenChange, hasPassword, onLo
     setIsLoading(true)
     setError('')
     try {
-      const success = await onLogin(password)
+      const success = await onLogin!(password)
       if (success) {
         toast.success('ADMIN ACCESS GRANTED', {
           description: 'Edit mode is now available'
@@ -102,17 +103,17 @@ export default function AdminLoginDialog({ open, onOpenChange, hasPassword, onLo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-mono">
             <LockSimple size={20} className="text-primary" />
-            {hasPassword ? 'ADMIN LOGIN' : 'SET ADMIN PASSWORD'}
+            {isLoginMode ? 'ADMIN LOGIN' : 'SET ADMIN PASSWORD'}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            {hasPassword
+            {isLoginMode
               ? 'Enter your admin password to access edit mode.'
               : 'Set a password to protect the admin edit mode. You will need this password to edit the page content.'
             }
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={hasPassword ? handleLogin : handleSetPassword} className="space-y-4">
+        <form onSubmit={isLoginMode ? handleLogin : handleSetPassword} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="admin-password">Password</Label>
             <div className="relative">
@@ -122,10 +123,10 @@ export default function AdminLoginDialog({ open, onOpenChange, hasPassword, onLo
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError('') }}
-                placeholder={hasPassword ? 'Enter password...' : 'Choose a password (min. 6 characters)...'}
+                placeholder={isLoginMode ? 'Enter password...' : 'Choose a password (min. 6 characters)...'}
                 className="bg-secondary border-input pl-9 pr-10"
                 autoFocus
-                autoComplete={hasPassword ? 'current-password' : 'new-password'}
+                autoComplete={isLoginMode ? 'current-password' : 'new-password'}
               />
               <button
                 type="button"
@@ -137,7 +138,7 @@ export default function AdminLoginDialog({ open, onOpenChange, hasPassword, onLo
             </div>
           </div>
 
-          {!hasPassword && (
+          {!isLoginMode && (
             <div className="space-y-2">
               <Label htmlFor="admin-confirm-password">Confirm Password</Label>
               <div className="relative">
@@ -168,7 +169,7 @@ export default function AdminLoginDialog({ open, onOpenChange, hasPassword, onLo
               className="bg-primary hover:bg-accent"
               disabled={isLoading || !password.trim()}
             >
-              {isLoading ? 'Processing...' : hasPassword ? 'Login' : 'Set Password'}
+              {isLoading ? 'Processing...' : isLoginMode ? 'Login' : 'Set Password'}
             </Button>
           </DialogFooter>
         </form>
