@@ -105,8 +105,8 @@ export function toDirectImageUrl(url: string | null | undefined): string {
 }
 
 /**
- * Attempt to load the image directly with CORS. If that fails (e.g. Google Drive),
- * fall back to the server-side proxy which caches in Vercel KV.
+ * Load image element directly. For Google Drive URLs, use wsrv.nl proxy directly.
+ * For other URLs that fail CORS, fall back to server-side proxy.
  */
 function loadImageElement(url: string): Promise<HTMLImageElement> {
   const directUrl = toDirectImageUrl(url)
@@ -116,13 +116,19 @@ function loadImageElement(url: string): Promise<HTMLImageElement> {
     img.crossOrigin = 'anonymous'
     img.onload = () => resolve(img)
     img.onerror = () => {
-      // Direct CORS load failed — try the server-side proxy
-      const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(directUrl)}`
-      const img2 = new Image()
-      img2.crossOrigin = 'anonymous'
-      img2.onload = () => resolve(img2)
-      img2.onerror = () => reject(new Error('Failed to load image via proxy'))
-      img2.src = proxyUrl
+      // Only use server-side proxy for non-Google Drive URLs that fail CORS
+      // Google Drive URLs already go through wsrv.nl, so don't double-proxy
+      const isGoogleDrive = /drive\.google\.com|lh3\.googleusercontent\.com|wsrv\.nl/.test(directUrl)
+      if (isGoogleDrive) {
+        reject(new Error('Failed to load image from wsrv.nl'))
+      } else {
+        const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(directUrl)}`
+        const img2 = new Image()
+        img2.crossOrigin = 'anonymous'
+        img2.onload = () => resolve(img2)
+        img2.onerror = () => reject(new Error('Failed to load image via proxy'))
+        img2.src = proxyUrl
+      }
     }
     img.src = directUrl
   })
@@ -131,7 +137,8 @@ function loadImageElement(url: string): Promise<HTMLImageElement> {
 /**
  * Loads an image from a URL, compresses it, and caches the result in IndexedDB.
  * Returns a data URL (from cache on subsequent calls).
- * Handles Google Drive URLs and falls back to server-side proxy on CORS failures.
+ * Handles Google Drive URLs via wsrv.nl proxy. For other URLs, falls back to 
+ * server-side proxy only on CORS failures.
  */
 export async function loadCachedImage(url: string): Promise<string> {
   const cached = await getCached(url)

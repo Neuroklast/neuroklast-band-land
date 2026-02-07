@@ -10,23 +10,15 @@ interface ProgressiveImageProps {
   loading?: 'lazy' | 'eager'
 }
 
-function isGoogleDriveUrl(url: string): boolean {
-  return /drive\.google\.com|lh3\.googleusercontent\.com/.test(url)
-}
-
 function resolveInitialSrc(src: string): string {
-  const directUrl = toDirectImageUrl(src)
-  // Google Drive URLs always need the server-side proxy (CORS / access issues)
-  if (isGoogleDriveUrl(src) || isGoogleDriveUrl(directUrl)) {
-    return `/api/image-proxy?url=${encodeURIComponent(directUrl)}`
-  }
-  return directUrl
+  // Convert Google Drive URLs to wsrv.nl format and use directly (no double proxying)
+  return toDirectImageUrl(src)
 }
 
 /**
  * Image component with a progress bar shown while loading.
- * Automatically transforms Google Drive share links into direct image URLs
- * and falls back to the server-side image proxy when CORS prevents loading.
+ * Automatically transforms Google Drive share links into wsrv.nl-proxied URLs
+ * for direct loading. Falls back to the server-side image proxy only on error.
  */
 export default function ProgressiveImage({ src, alt, className, style, draggable, loading }: ProgressiveImageProps) {
   const [loaded, setLoaded] = useState(false)
@@ -40,6 +32,7 @@ export default function ProgressiveImage({ src, alt, className, style, draggable
   }, [src])
 
   const handleError = () => {
+    // If direct loading fails, only then try the server-side proxy as fallback
     if (!proxyAttempted) {
       setProxyAttempted(true)
       const directUrl = toDirectImageUrl(src)
