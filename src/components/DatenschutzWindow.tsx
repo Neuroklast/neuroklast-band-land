@@ -170,7 +170,7 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
                   <p className="text-xs text-muted-foreground">
                     Bearbeiten Sie die Datenschutzerklärung. Absätze werden durch Leerzeilen getrennt.
                     Zeilen die mit einer Zahl + Punkt beginnen werden als Überschriften dargestellt.
-                    Zeilen die mit &quot;- &quot; beginnen werden als Aufzählung dargestellt.
+                    Zeilen die mit {'"- "'} beginnen werden als Aufzählung dargestellt.
                   </p>
                   <textarea
                     value={editText}
