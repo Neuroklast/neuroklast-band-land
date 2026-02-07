@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
-import type { Release } from '@/lib/types'
+import type { Release, FontSizeSettings } from '@/lib/types'
 import { useState, useEffect, useRef } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
@@ -13,14 +13,17 @@ import { fetchITunesReleases } from '@/lib/itunes'
 import { fetchOdesliLinks } from '@/lib/odesli'
 import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import FontSizePicker from '@/components/FontSizePicker'
 
 interface ReleasesSectionProps {
   releases: Release[]
   editMode: boolean
   onUpdate: (releases: Release[]) => void
+  fontSizes?: FontSizeSettings
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
 }
 
-export default function ReleasesSection({ releases, editMode, onUpdate }: ReleasesSectionProps) {
+export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange }: ReleasesSectionProps) {
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -199,6 +202,12 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
         </div>
 
         <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-12 h-0.5" />
+
+        {editMode && onFontSizeChange && (
+          <div className="mb-6 flex gap-2 flex-wrap">
+            <FontSizePicker label="RELEASES" value={fontSizes?.releasesText} onChange={(v) => onFontSizeChange('releasesText', v)} />
+          </div>
+        )}
 
         {sortedReleases.length === 0 ? (
           <motion.div 

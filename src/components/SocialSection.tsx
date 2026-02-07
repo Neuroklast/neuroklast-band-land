@@ -12,7 +12,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
-import type { SocialLinks } from '@/lib/types'
+import FontSizePicker from '@/components/FontSizePicker'
+import type { SocialLinks, FontSizeSettings } from '@/lib/types'
 import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -21,6 +22,8 @@ interface SocialSectionProps {
   socialLinks: SocialLinks
   editMode: boolean
   onUpdate: (socialLinks: SocialLinks) => void
+  fontSizes?: FontSizeSettings
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
 }
 
 const socialPlatforms = [
@@ -35,7 +38,7 @@ const socialPlatforms = [
   { key: 'bandcamp' as keyof SocialLinks, icon: Link, label: 'Bandcamp' }
 ]
 
-export default function SocialSection({ socialLinks, editMode, onUpdate }: SocialSectionProps) {
+export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange }: SocialSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
@@ -91,6 +94,12 @@ export default function SocialSection({ socialLinks, editMode, onUpdate }: Socia
         </div>
 
         <Separator className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-16 h-0.5" />
+
+        {editMode && onFontSizeChange && (
+          <div className="mb-6 flex gap-2 flex-wrap">
+            <FontSizePicker label="CONNECT" value={fontSizes?.connectText} onChange={(v) => onFontSizeChange('connectText', v)} />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {activePlatforms.map((platform, index) => {

@@ -8,9 +8,10 @@ interface FooterProps {
   label?: string
   onAdminLogin?: () => void
   onImpressum?: () => void
+  onDatenschutz?: () => void
 }
 
-export default function Footer({ socialLinks, genres, label, onAdminLogin, onImpressum }: FooterProps) {
+export default function Footer({ socialLinks, genres, label, onAdminLogin, onImpressum, onDatenschutz }: FooterProps) {
   const safeSocialLinks = socialLinks || {}
 
   const scrollToTop = () => {
@@ -51,14 +52,27 @@ export default function Footer({ socialLinks, genres, label, onAdminLogin, onImp
             )}
             <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
             <div className="flex flex-col items-center gap-2 pt-2">
-              {onImpressum && (
-                <button
-                  onClick={onImpressum}
-                  className="inline-block text-[10px] md:text-xs text-muted-foreground/60 hover:text-primary/80 transition-colors font-mono tracking-wider"
-                >
-                  IMPRESSUM
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                {onImpressum && (
+                  <button
+                    onClick={onImpressum}
+                    className="inline-block text-[10px] md:text-xs text-muted-foreground/60 hover:text-primary/80 transition-colors font-mono tracking-wider"
+                  >
+                    IMPRESSUM
+                  </button>
+                )}
+                {onImpressum && onDatenschutz && (
+                  <span className="text-muted-foreground/30 text-[10px]">|</span>
+                )}
+                {onDatenschutz && (
+                  <button
+                    onClick={onDatenschutz}
+                    className="inline-block text-[10px] md:text-xs text-muted-foreground/60 hover:text-primary/80 transition-colors font-mono tracking-wider"
+                  >
+                    DATENSCHUTZ
+                  </button>
+                )}
+              </div>
               {onAdminLogin && (
                 <button
                   onClick={onAdminLogin}

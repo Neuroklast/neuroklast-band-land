@@ -3,16 +3,19 @@ import { PencilSimple, CaretLeft, CaretRight, User, CaretDown } from '@phosphor-
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
+import FontSizePicker from '@/components/FontSizePicker'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
-import type { Biography, Member } from '@/lib/types'
+import type { Biography, Member, FontSizeSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
 interface BiographySectionProps {
   biography?: Biography
   editMode?: boolean
   onUpdate?: (biography: Biography) => void
+  fontSizes?: FontSizeSettings
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
 }
 
 const defaultBiography: Biography = {
@@ -24,7 +27,7 @@ const defaultBiography: Biography = {
 
 const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>([])
@@ -179,9 +182,14 @@ export default function BiographySection({ biography = defaultBiography, editMod
               )}
 
               <Card className="bg-card border-border p-4 md:p-8 hover:border-primary/50 active:border-primary transition-all duration-300 touch-manipulation">
+                {editMode && onFontSizeChange && (
+                  <div className="mb-3 flex gap-2 flex-wrap">
+                    <FontSizePicker label="BIO" value={fontSizes?.biographyStory} onChange={(v) => onFontSizeChange('biographyStory', v)} />
+                  </div>
+                )}
                 <div className="prose prose-invert max-w-none">
                   {biography.story.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className="text-sm md:text-base text-foreground/90 leading-relaxed mb-4 last:mb-0">
+                    <p key={index} className={`${fontSizes?.biographyStory || 'text-sm md:text-base'} text-foreground/90 leading-relaxed mb-4 last:mb-0`}>
                       {paragraph}
                     </p>
                   ))}

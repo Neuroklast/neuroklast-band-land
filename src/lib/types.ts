@@ -81,6 +81,10 @@ export interface GalleryImage {
   caption?: string
 }
 
+export interface Datenschutz {
+  customText?: string
+}
+
 export interface BandData {
   name: string
   genres: string[]
@@ -92,4 +96,15 @@ export interface BandData {
   terminalCommands?: TerminalCommand[]
   impressum?: Impressum
   galleryImages?: GalleryImage[]
+  datenschutz?: Datenschutz
+  fontSizes?: FontSizeSettings
+}
+
+export interface FontSizeSettings {
+  biographyStory?: string
+  biographyHeadings?: string
+  gigsText?: string
+  releasesText?: string
+  connectText?: string
+  footerText?: string
 }
