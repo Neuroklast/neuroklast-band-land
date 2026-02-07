@@ -65,9 +65,9 @@ export default function TerminalEditDialog({ open, onOpenChange, commands, onSav
   }
 
   const hasNameConflict = (name: string, index: number) => {
-    const lower = name.toLowerCase().trim()
+    const lower = (name || '').toLowerCase().trim()
     if (RESERVED.includes(lower)) return 'Reserved command name'
-    if (cmds.some((c, i) => i !== index && c.name.toLowerCase().trim() === lower)) return 'Duplicate name'
+    if (cmds.some((c, i) => i !== index && (c.name || '').toLowerCase().trim() === lower)) return 'Duplicate name'
     return null
   }
 

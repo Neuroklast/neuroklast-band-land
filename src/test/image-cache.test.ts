@@ -37,6 +37,13 @@ describe('toDirectImageUrl', () => {
     )
   })
 
+  it('converts Google Drive /file/d/ URLs with usp=drive_link', () => {
+    const url = 'https://drive.google.com/file/d/1T9UYw6j0W5TzNi0gZLOLgbH_5HXhBueD/view?usp=drive_link'
+    expect(toDirectImageUrl(url)).toBe(
+      'https://lh3.googleusercontent.com/d/1T9UYw6j0W5TzNi0gZLOLgbH_5HXhBueD'
+    )
+  })
+
   it('passes through regular image URLs unchanged', () => {
     const url = 'https://example.com/images/photo.jpg'
     expect(toDirectImageUrl(url)).toBe(url)
