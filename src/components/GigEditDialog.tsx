@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Plus, X } from '@phosphor-icons/react'
+import { Plus, X, UploadSimple } from '@phosphor-icons/react'
 import type { Gig } from '@/lib/types'
+import { toast } from 'sonner'
 
 interface GigEditDialogProps {
   gig: Gig | null
@@ -30,6 +31,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
   })
   const [supportingArtists, setSupportingArtists] = useState<string[]>([])
   const [newArtist, setNewArtist] = useState('')
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (gig) {
@@ -62,6 +64,21 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
 
   const removeArtist = (index: number) => {
     setSupportingArtists(supportingArtists.filter((_, i) => i !== index))
+  }
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      setFormData(prev => ({ ...prev, photo: dataUrl }))
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -171,15 +188,39 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
           </div>
 
           <div>
-            <Label htmlFor="photo">Photo URL (optional)</Label>
-            <Input
-              id="photo"
-              type="url"
-              value={formData.photo}
-              onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-              className="bg-secondary border-input"
-              placeholder="https://..."
-            />
+            <Label htmlFor="photo">Photo (optional)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="photo"
+                type="url"
+                value={formData.photo.startsWith('data:') ? '' : formData.photo}
+                onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                className="bg-secondary border-input flex-1"
+                placeholder="https://..."
+              />
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => photoInputRef.current?.click()}
+                className="border-primary/30 hover:bg-primary/10 flex-shrink-0"
+                title="Upload image"
+              >
+                <UploadSimple size={18} />
+              </Button>
+            </div>
+            {formData.photo && (
+              <div className="mt-2 relative w-16 h-16 rounded overflow-hidden border border-border">
+                <img src={formData.photo} alt="Photo preview" className="w-full h-full object-cover" />
+              </div>
+            )}
           </div>
 
           <div>

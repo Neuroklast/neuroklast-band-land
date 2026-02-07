@@ -4,8 +4,9 @@ const ARTIST_NAME = 'NEUROKLAST'
 
 export async function fetchITunesReleases(): Promise<Release[]> {
   try {
+    // Fetch both songs and albums to capture every release (singles, EPs, albums)
     const response = await fetch(
-      `/api/itunes?term=${encodeURIComponent(ARTIST_NAME)}`
+      `/api/itunes?term=${encodeURIComponent(ARTIST_NAME)}&entity=all`
     )
     
     if (!response.ok) {
@@ -33,7 +34,7 @@ export async function fetchITunesReleases(): Promise<Release[]> {
           id: `itunes-${collectionId}`,
           title: track.collectionName,
           artwork: track.artworkUrl100?.replace('100x100bb', '600x600bb') || track.artworkUrl60?.replace('60x60bb', '600x600bb'),
-          releaseDate: track.releaseDate ? new Date(track.releaseDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          releaseDate: track.releaseDate ? new Date(track.releaseDate).toISOString().split('T')[0] : undefined,
           streamingLinks: {
             appleMusic: track.collectionViewUrl || track.trackViewUrl,
           },
@@ -43,9 +44,13 @@ export async function fetchITunesReleases(): Promise<Release[]> {
 
     const releases = Array.from(releasesMap.values())
     
-    releases.sort((a, b) => 
-      new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
-    )
+    // Sort chronologically (oldest first), releases without dates go to the end
+    releases.sort((a, b) => {
+      if (!a.releaseDate && !b.releaseDate) return 0
+      if (!a.releaseDate) return 1
+      if (!b.releaseDate) return -1
+      return new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime()
+    })
 
     return releases
   } catch (error) {

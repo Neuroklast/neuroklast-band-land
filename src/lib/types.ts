@@ -20,7 +20,7 @@ export interface Release {
   id: string
   title: string
   artwork?: string
-  releaseDate: string
+  releaseDate?: string
   streamingLinks: {
     spotify?: string
     soundcloud?: string
