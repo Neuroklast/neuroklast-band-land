@@ -29,6 +29,145 @@ const defaultBiography: Biography = {
 
 const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
 
+const profileLoadingTexts = [
+  '> ACCESSING PROFILE...',
+  '> DECRYPTING BIO...',
+  '> IDENTITY VERIFIED',
+]
+
+function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
+  member: Member
+  resolvePhoto: (url: string) => string
+  onClose: () => void
+}) {
+  const [phase, setPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
+  const [loadingText, setLoadingText] = useState(profileLoadingTexts[0])
+
+  useEffect(() => {
+    let idx = 0
+    const txtInterval = setInterval(() => {
+      idx += 1
+      if (idx < profileLoadingTexts.length) {
+        setLoadingText(profileLoadingTexts[idx])
+      }
+    }, 300)
+
+    const glitchTimer = setTimeout(() => {
+      clearInterval(txtInterval)
+      setPhase('glitch')
+    }, 700)
+
+    const revealTimer = setTimeout(() => setPhase('revealed'), 1000)
+
+    return () => {
+      clearInterval(txtInterval)
+      clearTimeout(glitchTimer)
+      clearTimeout(revealTimer)
+    }
+  }, [])
+
+  return (
+    <motion.div
+      key="member-profile"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      {/* Scanline overlay */}
+      <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
+
+      {phase === 'loading' && (
+        <motion.div
+          className="flex flex-col items-center gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="w-16 h-1 bg-primary/30 overflow-hidden">
+            <motion.div
+              className="h-full bg-primary"
+              animate={{ width: ['0%', '100%'] }}
+              transition={{ duration: 0.7, ease: 'easeInOut' }}
+            />
+          </div>
+          <p className="text-primary/70 font-mono text-xs tracking-wider">{loadingText}</p>
+        </motion.div>
+      )}
+
+      {phase !== 'loading' && (
+        <motion.div
+          className={`w-full max-w-md bg-card border rounded-lg overflow-hidden relative ${
+            phase === 'glitch' ? 'border-primary red-glitch-element' : 'border-primary/30'
+          }`}
+          initial={{ scale: 0.85, y: 30, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.85, y: 30, opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* HUD corner accents */}
+          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
+
+          <button
+            className="absolute top-4 right-4 p-2 text-primary/60 hover:text-primary z-10"
+            onClick={onClose}
+            aria-label="Close profile"
+          >
+            <X size={24} />
+          </button>
+
+          <div className="flex flex-col items-center gap-5 p-8">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              {member.photo ? (
+                <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-2 border-primary/40 shadow-[0_0_30px_oklch(0.50_0.22_25/0.3)]">
+                  <ProgressiveImage
+                    src={resolvePhoto(member.photo)}
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-48 h-48 md:w-56 md:h-56 rounded-full bg-muted flex items-center justify-center border-2 border-primary/40 shadow-[0_0_30px_oklch(0.50_0.22_25/0.3)]">
+                  <User size={72} className="text-muted-foreground" />
+                </div>
+              )}
+            </motion.div>
+
+            <motion.h3
+              className="text-2xl md:text-3xl font-bold font-mono"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <ChromaticText intensity={1.5}>{member.name}</ChromaticText>
+            </motion.h3>
+
+            {member.bio && (
+              <motion.p
+                className="text-sm md:text-base text-foreground/70 text-center leading-relaxed max-w-xs"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
+              >
+                {member.bio}
+              </motion.p>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+  )
+}
+
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -324,56 +463,14 @@ export default function BiographySection({ biography = defaultBiography, editMod
         />
       )}
 
-      {/* Member profile overlay */}
+      {/* Member profile overlay – cyberpunk glitch entrance */}
       <AnimatePresence>
         {selectedMember && (
-          <motion.div
-            key="member-profile"
-            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedMember(null)}
-          >
-            <motion.div
-              className="w-full max-w-sm bg-card border border-border rounded-lg overflow-hidden"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                className="absolute top-4 right-4 p-2 text-primary/60 hover:text-primary z-10"
-                onClick={() => setSelectedMember(null)}
-                aria-label="Close profile"
-              >
-                <X size={24} />
-              </button>
-              <div className="flex flex-col items-center gap-4 p-6">
-                {selectedMember.photo ? (
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-primary/30">
-                    <ProgressiveImage
-                      src={resolvePhoto(selectedMember.photo)}
-                      alt={selectedMember.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center border-2 border-primary/30">
-                    <User size={48} className="text-muted-foreground" />
-                  </div>
-                )}
-                <h3 className="text-xl font-bold font-mono">
-                  <ChromaticText intensity={1}>{selectedMember.name}</ChromaticText>
-                </h3>
-                {selectedMember.bio && (
-                  <p className="text-sm text-foreground/70 text-center leading-relaxed">
-                    {selectedMember.bio}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
+          <MemberProfileOverlay
+            member={selectedMember}
+            resolvePhoto={resolvePhoto}
+            onClose={() => setSelectedMember(null)}
+          />
         )}
       </AnimatePresence>
     </section>

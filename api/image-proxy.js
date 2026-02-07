@@ -95,8 +95,11 @@ export default async function handler(req, res) {
     }
 
     const contentType = response.headers.get('content-type') || 'image/jpeg'
-    if (!contentType.startsWith('image/')) {
-      return res.status(400).json({ error: 'URL does not point to an image' })
+    const isAllowedType = contentType.startsWith('image/') ||
+      contentType.startsWith('application/json') ||
+      contentType.startsWith('text/')
+    if (!isAllowedType) {
+      return res.status(400).json({ error: 'Unsupported content type' })
     }
 
     const arrayBuf = await response.arrayBuffer()
