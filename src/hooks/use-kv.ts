@@ -77,9 +77,10 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
       // Always persist to localStorage as a backup
       persistLocally()
 
-      // Only write to the remote KV once the initial load has finished to
-      // prevent overwriting real data with stale defaults.
-      if (loadedRef.current) {
+      // Only write to the remote KV once the initial load has finished and
+      // the user is authenticated (has an admin token) to prevent
+      // unnecessary 500 errors for non-admin visitors.
+      if (loadedRef.current && adminToken) {
         fetch('/api/kv', {
           method: 'POST',
           headers: {

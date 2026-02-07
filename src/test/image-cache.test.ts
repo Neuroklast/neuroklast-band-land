@@ -2,31 +2,38 @@ import { describe, it, expect } from 'vitest'
 import { toDirectImageUrl } from '@/lib/image-cache'
 
 describe('toDirectImageUrl', () => {
-  it('converts Google Drive /file/d/ URLs to direct download URLs', () => {
+  it('converts Google Drive /file/d/ URLs to lh3 CDN URLs', () => {
     const url = 'https://drive.google.com/file/d/1aBcDeFgHiJkLmN/view?usp=sharing'
     expect(toDirectImageUrl(url)).toBe(
-      'https://drive.google.com/uc?export=view&id=1aBcDeFgHiJkLmN'
+      'https://lh3.googleusercontent.com/d/1aBcDeFgHiJkLmN'
     )
   })
 
   it('converts Google Drive /file/d/ URLs without query params', () => {
     const url = 'https://drive.google.com/file/d/abc123/view'
     expect(toDirectImageUrl(url)).toBe(
-      'https://drive.google.com/uc?export=view&id=abc123'
+      'https://lh3.googleusercontent.com/d/abc123'
     )
   })
 
   it('converts Google Drive open?id= URLs', () => {
     const url = 'https://drive.google.com/open?id=xyz789'
     expect(toDirectImageUrl(url)).toBe(
-      'https://drive.google.com/uc?export=view&id=xyz789'
+      'https://lh3.googleusercontent.com/d/xyz789'
     )
   })
 
   it('converts Google Drive open?id= with extra params', () => {
     const url = 'https://drive.google.com/open?id=xyz789&other=1'
     expect(toDirectImageUrl(url)).toBe(
-      'https://drive.google.com/uc?export=view&id=xyz789'
+      'https://lh3.googleusercontent.com/d/xyz789'
+    )
+  })
+
+  it('converts Google Drive uc?export=view URLs', () => {
+    const url = 'https://drive.google.com/uc?export=view&id=abc123'
+    expect(toDirectImageUrl(url)).toBe(
+      'https://lh3.googleusercontent.com/d/abc123'
     )
   })
 

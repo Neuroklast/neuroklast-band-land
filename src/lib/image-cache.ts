@@ -73,15 +73,20 @@ function compressImage(img: HTMLImageElement): string {
  *   - /open?id={id}     → /uc?export=view&id={id}
  */
 export function toDirectImageUrl(url: string): string {
-  // Google Drive: /file/d/{fileId}/view  →  /uc?export=view&id={fileId}
+  // Google Drive: /file/d/{fileId}/view  →  lh3 CDN
   const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
   if (driveFileMatch) {
-    return `https://drive.google.com/uc?export=view&id=${driveFileMatch[1]}`
+    return `https://lh3.googleusercontent.com/d/${driveFileMatch[1]}`
   }
   // Google Drive: open?id={fileId}
   const driveOpenMatch = url.match(/drive\.google\.com\/open\?id=([^&#]+)/)
   if (driveOpenMatch) {
-    return `https://drive.google.com/uc?export=view&id=${driveOpenMatch[1]}`
+    return `https://lh3.googleusercontent.com/d/${driveOpenMatch[1]}`
+  }
+  // Google Drive: uc?export=view&id={fileId}
+  const driveUcMatch = url.match(/drive\.google\.com\/uc\?[^#]*?id=([^&#]+)/)
+  if (driveUcMatch) {
+    return `https://lh3.googleusercontent.com/d/${driveUcMatch[1]}`
   }
   return url
 }
