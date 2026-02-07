@@ -73,8 +73,12 @@ function compressImage(img: HTMLImageElement): string {
  *   - /open?id={id}            → wsrv.nl/?url=lh3.../{id}
  *   - /uc?export=view&id={id}  → wsrv.nl/?url=lh3.../{id}
  *   - lh3.googleusercontent.com/d/{id} → wsrv.nl/?url=lh3.../{id}
+ * Returns empty string for null/undefined/empty input.
  */
-export function toDirectImageUrl(url: string): string {
+export function toDirectImageUrl(url: string | null | undefined): string {
+  // Handle null, undefined, or empty string
+  if (!url) return ''
+  
   // Google Drive: /file/d/{fileId}/view  →  wsrv.nl proxy
   const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
   if (driveFileMatch) {

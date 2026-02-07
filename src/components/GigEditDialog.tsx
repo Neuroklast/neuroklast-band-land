@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Plus, X, UploadSimple } from '@phosphor-icons/react'
 import type { Gig } from '@/lib/types'
 import { toast } from 'sonner'
+import { toDirectImageUrl } from '@/lib/image-cache'
 
 interface GigEditDialogProps {
   gig: Gig | null
@@ -96,7 +97,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
       ...(formData.allDay && { allDay: true }),
       ...(Object.keys(eventLinks).length > 0 && { eventLinks }),
       ...(supportingArtists.length > 0 && { supportingArtists }),
-      ...(formData.photo && { photo: formData.photo })
+      ...(formData.photo && { photo: toDirectImageUrl(formData.photo) })
     })
   }
 

@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Plus, X } from '@phosphor-icons/react'
 import type { Biography, Member } from '@/lib/types'
+import { toDirectImageUrl } from '@/lib/image-cache'
 
 interface BiographyEditDialogProps {
   open: boolean
@@ -25,10 +26,16 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
   const [newAchievement, setNewAchievement] = useState('')
 
   const handleSave = () => {
+    // Convert all Google Drive URLs to wsrv.nl URLs before saving
+    const convertedMembers = members.map(member => ({
+      ...member,
+      photo: toDirectImageUrl(member.photo)
+    }))
+
     onSave({
       story,
       founded: founded || undefined,
-      members: members.length > 0 ? members : undefined,
+      members: convertedMembers.length > 0 ? convertedMembers : undefined,
       achievements: achievements.length > 0 ? achievements : undefined,
       photos: biography.photos,
       friends: biography.friends,
