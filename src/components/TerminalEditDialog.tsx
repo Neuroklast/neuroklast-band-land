@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,11 @@ const RESERVED = ['help', 'clear', 'exit', 'glitch', 'matrix']
 export default function TerminalEditDialog({ open, onOpenChange, commands, onSave }: TerminalEditDialogProps) {
   const [cmds, setCmds] = useState<TerminalCommand[]>(commands)
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
+
+  useEffect(() => {
+    setCmds(commands)
+    setExpandedIdx(null)
+  }, [commands])
 
   const addCommand = () => {
     setCmds([...cmds, { name: '', description: '', output: [''] }])

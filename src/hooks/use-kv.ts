@@ -20,6 +20,14 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
         if (data && data.value !== null && data.value !== undefined) {
           setValue(data.value as T)
         } else {
+          // API returned no data, try localStorage before falling back to default
+          try {
+            const stored = localStorage.getItem(`kv:${key}`)
+            if (stored !== null) {
+              setValue(JSON.parse(stored) as T)
+              return
+            }
+          } catch { /* ignore */ }
           setValue(defaultRef.current)
         }
       })
@@ -46,6 +54,14 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
 
       const adminToken = sessionStorage.getItem('admin-token') || ''
 
+      const persistLocally = () => {
+        try {
+          localStorage.setItem(`kv:${key}`, JSON.stringify(newValue))
+        } catch (e) {
+          console.warn('Failed to persist KV:', e)
+        }
+      }
+
       fetch('/api/kv', {
         method: 'POST',
         headers: {
@@ -53,14 +69,9 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
           'x-admin-token': adminToken
         },
         body: JSON.stringify({ key, value: newValue }),
-      }).catch(() => {
-        // API not available (local dev), fallback to localStorage
-        try {
-          localStorage.setItem(`kv:${key}`, JSON.stringify(newValue))
-        } catch (e) {
-          console.warn('Failed to persist KV:', e)
-        }
-      })
+      }).then(res => {
+        if (!res.ok) persistLocally()
+      }).catch(persistLocally)
 
       return newValue
     })
