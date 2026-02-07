@@ -80,11 +80,19 @@ export default async function handler(req, res) {
       hasToken: !!req.headers['x-admin-token']
     })
     
-    // Check if it's a KV configuration error
-    if (errorMessage.includes('KV_') || errorMessage.includes('REST_API')) {
+    // Check if it's a KV-specific configuration error from @vercel/kv
+    // Common errors include missing environment variables or connection issues
+    const isKVConfigError = error instanceof Error && (
+      errorMessage.toLowerCase().includes('kv_rest_api_url') ||
+      errorMessage.toLowerCase().includes('kv_rest_api_token') ||
+      errorMessage.toLowerCase().includes('vercel kv') ||
+      errorMessage.toLowerCase().includes('missing credentials')
+    )
+    
+    if (isKVConfigError) {
       return res.status(503).json({ 
         error: 'Service unavailable',
-        message: 'KV storage configuration error',
+        message: 'KV storage configuration error. Please check environment variables.',
         details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       })
     }

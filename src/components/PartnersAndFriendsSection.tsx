@@ -40,7 +40,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete }: {
     // Convert Google Drive URLs to wsrv.nl URLs before saving
     const updatedData = {
       ...editData,
-      photo: editData.photo ? toDirectImageUrl(editData.photo) : editData.photo
+      photo: toDirectImageUrl(editData.photo)
     }
     onUpdate(updatedData)
     setIsEditing(false)

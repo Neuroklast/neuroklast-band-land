@@ -29,7 +29,7 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
     // Convert all Google Drive URLs to wsrv.nl URLs before saving
     const convertedMembers = members.map(member => ({
       ...member,
-      photo: member.photo ? toDirectImageUrl(member.photo) : member.photo
+      photo: toDirectImageUrl(member.photo)
     }))
 
     onSave({
