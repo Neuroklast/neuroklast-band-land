@@ -82,7 +82,8 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
     const clamped = Math.max(0, Math.min(index, sortedReleases.length - 1))
     setMobileScrollIndex(clamped)
     if (mobileScrollRef.current) {
-      const cardWidth = 176 // 160px card + 16px gap
+      const firstCard = mobileScrollRef.current.querySelector('[data-release-card]') as HTMLElement | null
+      const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 176 // card width + gap fallback
       mobileScrollRef.current.scrollTo({ left: clamped * cardWidth, behavior: 'smooth' })
     }
   }, [sortedReleases.length])
@@ -261,6 +262,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                     <motion.div
                       key={release.id}
                       className="w-[160px] flex-shrink-0"
+                      data-release-card
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.4, delay: index * 0.05 }}
