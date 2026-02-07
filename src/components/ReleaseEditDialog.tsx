@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import type { Release } from '@/lib/types'
+import { fetchOdesliLinks } from '@/lib/odesli'
+import { toast } from 'sonner'
 
 interface ReleaseEditDialogProps {
   release: Release | null
@@ -22,6 +24,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
     youtube: '',
     appleMusic: ''
   })
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     if (release) {
@@ -39,21 +42,49 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
     }
   }, [release])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave({
-      id: release?.id || Date.now().toString(),
-      title: formData.title,
-      artwork: formData.artwork || undefined,
-      releaseDate: formData.releaseDate,
-      streamingLinks: {
-        spotify: formData.spotify || undefined,
-        soundcloud: formData.soundcloud || undefined,
-        bandcamp: formData.bandcamp || undefined,
-        youtube: formData.youtube || undefined,
-        appleMusic: formData.appleMusic || undefined
+    setIsSaving(true)
+
+    try {
+      let artwork = formData.artwork || undefined
+      let spotify = formData.spotify || undefined
+      let soundcloud = formData.soundcloud || undefined
+      let bandcamp = formData.bandcamp || undefined
+      let youtube = formData.youtube || undefined
+      let appleMusic = formData.appleMusic || undefined
+
+      // Use the first available streaming link to look up the rest via Odesli
+      const lookupUrl = formData.spotify || formData.appleMusic || formData.soundcloud || formData.youtube || formData.bandcamp
+      if (lookupUrl) {
+        try {
+          const odesliResult = await fetchOdesliLinks(lookupUrl)
+          if (odesliResult) {
+            // Only fill in missing values — never overwrite user entries
+            spotify = spotify || odesliResult.spotify
+            appleMusic = appleMusic || odesliResult.appleMusic
+            soundcloud = soundcloud || odesliResult.soundcloud
+            youtube = youtube || odesliResult.youtube
+            bandcamp = bandcamp || odesliResult.bandcamp
+            artwork = artwork || odesliResult.artwork
+            toast.success('Streaming links enriched via Odesli')
+          }
+        } catch (error) {
+          // Odesli lookup failed — save with the data we have
+          console.error('Odesli enrichment failed, saving without enrichment', error)
+        }
       }
-    })
+
+      onSave({
+        id: release?.id || Date.now().toString(),
+        title: formData.title,
+        artwork,
+        releaseDate: formData.releaseDate,
+        streamingLinks: { spotify, soundcloud, bandcamp, youtube, appleMusic }
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -166,10 +197,10 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" className="flex-1 bg-primary hover:bg-accent">
-              Save
+            <Button type="submit" disabled={isSaving} className="flex-1 bg-primary hover:bg-accent">
+              {isSaving ? 'Saving…' : 'Save'}
             </Button>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Cancel
             </Button>
           </div>
