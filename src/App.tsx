@@ -86,11 +86,11 @@ function App() {
     }
   }, [])
 
-  // Restore admin session from sessionStorage when the password hash loads.
-  // This keeps admin mode alive across page reloads within the same tab.
+  // Restore admin session from localStorage when the password hash loads.
+  // This keeps admin mode alive across page reloads, tab closes, and deployments.
   useEffect(() => {
     if (!adminPasswordHash) return
-    const storedToken = sessionStorage.getItem('admin-token')
+    const storedToken = localStorage.getItem('admin-token')
     if (storedToken && storedToken === adminPasswordHash) {
       setIsOwner(true)
     }
@@ -107,7 +107,7 @@ function App() {
   const handleAdminLogin = async (password: string): Promise<boolean> => {
     const hash = await hashPassword(password)
     if (hash === adminPasswordHash) {
-      sessionStorage.setItem('admin-token', hash)
+      localStorage.setItem('admin-token', hash)
       setIsOwner(true)
       return true
     }
@@ -123,24 +123,24 @@ function App() {
 
   const handleSetAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
-    sessionStorage.setItem('admin-token', hash)
+    localStorage.setItem('admin-token', hash)
     setAdminPasswordHash(hash)
   }
 
   const handleSetupAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
-    sessionStorage.setItem('admin-token', hash)
+    localStorage.setItem('admin-token', hash)
     setAdminPasswordHash(hash)
     setIsOwner(true)
   }
 
   const handleChangeAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
-    // Persist to KV first while the OLD token is still in sessionStorage so
+    // Persist to KV first while the OLD token is still in localStorage so
     // the server can authenticate the write against the existing hash.
     setAdminPasswordHash(hash)
-    // Then update the session token for future requests.
-    sessionStorage.setItem('admin-token', hash)
+    // Then update the stored token for future requests.
+    localStorage.setItem('admin-token', hash)
   }
 
   const handleTerminalActivation = () => {

@@ -5,7 +5,6 @@ import { useKV } from '@/hooks/use-kv'
 describe('useKV', () => {
   beforeEach(() => {
     localStorage.clear()
-    sessionStorage.clear()
     vi.restoreAllMocks()
   })
 
@@ -27,6 +26,18 @@ describe('useKV', () => {
     // After loading
     await waitFor(() => expect(result.current[2]).toBe(true))
     expect(result.current[0]).toEqual({ foo: 'bar' })
+  })
+
+  it('falls back to localStorage when API returns null but localStorage has data', async () => {
+    localStorage.setItem('kv:persisted-key', JSON.stringify({ saved: 'from-local' }))
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ value: null }), { status: 200 })
+    )
+
+    const { result } = renderHook(() => useKV('persisted-key', { saved: 'default' }))
+
+    await waitFor(() => expect(result.current[2]).toBe(true))
+    expect(result.current[0]).toEqual({ saved: 'from-local' })
   })
 
   it('returns value from API when available', async () => {
@@ -152,7 +163,7 @@ describe('useKV', () => {
       new Response(JSON.stringify({ value: 'data' }), { status: 200 })
     )
 
-    sessionStorage.setItem('admin-token', 'my-token')
+    localStorage.setItem('admin-token', 'my-token')
 
     const { result } = renderHook(() => useKV('auth-key', 'default'))
     await waitFor(() => expect(result.current[2]).toBe(true))
@@ -175,7 +186,7 @@ describe('useKV', () => {
     )
 
     // Make sure no admin token
-    sessionStorage.removeItem('admin-token')
+    localStorage.removeItem('admin-token')
 
     const { result } = renderHook(() => useKV('no-auth-key', 'default'))
     await waitFor(() => expect(result.current[2]).toBe(true))
@@ -202,7 +213,7 @@ describe('useKV', () => {
       return Promise.resolve(new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 }))
     })
 
-    sessionStorage.setItem('admin-token', 'token')
+    localStorage.setItem('admin-token', 'token')
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { result } = renderHook(() => useKV('fail-post-key', 'default'))
@@ -228,7 +239,7 @@ describe('useKV', () => {
       return Promise.reject(new Error('Network error'))
     })
 
-    sessionStorage.setItem('admin-token', 'token')
+    localStorage.setItem('admin-token', 'token')
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { result } = renderHook(() => useKV('network-err-key', 'default'))
@@ -260,7 +271,7 @@ describe('useKV', () => {
     const { result } = renderHook(() => useKV<string | null>('null-key', 'default'))
     await waitFor(() => expect(result.current[2]).toBe(true))
 
-    sessionStorage.setItem('admin-token', 'token')
+    localStorage.setItem('admin-token', 'token')
     act(() => { result.current[1](null) })
     expect(result.current[0]).toBeNull()
   })
