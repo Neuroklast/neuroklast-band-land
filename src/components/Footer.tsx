@@ -37,19 +37,10 @@ export default function Footer({ socialLinks, genres, label, onAdminLogin }: Foo
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex justify-center mb-6 md:mb-8">
-            <div className="relative scanline-text hud-scanline cursor-pointer group">
-              <img 
-                src={titleImage} 
-                alt="NEUROKLAST" 
-                className="h-16 md:h-20 lg:h-24 w-auto red-glitch-element chromatic-aberration-hover transition-all duration-200 group-hover:scale-100"
-              />
-            </div>
-          </div>
-
+          
           <div className="text-xs md:text-sm text-muted-foreground space-y-2 px-4 font-mono">
             <p className="tracking-wider">
-              <span className="text-primary/40">&gt;</span> {genres?.join(' · ') || 'HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO'}
+              <span className="text-primary/40">&gt;</span> {genres?.join(' · ') || 'HARD TECHNO · CYBERPUNK · DNB · DARK ELECTRO'}
             </p>
             {label && (
               <p className="text-[10px] md:text-xs">LABEL: {label}</p>
