@@ -113,7 +113,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const loadDriveFolder = async (url: string, silent = false) => {
     const folderId = extractDriveFolderId(url)
     if (!folderId) {
-      if (!silent) toast.error('Invalid Google Drive folder URL')
+      if (!silent) toast.error('Invalid Google Drive folder URL. Expected format: https://drive.google.com/drive/folders/...')
       return
     }
     setIsDriveLoading(true)

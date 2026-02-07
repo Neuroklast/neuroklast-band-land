@@ -34,6 +34,8 @@ export default async function handler(req, res) {
     // Extract file entries from the HTML.  The embedded view contains
     // data attributes or script blocks with file IDs.  We look for the
     // pattern used by Google to list file IDs and names.
+    // NOTE: This is a scraping approach and may break if Google changes
+    // their embedded folder view HTML structure.
     const images = []
 
     // Match file IDs from the embedded view HTML — Google embeds them as

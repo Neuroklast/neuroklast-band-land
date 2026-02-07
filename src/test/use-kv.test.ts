@@ -100,7 +100,7 @@ describe('useKV', () => {
   })
 
   it('does not POST to KV before initial load completes', async () => {
-    let resolveApi: (v: Response) => void
+    let resolveApi: ((v: Response) => void) | undefined
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation((url) => {
       if (typeof url === 'string' && url.includes('/api/kv?')) {
         return new Promise((res) => { resolveApi = res })

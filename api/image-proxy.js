@@ -8,8 +8,25 @@ import { kv } from '@vercel/kv'
  * GET /api/image-proxy?url=<encoded-url>
  */
 
-const MAX_IMAGE_SIZE = 4 * 1024 * 1024 // 4 MB
+const MAX_CACHEABLE_IMAGE_SIZE = 4 * 1024 * 1024 // 4 MB — larger images are served but not cached
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 30 // 30 days
+
+/** Block requests to private/internal networks to prevent SSRF */
+const BLOCKED_HOST_PATTERNS = [
+  /^localhost$/i,
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^0\./,
+  /^169\.254\./,
+  /^\[::1\]/,
+  /^metadata\.google\.internal$/i,
+]
+
+function isBlockedHost(hostname) {
+  return BLOCKED_HOST_PATTERNS.some(p => p.test(hostname))
+}
 
 function toDirectUrl(url) {
   const driveFile = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
@@ -35,6 +52,16 @@ export default async function handler(req, res) {
 
   // Only allow http(s) URLs
   if (!/^https?:\/\//i.test(url)) {
+    return res.status(400).json({ error: 'Invalid URL' })
+  }
+
+  // Block requests to private/internal networks (SSRF prevention)
+  try {
+    const parsed = new URL(url)
+    if (isBlockedHost(parsed.hostname)) {
+      return res.status(400).json({ error: 'Blocked host' })
+    }
+  } catch {
     return res.status(400).json({ error: 'Invalid URL' })
   }
 
@@ -71,7 +98,7 @@ export default async function handler(req, res) {
     }
 
     const arrayBuf = await response.arrayBuffer()
-    if (arrayBuf.byteLength > MAX_IMAGE_SIZE) {
+    if (arrayBuf.byteLength > MAX_CACHEABLE_IMAGE_SIZE) {
       // Serve but don't cache very large images
       res.setHeader('Content-Type', contentType)
       res.setHeader('Cache-Control', 'public, max-age=86400')

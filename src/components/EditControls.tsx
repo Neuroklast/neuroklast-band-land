@@ -1,12 +1,14 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, ArrowsClockwise } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
-import { toDirectImageUrl } from '@/lib/image-cache'
 import type { BandData } from '@/lib/types'
 import { toast } from 'sonner'
+
+const INITIAL_SYNC_DELAY_MS = 30_000 // 30 seconds after load
+const SYNC_INTERVAL_MS = 5 * 60_000  // every 5 minutes
 
 interface EditControlsProps {
   editMode: boolean
@@ -114,9 +116,8 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
       importFromUrl(syncUrl, true)
     }
 
-    // Check 30 seconds after load, then every 5 minutes
-    const initialTimeout = setTimeout(checkSync, 30_000)
-    const interval = setInterval(checkSync, 5 * 60_000)
+    const initialTimeout = setTimeout(checkSync, INITIAL_SYNC_DELAY_MS)
+    const interval = setInterval(checkSync, SYNC_INTERVAL_MS)
 
     return () => {
       clearTimeout(initialTimeout)

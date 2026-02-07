@@ -68,7 +68,9 @@ function compressImage(img: HTMLImageElement): string {
 
 /**
  * Transform known provider URLs into direct-download image URLs.
- * Supports Google Drive share links (file/d/{id}/... and open?id={id}).
+ * Supports Google Drive share links:
+ *   - /file/d/{id}/view → /uc?export=view&id={id}
+ *   - /open?id={id}     → /uc?export=view&id={id}
  */
 export function toDirectImageUrl(url: string): string {
   // Google Drive: /file/d/{fileId}/view  →  /uc?export=view&id={fileId}
