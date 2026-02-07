@@ -179,7 +179,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                     {impressum.responsibleName && (
                       <div>
                         <h2 className="text-primary text-base mb-3 tracking-wider">
-                          Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
+                          VERANTWORTLICH FÜR DEN INHALT NACH § 18 ABS. 2 MSTVV
                         </h2>
                         <p className="text-foreground/80">{impressum.responsibleName}</p>
                         {impressum.responsibleAddress && (
