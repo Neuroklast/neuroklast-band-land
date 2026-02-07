@@ -12,6 +12,7 @@ import SocialSection from '@/components/SocialSection'
 import InstagramGallery from '@/components/InstagramGallery'
 import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
+import AdminLoginDialog, { hashPassword } from '@/components/AdminLoginDialog'
 import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
@@ -45,10 +46,12 @@ const defaultBandData: BandData = {
 
 function App() {
   const [bandData, setBandData] = useKV<BandData>('band-data', defaultBandData)
+  const [adminPasswordHash, setAdminPasswordHash] = useKV<string>('admin-password-hash', '')
   const [isOwner, setIsOwner] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [terminalOpen, setTerminalOpen] = useState(false)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
 
   useEffect(() => {
     window.spark.user().then(user => {
@@ -59,6 +62,26 @@ function App() {
       console.warn('Failed to fetch user data:', err)
     })
   }, [])
+
+  const handleAdminLogin = async (password: string): Promise<boolean> => {
+    const hash = await hashPassword(password)
+    if (hash === adminPasswordHash) {
+      setIsOwner(true)
+      return true
+    }
+    return false
+  }
+
+  const handleSetAdminPassword = async (password: string): Promise<void> => {
+    const hash = await hashPassword(password)
+    setAdminPasswordHash(hash)
+    setIsOwner(true)
+  }
+
+  const handleChangeAdminPassword = async (password: string): Promise<void> => {
+    const hash = await hashPassword(password)
+    setAdminPasswordHash(hash)
+  }
 
   const handleTerminalActivation = () => {
     setTerminalOpen(true)
@@ -182,6 +205,7 @@ function App() {
                 socialLinks={safeSocialLinks} 
                 genres={data.genres}
                 label={data.label}
+                onAdminLogin={!isOwner ? () => setShowLoginDialog(true) : undefined}
               />
             </motion.div>
 
@@ -189,8 +213,19 @@ function App() {
               <EditControls 
                 editMode={editMode}
                 onToggleEdit={() => setEditMode(!editMode)}
+                hasPassword={!!adminPasswordHash}
+                onChangePassword={handleChangeAdminPassword}
+                onSetPassword={handleSetAdminPassword}
               />
             )}
+
+            <AdminLoginDialog
+              open={showLoginDialog}
+              onOpenChange={setShowLoginDialog}
+              hasPassword={!!adminPasswordHash}
+              onLogin={handleAdminLogin}
+              onSetPassword={handleSetAdminPassword}
+            />
           </motion.div>
         </motion.div>
       )}
