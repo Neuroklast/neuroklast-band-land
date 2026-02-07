@@ -86,6 +86,16 @@ function App() {
     }
   }, [])
 
+  // Restore admin session from sessionStorage when the password hash loads.
+  // This keeps admin mode alive across page reloads within the same tab.
+  useEffect(() => {
+    if (!adminPasswordHash) return
+    const storedToken = sessionStorage.getItem('admin-token')
+    if (storedToken && storedToken === adminPasswordHash) {
+      setIsOwner(true)
+    }
+  }, [adminPasswordHash])
+
   // Open setup dialog once KV data has loaded and confirms no password exists
   useEffect(() => {
     if (wantsSetup.current && adminPasswordHash !== undefined && !adminPasswordHash) {
@@ -126,8 +136,11 @@ function App() {
 
   const handleChangeAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
-    sessionStorage.setItem('admin-token', hash)
+    // Persist to KV first while the OLD token is still in sessionStorage so
+    // the server can authenticate the write against the existing hash.
     setAdminPasswordHash(hash)
+    // Then update the session token for future requests.
+    sessionStorage.setItem('admin-token', hash)
   }
 
   const handleTerminalActivation = () => {

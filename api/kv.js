@@ -1,7 +1,7 @@
 import { kv } from '@vercel/kv'
 
 // Constant-time string comparison to prevent timing attacks on hash comparison
-function timingSafeEqual(a, b) {
+export function timingSafeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false
   let result = 0
   for (let i = 0; i < a.length; i++) {
@@ -18,15 +18,20 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const { key } = req.query
-      if (!key) return res.status(400).json({ error: 'key is required' })
+      if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
 
       const value = await kv.get(key)
       return res.json({ value: value ?? null })
     }
 
     if (req.method === 'POST') {
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: 'Request body is required' })
+      }
+
       const { key, value } = req.body
-      if (!key) return res.status(400).json({ error: 'key is required' })
+      if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
+      if (value === undefined) return res.status(400).json({ error: 'value is required' })
 
       const token = req.headers['x-admin-token'] || ''
 
