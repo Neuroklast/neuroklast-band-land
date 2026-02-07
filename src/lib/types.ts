@@ -48,12 +48,30 @@ export interface Member {
   bio?: string
 }
 
+export interface Friend {
+  id: string
+  name: string
+  photo?: string
+  description?: string
+  url?: string
+  socials?: {
+    instagram?: string
+    facebook?: string
+    spotify?: string
+    soundcloud?: string
+    youtube?: string
+    bandcamp?: string
+    website?: string
+  }
+}
+
 export interface Biography {
   story: string
   founded?: string
   members?: (string | Member)[]
   achievements?: string[]
   photos?: string[]
+  friends?: Friend[]
 }
 
 export interface TerminalCommand {
