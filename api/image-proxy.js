@@ -33,7 +33,7 @@ function toDirectUrl(url) {
   if (driveFile) return `https://lh3.googleusercontent.com/d/${driveFile[1]}`
   const driveOpen = url.match(/drive\.google\.com\/open\?id=([^&#]+)/)
   if (driveOpen) return `https://lh3.googleusercontent.com/d/${driveOpen[1]}`
-  const driveUc = url.match(/drive\.google\.com\/uc\?.*?id=([^&#]+)/)
+  const driveUc = url.match(/drive\.google\.com\/uc\?[^#]*?id=([^&#]+)/)
   if (driveUc) return `https://lh3.googleusercontent.com/d/${driveUc[1]}`
   return url
 }

@@ -84,7 +84,7 @@ export function toDirectImageUrl(url: string): string {
     return `https://lh3.googleusercontent.com/d/${driveOpenMatch[1]}`
   }
   // Google Drive: uc?export=view&id={fileId}
-  const driveUcMatch = url.match(/drive\.google\.com\/uc\?.*?id=([^&#]+)/)
+  const driveUcMatch = url.match(/drive\.google\.com\/uc\?[^#]*?id=([^&#]+)/)
   if (driveUcMatch) {
     return `https://lh3.googleusercontent.com/d/${driveUcMatch[1]}`
   }
