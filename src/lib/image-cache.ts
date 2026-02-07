@@ -67,26 +67,35 @@ function compressImage(img: HTMLImageElement): string {
 }
 
 /**
- * Transform known provider URLs into direct-download image URLs.
- * Supports Google Drive share links:
- *   - /file/d/{id}/view → /uc?export=view&id={id}
- *   - /open?id={id}     → /uc?export=view&id={id}
+ * Transform known provider URLs into wsrv.nl-proxied image URLs.
+ * Supports Google Drive share links and lh3 CDN URLs:
+ *   - /file/d/{id}/view        → wsrv.nl/?url=lh3.../{id}
+ *   - /open?id={id}            → wsrv.nl/?url=lh3.../{id}
+ *   - /uc?export=view&id={id}  → wsrv.nl/?url=lh3.../{id}
+ *   - lh3.googleusercontent.com/d/{id} → wsrv.nl/?url=lh3.../{id}
  */
 export function toDirectImageUrl(url: string): string {
-  // Google Drive: /file/d/{fileId}/view  →  lh3 CDN
+  // Google Drive: /file/d/{fileId}/view  →  wsrv.nl proxy
   const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
   if (driveFileMatch) {
-    return `https://lh3.googleusercontent.com/d/${driveFileMatch[1]}`
+    return `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${driveFileMatch[1]}`
   }
   // Google Drive: open?id={fileId}
   const driveOpenMatch = url.match(/drive\.google\.com\/open\?id=([^&#]+)/)
   if (driveOpenMatch) {
-    return `https://lh3.googleusercontent.com/d/${driveOpenMatch[1]}`
+    return `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${driveOpenMatch[1]}`
   }
   // Google Drive: uc?export=view&id={fileId}
   const driveUcMatch = url.match(/drive\.google\.com\/uc\?[^#]*?id=([^&#]+)/)
   if (driveUcMatch) {
-    return `https://lh3.googleusercontent.com/d/${driveUcMatch[1]}`
+    return `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${driveUcMatch[1]}`
+  }
+  // Already an lh3 URL — wrap through wsrv.nl (skip if already wrapped)
+  if (!url.includes('wsrv.nl')) {
+    const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([^/?#]+)/)
+    if (lh3Match) {
+      return `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${lh3Match[1]}`
+    }
   }
   return url
 }

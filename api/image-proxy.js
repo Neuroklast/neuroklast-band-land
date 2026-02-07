@@ -38,6 +38,9 @@ function toDirectUrl(url) {
   // Handle lh3 CDN URLs — convert back to reliable export URL
   const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([^/?#]+)/)
   if (lh3Match) return `https://drive.google.com/uc?export=view&id=${lh3Match[1]}`
+  // Handle wsrv.nl-wrapped lh3 URLs — extract the file ID and convert
+  const wsrvLh3Match = url.match(/wsrv\.nl\/\?url=https?:\/\/lh3\.googleusercontent\.com\/d\/([^/?#&]+)/)
+  if (wsrvLh3Match) return `https://drive.google.com/uc?export=view&id=${wsrvLh3Match[1]}`
   return url
 }
 
