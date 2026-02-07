@@ -46,42 +46,45 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
     e.preventDefault()
     setIsSaving(true)
 
-    let artwork = formData.artwork || undefined
-    let spotify = formData.spotify || undefined
-    let soundcloud = formData.soundcloud || undefined
-    let bandcamp = formData.bandcamp || undefined
-    let youtube = formData.youtube || undefined
-    let appleMusic = formData.appleMusic || undefined
+    try {
+      let artwork = formData.artwork || undefined
+      let spotify = formData.spotify || undefined
+      let soundcloud = formData.soundcloud || undefined
+      let bandcamp = formData.bandcamp || undefined
+      let youtube = formData.youtube || undefined
+      let appleMusic = formData.appleMusic || undefined
 
-    // Use the first available streaming link to look up the rest via Odesli
-    const lookupUrl = formData.spotify || formData.appleMusic || formData.soundcloud || formData.youtube || formData.bandcamp
-    if (lookupUrl) {
-      try {
-        const odesliResult = await fetchOdesliLinks(lookupUrl)
-        if (odesliResult) {
-          // Only fill in missing values — never overwrite user entries
-          spotify = spotify || odesliResult.spotify
-          appleMusic = appleMusic || odesliResult.appleMusic
-          soundcloud = soundcloud || odesliResult.soundcloud
-          youtube = youtube || odesliResult.youtube
-          bandcamp = bandcamp || odesliResult.bandcamp
-          artwork = artwork || odesliResult.artwork
-          toast.success('Streaming links enriched via Odesli')
+      // Use the first available streaming link to look up the rest via Odesli
+      const lookupUrl = formData.spotify || formData.appleMusic || formData.soundcloud || formData.youtube || formData.bandcamp
+      if (lookupUrl) {
+        try {
+          const odesliResult = await fetchOdesliLinks(lookupUrl)
+          if (odesliResult) {
+            // Only fill in missing values — never overwrite user entries
+            spotify = spotify || odesliResult.spotify
+            appleMusic = appleMusic || odesliResult.appleMusic
+            soundcloud = soundcloud || odesliResult.soundcloud
+            youtube = youtube || odesliResult.youtube
+            bandcamp = bandcamp || odesliResult.bandcamp
+            artwork = artwork || odesliResult.artwork
+            toast.success('Streaming links enriched via Odesli')
+          }
+        } catch (error) {
+          // Odesli lookup failed — save with the data we have
+          console.error('Odesli enrichment failed, saving without enrichment', error)
         }
-      } catch {
-        // Odesli lookup failed — save with the data we have
-        console.error('Odesli enrichment failed, saving without enrichment')
       }
-    }
 
-    onSave({
-      id: release?.id || Date.now().toString(),
-      title: formData.title,
-      artwork,
-      releaseDate: formData.releaseDate,
-      streamingLinks: { spotify, soundcloud, bandcamp, youtube, appleMusic }
-    })
-    setIsSaving(false)
+      onSave({
+        id: release?.id || Date.now().toString(),
+        title: formData.title,
+        artwork,
+        releaseDate: formData.releaseDate,
+        streamingLinks: { spotify, soundcloud, bandcamp, youtube, appleMusic }
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
