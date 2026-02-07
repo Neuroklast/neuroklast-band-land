@@ -58,7 +58,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     let output: Array<{ type: 'command' | 'output' | 'error', text: string }> = []
 
     // Check custom commands first
-    const customCmd = customCommands.find(c => c.name.toLowerCase() === trimmedCmd)
+    const customCmd = customCommands.find(c => c.name?.toLowerCase() === trimmedCmd)
 
     if (customCmd) {
       output = [
@@ -166,9 +166,9 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
   }
 
   const hasNameConflict = (name: string, index: number) => {
-    const lower = name.toLowerCase().trim()
+    const lower = (name || '').toLowerCase().trim()
     if (RESERVED.includes(lower)) return 'Reserved command name'
-    if (cmds.some((c, i) => i !== index && c.name.toLowerCase().trim() === lower)) return 'Duplicate name'
+    if (cmds.some((c, i) => i !== index && (c.name || '').toLowerCase().trim() === lower)) return 'Duplicate name'
     return null
   }
 

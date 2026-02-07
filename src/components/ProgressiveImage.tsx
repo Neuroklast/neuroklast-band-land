@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { toDirectImageUrl } from '@/lib/image-cache'
 
 interface ProgressiveImageProps {
   src: string
@@ -11,9 +12,27 @@ interface ProgressiveImageProps {
 
 /**
  * Image component with a progress bar shown while loading.
+ * Automatically transforms Google Drive share links into direct image URLs
+ * and falls back to the server-side image proxy when CORS prevents loading.
  */
 export default function ProgressiveImage({ src, alt, className, style, draggable, loading }: ProgressiveImageProps) {
   const [loaded, setLoaded] = useState(false)
+  const [effectiveSrc, setEffectiveSrc] = useState(() => toDirectImageUrl(src))
+  const [proxyAttempted, setProxyAttempted] = useState(false)
+
+  useEffect(() => {
+    setEffectiveSrc(toDirectImageUrl(src))
+    setLoaded(false)
+    setProxyAttempted(false)
+  }, [src])
+
+  const handleError = () => {
+    if (!proxyAttempted) {
+      setProxyAttempted(true)
+      const directUrl = toDirectImageUrl(src)
+      setEffectiveSrc(`/api/image-proxy?url=${encodeURIComponent(directUrl)}`)
+    }
+  }
 
   return (
     <div className="relative w-full h-full">
@@ -30,13 +49,14 @@ export default function ProgressiveImage({ src, alt, className, style, draggable
         </div>
       )}
       <img
-        src={src}
+        src={effectiveSrc}
         alt={alt}
         className={className}
         style={{ ...style, opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
         draggable={draggable}
         loading={loading}
         onLoad={() => setLoaded(true)}
+        onError={handleError}
       />
     </div>
   )
