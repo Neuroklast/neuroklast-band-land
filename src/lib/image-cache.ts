@@ -117,9 +117,9 @@ function loadImageElement(url: string): Promise<HTMLImageElement> {
     img.onload = () => resolve(img)
     img.onerror = () => {
       // Only use server-side proxy for non-Google Drive URLs that fail CORS
-      // Google Drive URLs already go through wsrv.nl, so don't double-proxy
-      const isGoogleDrive = /drive\.google\.com|lh3\.googleusercontent\.com|wsrv\.nl/.test(directUrl)
-      if (isGoogleDrive) {
+      // Google Drive/wsrv.nl URLs already have their own proxy, so don't double-proxy
+      const isAlreadyProxied = /drive\.google\.com|lh3\.googleusercontent\.com|wsrv\.nl/.test(directUrl)
+      if (isAlreadyProxied) {
         reject(new Error('Failed to load image from wsrv.nl'))
       } else {
         const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(directUrl)}`

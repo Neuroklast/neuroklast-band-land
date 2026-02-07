@@ -24,12 +24,21 @@ This is described as "Doppelt gemoppelt" (double wrapping) - a classic anti-patt
 - Google Drive URLs already converted to wsrv.nl are NOT sent through `/api/image-proxy`
 - Only non-Google Drive URLs that fail CORS use the server proxy
 
-### Backend (Unchanged)
+### Backend Safety Mechanisms
 
-The `/api/image-proxy` endpoint already had safety mechanisms:
-- Unwraps wsrv.nl URLs to extract the Google Drive file ID
-- Prevents double proxying at the server level
-- Still needed for:
+The `/api/image-proxy` endpoint had server-side safety mechanisms (lines 42-43):
+- Detects and unwraps wsrv.nl URLs to extract the Google Drive file ID
+- Converts them back to direct Google Drive URLs
+- **However**, these only prevented issues at the server level
+
+The problem was that the **frontend was still making the double-proxy request**, which:
+- Created complex URL-in-URL patterns that some security systems block (400 errors)
+- Added unnecessary network latency (client → server → wsrv.nl instead of client → wsrv.nl)
+- Increased server load even when unwrapping worked
+
+The frontend changes prevent these requests from being made in the first place.
+
+The `/api/image-proxy` is still needed for:
   - Non-Google Drive URLs that require CORS handling
   - JSON file imports (EditControls.tsx)
   - Fallback when direct wsrv.nl loading fails
