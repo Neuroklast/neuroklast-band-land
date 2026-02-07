@@ -46,6 +46,17 @@ export interface TerminalCommand {
   output: string[]
 }
 
+export interface Impressum {
+  name: string
+  careOf?: string
+  street?: string
+  zipCity?: string
+  phone?: string
+  email?: string
+  responsibleName?: string
+  responsibleAddress?: string
+}
+
 export interface BandData {
   name: string
   genres: string[]
@@ -55,4 +66,5 @@ export interface BandData {
   biography?: Biography
   label?: string
   terminalCommands?: TerminalCommand[]
+  impressum?: Impressum
 }

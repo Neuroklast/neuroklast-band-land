@@ -8,9 +8,10 @@ interface FooterProps {
   genres?: string[]
   label?: string
   onAdminLogin?: () => void
+  onImpressum?: () => void
 }
 
-export default function Footer({ socialLinks, genres, label, onAdminLogin }: FooterProps) {
+export default function Footer({ socialLinks, genres, label, onAdminLogin, onImpressum }: FooterProps) {
   const safeSocialLinks = socialLinks || {}
 
   return (
@@ -46,6 +47,14 @@ export default function Footer({ socialLinks, genres, label, onAdminLogin }: Foo
               <p className="text-[10px] md:text-xs">LABEL: {label}</p>
             )}
             <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
+            {onImpressum && (
+              <button
+                onClick={onImpressum}
+                className="inline-block text-[10px] md:text-xs text-muted-foreground/60 hover:text-primary/80 transition-colors mt-1 font-mono tracking-wider"
+              >
+                IMPRESSUM
+              </button>
+            )}
             {onAdminLogin && (
               <button
                 onClick={onAdminLogin}
