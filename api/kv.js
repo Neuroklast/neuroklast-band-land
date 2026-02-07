@@ -57,6 +57,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
     console.error('KV API error:', error)
-    return res.status(500).json({ error: 'Internal server error' })
+    // Provide more detailed error message for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('KV API error details:', {
+      message: errorMessage,
+      key: req.body?.key,
+      method: req.method,
+      hasToken: !!req.headers['x-admin-token']
+    })
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    })
   }
 }

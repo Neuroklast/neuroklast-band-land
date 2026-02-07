@@ -88,12 +88,18 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
             'x-admin-token': adminToken
           },
           body: JSON.stringify({ key, value: newValue }),
-        }).then(res => {
+        }).then(async res => {
           if (!res.ok) {
-            console.warn(`KV POST failed (${res.status}) for key "${key}"`)
+            // Try to get more detailed error info
+            try {
+              const errorData = await res.json()
+              console.error(`KV POST failed (${res.status}) for key "${key}":`, errorData)
+            } catch {
+              console.warn(`KV POST failed (${res.status}) for key "${key}"`)
+            }
           }
         }).catch(err => {
-          console.warn('KV POST error:', err)
+          console.error('KV POST error:', err)
         })
       }
 

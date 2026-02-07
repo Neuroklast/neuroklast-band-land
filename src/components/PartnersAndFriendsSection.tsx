@@ -9,6 +9,7 @@ import { useState, useRef } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend } from '@/lib/types'
+import { toDirectImageUrl } from '@/lib/image-cache'
 
 interface PartnersAndFriendsSectionProps {
   friends?: Friend[]
@@ -36,7 +37,12 @@ function FriendCard({ friend, editMode, onUpdate, onDelete }: {
   const [editData, setEditData] = useState(friend)
 
   const handleSave = () => {
-    onUpdate(editData)
+    // Convert Google Drive URLs to wsrv.nl URLs before saving
+    const updatedData = {
+      ...editData,
+      photo: editData.photo ? toDirectImageUrl(editData.photo) : editData.photo
+    }
+    onUpdate(updatedData)
     setIsEditing(false)
   }
 
