@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Plus, X } from '@phosphor-icons/react'
-import type { Biography } from '@/lib/types'
+import type { Biography, Member } from '@/lib/types'
 
 interface BiographyEditDialogProps {
   open: boolean
@@ -14,10 +14,12 @@ interface BiographyEditDialogProps {
   onSave: (biography: Biography) => void
 }
 
+const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
+
 export default function BiographyEditDialog({ open, onOpenChange, biography, onSave }: BiographyEditDialogProps) {
   const [story, setStory] = useState(biography.story)
   const [founded, setFounded] = useState(biography.founded || '')
-  const [members, setMembers] = useState<string[]>(biography.members || [])
+  const [members, setMembers] = useState<Member[]>((biography.members || []).map(normalizeMember))
   const [achievements, setAchievements] = useState<string[]>(biography.achievements || [])
   const [newMember, setNewMember] = useState('')
   const [newAchievement, setNewAchievement] = useState('')
@@ -33,13 +35,17 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
 
   const addMember = () => {
     if (newMember.trim()) {
-      setMembers([...members, newMember.trim()])
+      setMembers([...members, { name: newMember.trim(), photo: '', bio: '' }])
       setNewMember('')
     }
   }
 
   const removeMember = (index: number) => {
     setMembers(members.filter((_, i) => i !== index))
+  }
+
+  const updateMember = (index: number, field: keyof Member, value: string) => {
+    setMembers(members.map((m, i) => i === index ? { ...m, [field]: value } : m))
   }
 
   const addAchievement = () => {
@@ -85,18 +91,36 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
 
           <div className="space-y-2">
             <Label>Members</Label>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {members.map((member, index) => (
-                <div key={index} className="flex gap-2 items-center">
-                  <Input value={member} disabled className="flex-1" />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeMember(index)}
-                  >
-                    <X size={16} />
-                  </Button>
+                <div key={index} className="border border-border rounded-md p-3 space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={member.name}
+                      onChange={(e) => updateMember(index, 'name', e.target.value)}
+                      placeholder="Member name"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeMember(index)}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                  <Input
+                    value={member.photo || ''}
+                    onChange={(e) => updateMember(index, 'photo', e.target.value)}
+                    placeholder="Photo URL (optional)"
+                  />
+                  <Textarea
+                    value={member.bio || ''}
+                    onChange={(e) => updateMember(index, 'bio', e.target.value)}
+                    placeholder="Bio (optional)"
+                    className="min-h-[60px] resize-y"
+                  />
                 </div>
               ))}
               <div className="flex gap-2">
