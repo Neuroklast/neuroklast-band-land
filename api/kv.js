@@ -1,5 +1,10 @@
 import { kv } from '@vercel/kv'
 
+// Check if KV is properly configured
+const isKVConfigured = () => {
+  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+}
+
 // Constant-time string comparison to prevent timing attacks on hash comparison
 export function timingSafeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false
@@ -13,6 +18,15 @@ export function timingSafeEqual(a, b) {
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
+  }
+
+  // Check if KV is configured
+  if (!isKVConfigured()) {
+    console.error('KV not configured: Missing KV_REST_API_URL or KV_REST_API_TOKEN environment variables')
+    return res.status(503).json({ 
+      error: 'Service unavailable',
+      message: 'KV storage is not configured. Please set KV_REST_API_URL and KV_REST_API_TOKEN environment variables.'
+    })
   }
 
   try {
@@ -65,6 +79,16 @@ export default async function handler(req, res) {
       method: req.method,
       hasToken: !!req.headers['x-admin-token']
     })
+    
+    // Check if it's a KV configuration error
+    if (errorMessage.includes('KV_') || errorMessage.includes('REST_API')) {
+      return res.status(503).json({ 
+        error: 'Service unavailable',
+        message: 'KV storage configuration error',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      })
+    }
+    
     return res.status(500).json({ 
       error: 'Internal server error',
       details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
