@@ -79,8 +79,6 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
           const allCommands = [
             { name: 'help', description: 'Show this message' },
             ...customCommands.map(c => ({ name: c.name, description: c.description })),
-            { name: 'glitch', description: 'Trigger visual glitch' },
-            { name: 'matrix', description: 'Display data stream' },
             { name: 'clear', description: 'Clear terminal' },
             { name: 'exit', description: 'Close terminal' },
           ]
@@ -95,26 +93,6 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
           break
         }
 
-        case 'glitch':
-          output = [
-            { type: 'output', text: 'INITIATING VISUAL CORRUPTION...' },
-            { type: 'output', text: 'GLITCH SEQUENCE ACTIVATED' },
-            { type: 'output', text: '' }
-          ]
-          document.documentElement.classList.add('red-glitch-text')
-          setTimeout(() => {
-            document.documentElement.classList.remove('red-glitch-text')
-          }, 300)
-          break
-
-        case 'matrix':
-          output = [
-            { type: 'output', text: '01001110 01000101 01010101 01010010 01001111' },
-            { type: 'output', text: '01001011 01001100 01000001 01010011 01010100' },
-            { type: 'output', text: 'DECODING... NEUROKLAST' },
-            { type: 'output', text: '' }
-          ]
-          break
 
         case 'clear':
           setHistory([
