@@ -5,6 +5,7 @@ const ARTIST_NAME = 'NEUROKLAST'
 
 export async function fetchSpotifyReleases(): Promise<Release[]> {
   try {
+    if (typeof window.spark === 'undefined') return []
     const artistId = SPOTIFY_ARTIST_ID
     
     const promptText = `You are a Spotify data fetcher. Get the latest albums and singles from Spotify artist ID ${artistId} (NEUROKLAST).
@@ -72,6 +73,7 @@ Return ONLY valid JSON, no explanations.`
 
 export async function fetchUpcomingGigs(): Promise<Gig[]> {
   try {
+    if (typeof window.spark === 'undefined') return []
     const artistName = ARTIST_NAME
     
     const promptText = `You are a concert data fetcher. Find upcoming concerts and tour dates for the artist "${artistName}".

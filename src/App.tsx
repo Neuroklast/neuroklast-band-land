@@ -1,10 +1,11 @@
-import { useKV } from '@github/spark/hooks'
-import { useEffect, useState } from 'react'
+import { useKV } from '@/hooks/use-kv'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
+import BandInfoEditDialog from '@/components/BandInfoEditDialog'
 import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
@@ -52,26 +53,56 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [terminalOpen, setTerminalOpen] = useState(false)
   const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [showSetupDialog, setShowSetupDialog] = useState(false)
+  const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
 
+  // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
+  const wantsSetup = useRef(false)
   useEffect(() => {
-    window.spark.user().then(user => {
-      if (user && user.isOwner) {
-        setIsOwner(true)
-        if (!adminPasswordHash) {
-          toast.info('TIP: Set an admin password', {
-            description: 'Use the key icon in edit mode to set a password for login from other devices.',
-            duration: 8000
-          })
+    const params = new URLSearchParams(window.location.search)
+    if (params.has('admin-setup')) {
+      wantsSetup.current = true
+      // Clean up URL immediately
+      const url = new URL(window.location.href)
+      url.searchParams.delete('admin-setup')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [])
+
+  // Primary auth: Spark platform owner detection (only works on Spark)
+  useEffect(() => {
+    if (typeof window.spark === 'undefined') return
+    try {
+      window.spark.user().then(user => {
+        if (user && user.isOwner) {
+          setIsOwner(true)
+          if (!adminPasswordHash) {
+            toast.info('TIP: Set an admin password', {
+              description: 'Use the key icon in edit mode to set a password for login from other devices.',
+              duration: 8000
+            })
+          }
         }
-      }
-    }).catch(err => {
-      console.warn('Failed to fetch user data:', err)
-    })
+      }).catch(() => {
+        // Spark auth not available
+      })
+    } catch {
+      // Spark runtime not available (Vercel deployment)
+    }
+  }, [adminPasswordHash])
+
+  // Open setup dialog once KV data has loaded and confirms no password exists
+  useEffect(() => {
+    if (wantsSetup.current && adminPasswordHash !== undefined && !adminPasswordHash) {
+      wantsSetup.current = false
+      setShowSetupDialog(true)
+    }
   }, [adminPasswordHash])
 
   const handleAdminLogin = async (password: string): Promise<boolean> => {
     const hash = await hashPassword(password)
     if (hash === adminPasswordHash) {
+      sessionStorage.setItem('admin-token', hash)
       setIsOwner(true)
       return true
     }
@@ -80,11 +111,20 @@ function App() {
 
   const handleSetAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
+    sessionStorage.setItem('admin-token', hash)
     setAdminPasswordHash(hash)
+  }
+
+  const handleSetupAdminPassword = async (password: string): Promise<void> => {
+    const hash = await hashPassword(password)
+    sessionStorage.setItem('admin-token', hash)
+    setAdminPasswordHash(hash)
+    setIsOwner(true)
   }
 
   const handleChangeAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
+    sessionStorage.setItem('admin-token', hash)
     setAdminPasswordHash(hash)
   }
 
@@ -141,6 +181,8 @@ function App() {
             <Hero 
               name={data.name} 
               genres={data.genres}
+              editMode={editMode && isOwner}
+              onEdit={() => setShowBandInfoEdit(true)}
             />
 
             <main className="relative">
@@ -230,6 +272,22 @@ function App() {
               mode="login"
               onLogin={handleAdminLogin}
               onSetPassword={handleSetAdminPassword}
+            />
+
+            <AdminLoginDialog
+              open={showSetupDialog}
+              onOpenChange={setShowSetupDialog}
+              mode="setup"
+              onSetPassword={handleSetupAdminPassword}
+            />
+
+            <BandInfoEditDialog
+              open={showBandInfoEdit}
+              onOpenChange={setShowBandInfoEdit}
+              name={data.name}
+              genres={data.genres}
+              label={data.label}
+              onSave={({ name, genres, label }) => setBandData((current) => ({ ...(current || defaultBandData), name, genres, label }))}
             />
           </motion.div>
         </motion.div>

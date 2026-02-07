@@ -1,0 +1,69 @@
+import { useState, useEffect, useCallback, useRef } from 'react'
+
+/**
+ * Custom KV hook that replaces @github/spark's useKV.
+ * Uses /api/kv (Vercel KV) for persistence, with localStorage fallback for local dev.
+ * The admin token from sessionStorage is sent with write requests for auth.
+ */
+export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater: T | ((current: T | undefined) => T)) => void] {
+  const [value, setValue] = useState<T | undefined>(undefined)
+  const initializedRef = useRef(false)
+
+  useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
+
+    fetch(`/api/kv?key=${encodeURIComponent(key)}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.value !== null && data.value !== undefined) {
+          setValue(data.value as T)
+        } else {
+          setValue(defaultValue)
+        }
+      })
+      .catch(() => {
+        // API not available (local dev), try localStorage
+        try {
+          const stored = localStorage.getItem(`kv:${key}`)
+          if (stored !== null) {
+            setValue(JSON.parse(stored) as T)
+          } else {
+            setValue(defaultValue)
+          }
+        } catch {
+          setValue(defaultValue)
+        }
+      })
+  }, [key, defaultValue])
+
+  const updateValue = useCallback((updater: T | ((current: T | undefined) => T)) => {
+    setValue(prev => {
+      const newValue = typeof updater === 'function'
+        ? (updater as (current: T | undefined) => T)(prev)
+        : updater
+
+      const adminToken = sessionStorage.getItem('admin-token') || ''
+
+      fetch('/api/kv', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': adminToken
+        },
+        body: JSON.stringify({ key, value: newValue }),
+      }).catch(() => {
+        // API not available (local dev), fallback to localStorage
+        try {
+          localStorage.setItem(`kv:${key}`, JSON.stringify(newValue))
+        } catch (e) {
+          console.warn('Failed to persist KV:', e)
+        }
+      })
+
+      return newValue
+    })
+  }, [key])
+
+  return [value, updateValue]
+}
