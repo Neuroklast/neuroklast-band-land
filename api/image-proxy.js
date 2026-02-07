@@ -30,9 +30,11 @@ function isBlockedHost(hostname) {
 
 function toDirectUrl(url) {
   const driveFile = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
-  if (driveFile) return `https://drive.google.com/uc?export=view&id=${driveFile[1]}`
+  if (driveFile) return `https://lh3.googleusercontent.com/d/${driveFile[1]}`
   const driveOpen = url.match(/drive\.google\.com\/open\?id=([^&#]+)/)
-  if (driveOpen) return `https://drive.google.com/uc?export=view&id=${driveOpen[1]}`
+  if (driveOpen) return `https://lh3.googleusercontent.com/d/${driveOpen[1]}`
+  const driveUc = url.match(/drive\.google\.com\/uc\?.*?id=([^&#]+)/)
+  if (driveUc) return `https://lh3.googleusercontent.com/d/${driveUc[1]}`
   return url
 }
 

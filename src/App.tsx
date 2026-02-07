@@ -10,6 +10,7 @@ import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
 import SocialSection from '@/components/SocialSection'
+import PartnersAndFriendsSection from '@/components/PartnersAndFriendsSection'
 import InstagramGallery from '@/components/InstagramGallery'
 import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
@@ -278,6 +279,21 @@ function App() {
                   onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.5 }}
+              >
+                <PartnersAndFriendsSection
+                  friends={data.biography?.friends}
+                  editMode={editMode && isOwner}
+                  onUpdate={(friends) => setBandData((current) => ({
+                    ...(current || defaultBandData),
+                    biography: { ...(current || defaultBandData).biography!, friends }
+                  }))}
                 />
               </motion.div>
             </main>

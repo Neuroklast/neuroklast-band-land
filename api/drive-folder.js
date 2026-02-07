@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       if (isImage && !images.find(i => i.id === fileId)) {
         images.push({
           id: `drive-${fileId}`,
-          url: `https://drive.google.com/uc?export=view&id=${fileId}`,
+          url: `https://lh3.googleusercontent.com/d/${fileId}`,
           caption: fileName.replace(/\.[^.]+$/, '') || `IMG_${images.length}`,
         })
       }
@@ -67,7 +67,7 @@ export default async function handler(req, res) {
         if (!images.find(i => i.id === `drive-${fileId}`)) {
           images.push({
             id: `drive-${fileId}`,
-            url: `https://drive.google.com/uc?export=view&id=${fileId}`,
+            url: `https://lh3.googleusercontent.com/d/${fileId}`,
             caption: `IMG_${images.length}`,
           })
         }
