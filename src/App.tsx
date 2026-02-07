@@ -136,8 +136,11 @@ function App() {
 
   const handleChangeAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
-    sessionStorage.setItem('admin-token', hash)
+    // Persist to KV first while the OLD token is still in sessionStorage so
+    // the server can authenticate the write against the existing hash.
     setAdminPasswordHash(hash)
+    // Then update the session token for future requests.
+    sessionStorage.setItem('admin-token', hash)
   }
 
   const handleTerminalActivation = () => {

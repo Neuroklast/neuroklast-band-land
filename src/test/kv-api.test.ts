@@ -248,11 +248,14 @@ describe('timingSafeEqual', () => {
     expect(timingSafeEqual('abc', 'abcd')).toBe(false)
   })
 
+  // Runtime type checks — intentionally passing non-string values
   it('returns false when a is not a string', () => {
+    // @ts-expect-error testing runtime guard against non-string input
     expect(timingSafeEqual(123, 'abc')).toBe(false)
   })
 
   it('returns false when b is not a string', () => {
+    // @ts-expect-error testing runtime guard against non-string input
     expect(timingSafeEqual('abc', null)).toBe(false)
   })
 

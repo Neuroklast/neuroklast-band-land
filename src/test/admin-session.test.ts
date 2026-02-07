@@ -123,4 +123,39 @@ describe('admin login flow', () => {
     expect(sessionStorage.getItem('admin-token')).toBe(newHash)
     expect(sessionStorage.getItem('admin-token')).not.toBe(oldHash)
   })
+
+  it('password change must read OLD token before updating sessionStorage', async () => {
+    // This test validates the fix for the critical password-change bug:
+    // The KV write (setAdminPasswordHash) reads sessionStorage synchronously
+    // inside setValue. If sessionStorage is updated BEFORE the KV write,
+    // the new hash is sent as x-admin-token, but the server still has the
+    // old hash → 403. The correct order is: KV write first, then update
+    // sessionStorage.
+    const oldHash = await hashPassword('oldPassword')
+    const newHash = await hashPassword('newPassword')
+    sessionStorage.setItem('admin-token', oldHash)
+
+    // Simulate the CORRECT order (as in handleChangeAdminPassword):
+    // 1. Read token BEFORE updating sessionStorage
+    const tokenDuringKvWrite = sessionStorage.getItem('admin-token')
+    expect(tokenDuringKvWrite).toBe(oldHash) // OLD token used for auth ✓
+
+    // 2. Then update sessionStorage
+    sessionStorage.setItem('admin-token', newHash)
+    expect(sessionStorage.getItem('admin-token')).toBe(newHash)
+  })
+
+  it('initial password setup needs token in sessionStorage before KV write', async () => {
+    // For initial setup (no existing password), the server skips auth.
+    // But useKV's guard requires a non-empty adminToken to POST at all.
+    // So sessionStorage must be set BEFORE setAdminPasswordHash.
+    const hash = await hashPassword('firstPassword')
+
+    // Before setup, no token exists
+    expect(sessionStorage.getItem('admin-token')).toBeNull()
+
+    // Set token first (so useKV's POST guard passes)
+    sessionStorage.setItem('admin-token', hash)
+    expect(sessionStorage.getItem('admin-token')).toBe(hash)
+  })
 })

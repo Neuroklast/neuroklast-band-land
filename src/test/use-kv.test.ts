@@ -182,9 +182,8 @@ describe('useKV', () => {
 
     act(() => { result.current[1]('new-value') })
 
-    // Wait a tick to ensure any pending POSTs would have been initiated
-    await new Promise(r => setTimeout(r, 50))
-
+    // The decision to POST is synchronous inside setValue, so we can
+    // check immediately — no POST should have been initiated.
     const postCalls = fetchSpy.mock.calls.filter(
       (call) => call[1] && (call[1] as RequestInit).method === 'POST'
     )
