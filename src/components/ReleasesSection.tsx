@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import type { Release, FontSizeSettings } from '@/lib/types'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
 import { fetchITunesReleases } from '@/lib/itunes'
@@ -14,6 +14,8 @@ import { fetchOdesliLinks } from '@/lib/odesli'
 import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import FontSizePicker from '@/components/FontSizePicker'
+
+import { useTouchSwipe } from '@/hooks/use-touch-swipe'
 
 interface ReleasesSectionProps {
   releases: Release[]
@@ -31,6 +33,9 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const [expandedReleaseId, setExpandedReleaseId] = useState<string | null>(null)
+  const [showAllDesktop, setShowAllDesktop] = useState(false)
+  const [mobileScrollIndex, setMobileScrollIndex] = useState(0)
+  const mobileScrollRef = useRef<HTMLDivElement>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
 
@@ -68,6 +73,26 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
       return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
     }
   )
+
+  const DESKTOP_INITIAL_COUNT = 3
+  const desktopReleases = showAllDesktop || editMode ? sortedReleases : sortedReleases.slice(0, DESKTOP_INITIAL_COUNT)
+  const hasMoreDesktop = sortedReleases.length > DESKTOP_INITIAL_COUNT
+
+  const scrollToMobileRelease = useCallback((index: number) => {
+    const clamped = Math.max(0, Math.min(index, sortedReleases.length - 1))
+    setMobileScrollIndex(clamped)
+    if (mobileScrollRef.current) {
+      const firstCard = mobileScrollRef.current.querySelector('[data-release-card]') as HTMLElement | null
+      const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 176 // card width + gap fallback
+      mobileScrollRef.current.scrollTo({ left: clamped * cardWidth, behavior: 'smooth' })
+    }
+  }, [sortedReleases.length])
+
+  const swipeHandlers = useTouchSwipe({
+    onSwipeLeft: () => scrollToMobileRelease(mobileScrollIndex + 1),
+    onSwipeRight: () => scrollToMobileRelease(mobileScrollIndex - 1),
+    threshold: 50,
+  })
 
   const handleDelete = (id: string) => {
     onUpdate((releases || []).filter(r => r.id !== id))
@@ -224,8 +249,12 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
           </motion.div>
         ) : (
           <>
-            {/* Mobile: horizontal scroller */}
-            <div className="md:hidden -mx-4 px-4 overflow-x-auto scrollbar-hide">
+            {/* Mobile: horizontal scroller with swipe */}
+            <div
+              className="md:hidden -mx-4 px-4 overflow-x-auto scrollbar-hide"
+              ref={mobileScrollRef}
+              {...swipeHandlers}
+            >
               <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
                 {sortedReleases.map((release, index) => {
                   const isExpanded = expandedReleaseId === release.id
@@ -233,6 +262,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                     <motion.div
                       key={release.id}
                       className="w-[160px] flex-shrink-0"
+                      data-release-card
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.4, delay: index * 0.05 }}
@@ -375,7 +405,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
 
             {/* Desktop: grid layout */}
             <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedReleases.map((release, index) => (
+              {desktopReleases.map((release, index) => (
                 <motion.div
                   key={release.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -514,6 +544,19 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                 </motion.div>
               ))}
             </div>
+
+            {/* Desktop: Show More / Show Less button */}
+            {!editMode && hasMoreDesktop && (
+              <div className="hidden md:flex justify-center mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllDesktop(!showAllDesktop)}
+                  className="border-primary/30 hover:bg-primary/10 hover:border-primary transition-all"
+                >
+                  {showAllDesktop ? `Show Less` : `Show More (${sortedReleases.length - DESKTOP_INITIAL_COUNT} more)`}
+                </Button>
+              </div>
+            )}
 
             {/* Mobile edit mode: stack normally */}
             {editMode && (

@@ -28,19 +28,11 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
           // Keep localStorage in sync as backup
           try { localStorage.setItem(`kv:${key}`, JSON.stringify(data.value)) } catch { /* ignore */ }
         } else {
-          // API returned no data, try localStorage before falling back to default
-          try {
-            const stored = localStorage.getItem(`kv:${key}`)
-            if (stored !== null) {
-              setValue(JSON.parse(stored) as T)
-              return
-            }
-          } catch { /* ignore */ }
           setValue(defaultRef.current)
         }
       })
       .catch(() => {
-        // API not available (local dev), try localStorage
+        // API not available (local dev), try localStorage as last resort
         try {
           const stored = localStorage.getItem(`kv:${key}`)
           if (stored !== null) {
