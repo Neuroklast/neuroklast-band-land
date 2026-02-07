@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
 import FontSizePicker from '@/components/FontSizePicker'
 import ProgressiveImage from '@/components/ProgressiveImage'
+import { loadCachedImage } from '@/lib/image-cache'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
@@ -170,6 +171,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>(biography.photos || [])
+  const [cachedPhotos, setCachedPhotos] = useState<Record<string, string>>({})
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
   const [glitchActive, setGlitchActive] = useState(false)
@@ -198,6 +200,27 @@ export default function BiographySection({ biography = defaultBiography, editMod
   useEffect(() => {
     setPhotos(biography.photos || [])
   }, [biography.photos])
+
+  // Cache URL-based biography photos and member photos
+  useEffect(() => {
+    const urlsToCache: string[] = []
+    for (const p of photos) {
+      if (p.startsWith('http') && !cachedPhotos[p]) urlsToCache.push(p)
+    }
+    for (const m of (biography.members || []).map(normalizeMember)) {
+      if (m.photo && m.photo.startsWith('http') && !cachedPhotos[m.photo]) urlsToCache.push(m.photo)
+    }
+    for (const f of (biography.friends || [])) {
+      if (f.photo && f.photo.startsWith('http') && !cachedPhotos[f.photo]) urlsToCache.push(f.photo)
+    }
+    urlsToCache.forEach((url) => {
+      loadCachedImage(url).then((cached) => {
+        setCachedPhotos((prev) => ({ ...prev, [url]: cached }))
+      })
+    })
+  }, [photos, biography.members, biography.friends])
+
+  const resolvePhoto = (url: string) => cachedPhotos[url] || url
 
   const handleUpdate = (updatedBiography: Biography) => {
     onUpdate?.(updatedBiography)
@@ -266,24 +289,21 @@ export default function BiographySection({ biography = defaultBiography, editMod
             )}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div 
-              className="md:col-span-2 space-y-8"
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
+          {/* Masonry layout: items auto-arrange based on content size */}
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 [&>*]:break-inside-avoid">
               {photos.length > 0 && (
                 <motion.div
                   className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group ${glitchActive ? 'glitch-effect' : ''}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                  transition={{ duration: 0.7, delay: 0.2 }}
                   whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
-                  <img
-                    src={photos[currentPhotoIndex]}
+                  <ProgressiveImage
+                    src={resolvePhoto(photos[currentPhotoIndex])}
                     alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -322,23 +342,27 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 </motion.div>
               )}
 
-              <Card className="bg-card border-border p-4 md:p-8 hover:border-primary/50 active:border-primary transition-all duration-300 touch-manipulation">
-                {editMode && onFontSizeChange && (
-                  <div className="mb-3 flex gap-2 flex-wrap">
-                    <FontSizePicker label="BIO" value={fontSizes?.biographyStory} onChange={(v) => onFontSizeChange('biographyStory', v)} />
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+              >
+                <Card className="bg-card border-border p-4 md:p-8 hover:border-primary/50 active:border-primary transition-all duration-300 touch-manipulation">
+                  {editMode && onFontSizeChange && (
+                    <div className="mb-3 flex gap-2 flex-wrap">
+                      <FontSizePicker label="BIO" value={fontSizes?.biographyStory} onChange={(v) => onFontSizeChange('biographyStory', v)} />
+                    </div>
+                  )}
+                  <div className="prose prose-invert max-w-none">
+                    {biography.story.split('\n\n').map((paragraph, index) => (
+                      <p key={index} className={`${fontSizes?.biographyStory || 'text-sm md:text-base'} text-foreground/90 leading-relaxed mb-4 last:mb-0`}>
+                        {paragraph}
+                      </p>
+                    ))}
                   </div>
-                )}
-                <div className="prose prose-invert max-w-none">
-                  {biography.story.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className={`${fontSizes?.biographyStory || 'text-sm md:text-base'} text-foreground/90 leading-relaxed mb-4 last:mb-0`}>
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </Card>
-            </motion.div>
+                </Card>
+              </motion.div>
 
-            <div className="space-y-6">
               {biography.founded && (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -381,8 +405,8 @@ export default function BiographySection({ biography = defaultBiography, editMod
                             <div className="flex items-center gap-3">
                               {member.photo ? (
                                 <div className={`w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ${glitchActive ? 'glitch-effect' : ''} red-tint`}>
-                                  <img
-                                    src={member.photo}
+                                  <ProgressiveImage
+                                    src={resolvePhoto(member.photo)}
                                     alt={member.name}
                                     className="w-full h-full object-cover"
                                   />
@@ -455,10 +479,9 @@ export default function BiographySection({ biography = defaultBiography, editMod
                   </Card>
                 </motion.div>
               )}
-            </div>
           </div>
 
-          {/* Friends / Partners Section */}
+          {/* Connections Section */}
           {((biography.friends && biography.friends.length > 0) || editMode) && (
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -468,7 +491,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg md:text-xl font-mono uppercase tracking-wider text-muted-foreground">
-                  <span className="text-primary/40">&gt;</span> Friends &amp; Partners
+                  <span className="text-primary/40">&gt;</span> Connections
                 </h3>
                 {editMode && (
                   <Button
