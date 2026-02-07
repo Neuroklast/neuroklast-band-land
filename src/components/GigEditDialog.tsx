@@ -107,7 +107,13 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
                 id="allDay"
                 type="checkbox"
                 checked={formData.allDay}
-                onChange={(e) => setFormData({ ...formData, allDay: e.target.checked })}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  const date = checked
+                    ? formData.date.split('T')[0]
+                    : formData.date.includes('T') ? formData.date : `${formData.date}T00:00`
+                  setFormData({ ...formData, allDay: checked, date })
+                }}
                 className="h-4 w-4 accent-primary"
               />
               <Label htmlFor="allDay" className="text-sm whitespace-nowrap cursor-pointer">All Day</Label>

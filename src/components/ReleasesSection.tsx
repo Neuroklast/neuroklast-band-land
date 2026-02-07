@@ -84,27 +84,31 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
         return
       }
 
-      // Enrich all iTunes releases with Odesli streaming links concurrently
-      await Promise.allSettled(
-        iTunesReleases.map(async (release) => {
-          const appleMusicUrl = release.streamingLinks?.appleMusic
-          if (!appleMusicUrl) return
-          try {
-            const odesliLinks = await fetchOdesliLinks(appleMusicUrl)
-            if (odesliLinks) {
-              release.streamingLinks = {
-                ...release.streamingLinks,
-                spotify: release.streamingLinks.spotify || odesliLinks.spotify,
-                soundcloud: release.streamingLinks.soundcloud || odesliLinks.soundcloud,
-                youtube: release.streamingLinks.youtube || odesliLinks.youtube,
-                bandcamp: release.streamingLinks.bandcamp || odesliLinks.bandcamp,
+      // Enrich iTunes releases with Odesli streaming links in batches of 5
+      const BATCH_SIZE = 5
+      for (let i = 0; i < iTunesReleases.length; i += BATCH_SIZE) {
+        const batch = iTunesReleases.slice(i, i + BATCH_SIZE)
+        await Promise.allSettled(
+          batch.map(async (release) => {
+            const appleMusicUrl = release.streamingLinks?.appleMusic
+            if (!appleMusicUrl) return
+            try {
+              const odesliLinks = await fetchOdesliLinks(appleMusicUrl)
+              if (odesliLinks) {
+                release.streamingLinks = {
+                  ...release.streamingLinks,
+                  spotify: release.streamingLinks.spotify || odesliLinks.spotify,
+                  soundcloud: release.streamingLinks.soundcloud || odesliLinks.soundcloud,
+                  youtube: release.streamingLinks.youtube || odesliLinks.youtube,
+                  bandcamp: release.streamingLinks.bandcamp || odesliLinks.bandcamp,
+                }
               }
+            } catch (e) {
+              console.error(`Odesli enrichment failed for ${release.title}:`, e)
             }
-          } catch (e) {
-            console.error(`Odesli enrichment failed for ${release.title}:`, e)
-          }
-        })
-      )
+          })
+        )
+      }
 
       const currentReleases = releases || []
       const existingIds = new Set(currentReleases.map(r => r.id))
