@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { LockSimple } from '@phosphor-icons/react'
 import type { SocialLinks } from '@/lib/types'
 import titleImage from '@/assets/images/titel.png'
 
@@ -6,9 +7,10 @@ interface FooterProps {
   socialLinks: SocialLinks
   genres?: string[]
   label?: string
+  onAdminLogin?: () => void
 }
 
-export default function Footer({ socialLinks, genres, label }: FooterProps) {
+export default function Footer({ socialLinks, genres, label, onAdminLogin }: FooterProps) {
   const safeSocialLinks = socialLinks || {}
 
   return (
@@ -53,6 +55,16 @@ export default function Footer({ socialLinks, genres, label }: FooterProps) {
               <p className="text-[10px] md:text-xs">LABEL: {label}</p>
             )}
             <p className="text-[10px] md:text-xs">© {new Date().getFullYear()} NEUROKLAST. All rights reserved.</p>
+            {onAdminLogin && (
+              <button
+                onClick={onAdminLogin}
+                className="inline-flex items-center gap-1 text-[10px] md:text-xs text-muted-foreground/30 hover:text-primary/60 transition-colors mt-2 font-mono"
+                aria-label="Admin login"
+              >
+                <LockSimple size={12} />
+                <span>ADMIN</span>
+              </button>
+            )}
           </div>
         </motion.div>
       </div>

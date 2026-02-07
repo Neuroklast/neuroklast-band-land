@@ -40,6 +40,12 @@ export interface Biography {
   photos?: string[]
 }
 
+export interface TerminalCommand {
+  name: string
+  description: string
+  output: string[]
+}
+
 export interface BandData {
   name: string
   genres: string[]
@@ -48,4 +54,5 @@ export interface BandData {
   releases: Release[]
   biography?: Biography
   label?: string
+  terminalCommands?: TerminalCommand[]
 }
