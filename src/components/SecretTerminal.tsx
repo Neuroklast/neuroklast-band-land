@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from '@phosphor-icons/react'
+import { X, PencilSimple } from '@phosphor-icons/react'
+import type { TerminalCommand } from '@/lib/types'
 
 interface SecretTerminalProps {
   isOpen: boolean
   onClose: () => void
+  customCommands?: TerminalCommand[]
+  editMode?: boolean
+  onEdit?: () => void
 }
 
-export default function SecretTerminal({ isOpen, onClose }: SecretTerminalProps) {
+export default function SecretTerminal({ isOpen, onClose, customCommands = [], editMode, onEdit }: SecretTerminalProps) {
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([
     { type: 'output', text: '> NEUROKLAST TERMINAL v1.3.37' },
@@ -37,83 +41,77 @@ export default function SecretTerminal({ isOpen, onClose }: SecretTerminalProps)
 
     let output: Array<{ type: 'command' | 'output' | 'error', text: string }> = []
 
-    switch (trimmedCmd) {
-      case 'help':
-        output = [
-          { type: 'output', text: 'AVAILABLE COMMANDS:' },
-          { type: 'output', text: '  help     - Show this message' },
-          { type: 'output', text: '  status   - System status' },
-          { type: 'output', text: '  info     - Band information' },
-          { type: 'output', text: '  glitch   - Trigger visual glitch' },
-          { type: 'output', text: '  matrix   - Display data stream' },
-          { type: 'output', text: '  clear    - Clear terminal' },
-          { type: 'output', text: '  exit     - Close terminal' },
-          { type: 'output', text: '' }
-        ]
-        break
+    // Check custom commands first
+    const customCmd = customCommands.find(c => c.name.toLowerCase() === trimmedCmd)
 
-      case 'status':
-        output = [
-          { type: 'output', text: 'SYSTEM STATUS:' },
-          { type: 'output', text: `  UPTIME: ${Math.floor(Math.random() * 9999)} HOURS` },
-          { type: 'output', text: `  MEMORY: ${Math.floor(Math.random() * 40 + 60)}%` },
-          { type: 'output', text: `  AUDIO ENGINE: ACTIVE` },
-          { type: 'output', text: `  HUD SYSTEMS: OPERATIONAL` },
-          { type: 'output', text: `  THREAT LEVEL: ${['LOW', 'MODERATE', 'HIGH'][Math.floor(Math.random() * 3)]}` },
-          { type: 'output', text: '' }
-        ]
-        break
+    if (customCmd) {
+      output = [
+        ...customCmd.output.map(text => ({ type: 'output' as const, text })),
+        { type: 'output' as const, text: '' }
+      ]
+    } else {
+      switch (trimmedCmd) {
+        case 'help': {
+          const allCommands = [
+            { name: 'help', description: 'Show this message' },
+            ...customCommands.map(c => ({ name: c.name, description: c.description })),
+            { name: 'glitch', description: 'Trigger visual glitch' },
+            { name: 'matrix', description: 'Display data stream' },
+            { name: 'clear', description: 'Clear terminal' },
+            { name: 'exit', description: 'Close terminal' },
+          ]
+          output = [
+            { type: 'output', text: 'AVAILABLE COMMANDS:' },
+            ...allCommands.map(c => ({
+              type: 'output' as const,
+              text: `  ${c.name.padEnd(10)} - ${c.description}`
+            })),
+            { type: 'output', text: '' }
+          ]
+          break
+        }
 
-      case 'info':
-        output = [
-          { type: 'output', text: 'NEUROKLAST - HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO' },
-          { type: 'output', text: 'LABEL: DARKTUNES MUSIC GROUP' },
-          { type: 'output', text: 'LOCATION: CLASSIFIED' },
-          { type: 'output', text: 'FREQUENCY: 150+ BPM' },
-          { type: 'output', text: '' }
-        ]
-        break
+        case 'glitch':
+          output = [
+            { type: 'output', text: 'INITIATING VISUAL CORRUPTION...' },
+            { type: 'output', text: 'GLITCH SEQUENCE ACTIVATED' },
+            { type: 'output', text: '' }
+          ]
+          document.documentElement.classList.add('red-glitch-text')
+          setTimeout(() => {
+            document.documentElement.classList.remove('red-glitch-text')
+          }, 300)
+          break
 
-      case 'glitch':
-        output = [
-          { type: 'output', text: 'INITIATING VISUAL CORRUPTION...' },
-          { type: 'output', text: 'G̴͉̈́L̵̰̐I̶̫̿T̶̰̂C̶͙̈H̵͎̽ ̷̰̀S̶̰̈́E̶̦̍Q̶̰̈́U̶̘̇E̶͎͝N̶̰̈́C̶̦̍Ḛ̶͝ ̶̦̍A̶̰̍C̶̦̍T̶̰̍I̶̦̍V̶̰̍A̶̦̍T̶̰̍E̶̦̍D̶̰̍' },
-          { type: 'output', text: '' }
-        ]
-        document.documentElement.classList.add('red-glitch-text')
-        setTimeout(() => {
-          document.documentElement.classList.remove('red-glitch-text')
-        }, 300)
-        break
+        case 'matrix':
+          output = [
+            { type: 'output', text: '01001110 01000101 01010101 01010010 01001111' },
+            { type: 'output', text: '01001011 01001100 01000001 01010011 01010100' },
+            { type: 'output', text: 'DECODING... NEUROKLAST' },
+            { type: 'output', text: '' }
+          ]
+          break
 
-      case 'matrix':
-        output = [
-          { type: 'output', text: '01001110 01000101 01010101 01010010 01001111' },
-          { type: 'output', text: '01001011 01001100 01000001 01010011 01010100' },
-          { type: 'output', text: 'DECODING... NEUROKLAST' },
-          { type: 'output', text: '' }
-        ]
-        break
+        case 'clear':
+          setHistory([
+            { type: 'output', text: '> TERMINAL CLEARED' },
+            { type: 'output', text: '' }
+          ])
+          setInput('')
+          return
 
-      case 'clear':
-        setHistory([
-          { type: 'output', text: '> TERMINAL CLEARED' },
-          { type: 'output', text: '' }
-        ])
-        setInput('')
-        return
+        case 'exit':
+          onClose()
+          return
 
-      case 'exit':
-        onClose()
-        return
-
-      default:
-        output = [
-          { type: 'error', text: `COMMAND NOT FOUND: ${cmd}` },
-          { type: 'error', text: 'TYPE "help" FOR AVAILABLE COMMANDS' },
-          { type: 'output', text: '' }
-        ]
-        break
+        default:
+          output = [
+            { type: 'error', text: `COMMAND NOT FOUND: ${cmd}` },
+            { type: 'error', text: 'TYPE "help" FOR AVAILABLE COMMANDS' },
+            { type: 'output', text: '' }
+          ]
+          break
+      }
     }
 
     setHistory(prev => [...prev, ...output])
@@ -153,12 +151,23 @@ export default function SecretTerminal({ isOpen, onClose }: SecretTerminalProps)
                   TERMINAL ACTIVE
                 </span>
               </div>
-              <button
-                onClick={onClose}
-                className="text-primary hover:text-accent transition-colors"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                {editMode && onEdit && (
+                  <button
+                    onClick={onEdit}
+                    className="text-primary hover:text-accent transition-colors"
+                    title="Edit terminal commands"
+                  >
+                    <PencilSimple size={18} />
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="text-primary hover:text-accent transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             <div 

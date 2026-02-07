@@ -18,6 +18,7 @@ import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import SecretTerminal from '@/components/SecretTerminal'
+import TerminalEditDialog from '@/components/TerminalEditDialog'
 import KonamiListener from '@/components/KonamiListener'
 import type { BandData } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
@@ -42,7 +43,11 @@ const defaultBandData: BandData = {
     founded: bandDataJson.biography.founded,
     members: bandDataJson.biography.members,
     achievements: bandDataJson.biography.achievements
-  }
+  },
+  terminalCommands: [
+    { name: 'status', description: 'System status', output: ['SYSTEM STATUS:', '  AUDIO ENGINE: ACTIVE', '  HUD SYSTEMS: OPERATIONAL', '  THREAT LEVEL: CLASSIFIED'] },
+    { name: 'info', description: 'Band information', output: ['NEUROKLAST - HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO', 'LABEL: DARKTUNES MUSIC GROUP', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
+  ]
 }
 
 function App() {
@@ -55,6 +60,7 @@ function App() {
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showSetupDialog, setShowSetupDialog] = useState(false)
   const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
+  const [showTerminalEdit, setShowTerminalEdit] = useState(false)
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
   const wantsSetup = useRef(false)
@@ -119,7 +125,13 @@ function App() {
   return (
     <>
       <KonamiListener onCodeActivated={handleTerminalActivation} />
-      <SecretTerminal isOpen={terminalOpen} onClose={() => setTerminalOpen(false)} />
+      <SecretTerminal
+        isOpen={terminalOpen}
+        onClose={() => setTerminalOpen(false)}
+        customCommands={data.terminalCommands || []}
+        editMode={editMode && isOwner}
+        onEdit={() => setShowTerminalEdit(true)}
+      />
       
       <AnimatePresence>
         {loading && (
@@ -266,6 +278,13 @@ function App() {
               genres={data.genres}
               label={data.label}
               onSave={({ name, genres, label }) => setBandData((current) => ({ ...(current || defaultBandData), name, genres, label }))}
+            />
+
+            <TerminalEditDialog
+              open={showTerminalEdit}
+              onOpenChange={setShowTerminalEdit}
+              commands={data.terminalCommands || []}
+              onSave={(terminalCommands) => setBandData((current) => ({ ...(current || defaultBandData), terminalCommands }))}
             />
           </motion.div>
         </motion.div>

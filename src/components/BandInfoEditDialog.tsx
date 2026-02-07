@@ -89,7 +89,7 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
                   value={newGenre}
                   onChange={(e) => setNewGenre(e.target.value)}
                   placeholder="Add genre"
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGenre())}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGenre() } }}
                 />
                 <Button type="button" onClick={addGenre} size="icon">
                   <Plus size={16} />

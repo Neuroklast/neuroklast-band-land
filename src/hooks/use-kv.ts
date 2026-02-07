@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater: T | ((current: T | undefined) => T)) => void] {
   const [value, setValue] = useState<T | undefined>(undefined)
   const initializedRef = useRef(false)
+  const defaultRef = useRef(defaultValue)
 
   useEffect(() => {
     if (initializedRef.current) return
@@ -19,7 +20,7 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
         if (data && data.value !== null && data.value !== undefined) {
           setValue(data.value as T)
         } else {
-          setValue(defaultValue)
+          setValue(defaultRef.current)
         }
       })
       .catch(() => {
@@ -29,13 +30,13 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
           if (stored !== null) {
             setValue(JSON.parse(stored) as T)
           } else {
-            setValue(defaultValue)
+            setValue(defaultRef.current)
           }
         } catch {
-          setValue(defaultValue)
+          setValue(defaultRef.current)
         }
       })
-  }, [key, defaultValue])
+  }, [key])
 
   const updateValue = useCallback((updater: T | ((current: T | undefined) => T)) => {
     setValue(prev => {
