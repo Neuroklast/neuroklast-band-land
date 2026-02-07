@@ -1,5 +1,5 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { PencilSimple, CaretLeft, CaretRight, User, CaretDown, Trash } from '@phosphor-icons/react'
+import { PencilSimple, CaretLeft, CaretRight, User, X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
@@ -37,7 +37,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
   const [glitchActive, setGlitchActive] = useState(false)
-  const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set())
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
@@ -78,7 +78,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
     urlsToCache.forEach((url) => {
       loadCachedImage(url).then((cached) => {
         setCachedPhotos((prev) => ({ ...prev, [url]: cached }))
-      })
+      }).catch(() => { /* ignore failed cache attempts */ })
     })
   }, [photos, biography.members, biography.friends])
 
@@ -151,11 +151,11 @@ export default function BiographySection({ biography = defaultBiography, editMod
             )}
           </div>
 
-          {/* Masonry layout: items auto-arrange based on content size */}
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 [&>*]:break-inside-avoid">
+          {/* Full-width story card */}
+          <div className="mb-6">
               {photos.length > 0 && (
                 <motion.div
-                  className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group ${glitchActive ? 'glitch-effect' : ''}`}
+                  className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group mb-6 ${glitchActive ? 'glitch-effect' : ''}`}
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                   transition={{ duration: 0.7, delay: 0.2 }}
@@ -224,6 +224,10 @@ export default function BiographySection({ biography = defaultBiography, editMod
                   </div>
                 </Card>
               </motion.div>
+          </div>
+
+          {/* Grid for remaining cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
               {biography.founded && (
                 <motion.div
@@ -253,17 +257,13 @@ export default function BiographySection({ biography = defaultBiography, editMod
                     <div className="space-y-3">
                       {biography.members.map((rawMember, index) => {
                         const member = normalizeMember(rawMember)
-                        const isExpanded = expandedMembers.has(index)
-                        const toggleExpanded = () => {
-                          setExpandedMembers(prev => {
-                            const next = new Set(prev)
-                            if (next.has(index)) next.delete(index)
-                            else next.add(index)
-                            return next
-                          })
-                        }
                         return (
-                          <div key={index} className="border border-border/50 rounded-lg p-3 hover:border-primary/30 transition-colors duration-200">
+                          <button
+                            key={index}
+                            className="w-full text-left border border-border/50 rounded-lg p-3 hover:border-primary/30 transition-colors duration-200 cursor-pointer"
+                            onClick={() => setSelectedMember(member)}
+                            aria-label={`View profile of ${member.name}`}
+                          >
                             <div className="flex items-center gap-3">
                               {member.photo ? (
                                 <div className={`w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ${glitchActive ? 'glitch-effect' : ''} red-tint`}>
@@ -281,38 +281,8 @@ export default function BiographySection({ biography = defaultBiography, editMod
                               <span className="flex-1 text-foreground/90 font-medium">
                                 <ChromaticText intensity={0.5}>{member.name}</ChromaticText>
                               </span>
-                              {member.bio && (
-                                <button
-                                  onClick={toggleExpanded}
-                                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                                  aria-label={isExpanded ? 'Collapse bio' : 'Expand bio'}
-                                >
-                                  <motion.span
-                                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="block"
-                                  >
-                                    <CaretDown size={16} />
-                                  </motion.span>
-                                </button>
-                              )}
                             </div>
-                            <AnimatePresence>
-                              {isExpanded && member.bio && (
-                                <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: 'auto', opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.3 }}
-                                  className="overflow-hidden"
-                                >
-                                  <p className="text-sm text-foreground/70 mt-2 pl-[52px]">
-                                    {member.bio}
-                                  </p>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
+                          </button>
                         )
                       })}
                     </div>
@@ -353,6 +323,59 @@ export default function BiographySection({ biography = defaultBiography, editMod
           onSave={handleUpdate}
         />
       )}
+
+      {/* Member profile overlay */}
+      <AnimatePresence>
+        {selectedMember && (
+          <motion.div
+            key="member-profile"
+            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedMember(null)}
+          >
+            <motion.div
+              className="w-full max-w-sm bg-card border border-border rounded-lg overflow-hidden"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-4 right-4 p-2 text-primary/60 hover:text-primary z-10"
+                onClick={() => setSelectedMember(null)}
+                aria-label="Close profile"
+              >
+                <X size={24} />
+              </button>
+              <div className="flex flex-col items-center gap-4 p-6">
+                {selectedMember.photo ? (
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-primary/30">
+                    <ProgressiveImage
+                      src={resolvePhoto(selectedMember.photo)}
+                      alt={selectedMember.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center border-2 border-primary/30">
+                    <User size={48} className="text-muted-foreground" />
+                  </div>
+                )}
+                <h3 className="text-xl font-bold font-mono">
+                  <ChromaticText intensity={1}>{selectedMember.name}</ChromaticText>
+                </h3>
+                {selectedMember.bio && (
+                  <p className="text-sm text-foreground/70 text-center leading-relaxed">
+                    {selectedMember.bio}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

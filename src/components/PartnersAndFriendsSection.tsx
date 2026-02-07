@@ -88,11 +88,11 @@ function FriendCard({ friend, editMode, onUpdate, onDelete }: {
       <span className="corner-br"></span>
       <div className="flex gap-3 p-4">
         {friend.photo ? (
-          <div className="w-16 h-16 flex-shrink-0 overflow-hidden border border-border">
+          <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
             <ProgressiveImage
               src={friend.photo}
               alt={friend.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </div>
         ) : (
