@@ -200,7 +200,11 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.9 }}
               >
-                <InstagramGallery />
+                <InstagramGallery
+                  galleryImages={data.galleryImages}
+                  editMode={editMode && isOwner}
+                  onUpdate={(galleryImages) => setBandData((current) => ({ ...(current || defaultBandData), galleryImages }))}
+                />
               </motion.div>
 
               <motion.div

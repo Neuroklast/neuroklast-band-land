@@ -1,17 +1,34 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Images, X } from '@phosphor-icons/react'
+import { Images, X, CaretLeft, CaretRight, Plus, Trash, PencilSimple } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
+import { loadCachedImage } from '@/lib/image-cache'
+import type { GalleryImage } from '@/lib/types'
 
 const galleryModules = import.meta.glob('/src/assets/images/gallery/*.{jpg,jpeg,png,gif,webp}', { eager: true })
 
-export default function InstagramGallery() {
+interface InstagramGalleryProps {
+  galleryImages?: GalleryImage[]
+  editMode?: boolean
+  onUpdate?: (images: GalleryImage[]) => void
+}
+
+export default function InstagramGallery({ galleryImages = [], editMode, onUpdate }: InstagramGalleryProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
   const [selectedImage, setSelectedImage] = useState<{ imageUrl: string; caption: string } | null>(null)
+  const [mobileIndex, setMobileIndex] = useState(0)
+  const [touchStartX, setTouchStartX] = useState(0)
+  const [touchEndX, setTouchEndX] = useState(0)
+  const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newUrl, setNewUrl] = useState('')
+  const [newCaption, setNewCaption] = useState('')
 
   const titleText = 'GALLERY'
   const { displayedText: displayedTitle } = useTypingEffect(
@@ -19,6 +36,18 @@ export default function InstagramGallery() {
     50,
     200
   )
+
+  // Load and cache URL-based images
+  useEffect(() => {
+    if (!galleryImages || galleryImages.length === 0) return
+    galleryImages.forEach((img) => {
+      if (!cachedUrls[img.url]) {
+        loadCachedImage(img.url).then((cached) => {
+          setCachedUrls((prev) => ({ ...prev, [img.url]: cached }))
+        })
+      }
+    })
+  }, [galleryImages])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -43,14 +72,59 @@ export default function InstagramGallery() {
     }
   }, [selectedImage])
 
-  const photos = Object.entries(galleryModules).map(([path, module]: [string, any], index) => {
-    const filename = path.split('/').pop()?.split('.')[0] || `image-${index}`
+  // Local images from build folder
+  const localPhotos = Object.entries(galleryModules).map(([path, module]: [string, any], index) => {
     return {
-      id: `gallery-${index}`,
+      id: `gallery-local-${index}`,
       imageUrl: module.default as string,
-      caption: 'NK//00' + index
+      caption: 'NK//00' + index,
+      isLocal: true
     }
   })
+
+  // URL-based images from KV store
+  const urlPhotos = (galleryImages || []).map((img) => ({
+    id: img.id,
+    imageUrl: cachedUrls[img.url] || img.url,
+    caption: img.caption || img.url.split('/').pop()?.split('?')[0] || 'IMG',
+    isLocal: false,
+    originalUrl: img.url
+  }))
+
+  const photos = [...localPhotos, ...urlPhotos]
+
+  const handleAddImage = () => {
+    if (!newUrl.trim() || !onUpdate) return
+    const id = `gallery-url-${Date.now()}`
+    const updated = [...(galleryImages || []), { id, url: newUrl.trim(), caption: newCaption.trim() || undefined }]
+    onUpdate(updated)
+    setNewUrl('')
+    setNewCaption('')
+    setShowAddForm(false)
+  }
+
+  const handleRemoveImage = (imageId: string) => {
+    if (!onUpdate) return
+    onUpdate((galleryImages || []).filter((img) => img.id !== imageId))
+  }
+
+  const handleMobileSwipeStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX)
+    setTouchEndX(e.targetTouches[0].clientX)
+  }
+
+  const handleMobileSwipeMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX)
+  }
+
+  const handleMobileSwipeEnd = () => {
+    const diff = touchStartX - touchEndX
+    if (diff > 60 && mobileIndex < photos.length - 1) {
+      setMobileIndex(mobileIndex + 1)
+    } else if (diff < -60 && mobileIndex > 0) {
+      setMobileIndex(mobileIndex - 1)
+    }
+  }
 
   return (
     <>
@@ -76,7 +150,6 @@ export default function InstagramGallery() {
                 <Images size={32} className="text-primary" weight="fill" />
               </motion.div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
-
                 style={{
                   textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
                 }}
@@ -90,15 +163,144 @@ export default function InstagramGallery() {
             <p className="text-muted-foreground font-mono text-sm">
               &gt; Visual identity of NEUROKLAST
             </p>
+            {editMode && onUpdate && (
+              <div className="mt-4">
+                {!showAddForm ? (
+                  <Button
+                    onClick={() => setShowAddForm(true)}
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/30 hover:bg-primary/10 gap-2"
+                  >
+                    <Plus size={16} />
+                    Add Image URL
+                  </Button>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto items-end">
+                    <div className="flex-1 space-y-1">
+                      <Input
+                        value={newUrl}
+                        onChange={(e) => setNewUrl(e.target.value)}
+                        placeholder="https://example.com/image.jpg"
+                        className="text-xs"
+                      />
+                      <Input
+                        value={newCaption}
+                        onChange={(e) => setNewCaption(e.target.value)}
+                        placeholder="Caption (optional)"
+                        className="text-xs"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={handleAddImage} disabled={!newUrl.trim()}>Add</Button>
+                      <Button size="sm" variant="outline" onClick={() => { setShowAddForm(false); setNewUrl(''); setNewCaption('') }}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
-          {photos.length === 0 && (
+          {photos.length === 0 && !editMode && (
             <div className="text-center text-muted-foreground py-12">
               <p className="font-mono">&gt; No images found in gallery folder</p>
               <p className="font-mono text-xs mt-2">&gt; Add images to /src/assets/images/gallery/</p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Mobile: single image swipe view */}
+          {photos.length > 0 && (
+            <div className="md:hidden">
+              <div
+                className="relative aspect-square overflow-hidden bg-card hud-element hud-corner hud-scanline"
+                onTouchStart={handleMobileSwipeStart}
+                onTouchMove={handleMobileSwipeMove}
+                onTouchEnd={handleMobileSwipeEnd}
+              >
+                <span className="corner-bl"></span>
+                <span className="corner-br"></span>
+
+                <div className="absolute top-2 left-2 z-10 data-readout">
+                  IMG_{String(mobileIndex).padStart(3, '0')}
+                </div>
+                <div className="absolute top-2 right-2 z-10">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 8px oklch(0.50 0.22 25)' }}></div>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={mobileIndex}
+                    className="relative w-full h-full red-tint-strong cursor-pointer"
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.25 }}
+                    onClick={() => setSelectedImage(photos[mobileIndex])}
+                  >
+                    <ProgressiveImage
+                      src={photos[mobileIndex].imageUrl}
+                      alt={photos[mobileIndex].caption}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      style={{ filter: 'contrast(1.1) brightness(0.9)' }}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
+
+                <div className="absolute bottom-3 left-3 right-3 z-20 flex items-end justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 text-white hud-text">
+                      <Images size={16} weight="fill" className="text-primary" />
+                      <span className="text-xs font-mono">{photos[mobileIndex].caption}</span>
+                    </div>
+                    <div className="mt-1 flex gap-2 text-[9px] text-primary/60">
+                      <span>SECTOR: {String.fromCharCode(65 + (mobileIndex % 26))}</span>
+                      <span>•</span>
+                      <span>STATUS: ACTIVE</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono text-primary/50">{mobileIndex + 1}/{photos.length}</span>
+                </div>
+
+                {mobileIndex > 0 && (
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/60 border border-primary/30 text-primary/80 active:bg-primary/20 touch-manipulation"
+                    onClick={() => setMobileIndex(mobileIndex - 1)}
+                  >
+                    <CaretLeft size={20} weight="bold" />
+                  </button>
+                )}
+                {mobileIndex < photos.length - 1 && (
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/60 border border-primary/30 text-primary/80 active:bg-primary/20 touch-manipulation"
+                    onClick={() => setMobileIndex(mobileIndex + 1)}
+                  >
+                    <CaretRight size={20} weight="bold" />
+                  </button>
+                )}
+              </div>
+
+              {/* Dot indicators */}
+              <div className="flex justify-center gap-2 mt-3">
+                {photos.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setMobileIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all touch-manipulation ${
+                      index === mobileIndex
+                        ? 'bg-primary w-5'
+                        : 'bg-foreground/20'
+                    }`}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Desktop: grid layout */}
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {photos.map((photo, index) => (
               <motion.div
                 key={photo.id}
@@ -117,7 +319,16 @@ export default function InstagramGallery() {
                   IMG_{String(index).padStart(3, '0')}
                 </div>
                 
-                <div className="absolute top-2 right-2 z-10">
+                <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+                  {editMode && !photo.isLocal && (
+                    <button
+                      className="p-1 bg-destructive/80 hover:bg-destructive text-white rounded-sm transition-colors"
+                      onClick={(e) => { e.stopPropagation(); handleRemoveImage(photo.id) }}
+                      title="Remove image"
+                    >
+                      <Trash size={14} />
+                    </button>
+                  )}
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 8px oklch(0.50 0.22 25)' }}></div>
                 </div>
                 

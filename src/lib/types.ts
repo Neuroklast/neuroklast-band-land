@@ -75,6 +75,12 @@ export interface Impressum {
   responsibleAddress?: string
 }
 
+export interface GalleryImage {
+  id: string
+  url: string
+  caption?: string
+}
+
 export interface BandData {
   name: string
   genres: string[]
@@ -85,4 +91,5 @@ export interface BandData {
   label?: string
   terminalCommands?: TerminalCommand[]
   impressum?: Impressum
+  galleryImages?: GalleryImage[]
 }
