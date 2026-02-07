@@ -4,6 +4,7 @@ import { X, PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import ProtectedText from '@/components/ProtectedText'
 import type { Impressum } from '@/lib/types'
 
 interface ImpressumWindowProps {
@@ -171,8 +172,16 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                     {(impressum.phone || impressum.email) && (
                       <div>
                         <h2 className="text-primary text-base mb-3 tracking-wider">Kontakt</h2>
-                        {impressum.phone && <p className="text-foreground/80">Telefon: {impressum.phone}</p>}
-                        {impressum.email && <p className="text-foreground/80">E-Mail: {impressum.email}</p>}
+                        {impressum.phone && (
+                          <p className="text-foreground/80 flex items-center gap-1">
+                            Telefon: <ProtectedText text={impressum.phone} fontSize={14} />
+                          </p>
+                        )}
+                        {impressum.email && (
+                          <p className="text-foreground/80 flex items-center gap-1">
+                            E-Mail: <ProtectedText text={impressum.email} fontSize={14} />
+                          </p>
+                        )}
                       </div>
                     )}
 

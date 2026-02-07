@@ -3,6 +3,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Images, X } from '@phosphor-icons/react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
+import ProgressiveImage from '@/components/ProgressiveImage'
 
 const galleryModules = import.meta.glob('/src/assets/images/gallery/*.{jpg,jpeg,png,gif,webp}', { eager: true })
 

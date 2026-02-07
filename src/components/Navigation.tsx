@@ -36,11 +36,11 @@ export default function Navigation() {
 
   const navItems = [
     { label: 'HOME', id: 'hero' },
-    { label: 'BIO', id: 'biography' },
+    { label: 'BIOGRAPHY', id: 'biography' },
     { label: 'GALLERY', id: 'gallery' },
-    { label: 'SHOWS', id: 'gigs' },
+    { label: 'GIGS', id: 'gigs' },
     { label: 'RELEASES', id: 'releases' },
-    { label: 'CONTACT', id: 'social' }
+    { label: 'CONNECT', id: 'social' }
   ]
 
   return (
@@ -68,7 +68,7 @@ export default function Navigation() {
                 onClick={() => scrollToSection(item.id)}
                 className="text-xs font-mono tracking-[0.08em] hover:text-primary active:text-primary/80 transition-colors relative group"
               >
-                <span className="text-primary/40">[</span>{item.label}<span className="text-primary/40">]</span>
+                <span className="text-primary/40">&gt;:</span> {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
