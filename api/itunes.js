@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=6`);
+    const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=200`);
     
     if (!response.ok) {
       throw new Error(`iTunes API responded with ${response.status}`);

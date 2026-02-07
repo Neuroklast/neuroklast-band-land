@@ -4,6 +4,16 @@ export interface Gig {
   venue: string
   location: string
   ticketUrl?: string
+  gigType?: 'concert' | 'dj'
+  allDay?: boolean
+  eventLinks?: {
+    facebook?: string
+    instagram?: string
+    residentAdvisor?: string
+    other?: string
+  }
+  supportingArtists?: string[]
+  photo?: string
 }
 
 export interface Release {
@@ -32,10 +42,16 @@ export interface SocialLinks {
   twitter?: string
 }
 
+export interface Member {
+  name: string
+  photo?: string
+  bio?: string
+}
+
 export interface Biography {
   story: string
   founded?: string
-  members?: string[]
+  members?: (string | Member)[]
   achievements?: string[]
   photos?: string[]
 }
@@ -44,6 +60,8 @@ export interface TerminalCommand {
   name: string
   description: string
   output: string[]
+  fileUrl?: string
+  fileName?: string
 }
 
 export interface Impressum {
