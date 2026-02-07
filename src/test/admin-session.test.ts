@@ -41,45 +41,44 @@ describe('hashPassword', () => {
 // ---------------------------------------------------------------------------
 describe('admin session restoration', () => {
   beforeEach(() => {
-    sessionStorage.clear()
     localStorage.clear()
     vi.restoreAllMocks()
   })
 
-  it('sessionStorage admin-token survives simulated reload', () => {
+  it('localStorage admin-token survives simulated reload', () => {
     const hash = 'abc123def456'
-    sessionStorage.setItem('admin-token', hash)
+    localStorage.setItem('admin-token', hash)
     // Simulate reading it back (as App.tsx would on mount)
-    expect(sessionStorage.getItem('admin-token')).toBe(hash)
+    expect(localStorage.getItem('admin-token')).toBe(hash)
   })
 
   it('isOwner should be true when stored token matches password hash', () => {
     const hash = 'abc123def456'
-    sessionStorage.setItem('admin-token', hash)
-    const storedToken = sessionStorage.getItem('admin-token')
+    localStorage.setItem('admin-token', hash)
+    const storedToken = localStorage.getItem('admin-token')
     const adminPasswordHash = hash
     const isOwner = !!(storedToken && storedToken === adminPasswordHash)
     expect(isOwner).toBe(true)
   })
 
   it('isOwner should be false when stored token does NOT match', () => {
-    sessionStorage.setItem('admin-token', 'old-hash')
-    const storedToken = sessionStorage.getItem('admin-token')
+    localStorage.setItem('admin-token', 'old-hash')
+    const storedToken = localStorage.getItem('admin-token')
     const adminPasswordHash = 'new-hash'
     const isOwner = !!(storedToken && storedToken === adminPasswordHash)
     expect(isOwner).toBe(false)
   })
 
   it('isOwner should be false when no token is stored', () => {
-    const storedToken = sessionStorage.getItem('admin-token')
+    const storedToken = localStorage.getItem('admin-token')
     const adminPasswordHash = 'some-hash'
     const isOwner = !!(storedToken && storedToken === adminPasswordHash)
     expect(isOwner).toBe(false)
   })
 
   it('isOwner should be false when password hash is empty (no password set)', () => {
-    sessionStorage.setItem('admin-token', 'some-hash')
-    const storedToken = sessionStorage.getItem('admin-token')
+    localStorage.setItem('admin-token', 'some-hash')
+    const storedToken = localStorage.getItem('admin-token')
     const adminPasswordHash = ''
     const isOwner = !!(storedToken && storedToken === adminPasswordHash)
     expect(isOwner).toBe(false)
@@ -91,11 +90,11 @@ describe('admin session restoration', () => {
 // ---------------------------------------------------------------------------
 describe('admin login flow', () => {
   beforeEach(() => {
-    sessionStorage.clear()
+    localStorage.clear()
     vi.restoreAllMocks()
   })
 
-  it('login stores token in sessionStorage and validates correctly', async () => {
+  it('login stores token in localStorage and validates correctly', async () => {
     const password = 'superSecret42'
     const hash = await hashPassword(password)
 
@@ -103,8 +102,8 @@ describe('admin login flow', () => {
     const loginHash = await hashPassword(password)
     expect(loginHash).toBe(hash)
 
-    sessionStorage.setItem('admin-token', loginHash)
-    expect(sessionStorage.getItem('admin-token')).toBe(hash)
+    localStorage.setItem('admin-token', loginHash)
+    expect(localStorage.getItem('admin-token')).toBe(hash)
   })
 
   it('login with wrong password should not match', async () => {
@@ -113,49 +112,49 @@ describe('admin login flow', () => {
     expect(loginHash).not.toBe(correctHash)
   })
 
-  it('password change updates token in sessionStorage', async () => {
+  it('password change updates token in localStorage', async () => {
     const oldHash = await hashPassword('oldPassword')
-    sessionStorage.setItem('admin-token', oldHash)
+    localStorage.setItem('admin-token', oldHash)
 
     const newHash = await hashPassword('newPassword')
-    sessionStorage.setItem('admin-token', newHash)
+    localStorage.setItem('admin-token', newHash)
 
-    expect(sessionStorage.getItem('admin-token')).toBe(newHash)
-    expect(sessionStorage.getItem('admin-token')).not.toBe(oldHash)
+    expect(localStorage.getItem('admin-token')).toBe(newHash)
+    expect(localStorage.getItem('admin-token')).not.toBe(oldHash)
   })
 
-  it('password change must read OLD token before updating sessionStorage', async () => {
+  it('password change must read OLD token before updating localStorage', async () => {
     // This test validates the fix for the critical password-change bug:
-    // The KV write (setAdminPasswordHash) reads sessionStorage synchronously
-    // inside setValue. If sessionStorage is updated BEFORE the KV write,
+    // The KV write (setAdminPasswordHash) reads localStorage synchronously
+    // inside setValue. If localStorage is updated BEFORE the KV write,
     // the new hash is sent as x-admin-token, but the server still has the
     // old hash → 403. The correct order is: KV write first, then update
-    // sessionStorage.
+    // localStorage.
     const oldHash = await hashPassword('oldPassword')
     const newHash = await hashPassword('newPassword')
-    sessionStorage.setItem('admin-token', oldHash)
+    localStorage.setItem('admin-token', oldHash)
 
     // Simulate the CORRECT order (as in handleChangeAdminPassword):
-    // 1. Read token BEFORE updating sessionStorage
-    const tokenDuringKvWrite = sessionStorage.getItem('admin-token')
+    // 1. Read token BEFORE updating localStorage
+    const tokenDuringKvWrite = localStorage.getItem('admin-token')
     expect(tokenDuringKvWrite).toBe(oldHash) // OLD token used for auth ✓
 
-    // 2. Then update sessionStorage
-    sessionStorage.setItem('admin-token', newHash)
-    expect(sessionStorage.getItem('admin-token')).toBe(newHash)
+    // 2. Then update localStorage
+    localStorage.setItem('admin-token', newHash)
+    expect(localStorage.getItem('admin-token')).toBe(newHash)
   })
 
-  it('initial password setup needs token in sessionStorage before KV write', async () => {
+  it('initial password setup needs token in localStorage before KV write', async () => {
     // For initial setup (no existing password), the server skips auth.
     // But useKV's guard requires a non-empty adminToken to POST at all.
-    // So sessionStorage must be set BEFORE setAdminPasswordHash.
+    // So localStorage must be set BEFORE setAdminPasswordHash.
     const hash = await hashPassword('firstPassword')
 
     // Before setup, no token exists
-    expect(sessionStorage.getItem('admin-token')).toBeNull()
+    expect(localStorage.getItem('admin-token')).toBeNull()
 
     // Set token first (so useKV's POST guard passes)
-    sessionStorage.setItem('admin-token', hash)
-    expect(sessionStorage.getItem('admin-token')).toBe(hash)
+    localStorage.setItem('admin-token', hash)
+    expect(localStorage.getItem('admin-token')).toBe(hash)
   })
 })

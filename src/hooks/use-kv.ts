@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 /**
  * Custom KV hook backed by Vercel KV API routes, with localStorage fallback for local dev.
  * Uses /api/kv (Vercel KV) for persistence, with localStorage fallback for local dev.
- * The admin token from sessionStorage is sent with write requests for auth.
+ * The admin token from localStorage is sent with write requests for auth.
  *
  * Returns [value, updateValue, loaded] — `loaded` is true once the initial
  * KV/localStorage/default fetch has completed so consumers can avoid acting on
@@ -28,6 +28,14 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
           // Keep localStorage in sync as backup
           try { localStorage.setItem(`kv:${key}`, JSON.stringify(data.value)) } catch { /* ignore */ }
         } else {
+          // API returned null — try localStorage before falling back to default
+          try {
+            const stored = localStorage.getItem(`kv:${key}`)
+            if (stored !== null) {
+              setValue(JSON.parse(stored) as T)
+              return
+            }
+          } catch { /* ignore */ }
           setValue(defaultRef.current)
         }
       })
@@ -56,7 +64,7 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
         ? (updater as (current: T | undefined) => T)(prev)
         : updater
 
-      const adminToken = sessionStorage.getItem('admin-token') || ''
+      const adminToken = localStorage.getItem('admin-token') || ''
 
       const persistLocally = () => {
         try {
