@@ -90,10 +90,12 @@ export function toDirectImageUrl(url: string): string {
   if (driveUcMatch) {
     return `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${driveUcMatch[1]}`
   }
-  // Already an lh3 URL — wrap through wsrv.nl
-  const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([^/?#]+)/)
-  if (lh3Match) {
-    return `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${lh3Match[1]}`
+  // Already an lh3 URL — wrap through wsrv.nl (skip if already wrapped)
+  if (!url.includes('wsrv.nl')) {
+    const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([^/?#]+)/)
+    if (lh3Match) {
+      return `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${lh3Match[1]}`
+    }
   }
   return url
 }
