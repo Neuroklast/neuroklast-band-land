@@ -232,6 +232,8 @@ function App() {
                   galleryImages={data.galleryImages}
                   editMode={editMode && isOwner}
                   onUpdate={(galleryImages) => setBandData((current) => ({ ...(current || defaultBandData), galleryImages }))}
+                  driveFolderUrl={data.galleryDriveFolderUrl}
+                  onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
                 />
               </motion.div>
 

@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Images, X, CaretLeft, CaretRight, Plus, Trash, PencilSimple } from '@phosphor-icons/react'
+import { Images, X, CaretLeft, CaretRight, Plus, Trash, PencilSimple, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -8,16 +8,31 @@ import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import { loadCachedImage } from '@/lib/image-cache'
 import type { GalleryImage } from '@/lib/types'
-
-const galleryModules = import.meta.glob('/src/assets/images/gallery/*.{jpg,jpeg,png,gif,webp}', { eager: true })
+import { toast } from 'sonner'
 
 interface InstagramGalleryProps {
   galleryImages?: GalleryImage[]
   editMode?: boolean
   onUpdate?: (images: GalleryImage[]) => void
+  /** Google Drive folder URL for bulk photo import */
+  driveFolderUrl?: string
+  onDriveFolderUrlChange?: (url: string) => void
 }
 
-export default function InstagramGallery({ galleryImages = [], editMode, onUpdate }: InstagramGalleryProps) {
+/** Extract a Google Drive folder ID from various URL formats */
+function extractDriveFolderId(url: string): string | null {
+  // https://drive.google.com/drive/folders/{folderId}
+  const m1 = url.match(/drive\.google\.com\/drive\/folders\/([A-Za-z0-9_-]+)/)
+  if (m1) return m1[1]
+  // https://drive.google.com/open?id={folderId}
+  const m2 = url.match(/drive\.google\.com\/open\?id=([A-Za-z0-9_-]+)/)
+  if (m2) return m2[1]
+  // plain folder ID
+  if (/^[A-Za-z0-9_-]{10,}$/.test(url.trim())) return url.trim()
+  return null
+}
+
+export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange }: InstagramGalleryProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
@@ -29,6 +44,10 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const [showAddForm, setShowAddForm] = useState(false)
   const [newUrl, setNewUrl] = useState('')
   const [newCaption, setNewCaption] = useState('')
+  const [driveUrlInput, setDriveUrlInput] = useState(driveFolderUrl || '')
+  const [isDriveLoading, setIsDriveLoading] = useState(false)
+  const [showDriveForm, setShowDriveForm] = useState(false)
+  const driveAutoLoaded = useRef(false)
 
   const titleText = 'GALLERY'
   const { displayedText: displayedTitle } = useTypingEffect(
@@ -48,6 +67,14 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
       }
     })
   }, [galleryImages])
+
+  // Auto-load from Drive folder on first render if URL is set
+  useEffect(() => {
+    if (driveFolderUrl && !driveAutoLoaded.current && galleryImages.length === 0) {
+      driveAutoLoaded.current = true
+      loadDriveFolder(driveFolderUrl, true)
+    }
+  }, [driveFolderUrl])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,17 +99,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     }
   }, [selectedImage])
 
-  // Local images from build folder
-  const localPhotos = Object.entries(galleryModules).map(([path, module]: [string, any], index) => {
-    return {
-      id: `gallery-local-${index}`,
-      imageUrl: module.default as string,
-      caption: 'NK//00' + index,
-      isLocal: true
-    }
-  })
-
-  // URL-based images from KV store
+  // URL-based images from KV store (includes Drive-imported images)
   const urlPhotos = (galleryImages || []).map((img) => ({
     id: img.id,
     imageUrl: cachedUrls[img.url] || img.url,
@@ -91,7 +108,48 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     originalUrl: img.url
   }))
 
-  const photos = [...localPhotos, ...urlPhotos]
+  const photos = urlPhotos
+
+  const loadDriveFolder = async (url: string, silent = false) => {
+    const folderId = extractDriveFolderId(url)
+    if (!folderId) {
+      if (!silent) toast.error('Invalid Google Drive folder URL')
+      return
+    }
+    setIsDriveLoading(true)
+    try {
+      const res = await fetch(`/api/drive-folder?folderId=${encodeURIComponent(folderId)}`)
+      if (!res.ok) throw new Error(`API returned ${res.status}`)
+      const data = await res.json()
+      if (!data.images || data.images.length === 0) {
+        if (!silent) toast.info('No images found in Drive folder')
+        return
+      }
+      const current = galleryImages || []
+      const existingIds = new Set(current.map(i => i.id))
+      const newImages = (data.images as GalleryImage[]).filter(i => !existingIds.has(i.id))
+      if (newImages.length > 0 && onUpdate) {
+        onUpdate([...current, ...newImages])
+        if (!silent) toast.success(`Added ${newImages.length} image(s) from Drive`)
+      } else if (!silent) {
+        toast.info('All Drive images already imported')
+      }
+    } catch (err) {
+      console.error('Drive folder load error:', err)
+      if (!silent) toast.error('Failed to load images from Drive folder')
+    } finally {
+      setIsDriveLoading(false)
+    }
+  }
+
+  const handleSaveDriveUrl = () => {
+    const url = driveUrlInput.trim()
+    if (url && onDriveFolderUrlChange) {
+      onDriveFolderUrlChange(url)
+      loadDriveFolder(url)
+    }
+    setShowDriveForm(false)
+  }
 
   const handleAddImage = () => {
     if (!newUrl.trim() || !onUpdate) return
@@ -164,18 +222,45 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               &gt; Visual identity of NEUROKLAST
             </p>
             {editMode && onUpdate && (
-              <div className="mt-4">
-                {!showAddForm ? (
-                  <Button
-                    onClick={() => setShowAddForm(true)}
-                    variant="outline"
-                    size="sm"
-                    className="border-primary/30 hover:bg-primary/10 gap-2"
-                  >
-                    <Plus size={16} />
-                    Add Image URL
-                  </Button>
-                ) : (
+              <div className="mt-4 space-y-3">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {!showAddForm && (
+                    <Button
+                      onClick={() => setShowAddForm(true)}
+                      variant="outline"
+                      size="sm"
+                      className="border-primary/30 hover:bg-primary/10 gap-2"
+                    >
+                      <Plus size={16} />
+                      Add Image URL
+                    </Button>
+                  )}
+                  {!showDriveForm && (
+                    <Button
+                      onClick={() => { setShowDriveForm(true); setDriveUrlInput(driveFolderUrl || '') }}
+                      variant="outline"
+                      size="sm"
+                      className="border-primary/30 hover:bg-primary/10 gap-2"
+                    >
+                      <FolderOpen size={16} />
+                      Drive Folder
+                    </Button>
+                  )}
+                  {driveFolderUrl && (
+                    <Button
+                      onClick={() => loadDriveFolder(driveFolderUrl)}
+                      variant="outline"
+                      size="sm"
+                      disabled={isDriveLoading}
+                      className="border-primary/30 hover:bg-primary/10 gap-2"
+                    >
+                      <ArrowsClockwise size={16} className={isDriveLoading ? 'animate-spin' : ''} />
+                      Sync Drive
+                    </Button>
+                  )}
+                </div>
+
+                {showAddForm && (
                   <div className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto items-end">
                     <div className="flex-1 space-y-1">
                       <Input
@@ -197,13 +282,32 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                     </div>
                   </div>
                 )}
+
+                {showDriveForm && (
+                  <div className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto items-end">
+                    <div className="flex-1">
+                      <Input
+                        value={driveUrlInput}
+                        onChange={(e) => setDriveUrlInput(e.target.value)}
+                        placeholder="https://drive.google.com/drive/folders/..."
+                        className="text-xs"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={handleSaveDriveUrl} disabled={!driveUrlInput.trim() || isDriveLoading}>
+                        {isDriveLoading ? 'Loading...' : 'Import'}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setShowDriveForm(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
           {photos.length === 0 && !editMode && (
             <div className="text-center text-muted-foreground py-12">
-              <p className="font-mono">&gt; No images found in gallery folder</p>
-              <p className="font-mono text-xs mt-2">&gt; Add images to /src/assets/images/gallery/</p>
+              <p className="font-mono">&gt; No images found in gallery</p>
+              <p className="font-mono text-xs mt-2">&gt; Images can be added via URL or Google Drive folder</p>
             </div>
           )}
 
@@ -320,7 +424,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 </div>
                 
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-                  {editMode && !photo.isLocal && (
+                  {editMode && (
                     <button
                       className="p-1 bg-destructive/80 hover:bg-destructive text-white rounded-sm transition-colors"
                       onClick={(e) => { e.stopPropagation(); handleRemoveImage(photo.id) }}
