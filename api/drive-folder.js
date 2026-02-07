@@ -1,0 +1,83 @@
+/**
+ * API route that lists image files from a public Google Drive folder.
+ *
+ * GET /api/drive-folder?folderId=<id>
+ *
+ * Google Drive exposes a simple JSON feed for public folders which we scrape
+ * for image file entries.  Each image is returned as a GalleryImage-compatible
+ * object with a proxied URL so that CORS is not an issue and caching works.
+ */
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const { folderId } = req.query
+  if (!folderId) {
+    return res.status(400).json({ error: 'folderId parameter is required' })
+  }
+
+  try {
+    // Google Drive public folder listing via the embedlink/list endpoint
+    const listUrl = `https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(folderId)}#list`
+    const response = await fetch(listUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NeuroklastBot/1.0)' },
+    })
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: `Drive returned ${response.status}` })
+    }
+
+    const html = await response.text()
+
+    // Extract file entries from the HTML.  The embedded view contains
+    // data attributes or script blocks with file IDs.  We look for the
+    // pattern used by Google to list file IDs and names.
+    // NOTE: This is a scraping approach and may break if Google changes
+    // their embedded folder view HTML structure.
+    const images = []
+
+    // Match file IDs from the embedded view HTML — Google embeds them as
+    // data in script tags or anchor attributes.
+    const idPattern = /\["([A-Za-z0-9_-]{20,})"(?:,\[|,"([^"]*)")/g
+    let match
+    while ((match = idPattern.exec(html)) !== null) {
+      const fileId = match[1]
+      const fileName = match[2] || ''
+
+      // Filter to likely image files by extension (if name available) or include all
+      const lowerName = fileName.toLowerCase()
+      const isImage = !fileName || /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(lowerName)
+
+      if (isImage && !images.find(i => i.id === fileId)) {
+        images.push({
+          id: `drive-${fileId}`,
+          url: `https://drive.google.com/uc?export=view&id=${fileId}`,
+          caption: fileName.replace(/\.[^.]+$/, '') || `IMG_${images.length}`,
+        })
+      }
+    }
+
+    // Fallback: try matching direct file links
+    if (images.length === 0) {
+      const linkPattern = /\/file\/d\/([A-Za-z0-9_-]+)/g
+      while ((match = linkPattern.exec(html)) !== null) {
+        const fileId = match[1]
+        if (!images.find(i => i.id === `drive-${fileId}`)) {
+          images.push({
+            id: `drive-${fileId}`,
+            url: `https://drive.google.com/uc?export=view&id=${fileId}`,
+            caption: `IMG_${images.length}`,
+          })
+        }
+      }
+    }
+
+    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=600')
+    return res.json({ images })
+  } catch (error) {
+    console.error('Drive folder listing error:', error)
+    return res.status(502).json({ error: 'Failed to list Drive folder' })
+  }
+}

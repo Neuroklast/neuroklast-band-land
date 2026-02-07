@@ -53,7 +53,7 @@ const defaultBandData: BandData = {
 }
 
 function App() {
-  const [bandData, setBandData] = useKV<BandData>('band-data', defaultBandData)
+  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
   const [adminPasswordHash, setAdminPasswordHash] = useKV<string>('admin-password-hash', '')
   const [isOwner, setIsOwner] = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -232,6 +232,8 @@ function App() {
                   galleryImages={data.galleryImages}
                   editMode={editMode && isOwner}
                   onUpdate={(galleryImages) => setBandData((current) => ({ ...(current || defaultBandData), galleryImages }))}
+                  driveFolderUrl={data.galleryDriveFolderUrl}
+                  onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
                 />
               </motion.div>
 
@@ -246,6 +248,7 @@ function App() {
                   onUpdate={(gigs) => setBandData((current) => ({ ...(current || defaultBandData), gigs }))}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
+                  dataLoaded={bandDataLoaded}
                 />
               </motion.div>
 
@@ -260,6 +263,7 @@ function App() {
                   onUpdate={(releases) => setBandData((current) => ({ ...(current || defaultBandData), releases }))}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
+                  dataLoaded={bandDataLoaded}
                 />
               </motion.div>
 
@@ -300,6 +304,8 @@ function App() {
                 hasPassword={!!adminPasswordHash}
                 onChangePassword={handleChangeAdminPassword}
                 onSetPassword={handleSetAdminPassword}
+                bandData={data}
+                onImportData={(imported) => setBandData(imported)}
               />
             )}
 

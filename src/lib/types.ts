@@ -116,6 +116,10 @@ export interface BandData {
   galleryImages?: GalleryImage[]
   datenschutz?: Datenschutz
   fontSizes?: FontSizeSettings
+  /** URL to a remote JSON file (e.g. Google Drive) that is periodically checked for updates */
+  syncUrl?: string
+  /** Google Drive folder URL for gallery photos */
+  galleryDriveFolderUrl?: string
 }
 
 export interface FontSizeSettings {

@@ -68,10 +68,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
       if (customCmd.fileUrl) {
         const fileName = customCmd.fileName || 'download'
         output.push({ type: 'output' as const, text: `INITIATING DOWNLOAD: ${fileName}...` })
-        const a = document.createElement('a')
-        a.href = customCmd.fileUrl
-        a.download = fileName
-        a.click()
+        window.open(customCmd.fileUrl, '_blank', 'noopener,noreferrer')
       }
     } else {
       switch (trimmedCmd) {
