@@ -67,29 +67,63 @@ function compressImage(img: HTMLImageElement): string {
 }
 
 /**
+ * Transform known provider URLs into direct-download image URLs.
+ * Supports Google Drive share links (file/d/{id}/... and open?id={id}).
+ */
+export function toDirectImageUrl(url: string): string {
+  // Google Drive: /file/d/{fileId}/view  →  /uc?export=view&id={fileId}
+  const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
+  if (driveFileMatch) {
+    return `https://drive.google.com/uc?export=view&id=${driveFileMatch[1]}`
+  }
+  // Google Drive: open?id={fileId}
+  const driveOpenMatch = url.match(/drive\.google\.com\/open\?id=([^&#]+)/)
+  if (driveOpenMatch) {
+    return `https://drive.google.com/uc?export=view&id=${driveOpenMatch[1]}`
+  }
+  return url
+}
+
+/**
+ * Attempt to load the image directly with CORS. If that fails (e.g. Google Drive),
+ * fall back to the server-side proxy which caches in Vercel KV.
+ */
+function loadImageElement(url: string): Promise<HTMLImageElement> {
+  const directUrl = toDirectImageUrl(url)
+
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => resolve(img)
+    img.onerror = () => {
+      // Direct CORS load failed — try the server-side proxy
+      const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(directUrl)}`
+      const img2 = new Image()
+      img2.crossOrigin = 'anonymous'
+      img2.onload = () => resolve(img2)
+      img2.onerror = () => reject(new Error('Failed to load image via proxy'))
+      img2.src = proxyUrl
+    }
+    img.src = directUrl
+  })
+}
+
+/**
  * Loads an image from a URL, compresses it, and caches the result in IndexedDB.
  * Returns a data URL (from cache on subsequent calls).
+ * Handles Google Drive URLs and falls back to server-side proxy on CORS failures.
  */
 export async function loadCachedImage(url: string): Promise<string> {
   const cached = await getCached(url)
   if (cached) return cached
 
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = async () => {
-      try {
-        const compressed = compressImage(img)
-        await setCached(url, compressed)
-        resolve(compressed)
-      } catch {
-        resolve(url)
-      }
-    }
-    img.onerror = () => {
-      // If CORS fails, return original URL without caching
-      resolve(url)
-    }
-    img.src = url
-  })
+  try {
+    const img = await loadImageElement(url)
+    const compressed = compressImage(img)
+    await setCached(url, compressed)
+    return compressed
+  } catch {
+    // All strategies failed — return a usable URL (direct or transformed)
+    return toDirectImageUrl(url)
+  }
 }

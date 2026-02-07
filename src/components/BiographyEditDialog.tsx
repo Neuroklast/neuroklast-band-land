@@ -30,6 +30,8 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
       founded: founded || undefined,
       members: members.length > 0 ? members : undefined,
       achievements: achievements.length > 0 ? achievements : undefined,
+      photos: biography.photos,
+      friends: biography.friends,
     })
   }
 

@@ -21,9 +21,10 @@ interface ReleasesSectionProps {
   onUpdate: (releases: Release[]) => void
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  dataLoaded?: boolean
 }
 
-export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange }: ReleasesSectionProps) {
+export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded }: ReleasesSectionProps) {
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -52,17 +53,18 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   }, [])
 
   useEffect(() => {
-    if (!hasAutoLoaded && (!releases || releases.length === 0)) {
+    if (!hasAutoLoaded && dataLoaded && (!releases || releases.length === 0)) {
       setHasAutoLoaded(true)
       handleFetchITunesReleases(true)
     }
-  }, [hasAutoLoaded, releases])
+  }, [hasAutoLoaded, releases, dataLoaded])
 
   const sortedReleases = [...(releases || [])].sort(
     (a, b) => {
+      // Releases without a date are treated as upcoming/future → shown first
       if (!a.releaseDate && !b.releaseDate) return 0
-      if (!a.releaseDate) return 1
-      if (!b.releaseDate) return -1
+      if (!a.releaseDate) return -1
+      if (!b.releaseDate) return 1
       return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
     }
   )
@@ -272,7 +274,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                           <p className="text-[10px] text-muted-foreground mt-0.5">
                             {release.releaseDate
                               ? format(new Date(release.releaseDate), 'MMM yyyy')
-                              : '—'}
+                              : 'Upcoming'}
                           </p>
                         </div>
                       </div>
@@ -325,7 +327,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                           <p className="text-xs text-muted-foreground mt-1">
                             {release.releaseDate
                               ? format(new Date(release.releaseDate), 'MMMM yyyy')
-                              : 'Release date unknown'}
+                              : 'Upcoming Release'}
                           </p>
                         </div>
                         {release.streamingLinks && (
@@ -426,7 +428,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                         <p className="text-xs md:text-sm text-muted-foreground">
                           {release.releaseDate
                             ? format(new Date(release.releaseDate), 'MMMM yyyy')
-                            : 'Release date unknown'}
+                            : 'Upcoming Release'}
                         </p>
                       </div>
 
@@ -524,7 +526,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-bold line-clamp-1">{release.title}</h3>
                       <p className="text-[10px] text-muted-foreground">
-                        {release.releaseDate ? format(new Date(release.releaseDate), 'MMM yyyy') : '—'}
+                        {release.releaseDate ? format(new Date(release.releaseDate), 'MMM yyyy') : 'Upcoming'}
                       </p>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">

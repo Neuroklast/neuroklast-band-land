@@ -246,6 +246,7 @@ function App() {
                   onUpdate={(gigs) => setBandData((current) => ({ ...(current || defaultBandData), gigs }))}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
+                  dataLoaded={bandDataLoaded}
                 />
               </motion.div>
 
@@ -260,6 +261,7 @@ function App() {
                   onUpdate={(releases) => setBandData((current) => ({ ...(current || defaultBandData), releases }))}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
+                  dataLoaded={bandDataLoaded}
                 />
               </motion.div>
 
@@ -300,6 +302,8 @@ function App() {
                 hasPassword={!!adminPasswordHash}
                 onChangePassword={handleChangeAdminPassword}
                 onSetPassword={handleSetAdminPassword}
+                bandData={data}
+                onImportData={(imported) => setBandData(imported)}
               />
             )}
 

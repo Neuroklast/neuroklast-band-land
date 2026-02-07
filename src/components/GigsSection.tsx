@@ -19,9 +19,10 @@ interface GigsSectionProps {
   onUpdate: (gigs: Gig[]) => void
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  dataLoaded?: boolean
 }
 
-export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange }: GigsSectionProps) {
+export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded }: GigsSectionProps) {
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -49,11 +50,11 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   }, [])
 
   useEffect(() => {
-    if (!hasLoadedOnce) {
+    if (!hasLoadedOnce && dataLoaded) {
       loadGigsFromAPI(true)
       setHasLoadedOnce(true)
     }
-  }, [])
+  }, [dataLoaded])
 
   const loadGigsFromAPI = async (isAutoLoad = false) => {
     setIsLoading(true)

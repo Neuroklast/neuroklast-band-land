@@ -169,7 +169,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete }: {
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
-  const [photos, setPhotos] = useState<string[]>([])
+  const [photos, setPhotos] = useState<string[]>(biography.photos || [])
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
   const [glitchActive, setGlitchActive] = useState(false)
@@ -195,7 +195,9 @@ export default function BiographySection({ biography = defaultBiography, editMod
     return () => clearInterval(interval)
   }, [])
 
-
+  useEffect(() => {
+    setPhotos(biography.photos || [])
+  }, [biography.photos])
 
   const handleUpdate = (updatedBiography: Biography) => {
     onUpdate?.(updatedBiography)
