@@ -1,5 +1,5 @@
 import { motion, useInView } from 'framer-motion'
-import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise } from '@phosphor-icons/react'
+import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise, FacebookLogo, InstagramLogo, Link, MusicNote } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -190,22 +190,36 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
                   <div className="relative flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div className="flex items-start gap-3 md:gap-4 flex-1">
+                        {gig.photo && (
+                          <img
+                            src={gig.photo}
+                            alt={gig.venue}
+                            className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md object-cover border border-border"
+                          />
+                        )}
                         <div className="flex-shrink-0 pt-1">
                           <CalendarDots size={24} className="md:hidden text-primary" />
                           <CalendarDots size={28} className="hidden md:block text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <time className="text-base md:text-lg lg:text-xl font-semibold text-foreground/90 block mb-1">
-                            {format(new Date(gig.date), 'EEEE, MMMM d, yyyy')}
-                          </time>
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <time className="text-base md:text-lg lg:text-xl font-semibold text-foreground/90">
+                              {format(new Date(gig.date), 'EEEE, MMMM d, yyyy')}
+                            </time>
+                            {gig.gigType && (
+                              <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${gig.gigType === 'concert' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent'}`}>
+                                {gig.gigType === 'concert' ? 'CONCERT' : 'DJ SET'}
+                              </span>
+                            )}
+                          </div>
                           <time className="text-xs md:text-sm text-muted-foreground">
-                            {format(new Date(gig.date), 'HH:mm')}
+                            {gig.allDay ? 'ALL DAY' : format(new Date(gig.date), 'HH:mm')}
                           </time>
                         </div>
                       </div>
 
-                      {(editMode || gig.ticketUrl) && (
-                        <div className="flex items-center gap-2 sm:flex-shrink-0">
+                      {(editMode || gig.ticketUrl || gig.eventLinks) && (
+                        <div className="flex items-center gap-2 sm:flex-shrink-0 flex-wrap">
                           {editMode && (
                             <>
                               <Button
@@ -224,6 +238,30 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
                               >
                                 <Trash size={18} />
                               </Button>
+                            </>
+                          )}
+                          {!editMode && gig.eventLinks && (
+                            <>
+                              {gig.eventLinks.facebook && (
+                                <a href={gig.eventLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" title="Facebook Event">
+                                  <FacebookLogo size={22} />
+                                </a>
+                              )}
+                              {gig.eventLinks.instagram && (
+                                <a href={gig.eventLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" title="Instagram">
+                                  <InstagramLogo size={22} />
+                                </a>
+                              )}
+                              {gig.eventLinks.residentAdvisor && (
+                                <a href={gig.eventLinks.residentAdvisor} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" title="Resident Advisor">
+                                  <MusicNote size={22} />
+                                </a>
+                              )}
+                              {gig.eventLinks.other && (
+                                <a href={gig.eventLinks.other} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" title="Event Link">
+                                  <Link size={22} />
+                                </a>
+                              )}
                             </>
                           )}
                           {gig.ticketUrl && !editMode && (
@@ -249,6 +287,12 @@ export default function GigsSection({ gigs, editMode, onUpdate }: GigsSectionPro
                         <MapPin size={18} className="flex-shrink-0 hidden md:block" />
                         <span className="text-sm md:text-base break-words">{gig.location}</span>
                       </div>
+
+                      {gig.supportingArtists && gig.supportingArtists.length > 0 && (
+                        <p className="text-xs md:text-sm text-muted-foreground/70 mt-1 italic">
+                          w/ {gig.supportingArtists.join(', ')}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </Card>
