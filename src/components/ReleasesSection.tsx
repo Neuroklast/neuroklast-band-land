@@ -54,7 +54,12 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
   }, [hasAutoLoaded, releases])
 
   const sortedReleases = [...(releases || [])].sort(
-    (a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
+    (a, b) => {
+      if (!a.releaseDate && !b.releaseDate) return 0
+      if (!a.releaseDate) return 1
+      if (!b.releaseDate) return -1
+      return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
+    }
   )
 
   const handleDelete = (id: string) => {
@@ -246,7 +251,9 @@ export default function ReleasesSection({ releases, editMode, onUpdate }: Releas
                     <div>
                       <h3 className="text-lg md:text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{release.title}</h3>
                       <p className="text-xs md:text-sm text-muted-foreground">
-                        {format(new Date(release.releaseDate), 'MMMM yyyy')}
+                        {release.releaseDate
+                          ? format(new Date(release.releaseDate), 'MMMM yyyy')
+                          : 'Release date unknown'}
                       </p>
                     </div>
 
