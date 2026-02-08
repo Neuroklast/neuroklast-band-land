@@ -158,7 +158,6 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={onClose}
     >
       <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
 
