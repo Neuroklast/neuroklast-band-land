@@ -8,7 +8,7 @@ import ProgressiveImage from '@/components/ProgressiveImage'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
-import type { Friend } from '@/lib/types'
+import type { Friend, SectionLabels } from '@/lib/types'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import {
   CONSOLE_LINES_DEFAULT_SPEED_MS,
@@ -26,6 +26,7 @@ interface PartnersAndFriendsSectionProps {
   friends?: Friend[]
   editMode?: boolean
   onUpdate?: (friends: Friend[]) => void
+  sectionLabels?: SectionLabels
 }
 
 const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: any; label: string }[] = [
@@ -84,7 +85,7 @@ const friendProfileLoadingTexts = [
   '> IDENTITY VERIFIED',
 ]
 
-function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: () => void }) {
+function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Friend; onClose: () => void; sectionLabels?: SectionLabels }) {
   const [phase, setPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(friendProfileLoadingTexts[0])
   const [photoLoaded, setPhotoLoaded] = useState(false)
@@ -207,9 +208,9 @@ function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: ()
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
                 {friend.photo && photoSrc ? (
-                  <div className="w-full h-full overflow-hidden rounded-full border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.2)] bg-black">
+                  <div className="w-full h-full overflow-hidden border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.2)] bg-black">
                     {!photoLoaded && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black rounded-full">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black">
                         <div className="w-3/4 h-[2px] bg-primary/20 overflow-hidden mb-1">
                           <div className="h-full bg-primary animate-progress-bar" />
                         </div>
@@ -230,10 +231,10 @@ function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: ()
                         }
                       }}
                     />
-                    <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20 rounded-full" />
+                    <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
                   </div>
                 ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center rounded-full border border-primary/40">
+                  <div className="w-full h-full bg-muted flex items-center justify-center border border-primary/40">
                     <User size={72} className="text-muted-foreground" />
                   </div>
                 )}
@@ -278,7 +279,7 @@ function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: ()
 
                 <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  <span>SESSION ACTIVE</span>
+                  <span>{sectionLabels?.sessionStatusText || 'SESSION ACTIVE'}</span>
                   <span className="ml-auto">NK-SYS v1.3.37</span>
                 </div>
               </motion.div>
@@ -299,6 +300,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState(friend)
+  const [hovered, setHovered] = useState(false)
 
   const handleSave = () => {
     // Convert Google Drive URLs to wsrv.nl URLs before saving
@@ -356,20 +358,22 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
     <Card
       className="bg-card/50 border-border hover:border-primary/50 transition-all duration-300 overflow-hidden group hud-element hud-corner cursor-pointer"
       onClick={() => !editMode && onSelect()}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <span className="corner-bl"></span>
       <span className="corner-br"></span>
       <div className="flex flex-col items-center gap-3 p-5">
         {friend.photo ? (
-          <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-full shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)]">
+          <div className={`w-24 h-24 aspect-square flex-shrink-0 overflow-hidden shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] ${hovered ? 'red-glitch-element' : ''}`}>
             <ProgressiveImage
               src={friend.photo}
               alt={friend.name}
-              className="w-full h-full object-cover rounded-full"
+              className="w-full h-full object-contain"
             />
           </div>
         ) : (
-          <div className="w-24 h-24 flex-shrink-0 bg-secondary/30 border border-border rounded-full flex items-center justify-center shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)]">
+          <div className={`w-24 h-24 aspect-square flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] ${hovered ? 'red-glitch-element' : ''}`}>
             <User size={32} className="text-muted-foreground/40" />
           </div>
         )}
@@ -413,11 +417,11 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
   )
 }
 
-export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate }: PartnersAndFriendsSectionProps) {
+export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels }: PartnersAndFriendsSectionProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
-  const titleText = 'PARTNERS & FRIENDS'
+  const titleText = sectionLabels?.partnersAndFriends || 'PARTNERS & FRIENDS'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
@@ -492,6 +496,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
           <FriendProfileOverlay
             friend={selectedFriend}
             onClose={() => setSelectedFriend(null)}
+            sectionLabels={sectionLabels}
           />
         )}
       </AnimatePresence>

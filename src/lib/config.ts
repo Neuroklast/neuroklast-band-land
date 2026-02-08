@@ -82,6 +82,8 @@ const DEFAULTS = {
 
   // Defaults / Labels
   DEFAULT_LABEL: 'Darktunes Music Group',
+  PROFILE_STATUS_TEXT: 'ACTIVE',
+  SESSION_STATUS_TEXT: 'SESSION ACTIVE',
 } as const
 
 export type ConfigKey = keyof typeof DEFAULTS
@@ -155,6 +157,8 @@ export const CONFIG_META: Record<ConfigKey, ConfigMeta> = {
   SYNC_INTERVAL_MS:                { label: 'Sync Interval',            description: 'Interval between sync checks (ms)',                      group: 'Data Sync',        type: 'number' },
 
   DEFAULT_LABEL:                   { label: 'Default Label',            description: 'Default record label name',                              group: 'Defaults',         type: 'string' },
+  PROFILE_STATUS_TEXT:              { label: 'Profile Status Text',      description: 'Status text shown in member profile overlays',            group: 'Defaults',         type: 'string' },
+  SESSION_STATUS_TEXT:              { label: 'Session Status Text',      description: 'Session status text shown in profile overlays',           group: 'Defaults',         type: 'string' },
 }
 
 // ---------------------------------------------------------------------------
@@ -245,3 +249,5 @@ export const DEFAULT_SOUND_VOLUME            = DEFAULTS.DEFAULT_SOUND_VOLUME
 export const INITIAL_SYNC_DELAY_MS           = DEFAULTS.INITIAL_SYNC_DELAY_MS
 export const SYNC_INTERVAL_MS                = DEFAULTS.SYNC_INTERVAL_MS
 export const DEFAULT_LABEL                   = DEFAULTS.DEFAULT_LABEL
+export const PROFILE_STATUS_TEXT             = DEFAULTS.PROFILE_STATUS_TEXT
+export const SESSION_STATUS_TEXT             = DEFAULTS.SESSION_STATUS_TEXT

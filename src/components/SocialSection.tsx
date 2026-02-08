@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import FontSizePicker from '@/components/FontSizePicker'
-import type { SocialLinks, FontSizeSettings } from '@/lib/types'
+import type { SocialLinks, FontSizeSettings, SectionLabels } from '@/lib/types'
 import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -31,6 +31,7 @@ interface SocialSectionProps {
   onUpdate: (socialLinks: SocialLinks) => void
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  sectionLabels?: SectionLabels
 }
 
 const socialPlatforms = [
@@ -45,12 +46,12 @@ const socialPlatforms = [
   { key: 'bandcamp' as keyof SocialLinks, icon: Link, label: 'Bandcamp' }
 ]
 
-export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange }: SocialSectionProps) {
+export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels }: SocialSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-  const titleText = 'CONNECT'
+  const titleText = sectionLabels?.connect || 'CONNECT'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
@@ -123,13 +124,20 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
                 <Button
                   asChild
                   variant="outline"
-                  className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation"
+                  className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation hud-element hud-corner hud-scanline"
+                  style={{
+                    textShadow: '0 0 6px oklch(1 0 0 / 0.3), 0 0 12px oklch(0.50 0.22 25 / 0.2)'
+                  }}
                 >
                   <a href={url} target="_blank" rel="noopener noreferrer">
+                    <span className="corner-bl"></span>
+                    <span className="corner-br"></span>
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
                     <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
-                    <Icon size={80} className="md:hidden size-20 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200 relative z-10" weight="fill" />
-                    <Icon size={96} className="hidden md:block size-24 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200 relative z-10" weight="fill" />
+                    <div className="relative z-10 group-hover:red-glitch-element transition-all">
+                      <Icon size={80} className="md:hidden size-20 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
+                      <Icon size={96} className="hidden md:block size-24 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
+                    </div>
                     <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10">{platform.label}</span>
                   </a>
                 </Button>

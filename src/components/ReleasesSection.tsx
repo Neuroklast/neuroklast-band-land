@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
-import type { Release, FontSizeSettings } from '@/lib/types'
+import type { Release, FontSizeSettings, SectionLabels } from '@/lib/types'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
 import { format } from 'date-fns'
@@ -24,9 +24,10 @@ interface ReleasesSectionProps {
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   dataLoaded?: boolean
+  sectionLabels?: SectionLabels
 }
 
-export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded }: ReleasesSectionProps) {
+export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels }: ReleasesSectionProps) {
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -39,7 +40,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
 
-  const titleText = 'RELEASES'
+  const titleText = sectionLabels?.releases || 'RELEASES'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     50,
@@ -283,12 +284,6 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                               />
                               <div className="absolute inset-0 pointer-events-none"
                                 style={{
-                                  backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.4) 1px, transparent 1px)`,
-                                  backgroundSize: '3px 3px'
-                                }}
-                              />
-                              <div className="absolute inset-0 pointer-events-none"
-                                style={{
                                   backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, oklch(0 0 0 / 0.08) 2px, oklch(0 0 0 / 0.08) 3px)`
                                 }}
                               />
@@ -314,34 +309,46 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
               </div>
             </div>
 
-            {/* Mobile: expanded release links overlay */}
             <AnimatePresence>
               {expandedReleaseId && (() => {
                 const release = sortedReleases.find(r => r.id === expandedReleaseId)
                 if (!release) return null
                 return (
                   <motion.div
-                    key="mobile-links"
-                    className="md:hidden fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-6"
+                    key="release-links"
+                    className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-6"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setExpandedReleaseId(null)}
                   >
+                    <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
                     <motion.div
-                      className="w-full max-w-sm"
-                      initial={{ scale: 0.9, y: 20 }}
-                      animate={{ scale: 1, y: 0 }}
-                      exit={{ scale: 0.9, y: 20 }}
+                      className="w-full max-w-md bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter"
+                      initial={{ scale: 0.85, y: 30, opacity: 0 }}
+                      animate={{ scale: 1, y: 0, opacity: 1 }}
+                      exit={{ scale: 0.85, y: 30, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
                       onClick={(e) => e.stopPropagation()}
                     >
+                      <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
+                      <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
+                      <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
+                      <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
+
+                      <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">RELEASE // {release.title.toUpperCase()}</span>
+                      </div>
+
                       <button
-                        className="absolute top-4 right-4 p-2 text-primary/60 hover:text-primary"
+                        className="absolute top-2 right-3 p-2 text-primary/60 hover:text-primary z-10"
                         onClick={() => setExpandedReleaseId(null)}
                       >
                         <X size={24} />
                       </button>
-                      <div className="flex flex-col items-center gap-4">
+
+                      <div className="flex flex-col items-center gap-4 p-6">
                         {release.artwork && (
                           <div className="w-48 h-48 relative overflow-hidden border border-primary/30">
                             <img
@@ -350,6 +357,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                               className="w-full h-full object-cover"
                               style={{ filter: 'contrast(1.15) brightness(0.85)' }}
                             />
+                            <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
                           </div>
                         )}
                         <div className="text-center">
@@ -396,6 +404,11 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                             )}
                           </div>
                         )}
+                        <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1 w-full">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
+                          <span>STREAM ACTIVE</span>
+                          <span className="ml-auto">NK-SYS v1.3.37</span>
+                        </div>
                       </div>
                     </motion.div>
                   </motion.div>
@@ -412,7 +425,9 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                   animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                 >
-                  <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation hud-element hud-corner hud-scanline">
+                  <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation hud-element hud-corner hud-scanline cursor-pointer"
+                    onClick={() => !editMode && setExpandedReleaseId(expandedReleaseId === release.id ? null : release.id)}
+                  >
                     <span className="corner-bl"></span>
                     <span className="corner-br"></span>
                     
@@ -436,7 +451,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                           <div className="absolute inset-0 pointer-events-none z-[1]"
                             style={{
                               backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.4) 1px, transparent 1px)`,
-                              backgroundSize: '3px 3px'
+                              backgroundSize: 'clamp(2px, 0.3vw, 4px) clamp(2px, 0.3vw, 4px)'
                             }}
                           />
                           <div className="absolute inset-0 pointer-events-none z-[2]"
@@ -462,69 +477,12 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                         </p>
                       </div>
 
-                      {!editMode && release.streamingLinks && (
-                        <div className="grid grid-cols-2 gap-2">
-                          {release.streamingLinks.spotify && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                              className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
-                            >
-                              <a href={release.streamingLinks.spotify} target="_blank" rel="noopener noreferrer">
-                                <SpotifyLogo size={18} weight="fill" className="mr-1" />
-                                <span className="text-xs">Spotify</span>
-                              </a>
-                            </Button>
-                          )}
-                          {release.streamingLinks.soundcloud && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                              className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
-                            >
-                              <a href={release.streamingLinks.soundcloud} target="_blank" rel="noopener noreferrer">
-                                <SoundcloudLogo size={18} weight="fill" className="mr-1" />
-                                <span className="text-xs">SoundCloud</span>
-                              </a>
-                            </Button>
-                          )}
-                          {release.streamingLinks.youtube && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                              className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
-                            >
-                              <a href={release.streamingLinks.youtube} target="_blank" rel="noopener noreferrer">
-                                <YoutubeLogo size={18} weight="fill" className="mr-1" />
-                                <span className="text-xs">YouTube</span>
-                              </a>
-                            </Button>
-                          )}
-                          {release.streamingLinks.bandcamp && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                              className="border-primary/30 hover:bg-primary/10 hover:border-primary active:scale-95 transition-all touch-manipulation"
-                            >
-                              <a href={release.streamingLinks.bandcamp} target="_blank" rel="noopener noreferrer">
-                                <MusicNote size={18} weight="fill" className="mr-1" />
-                                <span className="text-xs">Bandcamp</span>
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-                      )}
-
                       {editMode && (
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setEditingRelease(release)}
+                            onClick={(e) => { e.stopPropagation(); setEditingRelease(release) }}
                             className="flex-1 border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
                           >
                             Edit
@@ -532,7 +490,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDelete(release.id)}
+                            onClick={(e) => { e.stopPropagation(); handleDelete(release.id) }}
                             className="active:scale-95 transition-transform touch-manipulation"
                           >
                             <Trash size={18} />

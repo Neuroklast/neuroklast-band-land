@@ -7,7 +7,7 @@ import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import { loadCachedImage } from '@/lib/image-cache'
-import type { GalleryImage } from '@/lib/types'
+import type { GalleryImage, SectionLabels } from '@/lib/types'
 import { toast } from 'sonner'
 
 interface InstagramGalleryProps {
@@ -17,6 +17,7 @@ interface InstagramGalleryProps {
   /** Google Drive folder URL for bulk photo import */
   driveFolderUrl?: string
   onDriveFolderUrlChange?: (url: string) => void
+  sectionLabels?: SectionLabels
 }
 
 /** Extract a Google Drive folder ID from various URL formats */
@@ -32,7 +33,7 @@ function extractDriveFolderId(url: string): string | null {
   return null
 }
 
-export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange }: InstagramGalleryProps) {
+export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels }: InstagramGalleryProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
@@ -49,7 +50,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const [showDriveForm, setShowDriveForm] = useState(false)
   const driveAutoLoaded = useRef(false)
 
-  const titleText = 'GALLERY'
+  const titleText = sectionLabels?.gallery || 'GALLERY'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     50,
