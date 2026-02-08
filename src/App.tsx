@@ -200,6 +200,8 @@ function App() {
       </AnimatePresence>
 
       {!loading && (
+        <>
+        <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} />
         <motion.div 
           className="min-h-screen bg-background text-foreground overflow-x-hidden relative"
           initial={{ opacity: 0 }}
@@ -214,14 +216,6 @@ function App() {
           
           <CyberpunkBackground />
           <Toaster position="top-right" />
-          
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} />
-          </motion.div>
           
           <motion.div
             initial={{ opacity: 0 }}
@@ -414,6 +408,7 @@ function App() {
             />
           </motion.div>
         </motion.div>
+        </>
       )}
     </>
   )

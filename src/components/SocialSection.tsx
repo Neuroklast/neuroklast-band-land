@@ -61,9 +61,12 @@ function SocialButton({ Icon, url, label, index, isInView }: { Icon: any; url?: 
       <Button
         asChild
         variant="outline"
-        className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation hud-element hud-corner hud-scanline"
+        className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 rounded-none border-primary/30 hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation hud-element hud-corner hud-scanline social-cyber-card"
         style={{
-          textShadow: '0 0 6px oklch(1 0 0 / 0.3), 0 0 12px oklch(0.50 0.22 25 / 0.2)'
+          textShadow: '0 0 6px oklch(1 0 0 / 0.3), 0 0 12px oklch(0.50 0.22 25 / 0.2)',
+          boxShadow: hovered
+            ? '0 0 20px oklch(0.50 0.22 25 / 0.4), inset 0 0 20px oklch(0.50 0.22 25 / 0.1)'
+            : '0 0 8px oklch(0.50 0.22 25 / 0.15), inset 0 0 8px oklch(0.50 0.22 25 / 0.03)',
         }}
       >
         <a href={url} target="_blank" rel="noopener noreferrer">
@@ -71,11 +74,11 @@ function SocialButton({ Icon, url, label, index, isInView }: { Icon: any; url?: 
           <span className="corner-br"></span>
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
-          <div className={`relative z-10 transition-all ${hovered ? 'red-glitch-element' : ''}`}>
+          <div className={`relative z-10 transition-all ${hovered ? 'red-glitch-element chromatic-aberration-hover' : ''}`}>
             <Icon size={80} className="md:hidden size-20 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
             <Icon size={96} className="hidden md:block size-24 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
           </div>
-          <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10">{label}</span>
+          <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10 font-mono">{label}</span>
         </a>
       </Button>
     </motion.div>
