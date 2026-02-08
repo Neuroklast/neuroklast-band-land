@@ -246,6 +246,7 @@ function App() {
                   onUpdate={(biography) => setBandData((current) => ({ ...(current || defaultBandData), biography }))}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
+                  sectionLabels={data.sectionLabels}
                 />
               </motion.div>
 
@@ -260,6 +261,7 @@ function App() {
                   onUpdate={(galleryImages) => setBandData((current) => ({ ...(current || defaultBandData), galleryImages }))}
                   driveFolderUrl={data.galleryDriveFolderUrl}
                   onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
+                  sectionLabels={data.sectionLabels}
                 />
               </motion.div>
 
@@ -275,6 +277,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
+                  sectionLabels={data.sectionLabels}
                 />
               </motion.div>
 
@@ -290,6 +293,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
+                  sectionLabels={data.sectionLabels}
                 />
               </motion.div>
 
@@ -304,6 +308,7 @@ function App() {
                   onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
+                  sectionLabels={data.sectionLabels}
                 />
               </motion.div>
 
@@ -319,6 +324,7 @@ function App() {
                     ...(current || defaultBandData),
                     biography: { ...(current || defaultBandData).biography!, friends }
                   }))}
+                  sectionLabels={data.sectionLabels}
                 />
               </motion.div>
             </main>

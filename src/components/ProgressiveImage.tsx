@@ -26,9 +26,18 @@ export default function ProgressiveImage({ src, alt, className, style, draggable
   const [proxyAttempted, setProxyAttempted] = useState(false)
 
   useEffect(() => {
-    setEffectiveSrc(resolveInitialSrc(src))
+    const newSrc = resolveInitialSrc(src)
+    setEffectiveSrc(newSrc)
     setLoaded(false)
     setProxyAttempted(false)
+
+    // Check if image is already cached by the browser
+    const img = new Image()
+    img.src = newSrc
+    if (img.complete) {
+      setLoaded(true)
+    }
+    return () => { img.src = '' }
   }, [src])
 
   const handleError = () => {

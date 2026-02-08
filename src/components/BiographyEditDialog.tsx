@@ -22,8 +22,10 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
   const [founded, setFounded] = useState(biography.founded || '')
   const [members, setMembers] = useState<Member[]>((biography.members || []).map(normalizeMember))
   const [achievements, setAchievements] = useState<string[]>(biography.achievements || [])
+  const [collabs, setCollabs] = useState<string[]>(biography.collabs || [])
   const [newMember, setNewMember] = useState('')
   const [newAchievement, setNewAchievement] = useState('')
+  const [newCollab, setNewCollab] = useState('')
 
   const handleSave = () => {
     // Convert all Google Drive URLs to wsrv.nl URLs before saving
@@ -37,6 +39,7 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
       founded: founded || undefined,
       members: convertedMembers.length > 0 ? convertedMembers : undefined,
       achievements: achievements.length > 0 ? achievements : undefined,
+      collabs: collabs.length > 0 ? collabs : undefined,
       photos: biography.photos,
       friends: biography.friends,
     })
@@ -66,6 +69,17 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
 
   const removeAchievement = (index: number) => {
     setAchievements(achievements.filter((_, i) => i !== index))
+  }
+
+  const addCollab = () => {
+    if (newCollab.trim()) {
+      setCollabs([...collabs, newCollab.trim()])
+      setNewCollab('')
+    }
+  }
+
+  const removeCollab = (index: number) => {
+    setCollabs(collabs.filter((_, i) => i !== index))
   }
 
   return (
@@ -170,6 +184,36 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addAchievement())}
                 />
                 <Button type="button" onClick={addAchievement} size="icon">
+                  <Plus size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Collabs</Label>
+            <div className="space-y-2">
+              {collabs.map((collab, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <Input value={collab} disabled className="flex-1" />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCollab(index)}
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <Input
+                  value={newCollab}
+                  onChange={(e) => setNewCollab(e.target.value)}
+                  placeholder="Add collab"
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCollab())}
+                />
+                <Button type="button" onClick={addCollab} size="icon">
                   <Plus size={16} />
                 </Button>
               </div>

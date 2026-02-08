@@ -70,6 +70,7 @@ export interface Biography {
   founded?: string
   members?: (string | Member)[]
   achievements?: string[]
+  collabs?: string[]
   photos?: string[]
   friends?: Friend[]
 }
@@ -124,6 +125,8 @@ export interface BandData {
   soundSettings?: SoundSettings
   /** Runtime overrides for config.ts constants (keys are ConfigKey names) */
   configOverrides?: Record<string, unknown>
+  /** Custom section headings and display labels */
+  sectionLabels?: SectionLabels
 }
 
 export interface SoundSettings {
@@ -133,6 +136,18 @@ export interface SoundSettings {
   typingSound?: string
   /** URL to button click sound */
   buttonSound?: string
+}
+
+export interface SectionLabels {
+  biography?: string
+  gallery?: string
+  gigs?: string
+  releases?: string
+  connect?: string
+  partnersAndFriends?: string
+  profileStatusText?: string
+  sessionStatusText?: string
+  collabs?: string
 }
 
 export interface FontSizeSettings {

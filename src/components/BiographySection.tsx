@@ -9,7 +9,7 @@ import { loadCachedImage, toDirectImageUrl } from '@/lib/image-cache'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
-import type { Biography, Member, FontSizeSettings } from '@/lib/types'
+import type { Biography, Member, FontSizeSettings, SectionLabels } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import {
   CONSOLE_LINES_DEFAULT_SPEED_MS,
@@ -33,6 +33,7 @@ interface BiographySectionProps {
   onUpdate?: (biography: Biography) => void
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  sectionLabels?: SectionLabels
 }
 
 const defaultBiography: Biography = {
@@ -90,10 +91,11 @@ function ConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetw
   )
 }
 
-function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
+function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: {
   member: Member
   resolvePhoto: (url: string) => string
   onClose: () => void
+  sectionLabels?: SectionLabels
 }) {
   const [phase, setPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(profileLoadingTexts[0])
@@ -138,7 +140,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
   // Build terminal-style data lines for the console effect
   const dataLines: string[] = []
   dataLines.push(`> SUBJECT: ${member.name.toUpperCase()}`)
-  dataLines.push('> STATUS: ACTIVE')
+  dataLines.push(`> STATUS: ${sectionLabels?.profileStatusText || 'ACTIVE'}`)
   if (member.bio) {
     dataLines.push('> ---')
     dataLines.push(`> ${member.bio}`)
@@ -273,7 +275,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
                 </div>
                 <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  <span>SESSION ACTIVE</span>
+                  <span>{sectionLabels?.sessionStatusText || 'SESSION ACTIVE'}</span>
                   <span className="ml-auto">NK-SYS v1.3.37</span>
                 </div>
               </motion.div>
@@ -285,7 +287,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
   )
 }
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>(biography.photos || [])
@@ -297,7 +299,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
-  const titleText = 'BIOGRAPHY'
+  const titleText = sectionLabels?.biography || 'BIOGRAPHY'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
@@ -567,6 +569,28 @@ export default function BiographySection({ biography = defaultBiography, editMod
                   </Card>
                 </motion.div>
               )}
+
+              {biography.collabs && biography.collabs.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                  transition={{ duration: 0.7, delay: 0.6 }}
+                >
+                  <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                    <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                      {sectionLabels?.collabs || 'Collabs'}
+                    </h3>
+                    <ul className="space-y-3">
+                      {biography.collabs.map((collab, index) => (
+                        <li key={index} className="text-foreground/90 text-sm flex gap-2">
+                          <span className="text-primary mt-1">◆</span>
+                          <span className="flex-1">{collab}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                </motion.div>
+              )}
           </div>
         </motion.div>
       </div>
@@ -587,6 +611,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
             member={selectedMember}
             resolvePhoto={resolvePhoto}
             onClose={() => setSelectedMember(null)}
+            sectionLabels={sectionLabels}
           />
         )}
       </AnimatePresence>

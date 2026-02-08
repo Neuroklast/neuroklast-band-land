@@ -17,10 +17,12 @@ export function useTypingEffect(
       return
     }
 
+    let intervalId: ReturnType<typeof setInterval> | undefined
+
     const startTimeout = setTimeout(() => {
       let currentIndex = 0
 
-      const intervalId = setInterval(() => {
+      intervalId = setInterval(() => {
         if (currentIndex < text.length) {
           setDisplayedText(text.slice(0, currentIndex + 1))
           currentIndex++
@@ -29,11 +31,12 @@ export function useTypingEffect(
           setIsComplete(true)
         }
       }, speed)
-
-      return () => clearInterval(intervalId)
     }, startDelay)
 
-    return () => clearTimeout(startTimeout)
+    return () => {
+      clearTimeout(startTimeout)
+      if (intervalId) clearInterval(intervalId)
+    }
   }, [text, speed, startDelay])
 
   return { displayedText, isComplete }

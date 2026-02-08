@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import FontSizePicker from '@/components/FontSizePicker'
-import type { Gig, FontSizeSettings } from '@/lib/types'
+import type { Gig, FontSizeSettings, SectionLabels } from '@/lib/types'
 import { useState, useEffect, useRef } from 'react'
 import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
@@ -20,9 +20,10 @@ interface GigsSectionProps {
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   dataLoaded?: boolean
+  sectionLabels?: SectionLabels
 }
 
-export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded }: GigsSectionProps) {
+export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels }: GigsSectionProps) {
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -31,7 +32,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
 
-  const titleText = 'UPCOMING GIGS'
+  const titleText = sectionLabels?.gigs || 'UPCOMING GIGS'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     40,
