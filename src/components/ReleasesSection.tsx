@@ -448,6 +448,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                             draggable={false}
                             style={{ filter: 'contrast(1.15) brightness(0.85)' }}
                           />
+                          {/* Dot matrix scales with viewport: min 2px, max 4px */}
                           <div className="absolute inset-0 pointer-events-none z-[1]"
                             style={{
                               backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.4) 1px, transparent 1px)`,

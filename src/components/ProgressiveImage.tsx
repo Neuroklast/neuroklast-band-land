@@ -37,6 +37,7 @@ export default function ProgressiveImage({ src, alt, className, style, draggable
     if (img.complete) {
       setLoaded(true)
     }
+    return () => { img.src = '' }
   }, [src])
 
   const handleError = () => {
