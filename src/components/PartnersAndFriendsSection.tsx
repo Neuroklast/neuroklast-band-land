@@ -240,9 +240,7 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
                       }}
                     />
                     <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
-                    <div className="absolute inset-0 pointer-events-none" style={{
-                      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, oklch(0 0 0 / 0.06) 1px, oklch(0 0 0 / 0.06) 2px)'
-                    }} />
+                    <div className="dot-matrix-photo" />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center border border-primary/40">
@@ -383,9 +381,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
               className="w-full h-full object-contain"
             />
             <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
-            <div className="absolute inset-0 pointer-events-none" style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, oklch(0 0 0 / 0.06) 1px, oklch(0 0 0 / 0.06) 2px)'
-            }} />
+            <div className="dot-matrix-photo" />
           </div>
         ) : (
           <div className={`w-24 h-24 aspect-square flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] ${hovered ? 'red-glitch-element' : ''}`}>

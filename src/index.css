@@ -719,3 +719,17 @@ h1, h2, h3, h4, h5, h6 {
   margin-left: 1px;
   font-size: 0.8em;
 }
+
+/* Dot-matrix photo overlay effect */
+.dot-matrix-photo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    oklch(0 0 0 / 0.06) 1px,
+    oklch(0 0 0 / 0.06) 2px
+  );
+}

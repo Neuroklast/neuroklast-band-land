@@ -255,9 +255,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
                     {/* Scanline on photo */}
                     <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
                     {/* Dot-matrix on photo */}
-                    <div className="absolute inset-0 pointer-events-none" style={{
-                      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, oklch(0 0 0 / 0.06) 1px, oklch(0 0 0 / 0.06) 2px)'
-                    }} />
+                    <div className="dot-matrix-photo" />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center border border-primary/40">
