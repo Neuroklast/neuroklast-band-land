@@ -265,6 +265,7 @@ function App() {
                   driveFolderUrl={data.galleryDriveFolderUrl}
                   onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -345,6 +346,7 @@ function App() {
                     biography: { ...(current || defaultBandData).biography!, friends }
                   }))}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
             </main>

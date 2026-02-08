@@ -141,6 +141,7 @@ input, textarea, select {
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: screen;
+  will-change: auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -737,6 +738,61 @@ h1, h2, h3, h4, h5, h6 {
 /* Social button cyberpunk styling - angular with glow and scanlines */
 .social-cyber-card {
   clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+/* ── CyberpunkBackground pure-CSS animations (replaces framer-motion Infinity loops) ── */
+@keyframes cyberpunk-data-stream {
+  0%   { transform: translateY(0);    opacity: 0;   }
+  5%   { opacity: 0.6; }
+  95%  { opacity: 0.6; }
+  100% { transform: translateY(260vh); opacity: 0; }
+}
+
+.cyberpunk-data-stream {
+  animation: cyberpunk-data-stream linear infinite;
+  will-change: transform;
+}
+
+@keyframes cyberpunk-scan-pulse {
+  0%, 100% { opacity: 0;    }
+  50%      { opacity: 0.12; }
+}
+
+.cyberpunk-scan-pulse {
+  animation: cyberpunk-scan-pulse 7s ease-in-out infinite;
+}
+
+@keyframes cyberpunk-corner-glow {
+  0%, 100% { opacity: 0;   }
+  50%      { opacity: 0.3; }
+}
+
+.cyberpunk-corner-glow {
+  animation: cyberpunk-corner-glow 3s ease-in-out infinite;
+}
+
+/* ── Occult loader flash elements ── */
+@keyframes occult-flash {
+  0%   { opacity: 0; }
+  15%  { opacity: 0.7; }
+  30%  { opacity: 0; }
+  50%  { opacity: 0.5; }
+  70%  { opacity: 0; }
+  85%  { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+.occult-flash-element {
+  animation: occult-flash 0.8s ease-in-out forwards;
+}
+
+/* ── Performance: promote fixed overlays to own layer, reduce mobile repaints ── */
+@media (hover: none) and (pointer: coarse) {
+  .hud-scanline::before,
+  .hud-element::before {
+    animation-play-state: running; /* keep effect but browser can optimise */
+    will-change: transform;
+  }
 }
 
 .social-cyber-card::after {

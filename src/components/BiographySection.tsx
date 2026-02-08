@@ -209,7 +209,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
           <CyberCloseButton
             onClick={onClose}
             label={sectionLabels?.closeButtonText || 'CLOSE'}
-            className="absolute top-3 right-3"
+            className="absolute top-2 right-3 z-20"
           />
 
           {/* Header bar */}
@@ -411,13 +411,23 @@ export default function BiographySection({ biography = defaultBiography, editMod
             {editMode && (
               <div className="flex gap-2 items-center w-full sm:w-auto">
                 {onLabelChange && (
-                  <input
-                    type="text"
-                    value={sectionLabels?.biography || ''}
-                    onChange={(e) => onLabelChange('biography', e.target.value)}
-                    placeholder="BIOGRAPHY"
-                    className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
-                  />
+                  <>
+                    <input
+                      type="text"
+                      value={sectionLabels?.headingPrefix ?? '>'}
+                      onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
+                      placeholder=">"
+                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
+                      title="Heading prefix"
+                    />
+                    <input
+                      type="text"
+                      value={sectionLabels?.biography || ''}
+                      onChange={(e) => onLabelChange('biography', e.target.value)}
+                      placeholder="BIOGRAPHY"
+                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                    />
+                  </>
                 )}
                 <Button
                   onClick={() => setIsEditDialogOpen(true)}

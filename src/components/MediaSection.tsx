@@ -219,7 +219,8 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
         />
       ))}
 
-      {selectedFolder === null && rootFiles.map(file => {
+      {/* Always show root files in the tree */}
+      {rootFiles.map(file => {
         const ext = getFileExtension(file.name)
         const baseName = getFileBaseName(file.name)
         return (

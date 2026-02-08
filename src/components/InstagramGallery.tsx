@@ -18,6 +18,7 @@ interface InstagramGalleryProps {
   driveFolderUrl?: string
   onDriveFolderUrlChange?: (url: string) => void
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 /** Extract a Google Drive folder ID from various URL formats */
@@ -33,7 +34,7 @@ function extractDriveFolderId(url: string): string | null {
   return null
 }
 
-export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels }: InstagramGalleryProps) {
+export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels, onLabelChange }: InstagramGalleryProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
@@ -198,27 +199,32 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="mb-12"
           >
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-                className="glitch-effect"
-              >
-                <Images size={32} className="text-primary" weight="fill" />
-              </motion.div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
                 style={{
                   textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
                 }}
               >
                 <ChromaticText intensity={1.5}>
-                  {displayedTitle}
+                  {headingPrefix} {displayedTitle}
                 </ChromaticText>
                 <span className="animate-pulse">_</span>
               </h2>
+              {editMode && onUpdate && (
+                <div className="flex gap-2 items-center">
+                  {onLabelChange && (
+                    <input
+                      type="text"
+                      value={sectionLabels?.gallery || ''}
+                      onChange={(e) => onLabelChange('gallery', e.target.value)}
+                      placeholder="GALLERY"
+                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                    />
+                  )}
+                </div>
+              )}
             </div>
             <p className="text-muted-foreground font-mono text-sm">
               &gt; Visual identity of NEUROKLAST

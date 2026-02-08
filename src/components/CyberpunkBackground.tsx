@@ -1,12 +1,32 @@
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
+/**
+ * CyberpunkBackground – pure-CSS animated HUD overlay.
+ *
+ * Replaced framer-motion infinite animations with CSS keyframes to avoid
+ * continuous JS → DOM updates that trigger layout/paint on every frame.
+ * The clock now only ticks when the tab is visible to avoid wasted work.
+ */
 export default function CyberpunkBackground() {
   const [time, setTime] = useState(new Date())
+  const intervalRef = useRef<ReturnType<typeof setInterval>>()
 
   useEffect(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(interval)
+    const tick = () => setTime(new Date())
+    intervalRef.current = setInterval(tick, 1000)
+    const handleVisibility = () => {
+      if (document.hidden) {
+        clearInterval(intervalRef.current)
+      } else {
+        setTime(new Date())
+        intervalRef.current = setInterval(tick, 1000)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      clearInterval(intervalRef.current)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [])
 
   const formatTime = (date: Date) => {
@@ -19,7 +39,7 @@ export default function CyberpunkBackground() {
   }
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ willChange: 'auto', contain: 'strict' }}>
       <div className="absolute inset-0 hud-grid-overlay" />
       
       <div className="absolute top-4 left-4 data-readout hidden md:block">
@@ -46,48 +66,32 @@ export default function CyberpunkBackground() {
         <div className="mt-1">MODE: HARD</div>
       </div>
 
-      {[...Array(4)].map((_, i) => (
-        <motion.div
+      {/* Data streams – pure CSS animations instead of framer-motion */}
+      {[0, 1, 2, 3].map((i) => (
+        <div
           key={`data-stream-${i}`}
-          className="absolute w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent"
+          className="absolute w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent cyberpunk-data-stream"
           style={{
             left: `${15 + (i * 25)}%`,
             height: '60vh',
             top: '-60vh',
-          }}
-          initial={{ y: 0, opacity: 0 }}
-          animate={{ 
-            y: '200vh',
-            opacity: [0, 0.6, 0.6, 0],
-          }}
-          transition={{
-            duration: 8 + i * 2,
-            delay: i * 3,
-            repeat: Infinity,
-            ease: 'linear',
+            animationDuration: `${8 + i * 2}s`,
+            animationDelay: `${i * 3}s`,
           }}
         />
       ))}
       
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/2 to-transparent opacity-20" />
       
-      {[...Array(6)].map((_, i) => (
-        <motion.div
+      {/* Scan lines – pure CSS animations */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <div
           key={`scan-${i}`}
-          className="absolute w-px bg-gradient-to-b from-transparent via-primary/15 to-transparent"
+          className="absolute w-px bg-gradient-to-b from-transparent via-primary/15 to-transparent cyberpunk-scan-pulse"
           style={{
             left: `${(i * 16.66)}%`,
             height: '100%',
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ 
-            opacity: [0, 0.12, 0],
-          }}
-          transition={{
-            duration: 4,
-            delay: i * 0.4,
-            repeat: Infinity,
-            repeatDelay: 3,
+            animationDelay: `${i * 0.4}s`,
           }}
         />
       ))}
@@ -103,20 +107,15 @@ export default function CyberpunkBackground() {
         <rect width="100%" height="100%" fill="url(#hud-dots)" />
       </svg>
 
-      {[...Array(3)].map((_, i) => (
-        <motion.div
+      {/* Corner glows – pure CSS animations */}
+      {[0, 1, 2].map((i) => (
+        <div
           key={`corner-${i}`}
-          className="absolute"
+          className="absolute cyberpunk-corner-glow"
           style={{
             top: i === 0 ? '20%' : i === 1 ? '50%' : '70%',
             left: i % 2 === 0 ? '10%' : '85%',
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.3, 0] }}
-          transition={{
-            duration: 3,
-            delay: i * 1.5,
-            repeat: Infinity,
+            animationDelay: `${i * 1.5}s`,
           }}
         >
           <svg width="30" height="30" viewBox="0 0 30 30">
@@ -127,7 +126,7 @@ export default function CyberpunkBackground() {
               fill="none"
             />
           </svg>
-        </motion.div>
+        </div>
       ))}
     </div>
   )

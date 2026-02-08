@@ -63,7 +63,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element' : 'bg-background/70 backdrop-blur-sm'
+          isScrolled ? 'bg-background/95 md:backdrop-blur-md border-b border-primary/20 hud-element' : 'bg-background/80 md:bg-background/70 md:backdrop-blur-sm'
         } ${glitch ? 'red-glitch-element' : ''}`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
