@@ -30,6 +30,7 @@ const emptyImpressum: Impressum = {
 export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, onSave }: ImpressumWindowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<Impressum>(impressum || emptyImpressum)
+  const [lang, setLang] = useState<'de' | 'en'>('de')
 
   useEffect(() => {
     if (isOpen) {
@@ -56,6 +57,36 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
     setIsEditing(false)
   }
 
+  const t = lang === 'de' ? {
+    title: 'IMPRESSUM',
+    titleEdit: 'IMPRESSUM BEARBEITEN',
+    legalRef: 'Angaben gemäß § 5 DDG',
+    contact: 'Kontakt',
+    phone: 'Telefon',
+    email: 'E-Mail',
+    responsible: 'VERANTWORTLICH FÜR DEN INHALT NACH § 18 ABS. 2 MSTVV',
+    noData: editMode
+      ? 'Noch kein Impressum hinterlegt. Klicke auf den Stift oben rechts, um es zu bearbeiten.'
+      : 'Impressum wird noch eingerichtet.',
+    editTitle: 'Impressum bearbeiten',
+    cancel: 'Abbrechen',
+    save: 'Speichern',
+  } : {
+    title: 'LEGAL NOTICE',
+    titleEdit: 'EDIT LEGAL NOTICE',
+    legalRef: 'Information according to § 5 DDG',
+    contact: 'Contact',
+    phone: 'Phone',
+    email: 'Email',
+    responsible: 'RESPONSIBLE FOR CONTENT ACCORDING TO § 18 PARA. 2 MSTVV',
+    noData: editMode
+      ? 'No legal notice has been set up yet. Click the pencil icon above to edit.'
+      : 'Legal notice is being set up.',
+    editTitle: 'Edit legal notice',
+    cancel: 'Cancel',
+    save: 'Save',
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -67,10 +98,11 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative overflow-hidden"
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
@@ -79,15 +111,31 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary uppercase tracking-wider">
-                  {isEditing ? 'IMPRESSUM BEARBEITEN' : 'IMPRESSUM'}
+                  {isEditing ? t.titleEdit : t.title}
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                {!isEditing && (
+                  <div className="flex border border-primary/30 overflow-hidden">
+                    <button
+                      onClick={() => setLang('de')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${lang === 'de' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      DE
+                    </button>
+                    <button
+                      onClick={() => setLang('en')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${lang === 'en' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      EN
+                    </button>
+                  </div>
+                )}
                 {editMode && onSave && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-primary hover:text-accent transition-colors"
-                    title="Impressum bearbeiten"
+                    title={t.editTitle}
                   >
                     <PencilSimple size={18} />
                   </button>
@@ -104,7 +152,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
             <div className="pt-16 pb-8 px-8 font-mono text-sm space-y-6 max-h-[80vh] overflow-y-auto">
               {isEditing ? (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">Angaben gemäß § 5 DDG</p>
+                  <p className="text-sm text-muted-foreground">{t.legalRef}</p>
 
                   <div className="space-y-2">
                     <Label htmlFor="imp-name">Name / Bandmitglieder</Label>
@@ -124,19 +172,19 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                   </div>
 
                   <div className="border-t border-border pt-4 mt-4">
-                    <p className="text-sm text-muted-foreground mb-4">Kontakt</p>
+                    <p className="text-sm text-muted-foreground mb-4">{t.contact}</p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="imp-phone">Telefon</Label>
+                    <Label htmlFor="imp-phone">{t.phone}</Label>
                     <Input id="imp-phone" value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} placeholder="+49 ..." />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="imp-email">E-Mail</Label>
+                    <Label htmlFor="imp-email">{t.email}</Label>
                     <Input id="imp-email" value={form.email || ''} onChange={(e) => update('email', e.target.value)} placeholder="email@example.com" />
                   </div>
 
                   <div className="border-t border-border pt-4 mt-4">
-                    <p className="text-sm text-muted-foreground mb-4">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</p>
+                    <p className="text-sm text-muted-foreground mb-4">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="imp-resp-name">Name</Label>
@@ -148,21 +196,19 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                   </div>
 
                   <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>Abbrechen</Button>
-                    <Button onClick={handleSave} disabled={!form.name.trim()}>Speichern</Button>
+                    <Button variant="outline" onClick={() => setIsEditing(false)}>{t.cancel}</Button>
+                    <Button onClick={handleSave} disabled={!form.name.trim()}>{t.save}</Button>
                   </div>
                 </div>
               ) : (
                 !impressum || !impressum.name ? (
                   <p className="text-muted-foreground text-center py-8">
-                    {editMode
-                      ? 'Noch kein Impressum hinterlegt. Klicke auf den Stift oben rechts, um es zu bearbeiten.'
-                      : 'Impressum wird noch eingerichtet.'}
+                    {t.noData}
                   </p>
                 ) : (
                   <>
                     <div>
-                      <h2 className="text-primary text-base mb-3 tracking-wider">Angaben gemäß § 5 DDG</h2>
+                      <h2 className="text-primary text-base mb-3 tracking-wider">{t.legalRef}</h2>
                       <p className="text-foreground/80">{impressum.name}</p>
                       {impressum.careOf && <p className="text-foreground/80">c/o {impressum.careOf}</p>}
                       {impressum.street && <p className="text-foreground/80">{impressum.street}</p>}
@@ -171,15 +217,15 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
 
                     {(impressum.phone || impressum.email) && (
                       <div>
-                        <h2 className="text-primary text-base mb-3 tracking-wider">Kontakt</h2>
+                        <h2 className="text-primary text-base mb-3 tracking-wider">{t.contact}</h2>
                         {impressum.phone && (
                           <p className="text-foreground/80 flex items-center gap-1">
-                            Telefon: <ProtectedText text={impressum.phone} fontSize={14} />
+                            {t.phone}: <ProtectedText text={impressum.phone} fontSize={14} />
                           </p>
                         )}
                         {impressum.email && (
                           <p className="text-foreground/80 flex items-center gap-1">
-                            E-Mail: <ProtectedText text={impressum.email} fontSize={14} />
+                            {t.email}: <ProtectedText text={impressum.email} fontSize={14} />
                           </p>
                         )}
                       </div>
@@ -188,7 +234,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                     {impressum.responsibleName && (
                       <div>
                         <h2 className="text-primary text-base mb-3 tracking-wider">
-                          VERANTWORTLICH FÜR DEN INHALT NACH § 18 ABS. 2 MSTVV
+                          {t.responsible}
                         </h2>
                         <p className="text-foreground/80">{impressum.responsibleName}</p>
                         {impressum.responsibleAddress && (

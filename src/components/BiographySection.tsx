@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
 import FontSizePicker from '@/components/FontSizePicker'
 import ProgressiveImage from '@/components/ProgressiveImage'
-import { loadCachedImage } from '@/lib/image-cache'
+import { loadCachedImage, toDirectImageUrl } from '@/lib/image-cache'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
@@ -35,6 +35,46 @@ const profileLoadingTexts = [
   '> IDENTITY VERIFIED',
 ]
 
+/** Terminal-style line-by-line text reveal */
+function ConsoleLines({ lines, speed = 40, delayBetween = 120 }: { lines: string[]; speed?: number; delayBetween?: number }) {
+  const [visibleCount, setVisibleCount] = useState(0)
+  const [currentText, setCurrentText] = useState('')
+  const [lineComplete, setLineComplete] = useState(false)
+
+  useEffect(() => {
+    if (visibleCount >= lines.length) return
+    const line = lines[visibleCount]
+    let charIdx = 0
+    setCurrentText('')
+    setLineComplete(false)
+    const interval = setInterval(() => {
+      charIdx++
+      if (charIdx <= line.length) {
+        setCurrentText(line.slice(0, charIdx))
+      } else {
+        clearInterval(interval)
+        setLineComplete(true)
+        setTimeout(() => setVisibleCount((c) => c + 1), delayBetween)
+      }
+    }, speed)
+    return () => clearInterval(interval)
+  }, [visibleCount, lines, speed, delayBetween])
+
+  return (
+    <div className="space-y-1">
+      {lines.slice(0, visibleCount).map((line, i) => (
+        <p key={i} className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">{line}</p>
+      ))}
+      {visibleCount < lines.length && (
+        <p className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">
+          {currentText}
+          {!lineComplete && <span className="console-cursor" />}
+        </p>
+      )}
+    </div>
+  )
+}
+
 function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
   member: Member
   resolvePhoto: (url: string) => string
@@ -42,6 +82,20 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
 }) {
   const [phase, setPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(profileLoadingTexts[0])
+  const [photoLoaded, setPhotoLoaded] = useState(false)
+  const [photoSrc, setPhotoSrc] = useState('')
+  const proxyAttempted = useRef(false)
+
+  // Resolve photo URL robustly: use cached version or transform to direct URL
+  useEffect(() => {
+    if (!member.photo) return
+    const cached = resolvePhoto(member.photo)
+    if (cached && cached !== member.photo) {
+      setPhotoSrc(cached)
+    } else {
+      setPhotoSrc(toDirectImageUrl(member.photo))
+    }
+  }, [member.photo, resolvePhoto])
 
   useEffect(() => {
     let idx = 0
@@ -66,10 +120,21 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
     }
   }, [])
 
+  // Build terminal-style data lines for the console effect
+  const dataLines: string[] = []
+  dataLines.push(`> SUBJECT: ${member.name.toUpperCase()}`)
+  dataLines.push('> STATUS: ACTIVE')
+  if (member.bio) {
+    dataLines.push('> ---')
+    dataLines.push(`> ${member.bio}`)
+  }
+  dataLines.push('> ---')
+  dataLines.push('> CLEARANCE: GRANTED')
+
   return (
     <motion.div
       key="member-profile"
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-6"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -98,7 +163,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
 
       {phase !== 'loading' && (
         <motion.div
-          className={`w-full max-w-md bg-card border rounded-lg overflow-hidden relative ${
+          className={`w-full max-w-3xl bg-card border relative overflow-hidden glitch-overlay-enter ${
             phase === 'glitch' ? 'border-primary red-glitch-element' : 'border-primary/30'
           }`}
           initial={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -114,53 +179,90 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
           <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
           <button
-            className="absolute top-4 right-4 p-2 text-primary/60 hover:text-primary z-10"
+            className="absolute top-3 right-3 p-2 text-primary/60 hover:text-primary z-10"
             onClick={onClose}
             aria-label="Close profile"
           >
             <X size={24} />
           </button>
 
-          <div className="flex flex-col items-center gap-5 p-8">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              {member.photo ? (
-                <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-2 border-primary/40 shadow-[0_0_30px_oklch(0.50_0.22_25/0.3)]">
-                  <ProgressiveImage
-                    src={resolvePhoto(member.photo)}
-                    alt={member.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-48 h-48 md:w-56 md:h-56 rounded-full bg-muted flex items-center justify-center border-2 border-primary/40 shadow-[0_0_30px_oklch(0.50_0.22_25/0.3)]">
-                  <User size={72} className="text-muted-foreground" />
-                </div>
-              )}
-            </motion.div>
+          {/* Header bar */}
+          <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">PROFILE // {member.name.toUpperCase()}</span>
+          </div>
 
-            <motion.h3
-              className="text-2xl md:text-3xl font-bold font-mono"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <ChromaticText intensity={1.5}>{member.name}</ChromaticText>
-            </motion.h3>
-
-            {member.bio && (
-              <motion.p
-                className="text-sm md:text-base text-foreground/70 text-center leading-relaxed max-w-xs"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.3 }}
+          <div className="flex flex-col md:flex-row">
+            {/* Left: Photo with angular frame and loading bar */}
+            <div className="md:w-2/5 p-4 md:p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-primary/20">
+              <motion.div
+                className="relative w-full max-w-[220px] aspect-square"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
               >
-                {member.bio}
-              </motion.p>
-            )}
+                {member.photo && photoSrc ? (
+                  <div className="w-full h-full overflow-hidden border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.2)] bg-black">
+                    {!photoLoaded && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black">
+                        <div className="w-3/4 h-[2px] bg-primary/20 overflow-hidden mb-1">
+                          <div className="h-full bg-primary animate-progress-bar" />
+                        </div>
+                        <p className="text-[8px] font-mono text-primary/40 tracking-wider">LOADING IMG...</p>
+                      </div>
+                    )}
+                    <img
+                      src={photoSrc}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                      style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
+                      onLoad={() => setPhotoLoaded(true)}
+                      onError={() => {
+                        // Fallback: try server-side proxy once
+                        if (member.photo && !proxyAttempted.current) {
+                          proxyAttempted.current = true
+                          const directUrl = toDirectImageUrl(member.photo)
+                          setPhotoSrc(`/api/image-proxy?url=${encodeURIComponent(directUrl)}`)
+                        }
+                      }}
+                    />
+                    {/* Scanline on photo */}
+                    <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center border border-primary/40">
+                    <User size={72} className="text-muted-foreground" />
+                  </div>
+                )}
+                {/* Corner brackets on photo */}
+                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary/60" />
+                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/60" />
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary/60" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-primary/60" />
+              </motion.div>
+            </div>
+
+            {/* Right: Terminal-style data readout with console typing effect */}
+            <div className="md:w-3/5 p-4 md:p-6">
+              <motion.div
+                className="font-mono space-y-3"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+              >
+                <div className="text-[10px] text-primary/50 tracking-wider mb-3">
+                  {'>'} TERMINAL OUTPUT // PROFILE DATA
+                </div>
+                <div className="bg-black/50 border border-primary/20 p-4 min-h-[160px] max-h-[40vh] overflow-y-auto">
+                  <ConsoleLines lines={dataLines} speed={30} delayBetween={100} />
+                </div>
+                <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
+                  <span>SESSION ACTIVE</span>
+                  <span className="ml-auto">NK-SYS v1.3.37</span>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
       )}

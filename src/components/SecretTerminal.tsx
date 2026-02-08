@@ -180,14 +180,13 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            className="w-full max-w-4xl h-[600px] bg-card border-2 border-primary/30 relative overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full max-w-4xl h-[600px] bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter"
           >
             <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
             

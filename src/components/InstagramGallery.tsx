@@ -391,10 +391,10 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                   <button
                     key={index}
                     onClick={() => setMobileIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-all touch-manipulation ${
+                    className={`h-1 rounded-sm transition-all touch-manipulation ${
                       index === mobileIndex
-                        ? 'bg-primary w-5'
-                        : 'bg-foreground/20'
+                        ? 'bg-primary w-6'
+                        : 'bg-foreground/20 w-3'
                     }`}
                     aria-label={`Go to image ${index + 1}`}
                   />
@@ -490,7 +490,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
             </motion.button>
 
             <motion.div
-              className="relative max-w-7xl max-h-full hud-corner hud-element"
+              className="relative max-w-7xl max-h-full hud-corner hud-element glitch-overlay-enter"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}

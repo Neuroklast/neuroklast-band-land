@@ -13,14 +13,14 @@ interface DatenschutzWindowProps {
   onSave?: (datenschutz: Datenschutz) => void
 }
 
-const defaultText = `1. Datenschutz auf einen Blick
+const defaultTextDE = `1. Datenschutz auf einen Blick
 
 Allgemeine Hinweise
 Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.
 
 2. Hosting
 
-Diese Website wird bei einem externen Dienstleister gehostet (Hoster). Die personenbezogenen Daten, die auf dieser Website erfasst werden, werden auf den Servern des Hosters gespeichert. Hierbei kann es sich v. a. um IP-Adressen, Kontaktanfragen, Meta- und Kommunikationsdaten, Vertragsdaten, Kontaktdaten, Namen, Websitezugriffe und sonstige Daten, die über eine Website generiert werden, handeln. Der Einsatz des Hosters erfolgt im Interesse einer sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots (Art. 6 Abs. 1 lit. f DSGVO).
+Diese Website wird bei Vercel Inc. (340 S Lemon Ave #4133, Walnut, CA 91789, USA) gehostet. Die personenbezogenen Daten, die auf dieser Website erfasst werden, werden auf den Servern des Hosters gespeichert. Hierbei kann es sich v. a. um IP-Adressen, Kontaktanfragen, Meta- und Kommunikationsdaten, Vertragsdaten, Kontaktdaten, Namen, Websitezugriffe und sonstige Daten, die über eine Website generiert werden, handeln. Der Einsatz des Hosters erfolgt im Interesse einer sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots (Art. 6 Abs. 1 lit. f DSGVO). Vercel verarbeitet Daten auch in den USA. Es liegt ein Angemessenheitsbeschluss der EU-Kommission (EU-US Data Privacy Framework) vor.
 
 3. Allgemeine Hinweise und Pflichtinformationen
 
@@ -49,9 +49,11 @@ Lokale Speicherung (Local Storage / IndexedDB)
 Diese Website nutzt die lokale Speicherung im Browser (Local Storage und IndexedDB), um Einstellungen und zwischengespeicherte Bilddaten zu speichern. Diese Daten verlassen Ihren Browser nicht und werden nicht an Dritte übermittelt. Es handelt sich um technisch notwendige Speicherung.
 
 Externe Dienste
-Diese Website lädt keine externen Schriftarten oder Tracking-Skripte. Alle Ressourcen werden lokal bereitgestellt. Es werden keine Cookies gesetzt.
+Diese Website lädt keine externen Schriftarten oder Tracking-Skripte. Alle Schriftarten und Gestaltungsressourcen werden lokal bereitgestellt. Es werden keine Cookies gesetzt.
 
-Beim Abruf von Musikdaten werden Anfragen an die iTunes Search API und den Odesli-Dienst (song.link) gestellt. Dabei wird Ihre IP-Adresse an diese Dienste übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Darstellung aktueller Musikveröffentlichungen.
+Beim Abruf von Musikdaten werden Anfragen an die iTunes Search API (Apple Inc.) und den Odesli-Dienst (song.link) gestellt. Dabei wird Ihre IP-Adresse an diese Dienste übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Darstellung aktueller Musikveröffentlichungen.
+
+Zur Darstellung von Bildern kann diese Website den Bildproxy-Dienst wsrv.nl sowie Google-Dienste (lh3.googleusercontent.com, Google Drive) nutzen. Dabei wird Ihre IP-Adresse an diese Dienste übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der performanten Bereitstellung von Bildinhalten.
 
 5. Ihre Rechte
 
@@ -68,20 +70,86 @@ Sie haben jederzeit das Recht:
 
 Diese Website enthält Links zu externen Websites (z. B. Spotify, YouTube, Instagram, etc.). Beim Anklicken dieser Links verlassen Sie unsere Website. Für die Datenschutzpraktiken dieser externen Websites sind wir nicht verantwortlich. Bitte informieren Sie sich dort über die jeweiligen Datenschutzbestimmungen.`
 
+const defaultTextEN = `1. Privacy Policy at a Glance
+
+General Information
+The following information provides a simple overview of what happens to your personal data when you visit this website. Personal data is any data that can be used to personally identify you.
+
+2. Hosting
+
+This website is hosted by Vercel Inc. (340 S Lemon Ave #4133, Walnut, CA 91789, USA). The personal data collected on this website is stored on the host's servers. This may include IP addresses, contact requests, meta and communication data, contract data, contact details, names, website access, and other data generated through a website. The host is used in the interest of secure, fast and efficient provision of our online services (Art. 6(1)(f) GDPR). Vercel also processes data in the USA. An adequacy decision by the EU Commission (EU-US Data Privacy Framework) is in place.
+
+3. General Information and Mandatory Disclosures
+
+Data Protection
+The operators of this website take the protection of your personal data very seriously. We treat your personal data confidentially and in accordance with the statutory data protection regulations and this privacy policy.
+
+When you use this website, various personal data is collected. This privacy policy explains what data we collect and what we use it for.
+
+Responsible Party
+The party responsible for data processing on this website can be found in the imprint.
+
+4. Data Collection on This Website
+
+Server Log Files
+The provider of this website automatically collects and stores information in so-called server log files, which your browser automatically transmits to us. These are:
+- Browser type and version
+- Operating system used
+- Referrer URL
+- Hostname of the accessing device
+- Time of the server request
+- IP address
+
+This data is not merged with other data sources. The basis for data processing is Art. 6(1)(f) GDPR.
+
+Local Storage (Local Storage / IndexedDB)
+This website uses local browser storage (Local Storage and IndexedDB) to save settings and cached image data. This data does not leave your browser and is not transmitted to third parties. This is technically necessary storage.
+
+External Services
+This website does not load external fonts or tracking scripts. All fonts and design resources are provided locally. No cookies are set.
+
+When retrieving music data, requests are made to the iTunes Search API (Apple Inc.) and the Odesli service (song.link). Your IP address is transmitted to these services. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in displaying current music releases.
+
+To display images, this website may use the image proxy service wsrv.nl as well as Google services (lh3.googleusercontent.com, Google Drive). Your IP address is transmitted to these services. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in the performant delivery of image content.
+
+5. Your Rights
+
+You have the right at any time to:
+- Obtain information about your stored personal data (Art. 15 GDPR)
+- Request correction of inaccurate data (Art. 16 GDPR)
+- Request deletion of your data (Art. 17 GDPR)
+- Request restriction of processing (Art. 18 GDPR)
+- Object to processing (Art. 21 GDPR)
+- Request data portability (Art. 20 GDPR)
+- Lodge a complaint with a supervisory authority (Art. 77 GDPR)
+
+6. Links to External Websites
+
+This website contains links to external websites (e.g. Spotify, YouTube, Instagram, etc.). By clicking these links you leave our website. We are not responsible for the data protection practices of these external websites. Please refer to their respective privacy policies.`
+
 export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impressumName, editMode, onSave }: DatenschutzWindowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState('')
+  const [lang, setLang] = useState<'de' | 'en'>('de')
+
+  const defaultText = lang === 'de' ? defaultTextDE : defaultTextEN
 
   const displayText = datenschutz?.customText || defaultText.replace(
-    'Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website entnehmen Sie bitte dem Impressum.',
+    lang === 'de'
+      ? 'Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website entnehmen Sie bitte dem Impressum.'
+      : 'The party responsible for data processing on this website can be found in the imprint.',
     impressumName
-      ? `Verantwortlich für die Datenverarbeitung auf dieser Website ist: ${impressumName}. Weitere Angaben entnehmen Sie bitte dem Impressum.`
-      : 'Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website entnehmen Sie bitte dem Impressum.'
+      ? lang === 'de'
+        ? `Verantwortlich für die Datenverarbeitung auf dieser Website ist: ${impressumName}. Weitere Angaben entnehmen Sie bitte dem Impressum.`
+        : `The party responsible for data processing on this website is: ${impressumName}. Further details can be found in the imprint.`
+      : lang === 'de'
+        ? 'Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website entnehmen Sie bitte dem Impressum.'
+        : 'The party responsible for data processing on this website can be found in the imprint.'
   )
 
   useEffect(() => {
     if (isOpen) {
-      setEditText(datenschutz?.customText || defaultText)
+      setEditText(datenschutz?.customText || defaultTextDE)
       setIsEditing(false)
     }
   }, [isOpen, datenschutz])
@@ -130,10 +198,11 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative overflow-hidden"
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
@@ -142,15 +211,31 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary uppercase tracking-wider">
-                  {isEditing ? 'DATENSCHUTZ BEARBEITEN' : 'DATENSCHUTZERKLÄRUNG'}
+                  {isEditing ? (lang === 'de' ? 'DATENSCHUTZ BEARBEITEN' : 'EDIT PRIVACY POLICY') : (lang === 'de' ? 'DATENSCHUTZERKLÄRUNG' : 'PRIVACY POLICY')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                {!isEditing && (
+                  <div className="flex border border-primary/30 overflow-hidden">
+                    <button
+                      onClick={() => setLang('de')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${lang === 'de' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      DE
+                    </button>
+                    <button
+                      onClick={() => setLang('en')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${lang === 'en' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      EN
+                    </button>
+                  </div>
+                )}
                 {editMode && onSave && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-primary hover:text-accent transition-colors"
-                    title="Datenschutzerklärung bearbeiten"
+                    title={lang === 'de' ? 'Datenschutzerklärung bearbeiten' : 'Edit privacy policy'}
                   >
                     <PencilSimple size={18} />
                   </button>

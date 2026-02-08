@@ -52,7 +52,7 @@ export default function CookieBanner() {
                 <div>
                   <p className="font-mono text-[10px] text-primary/60 tracking-wider mb-1">SYSTEM_NOTICE</p>
                   <p className="font-mono text-xs text-foreground/80 leading-relaxed">
-                    Diese Website verwendet technisch notwendige lokale Speicherung (Local Storage, IndexedDB) für Einstellungen und Bildcaching. Es werden keine Tracking-Cookies gesetzt und keine Daten an Dritte übermittelt.
+                    Diese Website verwendet technisch notwendige lokale Speicherung (Local Storage, IndexedDB) für Einstellungen und Bildcaching. Es werden keine Tracking-Cookies gesetzt. Weitere Informationen finden Sie in unserer Datenschutzerklärung.
                   </p>
                 </div>
               </div>
