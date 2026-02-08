@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, PencilSimple, Plus, Trash, CaretDown, CaretUp } from '@phosphor-icons/react'
+import { PencilSimple, Plus, Trash, CaretDown, CaretUp } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import type { TerminalCommand } from '@/lib/types'
 
 import {
@@ -56,7 +57,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     if (historyRef.current) {
       historyRef.current.scrollTop = historyRef.current.scrollHeight
     }
-  }, [history])
+  }, [history, currentTyping, fileLoading])
 
   // Queue for typing effect – lines pending display
   const [typingQueue, setTypingQueue] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([])
@@ -271,12 +272,10 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
                     <PencilSimple size={18} />
                   </button>
                 )}
-                <button
+                <CyberCloseButton
                   onClick={() => { if (isEditing) { setIsEditing(false) } else { onClose() } }}
-                  className="text-primary hover:text-accent transition-colors"
-                >
-                  <X size={20} />
-                </button>
+                  label={isEditing ? 'BACK' : 'CLOSE'}
+                />
               </div>
             </div>
 

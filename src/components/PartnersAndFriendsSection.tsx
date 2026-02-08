@@ -1,10 +1,11 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { PencilSimple, User, Plus, Trash, InstagramLogo, FacebookLogo, SpotifyLogo, SoundcloudLogo, YoutubeLogo, MusicNote, Globe, Link, X } from '@phosphor-icons/react'
+import { PencilSimple, User, Plus, Trash, InstagramLogo, FacebookLogo, SpotifyLogo, SoundcloudLogo, YoutubeLogo, MusicNote, Globe, Link } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import ProgressiveImage from '@/components/ProgressiveImage'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
@@ -122,6 +123,13 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
 
   const dataLines: string[] = []
   dataLines.push(`> SUBJECT: ${friend.name.toUpperCase()}`)
+  // Add custom profile fields if defined
+  const profileFields = sectionLabels?.profileFields
+  if (profileFields && profileFields.length > 0) {
+    profileFields.forEach(field => {
+      dataLines.push(`> ${field.label}: ${field.value}`)
+    })
+  }
   if (friend.description) {
     dataLines.push('> ---')
     dataLines.push(`> ${friend.description}`)
@@ -139,7 +147,9 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
     })
   }
   dataLines.push('> ---')
-  dataLines.push('> CLEARANCE: GRANTED')
+  if (!profileFields || profileFields.length === 0) {
+    dataLines.push('> CLEARANCE: GRANTED')
+  }
 
   return (
     <motion.div
@@ -186,13 +196,11 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
           <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
           <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
-          <button
-            className="absolute top-3 right-3 p-2 text-primary/60 hover:text-primary z-10"
+          <CyberCloseButton
             onClick={onClose}
-            aria-label="Close profile"
-          >
-            <X size={24} />
-          </button>
+            label={sectionLabels?.closeButtonText || 'CLOSE'}
+            className="absolute top-3 right-3"
+          />
 
           <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -208,7 +216,7 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
                 {friend.photo && photoSrc ? (
-                  <div className="w-full h-full overflow-hidden border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.2)] bg-black">
+                  <div className="w-full h-full overflow-hidden border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.3),0_0_40px_oklch(0.50_0.22_25/0.15)] bg-black">
                     {!photoLoaded && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black">
                         <div className="w-3/4 h-[2px] bg-primary/20 overflow-hidden mb-1">
@@ -220,7 +228,7 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
                     <img
                       src={photoSrc}
                       alt={friend.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
                       onLoad={() => setPhotoLoaded(true)}
                       onError={() => {
@@ -232,6 +240,9 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
                       }}
                     />
                     <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, oklch(0 0 0 / 0.06) 1px, oklch(0 0 0 / 0.06) 2px)'
+                    }} />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center border border-primary/40">
@@ -365,12 +376,16 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
       <span className="corner-br"></span>
       <div className="flex flex-col items-center gap-3 p-5">
         {friend.photo ? (
-          <div className={`w-24 h-24 aspect-square flex-shrink-0 overflow-hidden shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] ${hovered ? 'red-glitch-element' : ''}`}>
+          <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] bg-black ${hovered ? 'red-glitch-element' : ''}`}>
             <ProgressiveImage
               src={friend.photo}
               alt={friend.name}
               className="w-full h-full object-contain"
             />
+            <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
+            <div className="absolute inset-0 pointer-events-none" style={{
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, oklch(0 0 0 / 0.06) 1px, oklch(0 0 0 / 0.06) 2px)'
+            }} />
           </div>
         ) : (
           <div className={`w-24 h-24 aspect-square flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] ${hovered ? 'red-glitch-element' : ''}`}>
@@ -422,6 +437,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const titleText = sectionLabels?.partnersAndFriends || 'PARTNERS & FRIENDS'
+  const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
@@ -445,7 +461,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
               }}
             >
               <ChromaticText intensity={1.5}>
-                &gt; {displayedTitle}
+                {headingPrefix} {displayedTitle}
               </ChromaticText>
               <span className="animate-pulse">_</span>
             </h2>

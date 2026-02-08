@@ -127,6 +127,8 @@ export interface BandData {
   configOverrides?: Record<string, unknown>
   /** Custom section headings and display labels */
   sectionLabels?: SectionLabels
+  /** Media files for press kits, logos, etc. */
+  mediaFiles?: MediaFile[]
 }
 
 export interface SoundSettings {
@@ -138,16 +140,36 @@ export interface SoundSettings {
   buttonSound?: string
 }
 
+export interface ProfileField {
+  label: string
+  value: string
+}
+
+export interface MediaFile {
+  id: string
+  name: string
+  description?: string
+  url: string
+  folder?: string
+}
+
 export interface SectionLabels {
   biography?: string
   gallery?: string
   gigs?: string
   releases?: string
   connect?: string
+  media?: string
   partnersAndFriends?: string
   profileStatusText?: string
   sessionStatusText?: string
   collabs?: string
+  /** Custom prefix shown before section headings (default ">") */
+  headingPrefix?: string
+  /** Custom profile fields shown in member/friend overlays */
+  profileFields?: ProfileField[]
+  /** Custom close button text for overlays (default "CLOSE") */
+  closeButtonText?: string
 }
 
 export interface FontSizeSettings {
