@@ -16,6 +16,8 @@ interface SecretTerminalProps {
 }
 
 const RESERVED = ['help', 'clear', 'exit', 'glitch', 'matrix']
+const TYPING_SPEED_MS = 18
+const FILE_LOADING_DURATION_MS = 2000
 
 export default function SecretTerminal({ isOpen, onClose, customCommands = [], editMode, onSaveCommands }: SecretTerminalProps) {
   const [input, setInput] = useState('')
@@ -83,7 +85,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     }
     const timer = setTimeout(() => {
       setCurrentTyping(prev => prev ? { ...prev, displayed: prev.text.slice(0, prev.displayed.length + 1) } : null)
-    }, 18)
+    }, TYPING_SPEED_MS)
     return () => clearTimeout(timer)
   }, [currentTyping])
 
@@ -99,7 +101,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
       setFileLoading(false)
       setHistory(prev => [...prev, { type: 'output', text: `DOWNLOAD STARTED: ${name}` }, { type: 'output', text: '' }])
       window.open(url, '_blank', 'noopener,noreferrer')
-    }, 2000)
+    }, FILE_LOADING_DURATION_MS)
     return () => clearTimeout(timer)
   }, [isTyping, typingQueue])
 

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SoundSettings } from '@/lib/types'
 import { toDirectImageUrl } from '@/lib/image-cache'
 
+const DEFAULT_SOUND_VOLUME = 0.4
+
 /** Convert Drive share links to direct download URLs for audio files */
 function toDirectAudioUrl(url?: string): string {
   if (!url) return ''
@@ -70,7 +72,7 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
     if (audio) {
       // Clone to allow overlapping playback
       const clone = audio.cloneNode() as HTMLAudioElement
-      clone.volume = 0.4
+      clone.volume = DEFAULT_SOUND_VOLUME
       clone.play().catch(() => { /* ignore autoplay restrictions */ })
     }
   }, [muted, settings])
