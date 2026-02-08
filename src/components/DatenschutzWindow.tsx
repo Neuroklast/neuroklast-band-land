@@ -20,7 +20,7 @@ Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren 
 
 2. Hosting
 
-Diese Website wird bei einem externen Dienstleister gehostet (Hoster). Die personenbezogenen Daten, die auf dieser Website erfasst werden, werden auf den Servern des Hosters gespeichert. Hierbei kann es sich v. a. um IP-Adressen, Kontaktanfragen, Meta- und Kommunikationsdaten, Vertragsdaten, Kontaktdaten, Namen, Websitezugriffe und sonstige Daten, die über eine Website generiert werden, handeln. Der Einsatz des Hosters erfolgt im Interesse einer sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots (Art. 6 Abs. 1 lit. f DSGVO).
+Diese Website wird bei Vercel Inc. (340 S Lemon Ave #4133, Walnut, CA 91789, USA) gehostet. Die personenbezogenen Daten, die auf dieser Website erfasst werden, werden auf den Servern des Hosters gespeichert. Hierbei kann es sich v. a. um IP-Adressen, Kontaktanfragen, Meta- und Kommunikationsdaten, Vertragsdaten, Kontaktdaten, Namen, Websitezugriffe und sonstige Daten, die über eine Website generiert werden, handeln. Der Einsatz des Hosters erfolgt im Interesse einer sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots (Art. 6 Abs. 1 lit. f DSGVO). Vercel verarbeitet Daten auch in den USA. Es liegt ein Angemessenheitsbeschluss der EU-Kommission (EU-US Data Privacy Framework) vor.
 
 3. Allgemeine Hinweise und Pflichtinformationen
 
@@ -49,9 +49,11 @@ Lokale Speicherung (Local Storage / IndexedDB)
 Diese Website nutzt die lokale Speicherung im Browser (Local Storage und IndexedDB), um Einstellungen und zwischengespeicherte Bilddaten zu speichern. Diese Daten verlassen Ihren Browser nicht und werden nicht an Dritte übermittelt. Es handelt sich um technisch notwendige Speicherung.
 
 Externe Dienste
-Diese Website lädt keine externen Schriftarten oder Tracking-Skripte. Alle Ressourcen werden lokal bereitgestellt. Es werden keine Cookies gesetzt.
+Diese Website lädt keine externen Schriftarten oder Tracking-Skripte. Alle Schriftarten und Gestaltungsressourcen werden lokal bereitgestellt. Es werden keine Cookies gesetzt.
 
-Beim Abruf von Musikdaten werden Anfragen an die iTunes Search API und den Odesli-Dienst (song.link) gestellt. Dabei wird Ihre IP-Adresse an diese Dienste übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Darstellung aktueller Musikveröffentlichungen.
+Beim Abruf von Musikdaten werden Anfragen an die iTunes Search API (Apple Inc.) und den Odesli-Dienst (song.link) gestellt. Dabei wird Ihre IP-Adresse an diese Dienste übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Darstellung aktueller Musikveröffentlichungen.
+
+Zur Darstellung von Bildern kann diese Website den Bildproxy-Dienst wsrv.nl sowie Google-Dienste (lh3.googleusercontent.com, Google Drive) nutzen. Dabei wird Ihre IP-Adresse an diese Dienste übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der performanten Bereitstellung von Bildinhalten.
 
 5. Ihre Rechte
 
@@ -75,7 +77,7 @@ The following information provides a simple overview of what happens to your per
 
 2. Hosting
 
-This website is hosted by an external service provider (host). The personal data collected on this website is stored on the host's servers. This may include IP addresses, contact requests, meta and communication data, contract data, contact details, names, website access, and other data generated through a website. The host is used in the interest of secure, fast and efficient provision of our online services (Art. 6(1)(f) GDPR).
+This website is hosted by Vercel Inc. (340 S Lemon Ave #4133, Walnut, CA 91789, USA). The personal data collected on this website is stored on the host's servers. This may include IP addresses, contact requests, meta and communication data, contract data, contact details, names, website access, and other data generated through a website. The host is used in the interest of secure, fast and efficient provision of our online services (Art. 6(1)(f) GDPR). Vercel also processes data in the USA. An adequacy decision by the EU Commission (EU-US Data Privacy Framework) is in place.
 
 3. General Information and Mandatory Disclosures
 
@@ -104,9 +106,11 @@ Local Storage (Local Storage / IndexedDB)
 This website uses local browser storage (Local Storage and IndexedDB) to save settings and cached image data. This data does not leave your browser and is not transmitted to third parties. This is technically necessary storage.
 
 External Services
-This website does not load external fonts or tracking scripts. All resources are provided locally. No cookies are set.
+This website does not load external fonts or tracking scripts. All fonts and design resources are provided locally. No cookies are set.
 
-When retrieving music data, requests are made to the iTunes Search API and the Odesli service (song.link). Your IP address is transmitted to these services. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in displaying current music releases.
+When retrieving music data, requests are made to the iTunes Search API (Apple Inc.) and the Odesli service (song.link). Your IP address is transmitted to these services. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in displaying current music releases.
+
+To display images, this website may use the image proxy service wsrv.nl as well as Google services (lh3.googleusercontent.com, Google Drive). Your IP address is transmitted to these services. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in the performant delivery of image content.
 
 5. Your Rights
 

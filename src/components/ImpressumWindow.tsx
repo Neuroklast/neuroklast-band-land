@@ -184,7 +184,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                   </div>
 
                   <div className="border-t border-border pt-4 mt-4">
-                    <p className="text-sm text-muted-foreground mb-4">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</p>
+                    <p className="text-sm text-muted-foreground mb-4">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="imp-resp-name">Name</Label>
