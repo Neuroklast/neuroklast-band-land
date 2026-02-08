@@ -33,6 +33,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   const isInView = useInView(sectionRef, { once: true })
 
   const titleText = sectionLabels?.gigs || 'UPCOMING GIGS'
+  const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     40,
@@ -113,7 +114,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4">
           <motion.h2 
             className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text ${glitchActive ? 'glitch-text-effect' : ''}`}
-            data-text={`> ${displayedTitle}`}
+            data-text={`${headingPrefix} ${displayedTitle}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
@@ -122,7 +123,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
             }}
           >
             <ChromaticText intensity={1.5}>
-              &gt; {displayedTitle}
+              {headingPrefix} {displayedTitle}
             </ChromaticText>
             <span className="animate-pulse">_</span>
           </motion.h2>

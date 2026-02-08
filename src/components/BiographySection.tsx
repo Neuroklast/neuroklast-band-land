@@ -1,10 +1,11 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { PencilSimple, CaretLeft, CaretRight, User, X } from '@phosphor-icons/react'
+import { PencilSimple, CaretLeft, CaretRight, User } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import BiographyEditDialog from '@/components/BiographyEditDialog'
 import FontSizePicker from '@/components/FontSizePicker'
 import ProgressiveImage from '@/components/ProgressiveImage'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import { loadCachedImage, toDirectImageUrl } from '@/lib/image-cache'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -140,13 +141,23 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
   // Build terminal-style data lines for the console effect
   const dataLines: string[] = []
   dataLines.push(`> SUBJECT: ${member.name.toUpperCase()}`)
-  dataLines.push(`> STATUS: ${sectionLabels?.profileStatusText || 'ACTIVE'}`)
+  // Add custom profile fields if defined, otherwise use defaults
+  const profileFields = sectionLabels?.profileFields
+  if (profileFields && profileFields.length > 0) {
+    profileFields.forEach(field => {
+      dataLines.push(`> ${field.label}: ${field.value}`)
+    })
+  } else {
+    dataLines.push(`> STATUS: ${sectionLabels?.profileStatusText || 'ACTIVE'}`)
+  }
   if (member.bio) {
     dataLines.push('> ---')
     dataLines.push(`> ${member.bio}`)
   }
   dataLines.push('> ---')
-  dataLines.push('> CLEARANCE: GRANTED')
+  if (!profileFields || profileFields.length === 0) {
+    dataLines.push('> CLEARANCE: GRANTED')
+  }
 
   return (
     <motion.div
@@ -195,13 +206,11 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
           <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
           <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
-          <button
-            className="absolute top-3 right-3 p-2 text-primary/60 hover:text-primary z-10"
+          <CyberCloseButton
             onClick={onClose}
-            aria-label="Close profile"
-          >
-            <X size={24} />
-          </button>
+            label={sectionLabels?.closeButtonText || 'CLOSE'}
+            className="absolute top-3 right-3"
+          />
 
           {/* Header bar */}
           <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
@@ -219,7 +228,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
                 {member.photo && photoSrc ? (
-                  <div className="w-full h-full overflow-hidden border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.2)] bg-black">
+                  <div className="w-full h-full overflow-hidden border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.3),0_0_40px_oklch(0.50_0.22_25/0.15)] bg-black">
                     {!photoLoaded && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black">
                         <div className="w-3/4 h-[2px] bg-primary/20 overflow-hidden mb-1">
@@ -231,7 +240,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
                     <img
                       src={photoSrc}
                       alt={member.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
                       onLoad={() => setPhotoLoaded(true)}
                       onError={() => {
@@ -245,6 +254,8 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
                     />
                     {/* Scanline on photo */}
                     <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
+                    {/* Dot-matrix on photo */}
+                    <div className="dot-matrix-photo" />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center border border-primary/40">
@@ -300,6 +311,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
 
   const titleText = sectionLabels?.biography || 'BIOGRAPHY'
+  const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
@@ -383,7 +395,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
           <motion.h2 
             className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text ${glitchActive ? 'glitch-text-effect' : ''}`}
-            data-text={`> ${displayedTitle}`}
+            data-text={`${headingPrefix} ${displayedTitle}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
@@ -392,7 +404,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
             }}
           >
             <ChromaticText intensity={1.5}>
-              &gt; {displayedTitle}
+              {headingPrefix} {displayedTitle}
             </ChromaticText>
             <span className="animate-pulse">_</span>
           </motion.h2>
@@ -484,29 +496,14 @@ export default function BiographySection({ biography = defaultBiography, editMod
               </motion.div>
           </div>
 
-          {/* Grid for remaining cards */}
+          {/* Grid for MEMBERS, COLLABS, ACHIEVEMENTS side by side */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-              {biography.founded && (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                  transition={{ duration: 0.7, delay: 0.3 }}
-                >
-                  <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
-                    <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-2">
-                      Founded
-                    </h3>
-                    <p className="text-2xl font-heading text-primary">{biography.founded}</p>
-                  </Card>
-                </motion.div>
-              )}
 
               {biography.members && biography.members.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                  transition={{ duration: 0.7, delay: 0.4 }}
+                  transition={{ duration: 0.7, delay: 0.3 }}
                 >
                   <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
                     <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
@@ -548,6 +545,28 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 </motion.div>
               )}
 
+              {biography.collabs && biography.collabs.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                  transition={{ duration: 0.7, delay: 0.4 }}
+                >
+                  <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
+                    <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                      {sectionLabels?.collabs || 'Collabs'}
+                    </h3>
+                    <ul className="space-y-3">
+                      {biography.collabs.map((collab, index) => (
+                        <li key={index} className="text-foreground/90 text-sm flex gap-2">
+                          <span className="text-primary mt-1">◆</span>
+                          <span className="flex-1">{collab}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                </motion.div>
+              )}
+
               {biography.achievements && biography.achievements.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -563,28 +582,6 @@ export default function BiographySection({ biography = defaultBiography, editMod
                         <li key={index} className="text-foreground/90 text-sm flex gap-2">
                           <span className="text-primary mt-1">•</span>
                           <span className="flex-1">{achievement}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card>
-                </motion.div>
-              )}
-
-              {biography.collabs && biography.collabs.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                  transition={{ duration: 0.7, delay: 0.6 }}
-                >
-                  <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
-                    <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                      {sectionLabels?.collabs || 'Collabs'}
-                    </h3>
-                    <ul className="space-y-3">
-                      {biography.collabs.map((collab, index) => (
-                        <li key={index} className="text-foreground/90 text-sm flex gap-2">
-                          <span className="text-primary mt-1">◆</span>
-                          <span className="flex-1">{collab}</span>
                         </li>
                       ))}
                     </ul>

@@ -51,6 +51,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const driveAutoLoaded = useRef(false)
 
   const titleText = sectionLabels?.gallery || 'GALLERY'
+  const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     50,

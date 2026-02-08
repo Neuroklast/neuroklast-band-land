@@ -88,6 +88,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const titleText = sectionLabels?.connect || 'CONNECT'
+  const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
@@ -114,7 +115,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12">
           <motion.h2 
             className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text ${glitchActive ? 'glitch-text-effect' : ''}`}
-            data-text={`> ${displayedTitle}`}
+            data-text={`${headingPrefix} ${displayedTitle}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
@@ -123,7 +124,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
             }}
           >
             <ChromaticText intensity={1.5}>
-              &gt; {displayedTitle}
+              {headingPrefix} {displayedTitle}
             </ChromaticText>
             <span className="animate-pulse">_</span>
           </motion.h2>

@@ -55,6 +55,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
     { label: 'GALLERY', id: 'gallery' },
     { label: 'GIGS', id: 'gigs' },
     { label: 'RELEASES', id: 'releases' },
+    { label: 'MEDIA', id: 'media' },
     { label: 'CONNECT', id: 'social' }
   ]
 
@@ -62,7 +63,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-background/90 backdrop-blur-sm border-b border-primary/20 hud-element' : 'bg-transparent'
+          isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element' : 'bg-background/70 backdrop-blur-sm'
         } ${glitch ? 'red-glitch-element' : ''}`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}

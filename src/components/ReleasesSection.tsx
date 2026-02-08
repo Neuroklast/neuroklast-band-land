@@ -1,10 +1,11 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise, X } from '@phosphor-icons/react'
+import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import type { Release, FontSizeSettings, SectionLabels } from '@/lib/types'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
@@ -41,6 +42,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const isInView = useInView(sectionRef, { once: true })
 
   const titleText = sectionLabels?.releases || 'RELEASES'
+  const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     50,
@@ -194,7 +196,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
           <motion.h2 
             className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text ${glitchActive ? 'glitch-text-effect' : ''}`}
-            data-text={`> ${displayedTitle}`}
+            data-text={`${headingPrefix} ${displayedTitle}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
@@ -203,7 +205,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
             }}
           >
             <ChromaticText intensity={1.5}>
-              &gt; {displayedTitle}
+              {headingPrefix} {displayedTitle}
             </ChromaticText>
             <span className="animate-pulse">_</span>
           </motion.h2>
@@ -341,12 +343,10 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                         <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">RELEASE // {release.title.toUpperCase()}</span>
                       </div>
 
-                      <button
-                        className="absolute top-2 right-3 p-2 text-primary/60 hover:text-primary z-10"
+                      <CyberCloseButton
                         onClick={() => setExpandedReleaseId(null)}
-                      >
-                        <X size={24} />
-                      </button>
+                        className="absolute top-2 right-3"
+                      />
 
                       <div className="flex flex-col items-center gap-4 p-6">
                         {release.artwork && (

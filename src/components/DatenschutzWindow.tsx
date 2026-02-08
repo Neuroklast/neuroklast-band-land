@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, PencilSimple } from '@phosphor-icons/react'
+import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import type { Datenschutz } from '@/lib/types'
 
 interface DatenschutzWindowProps {
@@ -240,12 +241,10 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
                     <PencilSimple size={18} />
                   </button>
                 )}
-                <button
+                <CyberCloseButton
                   onClick={() => { if (isEditing) { setIsEditing(false) } else { onClose() } }}
-                  className="text-primary hover:text-accent transition-colors"
-                >
-                  <X size={20} />
-                </button>
+                  label={isEditing ? 'BACK' : 'CLOSE'}
+                />
               </div>
             </div>
 
