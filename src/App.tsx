@@ -27,11 +27,12 @@ import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import { useSound } from '@/hooks/use-sound'
 import type { BandData, FontSizeSettings, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
+import { DEFAULT_LABEL } from '@/lib/config'
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
   genres: bandDataJson.band.genres,
-  label: bandDataJson.band.label || 'Darktunes Music Group',
+  label: bandDataJson.band.label || DEFAULT_LABEL,
   socialLinks: {
     instagram: 'https://instagram.com/neuroklast_music',
     facebook: 'https://www.facebook.com/Neuroklast/',

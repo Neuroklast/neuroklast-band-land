@@ -1,6 +1,14 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import logoImage from '@/assets/images/baphomet no text.svg'
+import {
+  LOADER_GLITCH_PROBABILITY,
+  LOADER_GLITCH_DURATION_MS,
+  LOADER_GLITCH_INTERVAL_MS,
+  LOADER_PROGRESS_INCREMENT_MULTIPLIER,
+  LOADER_COMPLETE_DELAY_MS,
+  LOADER_PROGRESS_INTERVAL_MS,
+} from '@/lib/config'
 
 interface CyberpunkLoaderProps {
   onLoadComplete: () => void
@@ -28,15 +36,15 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
 
   useEffect(() => {
     const glitchInterval = setInterval(() => {
-      if (Math.random() > 0.7) {
+      if (Math.random() > LOADER_GLITCH_PROBABILITY) {
         setGlitch(true)
-        setTimeout(() => setGlitch(false), 100)
+        setTimeout(() => setGlitch(false), LOADER_GLITCH_DURATION_MS)
       }
-    }, 800)
+    }, LOADER_GLITCH_INTERVAL_MS)
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev + Math.random() * 20
+        const newProgress = prev + Math.random() * LOADER_PROGRESS_INCREMENT_MULTIPLIER
         const progressIndex = Math.floor((newProgress / 100) * hackingTexts.length)
         if (progressIndex < hackingTexts.length) {
           setHackingText(hackingTexts[progressIndex])
@@ -44,12 +52,12 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
         
         if (prev >= 100) {
           clearInterval(interval)
-          setTimeout(onLoadComplete, 500)
+          setTimeout(onLoadComplete, LOADER_COMPLETE_DELAY_MS)
           return 100
         }
         return Math.min(newProgress, 100)
       })
-    }, 150)
+    }, LOADER_PROGRESS_INTERVAL_MS)
 
     return () => {
       clearInterval(interval)

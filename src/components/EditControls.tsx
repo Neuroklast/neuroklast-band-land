@@ -6,9 +6,10 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import type { BandData } from '@/lib/types'
 import { toast } from 'sonner'
-
-const INITIAL_SYNC_DELAY_MS = 30_000 // 30 seconds after load
-const SYNC_INTERVAL_MS = 5 * 60_000  // every 5 minutes
+import {
+  INITIAL_SYNC_DELAY_MS,
+  SYNC_INTERVAL_MS,
+} from '@/lib/config'
 
 interface EditControlsProps {
   editMode: boolean

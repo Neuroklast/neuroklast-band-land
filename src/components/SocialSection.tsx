@@ -17,6 +17,13 @@ import type { SocialLinks, FontSizeSettings } from '@/lib/types'
 import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import {
+  TITLE_TYPING_SPEED_MS,
+  TITLE_TYPING_START_DELAY_MS,
+  SECTION_GLITCH_PROBABILITY,
+  SECTION_GLITCH_DURATION_MS,
+  SECTION_GLITCH_INTERVAL_MS,
+} from '@/lib/config'
 
 interface SocialSectionProps {
   socialLinks: SocialLinks
@@ -46,17 +53,17 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
   const titleText = 'CONNECT'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
-    50,
-    100
+    TITLE_TYPING_SPEED_MS,
+    TITLE_TYPING_START_DELAY_MS
   )
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
+      if (Math.random() > SECTION_GLITCH_PROBABILITY) {
         setGlitchActive(true)
-        setTimeout(() => setGlitchActive(false), 300)
+        setTimeout(() => setGlitchActive(false), SECTION_GLITCH_DURATION_MS)
       }
-    }, 4000)
+    }, SECTION_GLITCH_INTERVAL_MS)
 
     return () => clearInterval(interval)
   }, [])

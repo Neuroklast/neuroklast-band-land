@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SoundSettings } from '@/lib/types'
 import { toDirectImageUrl } from '@/lib/image-cache'
-
-const DEFAULT_SOUND_VOLUME = 0.4
+import { DEFAULT_SOUND_VOLUME } from '@/lib/config'
 
 /** Convert Drive share links to direct download URLs for audio files */
 function toDirectAudioUrl(url?: string): string {

@@ -6,6 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { TerminalCommand } from '@/lib/types'
 
+import {
+  TERMINAL_RESERVED_COMMANDS,
+  TERMINAL_TYPING_SPEED_MS,
+  TERMINAL_FILE_LOADING_DURATION_MS,
+} from '@/lib/config'
+
 interface SecretTerminalProps {
   isOpen: boolean
   onClose: () => void
@@ -15,9 +21,9 @@ interface SecretTerminalProps {
   onSaveCommands?: (commands: TerminalCommand[]) => void
 }
 
-const RESERVED = ['help', 'clear', 'exit', 'glitch', 'matrix']
-const TYPING_SPEED_MS = 18
-const FILE_LOADING_DURATION_MS = 2000
+const RESERVED = TERMINAL_RESERVED_COMMANDS
+const TYPING_SPEED_MS = TERMINAL_TYPING_SPEED_MS
+const FILE_LOADING_DURATION_MS = TERMINAL_FILE_LOADING_DURATION_MS
 
 export default function SecretTerminal({ isOpen, onClose, customCommands = [], editMode, onSaveCommands }: SecretTerminalProps) {
   const [input, setInput] = useState('')

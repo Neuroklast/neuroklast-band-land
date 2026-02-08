@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
+import {
+  NAV_SCROLL_THRESHOLD_PX,
+  NAV_GLITCH_PROBABILITY,
+  NAV_GLITCH_DURATION_MS,
+  NAV_GLITCH_INTERVAL_MS,
+} from '@/lib/config'
 
 interface NavigationProps {
   soundMuted?: boolean
@@ -16,7 +22,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      setIsScrolled(window.scrollY > NAV_SCROLL_THRESHOLD_PX)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -24,11 +30,11 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.9) {
+      if (Math.random() > NAV_GLITCH_PROBABILITY) {
         setGlitch(true)
-        setTimeout(() => setGlitch(false), 200)
+        setTimeout(() => setGlitch(false), NAV_GLITCH_DURATION_MS)
       }
-    }, 5000)
+    }, NAV_GLITCH_INTERVAL_MS)
     return () => clearInterval(interval)
   }, [])
 

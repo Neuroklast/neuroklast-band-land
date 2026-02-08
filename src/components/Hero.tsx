@@ -5,6 +5,14 @@ import { Button } from '@/components/ui/button'
 import { CaretDown, PencilSimple } from '@phosphor-icons/react'
 import logoPng from '@/assets/images/baphomet no text.svg'
 import titlePng from '@/assets/images/titel.png'
+import {
+  HERO_LOGO_GLITCH_PROBABILITY,
+  HERO_LOGO_GLITCH_DURATION_MS,
+  HERO_LOGO_GLITCH_INTERVAL_MS,
+  HERO_TITLE_GLITCH_PROBABILITY,
+  HERO_TITLE_GLITCH_DURATION_MS,
+  HERO_TITLE_GLITCH_INTERVAL_MS,
+} from '@/lib/config'
 
 interface HeroProps {
   name: string
@@ -19,18 +27,18 @@ export default function Hero({ name, genres, editMode, onEdit }: HeroProps) {
 
   useEffect(() => {
     const logoInterval = setInterval(() => {
-      if (Math.random() > 0.75) {
+      if (Math.random() > HERO_LOGO_GLITCH_PROBABILITY) {
         setGlitchLogo(true)
-        setTimeout(() => setGlitchLogo(false), 300)
+        setTimeout(() => setGlitchLogo(false), HERO_LOGO_GLITCH_DURATION_MS)
       }
-    }, 5000)
+    }, HERO_LOGO_GLITCH_INTERVAL_MS)
 
     const titleInterval = setInterval(() => {
-      if (Math.random() > 0.8) {
+      if (Math.random() > HERO_TITLE_GLITCH_PROBABILITY) {
         setGlitchTitle(true)
-        setTimeout(() => setGlitchTitle(false), 300)
+        setTimeout(() => setGlitchTitle(false), HERO_TITLE_GLITCH_DURATION_MS)
       }
-    }, 6000)
+    }, HERO_TITLE_GLITCH_INTERVAL_MS)
 
     return () => {
       clearInterval(logoInterval)

@@ -10,6 +10,17 @@ import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend } from '@/lib/types'
 import { toDirectImageUrl } from '@/lib/image-cache'
+import {
+  CONSOLE_LINES_DEFAULT_SPEED_MS,
+  CONSOLE_LINES_DEFAULT_DELAY_MS,
+  CONSOLE_TYPING_SPEED_MS,
+  CONSOLE_LINE_DELAY_MS,
+  PROFILE_LOADING_TEXT_INTERVAL_MS,
+  PROFILE_GLITCH_PHASE_DELAY_MS,
+  PROFILE_REVEAL_PHASE_DELAY_MS,
+  TITLE_TYPING_SPEED_MS,
+  TITLE_TYPING_START_DELAY_MS,
+} from '@/lib/config'
 
 interface PartnersAndFriendsSectionProps {
   friends?: Friend[]
@@ -28,7 +39,7 @@ const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: any;
 ]
 
 /** Terminal-style line-by-line text reveal for friend profile */
-function FriendConsoleLines({ lines, speed = 40, delayBetween = 120 }: { lines: string[]; speed?: number; delayBetween?: number }) {
+function FriendConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetween = CONSOLE_LINES_DEFAULT_DELAY_MS }: { lines: string[]; speed?: number; delayBetween?: number }) {
   const [visibleCount, setVisibleCount] = useState(0)
   const [currentText, setCurrentText] = useState('')
   const [lineComplete, setLineComplete] = useState(false)
@@ -92,14 +103,14 @@ function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: ()
       if (idx < friendProfileLoadingTexts.length) {
         setLoadingText(friendProfileLoadingTexts[idx])
       }
-    }, 300)
+    }, PROFILE_LOADING_TEXT_INTERVAL_MS)
 
     const glitchTimer = setTimeout(() => {
       clearInterval(txtInterval)
       setPhase('glitch')
-    }, 700)
+    }, PROFILE_GLITCH_PHASE_DELAY_MS)
 
-    const revealTimer = setTimeout(() => setPhase('revealed'), 1000)
+    const revealTimer = setTimeout(() => setPhase('revealed'), PROFILE_REVEAL_PHASE_DELAY_MS)
 
     return () => {
       clearInterval(txtInterval)
@@ -244,7 +255,7 @@ function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: ()
                   {'>'} TERMINAL OUTPUT // PROFILE DATA
                 </div>
                 <div className="bg-black/50 border border-primary/20 p-4 min-h-[160px] max-h-[40vh] overflow-y-auto">
-                  <FriendConsoleLines lines={dataLines} speed={30} delayBetween={100} />
+                  <FriendConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
                 </div>
 
                 {/* Social link icons */}
@@ -409,8 +420,8 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
   const titleText = 'PARTNERS & FRIENDS'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
-    50,
-    100
+    TITLE_TYPING_SPEED_MS,
+    TITLE_TYPING_START_DELAY_MS
   )
 
   if (!editMode && friends.length === 0) return null

@@ -1,4 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
+import {
+  VISUALIZER_BAR_COUNT,
+  VISUALIZER_TIME_INCREMENT,
+  VISUALIZER_GLITCH_PROBABILITY,
+  VISUALIZER_GLITCH_OFFSET,
+  VISUALIZER_GLITCH_DURATION_FRAMES,
+  VISUALIZER_GLITCH_DECAY,
+  VISUALIZER_HEIGHT_SCALE,
+  VISUALIZER_BAR_GLITCH_PROBABILITY,
+  VISUALIZER_BAR_GLITCH_OFFSET,
+} from '@/lib/config'
 
 export default function AudioVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -10,7 +21,7 @@ export default function AudioVisualizer() {
     glitchOffset: number
     glitchTime: number
   }>>(() => 
-    Array.from({ length: 40 }, () => ({
+    Array.from({ length: VISUALIZER_BAR_COUNT }, () => ({
       height: Math.random() * 0.5 + 0.2,
       speed: Math.random() * 0.02 + 0.01,
       phase: Math.random() * Math.PI * 2,
@@ -43,24 +54,24 @@ export default function AudioVisualizer() {
       const barWidth = canvas.width / bars.length
       const centerY = canvas.height / 2
 
-      time += 0.01
+      time += VISUALIZER_TIME_INCREMENT
 
       bars.forEach((bar, i) => {
         bar.height = Math.sin(time * bar.speed + bar.phase) * 0.3 + 0.5
         
-        if (Math.random() < 0.002) {
-          bar.glitchOffset = (Math.random() - 0.5) * 20
-          bar.glitchTime = 10
+        if (Math.random() < VISUALIZER_GLITCH_PROBABILITY) {
+          bar.glitchOffset = (Math.random() - 0.5) * VISUALIZER_GLITCH_OFFSET
+          bar.glitchTime = VISUALIZER_GLITCH_DURATION_FRAMES
         }
         
         if (bar.glitchTime > 0) {
           bar.glitchTime--
         } else {
-          bar.glitchOffset *= 0.9
+          bar.glitchOffset *= VISUALIZER_GLITCH_DECAY
         }
 
         const x = i * barWidth + bar.glitchOffset
-        const height = bar.height * (canvas.height * 0.15)
+        const height = bar.height * (canvas.height * VISUALIZER_HEIGHT_SCALE)
         
         const gradient = ctx.createLinearGradient(x, centerY - height, x, centerY + height)
         gradient.addColorStop(0, 'oklch(0.50 0.22 25 / 0.05)')
@@ -76,9 +87,9 @@ export default function AudioVisualizer() {
         }
       })
 
-      if (Math.random() < 0.01) {
+      if (Math.random() < VISUALIZER_BAR_GLITCH_PROBABILITY) {
         const randomBar = bars[Math.floor(Math.random() * bars.length)]
-        randomBar.glitchOffset = (Math.random() - 0.5) * 30
+        randomBar.glitchOffset = (Math.random() - 0.5) * VISUALIZER_BAR_GLITCH_OFFSET
         randomBar.glitchTime = 15
       }
 
