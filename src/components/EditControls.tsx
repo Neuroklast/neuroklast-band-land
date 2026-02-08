@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import type { BandData } from '@/lib/types'
 import { toast } from 'sonner'
 import {
@@ -146,15 +147,15 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowUrlImport(false)}
           >
             <motion.div
-              className="bg-card border border-border rounded-lg p-6 w-full max-w-md space-y-4"
+              className="bg-card border border-border rounded-lg p-6 w-full max-w-md space-y-4 relative"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
             >
+              <CyberCloseButton onClick={() => setShowUrlImport(false)} label="CLOSE" className="absolute top-3 right-3" />
               <h3 className="text-lg font-bold">Import from URL</h3>
               <p className="text-sm text-muted-foreground">
                 Enter a URL to a JSON file (e.g. Google Drive share link).

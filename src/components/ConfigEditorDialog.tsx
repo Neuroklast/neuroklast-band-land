@@ -98,7 +98,6 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
         >
           <motion.div
             className="w-full max-w-3xl bg-card border-2 border-primary/30 relative overflow-hidden"

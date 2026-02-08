@@ -128,6 +128,13 @@ function App() {
     }))
   }
 
+  const handleLabelChange = (key: keyof import('@/lib/types').SectionLabels, value: string) => {
+    setBandData((current) => ({
+      ...(current || defaultBandData),
+      sectionLabels: { ...(current || defaultBandData).sectionLabels, [key]: value || undefined }
+    }))
+  }
+
   const handleSetAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
     localStorage.setItem('admin-token', hash)
@@ -200,6 +207,8 @@ function App() {
       </AnimatePresence>
 
       {!loading && (
+        <>
+        <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} />
         <motion.div 
           className="min-h-screen bg-background text-foreground overflow-x-hidden relative"
           initial={{ opacity: 0 }}
@@ -214,14 +223,6 @@ function App() {
           
           <CyberpunkBackground />
           <Toaster position="top-right" />
-          
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} />
-          </motion.div>
           
           <motion.div
             initial={{ opacity: 0 }}
@@ -248,6 +249,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -279,6 +281,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -295,6 +298,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -308,6 +312,7 @@ function App() {
                   editMode={editMode && isOwner}
                   onUpdate={(mediaFiles) => setBandData((current) => ({ ...(current || defaultBandData), mediaFiles }))}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -323,6 +328,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -414,6 +420,7 @@ function App() {
             />
           </motion.div>
         </motion.div>
+        </>
       )}
     </>
   )

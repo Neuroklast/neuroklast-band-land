@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { motion } from 'framer-motion'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import type { SoundSettings } from '@/lib/types'
 
 interface SoundSettingsDialogProps {
@@ -20,15 +21,15 @@ export default function SoundSettingsDialog({ settings, onSave, onClose }: Sound
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={onClose}
     >
       <motion.div
-        className="bg-card border border-border rounded-lg p-6 w-full max-w-md space-y-4"
+        className="bg-card border border-border rounded-lg p-6 w-full max-w-md space-y-4 relative"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
       >
+        <CyberCloseButton onClick={onClose} label="CLOSE" className="absolute top-3 right-3" />
         <h3 className="text-lg font-bold font-mono">Sound Effects</h3>
         <p className="text-sm text-muted-foreground">
           Add URLs to audio files (MP3, WAV, OGG). Google Drive share links are supported.

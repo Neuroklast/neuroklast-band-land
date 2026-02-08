@@ -32,6 +32,7 @@ interface SocialSectionProps {
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 const socialPlatforms = [
@@ -61,9 +62,12 @@ function SocialButton({ Icon, url, label, index, isInView }: { Icon: any; url?: 
       <Button
         asChild
         variant="outline"
-        className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation hud-element hud-corner hud-scanline"
+        className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 rounded-none border-primary/30 hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation hud-element hud-corner hud-scanline social-cyber-card"
         style={{
-          textShadow: '0 0 6px oklch(1 0 0 / 0.3), 0 0 12px oklch(0.50 0.22 25 / 0.2)'
+          textShadow: '0 0 6px oklch(1 0 0 / 0.3), 0 0 12px oklch(0.50 0.22 25 / 0.2)',
+          boxShadow: hovered
+            ? '0 0 20px oklch(0.50 0.22 25 / 0.4), inset 0 0 20px oklch(0.50 0.22 25 / 0.1)'
+            : '0 0 8px oklch(0.50 0.22 25 / 0.15), inset 0 0 8px oklch(0.50 0.22 25 / 0.03)',
         }}
       >
         <a href={url} target="_blank" rel="noopener noreferrer">
@@ -71,18 +75,18 @@ function SocialButton({ Icon, url, label, index, isInView }: { Icon: any; url?: 
           <span className="corner-br"></span>
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
-          <div className={`relative z-10 transition-all ${hovered ? 'red-glitch-element' : ''}`}>
+          <div className={`relative z-10 transition-all ${hovered ? 'red-glitch-element chromatic-aberration-hover' : ''}`}>
             <Icon size={80} className="md:hidden size-20 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
             <Icon size={96} className="hidden md:block size-24 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
           </div>
-          <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10">{label}</span>
+          <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10 font-mono">{label}</span>
         </a>
       </Button>
     </motion.div>
   )
 }
 
-export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels }: SocialSectionProps) {
+export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: SocialSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
@@ -129,12 +133,23 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
             <span className="animate-pulse">_</span>
           </motion.h2>
           {editMode && (
-            <Button
-              onClick={() => setIsEditing(true)}
-              className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
-            >
-              Edit Links
-            </Button>
+            <div className="flex gap-2 items-center w-full sm:w-auto">
+              {onLabelChange && (
+                <input
+                  type="text"
+                  value={sectionLabels?.connect || ''}
+                  onChange={(e) => onLabelChange('connect', e.target.value)}
+                  placeholder="CONNECT"
+                  className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                />
+              )}
+              <Button
+                onClick={() => setIsEditing(true)}
+                className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
+              >
+                Edit Links
+              </Button>
+            </div>
           )}
         </div>
 

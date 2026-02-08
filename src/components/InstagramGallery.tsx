@@ -477,7 +477,6 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
           >
             <motion.button
               className="absolute top-4 right-4 p-3 bg-primary/20 hover:bg-primary/30 active:bg-primary/40 border border-primary/40 hover:border-primary/60 transition-all z-50 touch-manipulation group"
