@@ -120,6 +120,17 @@ export interface BandData {
   syncUrl?: string
   /** Google Drive folder URL for gallery photos */
   galleryDriveFolderUrl?: string
+  /** Sound effect settings */
+  soundSettings?: SoundSettings
+}
+
+export interface SoundSettings {
+  /** URL to terminal keystroke/beep sound */
+  terminalSound?: string
+  /** URL to typing effect sound */
+  typingSound?: string
+  /** URL to button click sound */
+  buttonSound?: string
 }
 
 export interface FontSizeSettings {

@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,6 +18,7 @@ interface EditControlsProps {
   onSetPassword: (password: string) => Promise<void>
   bandData?: BandData
   onImportData?: (data: BandData) => void
+  onOpenSoundSettings?: () => void
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -29,7 +30,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, bandData, onImportData }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, bandData, onImportData, onOpenSoundSettings }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -237,6 +238,17 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 <Globe size={18} className="md:hidden" weight="bold" />
                 <Globe size={20} className="hidden md:block" weight="bold" />
               </Button>
+              {onOpenSoundSettings && (
+                <Button
+                  onClick={onOpenSoundSettings}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
+                  size="icon"
+                  title="Sound effects settings"
+                >
+                  <SpeakerHigh size={18} className="md:hidden" weight="bold" />
+                  <SpeakerHigh size={20} className="hidden md:block" weight="bold" />
+                </Button>
+              )}
             </motion.div>
             <motion.div
               initial={{ scale: 0, opacity: 0 }}

@@ -23,7 +23,9 @@ import ImpressumWindow from '@/components/ImpressumWindow'
 import DatenschutzWindow from '@/components/DatenschutzWindow'
 import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
-import type { BandData, FontSizeSettings } from '@/lib/types'
+import SoundSettingsDialog from '@/components/SoundSettingsDialog'
+import { useSound } from '@/hooks/use-sound'
+import type { BandData, FontSizeSettings, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 
 const defaultBandData: BandData = {
@@ -65,6 +67,7 @@ function App() {
   const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
   const [impressumOpen, setImpressumOpen] = useState(false)
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
+  const [showSoundSettings, setShowSoundSettings] = useState(false)
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
   const wantsSetup = useRef(false)
@@ -152,6 +155,7 @@ function App() {
 
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
+  const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
 
   return (
     <>
@@ -207,7 +211,7 @@ function App() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Navigation />
+            <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} />
           </motion.div>
           
           <motion.div
@@ -335,8 +339,19 @@ function App() {
                 onSetPassword={handleSetAdminPassword}
                 bandData={data}
                 onImportData={(imported) => setBandData(imported)}
+                onOpenSoundSettings={() => setShowSoundSettings(true)}
               />
             )}
+
+            <AnimatePresence>
+              {showSoundSettings && (
+                <SoundSettingsDialog
+                  settings={data.soundSettings}
+                  onSave={(soundSettings: SoundSettings) => setBandData((current) => ({ ...(current || defaultBandData), soundSettings }))}
+                  onClose={() => setShowSoundSettings(false)}
+                />
+              )}
+            </AnimatePresence>
 
             <AdminLoginDialog
               open={showLoginDialog}
