@@ -166,7 +166,6 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={onClose}
     >
       {/* Scanline overlay */}
       <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
