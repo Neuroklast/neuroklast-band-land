@@ -193,9 +193,9 @@ export function getConfigValues(): Readonly<ConfigValues> {
 // Typing & Console Effects
 export const get = <K extends ConfigKey>(key: K): ConfigValues[K] => runtimeValues[key]
 
-// For backwards compatibility, re-export as getters that read from runtimeValues
-// so existing `import { SOME_CONST } from '@/lib/config'` still works.
-// NOTE: These are evaluated at import time. For hot-reloading overrides we use get().
+// For backwards compatibility, re-export the compile-time defaults so existing
+// `import { SOME_CONST } from '@/lib/config'` statements continue to work.
+// These are static values. To read a runtime-overridden value use get(key).
 
 export const TYPING_EFFECT_SPEED_MS          = DEFAULTS.TYPING_EFFECT_SPEED_MS
 export const TYPING_EFFECT_START_DELAY_MS    = DEFAULTS.TYPING_EFFECT_START_DELAY_MS
