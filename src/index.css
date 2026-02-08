@@ -630,3 +630,92 @@ h1, h2, h3, h4, h5, h6 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Cyberpunk glitch overlay animation */
+@keyframes glitch-overlay-in {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+  10% {
+    clip-path: inset(40% 60% 40% 0);
+    opacity: 0.3;
+  }
+  20% {
+    clip-path: inset(0 40% 0 20%);
+    opacity: 0.5;
+  }
+  30% {
+    clip-path: inset(20% 20% 60% 0);
+    opacity: 0.6;
+  }
+  40% {
+    clip-path: inset(0 10% 0 0);
+    opacity: 0.8;
+  }
+  50% {
+    clip-path: inset(50% 0 0 30%);
+    opacity: 0.7;
+  }
+  60% {
+    clip-path: inset(0 5% 0 0);
+    opacity: 0.9;
+  }
+  80% {
+    clip-path: inset(0 0 10% 0);
+    opacity: 0.95;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+@keyframes glitch-overlay-out {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  20% {
+    clip-path: inset(0 5% 10% 0);
+    opacity: 0.9;
+  }
+  40% {
+    clip-path: inset(30% 0 20% 20%);
+    opacity: 0.6;
+  }
+  60% {
+    clip-path: inset(0 40% 50% 0);
+    opacity: 0.4;
+  }
+  80% {
+    clip-path: inset(50% 60% 0 30%);
+    opacity: 0.2;
+  }
+  100% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+}
+
+.glitch-overlay-enter {
+  animation: glitch-overlay-in 0.4s steps(8) forwards;
+}
+
+.glitch-overlay-exit {
+  animation: glitch-overlay-out 0.3s steps(6) forwards;
+}
+
+/* Terminal-style console typing cursor */
+@keyframes console-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.console-cursor::after {
+  content: '█';
+  animation: console-blink 0.8s step-end infinite;
+  color: oklch(0.50 0.22 25);
+  margin-left: 1px;
+  font-size: 0.8em;
+}
