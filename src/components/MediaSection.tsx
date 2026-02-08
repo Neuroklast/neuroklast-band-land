@@ -7,6 +7,7 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import { ChromaticText } from '@/components/ChromaticText'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { useState, useRef, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { MediaFile, SectionLabels } from '@/lib/types'
 import {
   TITLE_TYPING_SPEED_MS,
@@ -345,7 +346,10 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
 
   const importFromDrive = async () => {
     const folderId = extractDriveFolderId(driveUrl.trim())
-    if (!folderId) return
+    if (!folderId) {
+      toast.error('Could not extract folder ID from URL')
+      return
+    }
     setDriveLoading(true)
     try {
       const res = await fetch(`/api/drive-folder?folderId=${encodeURIComponent(folderId)}`)
@@ -358,9 +362,13 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
       }))
       if (driveFiles.length > 0) {
         setEditFiles([...editFiles, ...driveFiles])
+        toast.success(`Imported ${driveFiles.length} file(s) from Google Drive`)
+      } else {
+        toast.info('No files found in the Google Drive folder')
       }
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('Drive import error:', err)
+      toast.error('Failed to import files from Google Drive')
     } finally {
       setDriveLoading(false)
       setDriveUrl('')

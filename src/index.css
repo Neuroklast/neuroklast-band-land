@@ -764,9 +764,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 *, *::before, *::after {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cdefs%3E%3Cfilter id='g'%3E%3CfeGaussianBlur stdDeviation='0.5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23cc2222' stroke='%23ff4444' stroke-width='1' filter='url(%23g)'/%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23cc2222' stroke='%23ff3333' stroke-width='0.5'/%3E%3C/svg%3E") 4 2, auto;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cdefs%3E%3Cfilter id='gd'%3E%3CfeGaussianBlur stdDeviation='0.5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23cc2222' stroke='%23ff4444' stroke-width='1' filter='url(%23gd)'/%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23cc2222' stroke='%23ff3333' stroke-width='0.5'/%3E%3C/svg%3E") 4 2, auto;
 }
 
 button, a, [role="button"], .cursor-pointer {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cdefs%3E%3Cfilter id='g'%3E%3CfeGaussianBlur stdDeviation='0.8'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23ee3333' stroke='%23ff5555' stroke-width='1.5' filter='url(%23g)'/%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23ee3333' stroke='%23ff4444' stroke-width='0.5'/%3E%3C/svg%3E") 4 2, pointer;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cdefs%3E%3Cfilter id='gi'%3E%3CfeGaussianBlur stdDeviation='0.8'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23ee3333' stroke='%23ff5555' stroke-width='1.5' filter='url(%23gi)'/%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23ee3333' stroke='%23ff4444' stroke-width='0.5'/%3E%3C/svg%3E") 4 2, pointer;
 }

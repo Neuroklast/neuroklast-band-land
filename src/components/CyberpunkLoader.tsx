@@ -202,7 +202,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
               delay: Math.random() * 3,
             }}
           >
-            0x{Math.random().toString(16).slice(2, 10).toUpperCase()}
+            0x{Math.random().toString(16).slice(2, 10).toUpperCase().padEnd(8, '0')}
           </motion.div>
         ))}
       </div>
