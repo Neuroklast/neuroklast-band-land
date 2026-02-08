@@ -84,6 +84,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
   const [loadingText, setLoadingText] = useState(profileLoadingTexts[0])
   const [photoLoaded, setPhotoLoaded] = useState(false)
   const [photoSrc, setPhotoSrc] = useState('')
+  const proxyAttempted = useRef(false)
 
   // Resolve photo URL robustly: use cached version or transform to direct URL
   useEffect(() => {
@@ -217,8 +218,9 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
                       style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
                       onLoad={() => setPhotoLoaded(true)}
                       onError={() => {
-                        // Fallback: try server-side proxy
-                        if (member.photo && !photoSrc.includes('/api/image-proxy')) {
+                        // Fallback: try server-side proxy once
+                        if (member.photo && !proxyAttempted.current) {
+                          proxyAttempted.current = true
                           const directUrl = toDirectImageUrl(member.photo)
                           setPhotoSrc(`/api/image-proxy?url=${encodeURIComponent(directUrl)}`)
                         }
