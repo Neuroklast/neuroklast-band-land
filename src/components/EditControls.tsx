@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,6 +20,7 @@ interface EditControlsProps {
   bandData?: BandData
   onImportData?: (data: BandData) => void
   onOpenSoundSettings?: () => void
+  onOpenConfigEditor?: () => void
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -31,7 +32,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, bandData, onImportData, onOpenSoundSettings }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -248,6 +249,17 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 >
                   <SpeakerHigh size={18} className="md:hidden" weight="bold" />
                   <SpeakerHigh size={20} className="hidden md:block" weight="bold" />
+                </Button>
+              )}
+              {onOpenConfigEditor && (
+                <Button
+                  onClick={onOpenConfigEditor}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
+                  size="icon"
+                  title="Config variables editor"
+                >
+                  <Sliders size={18} className="md:hidden" weight="bold" />
+                  <Sliders size={20} className="hidden md:block" weight="bold" />
                 </Button>
               )}
             </motion.div>

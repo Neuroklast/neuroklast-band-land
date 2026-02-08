@@ -122,6 +122,8 @@ export interface BandData {
   galleryDriveFolderUrl?: string
   /** Sound effect settings */
   soundSettings?: SoundSettings
+  /** Runtime overrides for config.ts constants (keys are ConfigKey names) */
+  configOverrides?: Record<string, unknown>
 }
 
 export interface SoundSettings {

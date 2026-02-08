@@ -243,14 +243,14 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-start justify-center p-4 pt-8 overflow-y-auto"
         >
           <motion.div
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 20, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-4xl h-[600px] bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter"
+            className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter flex-shrink-0"
           >
             <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
             

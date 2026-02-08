@@ -7,6 +7,7 @@ import {
   NAV_GLITCH_PROBABILITY,
   NAV_GLITCH_DURATION_MS,
   NAV_GLITCH_INTERVAL_MS,
+  NAV_HEIGHT_PX,
 } from '@/lib/config'
 
 interface NavigationProps {
@@ -41,7 +42,9 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+      const navHeight = NAV_HEIGHT_PX
+      const top = element.getBoundingClientRect().top + window.scrollY - navHeight
+      window.scrollTo({ top, behavior: 'smooth' })
       setIsMobileMenuOpen(false)
     }
   }

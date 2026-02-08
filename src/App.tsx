@@ -24,10 +24,11 @@ import DatenschutzWindow from '@/components/DatenschutzWindow'
 import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
+import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import { useSound } from '@/hooks/use-sound'
 import type { BandData, FontSizeSettings, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
-import { DEFAULT_LABEL } from '@/lib/config'
+import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
@@ -69,6 +70,7 @@ function App() {
   const [impressumOpen, setImpressumOpen] = useState(false)
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
   const [showSoundSettings, setShowSoundSettings] = useState(false)
+  const [showConfigEditor, setShowConfigEditor] = useState(false)
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
   const wantsSetup = useRef(false)
@@ -157,6 +159,11 @@ function App() {
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
   const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
+
+  // Apply config overrides whenever bandData changes
+  useEffect(() => {
+    applyConfigOverrides(data.configOverrides)
+  }, [data.configOverrides])
 
   return (
     <>
@@ -341,6 +348,7 @@ function App() {
                 bandData={data}
                 onImportData={(imported) => setBandData(imported)}
                 onOpenSoundSettings={() => setShowSoundSettings(true)}
+                onOpenConfigEditor={() => setShowConfigEditor(true)}
               />
             )}
 
@@ -353,6 +361,13 @@ function App() {
                 />
               )}
             </AnimatePresence>
+
+            <ConfigEditorDialog
+              open={showConfigEditor}
+              onClose={() => setShowConfigEditor(false)}
+              overrides={data.configOverrides || {}}
+              onSave={(configOverrides) => setBandData((current) => ({ ...(current || defaultBandData), configOverrides }))}
+            />
 
             <AdminLoginDialog
               open={showLoginDialog}

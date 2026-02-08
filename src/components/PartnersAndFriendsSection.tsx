@@ -254,7 +254,7 @@ function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: ()
                 <div className="text-[10px] text-primary/50 tracking-wider mb-3">
                   {'>'} TERMINAL OUTPUT // PROFILE DATA
                 </div>
-                <div className="bg-black/50 border border-primary/20 p-4 min-h-[160px] max-h-[40vh] overflow-y-auto">
+                <div className="bg-black/50 border border-primary/20 p-4 h-[200px] max-h-[40vh] overflow-y-auto">
                   <FriendConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
                 </div>
 
