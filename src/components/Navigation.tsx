@@ -55,6 +55,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
     { label: 'GALLERY', id: 'gallery' },
     { label: 'GIGS', id: 'gigs' },
     { label: 'RELEASES', id: 'releases' },
+    { label: 'MEDIA', id: 'media' },
     { label: 'CONNECT', id: 'social' }
   ]
 

@@ -53,12 +53,6 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     }
   }, [isOpen, customCommands])
 
-  useEffect(() => {
-    if (historyRef.current) {
-      historyRef.current.scrollTop = historyRef.current.scrollHeight
-    }
-  }, [history, currentTyping, fileLoading])
-
   // Queue for typing effect – lines pending display
   const [typingQueue, setTypingQueue] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([])
   const [currentTyping, setCurrentTyping] = useState<{ type: 'command' | 'output' | 'error', text: string, displayed: string } | null>(null)
@@ -66,6 +60,12 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
   // File loading state
   const [fileLoading, setFileLoading] = useState(false)
   const pendingFileRef = useRef<{ url: string; name: string } | null>(null)
+
+  useEffect(() => {
+    if (historyRef.current) {
+      historyRef.current.scrollTop = historyRef.current.scrollHeight
+    }
+  }, [history, currentTyping, fileLoading])
 
   // Process typing queue
   useEffect(() => {

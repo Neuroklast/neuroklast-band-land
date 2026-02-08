@@ -9,6 +9,7 @@ import BandInfoEditDialog from '@/components/BandInfoEditDialog'
 import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
+import MediaSection from '@/components/MediaSection'
 import SocialSection from '@/components/SocialSection'
 import PartnersAndFriendsSection from '@/components/PartnersAndFriendsSection'
 import InstagramGallery from '@/components/InstagramGallery'
@@ -293,6 +294,19 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
+                  sectionLabels={data.sectionLabels}
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.3 }}
+              >
+                <MediaSection
+                  mediaFiles={data.mediaFiles}
+                  editMode={editMode && isOwner}
+                  onUpdate={(mediaFiles) => setBandData((current) => ({ ...(current || defaultBandData), mediaFiles }))}
                   sectionLabels={data.sectionLabels}
                 />
               </motion.div>
