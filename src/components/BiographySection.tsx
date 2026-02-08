@@ -11,6 +11,21 @@ import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Biography, Member, FontSizeSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
+import {
+  CONSOLE_LINES_DEFAULT_SPEED_MS,
+  CONSOLE_LINES_DEFAULT_DELAY_MS,
+  CONSOLE_TYPING_SPEED_MS,
+  CONSOLE_LINE_DELAY_MS,
+  PROFILE_LOADING_TEXT_INTERVAL_MS,
+  PROFILE_GLITCH_PHASE_DELAY_MS,
+  PROFILE_REVEAL_PHASE_DELAY_MS,
+  TITLE_TYPING_SPEED_MS,
+  TITLE_TYPING_START_DELAY_MS,
+  SECTION_GLITCH_PROBABILITY,
+  SECTION_GLITCH_DURATION_MS,
+  SECTION_GLITCH_INTERVAL_MS,
+  TOUCH_SWIPE_THRESHOLD_PX,
+} from '@/lib/config'
 
 interface BiographySectionProps {
   biography?: Biography
@@ -36,7 +51,7 @@ const profileLoadingTexts = [
 ]
 
 /** Terminal-style line-by-line text reveal */
-function ConsoleLines({ lines, speed = 40, delayBetween = 120 }: { lines: string[]; speed?: number; delayBetween?: number }) {
+function ConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetween = CONSOLE_LINES_DEFAULT_DELAY_MS }: { lines: string[]; speed?: number; delayBetween?: number }) {
   const [visibleCount, setVisibleCount] = useState(0)
   const [currentText, setCurrentText] = useState('')
   const [lineComplete, setLineComplete] = useState(false)
@@ -104,14 +119,14 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
       if (idx < profileLoadingTexts.length) {
         setLoadingText(profileLoadingTexts[idx])
       }
-    }, 300)
+    }, PROFILE_LOADING_TEXT_INTERVAL_MS)
 
     const glitchTimer = setTimeout(() => {
       clearInterval(txtInterval)
       setPhase('glitch')
-    }, 700)
+    }, PROFILE_GLITCH_PHASE_DELAY_MS)
 
-    const revealTimer = setTimeout(() => setPhase('revealed'), 1000)
+    const revealTimer = setTimeout(() => setPhase('revealed'), PROFILE_REVEAL_PHASE_DELAY_MS)
 
     return () => {
       clearInterval(txtInterval)
@@ -253,8 +268,8 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose }: {
                 <div className="text-[10px] text-primary/50 tracking-wider mb-3">
                   {'>'} TERMINAL OUTPUT // PROFILE DATA
                 </div>
-                <div className="bg-black/50 border border-primary/20 p-4 min-h-[160px] max-h-[40vh] overflow-y-auto">
-                  <ConsoleLines lines={dataLines} speed={30} delayBetween={100} />
+                <div className="bg-black/50 border border-primary/20 p-4 h-[200px] max-h-[40vh] overflow-y-auto">
+                  <ConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
                 </div>
                 <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
@@ -285,17 +300,17 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const titleText = 'BIOGRAPHY'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
-    50,
-    100
+    TITLE_TYPING_SPEED_MS,
+    TITLE_TYPING_START_DELAY_MS
   )
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
+      if (Math.random() > SECTION_GLITCH_PROBABILITY) {
         setGlitchActive(true)
-        setTimeout(() => setGlitchActive(false), 300)
+        setTimeout(() => setGlitchActive(false), SECTION_GLITCH_DURATION_MS)
       }
-    }, 4000)
+    }, SECTION_GLITCH_INTERVAL_MS)
 
     return () => clearInterval(interval)
   }, [])
@@ -347,10 +362,10 @@ export default function BiographySection({ biography = defaultBiography, editMod
   }
 
   const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 75) {
+    if (touchStart - touchEnd > TOUCH_SWIPE_THRESHOLD_PX) {
       nextPhoto()
     }
-    if (touchStart - touchEnd < -75) {
+    if (touchStart - touchEnd < -TOUCH_SWIPE_THRESHOLD_PX) {
       prevPhoto()
     }
   }

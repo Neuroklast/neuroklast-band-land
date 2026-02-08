@@ -6,6 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { TerminalCommand } from '@/lib/types'
 
+import {
+  TERMINAL_RESERVED_COMMANDS,
+  TERMINAL_TYPING_SPEED_MS,
+  TERMINAL_FILE_LOADING_DURATION_MS,
+} from '@/lib/config'
+
 interface SecretTerminalProps {
   isOpen: boolean
   onClose: () => void
@@ -15,7 +21,9 @@ interface SecretTerminalProps {
   onSaveCommands?: (commands: TerminalCommand[]) => void
 }
 
-const RESERVED = ['help', 'clear', 'exit', 'glitch', 'matrix']
+const RESERVED = TERMINAL_RESERVED_COMMANDS
+const TYPING_SPEED_MS = TERMINAL_TYPING_SPEED_MS
+const FILE_LOADING_DURATION_MS = TERMINAL_FILE_LOADING_DURATION_MS
 
 export default function SecretTerminal({ isOpen, onClose, customCommands = [], editMode, onSaveCommands }: SecretTerminalProps) {
   const [input, setInput] = useState('')
@@ -50,6 +58,59 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     }
   }, [history])
 
+  // Queue for typing effect – lines pending display
+  const [typingQueue, setTypingQueue] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([])
+  const [currentTyping, setCurrentTyping] = useState<{ type: 'command' | 'output' | 'error', text: string, displayed: string } | null>(null)
+  const [isTyping, setIsTyping] = useState(false)
+  // File loading state
+  const [fileLoading, setFileLoading] = useState(false)
+  const pendingFileRef = useRef<{ url: string; name: string } | null>(null)
+
+  // Process typing queue
+  useEffect(() => {
+    if (currentTyping || typingQueue.length === 0) return
+    const [next, ...rest] = typingQueue
+    setTypingQueue(rest)
+    // Empty lines appear instantly
+    if (!next.text) {
+      setHistory(prev => [...prev, next])
+      return
+    }
+    setCurrentTyping({ ...next, displayed: '' })
+    setIsTyping(true)
+  }, [typingQueue, currentTyping])
+
+  // Character-by-character typing
+  useEffect(() => {
+    if (!currentTyping) return
+    if (currentTyping.displayed.length >= currentTyping.text.length) {
+      setHistory(prev => [...prev, { type: currentTyping.type, text: currentTyping.text }])
+      setCurrentTyping(null)
+      setIsTyping(false)
+      return
+    }
+    const timer = setTimeout(() => {
+      setCurrentTyping(prev => prev ? { ...prev, displayed: prev.text.slice(0, prev.displayed.length + 1) } : null)
+    }, TYPING_SPEED_MS)
+    return () => clearTimeout(timer)
+  }, [currentTyping])
+
+  // After typing finishes, handle pending file download with loading animation
+  useEffect(() => {
+    if (isTyping || typingQueue.length > 0) return
+    if (!pendingFileRef.current) return
+    const { url, name } = pendingFileRef.current
+    pendingFileRef.current = null
+    setFileLoading(true)
+    // Show loading animation then open file
+    const timer = setTimeout(() => {
+      setFileLoading(false)
+      setHistory(prev => [...prev, { type: 'output', text: `DOWNLOAD STARTED: ${name}` }, { type: 'output', text: '' }])
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }, FILE_LOADING_DURATION_MS)
+    return () => clearTimeout(timer)
+  }, [isTyping, typingQueue])
+
   const handleCommand = (cmd: string) => {
     const trimmedCmd = cmd.trim().toLowerCase()
     
@@ -68,7 +129,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
       if (customCmd.fileUrl) {
         const fileName = customCmd.fileName || 'download'
         output.push({ type: 'output' as const, text: `INITIATING DOWNLOAD: ${fileName}...` })
-        window.open(customCmd.fileUrl, '_blank', 'noopener,noreferrer')
+        pendingFileRef.current = { url: customCmd.fileUrl, name: fileName }
       }
     } else {
       switch (trimmedCmd) {
@@ -96,6 +157,9 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
             { type: 'output', text: '> TERMINAL CLEARED' },
             { type: 'output', text: '' }
           ])
+          setTypingQueue([])
+          setCurrentTyping(null)
+          setIsTyping(false)
           setInput('')
           return
 
@@ -113,7 +177,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
       }
     }
 
-    setHistory(prev => [...prev, ...output])
+    setTypingQueue(prev => [...prev, ...output])
     setInput('')
   }
 
@@ -179,14 +243,14 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-start justify-center p-4 pt-8 overflow-y-auto"
         >
           <motion.div
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 20, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-4xl h-[600px] bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter"
+            className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter flex-shrink-0"
           >
             <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
             
@@ -320,6 +384,36 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
                       {line.text}
                     </div>
                   ))}
+                  {/* Currently typing line */}
+                  {currentTyping && (
+                    <div
+                      className={`mb-1 ${
+                        currentTyping.type === 'command'
+                          ? 'text-accent'
+                          : currentTyping.type === 'error'
+                          ? 'text-destructive'
+                          : 'text-foreground/80'
+                      }`}
+                    >
+                      {currentTyping.displayed}
+                      <span className="animate-pulse">▌</span>
+                    </div>
+                  )}
+                  {/* File loading animation */}
+                  {fileLoading && (
+                    <div className="my-3">
+                      <div className="text-primary/70 mb-2 text-xs">LOADING FILE...</div>
+                      <div className="w-48 h-1 bg-primary/20 overflow-hidden">
+                        <motion.div
+                          className="h-full bg-primary"
+                          initial={{ width: '0%' }}
+                          animate={{ width: '100%' }}
+                          transition={{ duration: 1.8, ease: 'easeInOut' }}
+                        />
+                      </div>
+                      <div className="text-primary/40 text-[10px] mt-1 tracking-wider">DECRYPTING &amp; PREPARING...</div>
+                    </div>
+                  )}
                 </div>
 
                 <form 

@@ -1,16 +1,29 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { List, X } from '@phosphor-icons/react'
+import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
+import {
+  NAV_SCROLL_THRESHOLD_PX,
+  NAV_GLITCH_PROBABILITY,
+  NAV_GLITCH_DURATION_MS,
+  NAV_GLITCH_INTERVAL_MS,
+  NAV_HEIGHT_PX,
+} from '@/lib/config'
 
-export default function Navigation() {
+interface NavigationProps {
+  soundMuted?: boolean
+  hasSounds?: boolean
+  onToggleMute?: () => void
+}
+
+export default function Navigation({ soundMuted, hasSounds, onToggleMute }: NavigationProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      setIsScrolled(window.scrollY > NAV_SCROLL_THRESHOLD_PX)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -18,18 +31,20 @@ export default function Navigation() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.9) {
+      if (Math.random() > NAV_GLITCH_PROBABILITY) {
         setGlitch(true)
-        setTimeout(() => setGlitch(false), 200)
+        setTimeout(() => setGlitch(false), NAV_GLITCH_DURATION_MS)
       }
-    }, 5000)
+    }, NAV_GLITCH_INTERVAL_MS)
     return () => clearInterval(interval)
   }, [])
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+      const navHeight = NAV_HEIGHT_PX
+      const top = element.getBoundingClientRect().top + window.scrollY - navHeight
+      window.scrollTo({ top, behavior: 'smooth' })
       setIsMobileMenuOpen(false)
     }
   }
@@ -72,16 +87,35 @@ export default function Navigation() {
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
+            {hasSounds && onToggleMute && (
+              <button
+                onClick={onToggleMute}
+                className="text-primary/60 hover:text-primary transition-colors p-1"
+                title={soundMuted ? 'Unmute sounds' : 'Mute sounds'}
+              >
+                {soundMuted ? <SpeakerSlash size={18} /> : <SpeakerHigh size={18} />}
+              </button>
+            )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={20} /> : <List size={20} />}
-          </Button>
+          <div className="flex items-center gap-2 md:hidden">
+            {hasSounds && onToggleMute && (
+              <button
+                onClick={onToggleMute}
+                className="text-primary/60 hover:text-primary transition-colors p-2"
+                title={soundMuted ? 'Unmute sounds' : 'Mute sounds'}
+              >
+                {soundMuted ? <SpeakerSlash size={18} /> : <SpeakerHigh size={18} />}
+              </button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <List size={20} />}
+            </Button>
+          </div>
         </div>
         
         {isScrolled && (

@@ -1,15 +1,26 @@
-import { motion, useInView } from 'framer-motion'
-import { PencilSimple, User, Plus, Trash, InstagramLogo, FacebookLogo, SpotifyLogo, SoundcloudLogo, YoutubeLogo, MusicNote, Globe, Link } from '@phosphor-icons/react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { PencilSimple, User, Plus, Trash, InstagramLogo, FacebookLogo, SpotifyLogo, SoundcloudLogo, YoutubeLogo, MusicNote, Globe, Link, X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import ProgressiveImage from '@/components/ProgressiveImage'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend } from '@/lib/types'
 import { toDirectImageUrl } from '@/lib/image-cache'
+import {
+  CONSOLE_LINES_DEFAULT_SPEED_MS,
+  CONSOLE_LINES_DEFAULT_DELAY_MS,
+  CONSOLE_TYPING_SPEED_MS,
+  CONSOLE_LINE_DELAY_MS,
+  PROFILE_LOADING_TEXT_INTERVAL_MS,
+  PROFILE_GLITCH_PHASE_DELAY_MS,
+  PROFILE_REVEAL_PHASE_DELAY_MS,
+  TITLE_TYPING_SPEED_MS,
+  TITLE_TYPING_START_DELAY_MS,
+} from '@/lib/config'
 
 interface PartnersAndFriendsSectionProps {
   friends?: Friend[]
@@ -27,11 +38,264 @@ const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: any;
   { key: 'website', icon: Globe, label: 'Website' },
 ]
 
-function FriendCard({ friend, editMode, onUpdate, onDelete }: {
+/** Terminal-style line-by-line text reveal for friend profile */
+function FriendConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetween = CONSOLE_LINES_DEFAULT_DELAY_MS }: { lines: string[]; speed?: number; delayBetween?: number }) {
+  const [visibleCount, setVisibleCount] = useState(0)
+  const [currentText, setCurrentText] = useState('')
+  const [lineComplete, setLineComplete] = useState(false)
+
+  useEffect(() => {
+    if (visibleCount >= lines.length) return
+    const line = lines[visibleCount]
+    let charIdx = 0
+    setCurrentText('')
+    setLineComplete(false)
+    const interval = setInterval(() => {
+      charIdx++
+      if (charIdx <= line.length) {
+        setCurrentText(line.slice(0, charIdx))
+      } else {
+        clearInterval(interval)
+        setLineComplete(true)
+        setTimeout(() => setVisibleCount((c) => c + 1), delayBetween)
+      }
+    }, speed)
+    return () => clearInterval(interval)
+  }, [visibleCount, lines, speed, delayBetween])
+
+  return (
+    <div className="space-y-1">
+      {lines.slice(0, visibleCount).map((line, i) => (
+        <p key={i} className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">{line}</p>
+      ))}
+      {visibleCount < lines.length && (
+        <p className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">
+          {currentText}
+          {!lineComplete && <span className="console-cursor" />}
+        </p>
+      )}
+    </div>
+  )
+}
+
+const friendProfileLoadingTexts = [
+  '> ACCESSING PROFILE...',
+  '> DECRYPTING DATA...',
+  '> IDENTITY VERIFIED',
+]
+
+function FriendProfileOverlay({ friend, onClose }: { friend: Friend; onClose: () => void }) {
+  const [phase, setPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
+  const [loadingText, setLoadingText] = useState(friendProfileLoadingTexts[0])
+  const [photoLoaded, setPhotoLoaded] = useState(false)
+  const [photoSrc, setPhotoSrc] = useState('')
+  const proxyAttempted = useRef(false)
+
+  useEffect(() => {
+    if (!friend.photo) return
+    setPhotoSrc(toDirectImageUrl(friend.photo))
+  }, [friend.photo])
+
+  useEffect(() => {
+    let idx = 0
+    const txtInterval = setInterval(() => {
+      idx += 1
+      if (idx < friendProfileLoadingTexts.length) {
+        setLoadingText(friendProfileLoadingTexts[idx])
+      }
+    }, PROFILE_LOADING_TEXT_INTERVAL_MS)
+
+    const glitchTimer = setTimeout(() => {
+      clearInterval(txtInterval)
+      setPhase('glitch')
+    }, PROFILE_GLITCH_PHASE_DELAY_MS)
+
+    const revealTimer = setTimeout(() => setPhase('revealed'), PROFILE_REVEAL_PHASE_DELAY_MS)
+
+    return () => {
+      clearInterval(txtInterval)
+      clearTimeout(glitchTimer)
+      clearTimeout(revealTimer)
+    }
+  }, [])
+
+  const dataLines: string[] = []
+  dataLines.push(`> SUBJECT: ${friend.name.toUpperCase()}`)
+  if (friend.description) {
+    dataLines.push('> ---')
+    dataLines.push(`> ${friend.description}`)
+  }
+  if (friend.url) {
+    dataLines.push('> ---')
+    dataLines.push(`> LINK: ${friend.url}`)
+  }
+  const activeSocials = friendSocialIcons.filter(({ key }) => friend.socials?.[key])
+  if (activeSocials.length > 0) {
+    dataLines.push('> ---')
+    dataLines.push('> SOCIAL CONNECTIONS:')
+    activeSocials.forEach(({ key, label }) => {
+      dataLines.push(`>   ${label.toUpperCase()}: ${friend.socials![key]}`)
+    })
+  }
+  dataLines.push('> ---')
+  dataLines.push('> CLEARANCE: GRANTED')
+
+  return (
+    <motion.div
+      key="friend-profile"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
+
+      {phase === 'loading' && (
+        <motion.div
+          className="flex flex-col items-center gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="w-16 h-1 bg-primary/30 overflow-hidden">
+            <motion.div
+              className="h-full bg-primary"
+              animate={{ width: ['0%', '100%'] }}
+              transition={{ duration: 0.7, ease: 'easeInOut' }}
+            />
+          </div>
+          <p className="text-primary/70 font-mono text-xs tracking-wider">{loadingText}</p>
+        </motion.div>
+      )}
+
+      {phase !== 'loading' && (
+        <motion.div
+          className={`w-full max-w-3xl bg-card border relative overflow-hidden glitch-overlay-enter ${
+            phase === 'glitch' ? 'border-primary red-glitch-element' : 'border-primary/30'
+          }`}
+          initial={{ scale: 0.85, y: 30, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.85, y: 30, opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
+
+          <button
+            className="absolute top-3 right-3 p-2 text-primary/60 hover:text-primary z-10"
+            onClick={onClose}
+            aria-label="Close profile"
+          >
+            <X size={24} />
+          </button>
+
+          <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">PROFILE // {friend.name.toUpperCase()}</span>
+          </div>
+
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-2/5 p-4 md:p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-primary/20">
+              <motion.div
+                className="relative w-full max-w-[220px] aspect-square"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+              >
+                {friend.photo && photoSrc ? (
+                  <div className="w-full h-full overflow-hidden rounded-full border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.2)] bg-black">
+                    {!photoLoaded && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black rounded-full">
+                        <div className="w-3/4 h-[2px] bg-primary/20 overflow-hidden mb-1">
+                          <div className="h-full bg-primary animate-progress-bar" />
+                        </div>
+                        <p className="text-[8px] font-mono text-primary/40 tracking-wider">LOADING IMG...</p>
+                      </div>
+                    )}
+                    <img
+                      src={photoSrc}
+                      alt={friend.name}
+                      className="w-full h-full object-cover"
+                      style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
+                      onLoad={() => setPhotoLoaded(true)}
+                      onError={() => {
+                        if (friend.photo && !proxyAttempted.current) {
+                          proxyAttempted.current = true
+                          const directUrl = toDirectImageUrl(friend.photo)
+                          setPhotoSrc(`/api/image-proxy?url=${encodeURIComponent(directUrl)}`)
+                        }
+                      }}
+                    />
+                    <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20 rounded-full" />
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center rounded-full border border-primary/40">
+                    <User size={72} className="text-muted-foreground" />
+                  </div>
+                )}
+                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary/60" />
+                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/60" />
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary/60" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-primary/60" />
+              </motion.div>
+            </div>
+
+            <div className="md:w-3/5 p-4 md:p-6">
+              <motion.div
+                className="font-mono space-y-3"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+              >
+                <div className="text-[10px] text-primary/50 tracking-wider mb-3">
+                  {'>'} TERMINAL OUTPUT // PROFILE DATA
+                </div>
+                <div className="bg-black/50 border border-primary/20 p-4 h-[200px] max-h-[40vh] overflow-y-auto">
+                  <FriendConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
+                </div>
+
+                {/* Social link icons */}
+                {activeSocials.length > 0 && (
+                  <div className="flex gap-3 flex-wrap pt-2">
+                    {activeSocials.map(({ key, icon: Icon, label }) => (
+                      <a
+                        key={key}
+                        href={friend.socials![key]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary/60 hover:text-primary transition-colors"
+                        title={label}
+                      >
+                        <Icon size={22} weight="fill" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
+                  <span>SESSION ACTIVE</span>
+                  <span className="ml-auto">NK-SYS v1.3.37</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+  )
+}
+
+function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
   friend: Friend
   editMode?: boolean
   onUpdate: (friend: Friend) => void
   onDelete: () => void
+  onSelect: () => void
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState(friend)
@@ -89,65 +353,56 @@ function FriendCard({ friend, editMode, onUpdate, onDelete }: {
   }
 
   return (
-    <Card className="bg-card/50 border-border hover:border-primary/50 transition-all duration-300 overflow-hidden group hud-element hud-corner">
+    <Card
+      className="bg-card/50 border-border hover:border-primary/50 transition-all duration-300 overflow-hidden group hud-element hud-corner cursor-pointer"
+      onClick={() => !editMode && onSelect()}
+    >
       <span className="corner-bl"></span>
       <span className="corner-br"></span>
-      <div className="flex gap-3 p-4">
+      <div className="flex flex-col items-center gap-3 p-5">
         {friend.photo ? (
-          <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
+          <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-full shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)]">
             <ProgressiveImage
               src={friend.photo}
               alt={friend.name}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover rounded-full"
             />
           </div>
         ) : (
-          <div className="w-16 h-16 flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center">
-            <User size={24} className="text-muted-foreground/40" />
+          <div className="w-24 h-24 flex-shrink-0 bg-secondary/30 border border-border rounded-full flex items-center justify-center shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)]">
+            <User size={32} className="text-muted-foreground/40" />
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              {friend.url ? (
-                <a href={friend.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold hover:text-primary transition-colors line-clamp-1 flex items-center gap-1">
-                  {friend.name}
-                  <Link size={12} className="text-primary/40 flex-shrink-0" />
-                </a>
-              ) : (
-                <p className="text-sm font-bold line-clamp-1">{friend.name}</p>
-              )}
-              {friend.description && (
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{friend.description}</p>
-              )}
-            </div>
+        <div className="text-center min-w-0 w-full">
+          <div className="flex items-center justify-center gap-2">
+            <p className="text-sm font-bold line-clamp-1">{friend.name}</p>
             {editMode && (
               <div className="flex gap-1 flex-shrink-0">
-                <button onClick={() => { setEditData(friend); setIsEditing(true) }} className="p-1 text-muted-foreground hover:text-primary transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); setEditData(friend); setIsEditing(true) }} className="p-1 text-muted-foreground hover:text-primary transition-colors">
                   <PencilSimple size={14} />
                 </button>
-                <button onClick={onDelete} className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); onDelete() }} className="p-1 text-muted-foreground hover:text-destructive transition-colors">
                   <Trash size={14} />
                 </button>
               </div>
             )}
           </div>
+          {friend.description && (
+            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{friend.description}</p>
+          )}
           {friend.socials && (
-            <div className="flex gap-1.5 mt-2 flex-wrap">
+            <div className="flex gap-1.5 mt-2 flex-wrap justify-center">
               {friendSocialIcons.map(({ key, icon: Icon, label }) => {
                 const url = friend.socials?.[key]
                 if (!url) return null
                 return (
-                  <a
+                  <span
                     key={key}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-muted-foreground/60 hover:text-primary transition-colors"
                     title={label}
                   >
                     <Icon size={16} weight="fill" />
-                  </a>
+                  </span>
                 )
               })}
             </div>
@@ -161,11 +416,12 @@ function FriendCard({ friend, editMode, onUpdate, onDelete }: {
 export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate }: PartnersAndFriendsSectionProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const titleText = 'PARTNERS & FRIENDS'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
-    50,
-    100
+    TITLE_TYPING_SPEED_MS,
+    TITLE_TYPING_START_DELAY_MS
   )
 
   if (!editMode && friends.length === 0) return null
@@ -214,6 +470,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
                 key={friend.id}
                 friend={friend}
                 editMode={editMode}
+                onSelect={() => setSelectedFriend(friend)}
                 onUpdate={(updated) => {
                   if (onUpdate) {
                     onUpdate(friends.map(f => f.id === updated.id ? updated : f))
@@ -229,6 +486,15 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {selectedFriend && (
+          <FriendProfileOverlay
+            friend={selectedFriend}
+            onClose={() => setSelectedFriend(null)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   )
 }

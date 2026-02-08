@@ -23,13 +23,17 @@ import ImpressumWindow from '@/components/ImpressumWindow'
 import DatenschutzWindow from '@/components/DatenschutzWindow'
 import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
-import type { BandData, FontSizeSettings } from '@/lib/types'
+import SoundSettingsDialog from '@/components/SoundSettingsDialog'
+import ConfigEditorDialog from '@/components/ConfigEditorDialog'
+import { useSound } from '@/hooks/use-sound'
+import type { BandData, FontSizeSettings, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
+import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
   genres: bandDataJson.band.genres,
-  label: bandDataJson.band.label || 'Darktunes Music Group',
+  label: bandDataJson.band.label || DEFAULT_LABEL,
   socialLinks: {
     instagram: 'https://instagram.com/neuroklast_music',
     facebook: 'https://www.facebook.com/Neuroklast/',
@@ -65,6 +69,8 @@ function App() {
   const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
   const [impressumOpen, setImpressumOpen] = useState(false)
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
+  const [showSoundSettings, setShowSoundSettings] = useState(false)
+  const [showConfigEditor, setShowConfigEditor] = useState(false)
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
   const wantsSetup = useRef(false)
@@ -152,6 +158,12 @@ function App() {
 
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
+  const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
+
+  // Apply config overrides whenever bandData changes
+  useEffect(() => {
+    applyConfigOverrides(data.configOverrides)
+  }, [data.configOverrides])
 
   return (
     <>
@@ -207,7 +219,7 @@ function App() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Navigation />
+            <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} />
           </motion.div>
           
           <motion.div
@@ -335,8 +347,27 @@ function App() {
                 onSetPassword={handleSetAdminPassword}
                 bandData={data}
                 onImportData={(imported) => setBandData(imported)}
+                onOpenSoundSettings={() => setShowSoundSettings(true)}
+                onOpenConfigEditor={() => setShowConfigEditor(true)}
               />
             )}
+
+            <AnimatePresence>
+              {showSoundSettings && (
+                <SoundSettingsDialog
+                  settings={data.soundSettings}
+                  onSave={(soundSettings: SoundSettings) => setBandData((current) => ({ ...(current || defaultBandData), soundSettings }))}
+                  onClose={() => setShowSoundSettings(false)}
+                />
+              )}
+            </AnimatePresence>
+
+            <ConfigEditorDialog
+              open={showConfigEditor}
+              onClose={() => setShowConfigEditor(false)}
+              overrides={data.configOverrides || {}}
+              onSave={(configOverrides) => setBandData((current) => ({ ...(current || defaultBandData), configOverrides }))}
+            />
 
             <AdminLoginDialog
               open={showLoginDialog}

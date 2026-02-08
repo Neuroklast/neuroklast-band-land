@@ -437,8 +437,8 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 </div>
                 
                 <div className="relative w-full h-full red-tint-strong">
-                  <img
-                    src={photo.imageUrl}
+                  <ProgressiveImage
+                    src={photo.originalUrl || photo.imageUrl}
                     alt={photo.caption}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-active:scale-105"
                     loading="lazy"

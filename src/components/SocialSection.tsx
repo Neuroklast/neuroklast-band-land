@@ -17,6 +17,13 @@ import type { SocialLinks, FontSizeSettings } from '@/lib/types'
 import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import {
+  TITLE_TYPING_SPEED_MS,
+  TITLE_TYPING_START_DELAY_MS,
+  SECTION_GLITCH_PROBABILITY,
+  SECTION_GLITCH_DURATION_MS,
+  SECTION_GLITCH_INTERVAL_MS,
+} from '@/lib/config'
 
 interface SocialSectionProps {
   socialLinks: SocialLinks
@@ -46,17 +53,17 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
   const titleText = 'CONNECT'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
-    50,
-    100
+    TITLE_TYPING_SPEED_MS,
+    TITLE_TYPING_START_DELAY_MS
   )
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
+      if (Math.random() > SECTION_GLITCH_PROBABILITY) {
         setGlitchActive(true)
-        setTimeout(() => setGlitchActive(false), 300)
+        setTimeout(() => setGlitchActive(false), SECTION_GLITCH_DURATION_MS)
       }
-    }, 4000)
+    }, SECTION_GLITCH_INTERVAL_MS)
 
     return () => clearInterval(interval)
   }, [])
@@ -116,13 +123,13 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
                 <Button
                   asChild
                   variant="outline"
-                  className="w-full h-32 md:h-36 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation"
+                  className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 border-border hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation"
                 >
                   <a href={url} target="_blank" rel="noopener noreferrer">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
                     <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
-                    <Icon size={40} className="md:hidden text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200 relative z-10" weight="fill" />
-                    <Icon size={48} className="hidden md:block text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200 relative z-10" weight="fill" />
+                    <Icon size={80} className="md:hidden size-20 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200 relative z-10" weight="fill" />
+                    <Icon size={96} className="hidden md:block size-24 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200 relative z-10" weight="fill" />
                     <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10">{platform.label}</span>
                   </a>
                 </Button>
