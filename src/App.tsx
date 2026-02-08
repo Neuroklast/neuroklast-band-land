@@ -128,6 +128,13 @@ function App() {
     }))
   }
 
+  const handleLabelChange = (key: keyof import('@/lib/types').SectionLabels, value: string) => {
+    setBandData((current) => ({
+      ...(current || defaultBandData),
+      sectionLabels: { ...(current || defaultBandData).sectionLabels, [key]: value || undefined }
+    }))
+  }
+
   const handleSetAdminPassword = async (password: string): Promise<void> => {
     const hash = await hashPassword(password)
     localStorage.setItem('admin-token', hash)
@@ -242,6 +249,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -273,6 +281,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -289,6 +298,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -302,6 +312,7 @@ function App() {
                   editMode={editMode && isOwner}
                   onUpdate={(mediaFiles) => setBandData((current) => ({ ...(current || defaultBandData), mediaFiles }))}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -317,6 +328,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 

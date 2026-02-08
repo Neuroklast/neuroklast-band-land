@@ -21,9 +21,10 @@ interface GigsSectionProps {
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   dataLoaded?: boolean
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
-export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels }: GigsSectionProps) {
+export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: GigsSectionProps) {
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -128,6 +129,15 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
             <span className="animate-pulse">_</span>
           </motion.h2>
           <div className="flex gap-2 flex-wrap">
+            {editMode && onLabelChange && (
+              <input
+                type="text"
+                value={sectionLabels?.gigs || ''}
+                onChange={(e) => onLabelChange('gigs', e.target.value)}
+                placeholder="UPCOMING GIGS"
+                className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+              />
+            )}
             <Button
               onClick={() => loadGigsFromAPI(false)}
               disabled={isLoading}

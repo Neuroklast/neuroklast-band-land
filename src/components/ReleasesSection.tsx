@@ -26,9 +26,10 @@ interface ReleasesSectionProps {
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   dataLoaded?: boolean
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
-export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels }: ReleasesSectionProps) {
+export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: ReleasesSectionProps) {
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -211,6 +212,15 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
           </motion.h2>
           {editMode && (
             <div className="flex gap-2 flex-wrap">
+              {onLabelChange && (
+                <input
+                  type="text"
+                  value={sectionLabels?.releases || ''}
+                  onChange={(e) => onLabelChange('releases', e.target.value)}
+                  placeholder="RELEASES"
+                  className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                />
+              )}
               <Button
                 onClick={() => handleFetchITunesReleases(false)}
                 disabled={isFetching}

@@ -32,6 +32,7 @@ interface SocialSectionProps {
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 const socialPlatforms = [
@@ -85,7 +86,7 @@ function SocialButton({ Icon, url, label, index, isInView }: { Icon: any; url?: 
   )
 }
 
-export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels }: SocialSectionProps) {
+export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: SocialSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
@@ -132,12 +133,23 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
             <span className="animate-pulse">_</span>
           </motion.h2>
           {editMode && (
-            <Button
-              onClick={() => setIsEditing(true)}
-              className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
-            >
-              Edit Links
-            </Button>
+            <div className="flex gap-2 items-center w-full sm:w-auto">
+              {onLabelChange && (
+                <input
+                  type="text"
+                  value={sectionLabels?.connect || ''}
+                  onChange={(e) => onLabelChange('connect', e.target.value)}
+                  placeholder="CONNECT"
+                  className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                />
+              )}
+              <Button
+                onClick={() => setIsEditing(true)}
+                className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
+              >
+                Edit Links
+              </Button>
+            </div>
           )}
         </div>
 
