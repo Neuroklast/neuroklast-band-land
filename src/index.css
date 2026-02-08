@@ -141,7 +141,6 @@ input, textarea, select {
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: screen;
-  will-change: auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -478,6 +477,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 1px;
   background: linear-gradient(90deg, transparent, oklch(0.50 0.22 25 / 0.5), transparent);
   animation: scan-horizontal 3s linear infinite;
+  will-change: transform;
 }
 
 .hud-corner {
@@ -569,6 +569,7 @@ h1, h2, h3, h4, h5, h6 {
   animation: scan-line 8s linear infinite;
   z-index: 1;
   pointer-events: none;
+  will-change: transform;
 }
 
 .hud-grid-overlay {

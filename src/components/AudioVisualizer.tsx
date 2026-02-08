@@ -124,7 +124,7 @@ export default function AudioVisualizer() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-[1] opacity-40 mix-blend-screen"
-      style={{ filter: 'blur(1px)', willChange: 'contents' }}
+      style={{ filter: 'blur(1px)' }}
     />
   )
 }

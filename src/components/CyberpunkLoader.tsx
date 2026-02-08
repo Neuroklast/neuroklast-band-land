@@ -81,6 +81,8 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
   useEffect(() => {
     if (phase !== 'loading') return
 
+    let completeTimeout: ReturnType<typeof setTimeout>
+
     const glitchInterval = setInterval(() => {
       if (Math.random() > LOADER_GLITCH_PROBABILITY) {
         setGlitch(true)
@@ -98,7 +100,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
         
         if (prev >= 100) {
           clearInterval(interval)
-          setTimeout(onLoadComplete, LOADER_COMPLETE_DELAY_MS)
+          completeTimeout = setTimeout(onLoadComplete, LOADER_COMPLETE_DELAY_MS)
           return 100
         }
         return Math.min(newProgress, 100)
@@ -108,6 +110,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
     return () => {
       clearInterval(interval)
       clearInterval(glitchInterval)
+      clearTimeout(completeTimeout)
     }
   }, [onLoadComplete, phase])
 
