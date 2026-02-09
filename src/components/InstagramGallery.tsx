@@ -526,9 +526,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               </div>
             </motion.div>
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-muted-foreground/60 font-mono text-xs">
-              <p>&gt; Click outside to close</p>
-            </div>
+
           </motion.div>
         )}
       </AnimatePresence>

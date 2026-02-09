@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export function useTypingEffect(
   text: string,
@@ -39,5 +39,13 @@ export function useTypingEffect(
     }
   }, [text, speed, startDelay])
 
-  return { displayedText, isComplete }
+  /** Skip the animation and show the full text immediately */
+  const skipAnimation = useCallback(() => {
+    if (!isComplete && text) {
+      setDisplayedText(text)
+      setIsComplete(true)
+    }
+  }, [isComplete, text])
+
+  return { displayedText, isComplete, skipAnimation }
 }

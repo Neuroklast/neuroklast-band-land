@@ -57,9 +57,10 @@ function ConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetw
   const [visibleCount, setVisibleCount] = useState(0)
   const [currentText, setCurrentText] = useState('')
   const [lineComplete, setLineComplete] = useState(false)
+  const [skipped, setSkipped] = useState(false)
 
   useEffect(() => {
-    if (visibleCount >= lines.length) return
+    if (skipped || visibleCount >= lines.length) return
     const line = lines[visibleCount]
     let charIdx = 0
     setCurrentText('')
@@ -75,14 +76,22 @@ function ConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetw
       }
     }, speed)
     return () => clearInterval(interval)
-  }, [visibleCount, lines, speed, delayBetween])
+  }, [visibleCount, lines, speed, delayBetween, skipped])
+
+  const handleSkip = () => {
+    if (!skipped) {
+      setSkipped(true)
+      setVisibleCount(lines.length)
+      setCurrentText('')
+    }
+  }
 
   return (
-    <div className="space-y-1">
-      {lines.slice(0, visibleCount).map((line, i) => (
+    <div className="space-y-1 cursor-pointer" onClick={handleSkip} onTouchEnd={handleSkip}>
+      {(skipped ? lines : lines.slice(0, visibleCount)).map((line, i) => (
         <p key={i} className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">{line}</p>
       ))}
-      {visibleCount < lines.length && (
+      {!skipped && visibleCount < lines.length && (
         <p className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">
           {currentText}
           {!lineComplete && <span className="console-cursor" />}
