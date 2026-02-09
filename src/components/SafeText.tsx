@@ -3,10 +3,10 @@ import type { ReactNode } from 'react'
 
 /**
  * Regex patterns for detecting phone numbers and email addresses in text.
- * Phone: international format (+XX ...) or local formats with common separators.
+ * Phone: requires + prefix or common separators with at least 7 digits.
  * Email: standard user@domain pattern.
  */
-const PHONE_RE = /(\+?\d[\d\s\-().]{6,}\d)/g
+const PHONE_RE = /(\+\d[\d\s\-().]{6,}\d)/g
 const EMAIL_RE = /([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g
 
 /** Combined regex that matches either a phone number or an email address */

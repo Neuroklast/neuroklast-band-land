@@ -18,6 +18,7 @@ interface MediaSectionProps {
   editMode?: boolean
   onUpdate?: (files: MediaFile[]) => void
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 /** Get unique folder names from files */
@@ -390,7 +391,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
   )
 }
 
-export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sectionLabels }: MediaSectionProps) {
+export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sectionLabels, onLabelChange }: MediaSectionProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -422,15 +423,26 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
               <span className="animate-pulse">_</span>
             </h2>
             {editMode && onUpdate && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-primary/30 hover:bg-primary/10 gap-1"
-                onClick={() => setOverlayOpen(true)}
-              >
-                <PencilSimple size={16} />
-                <span className="hidden md:inline">Manage</span>
-              </Button>
+              <div className="flex gap-2 items-center">
+                {onLabelChange && (
+                  <input
+                    type="text"
+                    value={sectionLabels?.media || ''}
+                    onChange={(e) => onLabelChange('media', e.target.value)}
+                    placeholder="MEDIA"
+                    className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                  />
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-primary/30 hover:bg-primary/10 gap-1"
+                  onClick={() => setOverlayOpen(true)}
+                >
+                  <PencilSimple size={16} />
+                  <span className="hidden md:inline">Manage</span>
+                </Button>
+              </div>
             )}
           </div>
 

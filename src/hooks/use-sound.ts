@@ -31,8 +31,8 @@ function getCachedAudio(url: string): HTMLAudioElement | null {
   if (cached) return cached
   try {
     // Use the server-side proxy for CORS-safe audio playback
-    const proxied = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
-    const audio = new Audio(proxied)
+    const audioUrl = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
+    const audio = new Audio(audioUrl)
     audio.preload = 'auto'
     audio.crossOrigin = 'anonymous'
     audioCache.set(url, audio)

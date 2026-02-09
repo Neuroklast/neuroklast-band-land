@@ -319,6 +319,7 @@ function App() {
                   editMode={editMode && isOwner}
                   onUpdate={(mediaFiles) => setBandData((current) => ({ ...(current || defaultBandData), mediaFiles }))}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 

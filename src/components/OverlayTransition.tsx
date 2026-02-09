@@ -92,6 +92,9 @@ interface OverlayTransitionProps {
   onComplete?: () => void
 }
 
+/** Total duration of the transition effect in milliseconds */
+const TRANSITION_DURATION_MS = 500
+
 /**
  * Lightweight cyberpunk scan-line transition played when an overlay opens.
  * Randomly selects one of three visual patterns on each mount.
@@ -106,7 +109,7 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
       const timeout = setTimeout(() => {
         setVisible(false)
         onComplete?.()
-      }, 500)
+      }, TRANSITION_DURATION_MS)
       return () => clearTimeout(timeout)
     }
   }, [show, onComplete])
