@@ -187,7 +187,7 @@ function App() {
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
   const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
-  const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
+  const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, musicPaused, toggleMusic, hasSounds } = useSound(data.soundSettings, editMode)
 
   // Apply config overrides whenever bandData changes
   useEffect(() => {
@@ -250,9 +250,11 @@ function App() {
           <Toaster position="top-right" />
           
           <Navigation 
-            soundMuted={soundMuted} 
+            soundMuted={soundMuted}
+            musicPaused={musicPaused}
             hasSounds={hasSounds} 
-            onToggleMute={toggleSoundMute} 
+            onToggleMute={toggleSoundMute}
+            onToggleMusic={toggleMusic}
             onPlaySound={playSound}
             sectionLabels={data.sectionLabels} 
           />
@@ -297,6 +299,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
 

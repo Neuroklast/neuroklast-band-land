@@ -38,6 +38,7 @@ interface BiographySectionProps {
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  onPlaySound?: (type: 'typing') => void
 }
 
 const defaultBiography: Biography = {
@@ -312,7 +313,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
   )
 }
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange, onPlaySound }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>(biography.photos || [])
@@ -330,7 +331,8 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
-    TITLE_TYPING_START_DELAY_MS
+    TITLE_TYPING_START_DELAY_MS,
+    () => onPlaySound?.('typing')
   )
 
   useEffect(() => {

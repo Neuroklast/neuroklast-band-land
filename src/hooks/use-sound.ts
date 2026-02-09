@@ -67,6 +67,16 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
       return true
     }
   })
+  
+  const [musicPaused, setMusicPaused] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nk-music-paused')
+      return stored === null ? false : stored === 'true'
+    } catch {
+      return false
+    }
+  })
+  
   const cachedRef = useRef(false)
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null)
 
@@ -102,8 +112,8 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
 
   // Background music management
   useEffect(() => {
-    if (!effectiveSounds.backgroundMusic || muted) {
-      // Stop background music if muted or no music configured
+    if (!effectiveSounds.backgroundMusic || musicPaused) {
+      // Stop background music if paused or no music configured
       if (backgroundMusicRef.current) {
         backgroundMusicRef.current.pause()
         backgroundMusicRef.current = null
@@ -135,12 +145,17 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
       audio.pause()
       backgroundMusicRef.current = null
     }
-  }, [effectiveSounds.backgroundMusic, muted, settings?.backgroundMusicVolume])
+  }, [effectiveSounds.backgroundMusic, musicPaused, settings?.backgroundMusicVolume])
 
   // Persist mute preference
   useEffect(() => {
     try { localStorage.setItem('nk-sound-muted', String(muted)) } catch { /* noop */ }
   }, [muted])
+  
+  // Persist music pause preference
+  useEffect(() => {
+    try { localStorage.setItem('nk-music-paused', String(musicPaused)) } catch { /* noop */ }
+  }, [musicPaused])
 
   const play = useCallback((type: 'terminal' | 'typing' | 'button' | 'loadingFinished') => {
     if (muted) return
@@ -163,6 +178,7 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
   }, [muted, effectiveSounds])
 
   const toggleMute = useCallback(() => setMuted(m => !m), [])
+  const toggleMusic = useCallback(() => setMusicPaused(p => !p), [])
 
-  return { play, muted, toggleMute, hasSounds }
+  return { play, muted, toggleMute, musicPaused, toggleMusic, hasSounds }
 }
