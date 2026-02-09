@@ -71,13 +71,17 @@
   --radius-full: 9999px;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  touch-action: pan-y;
   overscroll-behavior-y: contain;
   overflow-x: hidden;
+  max-width: 100vw;
   text-shadow: 
     0 0 3px oklch(1 0 0 / 0.3),
     0 0 6px oklch(0.50 0.22 25 / 0.15),
@@ -127,6 +131,8 @@ input, textarea, select {
 #root {
   position: relative;
   background: oklch(0 0 0);
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 #root::before {
@@ -141,6 +147,14 @@ input, textarea, select {
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: screen;
+  contain: strict;
+}
+
+/* Disable heavy overlays on touch/mobile devices for performance */
+@media (hover: none) and (pointer: coarse) {
+  #root::before {
+    display: none;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -789,10 +803,22 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── Performance: promote fixed overlays to own layer, reduce mobile repaints ── */
 @media (hover: none) and (pointer: coarse) {
-  .hud-scanline::before,
+  .hud-scanline::before {
+    display: none;
+  }
+
   .hud-element::before {
-    animation-play-state: running; /* keep effect but browser can optimise */
-    will-change: transform;
+    display: none;
+  }
+
+  .cyberpunk-data-stream,
+  .cyberpunk-scan-pulse,
+  .cyberpunk-corner-glow {
+    display: none;
+  }
+
+  .data-readout {
+    animation: none;
   }
 }
 

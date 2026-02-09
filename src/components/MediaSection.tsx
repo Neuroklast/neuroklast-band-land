@@ -483,10 +483,11 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      onClick={onClose}
     >
       <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
 
@@ -494,7 +495,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
 
       {phase === 'ready' && (
         <motion.div
-          className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter flex flex-col"
+          className="w-full max-w-4xl max-h-[90dvh] bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter flex flex-col"
           initial={{ scale: 0.85, y: 30, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -502,20 +503,20 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
           onClick={(e) => e.stopPropagation()}
         >
           {/* HUD corner accents */}
-          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
-          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
-          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
-          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
+          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50 pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50 pointer-events-none" />
 
           {/* Header bar */}
           <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4 flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0" />
+              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase truncate">
                 {isEditing ? 'EDIT MEDIA FILES' : 'FILE EXPLORER // MEDIA ARCHIVE'}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {editMode && onUpdate && !isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
@@ -535,9 +536,9 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
           {isEditing && onUpdate ? (
             <MediaEditPanel files={files} onUpdate={(updated) => { onUpdate(updated); setIsEditing(false) }} />
           ) : (
-            <div className="flex flex-col md:flex-row flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
               {/* Left: Tree view */}
-              <div className="md:w-2/5 border-b md:border-b-0 md:border-r border-primary/20 overflow-y-auto p-3 max-h-[200px] md:max-h-none">
+              <div className="md:w-2/5 border-b md:border-b-0 md:border-r border-primary/20 overflow-y-auto p-3 max-h-[30vh] md:max-h-none flex-shrink-0">
                 <div className="text-[9px] text-primary/40 tracking-wider mb-2 px-2">DIRECTORY</div>
                 <FileTreeView
                   files={files}
@@ -549,7 +550,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
               </div>
 
               {/* Right: File details */}
-              <div className="md:w-3/5 overflow-y-auto flex-1">
+              <div className="md:w-3/5 overflow-y-auto flex-1 min-h-0">
                 <FileDetailPanel file={selectedFile} />
               </div>
             </div>
