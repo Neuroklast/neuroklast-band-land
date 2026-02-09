@@ -1,5 +1,5 @@
 import { useKV } from '@/hooks/use-kv'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -57,6 +57,49 @@ const defaultBandData: BandData = {
     { name: 'status', description: 'System status', output: ['SYSTEM STATUS:', '  AUDIO ENGINE: ACTIVE', '  HUD SYSTEMS: OPERATIONAL', '  THREAT LEVEL: CLASSIFIED'] },
     { name: 'info', description: 'Band information', output: ['NEUROKLAST - HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO', 'LABEL: DARKTUNES MUSIC GROUP', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
   ]
+}
+
+/** Collect all image URLs from band data for background pre-caching */
+function collectImageUrls(data: BandData): string[] {
+  const urls: string[] = []
+  if (data.galleryImages) {
+    for (const img of data.galleryImages) {
+      if (img.url) urls.push(img.url)
+    }
+  }
+  if (data.biography?.members) {
+    for (const member of data.biography.members) {
+      if (typeof member === 'object' && member.photo) urls.push(member.photo)
+    }
+  }
+  if (data.biography?.friends) {
+    for (const friend of data.biography.friends) {
+      if (friend.photo) urls.push(friend.photo)
+      if (friend.iconPhoto) urls.push(friend.iconPhoto)
+      if (friend.profilePhoto) urls.push(friend.profilePhoto)
+    }
+  }
+  if (data.biography?.photos) {
+    for (const photo of data.biography.photos) {
+      if (photo) urls.push(photo)
+    }
+  }
+  if (data.releases) {
+    for (const release of data.releases) {
+      if (release.artwork) urls.push(release.artwork)
+    }
+  }
+  if (data.gigs) {
+    for (const gig of data.gigs) {
+      if (gig.photo) urls.push(gig.photo)
+    }
+  }
+  if (data.news) {
+    for (const item of data.news) {
+      if (item.photo) urls.push(item.photo)
+    }
+  }
+  return urls
 }
 
 function App() {
@@ -167,6 +210,7 @@ function App() {
 
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
+  const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
   const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
 
   // Apply config overrides whenever bandData changes
@@ -204,6 +248,7 @@ function App() {
       <AnimatePresence>
         {loading && (
           <CyberpunkLoader 
+            precacheUrls={precacheUrls}
             onLoadComplete={() => {
               playSound('loadingFinished')
               setLoading(false)
