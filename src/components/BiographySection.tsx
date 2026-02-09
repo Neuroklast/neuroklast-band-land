@@ -283,7 +283,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
                 <div className="text-[10px] text-primary/50 tracking-wider mb-3">
                   {'>'} TERMINAL OUTPUT // PROFILE DATA
                 </div>
-                <div className="bg-black/50 border border-primary/20 p-4 max-h-[200px] overflow-y-auto">
+                <div className="bg-black/50 border border-primary/20 p-4 max-h-[30vh] overflow-y-auto">
                   <ConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
                 </div>
                 <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1">
