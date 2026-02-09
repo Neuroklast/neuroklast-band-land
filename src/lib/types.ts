@@ -129,6 +129,7 @@ export interface NewsItem {
   text: string
   details?: string
   link?: string
+  photo?: string
 }
 
 export interface Datenschutz {

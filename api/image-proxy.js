@@ -33,6 +33,7 @@ function toDirectUrl(url) {
   if (driveFile) return `https://drive.google.com/uc?export=view&id=${driveFile[1]}`
   const driveOpen = url.match(/drive\.google\.com\/open\?id=([^&#]+)/)
   if (driveOpen) return `https://drive.google.com/uc?export=view&id=${driveOpen[1]}`
+  // Handle all uc URLs (both export=view and export=download) by extracting the ID
   const driveUc = url.match(/drive\.google\.com\/uc\?[^#]*?id=([^&#]+)/)
   if (driveUc) return `https://drive.google.com/uc?export=view&id=${driveUc[1]}`
   // Handle lh3 CDN URLs — convert back to reliable export URL
