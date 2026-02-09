@@ -1,14 +1,4 @@
 import { motion, useInView } from 'framer-motion'
-import {
-  InstagramLogo,
-  FacebookLogo,
-  SpotifyLogo,
-  SoundcloudLogo,
-  YoutubeLogo,
-  TiktokLogo,
-  TwitterLogo,
-  Link
-} from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
@@ -25,6 +15,14 @@ import {
   SECTION_GLITCH_INTERVAL_MS,
 } from '@/lib/config'
 
+import instagramIcon from '@/assets/images/icons/instagram.png'
+import facebookIcon from '@/assets/images/icons/facebook.png'
+import spotifyIcon from '@/assets/images/icons/spotify.png'
+import soundcloudIcon from '@/assets/images/icons/soundcloud.png'
+import youtubeIcon from '@/assets/images/icons/youtube.png'
+import bandcampIcon from '@/assets/images/icons/bandcamp.png'
+import linkIcon from '@/assets/images/icons/link.png'
+
 interface SocialSectionProps {
   socialLinks: SocialLinks
   editMode: boolean
@@ -36,18 +34,18 @@ interface SocialSectionProps {
 }
 
 const socialPlatforms = [
-  { key: 'instagram' as keyof SocialLinks, icon: InstagramLogo, label: 'Instagram' },
-  { key: 'facebook' as keyof SocialLinks, icon: FacebookLogo, label: 'Facebook' },
-  { key: 'spotify' as keyof SocialLinks, icon: SpotifyLogo, label: 'Spotify' },
-  { key: 'soundcloud' as keyof SocialLinks, icon: SoundcloudLogo, label: 'SoundCloud' },
-  { key: 'youtube' as keyof SocialLinks, icon: YoutubeLogo, label: 'YouTube' },
-  { key: 'tiktok' as keyof SocialLinks, icon: TiktokLogo, label: 'TikTok' },
-  { key: 'twitter' as keyof SocialLinks, icon: TwitterLogo, label: 'Twitter' },
-  { key: 'linktr' as keyof SocialLinks, icon: Link, label: 'Linktree' },
-  { key: 'bandcamp' as keyof SocialLinks, icon: Link, label: 'Bandcamp' }
+  { key: 'instagram' as keyof SocialLinks, icon: instagramIcon, label: 'Instagram' },
+  { key: 'facebook' as keyof SocialLinks, icon: facebookIcon, label: 'Facebook' },
+  { key: 'spotify' as keyof SocialLinks, icon: spotifyIcon, label: 'Spotify' },
+  { key: 'soundcloud' as keyof SocialLinks, icon: soundcloudIcon, label: 'SoundCloud' },
+  { key: 'youtube' as keyof SocialLinks, icon: youtubeIcon, label: 'YouTube' },
+  { key: 'tiktok' as keyof SocialLinks, icon: linkIcon, label: 'TikTok' },
+  { key: 'twitter' as keyof SocialLinks, icon: linkIcon, label: 'Twitter' },
+  { key: 'linktr' as keyof SocialLinks, icon: linkIcon, label: 'Linktree' },
+  { key: 'bandcamp' as keyof SocialLinks, icon: bandcampIcon, label: 'Bandcamp' }
 ]
 
-function SocialButton({ Icon, url, label, index, isInView }: { Icon: any; url?: string; label: string; index: number; isInView: boolean }) {
+function SocialButton({ iconSrc, url, label, index, isInView }: { iconSrc: string; url?: string; label: string; index: number; isInView: boolean }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -76,8 +74,15 @@ function SocialButton({ Icon, url, label, index, isInView }: { Icon: any; url?: 
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
           <div className={`relative z-10 transition-all ${hovered ? 'red-glitch-element chromatic-aberration-hover' : ''}`}>
-            <Icon size={80} className="md:hidden size-20 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
-            <Icon size={96} className="hidden md:block size-24 text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200" weight="fill" />
+            <img
+              src={iconSrc}
+              alt={label}
+              className="w-16 h-16 md:w-20 md:h-20 object-contain group-hover:scale-110 group-active:scale-125 transition-transform duration-200 select-none"
+              draggable={false}
+              style={{
+                filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
+              }}
+            />
           </div>
           <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10 font-mono">{label}</span>
         </a>
@@ -163,11 +168,10 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {activePlatforms.map((platform, index) => {
-            const Icon = platform.icon
             const url = safeSocialLinks[platform.key]
 
             return (
-              <SocialButton key={platform.key} Icon={Icon} url={url} label={platform.label} index={index} isInView={isInView} />
+              <SocialButton key={platform.key} iconSrc={platform.icon} url={url} label={platform.label} index={index} isInView={isInView} />
             )
           })}
         </div>

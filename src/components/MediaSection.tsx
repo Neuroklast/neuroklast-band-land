@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { ChromaticText } from '@/components/ChromaticText'
+import { useOverlayTransition } from '@/components/OverlayTransition'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { useState, useRef, useEffect } from 'react'
 import type { MediaFile, SectionLabels } from '@/lib/types'
@@ -314,7 +315,6 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={onClose}
     >
       <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
 
@@ -395,6 +395,7 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [overlayOpen, setOverlayOpen] = useState(false)
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
   const titleText = sectionLabels?.media || 'MEDIA'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
@@ -437,7 +438,7 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
                   size="sm"
                   variant="outline"
                   className="border-primary/30 hover:bg-primary/10 gap-1"
-                  onClick={() => setOverlayOpen(true)}
+                  onClick={() => { triggerTransition(); setOverlayOpen(true) }}
                 >
                   <PencilSimple size={16} />
                   <span className="hidden md:inline">Manage</span>
@@ -449,7 +450,7 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
           {/* Clickable card to open the media overlay */}
           <motion.button
             className="w-full text-left border border-primary/20 bg-card/50 hover:border-primary/50 p-6 md:p-8 transition-all duration-300 group hud-element hud-corner cursor-pointer"
-            onClick={() => setOverlayOpen(true)}
+            onClick={() => { triggerTransition(); setOverlayOpen(true) }}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
@@ -484,11 +485,12 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
             files={mediaFiles}
             editMode={editMode}
             onUpdate={onUpdate}
-            onClose={() => setOverlayOpen(false)}
+            onClose={() => { triggerTransition(); setOverlayOpen(false) }}
             sectionLabels={sectionLabels}
           />
         )}
       </AnimatePresence>
+      {transitionElement}
     </section>
   )
 }

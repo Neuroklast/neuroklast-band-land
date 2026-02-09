@@ -53,6 +53,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
 
   const navItems = [
     { label: 'HOME', id: 'hero' },
+    { label: sectionLabels?.news || 'NEWS', id: 'news' },
     { label: sectionLabels?.biography || 'BIOGRAPHY', id: 'biography' },
     { label: sectionLabels?.gallery || 'GALLERY', id: 'gallery' },
     { label: sectionLabels?.gigs || 'GIGS', id: 'gigs' },

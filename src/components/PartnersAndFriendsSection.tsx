@@ -105,10 +105,12 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
   const [photoSrc, setPhotoSrc] = useState('')
   const proxyAttempted = useRef(false)
 
+  const overlayPhoto = friend.profilePhoto || friend.photo
+
   useEffect(() => {
-    if (!friend.photo) return
-    setPhotoSrc(toDirectImageUrl(friend.photo))
-  }, [friend.photo])
+    if (!overlayPhoto) return
+    setPhotoSrc(toDirectImageUrl(overlayPhoto))
+  }, [overlayPhoto])
 
   useEffect(() => {
     let idx = 0
@@ -212,15 +214,15 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
           <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
           <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
-          <CyberCloseButton
-            onClick={onClose}
-            label={sectionLabels?.closeButtonText || 'CLOSE'}
-            className="absolute top-2 right-3 z-20"
-          />
-
-          <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">PROFILE // {friend.name.toUpperCase()}</span>
+          <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">PROFILE // {friend.name.toUpperCase()}</span>
+            </div>
+            <CyberCloseButton
+              onClick={onClose}
+              label={sectionLabels?.closeButtonText || 'CLOSE'}
+            />
           </div>
 
           <div className="flex flex-col md:flex-row">
@@ -231,7 +233,7 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
-                {friend.photo && photoSrc ? (
+                {overlayPhoto && photoSrc ? (
                   <div className="w-full h-full overflow-hidden border border-primary/40 shadow-[0_0_20px_oklch(0.50_0.22_25/0.3),0_0_40px_oklch(0.50_0.22_25/0.15)] bg-black">
                     {!photoLoaded && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black">
@@ -248,9 +250,9 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
                       style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
                       onLoad={() => setPhotoLoaded(true)}
                       onError={() => {
-                        if (friend.photo && !proxyAttempted.current) {
+                        if (overlayPhoto && !proxyAttempted.current) {
                           proxyAttempted.current = true
-                          const directUrl = toDirectImageUrl(friend.photo)
+                          const directUrl = toDirectImageUrl(overlayPhoto)
                           setPhotoSrc(`/api/image-proxy?url=${encodeURIComponent(directUrl)}`)
                         }
                       }}
@@ -331,7 +333,9 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
     // Convert Google Drive URLs to wsrv.nl URLs before saving
     const updatedData = {
       ...editData,
-      photo: toDirectImageUrl(editData.photo)
+      photo: toDirectImageUrl(editData.photo),
+      iconPhoto: editData.iconPhoto ? toDirectImageUrl(editData.iconPhoto) : undefined,
+      profilePhoto: editData.profilePhoto ? toDirectImageUrl(editData.profilePhoto) : undefined,
     }
     onUpdate(updatedData)
     setIsEditing(false)
@@ -348,6 +352,14 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
           <div>
             <Label className="text-[10px]">Photo URL</Label>
             <Input value={editData.photo || ''} onChange={(e) => setEditData({ ...editData, photo: e.target.value })} className="text-xs h-8" placeholder="https://..." />
+          </div>
+          <div>
+            <Label className="text-[10px]">Icon Photo URL (card thumbnail, optional)</Label>
+            <Input value={editData.iconPhoto || ''} onChange={(e) => setEditData({ ...editData, iconPhoto: e.target.value || undefined })} className="text-xs h-8" placeholder="https://..." />
+          </div>
+          <div>
+            <Label className="text-[10px]">Profile Photo URL (overlay photo, optional)</Label>
+            <Input value={editData.profilePhoto || ''} onChange={(e) => setEditData({ ...editData, profilePhoto: e.target.value || undefined })} className="text-xs h-8" placeholder="https://..." />
           </div>
           <div>
             <Label className="text-[10px]">Description</Label>
@@ -409,10 +421,10 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
       <span className="corner-bl"></span>
       <span className="corner-br"></span>
       <div className="flex flex-col items-center gap-3 p-5">
-        {friend.photo ? (
+        {(friend.iconPhoto || friend.photo) ? (
           <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] bg-black ${hovered ? 'red-glitch-element' : ''}`}>
             <ProgressiveImage
-              src={friend.photo}
+              src={friend.iconPhoto || friend.photo!}
               alt={friend.name}
               className="w-full h-full object-contain"
             />
