@@ -2,6 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SoundSettings } from '@/lib/types'
 import { DEFAULT_SOUND_VOLUME } from '@/lib/config'
 
+// Default local sound files
+const DEFAULT_SOUNDS = {
+  typing: '/src/assets/sounds/texttyping.wav',
+  button: '/src/assets/sounds/click.wav',
+  loadingFinished: '/src/assets/sounds/laodingfinished.mp3',
+  backgroundMusic: '/src/assets/sounds/NK - THRESHOLD.mp3',
+}
+
 /** Convert Drive share links to direct download URLs for audio files */
 function toDirectAudioUrl(url?: string): string {
   if (!url) return ''
@@ -30,11 +38,14 @@ function getCachedAudio(url: string): HTMLAudioElement | null {
   const cached = audioCache.get(url)
   if (cached) return cached
   try {
-    // Use the server-side proxy for CORS-safe audio playback
+    // Don't use proxy for local files (starting with /)
     const audioUrl = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
     const audio = new Audio(audioUrl)
     audio.preload = 'auto'
-    audio.crossOrigin = 'anonymous'
+    // Only set crossOrigin for remote URLs
+    if (!url.startsWith('/')) {
+      audio.crossOrigin = 'anonymous'
+    }
     audioCache.set(url, audio)
     return audio
   } catch {
@@ -44,41 +55,100 @@ function getCachedAudio(url: string): HTMLAudioElement | null {
 
 export function useSound(settings?: SoundSettings, editMode?: boolean) {
   const [muted, setMuted] = useState(() => {
-    try { return localStorage.getItem('nk-sound-muted') === 'true' } catch { return false }
+    // Check if defaultMuted is set in settings, otherwise check localStorage
+    if (settings?.defaultMuted !== undefined) {
+      return settings.defaultMuted
+    }
+    try { return localStorage.getItem('nk-sound-muted') === 'true' } catch { return true }
   })
   const cachedRef = useRef(false)
+  const backgroundMusicRef = useRef<HTMLAudioElement | null>(null)
+
+  // Use default sounds if not specified in settings
+  const effectiveSounds = {
+    terminalSound: settings?.terminalSound,
+    typingSound: settings?.typingSound || DEFAULT_SOUNDS.typing,
+    buttonSound: settings?.buttonSound || DEFAULT_SOUNDS.button,
+    loadingFinishedSound: settings?.loadingFinishedSound || DEFAULT_SOUNDS.loadingFinished,
+    backgroundMusic: settings?.backgroundMusic || DEFAULT_SOUNDS.backgroundMusic,
+  }
 
   // Determine whether any sounds are configured
-  const hasSounds = !!(settings?.terminalSound || settings?.typingSound || settings?.buttonSound)
+  const hasSounds = !!(effectiveSounds.terminalSound || effectiveSounds.typingSound || effectiveSounds.buttonSound)
 
   // Pre-cache sounds when leaving edit mode
   useEffect(() => {
-    if (editMode || cachedRef.current || !settings) return
+    if (editMode || cachedRef.current) return
     const urls = [
-      toDirectAudioUrl(settings.terminalSound),
-      toDirectAudioUrl(settings.typingSound),
-      toDirectAudioUrl(settings.buttonSound),
+      toDirectAudioUrl(effectiveSounds.terminalSound),
+      toDirectAudioUrl(effectiveSounds.typingSound),
+      toDirectAudioUrl(effectiveSounds.buttonSound),
+      toDirectAudioUrl(effectiveSounds.loadingFinishedSound),
     ].filter(Boolean)
     urls.forEach(getCachedAudio)
     cachedRef.current = true
-  }, [settings, editMode])
+  }, [effectiveSounds, editMode])
 
   // Invalidate cache when settings change
   useEffect(() => {
     cachedRef.current = false
-  }, [settings?.terminalSound, settings?.typingSound, settings?.buttonSound])
+  }, [settings?.terminalSound, settings?.typingSound, settings?.buttonSound, settings?.loadingFinishedSound])
+
+  // Background music management
+  useEffect(() => {
+    if (!effectiveSounds.backgroundMusic || muted) {
+      // Stop background music if muted or no music configured
+      if (backgroundMusicRef.current) {
+        backgroundMusicRef.current.pause()
+        backgroundMusicRef.current = null
+      }
+      return
+    }
+
+    // Start background music
+    const url = toDirectAudioUrl(effectiveSounds.backgroundMusic)
+    if (!url) return
+
+    // Don't use proxy for local files
+    const audioUrl = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
+    const audio = new Audio(audioUrl)
+    audio.loop = true
+    audio.volume = settings?.backgroundMusicVolume ?? 0.3
+    audio.preload = 'auto'
+    // Only set crossOrigin for remote URLs
+    if (!url.startsWith('/')) {
+      audio.crossOrigin = 'anonymous'
+    }
+    
+    // Try to play, handling autoplay restrictions
+    const playPromise = audio.play()
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Autoplay was prevented, will need user interaction
+        console.log('Background music autoplay prevented, waiting for user interaction')
+      })
+    }
+
+    backgroundMusicRef.current = audio
+
+    return () => {
+      audio.pause()
+      backgroundMusicRef.current = null
+    }
+  }, [effectiveSounds.backgroundMusic, muted, settings?.backgroundMusicVolume])
 
   // Persist mute preference
   useEffect(() => {
     try { localStorage.setItem('nk-sound-muted', String(muted)) } catch { /* noop */ }
   }, [muted])
 
-  const play = useCallback((type: 'terminal' | 'typing' | 'button') => {
-    if (muted || !settings) return
+  const play = useCallback((type: 'terminal' | 'typing' | 'button' | 'loadingFinished') => {
+    if (muted) return
     const urlMap: Record<string, string | undefined> = {
-      terminal: settings.terminalSound,
-      typing: settings.typingSound,
-      button: settings.buttonSound,
+      terminal: effectiveSounds.terminalSound,
+      typing: effectiveSounds.typingSound,
+      button: effectiveSounds.buttonSound,
+      loadingFinished: effectiveSounds.loadingFinishedSound,
     }
     const rawUrl = urlMap[type]
     if (!rawUrl) return
@@ -90,7 +160,7 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
       clone.volume = DEFAULT_SOUND_VOLUME
       clone.play().catch(() => { /* ignore autoplay restrictions */ })
     }
-  }, [muted, settings])
+  }, [muted, effectiveSounds])
 
   const toggleMute = useCallback(() => setMuted(m => !m), [])
 
