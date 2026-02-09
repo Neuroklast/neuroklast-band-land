@@ -349,14 +349,14 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                       <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
                       <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
-                      <CyberCloseButton
-                        onClick={() => { triggerTransition(); setExpandedReleaseId(null) }}
-                        className="absolute top-2 right-3 z-20"
-                      />
-
-                      <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">RELEASE // {release.title.toUpperCase()}</span>
+                      <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                          <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">RELEASE // {release.title.toUpperCase()}</span>
+                        </div>
+                        <CyberCloseButton
+                          onClick={() => { triggerTransition(); setExpandedReleaseId(null) }}
+                        />
                       </div>
 
                       <div className="flex flex-col items-center gap-4 p-6">

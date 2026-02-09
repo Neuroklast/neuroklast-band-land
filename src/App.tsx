@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
 import BandInfoEditDialog from '@/components/BandInfoEditDialog'
+import NewsSection from '@/components/NewsSection'
 import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
 import ReleasesSection from '@/components/ReleasesSection'
@@ -243,6 +244,20 @@ function App() {
             />
 
             <main className="relative">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+              >
+                <NewsSection
+                  news={data.news}
+                  editMode={editMode && isOwner}
+                  onUpdate={(news) => setBandData((current) => ({ ...(current || defaultBandData), news }))}
+                  sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
+                />
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}

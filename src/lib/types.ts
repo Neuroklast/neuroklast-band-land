@@ -58,6 +58,10 @@ export interface Friend {
   id: string
   name: string
   photo?: string
+  /** Small icon/avatar shown on the friend card */
+  iconPhoto?: string
+  /** Full-size photo shown in the profile overlay (falls back to photo if not set) */
+  profilePhoto?: string
   description?: string
   url?: string
   /** Custom label for the name line (default: "SUBJECT") */
@@ -119,6 +123,14 @@ export interface GalleryImage {
   caption?: string
 }
 
+export interface NewsItem {
+  id: string
+  date: string
+  text: string
+  details?: string
+  link?: string
+}
+
 export interface Datenschutz {
   customText?: string
   /** Separate English custom text */
@@ -148,6 +160,8 @@ export interface BandData {
   configOverrides?: Record<string, unknown>
   /** Custom section headings and display labels */
   sectionLabels?: SectionLabels
+  /** News items for the band */
+  news?: NewsItem[]
   /** Media files for press kits, logos, etc. */
   mediaFiles?: MediaFile[]
 }
@@ -181,6 +195,7 @@ export interface SectionLabels {
   releases?: string
   connect?: string
   media?: string
+  news?: string
   partnersAndFriends?: string
   profileStatusText?: string
   sessionStatusText?: string

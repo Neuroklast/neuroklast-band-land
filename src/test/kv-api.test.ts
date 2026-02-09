@@ -32,6 +32,9 @@ const { default: handler, timingSafeEqual } = await import('../../api/kv.js')
 describe('KV API handler', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Set env vars so isKVConfigured() returns true and the mocked kv is used
+    process.env.KV_REST_API_URL = 'https://fake-kv.vercel.test'
+    process.env.KV_REST_API_TOKEN = 'fake-token'
   })
 
   // ======= OPTIONS =======
