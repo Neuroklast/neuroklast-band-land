@@ -71,17 +71,13 @@
   --radius-full: 9999px;
 }
 
-html {
-  overflow-x: hidden;
-}
-
 body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   overscroll-behavior-y: contain;
   overflow-x: hidden;
-  max-width: 100vw;
   text-shadow: 
     0 0 3px oklch(1 0 0 / 0.3),
     0 0 6px oklch(0.50 0.22 25 / 0.15),
@@ -131,8 +127,6 @@ input, textarea, select {
 #root {
   position: relative;
   background: oklch(0 0 0);
-  overflow-x: hidden;
-  max-width: 100vw;
 }
 
 #root::before {
@@ -147,14 +141,6 @@ input, textarea, select {
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: screen;
-  contain: strict;
-}
-
-/* Disable heavy overlays on touch/mobile devices for performance */
-@media (hover: none) and (pointer: coarse) {
-  #root::before {
-    display: none;
-  }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -491,7 +477,6 @@ h1, h2, h3, h4, h5, h6 {
   height: 1px;
   background: linear-gradient(90deg, transparent, oklch(0.50 0.22 25 / 0.5), transparent);
   animation: scan-horizontal 3s linear infinite;
-  will-change: transform;
 }
 
 .hud-corner {
@@ -570,7 +555,6 @@ h1, h2, h3, h4, h5, h6 {
 .hud-scanline {
   position: relative;
   overflow: hidden;
-  pointer-events: none;
 }
 
 .hud-scanline::before {
@@ -584,7 +568,6 @@ h1, h2, h3, h4, h5, h6 {
   animation: scan-line 8s linear infinite;
   z-index: 1;
   pointer-events: none;
-  will-change: transform;
 }
 
 .hud-grid-overlay {
@@ -749,108 +732,4 @@ h1, h2, h3, h4, h5, h6 {
     oklch(0 0 0 / 0.06) 1px,
     oklch(0 0 0 / 0.06) 2px
   );
-}
-
-/* Social button cyberpunk styling - angular with glow and scanlines */
-.social-cyber-card {
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-}
-
-/* ── CyberpunkBackground pure-CSS animations (replaces framer-motion Infinity loops) ── */
-@keyframes cyberpunk-data-stream {
-  0%   { transform: translateY(0);    opacity: 0;   }
-  5%   { opacity: 0.6; }
-  95%  { opacity: 0.6; }
-  100% { transform: translateY(260vh); opacity: 0; }
-}
-
-.cyberpunk-data-stream {
-  animation: cyberpunk-data-stream linear infinite;
-  will-change: transform;
-}
-
-@keyframes cyberpunk-scan-pulse {
-  0%, 100% { opacity: 0;    }
-  50%      { opacity: 0.12; }
-}
-
-.cyberpunk-scan-pulse {
-  animation: cyberpunk-scan-pulse 7s ease-in-out infinite;
-}
-
-@keyframes cyberpunk-corner-glow {
-  0%, 100% { opacity: 0;   }
-  50%      { opacity: 0.3; }
-}
-
-.cyberpunk-corner-glow {
-  animation: cyberpunk-corner-glow 3s ease-in-out infinite;
-}
-
-/* ── Occult loader flash elements ── */
-@keyframes occult-flash {
-  0%   { opacity: 0; }
-  15%  { opacity: 0.7; }
-  30%  { opacity: 0; }
-  50%  { opacity: 0.5; }
-  70%  { opacity: 0; }
-  85%  { opacity: 0.3; }
-  100% { opacity: 0; }
-}
-
-.occult-flash-element {
-  animation: occult-flash 0.8s ease-in-out forwards;
-}
-
-/* ── Performance: promote fixed overlays to own layer, reduce mobile repaints ── */
-@media (hover: none) and (pointer: coarse) {
-  .hud-scanline::before {
-    display: none;
-  }
-
-  .hud-element::before {
-    display: none;
-  }
-
-  .cyberpunk-data-stream,
-  .cyberpunk-scan-pulse,
-  .cyberpunk-corner-glow {
-    display: none;
-  }
-
-  .data-readout {
-    animation: none;
-  }
-}
-
-.social-cyber-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    oklch(0.50 0.22 25 / 0.04) 2px,
-    oklch(0.50 0.22 25 / 0.04) 3px
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Cyberpunk custom cursor */
-@keyframes cursor-glitch {
-  0%, 90%, 100% { filter: none; }
-  92% { filter: drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)); }
-  94% { filter: drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.6)); }
-  96% { filter: drop-shadow(1px 0 0 oklch(0.60 0.24 25 / 0.7)); }
-  98% { filter: none; }
-}
-
-*, *::before, *::after {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cdefs%3E%3Cfilter id='gd'%3E%3CfeGaussianBlur stdDeviation='0.5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23cc2222' stroke='%23ff4444' stroke-width='1' filter='url(%23gd)'/%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23cc2222' stroke='%23ff3333' stroke-width='0.5'/%3E%3C/svg%3E") 4 2, auto;
-}
-
-button, a, [role="button"], .cursor-pointer {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cdefs%3E%3Cfilter id='gi'%3E%3CfeGaussianBlur stdDeviation='0.8'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23ee3333' stroke='%23ff5555' stroke-width='1.5' filter='url(%23gi)'/%3E%3Cpath d='M4 2 L4 22 L9 17 L14 24 L17 22 L12 15 L19 15 Z' fill='%23ee3333' stroke='%23ff4444' stroke-width='0.5'/%3E%3C/svg%3E") 4 2, pointer;
 }

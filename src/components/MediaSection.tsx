@@ -1,5 +1,5 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Folder, File, DownloadSimple, Plus, Trash, PencilSimple, GoogleDriveLogo } from '@phosphor-icons/react'
+import { Folder, File, DownloadSimple, Plus, Trash, PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -7,7 +7,6 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import { ChromaticText } from '@/components/ChromaticText'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { useState, useRef, useEffect } from 'react'
-import { toast } from 'sonner'
 import type { MediaFile, SectionLabels } from '@/lib/types'
 import {
   TITLE_TYPING_SPEED_MS,
@@ -19,61 +18,15 @@ interface MediaSectionProps {
   editMode?: boolean
   onUpdate?: (files: MediaFile[]) => void
   sectionLabels?: SectionLabels
-  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
-/** Extract file extension from a filename */
-function getFileExtension(name: string): string {
-  const lastDot = name.lastIndexOf('.')
-  if (lastDot === -1 || lastDot === 0) return ''
-  return name.slice(lastDot).toUpperCase()
-}
-
-/** Extract the filename without extension */
-function getFileBaseName(name: string): string {
-  const lastDot = name.lastIndexOf('.')
-  if (lastDot === -1 || lastDot === 0) return name
-  return name.slice(0, lastDot)
-}
-
-/** Build a nested folder tree from flat folder paths (supports slash-separated subfolders) */
-interface FolderNode {
-  name: string
-  path: string
-  children: FolderNode[]
-}
-
-function buildFolderTree(files: MediaFile[]): FolderNode[] {
-  const paths = new Set<string>()
+/** Get unique folder names from files */
+function getFolders(files: MediaFile[]): string[] {
+  const folders = new Set<string>()
   files.forEach(f => {
-    if (f.folder) {
-      // Add each parent path level as well
-      const parts = f.folder.split('/')
-      for (let i = 1; i <= parts.length; i++) {
-        paths.add(parts.slice(0, i).join('/'))
-      }
-    }
+    if (f.folder) folders.add(f.folder)
   })
-  const sorted = Array.from(paths).sort()
-
-  const root: FolderNode[] = []
-  const nodeMap = new Map<string, FolderNode>()
-
-  for (const path of sorted) {
-    const parts = path.split('/')
-    const name = parts[parts.length - 1]
-    const node: FolderNode = { name, path, children: [] }
-    nodeMap.set(path, node)
-
-    if (parts.length === 1) {
-      root.push(node)
-    } else {
-      const parentPath = parts.slice(0, -1).join('/')
-      const parent = nodeMap.get(parentPath)
-      if (parent) parent.children.push(node)
-    }
-  }
-  return root
+  return Array.from(folders).sort()
 }
 
 /** Get files in a specific folder (or root) */
@@ -119,70 +72,6 @@ function MediaLoadingScreen() {
   )
 }
 
-/** Recursive folder tree node */
-function FolderTreeNode({ node, depth, selectedFolder, onSelectFolder, selectedFile, onSelectFile, files }: {
-  node: FolderNode
-  depth: number
-  selectedFolder: string | null
-  onSelectFolder: (folder: string | null) => void
-  selectedFile: MediaFile | null
-  onSelectFile: (file: MediaFile) => void
-  files: MediaFile[]
-}) {
-  const isSelected = selectedFolder === node.path
-  const isExpanded = selectedFolder === node.path || (selectedFolder !== null && selectedFolder.startsWith(node.path + '/'))
-  const folderFiles = getFilesInFolder(files, node.path)
-
-  return (
-    <div>
-      <button
-        className={`w-full text-left px-2 py-1.5 flex items-center gap-2 transition-colors ${
-          isSelected ? 'text-primary bg-primary/10' : 'text-foreground/70 hover:text-primary hover:bg-primary/5'
-        }`}
-        style={{ paddingLeft: `${(depth + 1) * 16}px` }}
-        onClick={() => onSelectFolder(node.path)}
-      >
-        <Folder size={14} weight="fill" className="text-primary/60 flex-shrink-0" />
-        <span className="truncate">/{node.name.toUpperCase()}</span>
-      </button>
-      {isExpanded && (
-        <>
-          {node.children.map(child => (
-            <FolderTreeNode
-              key={child.path}
-              node={child}
-              depth={depth + 1}
-              selectedFolder={selectedFolder}
-              onSelectFolder={onSelectFolder}
-              selectedFile={selectedFile}
-              onSelectFile={onSelectFile}
-              files={files}
-            />
-          ))}
-          {isSelected && folderFiles.map(file => {
-            const ext = getFileExtension(file.name)
-            const baseName = getFileBaseName(file.name)
-            return (
-              <button
-                key={file.id}
-                className={`w-full text-left px-2 py-1 flex items-center gap-2 transition-colors ${
-                  selectedFile?.id === file.id ? 'text-primary bg-primary/10' : 'text-foreground/60 hover:text-primary hover:bg-primary/5'
-                }`}
-                style={{ paddingLeft: `${(depth + 2) * 16}px` }}
-                onClick={() => onSelectFile(file)}
-              >
-                <File size={12} className="text-primary/40 flex-shrink-0" />
-                <span className="truncate">{baseName}</span>
-                {ext && <span className="text-primary/50 text-[9px] flex-shrink-0">{ext}</span>}
-              </button>
-            )
-          })}
-        </>
-      )}
-    </div>
-  )
-}
-
 /** Tree view for navigating folders and files */
 function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onSelectFile }: {
   files: MediaFile[]
@@ -191,7 +80,7 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
   selectedFile: MediaFile | null
   onSelectFile: (file: MediaFile) => void
 }) {
-  const folderTree = buildFolderTree(files)
+  const folders = getFolders(files)
   const rootFiles = getFilesInFolder(files, null)
 
   return (
@@ -206,37 +95,44 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
         <span className="truncate">/ROOT</span>
       </button>
 
-      {folderTree.map(node => (
-        <FolderTreeNode
-          key={node.path}
-          node={node}
-          depth={0}
-          selectedFolder={selectedFolder}
-          onSelectFolder={onSelectFolder}
-          selectedFile={selectedFile}
-          onSelectFile={onSelectFile}
-          files={files}
-        />
+      {folders.map(folder => (
+        <div key={folder}>
+          <button
+            className={`w-full text-left px-2 py-1.5 pl-4 flex items-center gap-2 transition-colors ${
+              selectedFolder === folder ? 'text-primary bg-primary/10' : 'text-foreground/70 hover:text-primary hover:bg-primary/5'
+            }`}
+            onClick={() => onSelectFolder(folder)}
+          >
+            <Folder size={14} weight="fill" className="text-primary/60 flex-shrink-0" />
+            <span className="truncate">/{folder.toUpperCase()}</span>
+          </button>
+          {selectedFolder === folder && getFilesInFolder(files, folder).map(file => (
+            <button
+              key={file.id}
+              className={`w-full text-left px-2 py-1 pl-8 flex items-center gap-2 transition-colors ${
+                selectedFile?.id === file.id ? 'text-primary bg-primary/10' : 'text-foreground/60 hover:text-primary hover:bg-primary/5'
+              }`}
+              onClick={() => onSelectFile(file)}
+            >
+              <File size={12} className="text-primary/40 flex-shrink-0" />
+              <span className="truncate">{file.name}</span>
+            </button>
+          ))}
+        </div>
       ))}
 
-      {/* Always show root files in the tree */}
-      {rootFiles.map(file => {
-        const ext = getFileExtension(file.name)
-        const baseName = getFileBaseName(file.name)
-        return (
-          <button
-            key={file.id}
-            className={`w-full text-left px-2 py-1 pl-4 flex items-center gap-2 transition-colors ${
-              selectedFile?.id === file.id ? 'text-primary bg-primary/10' : 'text-foreground/60 hover:text-primary hover:bg-primary/5'
-            }`}
-            onClick={() => onSelectFile(file)}
-          >
-            <File size={12} className="text-primary/40 flex-shrink-0" />
-            <span className="truncate">{baseName}</span>
-            {ext && <span className="text-primary/50 text-[9px] flex-shrink-0">{ext}</span>}
-          </button>
-        )
-      })}
+      {selectedFolder === null && rootFiles.map(file => (
+        <button
+          key={file.id}
+          className={`w-full text-left px-2 py-1 pl-4 flex items-center gap-2 transition-colors ${
+            selectedFile?.id === file.id ? 'text-primary bg-primary/10' : 'text-foreground/60 hover:text-primary hover:bg-primary/5'
+          }`}
+          onClick={() => onSelectFile(file)}
+        >
+          <File size={12} className="text-primary/40 flex-shrink-0" />
+          <span className="truncate">{file.name}</span>
+        </button>
+      ))}
 
       {files.length === 0 && (
         <p className="text-primary/30 text-[10px] px-2 py-4">NO FILES AVAILABLE</p>
@@ -256,8 +152,6 @@ function FileDetailPanel({ file }: { file: MediaFile | null }) {
     )
   }
 
-  const ext = getFileExtension(file.name)
-
   return (
     <motion.div
       key={file.id}
@@ -274,7 +168,6 @@ function FileDetailPanel({ file }: { file: MediaFile | null }) {
         <div className="flex items-center gap-2">
           <File size={16} className="text-primary/60" />
           <span className="font-mono text-sm text-foreground/90">{file.name}</span>
-          {ext && <span className="text-primary/60 font-mono text-[10px] border border-primary/30 px-1.5 py-0.5">{ext}</span>}
         </div>
 
         {file.folder && (
@@ -309,20 +202,9 @@ function FileDetailPanel({ file }: { file: MediaFile | null }) {
   )
 }
 
-/** Extract Google Drive folder ID from a URL */
-function extractDriveFolderId(url: string): string | null {
-  const m = url.match(/drive\.google\.com\/(?:drive\/)?folders\/([A-Za-z0-9_-]+)/)
-  if (m) return m[1]
-  const m2 = url.match(/id=([A-Za-z0-9_-]+)/)
-  if (m2) return m2[1]
-  return null
-}
-
 /** Edit panel for managing media files */
 function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (files: MediaFile[]) => void }) {
   const [editFiles, setEditFiles] = useState<MediaFile[]>(files)
-  const [driveUrl, setDriveUrl] = useState('')
-  const [driveLoading, setDriveLoading] = useState(false)
 
   const addFile = () => {
     const newFile: MediaFile = {
@@ -345,67 +227,11 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
     onUpdate(editFiles.filter(f => f.name.trim() && f.url.trim()))
   }
 
-  const importFromDrive = async () => {
-    const folderId = extractDriveFolderId(driveUrl.trim())
-    if (!folderId) {
-      toast.error('Could not extract folder ID from URL')
-      return
-    }
-    setDriveLoading(true)
-    try {
-      const res = await fetch(`/api/drive-folder?folderId=${encodeURIComponent(folderId)}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      const driveFiles: MediaFile[] = (data.images || []).map((img: { id: string; url: string; caption: string }) => ({
-        id: img.id,
-        name: img.caption || `File_${img.id}`,
-        url: img.url,
-      }))
-      if (driveFiles.length > 0) {
-        setEditFiles([...editFiles, ...driveFiles])
-        toast.success(`Imported ${driveFiles.length} file(s) from Google Drive`)
-      } else {
-        toast.info('No files found in the Google Drive folder')
-      }
-    } catch (err) {
-      console.error('Drive import error:', err)
-      toast.error('Failed to import files from Google Drive')
-    } finally {
-      setDriveLoading(false)
-      setDriveUrl('')
-    }
-  }
-
   return (
     <div className="p-4 space-y-3 overflow-y-auto max-h-[60vh]">
       <p className="text-sm text-muted-foreground font-mono">
         Manage press kits, logos, and other downloadable media files.
       </p>
-
-      {/* Google Drive import */}
-      <div className="border border-primary/20 bg-primary/5 p-3 space-y-2">
-        <div className="flex items-center gap-2 text-[10px] font-mono text-primary/70">
-          <GoogleDriveLogo size={14} />
-          IMPORT FROM GOOGLE DRIVE
-        </div>
-        <div className="flex gap-2">
-          <Input
-            value={driveUrl}
-            onChange={(e) => setDriveUrl(e.target.value)}
-            placeholder="https://drive.google.com/drive/folders/..."
-            className="text-xs flex-1"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={importFromDrive}
-            disabled={!driveUrl.trim() || driveLoading}
-            className="text-xs"
-          >
-            {driveLoading ? 'Loading...' : 'Import'}
-          </Button>
-        </div>
-      </div>
 
       {editFiles.map((file, idx) => (
         <div key={file.id} className="border border-border rounded p-3 space-y-2">
@@ -431,11 +257,11 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px]">Folder path (optional, e.g. presskit/logos)</Label>
+              <Label className="text-[10px]">Folder (optional)</Label>
               <Input
                 value={file.folder || ''}
                 onChange={(e) => updateFile(idx, { folder: e.target.value || undefined })}
-                placeholder="e.g. presskit/logos"
+                placeholder="e.g. press-kit"
                 className="text-xs"
               />
             </div>
@@ -483,7 +309,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -495,7 +321,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
 
       {phase === 'ready' && (
         <motion.div
-          className="w-full max-w-4xl max-h-[90dvh] bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter flex flex-col"
+          className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter flex flex-col"
           initial={{ scale: 0.85, y: 30, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -503,20 +329,20 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
           onClick={(e) => e.stopPropagation()}
         >
           {/* HUD corner accents */}
-          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50 pointer-events-none" />
-          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50 pointer-events-none" />
+          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
           {/* Header bar */}
           <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4 flex-shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0" />
-              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase truncate">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
                 {isEditing ? 'EDIT MEDIA FILES' : 'FILE EXPLORER // MEDIA ARCHIVE'}
               </span>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
               {editMode && onUpdate && !isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
@@ -536,9 +362,9 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
           {isEditing && onUpdate ? (
             <MediaEditPanel files={files} onUpdate={(updated) => { onUpdate(updated); setIsEditing(false) }} />
           ) : (
-            <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
+            <div className="flex flex-col md:flex-row flex-1 min-h-0">
               {/* Left: Tree view */}
-              <div className="md:w-2/5 border-b md:border-b-0 md:border-r border-primary/20 overflow-y-auto p-3 max-h-[30vh] md:max-h-none flex-shrink-0">
+              <div className="md:w-2/5 border-b md:border-b-0 md:border-r border-primary/20 overflow-y-auto p-3 max-h-[200px] md:max-h-none">
                 <div className="text-[9px] text-primary/40 tracking-wider mb-2 px-2">DIRECTORY</div>
                 <FileTreeView
                   files={files}
@@ -550,7 +376,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
               </div>
 
               {/* Right: File details */}
-              <div className="md:w-3/5 overflow-y-auto flex-1 min-h-0">
+              <div className="md:w-3/5 overflow-y-auto flex-1">
                 <FileDetailPanel file={selectedFile} />
               </div>
             </div>
@@ -564,7 +390,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
   )
 }
 
-export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sectionLabels, onLabelChange }: MediaSectionProps) {
+export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sectionLabels }: MediaSectionProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -596,26 +422,15 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
               <span className="animate-pulse">_</span>
             </h2>
             {editMode && onUpdate && (
-              <div className="flex gap-2 items-center">
-                {onLabelChange && (
-                  <input
-                    type="text"
-                    value={sectionLabels?.media || ''}
-                    onChange={(e) => onLabelChange('media', e.target.value)}
-                    placeholder="MEDIA"
-                    className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
-                  />
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-primary/30 hover:bg-primary/10 gap-1"
-                  onClick={() => setOverlayOpen(true)}
-                >
-                  <PencilSimple size={16} />
-                  <span className="hidden md:inline">Manage</span>
-                </Button>
-              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-primary/30 hover:bg-primary/10 gap-1"
+                onClick={() => setOverlayOpen(true)}
+              >
+                <PencilSimple size={16} />
+                <span className="hidden md:inline">Manage</span>
+              </Button>
             )}
           </div>
 

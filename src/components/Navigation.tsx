@@ -3,9 +3,11 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
 import {
+  NAV_SCROLL_THRESHOLD_PX,
   NAV_GLITCH_PROBABILITY,
   NAV_GLITCH_DURATION_MS,
   NAV_GLITCH_INTERVAL_MS,
+  NAV_HEIGHT_PX,
 } from '@/lib/config'
 
 interface NavigationProps {
@@ -15,8 +17,17 @@ interface NavigationProps {
 }
 
 export default function Navigation({ soundMuted, hasSounds, onToggleMute }: NavigationProps) {
+  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > NAV_SCROLL_THRESHOLD_PX)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -31,7 +42,9 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+      const navHeight = NAV_HEIGHT_PX
+      const top = element.getBoundingClientRect().top + window.scrollY - navHeight
+      window.scrollTo({ top, behavior: 'smooth' })
       setIsMobileMenuOpen(false)
     }
   }
@@ -49,7 +62,9 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
   return (
     <>
       <motion.nav
-        className={`relative w-full bg-background/95 border-b border-primary/20 hud-element ${glitch ? 'red-glitch-element' : ''}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element' : 'bg-background/70 backdrop-blur-sm'
+        } ${glitch ? 'red-glitch-element' : ''}`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
@@ -103,6 +118,10 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
             </Button>
           </div>
         </div>
+        
+        {isScrolled && (
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        )}
       </motion.nav>
 
       {isMobileMenuOpen && (

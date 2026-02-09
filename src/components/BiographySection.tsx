@@ -35,7 +35,6 @@ interface BiographySectionProps {
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
-  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 const defaultBiography: Biography = {
@@ -163,7 +162,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
   return (
     <motion.div
       key="member-profile"
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -192,7 +191,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
 
       {phase !== 'loading' && (
         <motion.div
-          className={`w-full max-w-3xl max-h-[90dvh] bg-card border relative overflow-y-auto overflow-x-hidden glitch-overlay-enter ${
+          className={`w-full max-w-3xl bg-card border relative overflow-hidden glitch-overlay-enter ${
             phase === 'glitch' ? 'border-primary red-glitch-element' : 'border-primary/30'
           }`}
           initial={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -202,29 +201,28 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
           onClick={(e) => e.stopPropagation()}
         >
           {/* HUD corner accents */}
-          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50 pointer-events-none" />
-          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50 pointer-events-none" />
+          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
-          {/* Header bar with integrated close button */}
-          <div className="sticky top-0 z-20 h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0" />
-              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase truncate">PROFILE // {member.name.toUpperCase()}</span>
-            </div>
-            <CyberCloseButton
-              onClick={onClose}
-              label={sectionLabels?.closeButtonText || 'CLOSE'}
-              className="flex-shrink-0 ml-2"
-            />
+          <CyberCloseButton
+            onClick={onClose}
+            label={sectionLabels?.closeButtonText || 'CLOSE'}
+            className="absolute top-3 right-3"
+          />
+
+          {/* Header bar */}
+          <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">PROFILE // {member.name.toUpperCase()}</span>
           </div>
 
           <div className="flex flex-col md:flex-row">
             {/* Left: Photo with angular frame and loading bar */}
             <div className="md:w-2/5 p-4 md:p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-primary/20">
               <motion.div
-                className="relative w-full max-w-[180px] sm:max-w-[220px] aspect-square"
+                className="relative w-full max-w-[220px] aspect-square"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
@@ -283,7 +281,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
                 <div className="text-[10px] text-primary/50 tracking-wider mb-3">
                   {'>'} TERMINAL OUTPUT // PROFILE DATA
                 </div>
-                <div className="bg-black/50 border border-primary/20 p-4 max-h-[30vh] overflow-y-auto">
+                <div className="bg-black/50 border border-primary/20 p-4 h-[200px] max-h-[40vh] overflow-y-auto">
                   <ConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
                 </div>
                 <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1">
@@ -300,7 +298,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
   )
 }
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>(biography.photos || [])
@@ -411,36 +409,15 @@ export default function BiographySection({ biography = defaultBiography, editMod
             <span className="animate-pulse">_</span>
           </motion.h2>
             {editMode && (
-              <div className="flex gap-2 items-center w-full sm:w-auto">
-                {onLabelChange && (
-                  <>
-                    <input
-                      type="text"
-                      value={sectionLabels?.headingPrefix ?? '>'}
-                      onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
-                      placeholder=">"
-                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
-                      title="Heading prefix"
-                    />
-                    <input
-                      type="text"
-                      value={sectionLabels?.biography || ''}
-                      onChange={(e) => onLabelChange('biography', e.target.value)}
-                      placeholder="BIOGRAPHY"
-                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
-                    />
-                  </>
-                )}
-                <Button
-                  onClick={() => setIsEditDialogOpen(true)}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 active:scale-95 transition-transform touch-manipulation"
-                >
-                  <PencilSimple size={16} />
-                  Edit
-                </Button>
-              </div>
+              <Button
+                onClick={() => setIsEditDialogOpen(true)}
+                variant="outline"
+                size="sm"
+                className="gap-2 active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
+              >
+                <PencilSimple size={16} />
+                Edit
+              </Button>
             )}
           </div>
 
