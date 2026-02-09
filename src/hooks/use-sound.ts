@@ -2,16 +2,22 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SoundSettings } from '@/lib/types'
 import { DEFAULT_SOUND_VOLUME } from '@/lib/config'
 
-// Default local sound files
+// Import sound files as Vite assets so they resolve correctly in dev and production
+import textTypingUrl from '@/assets/sounds/texttyping.wav'
+import clickUrl from '@/assets/sounds/click.wav'
+import loadingFinishedUrl from '@/assets/sounds/laodingfinished.mp3'
+import backgroundMusicUrl from '@/assets/sounds/NK - THRESHOLD.mp3'
+
+// Default local sound files (resolved by Vite)
 const DEFAULT_SOUNDS = {
-  typing: '/src/assets/sounds/texttyping.wav',
-  button: '/src/assets/sounds/click.wav',
-  loadingFinished: '/src/assets/sounds/laodingfinished.mp3',
-  backgroundMusic: '/src/assets/sounds/NK - THRESHOLD.mp3',
+  typing: textTypingUrl,
+  button: clickUrl,
+  loadingFinished: loadingFinishedUrl,
+  backgroundMusic: backgroundMusicUrl,
 }
 
 /** Convert Drive share links to direct download URLs for audio files */
-function toDirectAudioUrl(url?: string): string {
+export function toDirectAudioUrl(url?: string): string {
   if (!url) return ''
   // Google Drive: /file/d/{fileId}/view → direct download URL
   const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
@@ -38,14 +44,9 @@ function getCachedAudio(url: string): HTMLAudioElement | null {
   const cached = audioCache.get(url)
   if (cached) return cached
   try {
-    // Don't use proxy for local files (starting with /)
-    const audioUrl = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
-    const audio = new Audio(audioUrl)
+    // Audio files are loaded directly — never route through the image proxy
+    const audio = new Audio(url)
     audio.preload = 'auto'
-    // Only set crossOrigin for remote URLs
-    if (!url.startsWith('/')) {
-      audio.crossOrigin = 'anonymous'
-    }
     audioCache.set(url, audio)
     return audio
   } catch {
@@ -109,23 +110,17 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
     const url = toDirectAudioUrl(effectiveSounds.backgroundMusic)
     if (!url) return
 
-    // Don't use proxy for local files
-    const audioUrl = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
-    const audio = new Audio(audioUrl)
+    // Audio files are loaded directly — never route through the image proxy
+    const audio = new Audio(url)
     audio.loop = true
     audio.volume = settings?.backgroundMusicVolume ?? 0.3
     audio.preload = 'auto'
-    // Only set crossOrigin for remote URLs
-    if (!url.startsWith('/')) {
-      audio.crossOrigin = 'anonymous'
-    }
     
     // Try to play, handling autoplay restrictions
     const playPromise = audio.play()
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Autoplay was prevented, will need user interaction
-        console.log('Background music autoplay prevented, waiting for user interaction')
+        // Silently handle autoplay prevention
       })
     }
 
