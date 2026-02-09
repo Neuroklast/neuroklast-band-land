@@ -88,7 +88,7 @@ export default function SoundSettingsDialog({ settings, onSave, onClose }: Sound
                 <Input
                   value={data.loadingFinishedSound || ''}
                   onChange={(e) => setData({ ...data, loadingFinishedSound: e.target.value })}
-                  placeholder="Default: loadingfinished.mp3"
+                  placeholder="Default: laodingfinished.mp3"
                   className="text-sm"
                 />
                 <p className="text-[10px] text-muted-foreground mt-0.5">Plays when page finishes loading</p>
