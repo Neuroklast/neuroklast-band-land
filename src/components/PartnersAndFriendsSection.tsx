@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import { useOverlayTransition } from '@/components/OverlayTransition'
+import SafeText from '@/components/SafeText'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
@@ -46,9 +48,10 @@ function FriendConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, del
   const [visibleCount, setVisibleCount] = useState(0)
   const [currentText, setCurrentText] = useState('')
   const [lineComplete, setLineComplete] = useState(false)
+  const [skipped, setSkipped] = useState(false)
 
   useEffect(() => {
-    if (visibleCount >= lines.length) return
+    if (skipped || visibleCount >= lines.length) return
     const line = lines[visibleCount]
     let charIdx = 0
     setCurrentText('')
@@ -64,14 +67,22 @@ function FriendConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, del
       }
     }, speed)
     return () => clearInterval(interval)
-  }, [visibleCount, lines, speed, delayBetween])
+  }, [visibleCount, lines, speed, delayBetween, skipped])
+
+  const handleSkip = () => {
+    if (!skipped) {
+      setSkipped(true)
+      setVisibleCount(lines.length)
+      setCurrentText('')
+    }
+  }
 
   return (
-    <div className="space-y-1">
-      {lines.slice(0, visibleCount).map((line, i) => (
+    <div className="space-y-1 cursor-pointer" onClick={handleSkip} onTouchEnd={handleSkip}>
+      {(skipped ? lines : lines.slice(0, visibleCount)).map((line, i) => (
         <p key={i} className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">{line}</p>
       ))}
-      {visibleCount < lines.length && (
+      {!skipped && visibleCount < lines.length && (
         <p className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">
           {currentText}
           {!lineComplete && <span className="console-cursor" />}
@@ -123,13 +134,18 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
   }, [])
 
   const dataLines: string[] = []
-  dataLines.push(`> SUBJECT: ${friend.name.toUpperCase()}`)
+  const subjectLabel = friend.subjectLabel || 'SUBJECT'
+  dataLines.push(`> ${subjectLabel}: ${friend.name.toUpperCase()}`)
   // Add custom profile fields if defined
   const profileFields = sectionLabels?.profileFields
   if (profileFields && profileFields.length > 0) {
     profileFields.forEach(field => {
       dataLines.push(`> ${field.label}: ${field.value}`)
     })
+  } else if (friend.statusLabel || friend.statusValue) {
+    const statusLabel = friend.statusLabel || 'STATUS'
+    const statusValue = friend.statusValue || 'ACTIVE'
+    dataLines.push(`> ${statusLabel}: ${statusValue}`)
   }
   if (friend.description) {
     dataLines.push('> ---')
@@ -348,6 +364,20 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
             <Input value={editData.url || ''} onChange={(e) => setEditData({ ...editData, url: e.target.value })} className="text-xs h-8" placeholder="https://..." />
           </div>
           <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-[10px]">Subject Label</Label>
+              <Input value={editData.subjectLabel || ''} onChange={(e) => setEditData({ ...editData, subjectLabel: e.target.value })} className="text-xs h-8" placeholder="SUBJECT" />
+            </div>
+            <div>
+              <Label className="text-[10px]">Status Label</Label>
+              <Input value={editData.statusLabel || ''} onChange={(e) => setEditData({ ...editData, statusLabel: e.target.value })} className="text-xs h-8" placeholder="STATUS" />
+            </div>
+            <div className="col-span-2">
+              <Label className="text-[10px]">Status Value</Label>
+              <Input value={editData.statusValue || ''} onChange={(e) => setEditData({ ...editData, statusValue: e.target.value })} className="text-xs h-8" placeholder="ACTIVE" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             {friendSocialIcons.map(({ key, label }) => (
               <div key={key}>
                 <Label className="text-[10px]">{label}</Label>
@@ -409,7 +439,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
             )}
           </div>
           {friend.description && (
-            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{friend.description}</p>
+            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5"><SafeText fontSize={11}>{friend.description}</SafeText></p>
           )}
           {friend.socials && (
             <div className="flex gap-1.5 mt-2 flex-wrap justify-center">
@@ -438,6 +468,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
   const titleText = sectionLabels?.partnersAndFriends || 'PARTNERS & FRIENDS'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
@@ -513,7 +544,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
                 key={friend.id}
                 friend={friend}
                 editMode={editMode}
-                onSelect={() => setSelectedFriend(friend)}
+                onSelect={() => { triggerTransition(); setSelectedFriend(friend) }}
                 onUpdate={(updated) => {
                   if (onUpdate) {
                     onUpdate(friends.map(f => f.id === updated.id ? updated : f))
@@ -534,11 +565,12 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
         {selectedFriend && (
           <FriendProfileOverlay
             friend={selectedFriend}
-            onClose={() => setSelectedFriend(null)}
+            onClose={() => { triggerTransition(); setSelectedFriend(null) }}
             sectionLabels={sectionLabels}
           />
         )}
       </AnimatePresence>
+      {transitionElement}
     </section>
   )
 }

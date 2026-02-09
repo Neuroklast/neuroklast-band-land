@@ -144,6 +144,26 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
                     placeholder="Bio (optional)"
                     className="min-h-[60px] resize-y"
                   />
+                  <div className="grid grid-cols-3 gap-2">
+                    <Input
+                      value={member.subjectLabel || ''}
+                      onChange={(e) => updateMember(index, 'subjectLabel', e.target.value)}
+                      placeholder="SUBJECT"
+                      className="text-xs"
+                    />
+                    <Input
+                      value={member.statusLabel || ''}
+                      onChange={(e) => updateMember(index, 'statusLabel', e.target.value)}
+                      placeholder="STATUS"
+                      className="text-xs"
+                    />
+                    <Input
+                      value={member.statusValue || ''}
+                      onChange={(e) => updateMember(index, 'statusValue', e.target.value)}
+                      placeholder="ACTIVE"
+                      className="text-xs"
+                    />
+                  </div>
                 </div>
               ))}
               <div className="flex gap-2">

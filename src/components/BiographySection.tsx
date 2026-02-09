@@ -6,6 +6,8 @@ import BiographyEditDialog from '@/components/BiographyEditDialog'
 import FontSizePicker from '@/components/FontSizePicker'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import { useOverlayTransition } from '@/components/OverlayTransition'
+import SafeText from '@/components/SafeText'
 import { loadCachedImage, toDirectImageUrl } from '@/lib/image-cache'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -35,6 +37,7 @@ interface BiographySectionProps {
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 const defaultBiography: Biography = {
@@ -57,9 +60,10 @@ function ConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetw
   const [visibleCount, setVisibleCount] = useState(0)
   const [currentText, setCurrentText] = useState('')
   const [lineComplete, setLineComplete] = useState(false)
+  const [skipped, setSkipped] = useState(false)
 
   useEffect(() => {
-    if (visibleCount >= lines.length) return
+    if (skipped || visibleCount >= lines.length) return
     const line = lines[visibleCount]
     let charIdx = 0
     setCurrentText('')
@@ -75,14 +79,22 @@ function ConsoleLines({ lines, speed = CONSOLE_LINES_DEFAULT_SPEED_MS, delayBetw
       }
     }, speed)
     return () => clearInterval(interval)
-  }, [visibleCount, lines, speed, delayBetween])
+  }, [visibleCount, lines, speed, delayBetween, skipped])
+
+  const handleSkip = () => {
+    if (!skipped) {
+      setSkipped(true)
+      setVisibleCount(lines.length)
+      setCurrentText('')
+    }
+  }
 
   return (
-    <div className="space-y-1">
-      {lines.slice(0, visibleCount).map((line, i) => (
+    <div className="space-y-1 cursor-pointer" onClick={handleSkip} onTouchEnd={handleSkip}>
+      {(skipped ? lines : lines.slice(0, visibleCount)).map((line, i) => (
         <p key={i} className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">{line}</p>
       ))}
-      {visibleCount < lines.length && (
+      {!skipped && visibleCount < lines.length && (
         <p className="text-xs font-mono text-foreground/80 whitespace-pre-wrap">
           {currentText}
           {!lineComplete && <span className="console-cursor" />}
@@ -140,7 +152,8 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
 
   // Build terminal-style data lines for the console effect
   const dataLines: string[] = []
-  dataLines.push(`> SUBJECT: ${member.name.toUpperCase()}`)
+  const subjectLabel = member.subjectLabel || 'SUBJECT'
+  dataLines.push(`> ${subjectLabel}: ${member.name.toUpperCase()}`)
   // Add custom profile fields if defined, otherwise use defaults
   const profileFields = sectionLabels?.profileFields
   if (profileFields && profileFields.length > 0) {
@@ -148,7 +161,9 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
       dataLines.push(`> ${field.label}: ${field.value}`)
     })
   } else {
-    dataLines.push(`> STATUS: ${sectionLabels?.profileStatusText || 'ACTIVE'}`)
+    const statusLabel = member.statusLabel || 'STATUS'
+    const statusValue = member.statusValue || sectionLabels?.profileStatusText || 'ACTIVE'
+    dataLines.push(`> ${statusLabel}: ${statusValue}`)
   }
   if (member.bio) {
     dataLines.push('> ---')
@@ -298,7 +313,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
   )
 }
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>(biography.photos || [])
@@ -309,6 +324,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
 
   const titleText = sectionLabels?.biography || 'BIOGRAPHY'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
@@ -409,15 +425,36 @@ export default function BiographySection({ biography = defaultBiography, editMod
             <span className="animate-pulse">_</span>
           </motion.h2>
             {editMode && (
-              <Button
-                onClick={() => setIsEditDialogOpen(true)}
-                variant="outline"
-                size="sm"
-                className="gap-2 active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
-              >
-                <PencilSimple size={16} />
-                Edit
-              </Button>
+              <div className="flex gap-2 items-center flex-wrap">
+                {onLabelChange && (
+                  <>
+                    <input
+                      type="text"
+                      value={sectionLabels?.headingPrefix ?? '>'}
+                      onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
+                      placeholder=">"
+                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
+                      title="Heading prefix"
+                    />
+                    <input
+                      type="text"
+                      value={sectionLabels?.biography || ''}
+                      onChange={(e) => onLabelChange('biography', e.target.value)}
+                      placeholder="BIOGRAPHY"
+                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                    />
+                  </>
+                )}
+                <Button
+                  onClick={() => setIsEditDialogOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
+                >
+                  <PencilSimple size={16} />
+                  Edit
+                </Button>
+              </div>
             )}
           </div>
 
@@ -488,7 +525,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                   <div className="prose prose-invert max-w-none">
                     {biography.story.split('\n\n').map((paragraph, index) => (
                       <p key={index} className={`${fontSizes?.biographyStory || 'text-sm md:text-base'} text-foreground/90 leading-relaxed mb-4 last:mb-0`}>
-                        {paragraph}
+                        <SafeText>{paragraph}</SafeText>
                       </p>
                     ))}
                   </div>
@@ -516,7 +553,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                           <button
                             key={index}
                             className="w-full text-left border border-border/50 rounded-lg p-3 hover:border-primary/30 transition-colors duration-200 cursor-pointer"
-                            onClick={() => setSelectedMember(member)}
+                            onClick={() => { triggerTransition(); setSelectedMember(member) }}
                             aria-label={`View profile of ${member.name}`}
                           >
                             <div className="flex items-center gap-3">
@@ -607,11 +644,12 @@ export default function BiographySection({ biography = defaultBiography, editMod
           <MemberProfileOverlay
             member={selectedMember}
             resolvePhoto={resolvePhoto}
-            onClose={() => setSelectedMember(null)}
+            onClose={() => { triggerTransition(); setSelectedMember(null) }}
             sectionLabels={sectionLabels}
           />
         )}
       </AnimatePresence>
+      {transitionElement}
     </section>
   )
 }

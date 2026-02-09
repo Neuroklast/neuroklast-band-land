@@ -46,6 +46,12 @@ export interface Member {
   name: string
   photo?: string
   bio?: string
+  /** Custom label for the name line (default: "SUBJECT") */
+  subjectLabel?: string
+  /** Custom label for the status line (default: "STATUS") */
+  statusLabel?: string
+  /** Custom value for the status line (default: "ACTIVE") */
+  statusValue?: string
 }
 
 export interface Friend {
@@ -54,6 +60,12 @@ export interface Friend {
   photo?: string
   description?: string
   url?: string
+  /** Custom label for the name line (default: "SUBJECT") */
+  subjectLabel?: string
+  /** Custom label for the status line (default: "STATUS") */
+  statusLabel?: string
+  /** Custom value for the status line (default: "ACTIVE") */
+  statusValue?: string
   socials?: {
     instagram?: string
     facebook?: string
@@ -92,6 +104,13 @@ export interface Impressum {
   email?: string
   responsibleName?: string
   responsibleAddress?: string
+  /** English overrides – when set, the EN view shows these values instead */
+  nameEn?: string
+  careOfEn?: string
+  streetEn?: string
+  zipCityEn?: string
+  responsibleNameEn?: string
+  responsibleAddressEn?: string
 }
 
 export interface GalleryImage {
@@ -102,6 +121,8 @@ export interface GalleryImage {
 
 export interface Datenschutz {
   customText?: string
+  /** Separate English custom text */
+  customTextEn?: string
 }
 
 export interface BandData {

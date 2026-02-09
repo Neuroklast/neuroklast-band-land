@@ -32,6 +32,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<Impressum>(impressum || emptyImpressum)
   const [lang, setLang] = useState<'de' | 'en'>('de')
+  const [editLang, setEditLang] = useState<'de' | 'en'>('de')
 
   useEffect(() => {
     if (isOpen) {
@@ -54,6 +55,12 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
       email: form.email || undefined,
       responsibleName: form.responsibleName || undefined,
       responsibleAddress: form.responsibleAddress || undefined,
+      nameEn: form.nameEn || undefined,
+      careOfEn: form.careOfEn || undefined,
+      streetEn: form.streetEn || undefined,
+      zipCityEn: form.zipCityEn || undefined,
+      responsibleNameEn: form.responsibleNameEn || undefined,
+      responsibleAddressEn: form.responsibleAddressEn || undefined,
     })
     setIsEditing(false)
   }
@@ -131,6 +138,22 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                     </button>
                   </div>
                 )}
+                {isEditing && (
+                  <div className="flex border border-primary/30 overflow-hidden">
+                    <button
+                      onClick={() => setEditLang('de')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${editLang === 'de' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      DE
+                    </button>
+                    <button
+                      onClick={() => setEditLang('en')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${editLang === 'en' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      EN
+                    </button>
+                  </div>
+                )}
                 {editMode && onSave && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -150,48 +173,98 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
             <div className="pt-16 pb-8 px-8 font-mono text-sm space-y-6 max-h-[80vh] overflow-y-auto">
               {isEditing ? (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">{t.legalRef}</p>
+                  <p className="text-sm text-muted-foreground">{editLang === 'de' ? t.legalRef : 'Information according to § 5 DDG'}</p>
+                  <p className="text-xs text-primary/60 font-mono">
+                    {editLang === 'de' ? '▸ Editing German version' : '▸ Editing English version (leave empty to use German values)'}
+                  </p>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-name">Name / Bandmitglieder</Label>
-                    <Input id="imp-name" value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Vorname Nachname oder Bandmitglieder" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-careof">c/o Impressum-Service</Label>
-                    <Input id="imp-careof" value={form.careOf || ''} onChange={(e) => update('careOf', e.target.value)} placeholder="Name des Impressum-Services" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-street">Straße und Hausnummer</Label>
-                    <Input id="imp-street" value={form.street || ''} onChange={(e) => update('street', e.target.value)} placeholder="Straße und Hausnummer" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-zipcity">PLZ und Ort</Label>
-                    <Input id="imp-zipcity" value={form.zipCity || ''} onChange={(e) => update('zipCity', e.target.value)} placeholder="PLZ und Ort" />
-                  </div>
+                  {editLang === 'de' ? (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-name">Name / Bandmitglieder</Label>
+                        <Input id="imp-name" value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Vorname Nachname oder Bandmitglieder" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-careof">c/o Impressum-Service</Label>
+                        <Input id="imp-careof" value={form.careOf || ''} onChange={(e) => update('careOf', e.target.value)} placeholder="Name des Impressum-Services" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-street">Straße und Hausnummer</Label>
+                        <Input id="imp-street" value={form.street || ''} onChange={(e) => update('street', e.target.value)} placeholder="Straße und Hausnummer" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-zipcity">PLZ und Ort</Label>
+                        <Input id="imp-zipcity" value={form.zipCity || ''} onChange={(e) => update('zipCity', e.target.value)} placeholder="PLZ und Ort" />
+                      </div>
 
-                  <div className="border-t border-border pt-4 mt-4">
-                    <p className="text-sm text-muted-foreground mb-4">{t.contact}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-phone">{t.phone}</Label>
-                    <Input id="imp-phone" value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} placeholder="+49 ..." />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-email">{t.email}</Label>
-                    <Input id="imp-email" value={form.email || ''} onChange={(e) => update('email', e.target.value)} placeholder="email@example.com" />
-                  </div>
+                      <div className="border-t border-border pt-4 mt-4">
+                        <p className="text-sm text-muted-foreground mb-4">{t.contact}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-phone">{t.phone}</Label>
+                        <Input id="imp-phone" value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} placeholder="+49 ..." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-email">{t.email}</Label>
+                        <Input id="imp-email" value={form.email || ''} onChange={(e) => update('email', e.target.value)} placeholder="email@example.com" />
+                      </div>
 
-                  <div className="border-t border-border pt-4 mt-4">
-                    <p className="text-sm text-muted-foreground mb-4">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-resp-name">Name</Label>
-                    <Input id="imp-resp-name" value={form.responsibleName || ''} onChange={(e) => update('responsibleName', e.target.value)} placeholder="Name der verantwortlichen Person" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imp-resp-addr">Anschrift</Label>
-                    <Input id="imp-resp-addr" value={form.responsibleAddress || ''} onChange={(e) => update('responsibleAddress', e.target.value)} placeholder="Anschrift oder Service-Adresse" />
-                  </div>
+                      <div className="border-t border-border pt-4 mt-4">
+                        <p className="text-sm text-muted-foreground mb-4">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-resp-name">Name</Label>
+                        <Input id="imp-resp-name" value={form.responsibleName || ''} onChange={(e) => update('responsibleName', e.target.value)} placeholder="Name der verantwortlichen Person" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-resp-addr">Anschrift</Label>
+                        <Input id="imp-resp-addr" value={form.responsibleAddress || ''} onChange={(e) => update('responsibleAddress', e.target.value)} placeholder="Anschrift oder Service-Adresse" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-name-en">Name / Band members</Label>
+                        <Input id="imp-name-en" value={form.nameEn || ''} onChange={(e) => update('nameEn', e.target.value)} placeholder={form.name || 'Name (leave empty to use German)'} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-careof-en">c/o Impressum Service</Label>
+                        <Input id="imp-careof-en" value={form.careOfEn || ''} onChange={(e) => update('careOfEn', e.target.value)} placeholder={form.careOf || 'c/o service name'} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-street-en">Street and number</Label>
+                        <Input id="imp-street-en" value={form.streetEn || ''} onChange={(e) => update('streetEn', e.target.value)} placeholder={form.street || 'Street and number'} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-zipcity-en">Postal code and city</Label>
+                        <Input id="imp-zipcity-en" value={form.zipCityEn || ''} onChange={(e) => update('zipCityEn', e.target.value)} placeholder={form.zipCity || 'Postal code and city'} />
+                      </div>
+
+                      <div className="border-t border-border pt-4 mt-4">
+                        <p className="text-sm text-muted-foreground mb-4">Contact (shared across languages)</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-phone-en">Phone</Label>
+                        <Input id="imp-phone-en" value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} placeholder="+49 ..." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-email-en">Email</Label>
+                        <Input id="imp-email-en" value={form.email || ''} onChange={(e) => update('email', e.target.value)} placeholder="email@example.com" />
+                      </div>
+
+                      <div className="border-t border-border pt-4 mt-4">
+                        <p className="text-sm text-muted-foreground mb-4">Responsible for content according to § 18 para. 2 MStV</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-resp-name-en">Name</Label>
+                        <Input id="imp-resp-name-en" value={form.responsibleNameEn || ''} onChange={(e) => update('responsibleNameEn', e.target.value)} placeholder={form.responsibleName || 'Name of responsible person'} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="imp-resp-addr-en">Address</Label>
+                        <Input id="imp-resp-addr-en" value={form.responsibleAddressEn || ''} onChange={(e) => update('responsibleAddressEn', e.target.value)} placeholder={form.responsibleAddress || 'Address or service address'} />
+                      </div>
+                    </>
+                  )}
 
                   <div className="flex justify-end gap-2 pt-4">
                     <Button variant="outline" onClick={() => setIsEditing(false)}>{t.cancel}</Button>
@@ -207,10 +280,10 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                   <>
                     <div>
                       <h2 className="text-primary text-base mb-3 tracking-wider">{t.legalRef}</h2>
-                      <p className="text-foreground/80">{impressum.name}</p>
-                      {impressum.careOf && <p className="text-foreground/80">c/o {impressum.careOf}</p>}
-                      {impressum.street && <p className="text-foreground/80">{impressum.street}</p>}
-                      {impressum.zipCity && <p className="text-foreground/80">{impressum.zipCity}</p>}
+                      <p className="text-foreground/80">{(lang === 'en' && impressum.nameEn) || impressum.name}</p>
+                      {((lang === 'en' && impressum.careOfEn) || impressum.careOf) && <p className="text-foreground/80">c/o {(lang === 'en' && impressum.careOfEn) || impressum.careOf}</p>}
+                      {((lang === 'en' && impressum.streetEn) || impressum.street) && <p className="text-foreground/80">{(lang === 'en' && impressum.streetEn) || impressum.street}</p>}
+                      {((lang === 'en' && impressum.zipCityEn) || impressum.zipCity) && <p className="text-foreground/80">{(lang === 'en' && impressum.zipCityEn) || impressum.zipCity}</p>}
                     </div>
 
                     {(impressum.phone || impressum.email) && (
@@ -229,14 +302,14 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                       </div>
                     )}
 
-                    {impressum.responsibleName && (
+                    {((lang === 'en' && impressum.responsibleNameEn) || impressum.responsibleName) && (
                       <div>
                         <h2 className="text-primary text-base mb-3 tracking-wider">
                           {t.responsible}
                         </h2>
-                        <p className="text-foreground/80">{impressum.responsibleName}</p>
-                        {impressum.responsibleAddress && (
-                          <p className="text-foreground/80">{impressum.responsibleAddress}</p>
+                        <p className="text-foreground/80">{(lang === 'en' && impressum.responsibleNameEn) || impressum.responsibleName}</p>
+                        {((lang === 'en' && impressum.responsibleAddressEn) || impressum.responsibleAddress) && (
+                          <p className="text-foreground/80">{(lang === 'en' && impressum.responsibleAddressEn) || impressum.responsibleAddress}</p>
                         )}
                       </div>
                     )}

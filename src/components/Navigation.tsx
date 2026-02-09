@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
+import type { SectionLabels } from '@/lib/types'
 import {
   NAV_SCROLL_THRESHOLD_PX,
   NAV_GLITCH_PROBABILITY,
@@ -14,9 +15,10 @@ interface NavigationProps {
   soundMuted?: boolean
   hasSounds?: boolean
   onToggleMute?: () => void
+  sectionLabels?: SectionLabels
 }
 
-export default function Navigation({ soundMuted, hasSounds, onToggleMute }: NavigationProps) {
+export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels }: NavigationProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
@@ -51,12 +53,12 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute }: Navi
 
   const navItems = [
     { label: 'HOME', id: 'hero' },
-    { label: 'BIOGRAPHY', id: 'biography' },
-    { label: 'GALLERY', id: 'gallery' },
-    { label: 'GIGS', id: 'gigs' },
-    { label: 'RELEASES', id: 'releases' },
-    { label: 'MEDIA', id: 'media' },
-    { label: 'CONNECT', id: 'social' }
+    { label: sectionLabels?.biography || 'BIOGRAPHY', id: 'biography' },
+    { label: sectionLabels?.gallery || 'GALLERY', id: 'gallery' },
+    { label: sectionLabels?.gigs || 'GIGS', id: 'gigs' },
+    { label: sectionLabels?.releases || 'RELEASES', id: 'releases' },
+    { label: sectionLabels?.media || 'MEDIA', id: 'media' },
+    { label: sectionLabels?.connect || 'CONNECT', id: 'social' }
   ]
 
   return (

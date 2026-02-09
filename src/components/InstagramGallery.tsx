@@ -1,11 +1,12 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Images, X, CaretLeft, CaretRight, Plus, Trash, PencilSimple, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
+import { Images, X, CaretLeft, CaretRight, Plus, PencilSimple, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
+import { useOverlayTransition } from '@/components/OverlayTransition'
 import { loadCachedImage } from '@/lib/image-cache'
 import type { GalleryImage, SectionLabels } from '@/lib/types'
 import { toast } from 'sonner'
@@ -50,6 +51,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const [isDriveLoading, setIsDriveLoading] = useState(false)
   const [showDriveForm, setShowDriveForm] = useState(false)
   const driveAutoLoaded = useRef(false)
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
 
   const titleText = sectionLabels?.gallery || 'GALLERY'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
@@ -113,7 +115,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
 
   const photos = urlPhotos
 
-  const loadDriveFolder = async (url: string, silent = false) => {
+  const loadDriveFolder = async (url: string, silent = false, replace = false) => {
     const folderId = extractDriveFolderId(url)
     if (!folderId) {
       if (!silent) toast.error('Invalid Google Drive folder URL. Expected format: https://drive.google.com/drive/folders/...')
@@ -125,17 +127,28 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
       if (!res.ok) throw new Error(`API returned ${res.status}`)
       const data = await res.json()
       if (!data.images || data.images.length === 0) {
-        if (!silent) toast.info('No images found in Drive folder')
+        if (replace && onUpdate) {
+          onUpdate([])
+          if (!silent) toast.info('Drive folder is empty – gallery cleared')
+        } else if (!silent) {
+          toast.info('No images found in Drive folder')
+        }
         return
       }
-      const current = galleryImages || []
-      const existingIds = new Set(current.map(i => i.id))
-      const newImages = (data.images as GalleryImage[]).filter(i => !existingIds.has(i.id))
-      if (newImages.length > 0 && onUpdate) {
-        onUpdate([...current, ...newImages])
-        if (!silent) toast.success(`Added ${newImages.length} image(s) from Drive`)
-      } else if (!silent) {
-        toast.info('All Drive images already imported')
+      if (replace && onUpdate) {
+        // Replace all: clear gallery and use only fresh Drive images
+        onUpdate(data.images as GalleryImage[])
+        if (!silent) toast.success(`Gallery synced: ${data.images.length} image(s) from Drive`)
+      } else {
+        const current = galleryImages || []
+        const existingIds = new Set(current.map(i => i.id))
+        const newImages = (data.images as GalleryImage[]).filter(i => !existingIds.has(i.id))
+        if (newImages.length > 0 && onUpdate) {
+          onUpdate([...current, ...newImages])
+          if (!silent) toast.success(`Added ${newImages.length} image(s) from Drive`)
+        } else if (!silent) {
+          toast.info('All Drive images already imported')
+        }
       }
     } catch (err) {
       console.error('Drive folder load error:', err)
@@ -162,11 +175,6 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     setNewUrl('')
     setNewCaption('')
     setShowAddForm(false)
-  }
-
-  const handleRemoveImage = (imageId: string) => {
-    if (!onUpdate) return
-    onUpdate((galleryImages || []).filter((img) => img.id !== imageId))
   }
 
   const handleMobileSwipeStart = (e: React.TouchEvent) => {
@@ -215,13 +223,23 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               {editMode && onUpdate && (
                 <div className="flex gap-2 items-center">
                   {onLabelChange && (
-                    <input
-                      type="text"
-                      value={sectionLabels?.gallery || ''}
-                      onChange={(e) => onLabelChange('gallery', e.target.value)}
-                      placeholder="GALLERY"
-                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
-                    />
+                    <>
+                      <input
+                        type="text"
+                        value={sectionLabels?.headingPrefix ?? '>'}
+                        onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
+                        placeholder=">"
+                        className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
+                        title="Heading prefix"
+                      />
+                      <input
+                        type="text"
+                        value={sectionLabels?.gallery || ''}
+                        onChange={(e) => onLabelChange('gallery', e.target.value)}
+                        placeholder="GALLERY"
+                        className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                      />
+                    </>
                   )}
                 </div>
               )}
@@ -256,7 +274,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                   )}
                   {driveFolderUrl && (
                     <Button
-                      onClick={() => loadDriveFolder(driveFolderUrl)}
+                      onClick={() => loadDriveFolder(driveFolderUrl, false, true)}
                       variant="outline"
                       size="sm"
                       disabled={isDriveLoading}
@@ -346,7 +364,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -30 }}
                     transition={{ duration: 0.25 }}
-                    onClick={() => setSelectedImage(photos[mobileIndex])}
+                    onClick={() => { triggerTransition(); setSelectedImage(photos[mobileIndex]) }}
                   >
                     <ProgressiveImage
                       src={photos[mobileIndex].imageUrl}
@@ -422,7 +440,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedImage(photo)}
+                onClick={() => { triggerTransition(); setSelectedImage(photo) }}
               >
                 <span className="corner-bl"></span>
                 <span className="corner-br"></span>
@@ -432,15 +450,6 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 </div>
                 
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-                  {editMode && (
-                    <button
-                      className="p-1 bg-destructive/80 hover:bg-destructive text-white rounded-sm transition-colors"
-                      onClick={(e) => { e.stopPropagation(); handleRemoveImage(photo.id) }}
-                      title="Remove image"
-                    >
-                      <Trash size={14} />
-                    </button>
-                  )}
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 8px oklch(0.50 0.22 25)' }}></div>
                 </div>
                 
@@ -486,7 +495,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
           >
             <motion.button
               className="absolute top-4 right-4 p-3 bg-primary/20 hover:bg-primary/30 active:bg-primary/40 border border-primary/40 hover:border-primary/60 transition-all z-50 touch-manipulation group"
-              onClick={() => setSelectedImage(null)}
+              onClick={() => { triggerTransition(); setSelectedImage(null) }}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
@@ -526,12 +535,11 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               </div>
             </motion.div>
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-muted-foreground/60 font-mono text-xs">
-              <p>&gt; Click outside to close</p>
-            </div>
+
           </motion.div>
         )}
       </AnimatePresence>
+      {transitionElement}
     </>
   )
 }
