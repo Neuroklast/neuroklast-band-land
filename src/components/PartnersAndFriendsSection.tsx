@@ -424,7 +424,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
         {(friend.iconPhoto || friend.photo) ? (
           <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] bg-black ${hovered ? 'red-glitch-element' : ''}`}>
             <ProgressiveImage
-              src={friend.iconPhoto || friend.photo!}
+              src={friend.iconPhoto || friend.photo || ''}
               alt={friend.name}
               className="w-full h-full object-contain"
             />

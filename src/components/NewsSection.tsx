@@ -134,7 +134,11 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
               <span className="corner-br"></span>
               <div className="flex flex-col md:flex-row md:items-start gap-3">
                 <div className="font-mono text-[10px] text-primary/60 tracking-wider whitespace-nowrap flex-shrink-0 pt-0.5">
-                  {item.date ? format(new Date(item.date), 'dd.MM.yyyy') : '---'}
+                  {(() => {
+                    if (!item.date) return '---'
+                    const d = new Date(item.date)
+                    return isNaN(d.getTime()) ? item.date : format(d, 'dd.MM.yyyy')
+                  })()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm md:text-base font-medium text-foreground/90 leading-relaxed">{item.text}</p>
@@ -216,7 +220,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
   onClose: () => void
 }) {
   const [formData, setFormData] = useState<NewsItem>(
-    item || { id: `news-${Date.now()}`, date: new Date().toISOString().split('T')[0], text: '' }
+    item || { id: `news-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, date: new Date().toISOString().split('T')[0], text: '' }
   )
 
   return (
