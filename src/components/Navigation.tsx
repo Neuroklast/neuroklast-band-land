@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { List, X, SpeakerHigh, SpeakerSlash, Play, Pause } from '@phosphor-icons/react'
+import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
 import type { SectionLabels } from '@/lib/types'
 import {
   NAV_SCROLL_THRESHOLD_PX,
@@ -13,15 +13,12 @@ import {
 
 interface NavigationProps {
   soundMuted?: boolean
-  musicPaused?: boolean
   hasSounds?: boolean
   onToggleMute?: () => void
-  onToggleMusic?: () => void
-  onPlaySound?: (type: 'button') => void
   sectionLabels?: SectionLabels
 }
 
-export default function Navigation({ soundMuted, musicPaused, hasSounds, onToggleMute, onToggleMusic, onPlaySound, sectionLabels }: NavigationProps) {
+export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels }: NavigationProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
@@ -45,7 +42,6 @@ export default function Navigation({ soundMuted, musicPaused, hasSounds, onToggl
   }, [])
 
   const scrollToSection = (id: string) => {
-    onPlaySound?.('button')
     const element = document.getElementById(id)
     if (element) {
       const navHeight = NAV_HEIGHT_PX
@@ -95,15 +91,6 @@ export default function Navigation({ soundMuted, musicPaused, hasSounds, onToggl
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
-            {onToggleMusic && (
-              <button
-                onClick={onToggleMusic}
-                className="text-primary/60 hover:text-primary transition-colors p-1"
-                title={musicPaused ? 'Play background music' : 'Pause background music'}
-              >
-                {musicPaused ? <Play size={18} weight="fill" /> : <Pause size={18} weight="fill" />}
-              </button>
-            )}
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -116,15 +103,6 @@ export default function Navigation({ soundMuted, musicPaused, hasSounds, onToggl
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            {onToggleMusic && (
-              <button
-                onClick={onToggleMusic}
-                className="text-primary/60 hover:text-primary transition-colors p-2"
-                title={musicPaused ? 'Play background music' : 'Pause background music'}
-              >
-                {musicPaused ? <Play size={18} weight="fill" /> : <Pause size={18} weight="fill" />}
-              </button>
-            )}
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -163,7 +141,7 @@ export default function Navigation({ soundMuted, musicPaused, hasSounds, onToggl
             />
             <motion.div
               key="mobile-panel"
-              className="fixed inset-x-0 top-[80px] z-40 bg-background md:hidden pb-8 border-b border-primary/20 hud-element"
+              className="fixed inset-x-0 top-0 z-40 bg-background md:hidden pt-16 pb-8 border-b border-primary/20 hud-element"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}

@@ -20,7 +20,6 @@ interface MediaSectionProps {
   onUpdate?: (files: MediaFile[]) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
-  onPlaySound?: (type: 'typing') => void
 }
 
 /** Get unique folder names from files */
@@ -392,7 +391,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
   )
 }
 
-export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sectionLabels, onLabelChange, onPlaySound }: MediaSectionProps) {
+export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sectionLabels, onLabelChange }: MediaSectionProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -402,8 +401,7 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
-    TITLE_TYPING_START_DELAY_MS,
-    () => onPlaySound?.('typing')
+    TITLE_TYPING_START_DELAY_MS
   )
 
   return (

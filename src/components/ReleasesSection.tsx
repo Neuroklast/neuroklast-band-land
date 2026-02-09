@@ -28,10 +28,9 @@ interface ReleasesSectionProps {
   dataLoaded?: boolean
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
-  onPlaySound?: (type: 'typing') => void
 }
 
-export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onPlaySound }: ReleasesSectionProps) {
+export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: ReleasesSectionProps) {
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -50,8 +49,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     50,
-    100,
-    () => onPlaySound?.('typing')
+    100
   )
 
   useEffect(() => {
