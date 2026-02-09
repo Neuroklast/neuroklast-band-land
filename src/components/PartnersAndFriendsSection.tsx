@@ -28,6 +28,7 @@ interface PartnersAndFriendsSectionProps {
   editMode?: boolean
   onUpdate?: (friends: Friend[]) => void
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: any; label: string }[] = [
@@ -198,7 +199,7 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
           <CyberCloseButton
             onClick={onClose}
             label={sectionLabels?.closeButtonText || 'CLOSE'}
-            className="absolute top-3 right-3"
+            className="absolute top-2 right-3 z-20"
           />
 
           <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
@@ -334,7 +335,13 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
           </div>
           <div>
             <Label className="text-[10px]">Description</Label>
-            <Input value={editData.description || ''} onChange={(e) => setEditData({ ...editData, description: e.target.value })} className="text-xs h-8" />
+            <textarea
+              value={editData.description || ''}
+              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+              className="flex w-full rounded-sm border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[60px] resize-y"
+              rows={3}
+              placeholder="Description with line breaks..."
+            />
           </div>
           <div>
             <Label className="text-[10px]">Main URL</Label>
@@ -427,7 +434,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
   )
 }
 
-export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels }: PartnersAndFriendsSectionProps) {
+export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels, onLabelChange }: PartnersAndFriendsSectionProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
@@ -449,7 +456,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.7 }}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
               style={{
                 textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
@@ -460,23 +467,44 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
               </ChromaticText>
               <span className="animate-pulse">_</span>
             </h2>
-            {editMode && onUpdate && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-primary/30 hover:bg-primary/10 gap-1"
-                onClick={() => {
-                  const newFriend: Friend = {
-                    id: `friend-${Date.now()}`,
-                    name: 'New Friend',
-                  }
-                  onUpdate([...friends, newFriend])
-                }}
-              >
-                <Plus size={16} />
-                <span className="hidden md:inline">Add</span>
-              </Button>
-            )}
+            <div className="flex gap-2 items-center">
+              {editMode && onLabelChange && (
+                <>
+                  <input
+                    type="text"
+                    value={sectionLabels?.headingPrefix ?? '>'}
+                    onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
+                    placeholder=">"
+                    className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
+                    title="Heading prefix"
+                  />
+                  <input
+                    type="text"
+                    value={sectionLabels?.partnersAndFriends || ''}
+                    onChange={(e) => onLabelChange('partnersAndFriends', e.target.value)}
+                    placeholder="PARTNERS & FRIENDS"
+                    className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-40 focus:outline-none focus:border-primary"
+                  />
+                </>
+              )}
+              {editMode && onUpdate && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-primary/30 hover:bg-primary/10 gap-1"
+                  onClick={() => {
+                    const newFriend: Friend = {
+                      id: `friend-${Date.now()}`,
+                      name: 'New Friend',
+                    }
+                    onUpdate([...friends, newFriend])
+                  }}
+                >
+                  <Plus size={16} />
+                  <span className="hidden md:inline">Add</span>
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

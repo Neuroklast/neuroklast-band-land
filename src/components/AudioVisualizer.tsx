@@ -11,9 +11,14 @@ import {
   VISUALIZER_BAR_GLITCH_OFFSET,
 } from '@/lib/config'
 
+/** Target ~20fps instead of 60fps to reduce GPU load */
+const FRAME_INTERVAL_MS = 50
+
 export default function AudioVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | undefined>(undefined)
+  const lastFrameTime = useRef(0)
+  const isVisible = useRef(true)
   const [bars] = useState<Array<{
     height: number
     speed: number
@@ -44,9 +49,19 @@ export default function AudioVisualizer() {
     resize()
     window.addEventListener('resize', resize)
 
+    // Pause animation when tab is not visible
+    const handleVisibility = () => { isVisible.current = !document.hidden }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     let time = 0
 
-    const animate = () => {
+    const animate = (now: number) => {
+      animationRef.current = requestAnimationFrame(animate)
+
+      if (!isVisible.current) return
+      if (now - lastFrameTime.current < FRAME_INTERVAL_MS) return
+      lastFrameTime.current = now
+
       if (!ctx || !canvas) return
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -92,14 +107,13 @@ export default function AudioVisualizer() {
         randomBar.glitchOffset = (Math.random() - 0.5) * VISUALIZER_BAR_GLITCH_OFFSET
         randomBar.glitchTime = 15
       }
-
-      animationRef.current = requestAnimationFrame(animate)
     }
 
-    animate()
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', handleVisibility)
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }

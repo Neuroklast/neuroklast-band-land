@@ -335,7 +335,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                   >
                     <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
                     <motion.div
-                      className="w-full max-w-md bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter"
+                      className="w-full max-w-2xl bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter"
                       initial={{ scale: 0.85, y: 30, opacity: 0 }}
                       animate={{ scale: 1, y: 0, opacity: 1 }}
                       exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -347,19 +347,19 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                       <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
                       <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
+                      <CyberCloseButton
+                        onClick={() => setExpandedReleaseId(null)}
+                        className="absolute top-2 right-3 z-20"
+                      />
+
                       <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center px-4 gap-3">
                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                         <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">RELEASE // {release.title.toUpperCase()}</span>
                       </div>
 
-                      <CyberCloseButton
-                        onClick={() => setExpandedReleaseId(null)}
-                        className="absolute top-2 right-3"
-                      />
-
                       <div className="flex flex-col items-center gap-4 p-6">
                         {release.artwork && (
-                          <div className="w-48 h-48 relative overflow-hidden border border-primary/30">
+                          <div className="w-64 h-64 relative overflow-hidden border border-primary/30">
                             <img
                               src={release.artwork}
                               alt={release.title}

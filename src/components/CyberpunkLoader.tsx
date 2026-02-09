@@ -81,6 +81,8 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
   useEffect(() => {
     if (phase !== 'loading') return
 
+    let completeTimeout: ReturnType<typeof setTimeout>
+
     const glitchInterval = setInterval(() => {
       if (Math.random() > LOADER_GLITCH_PROBABILITY) {
         setGlitch(true)
@@ -98,7 +100,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
         
         if (prev >= 100) {
           clearInterval(interval)
-          setTimeout(onLoadComplete, LOADER_COMPLETE_DELAY_MS)
+          completeTimeout = setTimeout(onLoadComplete, LOADER_COMPLETE_DELAY_MS)
           return 100
         }
         return Math.min(newProgress, 100)
@@ -108,6 +110,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
     return () => {
       clearInterval(interval)
       clearInterval(glitchInterval)
+      clearTimeout(completeTimeout)
     }
   }, [onLoadComplete, phase])
 
@@ -117,7 +120,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Intense initial glitch overlay */}
+      {/* Intense initial glitch overlay with occult + hacking elements */}
       <AnimatePresence>
         {phase === 'glitch' && (
           <motion.div
@@ -144,6 +147,67 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
                 transition={{ duration: 0.4, repeat: 2, ease: 'linear' }}
               />
             ))}
+
+            {/* Occult sigils – brief flash */}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <motion.div
+                key={`sigil-${i}`}
+                className="absolute occult-flash-element"
+                style={{
+                  top: `${15 + i * 20}%`,
+                  left: `${10 + (i % 2) * 60 + Math.random() * 20}%`,
+                }}
+              >
+                <svg
+                  width="60"
+                  height="60"
+                  viewBox="0 0 60 60"
+                  className="text-primary/40"
+                  style={{ filter: 'drop-shadow(0 0 8px oklch(0.50 0.22 25 / 0.6))' }}
+                >
+                  {i % 3 === 0 ? (
+                    /* Inverted triangle with eye */
+                    <g stroke="currentColor" strokeWidth="0.8" fill="none">
+                      <polygon points="30,55 5,10 55,10" />
+                      <circle cx="30" cy="25" r="6" />
+                      <circle cx="30" cy="25" r="2" fill="currentColor" />
+                    </g>
+                  ) : i % 3 === 1 ? (
+                    /* Hexagram */
+                    <g stroke="currentColor" strokeWidth="0.8" fill="none">
+                      <polygon points="30,5 52,42 8,42" />
+                      <polygon points="30,55 8,18 52,18" />
+                    </g>
+                  ) : (
+                    /* Concentric circles with cross */
+                    <g stroke="currentColor" strokeWidth="0.8" fill="none">
+                      <circle cx="30" cy="30" r="25" />
+                      <circle cx="30" cy="30" r="15" />
+                      <circle cx="30" cy="30" r="5" />
+                      <line x1="30" y1="2" x2="30" y2="58" />
+                      <line x1="2" y1="30" x2="58" y2="30" />
+                    </g>
+                  )}
+                </svg>
+              </motion.div>
+            ))}
+
+            {/* Hacking text fragments */}
+            {['BREACH DETECTED', 'SYS.OVERRIDE()', 'RITE://INIT', '0x666_SIGIL'].map((text, i) => (
+              <motion.div
+                key={`hack-${i}`}
+                className="absolute font-mono text-primary/50 text-[10px] tracking-widest occult-flash-element"
+                style={{
+                  top: `${20 + i * 18}%`,
+                  left: `${5 + i * 22}%`,
+                  animationDelay: `${i * 0.1}s`,
+                  textShadow: '0 0 6px oklch(0.50 0.22 25 / 0.8)',
+                }}
+              >
+                {text}
+              </motion.div>
+            ))}
+
             {/* Chromatic aberration flash */}
             <motion.div
               className="absolute inset-0"

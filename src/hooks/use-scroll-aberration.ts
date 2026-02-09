@@ -25,8 +25,8 @@ export const useScrollAberration = () => {
 
     // Reduziert die Intensität schrittweise, wenn nicht gescrollt wird
     const decayInterval = setInterval(() => {
-      setAberrationIntensity((prev) => (prev > 0.001 ? prev * 0.95 : 0))
-    }, 50)
+      setAberrationIntensity((prev) => (prev > 0.001 ? prev * 0.9 : 0))
+    }, 100)
 
     window.addEventListener('scroll', handleScroll, { passive: true })
 
