@@ -6,6 +6,7 @@ import BiographyEditDialog from '@/components/BiographyEditDialog'
 import FontSizePicker from '@/components/FontSizePicker'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import { useOverlayTransition } from '@/components/OverlayTransition'
 import { loadCachedImage, toDirectImageUrl } from '@/lib/image-cache'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -322,6 +323,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
 
   const titleText = sectionLabels?.biography || 'BIOGRAPHY'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
@@ -550,7 +552,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                           <button
                             key={index}
                             className="w-full text-left border border-border/50 rounded-lg p-3 hover:border-primary/30 transition-colors duration-200 cursor-pointer"
-                            onClick={() => setSelectedMember(member)}
+                            onClick={() => { triggerTransition(); setSelectedMember(member) }}
                             aria-label={`View profile of ${member.name}`}
                           >
                             <div className="flex items-center gap-3">
@@ -641,11 +643,12 @@ export default function BiographySection({ biography = defaultBiography, editMod
           <MemberProfileOverlay
             member={selectedMember}
             resolvePhoto={resolvePhoto}
-            onClose={() => setSelectedMember(null)}
+            onClose={() => { triggerTransition(); setSelectedMember(null) }}
             sectionLabels={sectionLabels}
           />
         )}
       </AnimatePresence>
+      {transitionElement}
     </section>
   )
 }

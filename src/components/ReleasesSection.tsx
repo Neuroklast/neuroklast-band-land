@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import { useOverlayTransition } from '@/components/OverlayTransition'
 import type { Release, FontSizeSettings, SectionLabels } from '@/lib/types'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import ReleaseEditDialog from './ReleaseEditDialog'
@@ -41,6 +42,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const mobileScrollRef = useRef<HTMLDivElement>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
 
   const titleText = sectionLabels?.releases || 'RELEASES'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
@@ -282,7 +284,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                     >
                       <div
                         className="relative cursor-pointer touch-manipulation"
-                        onClick={() => setExpandedReleaseId(isExpanded ? null : release.id)}
+                        onClick={() => { triggerTransition(); setExpandedReleaseId(isExpanded ? null : release.id) }}
                       >
                         <div className="aspect-square bg-secondary/30 relative overflow-hidden border border-border hover:border-primary/50 transition-colors">
                           {release.artwork ? (
@@ -348,7 +350,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                       <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
                       <CyberCloseButton
-                        onClick={() => setExpandedReleaseId(null)}
+                        onClick={() => { triggerTransition(); setExpandedReleaseId(null) }}
                         className="absolute top-2 right-3 z-20"
                       />
 
@@ -435,7 +437,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                 >
                   <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation hud-element hud-corner hud-scanline cursor-pointer"
-                    onClick={() => !editMode && setExpandedReleaseId(expandedReleaseId === release.id ? null : release.id)}
+                    onClick={() => { if (!editMode) { triggerTransition(); setExpandedReleaseId(expandedReleaseId === release.id ? null : release.id) } }}
                   >
                     <span className="corner-bl"></span>
                     <span className="corner-br"></span>
@@ -566,6 +568,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
           }}
         />
       )}
+      {transitionElement}
     </section>
   )
 }

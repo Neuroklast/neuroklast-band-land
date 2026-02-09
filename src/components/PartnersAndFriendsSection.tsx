@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import { useOverlayTransition } from '@/components/OverlayTransition'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
@@ -466,6 +467,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
   const titleText = sectionLabels?.partnersAndFriends || 'PARTNERS & FRIENDS'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
@@ -541,7 +543,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
                 key={friend.id}
                 friend={friend}
                 editMode={editMode}
-                onSelect={() => setSelectedFriend(friend)}
+                onSelect={() => { triggerTransition(); setSelectedFriend(friend) }}
                 onUpdate={(updated) => {
                   if (onUpdate) {
                     onUpdate(friends.map(f => f.id === updated.id ? updated : f))
@@ -562,11 +564,12 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
         {selectedFriend && (
           <FriendProfileOverlay
             friend={selectedFriend}
-            onClose={() => setSelectedFriend(null)}
+            onClose={() => { triggerTransition(); setSelectedFriend(null) }}
             sectionLabels={sectionLabels}
           />
         )}
       </AnimatePresence>
+      {transitionElement}
     </section>
   )
 }

@@ -1,13 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SoundSettings } from '@/lib/types'
-import { toDirectImageUrl } from '@/lib/image-cache'
 import { DEFAULT_SOUND_VOLUME } from '@/lib/config'
 
 /** Convert Drive share links to direct download URLs for audio files */
 function toDirectAudioUrl(url?: string): string {
   if (!url) return ''
-  // Re-use the existing Drive → direct URL logic (works for any file type)
-  return toDirectImageUrl(url)
+  // Google Drive: /file/d/{fileId}/view → direct download URL
+  const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
+  if (driveFileMatch) {
+    return `https://drive.google.com/uc?export=download&id=${driveFileMatch[1]}`
+  }
+  // Google Drive: open?id={fileId}
+  const driveOpenMatch = url.match(/drive\.google\.com\/open\?id=([^&#]+)/)
+  if (driveOpenMatch) {
+    return `https://drive.google.com/uc?export=download&id=${driveOpenMatch[1]}`
+  }
+  // Google Drive: uc?export=view&id={fileId}
+  const driveUcMatch = url.match(/drive\.google\.com\/uc\?[^#]*?id=([^&#]+)/)
+  if (driveUcMatch) {
+    return `https://drive.google.com/uc?export=download&id=${driveUcMatch[1]}`
+  }
+  return url
 }
 
 const audioCache = new Map<string, HTMLAudioElement>()
@@ -17,8 +30,11 @@ function getCachedAudio(url: string): HTMLAudioElement | null {
   const cached = audioCache.get(url)
   if (cached) return cached
   try {
-    const audio = new Audio(url)
+    // Use the server-side proxy for CORS-safe audio playback
+    const proxied = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
+    const audio = new Audio(proxied)
     audio.preload = 'auto'
+    audio.crossOrigin = 'anonymous'
     audioCache.set(url, audio)
     return audio
   } catch {

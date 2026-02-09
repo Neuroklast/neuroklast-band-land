@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
+import { useOverlayTransition } from '@/components/OverlayTransition'
 import { loadCachedImage } from '@/lib/image-cache'
 import type { GalleryImage, SectionLabels } from '@/lib/types'
 import { toast } from 'sonner'
@@ -50,6 +51,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const [isDriveLoading, setIsDriveLoading] = useState(false)
   const [showDriveForm, setShowDriveForm] = useState(false)
   const driveAutoLoaded = useRef(false)
+  const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
 
   const titleText = sectionLabels?.gallery || 'GALLERY'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
@@ -362,7 +364,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -30 }}
                     transition={{ duration: 0.25 }}
-                    onClick={() => setSelectedImage(photos[mobileIndex])}
+                    onClick={() => { triggerTransition(); setSelectedImage(photos[mobileIndex]) }}
                   >
                     <ProgressiveImage
                       src={photos[mobileIndex].imageUrl}
@@ -438,7 +440,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedImage(photo)}
+                onClick={() => { triggerTransition(); setSelectedImage(photo) }}
               >
                 <span className="corner-bl"></span>
                 <span className="corner-br"></span>
@@ -493,7 +495,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
           >
             <motion.button
               className="absolute top-4 right-4 p-3 bg-primary/20 hover:bg-primary/30 active:bg-primary/40 border border-primary/40 hover:border-primary/60 transition-all z-50 touch-manipulation group"
-              onClick={() => setSelectedImage(null)}
+              onClick={() => { triggerTransition(); setSelectedImage(null) }}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
@@ -537,6 +539,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
           </motion.div>
         )}
       </AnimatePresence>
+      {transitionElement}
     </>
   )
 }
