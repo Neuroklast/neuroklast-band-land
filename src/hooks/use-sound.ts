@@ -38,11 +38,14 @@ function getCachedAudio(url: string): HTMLAudioElement | null {
   const cached = audioCache.get(url)
   if (cached) return cached
   try {
-    // Use the server-side proxy for CORS-safe audio playback
+    // Don't use proxy for local files (starting with /)
     const audioUrl = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
     const audio = new Audio(audioUrl)
     audio.preload = 'auto'
-    audio.crossOrigin = 'anonymous'
+    // Only set crossOrigin for remote URLs
+    if (!url.startsWith('/')) {
+      audio.crossOrigin = 'anonymous'
+    }
     audioCache.set(url, audio)
     return audio
   } catch {
@@ -106,10 +109,16 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
     const url = toDirectAudioUrl(effectiveSounds.backgroundMusic)
     if (!url) return
 
-    const audio = new Audio(url)
+    // Don't use proxy for local files
+    const audioUrl = url.startsWith('/') ? url : `/api/image-proxy?url=${encodeURIComponent(url)}`
+    const audio = new Audio(audioUrl)
     audio.loop = true
     audio.volume = settings?.backgroundMusicVolume ?? 0.3
     audio.preload = 'auto'
+    // Only set crossOrigin for remote URLs
+    if (!url.startsWith('/')) {
+      audio.crossOrigin = 'anonymous'
+    }
     
     // Try to play, handling autoplay restrictions
     const playPromise = audio.play()
