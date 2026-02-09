@@ -283,6 +283,7 @@ function App() {
                   onUpdate={(news) => setBandData((current) => ({ ...(current || defaultBandData), news }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -316,6 +317,7 @@ function App() {
                   onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -333,6 +335,7 @@ function App() {
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -350,6 +353,7 @@ function App() {
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -364,6 +368,7 @@ function App() {
                   onUpdate={(mediaFiles) => setBandData((current) => ({ ...(current || defaultBandData), mediaFiles }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -380,6 +385,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -397,6 +403,7 @@ function App() {
                   }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onPlaySound={playSound}
                 />
               </motion.div>
             </main>
