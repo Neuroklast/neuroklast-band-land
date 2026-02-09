@@ -24,11 +24,12 @@ interface NewsSectionProps {
   onUpdate?: (news: NewsItem[]) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  onPlaySound?: (type: 'typing') => void
 }
 
 const INITIAL_VISIBLE_COUNT = 3
 
-export default function NewsSection({ news = [], editMode, onUpdate, sectionLabels, onLabelChange }: NewsSectionProps) {
+export default function NewsSection({ news = [], editMode, onUpdate, sectionLabels, onLabelChange, onPlaySound }: NewsSectionProps) {
   const [glitchActive, setGlitchActive] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [editingItem, setEditingItem] = useState<NewsItem | null>(null)
@@ -40,7 +41,8 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
-    TITLE_TYPING_START_DELAY_MS
+    TITLE_TYPING_START_DELAY_MS,
+    () => onPlaySound?.('typing')
   )
 
   useEffect(() => {
