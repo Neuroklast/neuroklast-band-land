@@ -59,46 +59,22 @@ const defaultBandData: BandData = {
   ]
 }
 
-/** Collect all image URLs from band data for background pre-caching */
+/** Collect all image URLs from band data for background precaching. */
 function collectImageUrls(data: BandData): string[] {
   const urls: string[] = []
-  if (data.galleryImages) {
-    for (const img of data.galleryImages) {
-      if (img.url) urls.push(img.url)
-    }
-  }
-  if (data.biography?.members) {
-    for (const member of data.biography.members) {
-      if (typeof member === 'object' && member.photo) urls.push(member.photo)
-    }
-  }
-  if (data.biography?.friends) {
-    for (const friend of data.biography.friends) {
-      if (friend.photo) urls.push(friend.photo)
-      if (friend.iconPhoto) urls.push(friend.iconPhoto)
-      if (friend.profilePhoto) urls.push(friend.profilePhoto)
-    }
-  }
-  if (data.biography?.photos) {
-    for (const photo of data.biography.photos) {
-      if (photo) urls.push(photo)
-    }
-  }
-  if (data.releases) {
-    for (const release of data.releases) {
-      if (release.artwork) urls.push(release.artwork)
-    }
-  }
-  if (data.gigs) {
-    for (const gig of data.gigs) {
-      if (gig.photo) urls.push(gig.photo)
-    }
-  }
-  if (data.news) {
-    for (const item of data.news) {
-      if (item.photo) urls.push(item.photo)
-    }
-  }
+  data.galleryImages?.forEach(img => { if (img.url) urls.push(img.url) })
+  data.biography?.members?.forEach(member => {
+    if (typeof member === 'object' && member !== null && member.photo) urls.push(member.photo)
+  })
+  data.biography?.friends?.forEach(friend => {
+    if (friend.photo) urls.push(friend.photo)
+    if (friend.iconPhoto) urls.push(friend.iconPhoto)
+    if (friend.profilePhoto) urls.push(friend.profilePhoto)
+  })
+  data.biography?.photos?.forEach(photo => { if (photo) urls.push(photo) })
+  data.releases?.forEach(release => { if (release.artwork) urls.push(release.artwork) })
+  data.gigs?.forEach(gig => { if (gig.photo) urls.push(gig.photo) })
+  data.news?.forEach(item => { if (item.photo) urls.push(item.photo) })
   return urls
 }
 
@@ -273,13 +249,7 @@ function App() {
           <CyberpunkBackground />
           <Toaster position="top-right" />
           
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
-          </motion.div>
+          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
           
           <motion.div
             initial={{ opacity: 0 }}
