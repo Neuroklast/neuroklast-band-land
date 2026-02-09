@@ -20,7 +20,6 @@ interface InstagramGalleryProps {
   onDriveFolderUrlChange?: (url: string) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
-  onPlaySound?: (type: 'typing') => void
 }
 
 /** Extract a Google Drive folder ID from various URL formats */
@@ -36,7 +35,7 @@ function extractDriveFolderId(url: string): string | null {
   return null
 }
 
-export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels, onLabelChange, onPlaySound }: InstagramGalleryProps) {
+export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels, onLabelChange }: InstagramGalleryProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
@@ -59,8 +58,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     50,
-    200,
-    () => onPlaySound?.('typing')
+    200
   )
 
   // Load and cache URL-based images

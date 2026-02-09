@@ -22,10 +22,9 @@ interface GigsSectionProps {
   dataLoaded?: boolean
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
-  onPlaySound?: (type: 'typing') => void
 }
 
-export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onPlaySound }: GigsSectionProps) {
+export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: GigsSectionProps) {
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -39,8 +38,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     40,
-    100,
-    () => onPlaySound?.('typing')
+    100
   )
 
   useEffect(() => {

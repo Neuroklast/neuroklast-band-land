@@ -31,7 +31,6 @@ interface PartnersAndFriendsSectionProps {
   onUpdate?: (friends: Friend[]) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
-  onPlaySound?: (type: 'typing') => void
 }
 
 const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: any; label: string }[] = [
@@ -477,7 +476,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
   )
 }
 
-export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels, onLabelChange, onPlaySound }: PartnersAndFriendsSectionProps) {
+export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels, onLabelChange }: PartnersAndFriendsSectionProps) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
@@ -487,8 +486,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
-    TITLE_TYPING_START_DELAY_MS,
-    () => onPlaySound?.('typing')
+    TITLE_TYPING_START_DELAY_MS
   )
 
   if (!editMode && friends.length === 0) return null

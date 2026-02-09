@@ -187,7 +187,7 @@ function App() {
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
   const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
-  const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, musicPaused, toggleMusic, hasSounds } = useSound(data.soundSettings, editMode)
+  const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
 
   // Apply config overrides whenever bandData changes
   useEffect(() => {
@@ -249,15 +249,7 @@ function App() {
           <CyberpunkBackground />
           <Toaster position="top-right" />
           
-          <Navigation 
-            soundMuted={soundMuted}
-            musicPaused={musicPaused}
-            hasSounds={hasSounds} 
-            onToggleMute={toggleSoundMute}
-            onToggleMusic={toggleMusic}
-            onPlaySound={playSound}
-            sectionLabels={data.sectionLabels} 
-          />
+          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
           
           <motion.div
             initial={{ opacity: 0 }}
@@ -283,7 +275,6 @@ function App() {
                   onUpdate={(news) => setBandData((current) => ({ ...(current || defaultBandData), news }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -300,7 +291,6 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -317,7 +307,6 @@ function App() {
                   onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -335,7 +324,6 @@ function App() {
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -353,7 +341,6 @@ function App() {
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -368,7 +355,6 @@ function App() {
                   onUpdate={(mediaFiles) => setBandData((current) => ({ ...(current || defaultBandData), mediaFiles }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -385,7 +371,6 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
 
@@ -403,7 +388,6 @@ function App() {
                   }))}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
-                  onPlaySound={playSound}
                 />
               </motion.div>
             </main>

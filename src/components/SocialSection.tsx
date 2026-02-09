@@ -31,7 +31,6 @@ interface SocialSectionProps {
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
-  onPlaySound?: (type: 'typing') => void
 }
 
 const socialPlatforms = [
@@ -92,7 +91,7 @@ function SocialButton({ iconSrc, url, label, index, isInView }: { iconSrc: strin
   )
 }
 
-export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange, onPlaySound }: SocialSectionProps) {
+export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: SocialSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
@@ -102,8 +101,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
     TITLE_TYPING_SPEED_MS,
-    TITLE_TYPING_START_DELAY_MS,
-    () => onPlaySound?.('typing')
+    TITLE_TYPING_START_DELAY_MS
   )
 
   useEffect(() => {

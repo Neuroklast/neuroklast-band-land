@@ -3,8 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 export function useTypingEffect(
   text: string,
   speed: number = 30,
-  startDelay: number = 0,
-  onType?: () => void
+  startDelay: number = 0
 ) {
   const [displayedText, setDisplayedText] = useState('')
   const [isComplete, setIsComplete] = useState(false)
@@ -26,7 +25,6 @@ export function useTypingEffect(
       intervalId = setInterval(() => {
         if (currentIndex < text.length) {
           setDisplayedText(text.slice(0, currentIndex + 1))
-          onType?.()
           currentIndex++
         } else {
           clearInterval(intervalId)
@@ -39,7 +37,7 @@ export function useTypingEffect(
       clearTimeout(startTimeout)
       if (intervalId) clearInterval(intervalId)
     }
-  }, [text, speed, startDelay, onType])
+  }, [text, speed, startDelay])
 
   /** Skip the animation and show the full text immediately */
   const skipAnimation = useCallback(() => {
