@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
 import type { SectionLabels } from '@/lib/types'
@@ -127,23 +127,26 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
         )}
       </motion.nav>
 
-      {isMobileMenuOpen && (
-        <>
-          <motion.div
-            className="fixed inset-0 z-40 bg-background/95 backdrop-blur-md md:hidden hud-grid-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-          <motion.div
-            className="fixed inset-x-0 top-0 z-40 bg-background md:hidden pt-16 pb-8 border-b border-primary/20 hud-element"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              key="mobile-overlay"
+              className="fixed inset-0 z-40 bg-background/95 backdrop-blur-md md:hidden hud-grid-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.div
+              key="mobile-panel"
+              className="fixed inset-x-0 top-0 z-40 bg-background md:hidden pt-16 pb-8 border-b border-primary/20 hud-element"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
             <div className="flex flex-col gap-1 px-4">
               {navItems.map((item, index) => (
                 <motion.button
@@ -162,8 +165,9 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
             </div>
             <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
           </motion.div>
-        </>
-      )}
+          </>
+        )}
+      </AnimatePresence>
     </>
   )
 }
