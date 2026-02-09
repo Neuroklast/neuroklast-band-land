@@ -133,8 +133,8 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
             >
               <span className="corner-bl"></span>
               <span className="corner-br"></span>
-              <div className="flex flex-col md:flex-row md:items-start gap-3">
-                <div className="font-mono text-[10px] text-primary/60 tracking-wider whitespace-nowrap flex-shrink-0 pt-0.5">
+              <div className="flex flex-col">
+                <div className="font-mono text-[10px] text-primary/60 tracking-wider whitespace-nowrap flex-shrink-0 mb-3">
                   {(() => {
                     if (!item.date) return '---'
                     const d = new Date(item.date)
@@ -151,48 +151,50 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                     return format(d, 'dd.MM.yyyy')
                   })()}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row gap-4 items-start">
                   {item.photo && (
-                    <div className="mb-3 max-w-md">
+                    <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28">
                       <ProgressiveImage 
                         src={item.photo} 
                         alt={item.text}
-                        className="w-full h-auto rounded-sm border border-primary/20"
+                        className="w-full h-full object-cover rounded-sm border border-primary/20"
                       />
                     </div>
                   )}
-                  <p className="text-sm md:text-base font-medium text-foreground/90 leading-relaxed">{item.text}</p>
-                  {item.details && (
-                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{item.details}</p>
-                  )}
-                  {item.link && (
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-2 font-mono tracking-wider transition-colors"
-                    >
-                      <ArrowSquareOut size={12} />
-                      LINK
-                    </a>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base md:text-lg font-medium text-foreground/90 leading-relaxed">{item.text}</p>
+                    {item.details && (
+                      <p className="text-sm md:text-base text-muted-foreground mt-2 leading-relaxed">{item.details}</p>
+                    )}
+                    {item.link && (
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-2 font-mono tracking-wider transition-colors"
+                      >
+                        <ArrowSquareOut size={12} />
+                        LINK
+                      </a>
+                    )}
+                  </div>
+                  {editMode && (
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => setEditingItem(item)}
+                        className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <PencilSimple size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash size={16} />
+                      </button>
+                    </div>
                   )}
                 </div>
-                {editMode && (
-                  <div className="flex gap-1 flex-shrink-0">
-                    <button
-                      onClick={() => setEditingItem(item)}
-                      className="p-1 text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      <PencilSimple size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                      <Trash size={16} />
-                    </button>
-                  </div>
-                )}
               </div>
             </motion.div>
           ))}
@@ -334,11 +336,11 @@ function NewsEditDialog({ item, onSave, onClose }: {
               placeholder="https://... or Google Drive link"
             />
             {formData.photo && (
-              <div className="mt-2 max-w-xs">
+              <div className="mt-2 w-24 h-24">
                 <ProgressiveImage 
                   src={formData.photo} 
                   alt="Preview"
-                  className="w-full h-auto rounded-sm border border-primary/20"
+                  className="w-full h-full object-cover rounded-sm border border-primary/20"
                 />
               </div>
             )}
