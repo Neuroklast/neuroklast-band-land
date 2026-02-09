@@ -217,7 +217,7 @@ function App() {
         >
           <AudioVisualizer />
           
-          <div className="fixed inset-0 pointer-events-none z-[100]">
+          <div className="fixed inset-0 pointer-events-none z-[100] hidden md:block">
             <div className="absolute inset-0 hud-scanline opacity-30" />
           </div>
           
