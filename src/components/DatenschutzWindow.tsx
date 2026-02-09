@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import SafeText from '@/components/SafeText'
 import type { Datenschutz } from '@/lib/types'
 
 interface DatenschutzWindowProps {
@@ -132,10 +133,11 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState('')
   const [lang, setLang] = useState<'de' | 'en'>('de')
+  const [editLang, setEditLang] = useState<'de' | 'en'>('de')
 
   const defaultText = lang === 'de' ? defaultTextDE : defaultTextEN
 
-  const displayText = datenschutz?.customText || defaultText.replace(
+  const displayText = (lang === 'de' ? datenschutz?.customText : datenschutz?.customTextEn) || defaultText.replace(
     lang === 'de'
       ? 'Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website entnehmen Sie bitte dem Impressum.'
       : 'The party responsible for data processing on this website can be found in the imprint.',
@@ -155,8 +157,23 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
     }
   }, [isOpen, datenschutz])
 
+  // Update the edit text when switching language in edit mode
+  useEffect(() => {
+    if (isEditing) {
+      if (editLang === 'de') {
+        setEditText(datenschutz?.customText || defaultTextDE)
+      } else {
+        setEditText(datenschutz?.customTextEn || defaultTextEN)
+      }
+    }
+  }, [editLang, isEditing, datenschutz])
+
   const handleSave = () => {
-    onSave?.({ customText: editText })
+    if (editLang === 'de') {
+      onSave?.({ ...datenschutz, customText: editText })
+    } else {
+      onSave?.({ ...datenschutz, customTextEn: editText })
+    }
     setIsEditing(false)
   }
 
@@ -166,7 +183,7 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
       if (/^\d+\.\s/.test(trimmed)) {
         return (
           <h2 key={i} className="text-primary text-base mb-2 tracking-wider mt-4">
-            {trimmed}
+            <SafeText>{trimmed}</SafeText>
           </h2>
         )
       }
@@ -175,14 +192,14 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
         return (
           <ul key={i} className="text-foreground/80 text-xs leading-relaxed list-disc pl-4 space-y-1">
             {items.map((item, j) => (
-              <li key={j}>{item.replace(/^- /, '')}</li>
+              <li key={j}><SafeText fontSize={12}>{item.replace(/^- /, '')}</SafeText></li>
             ))}
           </ul>
         )
       }
       return (
         <p key={i} className="text-foreground/80 text-xs leading-relaxed">
-          {trimmed}
+          <SafeText fontSize={12}>{trimmed}</SafeText>
         </p>
       )
     })
@@ -231,6 +248,22 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
                     </button>
                   </div>
                 )}
+                {isEditing && (
+                  <div className="flex border border-primary/30 overflow-hidden">
+                    <button
+                      onClick={() => setEditLang('de')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${editLang === 'de' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      DE
+                    </button>
+                    <button
+                      onClick={() => setEditLang('en')}
+                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${editLang === 'en' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
+                    >
+                      EN
+                    </button>
+                  </div>
+                )}
                 {editMode && onSave && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -250,10 +283,14 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
             <div className="pt-16 pb-8 px-8 font-mono text-sm space-y-4 max-h-[80vh] overflow-y-auto">
               {isEditing ? (
                 <div className="space-y-4">
+                  <p className="text-xs text-primary/60 font-mono">
+                    {editLang === 'de' ? '▸ Editing German version' : '▸ Editing English version'}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    Bearbeiten Sie die Datenschutzerklärung. Absätze werden durch Leerzeilen getrennt.
-                    Zeilen die mit einer Zahl + Punkt beginnen werden als Überschriften dargestellt.
-                    Zeilen die mit {'"- "'} beginnen werden als Aufzählung dargestellt.
+                    {editLang === 'de'
+                      ? 'Bearbeiten Sie die Datenschutzerklärung. Absätze werden durch Leerzeilen getrennt. Zeilen die mit einer Zahl + Punkt beginnen werden als Überschriften dargestellt. Zeilen die mit "- " beginnen werden als Aufzählung dargestellt.'
+                      : 'Edit the privacy policy. Paragraphs are separated by blank lines. Lines starting with a number + period are rendered as headings. Lines starting with "- " are rendered as bullet points.'
+                    }
                   </p>
                   <textarea
                     value={editText}
@@ -261,8 +298,8 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
                     className="w-full h-[50vh] bg-background border border-border rounded-sm p-4 text-xs font-mono text-foreground/90 resize-none focus:outline-none focus:border-primary/50"
                   />
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>Abbrechen</Button>
-                    <Button onClick={handleSave}>Speichern</Button>
+                    <Button variant="outline" onClick={() => setIsEditing(false)}>{editLang === 'de' ? 'Abbrechen' : 'Cancel'}</Button>
+                    <Button onClick={handleSave}>{editLang === 'de' ? 'Speichern' : 'Save'}</Button>
                   </div>
                 </div>
               ) : (

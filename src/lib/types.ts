@@ -104,6 +104,13 @@ export interface Impressum {
   email?: string
   responsibleName?: string
   responsibleAddress?: string
+  /** English overrides – when set, the EN view shows these values instead */
+  nameEn?: string
+  careOfEn?: string
+  streetEn?: string
+  zipCityEn?: string
+  responsibleNameEn?: string
+  responsibleAddressEn?: string
 }
 
 export interface GalleryImage {
@@ -114,6 +121,8 @@ export interface GalleryImage {
 
 export interface Datenschutz {
   customText?: string
+  /** Separate English custom text */
+  customTextEn?: string
 }
 
 export interface BandData {

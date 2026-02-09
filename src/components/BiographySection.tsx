@@ -7,6 +7,7 @@ import FontSizePicker from '@/components/FontSizePicker'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useOverlayTransition } from '@/components/OverlayTransition'
+import SafeText from '@/components/SafeText'
 import { loadCachedImage, toDirectImageUrl } from '@/lib/image-cache'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -524,7 +525,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                   <div className="prose prose-invert max-w-none">
                     {biography.story.split('\n\n').map((paragraph, index) => (
                       <p key={index} className={`${fontSizes?.biographyStory || 'text-sm md:text-base'} text-foreground/90 leading-relaxed mb-4 last:mb-0`}>
-                        {paragraph}
+                        <SafeText>{paragraph}</SafeText>
                       </p>
                     ))}
                   </div>
