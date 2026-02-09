@@ -141,7 +141,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
             />
             <motion.div
               key="mobile-panel"
-              className="fixed inset-x-0 top-0 z-40 bg-background md:hidden pt-16 pb-8 border-b border-primary/20 hud-element"
+              className="fixed inset-x-0 top-[80px] z-40 bg-background md:hidden pb-8 border-b border-primary/20 hud-element"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
