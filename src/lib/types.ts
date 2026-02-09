@@ -174,6 +174,14 @@ export interface SoundSettings {
   typingSound?: string
   /** URL to button click sound */
   buttonSound?: string
+  /** URL to loading finished sound */
+  loadingFinishedSound?: string
+  /** URL to background music */
+  backgroundMusic?: string
+  /** Background music volume (0-1) */
+  backgroundMusicVolume?: number
+  /** Whether sounds are muted by default */
+  defaultMuted?: boolean
 }
 
 export interface ProfileField {

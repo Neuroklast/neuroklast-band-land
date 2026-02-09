@@ -203,7 +203,12 @@ function App() {
       
       <AnimatePresence>
         {loading && (
-          <CyberpunkLoader onLoadComplete={() => setLoading(false)} />
+          <CyberpunkLoader 
+            onLoadComplete={() => {
+              playSound('loadingFinished')
+              setLoading(false)
+            }} 
+          />
         )}
       </AnimatePresence>
 
