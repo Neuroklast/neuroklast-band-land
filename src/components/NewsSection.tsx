@@ -76,7 +76,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
     onUpdate(news.filter(n => n.id !== id))
   }
 
-  if (!editMode && news.length === 0) return null
+  if (!editMode && (!news || news.length === 0)) return null
 
   return (
     <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-secondary/5 via-background to-background" id="news">
