@@ -1,5 +1,5 @@
 import { useKV } from '@/hooks/use-kv'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -57,6 +57,25 @@ const defaultBandData: BandData = {
     { name: 'status', description: 'System status', output: ['SYSTEM STATUS:', '  AUDIO ENGINE: ACTIVE', '  HUD SYSTEMS: OPERATIONAL', '  THREAT LEVEL: CLASSIFIED'] },
     { name: 'info', description: 'Band information', output: ['NEUROKLAST - HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO', 'LABEL: DARKTUNES MUSIC GROUP', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
   ]
+}
+
+/** Collect all image URLs from band data for background precaching. */
+function collectImageUrls(data: BandData): string[] {
+  const urls: string[] = []
+  data.galleryImages?.forEach(img => { if (img.url) urls.push(img.url) })
+  data.biography?.members?.forEach(member => {
+    if (typeof member !== 'string' && member.photo) urls.push(member.photo)
+  })
+  data.biography?.friends?.forEach(friend => {
+    if (friend.photo) urls.push(friend.photo)
+    if (friend.iconPhoto) urls.push(friend.iconPhoto)
+    if (friend.profilePhoto) urls.push(friend.profilePhoto)
+  })
+  data.biography?.photos?.forEach(photo => { if (photo) urls.push(photo) })
+  data.releases?.forEach(release => { if (release.artwork) urls.push(release.artwork) })
+  data.gigs?.forEach(gig => { if (gig.photo) urls.push(gig.photo) })
+  data.news?.forEach(item => { if (item.photo) urls.push(item.photo) })
+  return urls
 }
 
 function App() {
@@ -167,6 +186,7 @@ function App() {
 
   const data = bandData || defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
+  const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
   const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
 
   // Apply config overrides whenever bandData changes
@@ -204,6 +224,7 @@ function App() {
       <AnimatePresence>
         {loading && (
           <CyberpunkLoader 
+            precacheUrls={precacheUrls}
             onLoadComplete={() => {
               playSound('loadingFinished')
               setLoading(false)
@@ -228,13 +249,7 @@ function App() {
           <CyberpunkBackground />
           <Toaster position="top-right" />
           
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
-          </motion.div>
+          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
           
           <motion.div
             initial={{ opacity: 0 }}

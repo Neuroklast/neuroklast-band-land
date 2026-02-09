@@ -1,17 +1,16 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useEffect, useState, useRef } from 'react'
 import logoImage from '@/assets/images/baphomet no text.svg'
 import {
-  LOADER_GLITCH_PROBABILITY,
-  LOADER_GLITCH_DURATION_MS,
-  LOADER_GLITCH_INTERVAL_MS,
   LOADER_PROGRESS_INCREMENT_MULTIPLIER,
   LOADER_COMPLETE_DELAY_MS,
   LOADER_PROGRESS_INTERVAL_MS,
 } from '@/lib/config'
+import { loadCachedImage } from '@/lib/image-cache'
 
 interface CyberpunkLoaderProps {
   onLoadComplete: () => void
+  precacheUrls?: string[]
 }
 
 const hackingTexts = [
@@ -53,43 +52,28 @@ const codeFragments = [
   'export NK_MODE=ACTIVATED',
 ]
 
-export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps) {
+export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: CyberpunkLoaderProps) {
   const [progress, setProgress] = useState(0)
-  const [glitch, setGlitch] = useState(false)
   const [hackingText, setHackingText] = useState(hackingTexts[0])
-  const [phase, setPhase] = useState<'glitch' | 'loading'>('glitch')
-  const [initialGlitchIntensity, setInitialGlitchIntensity] = useState(1)
+  const [cachingDone, setCachingDone] = useState(precacheUrls.length === 0)
+  const onCompleteRef = useRef(onLoadComplete)
+  onCompleteRef.current = onLoadComplete
 
-  // Initial strong glitch phase before loading starts
+  // Background data caching during the loading screen
   useEffect(() => {
-    // Strong glitch phase for 800ms
-    const glitchTimer = setTimeout(() => {
-      setPhase('loading')
-    }, 800)
-
-    // Animate glitch intensity down
-    const intensityTimer = setInterval(() => {
-      setInitialGlitchIntensity(prev => Math.max(0, prev - 0.15))
-    }, 100)
-
-    return () => {
-      clearTimeout(glitchTimer)
-      clearInterval(intensityTimer)
+    if (precacheUrls.length === 0) {
+      setCachingDone(true)
+      return
     }
-  }, [])
+    setCachingDone(false)
+    let cancelled = false
+    Promise.allSettled(precacheUrls.map(url => loadCachedImage(url)))
+      .then(() => { if (!cancelled) setCachingDone(true) })
+    return () => { cancelled = true }
+  }, [precacheUrls])
 
+  // Progress bar animation
   useEffect(() => {
-    if (phase !== 'loading') return
-
-    let completeTimeout: ReturnType<typeof setTimeout>
-
-    const glitchInterval = setInterval(() => {
-      if (Math.random() > LOADER_GLITCH_PROBABILITY) {
-        setGlitch(true)
-        setTimeout(() => setGlitch(false), LOADER_GLITCH_DURATION_MS)
-      }
-    }, LOADER_GLITCH_INTERVAL_MS)
-
     const interval = setInterval(() => {
       setProgress((prev) => {
         const newProgress = prev + Math.random() * LOADER_PROGRESS_INCREMENT_MULTIPLIER
@@ -97,22 +81,24 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
         if (progressIndex < hackingTexts.length) {
           setHackingText(hackingTexts[progressIndex])
         }
-        
         if (prev >= 100) {
           clearInterval(interval)
-          completeTimeout = setTimeout(onLoadComplete, LOADER_COMPLETE_DELAY_MS)
           return 100
         }
         return Math.min(newProgress, 100)
       })
     }, LOADER_PROGRESS_INTERVAL_MS)
 
-    return () => {
-      clearInterval(interval)
-      clearInterval(glitchInterval)
-      clearTimeout(completeTimeout)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Complete when both progress animation and background caching are done
+  useEffect(() => {
+    if (progress >= 100 && cachingDone) {
+      const timeout = setTimeout(() => onCompleteRef.current(), LOADER_COMPLETE_DELAY_MS)
+      return () => clearTimeout(timeout)
     }
-  }, [onLoadComplete, phase])
+  }, [progress, cachingDone])
 
   return (
     <motion.div
@@ -120,109 +106,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Intense initial glitch overlay with occult + hacking elements */}
-      <AnimatePresence>
-        {phase === 'glitch' && (
-          <motion.div
-            className="absolute inset-0 z-30"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* Full-screen glitch bars */}
-            {Array.from({ length: 12 }).map((_, i) => (
-              <motion.div
-                key={`bar-${i}`}
-                className="absolute w-full bg-primary"
-                style={{
-                  height: `${Math.random() * 8 + 2}px`,
-                  top: `${Math.random() * 100}%`,
-                  opacity: initialGlitchIntensity * (Math.random() * 0.8 + 0.2),
-                  mixBlendMode: 'screen',
-                }}
-                animate={{
-                  x: [0, Math.random() * 100 - 50, 0, Math.random() * -80, 0],
-                  scaleX: [1, 1.5, 0.5, 2, 1],
-                }}
-                transition={{ duration: 0.4, repeat: 2, ease: 'linear' }}
-              />
-            ))}
-
-            {/* Occult sigils – brief flash */}
-            {Array.from({ length: 4 }).map((_, i) => (
-              <motion.div
-                key={`sigil-${i}`}
-                className="absolute occult-flash-element"
-                style={{
-                  top: `${15 + i * 20}%`,
-                  left: `${10 + (i % 2) * 60 + Math.random() * 20}%`,
-                }}
-              >
-                <svg
-                  width="60"
-                  height="60"
-                  viewBox="0 0 60 60"
-                  className="text-primary/40"
-                  style={{ filter: 'drop-shadow(0 0 8px oklch(0.50 0.22 25 / 0.6))' }}
-                >
-                  {i % 3 === 0 ? (
-                    /* Inverted triangle with eye */
-                    <g stroke="currentColor" strokeWidth="0.8" fill="none">
-                      <polygon points="30,55 5,10 55,10" />
-                      <circle cx="30" cy="25" r="6" />
-                      <circle cx="30" cy="25" r="2" fill="currentColor" />
-                    </g>
-                  ) : i % 3 === 1 ? (
-                    /* Hexagram */
-                    <g stroke="currentColor" strokeWidth="0.8" fill="none">
-                      <polygon points="30,5 52,42 8,42" />
-                      <polygon points="30,55 8,18 52,18" />
-                    </g>
-                  ) : (
-                    /* Concentric circles with cross */
-                    <g stroke="currentColor" strokeWidth="0.8" fill="none">
-                      <circle cx="30" cy="30" r="25" />
-                      <circle cx="30" cy="30" r="15" />
-                      <circle cx="30" cy="30" r="5" />
-                      <line x1="30" y1="2" x2="30" y2="58" />
-                      <line x1="2" y1="30" x2="58" y2="30" />
-                    </g>
-                  )}
-                </svg>
-              </motion.div>
-            ))}
-
-            {/* Hacking text fragments */}
-            {['BREACH DETECTED', 'SYS.OVERRIDE()', 'RITE://INIT', '0x666_SIGIL'].map((text, i) => (
-              <motion.div
-                key={`hack-${i}`}
-                className="absolute font-mono text-primary/50 text-[10px] tracking-widest occult-flash-element"
-                style={{
-                  top: `${20 + i * 18}%`,
-                  left: `${5 + i * 22}%`,
-                  animationDelay: `${i * 0.1}s`,
-                  textShadow: '0 0 6px oklch(0.50 0.22 25 / 0.8)',
-                }}
-              >
-                {text}
-              </motion.div>
-            ))}
-
-            {/* Chromatic aberration flash */}
-            <motion.div
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(90deg, oklch(0.50 0.22 25 / ${initialGlitchIntensity * 0.3}) 0%, transparent 30%, transparent 70%, oklch(0.50 0.22 210 / ${initialGlitchIntensity * 0.2}) 100%)`,
-                mixBlendMode: 'screen',
-              }}
-              animate={{ opacity: [1, 0.5, 1, 0.3, 0] }}
-              transition={{ duration: 0.8 }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Enhanced code rain background */}
+      {/* Code rain background */}
       <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
         <div className="text-primary font-mono text-[10px] leading-tight">
           {Array.from({ length: 50 }).map((_, i) => (
@@ -275,14 +159,14 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
         <motion.img
           src={logoImage}
           alt="NEUROKLAST"
-          className={`w-40 h-40 object-contain ${glitch ? 'red-glitch-element' : ''}`}
+          className="w-40 h-40 object-contain"
           style={{ 
-            filter: `drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))`,
+            filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',
           }}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ 
             opacity: [0.7, 1, 0.7],
-            scale: phase === 'glitch' ? [0.8, 1.05, 0.95, 1] : 1,
+            scale: 1,
           }}
           transition={{
             opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" },
@@ -308,7 +192,7 @@ export default function CyberpunkLoader({ onLoadComplete }: CyberpunkLoaderProps
         
         <div className="flex flex-col gap-3 items-center">
           <motion.div
-            className={`text-primary font-mono text-base tracking-[0.08em] ${glitch ? 'red-glitch-text' : ''}`}
+            className="text-primary font-mono text-base tracking-[0.08em]"
             animate={{ opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
