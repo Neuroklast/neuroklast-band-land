@@ -249,7 +249,13 @@ function App() {
           <CyberpunkBackground />
           <Toaster position="top-right" />
           
-          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
+          <Navigation 
+            soundMuted={soundMuted} 
+            hasSounds={hasSounds} 
+            onToggleMute={toggleSoundMute} 
+            onPlaySound={playSound}
+            sectionLabels={data.sectionLabels} 
+          />
           
           <motion.div
             initial={{ opacity: 0 }}

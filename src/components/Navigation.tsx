@@ -15,10 +15,11 @@ interface NavigationProps {
   soundMuted?: boolean
   hasSounds?: boolean
   onToggleMute?: () => void
+  onPlaySound?: (type: 'button') => void
   sectionLabels?: SectionLabels
 }
 
-export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels }: NavigationProps) {
+export default function Navigation({ soundMuted, hasSounds, onToggleMute, onPlaySound, sectionLabels }: NavigationProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
@@ -42,6 +43,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
   }, [])
 
   const scrollToSection = (id: string) => {
+    onPlaySound?.('button')
     const element = document.getElementById(id)
     if (element) {
       const navHeight = NAV_HEIGHT_PX
