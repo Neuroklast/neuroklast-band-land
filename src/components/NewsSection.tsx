@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
+import ProgressiveImage from '@/components/ProgressiveImage'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { format } from 'date-fns'
@@ -137,10 +138,29 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                   {(() => {
                     if (!item.date) return '---'
                     const d = new Date(item.date)
-                    return isNaN(d.getTime()) ? item.date : format(d, 'dd.MM.yyyy')
+                    // Check if it's a valid date
+                    if (isNaN(d.getTime())) {
+                      // If date is in YYYY-MM format, show just month and year
+                      if (/^\d{4}-\d{2}$/.test(item.date)) {
+                        const [year, month] = item.date.split('-')
+                        const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+                        return `${monthNames[parseInt(month) - 1]} ${year}`
+                      }
+                      return item.date
+                    }
+                    return format(d, 'dd.MM.yyyy')
                   })()}
                 </div>
                 <div className="flex-1 min-w-0">
+                  {item.photo && (
+                    <div className="mb-3 max-w-md">
+                      <ProgressiveImage 
+                        src={item.photo} 
+                        alt={item.text}
+                        className="w-full h-auto rounded-sm border border-primary/20"
+                      />
+                    </div>
+                  )}
                   <p className="text-sm md:text-base font-medium text-foreground/90 leading-relaxed">{item.text}</p>
                   {item.details && (
                     <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{item.details}</p>
@@ -220,13 +240,32 @@ function NewsEditDialog({ item, onSave, onClose }: {
   onClose: () => void
 }) {
   const [formData, setFormData] = useState<NewsItem>(
-    item || { id: `news-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, date: new Date().toISOString().split('T')[0], text: '' }
+    item || { id: `news-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, date: new Date().toISOString().slice(0, 7), text: '' }
   )
+  const [dateType, setDateType] = useState<'month' | 'date'>(() => {
+    // Determine initial date type based on existing date format
+    if (item?.date && /^\d{4}-\d{2}$/.test(item.date)) return 'month'
+    return 'date'
+  })
+
+  const handleDateTypeChange = (newType: 'month' | 'date') => {
+    setDateType(newType)
+    // Convert date format when switching
+    if (newType === 'month' && formData.date) {
+      // Convert YYYY-MM-DD to YYYY-MM
+      setFormData({ ...formData, date: formData.date.slice(0, 7) })
+    } else if (newType === 'date' && formData.date) {
+      // If we only have YYYY-MM, append -01 for first day of month
+      if (formData.date.length === 7) {
+        setFormData({ ...formData, date: `${formData.date}-01` })
+      }
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
       <motion.div
-        className="w-full max-w-md bg-card border border-primary/30 p-6 space-y-4"
+        className="w-full max-w-md bg-card border border-primary/30 p-6 space-y-4 max-h-[90vh] overflow-y-auto"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.2 }}
@@ -234,9 +273,34 @@ function NewsEditDialog({ item, onSave, onClose }: {
         <h3 className="font-mono text-sm text-primary tracking-wider">{item ? 'EDIT NEWS' : 'ADD NEWS'}</h3>
         <div className="space-y-3">
           <div>
-            <Label className="text-[10px]">Date</Label>
+            <Label className="text-[10px]">Date Format</Label>
+            <div className="flex gap-2 mt-1">
+              <button
+                onClick={() => handleDateTypeChange('month')}
+                className={`px-3 py-1 text-[10px] font-mono border transition-colors ${
+                  dateType === 'month'
+                    ? 'bg-primary/20 border-primary text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary/50'
+                }`}
+              >
+                MONTH/YEAR
+              </button>
+              <button
+                onClick={() => handleDateTypeChange('date')}
+                className={`px-3 py-1 text-[10px] font-mono border transition-colors ${
+                  dateType === 'date'
+                    ? 'bg-primary/20 border-primary text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary/50'
+                }`}
+              >
+                FULL DATE
+              </button>
+            </div>
+          </div>
+          <div>
+            <Label className="text-[10px]">{dateType === 'month' ? 'Month' : 'Date'}</Label>
             <Input
-              type="date"
+              type={dateType}
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               className="text-xs"
@@ -260,6 +324,24 @@ function NewsEditDialog({ item, onSave, onClose }: {
               rows={3}
               placeholder="Additional details..."
             />
+          </div>
+          <div>
+            <Label className="text-[10px]">Image URL (optional)</Label>
+            <Input
+              value={formData.photo || ''}
+              onChange={(e) => setFormData({ ...formData, photo: e.target.value || undefined })}
+              className="text-xs"
+              placeholder="https://... or Google Drive link"
+            />
+            {formData.photo && (
+              <div className="mt-2 max-w-xs">
+                <ProgressiveImage 
+                  src={formData.photo} 
+                  alt="Preview"
+                  className="w-full h-auto rounded-sm border border-primary/20"
+                />
+              </div>
+            )}
           </div>
           <div>
             <Label className="text-[10px]">Link (optional)</Label>
