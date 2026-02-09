@@ -64,7 +64,7 @@ function collectImageUrls(data: BandData): string[] {
   const urls: string[] = []
   data.galleryImages?.forEach(img => { if (img.url) urls.push(img.url) })
   data.biography?.members?.forEach(member => {
-    if (typeof member === 'object' && member !== null && member.photo) urls.push(member.photo)
+    if (typeof member !== 'string' && member.photo) urls.push(member.photo)
   })
   data.biography?.friends?.forEach(friend => {
     if (friend.photo) urls.push(friend.photo)

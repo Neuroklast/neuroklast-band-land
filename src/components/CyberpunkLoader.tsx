@@ -69,7 +69,6 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
     let cancelled = false
     Promise.allSettled(precacheUrls.map(url => loadCachedImage(url)))
       .then(() => { if (!cancelled) setCachingDone(true) })
-      .catch(() => { if (!cancelled) setCachingDone(true) })
     return () => { cancelled = true }
   }, [precacheUrls])
 
