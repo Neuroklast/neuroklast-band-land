@@ -46,6 +46,12 @@ export interface Member {
   name: string
   photo?: string
   bio?: string
+  /** Custom label for the name line (default: "SUBJECT") */
+  subjectLabel?: string
+  /** Custom label for the status line (default: "STATUS") */
+  statusLabel?: string
+  /** Custom value for the status line (default: "ACTIVE") */
+  statusValue?: string
 }
 
 export interface Friend {
@@ -54,6 +60,12 @@ export interface Friend {
   photo?: string
   description?: string
   url?: string
+  /** Custom label for the name line (default: "SUBJECT") */
+  subjectLabel?: string
+  /** Custom label for the status line (default: "STATUS") */
+  statusLabel?: string
+  /** Custom value for the status line (default: "ACTIVE") */
+  statusValue?: string
   socials?: {
     instagram?: string
     facebook?: string

@@ -132,13 +132,18 @@ function FriendProfileOverlay({ friend, onClose, sectionLabels }: { friend: Frie
   }, [])
 
   const dataLines: string[] = []
-  dataLines.push(`> SUBJECT: ${friend.name.toUpperCase()}`)
+  const subjectLabel = friend.subjectLabel || 'SUBJECT'
+  dataLines.push(`> ${subjectLabel}: ${friend.name.toUpperCase()}`)
   // Add custom profile fields if defined
   const profileFields = sectionLabels?.profileFields
   if (profileFields && profileFields.length > 0) {
     profileFields.forEach(field => {
       dataLines.push(`> ${field.label}: ${field.value}`)
     })
+  } else if (friend.statusLabel || friend.statusValue) {
+    const statusLabel = friend.statusLabel || 'STATUS'
+    const statusValue = friend.statusValue || 'ACTIVE'
+    dataLines.push(`> ${statusLabel}: ${statusValue}`)
   }
   if (friend.description) {
     dataLines.push('> ---')
@@ -355,6 +360,20 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
           <div>
             <Label className="text-[10px]">Main URL</Label>
             <Input value={editData.url || ''} onChange={(e) => setEditData({ ...editData, url: e.target.value })} className="text-xs h-8" placeholder="https://..." />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-[10px]">Subject Label</Label>
+              <Input value={editData.subjectLabel || ''} onChange={(e) => setEditData({ ...editData, subjectLabel: e.target.value })} className="text-xs h-8" placeholder="SUBJECT" />
+            </div>
+            <div>
+              <Label className="text-[10px]">Status Label</Label>
+              <Input value={editData.statusLabel || ''} onChange={(e) => setEditData({ ...editData, statusLabel: e.target.value })} className="text-xs h-8" placeholder="STATUS" />
+            </div>
+            <div className="col-span-2">
+              <Label className="text-[10px]">Status Value</Label>
+              <Input value={editData.statusValue || ''} onChange={(e) => setEditData({ ...editData, statusValue: e.target.value })} className="text-xs h-8" placeholder="ACTIVE" />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {friendSocialIcons.map(({ key, label }) => (

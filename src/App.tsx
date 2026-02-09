@@ -27,7 +27,7 @@ import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import { useSound } from '@/hooks/use-sound'
-import type { BandData, FontSizeSettings, SoundSettings } from '@/lib/types'
+import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 
@@ -125,6 +125,13 @@ function App() {
     setBandData((current) => ({
       ...(current || defaultBandData),
       fontSizes: { ...(current || defaultBandData).fontSizes, [key]: value }
+    }))
+  }
+
+  const handleLabelChange = (key: keyof SectionLabels, value: string) => {
+    setBandData((current) => ({
+      ...(current || defaultBandData),
+      sectionLabels: { ...(current || defaultBandData).sectionLabels, [key]: value }
     }))
   }
 
@@ -248,6 +255,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -263,6 +271,7 @@ function App() {
                   driveFolderUrl={data.galleryDriveFolderUrl}
                   onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -279,6 +288,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -295,6 +305,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -323,6 +334,7 @@ function App() {
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
 
@@ -339,6 +351,7 @@ function App() {
                     biography: { ...(current || defaultBandData).biography!, friends }
                   }))}
                   sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
                 />
               </motion.div>
             </main>

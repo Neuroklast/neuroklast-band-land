@@ -35,6 +35,7 @@ interface BiographySectionProps {
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
 const defaultBiography: Biography = {
@@ -149,7 +150,8 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
 
   // Build terminal-style data lines for the console effect
   const dataLines: string[] = []
-  dataLines.push(`> SUBJECT: ${member.name.toUpperCase()}`)
+  const subjectLabel = member.subjectLabel || 'SUBJECT'
+  dataLines.push(`> ${subjectLabel}: ${member.name.toUpperCase()}`)
   // Add custom profile fields if defined, otherwise use defaults
   const profileFields = sectionLabels?.profileFields
   if (profileFields && profileFields.length > 0) {
@@ -157,7 +159,9 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
       dataLines.push(`> ${field.label}: ${field.value}`)
     })
   } else {
-    dataLines.push(`> STATUS: ${sectionLabels?.profileStatusText || 'ACTIVE'}`)
+    const statusLabel = member.statusLabel || 'STATUS'
+    const statusValue = member.statusValue || sectionLabels?.profileStatusText || 'ACTIVE'
+    dataLines.push(`> ${statusLabel}: ${statusValue}`)
   }
   if (member.bio) {
     dataLines.push('> ---')
@@ -307,7 +311,7 @@ function MemberProfileOverlay({ member, resolvePhoto, onClose, sectionLabels }: 
   )
 }
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: BiographySectionProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>(biography.photos || [])
@@ -418,15 +422,36 @@ export default function BiographySection({ biography = defaultBiography, editMod
             <span className="animate-pulse">_</span>
           </motion.h2>
             {editMode && (
-              <Button
-                onClick={() => setIsEditDialogOpen(true)}
-                variant="outline"
-                size="sm"
-                className="gap-2 active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
-              >
-                <PencilSimple size={16} />
-                Edit
-              </Button>
+              <div className="flex gap-2 items-center flex-wrap">
+                {onLabelChange && (
+                  <>
+                    <input
+                      type="text"
+                      value={sectionLabels?.headingPrefix ?? '>'}
+                      onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
+                      placeholder=">"
+                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
+                      title="Heading prefix"
+                    />
+                    <input
+                      type="text"
+                      value={sectionLabels?.biography || ''}
+                      onChange={(e) => onLabelChange('biography', e.target.value)}
+                      placeholder="BIOGRAPHY"
+                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                    />
+                  </>
+                )}
+                <Button
+                  onClick={() => setIsEditDialogOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
+                >
+                  <PencilSimple size={16} />
+                  Edit
+                </Button>
+              </div>
             )}
           </div>
 

@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Images, X, CaretLeft, CaretRight, Plus, Trash, PencilSimple, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
+import { Images, X, CaretLeft, CaretRight, Plus, PencilSimple, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
@@ -113,7 +113,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
 
   const photos = urlPhotos
 
-  const loadDriveFolder = async (url: string, silent = false) => {
+  const loadDriveFolder = async (url: string, silent = false, replace = false) => {
     const folderId = extractDriveFolderId(url)
     if (!folderId) {
       if (!silent) toast.error('Invalid Google Drive folder URL. Expected format: https://drive.google.com/drive/folders/...')
@@ -125,17 +125,28 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
       if (!res.ok) throw new Error(`API returned ${res.status}`)
       const data = await res.json()
       if (!data.images || data.images.length === 0) {
-        if (!silent) toast.info('No images found in Drive folder')
+        if (replace && onUpdate) {
+          onUpdate([])
+          if (!silent) toast.info('Drive folder is empty – gallery cleared')
+        } else if (!silent) {
+          toast.info('No images found in Drive folder')
+        }
         return
       }
-      const current = galleryImages || []
-      const existingIds = new Set(current.map(i => i.id))
-      const newImages = (data.images as GalleryImage[]).filter(i => !existingIds.has(i.id))
-      if (newImages.length > 0 && onUpdate) {
-        onUpdate([...current, ...newImages])
-        if (!silent) toast.success(`Added ${newImages.length} image(s) from Drive`)
-      } else if (!silent) {
-        toast.info('All Drive images already imported')
+      if (replace && onUpdate) {
+        // Replace all: clear gallery and use only fresh Drive images
+        onUpdate(data.images as GalleryImage[])
+        if (!silent) toast.success(`Gallery synced: ${data.images.length} image(s) from Drive`)
+      } else {
+        const current = galleryImages || []
+        const existingIds = new Set(current.map(i => i.id))
+        const newImages = (data.images as GalleryImage[]).filter(i => !existingIds.has(i.id))
+        if (newImages.length > 0 && onUpdate) {
+          onUpdate([...current, ...newImages])
+          if (!silent) toast.success(`Added ${newImages.length} image(s) from Drive`)
+        } else if (!silent) {
+          toast.info('All Drive images already imported')
+        }
       }
     } catch (err) {
       console.error('Drive folder load error:', err)
@@ -162,11 +173,6 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     setNewUrl('')
     setNewCaption('')
     setShowAddForm(false)
-  }
-
-  const handleRemoveImage = (imageId: string) => {
-    if (!onUpdate) return
-    onUpdate((galleryImages || []).filter((img) => img.id !== imageId))
   }
 
   const handleMobileSwipeStart = (e: React.TouchEvent) => {
@@ -215,13 +221,23 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               {editMode && onUpdate && (
                 <div className="flex gap-2 items-center">
                   {onLabelChange && (
-                    <input
-                      type="text"
-                      value={sectionLabels?.gallery || ''}
-                      onChange={(e) => onLabelChange('gallery', e.target.value)}
-                      placeholder="GALLERY"
-                      className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
-                    />
+                    <>
+                      <input
+                        type="text"
+                        value={sectionLabels?.headingPrefix ?? '>'}
+                        onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
+                        placeholder=">"
+                        className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
+                        title="Heading prefix"
+                      />
+                      <input
+                        type="text"
+                        value={sectionLabels?.gallery || ''}
+                        onChange={(e) => onLabelChange('gallery', e.target.value)}
+                        placeholder="GALLERY"
+                        className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
+                      />
+                    </>
                   )}
                 </div>
               )}
@@ -256,7 +272,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                   )}
                   {driveFolderUrl && (
                     <Button
-                      onClick={() => loadDriveFolder(driveFolderUrl)}
+                      onClick={() => loadDriveFolder(driveFolderUrl, false, true)}
                       variant="outline"
                       size="sm"
                       disabled={isDriveLoading}
@@ -432,15 +448,6 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 </div>
                 
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-                  {editMode && (
-                    <button
-                      className="p-1 bg-destructive/80 hover:bg-destructive text-white rounded-sm transition-colors"
-                      onClick={(e) => { e.stopPropagation(); handleRemoveImage(photo.id) }}
-                      title="Remove image"
-                    >
-                      <Trash size={14} />
-                    </button>
-                  )}
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 8px oklch(0.50 0.22 25)' }}></div>
                 </div>
                 
