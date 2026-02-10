@@ -60,7 +60,13 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
     if (settings?.defaultMuted !== undefined) {
       return settings.defaultMuted
     }
-    try { return localStorage.getItem('nk-sound-muted') === 'true' } catch { return true }
+    try {
+      const stored = localStorage.getItem('nk-sound-muted')
+      // Default to muted (true) if no preference is stored
+      return stored !== null ? stored === 'true' : true
+    } catch {
+      return true
+    }
   })
   const cachedRef = useRef(false)
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null)

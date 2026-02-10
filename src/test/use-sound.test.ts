@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { toDirectAudioUrl } from '@/hooks/use-sound'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { renderHook, act } from '@testing-library/react'
+import { toDirectAudioUrl, useSound } from '@/hooks/use-sound'
 
 describe('toDirectAudioUrl', () => {
   it('converts Google Drive /file/d/ URLs to direct download URLs', () => {
@@ -49,5 +50,65 @@ describe('toDirectAudioUrl', () => {
     const remoteUrl = 'https://drive.google.com/file/d/abc123/view'
     const result2 = toDirectAudioUrl(remoteUrl)
     expect(result2).not.toContain('image-proxy')
+  })
+})
+
+describe('useSound', () => {
+  beforeEach(() => {
+    // Clear localStorage before each test
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    localStorage.clear()
+  })
+
+  it('should default to muted when no localStorage value exists', () => {
+    const { result } = renderHook(() => useSound())
+    expect(result.current.muted).toBe(true)
+  })
+
+  it('should respect localStorage value when set to true', () => {
+    localStorage.setItem('nk-sound-muted', 'true')
+    const { result } = renderHook(() => useSound())
+    expect(result.current.muted).toBe(true)
+  })
+
+  it('should respect localStorage value when set to false', () => {
+    localStorage.setItem('nk-sound-muted', 'false')
+    const { result } = renderHook(() => useSound())
+    expect(result.current.muted).toBe(false)
+  })
+
+  it('should prioritize settings.defaultMuted over localStorage', () => {
+    localStorage.setItem('nk-sound-muted', 'false')
+    const { result } = renderHook(() => useSound({ defaultMuted: true }))
+    expect(result.current.muted).toBe(true)
+  })
+
+  it('should use settings.defaultMuted when set to false', () => {
+    const { result } = renderHook(() => useSound({ defaultMuted: false }))
+    expect(result.current.muted).toBe(false)
+  })
+
+  it('should toggle mute state', () => {
+    const { result } = renderHook(() => useSound())
+    const initialMuted = result.current.muted
+    
+    act(() => {
+      result.current.toggleMute()
+    })
+    
+    expect(result.current.muted).toBe(!initialMuted)
+  })
+
+  it('should persist mute state to localStorage when toggled', () => {
+    const { result } = renderHook(() => useSound())
+    
+    act(() => {
+      result.current.toggleMute()
+    })
+    
+    expect(localStorage.getItem('nk-sound-muted')).toBe(String(result.current.muted))
   })
 })
