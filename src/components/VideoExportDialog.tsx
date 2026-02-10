@@ -51,8 +51,7 @@ export default function VideoExportDialog({ open, onOpenChange }: VideoExportDia
         {
           element: appElement,
           duration: duration * 1000, // Convert to milliseconds
-          fps,
-          filename: `neuroklast-animation-${Date.now()}.webm`
+          fps
         },
         (progress) => {
           setProgress(progress)

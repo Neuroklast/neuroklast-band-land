@@ -18,8 +18,6 @@ export interface VideoExportOptions {
   fps?: number
   /** Video format mime type */
   mimeType?: string
-  /** Filename for the exported video */
-  filename?: string
 }
 
 export interface VideoExportProgress {
@@ -99,7 +97,7 @@ export class VideoExporter {
 
       // Start recording
       this.mediaRecorder.start(100) // Collect data every 100ms
-      this.startTime = Date.now()
+      this.startTime = performance.now()
 
       // Report recording status
       this.reportProgress({
@@ -262,7 +260,7 @@ export class VideoExporter {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = filename || `animation-export-${new Date().toISOString().split('T')[0]}.webm`
+    a.download = filename || `animation-export-${Date.now()}.webm`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
