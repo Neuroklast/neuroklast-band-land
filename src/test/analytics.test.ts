@@ -91,7 +91,7 @@ describe('analytics', () => {
     trackInteraction('test-action')
     
     // Verify data exists before reset
-    let before = loadAnalytics()
+    const before = loadAnalytics()
     expect(before.totalPageViews).toBeGreaterThan(0)
     
     // Reset should clear the storage key entirely

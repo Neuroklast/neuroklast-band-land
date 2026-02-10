@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChartBar, X, Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
+import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { loadAnalytics, resetAnalytics } from '@/lib/analytics'
 import type { SiteAnalytics, DailyStats } from '@/lib/analytics'
@@ -42,7 +41,7 @@ function MiniBarChart({ data, dataKey, color = 'bg-primary' }: { data: DailyStat
 }
 
 /** Stat card with icon and value */
-function StatCard({ icon: Icon, label, value, sublabel }: { icon: any; label: string; value: number | string; sublabel?: string }) {
+function StatCard({ icon: Icon, label, value, sublabel }: { icon: React.ComponentType<{ size: number }>; label: string; value: number | string; sublabel?: string }) {
   return (
     <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
       <div className="flex items-center gap-2 text-primary/60">
