@@ -11,6 +11,7 @@ import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
 import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import { useTrackSection } from '@/hooks/use-track-section'
 
 interface GigsSectionProps {
   gigs: Gig[]
@@ -31,6 +32,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
+  useTrackSection('gigs')
 
   const titleText = sectionLabels?.gigs || 'UPCOMING GIGS'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'

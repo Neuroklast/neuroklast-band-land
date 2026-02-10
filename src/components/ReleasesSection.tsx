@@ -15,6 +15,7 @@ import { fetchITunesReleases } from '@/lib/itunes'
 import { fetchOdesliLinks } from '@/lib/odesli'
 import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import { useTrackSection } from '@/hooks/use-track-section'
 import FontSizePicker from '@/components/FontSizePicker'
 
 import { useTouchSwipe } from '@/hooks/use-touch-swipe'
@@ -43,6 +44,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
+  useTrackSection('releases')
 
   const titleText = sectionLabels?.releases || 'RELEASES'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'

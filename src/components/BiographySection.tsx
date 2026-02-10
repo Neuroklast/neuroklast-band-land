@@ -10,6 +10,8 @@ import { useOverlayTransition } from '@/components/OverlayTransition'
 import SafeText from '@/components/SafeText'
 import { loadCachedImage, toDirectImageUrl } from '@/lib/image-cache'
 import { buildMemberDataLines } from '@/lib/profile-data'
+import { trackInteraction } from '@/lib/analytics'
+import { useTrackSection } from '@/hooks/use-track-section'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
@@ -55,6 +57,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
+  useTrackSection('biography')
 
   const titleText = sectionLabels?.biography || 'BIOGRAPHY'
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
@@ -283,7 +286,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                           <button
                             key={index}
                             className="w-full text-left border border-border/50 rounded-lg p-3 hover:border-primary/30 transition-colors duration-200 cursor-pointer"
-                            onClick={() => { triggerTransition(); setSelectedMember(member) }}
+                            onClick={() => { triggerTransition(); trackInteraction('member_profile'); setSelectedMember(member) }}
                             aria-label={`View profile of ${member.name}`}
                           >
                             <div className="flex items-center gap-3">

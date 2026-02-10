@@ -27,7 +27,9 @@ import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
+import StatsDashboard from '@/components/StatsDashboard'
 import { useSound } from '@/hooks/use-sound'
+import { trackPageView, trackSectionView, trackInteraction } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
@@ -92,6 +94,12 @@ function App() {
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
   const [showSoundSettings, setShowSoundSettings] = useState(false)
   const [showConfigEditor, setShowConfigEditor] = useState(false)
+  const [showStats, setShowStats] = useState(false)
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView()
+  }, [])
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)
   const wantsSetup = useRef(false)
@@ -179,6 +187,7 @@ function App() {
 
   const handleTerminalActivation = () => {
     setTerminalOpen(true)
+    trackInteraction('terminal_activated')
     toast.success('TERMINAL ACCESS GRANTED', {
       description: 'Secret code activated'
     })
@@ -418,8 +427,11 @@ function App() {
                 onImportData={(imported) => setBandData(imported)}
                 onOpenSoundSettings={() => setShowSoundSettings(true)}
                 onOpenConfigEditor={() => setShowConfigEditor(true)}
+                onOpenStats={() => setShowStats(true)}
               />
             )}
+
+            <StatsDashboard open={showStats} onClose={() => setShowStats(false)} />
 
             <AnimatePresence>
               {showSoundSettings && (
