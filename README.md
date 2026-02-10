@@ -11,6 +11,7 @@ A dark, industrial landing page for the hard techno/industrial band **NEUROKLAST
 - **Releases Gallery**: Grid of releases with artwork (dot-matrix/scanline effect), streaming links (Spotify, SoundCloud, YouTube, Bandcamp)
 - **Social Media Hub (Connect)**: Links to Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, TikTok, and more
 - **Content Management**: Owner-only edit mode for updating content without code changes
+- **Video Export**: Export custom animations as video files (WebM format) using browser-based recording
 - **Impressum**: Legal contact info with anti-scraping protection for phone/email (rendered as images)
 - **Secret Terminal**: Hidden Konami code easter egg with a cyberpunk terminal
 
@@ -55,8 +56,31 @@ The site automatically loads releases from iTunes on first visit. Owners can:
 - Add/edit/delete gigs, releases, and social links
 - Update biography and member list (currently showing 3 members)
 - Edit the Impressum (legal info)
+- **Export animations as video** using the video export tool
 
 All changes persist automatically using Vercel KV storage.
+
+## 🎬 Video Export
+
+The site includes a built-in video export feature that allows you to capture and export custom animations as video files:
+
+1. Click "Edit Mode" to access owner controls
+2. Click the **Film Slate** icon (🎬) to open the Video Export dialog
+3. Configure export settings:
+   - **Duration**: Length of the recording in seconds (1-60s)
+   - **Frame Rate**: FPS for the video (15-60, recommended: 30)
+4. Click "START EXPORT" to begin recording
+5. The system will capture all visible animations and effects
+6. Once complete, click "DOWNLOAD VIDEO" to save the WebM file
+
+**Technical Details:**
+- Uses browser-based MediaRecorder API (no server required)
+- Captures the entire viewport including all Framer Motion animations
+- Output format: WebM (VP8/VP9 codec, widely supported)
+- Recording happens in real-time at the specified FPS
+- Works with all modern browsers that support MediaRecorder API
+
+**Note:** The video export feature captures what's visible in the browser viewport, so ensure your browser window is sized appropriately before starting the export.
 
 ## 👥 Band Members
 
