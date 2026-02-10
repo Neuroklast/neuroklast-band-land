@@ -1,10 +1,11 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, FilmSlate } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import VideoExportDialog from '@/components/VideoExportDialog'
 import type { BandData } from '@/lib/types'
 import { toast } from 'sonner'
 import {
@@ -36,6 +37,7 @@ function toDriveJsonUrl(url: string): string {
 export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
+  const [showVideoExport, setShowVideoExport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const importInputRef = useRef<HTMLInputElement>(null)
@@ -263,6 +265,15 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   <Sliders size={20} className="hidden md:block" weight="bold" />
                 </Button>
               )}
+              <Button
+                onClick={() => setShowVideoExport(true)}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
+                size="icon"
+                title="Export animations as video"
+              >
+                <FilmSlate size={18} className="md:hidden" weight="bold" />
+                <FilmSlate size={20} className="hidden md:block" weight="bold" />
+              </Button>
             </motion.div>
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
@@ -332,6 +343,11 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
           onSetPassword={hasPassword ? onChangePassword : onSetPassword}
         />
       )}
+      
+      <VideoExportDialog
+        open={showVideoExport}
+        onOpenChange={setShowVideoExport}
+      />
     </>
   )
 }
