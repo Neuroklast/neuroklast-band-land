@@ -1,12 +1,15 @@
-/** Lightweight analytics tracking using localStorage.
- *  Tracks page visits, section views, interactions, and referrers.
- *  Data is stored client-side and displayed in the admin dashboard.
+/** Persistent analytics tracking with server-side storage via Vercel KV.
+ *  Tracks page visits, section views, interactions, clicks, heatmap data,
+ *  and marketing-relevant metadata (UTM, device, browser, screen resolution).
+ *  Data is synced to the server for persistence across deployments and
+ *  also stored client-side in localStorage as a fallback.
  */
 
 const STORAGE_KEY = 'nk-site-analytics'
+const SESSION_ID_KEY = 'nk-session-id'
 
 export interface AnalyticsEvent {
-  type: 'page_view' | 'section_view' | 'interaction'
+  type: 'page_view' | 'section_view' | 'interaction' | 'click'
   target: string
   timestamp: number
 }
@@ -16,6 +19,7 @@ export interface DailyStats {
   pageViews: number
   sectionViews: number
   interactions: number
+  clicks?: number
 }
 
 export interface SiteAnalytics {
@@ -33,10 +37,35 @@ export interface SiteAnalytics {
   referrers: Record<string, number>
   /** Device type counts */
   devices: Record<string, number>
+  /** Browser counts */
+  browsers?: Record<string, number>
+  /** Screen resolution counts */
+  screenResolutions?: Record<string, number>
+  /** Landing page counts */
+  landingPages?: Record<string, number>
+  /** UTM source counts */
+  utmSources?: Record<string, number>
+  /** UTM medium counts */
+  utmMediums?: Record<string, number>
+  /** UTM campaign counts */
+  utmCampaigns?: Record<string, number>
   /** First tracked date */
   firstTracked?: string
   /** Last tracked date */
   lastTracked?: string
+}
+
+export interface HeatmapPoint {
+  /** X position as ratio (0-1) of viewport width */
+  x: number
+  /** Y position as ratio (0-1) of document height */
+  y: number
+  /** Page path */
+  page: string
+  /** Element tag that was clicked */
+  el: string
+  /** Timestamp */
+  ts: number
 }
 
 function emptyAnalytics(): SiteAnalytics {
@@ -48,6 +77,12 @@ function emptyAnalytics(): SiteAnalytics {
     dailyStats: [],
     referrers: {},
     devices: {},
+    browsers: {},
+    screenResolutions: {},
+    landingPages: {},
+    utmSources: {},
+    utmMediums: {},
+    utmCampaigns: {},
   }
 }
 
@@ -62,6 +97,20 @@ function getDeviceType(): string {
   return 'desktop'
 }
 
+function getBrowser(): string {
+  const ua = navigator.userAgent
+  if (/Firefox\//i.test(ua)) return 'Firefox'
+  if (/Edg\//i.test(ua)) return 'Edge'
+  if (/OPR\//i.test(ua) || /Opera/i.test(ua)) return 'Opera'
+  if (/Chrome\//i.test(ua)) return 'Chrome'
+  if (/Safari\//i.test(ua)) return 'Safari'
+  return 'Other'
+}
+
+function getScreenResolution(): string {
+  return `${screen.width}x${screen.height}`
+}
+
 function getReferrerDomain(): string {
   try {
     const ref = document.referrer
@@ -71,6 +120,58 @@ function getReferrerDomain(): string {
     return url.hostname
   } catch {
     return 'direct'
+  }
+}
+
+function getUTMParams(): { utmSource?: string; utmMedium?: string; utmCampaign?: string } {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    return {
+      utmSource: params.get('utm_source') || undefined,
+      utmMedium: params.get('utm_medium') || undefined,
+      utmCampaign: params.get('utm_campaign') || undefined,
+    }
+  } catch {
+    return {}
+  }
+}
+
+function getOrCreateSessionId(): string {
+  try {
+    let id = sessionStorage.getItem(SESSION_ID_KEY)
+    if (!id) {
+      id = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+      sessionStorage.setItem(SESSION_ID_KEY, id)
+    }
+    return id
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+  }
+}
+
+/** Send an analytics event to the server (fire-and-forget) */
+function sendToServer(payload: {
+  type: string
+  target?: string
+  meta?: Record<string, string | undefined>
+  heatmap?: { x: number; y: number; page: string; elementTag: string }
+}): void {
+  try {
+    const body = JSON.stringify(payload)
+    // Use sendBeacon for fire-and-forget reliability (survives page unload)
+    if (navigator.sendBeacon) {
+      const blob = new Blob([body], { type: 'application/json' })
+      navigator.sendBeacon('/api/analytics', blob)
+    } else {
+      fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: true,
+      }).catch(() => { /* fire and forget */ })
+    }
+  } catch {
+    // Silently fail — localStorage still has the data
   }
 }
 
@@ -99,7 +200,7 @@ function ensureDailyEntry(analytics: SiteAnalytics): DailyStats {
   const today = getToday()
   let entry = analytics.dailyStats.find(d => d.date === today)
   if (!entry) {
-    entry = { date: today, pageViews: 0, sectionViews: 0, interactions: 0 }
+    entry = { date: today, pageViews: 0, sectionViews: 0, interactions: 0, clicks: 0 }
     analytics.dailyStats.push(entry)
     // Keep only last 30 days
     if (analytics.dailyStats.length > 30) {
@@ -129,6 +230,36 @@ export function trackPageView(): void {
   const device = getDeviceType()
   analytics.devices[device] = (analytics.devices[device] || 0) + 1
 
+  // Track browser
+  const browser = getBrowser()
+  if (!analytics.browsers) analytics.browsers = {}
+  analytics.browsers[browser] = (analytics.browsers[browser] || 0) + 1
+
+  // Track screen resolution
+  const screenRes = getScreenResolution()
+  if (!analytics.screenResolutions) analytics.screenResolutions = {}
+  analytics.screenResolutions[screenRes] = (analytics.screenResolutions[screenRes] || 0) + 1
+
+  // Track landing page
+  const landingPage = window.location.pathname
+  if (!analytics.landingPages) analytics.landingPages = {}
+  analytics.landingPages[landingPage] = (analytics.landingPages[landingPage] || 0) + 1
+
+  // Track UTM params
+  const utm = getUTMParams()
+  if (utm.utmSource) {
+    if (!analytics.utmSources) analytics.utmSources = {}
+    analytics.utmSources[utm.utmSource] = (analytics.utmSources[utm.utmSource] || 0) + 1
+  }
+  if (utm.utmMedium) {
+    if (!analytics.utmMediums) analytics.utmMediums = {}
+    analytics.utmMediums[utm.utmMedium] = (analytics.utmMediums[utm.utmMedium] || 0) + 1
+  }
+  if (utm.utmCampaign) {
+    if (!analytics.utmCampaigns) analytics.utmCampaigns = {}
+    analytics.utmCampaigns[utm.utmCampaign] = (analytics.utmCampaigns[utm.utmCampaign] || 0) + 1
+  }
+
   // Count unique sessions (one per day)
   const sessionKey = `nk-session-${today}`
   if (!sessionStorage.getItem(sessionKey)) {
@@ -137,6 +268,20 @@ export function trackPageView(): void {
   }
 
   saveAnalytics(analytics)
+
+  // Sync to server
+  sendToServer({
+    type: 'page_view',
+    meta: {
+      referrer,
+      device,
+      browser,
+      screenResolution: screenRes,
+      landingPage,
+      sessionId: getOrCreateSessionId(),
+      ...utm,
+    },
+  })
 }
 
 /** Track a section becoming visible */
@@ -146,6 +291,8 @@ export function trackSectionView(sectionId: string): void {
   const dailyEntry = ensureDailyEntry(analytics)
   dailyEntry.sectionViews++
   saveAnalytics(analytics)
+
+  sendToServer({ type: 'section_view', target: sectionId })
 }
 
 /** Track a user interaction (click, profile open, etc.) */
@@ -155,9 +302,69 @@ export function trackInteraction(action: string): void {
   const dailyEntry = ensureDailyEntry(analytics)
   dailyEntry.interactions++
   saveAnalytics(analytics)
+
+  sendToServer({ type: 'interaction', target: action })
 }
 
-/** Reset all analytics data */
-export function resetAnalytics(): void {
+/** Track a click with position for heatmap */
+export function trackClick(event: MouseEvent): void {
+  const analytics = loadAnalytics()
+  const dailyEntry = ensureDailyEntry(analytics)
+  if (!dailyEntry.clicks) dailyEntry.clicks = 0
+  dailyEntry.clicks++
+  saveAnalytics(analytics)
+
+  const target = event.target as HTMLElement
+  const x = event.clientX / window.innerWidth
+  const y = (event.clientY + window.scrollY) / document.documentElement.scrollHeight
+
+  sendToServer({
+    type: 'click',
+    target: target?.tagName?.toLowerCase() || 'unknown',
+    heatmap: {
+      x,
+      y,
+      page: window.location.pathname,
+      elementTag: target?.tagName?.toLowerCase() || 'unknown',
+    },
+  })
+}
+
+/** Fetch persistent analytics from the server */
+export async function loadServerAnalytics(): Promise<SiteAnalytics> {
+  try {
+    const res = await fetch('/api/analytics')
+    if (!res.ok) throw new Error('Failed to fetch')
+    return await res.json()
+  } catch {
+    // Fall back to localStorage
+    return loadAnalytics()
+  }
+}
+
+/** Fetch heatmap data from the server */
+export async function loadHeatmapData(): Promise<HeatmapPoint[]> {
+  try {
+    const res = await fetch('/api/analytics?type=heatmap')
+    if (!res.ok) throw new Error('Failed to fetch')
+    const data = await res.json()
+    return data.heatmap || []
+  } catch {
+    return []
+  }
+}
+
+/** Reset all analytics data (server + local) */
+export async function resetAnalytics(): Promise<void> {
   localStorage.removeItem(STORAGE_KEY)
+
+  try {
+    const adminToken = localStorage.getItem('admin-token') || ''
+    await fetch('/api/analytics', {
+      method: 'DELETE',
+      headers: { 'x-admin-token': adminToken },
+    })
+  } catch {
+    // Server reset failed, local is already cleared
+  }
 }

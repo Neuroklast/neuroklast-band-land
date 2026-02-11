@@ -29,7 +29,7 @@ import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import StatsDashboard from '@/components/StatsDashboard'
 import { useSound } from '@/hooks/use-sound'
-import { trackPageView, trackInteraction } from '@/lib/analytics'
+import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
@@ -99,6 +99,13 @@ function App() {
   // Track page view on mount
   useEffect(() => {
     trackPageView()
+  }, [])
+
+  // Track all clicks for heatmap
+  useEffect(() => {
+    const handler = (e: MouseEvent) => trackClick(e)
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
   }, [])
 
   // Check for ?admin-setup URL parameter on mount (before it gets cleaned)

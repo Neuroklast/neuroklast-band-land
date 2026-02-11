@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut } from '@phosphor-icons/react'
+import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut, Globe, Browser, Monitor } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
-import { loadAnalytics, resetAnalytics } from '@/lib/analytics'
-import type { SiteAnalytics, DailyStats } from '@/lib/analytics'
-import { useState, useEffect, useMemo } from 'react'
+import { loadServerAnalytics, loadHeatmapData, resetAnalytics, loadAnalytics } from '@/lib/analytics'
+import type { SiteAnalytics, DailyStats, HeatmapPoint } from '@/lib/analytics'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 
 interface StatsDashboardProps {
   open: boolean
@@ -83,12 +83,77 @@ function TopList({ items, limit = 5 }: { items: Record<string, number>; limit?: 
   )
 }
 
+/** Heatmap canvas visualization */
+function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas || points.length === 0) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const w = canvas.width
+    const h = canvas.height
+    ctx.clearRect(0, 0, w, h)
+
+    // Draw each point as a radial gradient
+    for (const p of points) {
+      const px = p.x * w
+      const py = p.y * h
+      const radius = 12
+
+      const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius)
+      gradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)')
+      gradient.addColorStop(1, 'rgba(255, 0, 0, 0)')
+
+      ctx.beginPath()
+      ctx.fillStyle = gradient
+      ctx.arc(px, py, radius, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }, [points])
+
+  useEffect(() => {
+    draw()
+  }, [draw])
+
+  if (points.length === 0) {
+    return <p className="text-[10px] text-primary/30 font-mono">NO HEATMAP DATA YET</p>
+  }
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={400}
+      height={300}
+      className="w-full h-48 border border-primary/10 bg-black/50 rounded"
+    />
+  )
+}
+
 export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
   const [analytics, setAnalytics] = useState<SiteAnalytics | null>(null)
+  const [heatmapPoints, setHeatmapPoints] = useState<HeatmapPoint[]>([])
+  const [dataSource, setDataSource] = useState<'server' | 'local'>('server')
 
   useEffect(() => {
     if (open) {
-      setAnalytics(loadAnalytics())
+      // Try loading from server first, fall back to localStorage
+      loadServerAnalytics()
+        .then(data => {
+          setAnalytics(data)
+          setDataSource('server')
+        })
+        .catch(() => {
+          setAnalytics(loadAnalytics())
+          setDataSource('local')
+        })
+
+      loadHeatmapData()
+        .then(setHeatmapPoints)
+        .catch(() => setHeatmapPoints([]))
     }
   }, [open])
 
@@ -105,10 +170,11 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
     return { totalSectionViews, totalInteractions, last7Days, last30Days, avgDailyViews }
   }, [analytics])
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (window.confirm('Reset all analytics data? This cannot be undone.')) {
-      resetAnalytics()
+      await resetAnalytics()
       setAnalytics(loadAnalytics())
+      setHeatmapPoints([])
     }
   }
 
@@ -256,6 +322,64 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                         )}
                       </div>
                     </div>
+
+                    {/* Browsers */}
+                    {analytics.browsers && Object.keys(analytics.browsers).length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                          <Browser size={12} className="inline mr-1" />BROWSERS
+                        </h3>
+                        <TopList items={analytics.browsers} />
+                      </div>
+                    )}
+
+                    {/* Screen Resolutions */}
+                    {analytics.screenResolutions && Object.keys(analytics.screenResolutions).length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                          <Monitor size={12} className="inline mr-1" />SCREEN RESOLUTIONS
+                        </h3>
+                        <TopList items={analytics.screenResolutions} />
+                      </div>
+                    )}
+
+                    {/* Landing Pages */}
+                    {analytics.landingPages && Object.keys(analytics.landingPages).length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                          LANDING PAGES
+                        </h3>
+                        <TopList items={analytics.landingPages} />
+                      </div>
+                    )}
+
+                    {/* UTM Sources */}
+                    {analytics.utmSources && Object.keys(analytics.utmSources).length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                          <Globe size={12} className="inline mr-1" />UTM SOURCES
+                        </h3>
+                        <TopList items={analytics.utmSources} />
+                      </div>
+                    )}
+
+                    {/* UTM Campaigns */}
+                    {analytics.utmCampaigns && Object.keys(analytics.utmCampaigns).length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                          UTM CAMPAIGNS
+                        </h3>
+                        <TopList items={analytics.utmCampaigns} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Heatmap */}
+                  <div className="space-y-3">
+                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                      CLICK HEATMAP // {heatmapPoints.length} POINTS
+                    </h3>
+                    <HeatmapCanvas points={heatmapPoints} />
                   </div>
                 </>
               )}
@@ -264,7 +388,9 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
               <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-2 border-t border-primary/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
                 <span>ANALYTICS MODULE ACTIVE</span>
-                <span className="ml-auto">Data stored locally in browser</span>
+                <span className="ml-auto">
+                  {dataSource === 'server' ? 'Data from persistent server storage' : 'Data stored locally in browser'}
+                </span>
               </div>
             </div>
           </motion.div>
