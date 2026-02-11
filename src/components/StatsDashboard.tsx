@@ -146,7 +146,8 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
           setAnalytics(data)
           setDataSource('server')
         })
-        .catch(() => {
+        .catch((err) => {
+          console.warn('Failed to load server analytics, using local fallback:', err)
           setAnalytics(loadAnalytics())
           setDataSource('local')
         })

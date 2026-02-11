@@ -213,7 +213,7 @@ export default async function handler(req, res) {
       }
 
       // Sanitize string inputs to prevent injection into Redis keys
-      const sanitize = (s) => (typeof s === 'string' ? s.slice(0, 200).replace(/[\n\r]/g, '') : undefined)
+      const sanitize = (s) => (typeof s === 'string' ? s.slice(0, 200).replace(/[\n\r:*?\[\]]/g, '') : undefined)
 
       const sanitizedMeta = meta ? {
         referrer: sanitize(meta.referrer),
@@ -249,7 +249,7 @@ export default async function handler(req, res) {
       if (type === 'heatmap') {
         const raw = await kv.lrange(HEATMAP_KEY, 0, MAX_HEATMAP_POINTS - 1)
         const points = (raw || []).map((entry) => {
-          try { return typeof entry === 'string' ? JSON.parse(entry) : entry } catch { return null }
+          try { return typeof entry === 'string' ? JSON.parse(entry) : entry } catch (e) { console.warn('Malformed heatmap entry:', e); return null }
         }).filter(Boolean)
         return res.json({ heatmap: points })
       }
@@ -262,7 +262,7 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const token = req.headers['x-admin-token'] || ''
       const adminHash = await kv.get('admin-password-hash')
-      if (adminHash && token !== adminHash) {
+      if (!adminHash || token !== adminHash) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 

@@ -102,8 +102,8 @@ function getBrowser(): string {
   if (/Firefox\//i.test(ua)) return 'Firefox'
   if (/Edg\//i.test(ua)) return 'Edge'
   if (/OPR\//i.test(ua) || /Opera/i.test(ua)) return 'Opera'
-  if (/Chrome\//i.test(ua)) return 'Chrome'
-  if (/Safari\//i.test(ua)) return 'Safari'
+  if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) return 'Chrome'
+  if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) return 'Safari'
   return 'Other'
 }
 
@@ -315,8 +315,10 @@ export function trackClick(event: MouseEvent): void {
   saveAnalytics(analytics)
 
   const target = event.target as HTMLElement
-  const x = event.clientX / window.innerWidth
-  const y = (event.clientY + window.scrollY) / document.documentElement.scrollHeight
+  const vw = window.innerWidth || 1
+  const dh = document.documentElement.scrollHeight || 1
+  const x = event.clientX / vw
+  const y = (event.clientY + window.scrollY) / dh
 
   sendToServer({
     type: 'click',
