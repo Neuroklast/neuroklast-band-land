@@ -85,6 +85,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
+                data-track={`nav::${item.label}`}
                 className="text-xs font-mono tracking-[0.08em] hover:text-primary active:text-primary/80 transition-colors relative group"
               >
                 <span className="text-primary/40">&gt;:</span> {item.label}
@@ -153,6 +154,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
                   key={item.id}
                   className="text-left py-4 px-4 border-b border-border/50 touch-manipulation font-mono text-base tracking-[0.08em] hover:bg-primary/5 active:bg-primary/10 active:scale-[0.98] transition-all rounded-sm relative overflow-hidden group"
                   onClick={() => scrollToSection(item.id)}
+                  data-track={`nav::${item.label}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}

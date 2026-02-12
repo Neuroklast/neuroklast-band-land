@@ -28,11 +28,14 @@ import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import StatsDashboard from '@/components/StatsDashboard'
+import MusicPlayer from '@/components/MusicPlayer'
+import type { Track } from '@/components/MusicPlayer'
 import { useSound } from '@/hooks/use-sound'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
+import thresholdTrackUrl from '@/assets/sounds/NK - THRESHOLD.mp3'
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
@@ -204,6 +207,15 @@ function App() {
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
   const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
   const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
+
+  // Build music player track list: bundled track + any audio media files
+  const playerTracks = useMemo<Track[]>(() => {
+    const tracks: Track[] = [{ title: 'NK - THRESHOLD', src: thresholdTrackUrl }]
+    data.mediaFiles?.forEach(f => {
+      if (f.type === 'audio' && f.url) tracks.push({ title: f.name, src: f.url })
+    })
+    return tracks
+  }, [data.mediaFiles])
 
   // Apply config overrides whenever bandData changes
   useEffect(() => {
@@ -422,6 +434,11 @@ function App() {
                 onDatenschutz={() => setDatenschutzOpen(true)}
               />
             </motion.div>
+
+            {/* Persistent music player fixed to the bottom of the viewport */}
+            <div className="fixed bottom-0 left-0 right-0 z-40" data-track="music-player">
+              <MusicPlayer tracks={playerTracks} />
+            </div>
 
             {isOwner && (
               <EditControls 
