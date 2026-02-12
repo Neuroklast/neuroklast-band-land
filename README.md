@@ -1,9 +1,10 @@
 # NEUROKLAST - Official Band Website
 
-A dark, industrial landing page for the hard techno/industrial band **NEUROKLAST** featuring automatic iTunes integration, upcoming gigs, releases, and social media presence. Label: **Darktunes Music Group**.
+A dark, industrial single-page application for the hard techno/industrial band **NEUROKLAST** featuring automatic iTunes integration, music player, upcoming gigs, releases, and social media presence. Label: **Darktunes Music Group**.
 
 ## 🎵 Features
 
+- **Built-in Music Player**: Play NEUROKLAST tracks directly on the website with volume control, track navigation, and progress bar
 - **Automatic iTunes Integration**: Latest releases are automatically fetched from iTunes with cover art and enriched with streaming links via Odesli
 - **Biography Section**: Band story, members with expandable profile overlays, achievements, and collaborations
 - **Photo Gallery**: Swipeable image gallery with lightbox zoom and HUD-style overlays
@@ -19,6 +20,7 @@ A dark, industrial landing page for the hard techno/industrial band **NEUROKLAST
 - **Impressum & Datenschutz**: Legal pages with multi-language support (DE/EN)
 - **Secret Terminal**: Hidden Konami code easter egg with a cyberpunk terminal
 - **Cookie Banner**: GDPR-compliant cookie consent
+- **Fixed Navigation**: Sticky navigation bar that stays visible while scrolling
 
 ## 🖼️ Gallery Setup
 
@@ -38,7 +40,7 @@ To add images to the gallery:
 - **Phosphor Icons** for iconography
 - **Recharts** for data visualization
 - **iTunes Search API** + **Odesli** (song.link) for streaming link resolution
-- **Vercel KV** / **Upstash Redis** for data persistence
+- **Upstash Redis** (via Vercel KV) for data persistence
 - **Vite 7** for development and building
 - **Vitest** for testing
 
@@ -94,6 +96,35 @@ Admin users can access the built-in analytics dashboard to view:
 
 Data is stored locally in the browser using localStorage.
 
+## 🔒 Security
+
+For security considerations and reporting vulnerabilities, please see [SECURITY.md](SECURITY.md).
+
+### Security Features
+
+- Password-protected admin mode with SHA-256 hashing
+- Input validation and sanitization
+- XSS prevention through proper escaping
+- CSRF protection
+- HTTPS enforcement in production
+- Regular dependency updates
+
+## 🌐 Deployment
+
+This site is designed to be deployed on **Vercel** with:
+- Automatic HTTPS
+- Edge functions for API routes
+- KV storage integration (or Upstash Redis)
+- Automatic builds from Git
+
+### Environment Variables
+
+For production deployment, configure:
+- `KV_REST_API_URL` - Redis/KV storage URL
+- `KV_REST_API_TOKEN` - Redis/KV storage token
+
 ## 📄 License
 
-The template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+This project is licensed under the terms of the MIT license. See [LICENSE](LICENSE) for details.
+
+The template was originally derived from GitHub resources and has been extensively modified for the NEUROKLAST band website.
