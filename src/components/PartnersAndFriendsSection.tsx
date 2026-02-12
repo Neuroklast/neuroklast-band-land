@@ -208,6 +208,9 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
     TITLE_TYPING_START_DELAY_MS
   )
 
+  // Stable identity key derived from friends list for memoization
+  const friendsKey = friends.map(f => f.id).join(',')
+
   // Shuffle friends randomly on each page load to avoid favoritism appearance.
   // In edit mode, keep the original order so admins can manage them predictably.
   const displayFriends = useMemo(() => {
@@ -219,7 +222,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
     }
     return shuffled
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [friends.length, friends.map(f => f.id).join(','), editMode])
+  }, [friendsKey, editMode])
 
   if (!editMode && friends.length === 0) return null
 

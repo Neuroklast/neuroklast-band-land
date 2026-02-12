@@ -9,11 +9,13 @@ export interface Track {
 
 interface MusicPlayerProps {
   tracks: Track[]
+  /** Index of the track to start with */
+  initialIndex?: number
 }
 
-export default function MusicPlayer({ tracks }: MusicPlayerProps) {
+export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -59,7 +61,7 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
       }
     }
     setProgress(0)
-  }, [currentIndex])
+  }, [currentIndex, isPlaying])
 
   // Update progress bar
   useEffect(() => {

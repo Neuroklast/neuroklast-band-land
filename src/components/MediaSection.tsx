@@ -164,9 +164,9 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
     .filter(f => f.type === 'audio')
     .map(f => ({ title: f.name, src: f.url }))
 
-  // Find the currently selected audio track index
+  // Find the currently selected audio track index from audioTracks
   const audioIndex = file.type === 'audio'
-    ? allFiles.filter(f => f.type === 'audio').findIndex(f => f.id === file.id)
+    ? audioTracks.findIndex(t => t.src === file.url)
     : -1
 
   return (
@@ -188,7 +188,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
 
       {/* Audio player */}
       {file.type === 'audio' && audioTracks.length > 0 && audioIndex >= 0 && (
-        <MusicPlayer tracks={audioTracks} />
+        <MusicPlayer tracks={audioTracks} initialIndex={audioIndex} />
       )}
 
       <div className="bg-black/50 border border-primary/20 p-4 space-y-3">

@@ -29,6 +29,11 @@ export function extractYouTubeId(input: string): string | null {
 }
 
 export default function YouTubeEmbed({ videoId, title }: YouTubeEmbedProps) {
+  // Validate videoId to prevent URL injection
+  const safeVideoId = /^[A-Za-z0-9_-]{11}$/.test(videoId) ? videoId : null
+
+  if (!safeVideoId) return null
+
   return (
     <motion.div
       className="space-y-2"
@@ -44,7 +49,7 @@ export default function YouTubeEmbed({ videoId, title }: YouTubeEmbedProps) {
       )}
       <div className="relative w-full aspect-video border border-primary/20 bg-black overflow-hidden">
         <iframe
-          src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+          src={`https://www.youtube-nocookie.com/embed/${safeVideoId}`}
           title={title || 'YouTube video'}
           className="absolute inset-0 w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

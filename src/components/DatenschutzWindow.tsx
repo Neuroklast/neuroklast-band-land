@@ -57,6 +57,9 @@ Beim Abruf von Musikdaten werden Anfragen an die iTunes Search API (Apple Inc.) 
 
 Zur Darstellung von Bildern kann diese Website den Bildproxy-Dienst wsrv.nl sowie Google-Dienste (lh3.googleusercontent.com, Google Drive) nutzen. Dabei wird Ihre IP-Adresse an diese Dienste übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der performanten Bereitstellung von Bildinhalten.
 
+Eingebettete YouTube-Videos
+Diese Website kann Videos von YouTube (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einbetten. Dabei wird der erweiterte Datenschutzmodus von YouTube verwendet (Domain: youtube-nocookie.com), sodass YouTube keine Cookies setzt, bevor Sie das Video abspielen. Beim Abspielen eines Videos wird Ihre IP-Adresse an YouTube übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Einbindung von Videoinhalten. Weitere Informationen finden Sie in der Datenschutzerklärung von YouTube: https://policies.google.com/privacy
+
 5. Ihre Rechte
 
 Sie haben jederzeit das Recht:
@@ -113,6 +116,9 @@ This website does not load external fonts or tracking scripts. All fonts and des
 When retrieving music data, requests are made to the iTunes Search API (Apple Inc.) and the Odesli service (song.link). Your IP address is transmitted to these services. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in displaying current music releases.
 
 To display images, this website may use the image proxy service wsrv.nl as well as Google services (lh3.googleusercontent.com, Google Drive). Your IP address is transmitted to these services. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in the performant delivery of image content.
+
+Embedded YouTube Videos
+This website may embed videos from YouTube (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland). YouTube's enhanced privacy mode is used (domain: youtube-nocookie.com), meaning YouTube does not set cookies until you play the video. When you play a video, your IP address is transmitted to YouTube. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in embedding video content. For more information, see YouTube's privacy policy: https://policies.google.com/privacy
 
 5. Your Rights
 
