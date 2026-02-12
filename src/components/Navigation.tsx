@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
+import { List, X, SpeakerHigh, SpeakerSlash, MusicNote } from '@phosphor-icons/react'
 import type { SectionLabels } from '@/lib/types'
 import {
-  NAV_SCROLL_THRESHOLD_PX,
   NAV_GLITCH_PROBABILITY,
   NAV_GLITCH_DURATION_MS,
   NAV_GLITCH_INTERVAL_MS,
   NAV_HEIGHT_PX,
 } from '@/lib/config'
+
+/** Spotify embed URL for the artist page (autoplay disabled) */
+const SPOTIFY_EMBED_SRC = 'https://open.spotify.com/embed/artist/5xfQSijbVetvH1QAS58n30?utm_source=generator&autoplay=0'
 
 interface NavigationProps {
   soundMuted?: boolean
@@ -19,17 +21,9 @@ interface NavigationProps {
 }
 
 export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels }: NavigationProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > NAV_SCROLL_THRESHOLD_PX)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const [playerOpen, setPlayerOpen] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -65,9 +59,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
   return (
     <>
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element' : 'bg-background/70 backdrop-blur-sm'
-        } ${glitch ? 'red-glitch-element' : ''}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element ${glitch ? 'red-glitch-element' : ''}`}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -85,12 +77,21 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
+                data-track={`nav::${item.label}`}
                 className="text-xs font-mono tracking-[0.08em] hover:text-primary active:text-primary/80 transition-colors relative group"
               >
                 <span className="text-primary/40">&gt;:</span> {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
+            <button
+              onClick={() => setPlayerOpen(o => !o)}
+              data-track="nav::MUSIC_PLAYER"
+              className={`p-1 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              title={playerOpen ? 'Close music player' : 'Open music player'}
+            >
+              <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+            </button>
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -103,6 +104,14 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={() => setPlayerOpen(o => !o)}
+              data-track="nav::MUSIC_PLAYER"
+              className={`p-2 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              title={playerOpen ? 'Close music player' : 'Open music player'}
+            >
+              <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+            </button>
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -121,10 +130,36 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
             </Button>
           </div>
         </div>
+
+        {/* Expandable Spotify player dropdown */}
+        <AnimatePresence>
+          {playerOpen && (
+            <motion.div
+              key="music-player-dropdown"
+              className="border-t border-primary/20"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+              data-track="music-player"
+            >
+              <div className="max-w-7xl mx-auto">
+                <iframe
+                  src={SPOTIFY_EMBED_SRC}
+                  width="100%"
+                  height="352"
+                  allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  style={{ border: 'none', borderRadius: 0 }}
+                  title="Spotify Player"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
-        {isScrolled && (
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        )}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </motion.nav>
 
       <AnimatePresence>
@@ -153,6 +188,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
                   key={item.id}
                   className="text-left py-4 px-4 border-b border-border/50 touch-manipulation font-mono text-base tracking-[0.08em] hover:bg-primary/5 active:bg-primary/10 active:scale-[0.98] transition-all rounded-sm relative overflow-hidden group"
                   onClick={() => scrollToSection(item.id)}
+                  data-track={`nav::${item.label}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}

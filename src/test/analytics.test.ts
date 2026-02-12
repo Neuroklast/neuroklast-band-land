@@ -6,6 +6,7 @@ import {
   trackInteraction,
   trackClick,
   resetAnalytics,
+  describeClickTarget,
 } from '@/lib/analytics'
 
 // Mock sendBeacon and fetch to prevent actual server calls in tests
@@ -183,5 +184,78 @@ describe('analytics', () => {
     const analytics = loadAnalytics()
     const today = analytics.dailyStats[analytics.dailyStats.length - 1]
     expect(today.clicks).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('describeClickTarget', () => {
+  it('returns "unknown" for null', () => {
+    expect(describeClickTarget(null)).toBe('unknown')
+  })
+
+  it('returns data-track attribute when present', () => {
+    const btn = document.createElement('button')
+    btn.setAttribute('data-track', 'nav::NEWS')
+    expect(describeClickTarget(btn)).toBe('nav::NEWS')
+  })
+
+  it('returns aria-label when present', () => {
+    const btn = document.createElement('button')
+    btn.setAttribute('aria-label', 'Play music')
+    expect(describeClickTarget(btn)).toBe('Play music')
+  })
+
+  it('returns title attribute when present', () => {
+    const btn = document.createElement('button')
+    btn.setAttribute('title', 'Next track')
+    expect(describeClickTarget(btn)).toBe('Next track')
+  })
+
+  it('returns button text content', () => {
+    const btn = document.createElement('button')
+    btn.textContent = 'OPEN MEDIA ARCHIVE'
+    expect(describeClickTarget(btn)).toBe('OPEN MEDIA ARCHIVE')
+  })
+
+  it('returns parent button text when child span is clicked', () => {
+    const btn = document.createElement('button')
+    const span = document.createElement('span')
+    span.textContent = 'DOWNLOAD'
+    btn.appendChild(span)
+    expect(describeClickTarget(span)).toBe('DOWNLOAD')
+  })
+
+  it('truncates long text content', () => {
+    const btn = document.createElement('button')
+    btn.textContent = 'A'.repeat(100)
+    const result = describeClickTarget(btn)
+    expect(result.length).toBeLessThanOrEqual(60)
+    expect(result).toContain('...')
+  })
+
+  it('uses section id as context for non-interactive elements', () => {
+    const section = document.createElement('section')
+    section.id = 'releases'
+    const div = document.createElement('div')
+    section.appendChild(div)
+    document.body.appendChild(section)
+    try {
+      expect(describeClickTarget(div)).toBe('releases::div')
+    } finally {
+      document.body.removeChild(section)
+    }
+  })
+
+  it('falls back to tag name for generic elements', () => {
+    const div = document.createElement('div')
+    expect(describeClickTarget(div)).toBe('div')
+  })
+
+  it('prefers data-track on ancestor button over text', () => {
+    const btn = document.createElement('button')
+    btn.setAttribute('data-track', 'nav::HOME')
+    btn.textContent = 'HOME'
+    const icon = document.createElement('span')
+    btn.appendChild(icon)
+    expect(describeClickTarget(icon)).toBe('nav::HOME')
   })
 })

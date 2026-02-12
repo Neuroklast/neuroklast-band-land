@@ -306,6 +306,39 @@ export function trackInteraction(action: string): void {
   sendToServer({ type: 'interaction', target: action })
 }
 
+/** Derive a human-readable label for a clicked element.
+ *  Priority: data-track → aria-label → button/link text → closest section id → tag name.
+ */
+export function describeClickTarget(target: HTMLElement | null): string {
+  if (!target) return 'unknown'
+
+  // Walk up to find the nearest interactive element (button/link) for context
+  const interactive = target.closest('button, a, [role="button"]') as HTMLElement | null
+  const el = interactive || target
+
+  // Explicit tracking label
+  const track = el.getAttribute('data-track') || target.getAttribute('data-track')
+  if (track) return track
+
+  // Aria label
+  const aria = el.getAttribute('aria-label') || el.getAttribute('title')
+  if (aria) return aria
+
+  // Visible text on a button or link (trimmed, capped)
+  if (interactive) {
+    const text = (interactive.textContent || '').replace(/\s+/g, ' ').trim()
+    if (text && text.length <= 60) return text
+    if (text) return text.slice(0, 57) + '...'
+  }
+
+  // Closest section id gives area context
+  const section = target.closest('section[id], nav, footer, header')
+  const sectionId = section?.getAttribute('id') || section?.tagName?.toLowerCase()
+  if (sectionId) return `${sectionId}::${target.tagName.toLowerCase()}`
+
+  return target.tagName?.toLowerCase() || 'unknown'
+}
+
 /** Track a click with position for heatmap */
 export function trackClick(event: MouseEvent): void {
   const analytics = loadAnalytics()
@@ -319,15 +352,16 @@ export function trackClick(event: MouseEvent): void {
   const dh = document.documentElement.scrollHeight || 1
   const x = event.clientX / vw
   const y = (event.clientY + window.scrollY) / dh
+  const label = describeClickTarget(target)
 
   sendToServer({
     type: 'click',
-    target: target?.tagName?.toLowerCase() || 'unknown',
+    target: label,
     heatmap: {
       x,
       y,
       page: window.location.pathname,
-      elementTag: target?.tagName?.toLowerCase() || 'unknown',
+      elementTag: label,
     },
   })
 }
