@@ -77,7 +77,14 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
       }
     }
     setProgress(0)
-  }, [currentIndex, isPlaying, volume])
+  }, [currentIndex, isPlaying])
+  
+  // Update volume without reloading track
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume
+    }
+  }, [volume])
 
   // Update progress bar
   useEffect(() => {
