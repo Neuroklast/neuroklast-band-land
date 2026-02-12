@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { List, X, SpeakerHigh, SpeakerSlash, MusicNote } from '@phosphor-icons/react'
-import MusicPlayer from '@/components/MusicPlayer'
-import type { Track } from '@/components/MusicPlayer'
 import type { SectionLabels } from '@/lib/types'
 import {
   NAV_GLITCH_PROBABILITY,
@@ -12,16 +10,17 @@ import {
   NAV_HEIGHT_PX,
 } from '@/lib/config'
 
+/** Spotify embed URL for the artist page (autoplay disabled) */
+const SPOTIFY_EMBED_SRC = 'https://open.spotify.com/embed/artist/5xfQSijbVetvH1QAS58n30?utm_source=generator&autoplay=0'
+
 interface NavigationProps {
   soundMuted?: boolean
   hasSounds?: boolean
   onToggleMute?: () => void
   sectionLabels?: SectionLabels
-  /** Tracks for the expandable music player */
-  tracks?: Track[]
 }
 
-export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels, tracks = [] }: NavigationProps) {
+export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
   const [playerOpen, setPlayerOpen] = useState(false)
@@ -85,16 +84,14 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
-            {tracks.length > 0 && (
-              <button
-                onClick={() => setPlayerOpen(o => !o)}
-                data-track="nav::MUSIC_PLAYER"
-                className={`p-1 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
-                title={playerOpen ? 'Close music player' : 'Open music player'}
-              >
-                <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
-              </button>
-            )}
+            <button
+              onClick={() => setPlayerOpen(o => !o)}
+              data-track="nav::MUSIC_PLAYER"
+              className={`p-1 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              title={playerOpen ? 'Close music player' : 'Open music player'}
+            >
+              <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+            </button>
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -107,16 +104,14 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            {tracks.length > 0 && (
-              <button
-                onClick={() => setPlayerOpen(o => !o)}
-                data-track="nav::MUSIC_PLAYER"
-                className={`p-2 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
-                title={playerOpen ? 'Close music player' : 'Open music player'}
-              >
-                <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
-              </button>
-            )}
+            <button
+              onClick={() => setPlayerOpen(o => !o)}
+              data-track="nav::MUSIC_PLAYER"
+              className={`p-2 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              title={playerOpen ? 'Close music player' : 'Open music player'}
+            >
+              <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+            </button>
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -136,9 +131,9 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
           </div>
         </div>
 
-        {/* Expandable music player dropdown */}
+        {/* Expandable Spotify player dropdown */}
         <AnimatePresence>
-          {playerOpen && tracks.length > 0 && (
+          {playerOpen && (
             <motion.div
               key="music-player-dropdown"
               className="border-t border-primary/20"
@@ -150,7 +145,15 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
               data-track="music-player"
             >
               <div className="max-w-7xl mx-auto">
-                <MusicPlayer tracks={tracks} />
+                <iframe
+                  src={SPOTIFY_EMBED_SRC}
+                  width="100%"
+                  height="352"
+                  allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  style={{ border: 'none', borderRadius: 0 }}
+                  title="Spotify Player"
+                />
               </div>
             </motion.div>
           )}

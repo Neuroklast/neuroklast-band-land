@@ -28,20 +28,11 @@ import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import StatsDashboard from '@/components/StatsDashboard'
-import type { Track } from '@/components/MusicPlayer'
 import { useSound } from '@/hooks/use-sound'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
-
-/** Tracks served from the public/music folder */
-const PUBLIC_MUSIC_TRACKS: Track[] = [
-  { title: 'Neuroklast - IGNITE', src: '/music/Neuroklast - IGNITE.mp3' },
-  { title: 'Neuroklast - LILITH', src: '/music/Neuroklast - LILITH.mp3' },
-  { title: 'Neuroklast - SUCCUBUS (DFG Edit)', src: '/music/Neuroklast - SUCCUBUS (DFG Edit).mp3' },
-  { title: 'Neuroklast ft Mechanical Vein - DETHRONE', src: '/music/Neuroklast ft Mechanical Vein - DETHRONE.mp3' },
-]
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
@@ -214,9 +205,6 @@ function App() {
   const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
   const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
 
-  // Music player uses only tracks from public/music
-  const playerTracks = PUBLIC_MUSIC_TRACKS
-
   // Apply config overrides whenever bandData changes
   useEffect(() => {
     applyConfigOverrides(data.configOverrides)
@@ -277,7 +265,7 @@ function App() {
           <CyberpunkBackground />
           <Toaster position="top-right" />
           
-          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} tracks={playerTracks} />
+          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
           
           <motion.div
             initial={{ opacity: 0 }}
