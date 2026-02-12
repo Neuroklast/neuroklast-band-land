@@ -6,14 +6,12 @@ import { DEFAULT_SOUND_VOLUME } from '@/lib/config'
 import textTypingUrl from '@/assets/sounds/texttyping.wav'
 import clickUrl from '@/assets/sounds/click.wav'
 import loadingFinishedUrl from '@/assets/sounds/laodingfinished.mp3'
-import backgroundMusicUrl from '@/assets/sounds/NK - THRESHOLD.mp3'
 
 // Default local sound files (resolved by Vite)
 const DEFAULT_SOUNDS = {
   typing: textTypingUrl,
   button: clickUrl,
   loadingFinished: loadingFinishedUrl,
-  backgroundMusic: backgroundMusicUrl,
 }
 
 /** Convert Drive share links to direct download URLs for audio files */
@@ -77,7 +75,7 @@ export function useSound(settings?: SoundSettings, editMode?: boolean) {
     typingSound: settings?.typingSound || DEFAULT_SOUNDS.typing,
     buttonSound: settings?.buttonSound || DEFAULT_SOUNDS.button,
     loadingFinishedSound: settings?.loadingFinishedSound || DEFAULT_SOUNDS.loadingFinished,
-    backgroundMusic: settings?.backgroundMusic || DEFAULT_SOUNDS.backgroundMusic,
+    backgroundMusic: settings?.backgroundMusic,
   }
 
   // Determine whether any sounds are configured

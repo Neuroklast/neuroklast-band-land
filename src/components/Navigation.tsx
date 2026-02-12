@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { List, X, SpeakerHigh, SpeakerSlash, MusicNote } from '@phosphor-icons/react'
+import { List, X, MusicNote } from '@phosphor-icons/react'
 import type { SectionLabels } from '@/lib/types'
 import {
   NAV_GLITCH_PROBABILITY,
@@ -21,13 +21,10 @@ const LOCAL_TRACKS: Track[] = [
 ]
 
 interface NavigationProps {
-  soundMuted?: boolean
-  hasSounds?: boolean
-  onToggleMute?: () => void
   sectionLabels?: SectionLabels
 }
 
-export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels }: NavigationProps) {
+export default function Navigation({ sectionLabels }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
   const [playerOpen, setPlayerOpen] = useState(false)
@@ -67,8 +64,8 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element ${glitch ? 'red-glitch-element' : ''}`}
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
@@ -99,15 +96,6 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
             >
               <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
             </button>
-            {hasSounds && onToggleMute && (
-              <button
-                onClick={onToggleMute}
-                className="text-primary/60 hover:text-primary transition-colors p-1"
-                title={soundMuted ? 'Unmute sounds' : 'Mute sounds'}
-              >
-                {soundMuted ? <SpeakerSlash size={18} /> : <SpeakerHigh size={18} />}
-              </button>
-            )}
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
@@ -119,15 +107,6 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
             >
               <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
             </button>
-            {hasSounds && onToggleMute && (
-              <button
-                onClick={onToggleMute}
-                className="text-primary/60 hover:text-primary transition-colors p-2"
-                title={soundMuted ? 'Unmute sounds' : 'Mute sounds'}
-              >
-                {soundMuted ? <SpeakerSlash size={18} /> : <SpeakerHigh size={18} />}
-              </button>
-            )}
             <Button
               variant="ghost"
               size="icon"
