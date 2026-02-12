@@ -195,6 +195,8 @@ export interface MediaFile {
   description?: string
   url: string
   folder?: string
+  /** File type hint: 'audio' for playable music, 'youtube' for embedded video */
+  type?: 'audio' | 'youtube'
 }
 
 export interface SectionLabels {

@@ -7,6 +7,8 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import { ChromaticText } from '@/components/ChromaticText'
 import { useOverlayTransition } from '@/components/OverlayTransition'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import MusicPlayer from '@/components/MusicPlayer'
+import YouTubeEmbed, { extractYouTubeId } from '@/components/YouTubeEmbed'
 import { useState, useRef, useEffect } from 'react'
 import type { MediaFile, SectionLabels } from '@/lib/types'
 import {
@@ -144,7 +146,7 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
 }
 
 /** File detail panel shown on the right side */
-function FileDetailPanel({ file }: { file: MediaFile | null }) {
+function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles: MediaFile[] }) {
   if (!file) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
@@ -153,6 +155,19 @@ function FileDetailPanel({ file }: { file: MediaFile | null }) {
       </div>
     )
   }
+
+  // Detect if it's a YouTube file
+  const youtubeId = file.type === 'youtube' ? extractYouTubeId(file.url) : null
+
+  // Collect audio tracks from all files
+  const audioTracks = allFiles
+    .filter(f => f.type === 'audio')
+    .map(f => ({ title: f.name, src: f.url }))
+
+  // Find the currently selected audio track index from audioTracks
+  const audioIndex = file.type === 'audio'
+    ? audioTracks.findIndex(t => t.src === file.url)
+    : -1
 
   return (
     <motion.div
@@ -165,6 +180,16 @@ function FileDetailPanel({ file }: { file: MediaFile | null }) {
       <div className="text-[10px] text-primary/50 tracking-wider mb-2">
         {'>'} FILE DATA // {file.name.toUpperCase()}
       </div>
+
+      {/* YouTube embed */}
+      {youtubeId && (
+        <YouTubeEmbed videoId={youtubeId} title={file.name} />
+      )}
+
+      {/* Audio player */}
+      {file.type === 'audio' && audioTracks.length > 0 && audioIndex >= 0 && (
+        <MusicPlayer tracks={audioTracks} initialIndex={audioIndex} />
+      )}
 
       <div className="bg-black/50 border border-primary/20 p-4 space-y-3">
         <div className="flex items-center gap-2">
@@ -185,15 +210,17 @@ function FileDetailPanel({ file }: { file: MediaFile | null }) {
         )}
       </div>
 
-      <a
-        href={file.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
-      >
-        <DownloadSimple size={16} />
-        DOWNLOAD
-      </a>
+      {!youtubeId && (
+        <a
+          href={file.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
+        >
+          <DownloadSimple size={16} />
+          DOWNLOAD
+        </a>
+      )}
 
       <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-2">
         <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
@@ -268,14 +295,26 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
               />
             </div>
             <div>
-              <Label className="text-[10px]">Description (optional)</Label>
-              <Input
-                value={file.description || ''}
-                onChange={(e) => updateFile(idx, { description: e.target.value || undefined })}
-                placeholder="Short description"
-                className="text-xs"
-              />
+              <Label className="text-[10px]">Type</Label>
+              <select
+                value={file.type || ''}
+                onChange={(e) => updateFile(idx, { type: (e.target.value || undefined) as MediaFile['type'] })}
+                className="flex w-full rounded-sm border border-input bg-transparent px-3 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-8"
+              >
+                <option value="">Download</option>
+                <option value="audio">Audio</option>
+                <option value="youtube">YouTube</option>
+              </select>
             </div>
+          </div>
+          <div>
+            <Label className="text-[10px]">Description (optional)</Label>
+            <Input
+              value={file.description || ''}
+              onChange={(e) => updateFile(idx, { description: e.target.value || undefined })}
+              placeholder="Short description"
+              className="text-xs"
+            />
           </div>
         </div>
       ))}
@@ -308,6 +347,14 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
     const timer = setTimeout(() => setPhase('ready'), 1500)
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
 
   return (
     <motion.div
@@ -378,7 +425,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
 
               {/* Right: File details */}
               <div className="md:w-3/5 overflow-y-auto flex-1">
-                <FileDetailPanel file={selectedFile} />
+                <FileDetailPanel file={selectedFile} allFiles={files} />
               </div>
             </div>
           )}

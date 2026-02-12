@@ -8,7 +8,7 @@ import ProgressiveImage from '@/components/ProgressiveImage'
 import ProfileOverlay from '@/components/ProfileOverlay'
 import { useOverlayTransition } from '@/components/OverlayTransition'
 import SafeText from '@/components/SafeText'
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend, SectionLabels } from '@/lib/types'
@@ -208,6 +208,22 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
     TITLE_TYPING_START_DELAY_MS
   )
 
+  // Stable identity key derived from friends list for memoization
+  const friendsKey = friends.map(f => f.id).join(',')
+
+  // Shuffle friends randomly on each page load to avoid favoritism appearance.
+  // In edit mode, keep the original order so admins can manage them predictably.
+  const displayFriends = useMemo(() => {
+    if (editMode) return friends
+    const shuffled = [...friends]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [friendsKey, editMode])
+
   if (!editMode && friends.length === 0) return null
 
   return (
@@ -270,7 +286,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {friends.map((friend) => (
+            {displayFriends.map((friend) => (
               <FriendCard
                 key={friend.id}
                 friend={friend}

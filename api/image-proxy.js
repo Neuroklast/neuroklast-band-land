@@ -102,10 +102,9 @@ export default async function handler(req, res) {
     }
 
     const contentType = response.headers.get('content-type') || 'image/jpeg'
-    const isAllowedType = contentType.startsWith('image/') ||
-      contentType.startsWith('application/json') ||
-      contentType.startsWith('text/')
-    if (!isAllowedType) {
+    // Only allow image content types through the image proxy.
+    // Reject text/html, application/javascript, etc. to prevent XSS.
+    if (!contentType.startsWith('image/')) {
       return res.status(400).json({ error: 'Unsupported content type' })
     }
 

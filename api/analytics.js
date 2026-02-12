@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { timingSafeEqual } from './kv.js'
 
 const ANALYTICS_KEY = 'nk-analytics'
 const HEATMAP_KEY = 'nk-heatmap'
@@ -262,7 +263,7 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const token = req.headers['x-admin-token'] || ''
       const adminHash = await kv.get('admin-password-hash')
-      if (!adminHash || token !== adminHash) {
+      if (!adminHash || !timingSafeEqual(token, adminHash)) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 

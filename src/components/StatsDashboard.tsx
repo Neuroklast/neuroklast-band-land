@@ -98,6 +98,30 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
     const h = canvas.height
     ctx.clearRect(0, 0, w, h)
 
+    // Draw grid lines for reference
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'
+    ctx.lineWidth = 1
+    for (let i = 1; i < 4; i++) {
+      ctx.beginPath()
+      ctx.moveTo((w / 4) * i, 0)
+      ctx.lineTo((w / 4) * i, h)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(0, (h / 4) * i)
+      ctx.lineTo(w, (h / 4) * i)
+      ctx.stroke()
+    }
+
+    // Draw grid labels
+    ctx.font = '9px monospace'
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'
+    ctx.fillText('TOP', 4, 12)
+    ctx.fillText('BOTTOM', 4, h - 4)
+    ctx.fillText('LEFT', 4, h / 2)
+    ctx.textAlign = 'right'
+    ctx.fillText('RIGHT', w - 4, h / 2)
+    ctx.textAlign = 'left'
+
     // Draw each point as a radial gradient
     for (const p of points) {
       const px = p.x * w
@@ -124,12 +148,72 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
   }
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={400}
-      height={300}
-      className="w-full h-48 border border-primary/10 bg-black/50 rounded"
-    />
+    <div className="space-y-2">
+      <canvas
+        ref={canvasRef}
+        width={400}
+        height={300}
+        className="w-full h-48 border border-primary/10 bg-black/50 rounded"
+      />
+      <div className="flex items-center gap-4 text-[9px] font-mono text-primary/40">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full" style={{ background: 'radial-gradient(rgba(255,0,0,0.6), rgba(255,0,0,0))' }} />
+          <span>HIGH ACTIVITY</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full" style={{ background: 'radial-gradient(rgba(255,0,0,0.2), rgba(255,0,0,0))' }} />
+          <span>LOW ACTIVITY</span>
+        </div>
+        <span className="ml-auto">X/Y = viewport position ratio</span>
+      </div>
+    </div>
+  )
+}
+
+/** Table showing click counts per component/element */
+function ClickTable({ points }: { points: HeatmapPoint[] }) {
+  const elementCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const p of points) {
+      const key = p.el || 'unknown'
+      counts[key] = (counts[key] || 0) + 1
+    }
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+  }, [points])
+
+  if (elementCounts.length === 0) {
+    return <p className="text-[10px] text-primary/30 font-mono">NO CLICK DATA YET</p>
+  }
+
+  const total = elementCounts.reduce((sum, [, c]) => sum + c, 0)
+
+  return (
+    <div className="border border-primary/10 overflow-hidden">
+      <table className="w-full text-[10px] font-mono">
+        <thead>
+          <tr className="bg-primary/10 text-primary/70">
+            <th className="text-left px-3 py-1.5 tracking-wider">ELEMENT</th>
+            <th className="text-right px-3 py-1.5 tracking-wider">CLICKS</th>
+            <th className="text-right px-3 py-1.5 tracking-wider">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {elementCounts.map(([el, count]) => (
+            <tr key={el} className="border-t border-primary/5 hover:bg-primary/5 transition-colors">
+              <td className="px-3 py-1 text-foreground/70 uppercase">{el}</td>
+              <td className="px-3 py-1 text-right text-foreground/60">{count}</td>
+              <td className="px-3 py-1 text-right text-primary/50">{((count / total) * 100).toFixed(1)}%</td>
+            </tr>
+          ))}
+          <tr className="border-t border-primary/20 bg-primary/5">
+            <td className="px-3 py-1 text-foreground/80 font-bold">TOTAL</td>
+            <td className="px-3 py-1 text-right text-foreground/80 font-bold">{total}</td>
+            <td className="px-3 py-1 text-right text-primary/60">100%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   )
 }
 
@@ -157,6 +241,15 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
         .catch(() => setHeatmapPoints([]))
     }
   }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [open, onClose])
 
   const stats = useMemo(() => {
     if (!analytics) return null
@@ -380,7 +473,18 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                     <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
                       CLICK HEATMAP // {heatmapPoints.length} POINTS
                     </h3>
+                    <p className="text-[9px] font-mono text-primary/30">
+                      Shows where users click on the page. Red areas = more clicks. X axis = horizontal position, Y axis = vertical scroll position.
+                    </p>
                     <HeatmapCanvas points={heatmapPoints} />
+                  </div>
+
+                  {/* Click table */}
+                  <div className="space-y-3">
+                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                      CLICKS BY ELEMENT TYPE
+                    </h3>
+                    <ClickTable points={heatmapPoints} />
                   </div>
                 </>
               )}

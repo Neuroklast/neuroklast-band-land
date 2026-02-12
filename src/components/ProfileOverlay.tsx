@@ -71,6 +71,14 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
     }
   }, [])
 
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
   return (
     <motion.div
       key="profile-overlay"
