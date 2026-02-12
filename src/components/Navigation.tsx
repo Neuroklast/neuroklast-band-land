@@ -9,9 +9,16 @@ import {
   NAV_GLITCH_INTERVAL_MS,
   NAV_HEIGHT_PX,
 } from '@/lib/config'
+import MusicPlayer from '@/components/MusicPlayer'
+import type { Track } from '@/components/MusicPlayer'
 
-/** Spotify embed URL for the artist page (autoplay disabled) */
-const SPOTIFY_EMBED_SRC = 'https://open.spotify.com/embed/artist/5xfQSijbVetvH1QAS58n30?utm_source=generator&autoplay=0'
+/** Local tracks served from public/music/ */
+const LOCAL_TRACKS: Track[] = [
+  { title: 'IGNITE', src: '/music/Neuroklast - IGNITE.mp3' },
+  { title: 'LILITH', src: '/music/Neuroklast - LILITH.mp3' },
+  { title: 'SUCCUBUS (DFG Edit)', src: '/music/Neuroklast - SUCCUBUS (DFG Edit).mp3' },
+  { title: 'DETHRONE', src: '/music/Neuroklast ft Mechanical Vein - DETHRONE.mp3' },
+]
 
 interface NavigationProps {
   soundMuted?: boolean
@@ -131,7 +138,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
           </div>
         </div>
 
-        {/* Expandable Spotify player dropdown */}
+        {/* Expandable custom music player dropdown */}
         <AnimatePresence>
           {playerOpen && (
             <motion.div
@@ -145,15 +152,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
               data-track="music-player"
             >
               <div className="max-w-7xl mx-auto">
-                <iframe
-                  src={SPOTIFY_EMBED_SRC}
-                  width="100%"
-                  height="352"
-                  allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                  style={{ border: 'none', borderRadius: 0 }}
-                  title="Spotify Player"
-                />
+                <MusicPlayer tracks={LOCAL_TRACKS} />
               </div>
             </motion.div>
           )}

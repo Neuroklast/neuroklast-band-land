@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, SkipBack, SkipForward, SpeakerHigh, SpeakerSlash, MusicNote } from '@phosphor-icons/react'
+import { Play, Pause, SkipBack, SkipForward, SpeakerHigh, SpeakerSlash, SpeakerLow, MusicNote } from '@phosphor-icons/react'
 
 export interface Track {
   title: string
@@ -18,6 +18,7 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
+  const [volume, setVolume] = useState(0.7)
   const [progress, setProgress] = useState(0)
 
   const currentTrack = tracks[currentIndex]
@@ -44,6 +45,20 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
     setIsMuted(m => !m)
   }, [isMuted])
 
+  const handleVolumeChange = useCallback((newVolume: number) => {
+    setVolume(newVolume)
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume
+    }
+    if (newVolume === 0) {
+      setIsMuted(true)
+      if (audioRef.current) audioRef.current.muted = true
+    } else if (isMuted) {
+      setIsMuted(false)
+      if (audioRef.current) audioRef.current.muted = false
+    }
+  }, [isMuted])
+
   const prevTrack = useCallback(() => {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length)
   }, [tracks.length])
@@ -56,12 +71,13 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.load()
+      audioRef.current.volume = volume
       if (isPlaying) {
         audioRef.current.play().catch(() => {})
       }
     }
     setProgress(0)
-  }, [currentIndex, isPlaying])
+  }, [currentIndex, isPlaying, volume])
 
   // Update progress bar
   useEffect(() => {
@@ -84,6 +100,8 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
   }, [nextTrack])
 
   if (tracks.length === 0) return null
+
+  const VolumeIcon = isMuted || volume === 0 ? SpeakerSlash : volume < 0.5 ? SpeakerLow : SpeakerHigh
 
   return (
     <AnimatePresence>
@@ -148,13 +166,25 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
             <SkipForward size={18} weight="fill" />
           </button>
 
-          <button
-            onClick={toggleMute}
-            className="p-1.5 text-primary/60 hover:text-primary transition-colors ml-2"
-            title={isMuted ? 'Unmute' : 'Mute'}
-          >
-            {isMuted ? <SpeakerSlash size={18} /> : <SpeakerHigh size={18} />}
-          </button>
+          <div className="flex items-center gap-1.5 ml-2">
+            <button
+              onClick={toggleMute}
+              className="p-1.5 text-primary/60 hover:text-primary transition-colors"
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              <VolumeIcon size={18} />
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={isMuted ? 0 : volume}
+              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+              className="w-20 h-1 appearance-none bg-primary/20 rounded-none cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-none [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:rounded-none [&::-moz-range-thumb]:border-0"
+              title={`Volume: ${Math.round((isMuted ? 0 : volume) * 100)}%`}
+            />
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>

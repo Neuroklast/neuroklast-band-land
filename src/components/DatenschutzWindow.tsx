@@ -60,8 +60,8 @@ Zur Darstellung von Bildern kann diese Website den Bildproxy-Dienst wsrv.nl sowi
 Eingebettete YouTube-Videos
 Diese Website kann Videos von YouTube (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) einbetten. Dabei wird der erweiterte Datenschutzmodus von YouTube verwendet (Domain: youtube-nocookie.com), sodass YouTube keine Cookies setzt, bevor Sie das Video abspielen. Beim Abspielen eines Videos wird Ihre IP-Adresse an YouTube übermittelt. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Einbindung von Videoinhalten. Weitere Informationen finden Sie in der Datenschutzerklärung von YouTube: https://policies.google.com/privacy
 
-Eingebetteter Spotify-Player
-Diese Website bettet den Spotify-Player (Spotify AB, Regeringsgatan 19, SE-111 53 Stockholm, Schweden) ein. Beim Laden des Players wird Ihre IP-Adresse an Spotify übermittelt und Spotify kann Cookies setzen. Dies erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Einbindung von Musikinhalten. Weitere Informationen finden Sie in der Datenschutzerklärung von Spotify: https://www.spotify.com/de/legal/privacy-policy/
+Lokaler Musik-Player
+Diese Website stellt einen eigenen Musik-Player bereit, der Audiodateien direkt vom eigenen Server abspielt. Es werden dabei keine Daten an Drittanbieter übermittelt. Es werden keine externen Dienste eingebunden und keine Cookies gesetzt.
 
 5. Ihre Rechte
 
@@ -123,8 +123,8 @@ To display images, this website may use the image proxy service wsrv.nl as well 
 Embedded YouTube Videos
 This website may embed videos from YouTube (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland). YouTube's enhanced privacy mode is used (domain: youtube-nocookie.com), meaning YouTube does not set cookies until you play the video. When you play a video, your IP address is transmitted to YouTube. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in embedding video content. For more information, see YouTube's privacy policy: https://policies.google.com/privacy
 
-Embedded Spotify Player
-This website embeds the Spotify player (Spotify AB, Regeringsgatan 19, SE-111 53 Stockholm, Sweden). When loading the player, your IP address is transmitted to Spotify and Spotify may set cookies. This is done on the basis of our legitimate interest (Art. 6(1)(f) GDPR) in embedding music content. For more information, see Spotify's privacy policy: https://www.spotify.com/legal/privacy-policy/
+Local Music Player
+This website provides its own music player that plays audio files directly from our own server. No data is transmitted to third-party providers. No external services are integrated and no cookies are set.
 
 5. Your Rights
 
