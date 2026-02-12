@@ -250,22 +250,23 @@ function App() {
       </AnimatePresence>
 
       {!loading && (
-        <motion.div 
-          className="min-h-screen bg-background text-foreground overflow-x-hidden relative"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <AudioVisualizer />
-          
-          <div className="fixed inset-0 pointer-events-none z-[100]">
-            <div className="absolute inset-0 hud-scanline opacity-30" />
-          </div>
-          
-          <CyberpunkBackground />
-          <Toaster position="top-right" />
-          
+        <>
           <Navigation sectionLabels={data.sectionLabels} />
+          
+          <motion.div 
+            className="min-h-screen bg-background text-foreground overflow-x-hidden relative"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <AudioVisualizer />
+            
+            <div className="fixed inset-0 pointer-events-none z-[100]">
+              <div className="absolute inset-0 hud-scanline opacity-30" />
+            </div>
+            
+            <CyberpunkBackground />
+            <Toaster position="top-right" />
           
           <motion.div
             initial={{ opacity: 0 }}
@@ -481,7 +482,8 @@ function App() {
               onSave={({ name, genres, label }) => setBandData((current) => ({ ...(current || defaultBandData), name, genres, label }))}
             />
           </motion.div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </>
   )
