@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +16,14 @@ interface SoundSettingsDialogProps {
 
 export default function SoundSettingsDialog({ settings, onSave, onClose }: SoundSettingsDialogProps) {
   const [data, setData] = useState<SoundSettings>(settings || {})
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
 
   return (
     <motion.div

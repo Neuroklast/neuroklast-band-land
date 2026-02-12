@@ -157,6 +157,15 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
     }
   }, [isOpen, datenschutz])
 
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [isOpen, onClose])
+
   // Update the edit text when switching language in edit mode
   useEffect(() => {
     if (isEditing) {

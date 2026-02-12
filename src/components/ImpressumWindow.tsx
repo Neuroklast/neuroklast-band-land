@@ -41,6 +41,15 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
     }
   }, [isOpen, impressum])
 
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [isOpen, onClose])
+
   const update = (field: keyof Impressum, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }

@@ -104,6 +104,33 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     }
   }, [selectedImage])
 
+  // Close overlay and navigate with keyboard
+  useEffect(() => {
+    if (!selectedImage) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        triggerTransition()
+        setSelectedImage(null)
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        const currentIdx = photos.findIndex(p => p.imageUrl === selectedImage.imageUrl)
+        if (currentIdx < photos.length - 1) {
+          setSelectedImage(photos[currentIdx + 1])
+        }
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        const currentIdx = photos.findIndex(p => p.imageUrl === selectedImage.imageUrl)
+        if (currentIdx > 0) {
+          setSelectedImage(photos[currentIdx - 1])
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [selectedImage, photos, triggerTransition])
+
   // URL-based images from KV store (includes Drive-imported images)
   const urlPhotos = (galleryImages || []).map((img) => ({
     id: img.id,
@@ -531,11 +558,39 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 <div className="flex items-center gap-2 text-white hud-text">
                   <Images size={20} weight="fill" className="text-primary" />
                   <span className="text-sm font-mono">{selectedImage.caption}</span>
+                  <span className="ml-auto text-[10px] text-primary/50 font-mono">
+                    {photos.findIndex(p => p.imageUrl === selectedImage.imageUrl) + 1}/{photos.length}
+                  </span>
                 </div>
               </div>
             </motion.div>
 
-
+            {/* Desktop prev/next arrow buttons */}
+            {(() => {
+              const currentIdx = photos.findIndex(p => p.imageUrl === selectedImage.imageUrl)
+              return (
+                <>
+                  {currentIdx > 0 && (
+                    <button
+                      className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-black/60 border border-primary/30 text-primary/80 hover:bg-primary/20 hover:border-primary/60 transition-all"
+                      onClick={() => setSelectedImage(photos[currentIdx - 1])}
+                      title="Previous image"
+                    >
+                      <CaretLeft size={28} weight="bold" />
+                    </button>
+                  )}
+                  {currentIdx < photos.length - 1 && (
+                    <button
+                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-black/60 border border-primary/30 text-primary/80 hover:bg-primary/20 hover:border-primary/60 transition-all"
+                      onClick={() => setSelectedImage(photos[currentIdx + 1])}
+                      title="Next image"
+                    >
+                      <CaretRight size={28} weight="bold" />
+                    </button>
+                  )}
+                </>
+              )
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

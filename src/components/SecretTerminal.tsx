@@ -53,6 +53,15 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     }
   }, [isOpen, customCommands])
 
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [isOpen, onClose])
+
   // Queue for typing effect – lines pending display
   const [typingQueue, setTypingQueue] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([])
   const [currentTyping, setCurrentTyping] = useState<{ type: 'command' | 'output' | 'error', text: string, displayed: string } | null>(null)
