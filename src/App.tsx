@@ -34,7 +34,14 @@ import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
-import thresholdTrackUrl from '@/assets/sounds/NK - THRESHOLD.mp3'
+
+/** Tracks served from the public/music folder */
+const PUBLIC_MUSIC_TRACKS: Track[] = [
+  { title: 'Neuroklast - IGNITE', src: '/music/Neuroklast - IGNITE.mp3' },
+  { title: 'Neuroklast - LILITH', src: '/music/Neuroklast - LILITH.mp3' },
+  { title: 'Neuroklast - SUCCUBUS (DFG Edit)', src: '/music/Neuroklast - SUCCUBUS (DFG Edit).mp3' },
+  { title: 'Neuroklast ft Mechanical Vein - DETHRONE', src: '/music/Neuroklast ft Mechanical Vein - DETHRONE.mp3' },
+]
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
@@ -207,14 +214,8 @@ function App() {
   const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
   const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
 
-  // Build music player track list: bundled track + any audio media files
-  const playerTracks = useMemo<Track[]>(() => {
-    const tracks: Track[] = [{ title: 'NK - THRESHOLD', src: thresholdTrackUrl }]
-    data.mediaFiles?.forEach(f => {
-      if (f.type === 'audio' && f.url) tracks.push({ title: f.name, src: f.url })
-    })
-    return tracks
-  }, [data.mediaFiles])
+  // Music player uses only tracks from public/music
+  const playerTracks = PUBLIC_MUSIC_TRACKS
 
   // Apply config overrides whenever bandData changes
   useEffect(() => {
