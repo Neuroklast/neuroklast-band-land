@@ -28,7 +28,6 @@ import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import StatsDashboard from '@/components/StatsDashboard'
-import MusicPlayer from '@/components/MusicPlayer'
 import type { Track } from '@/components/MusicPlayer'
 import { useSound } from '@/hooks/use-sound'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -277,7 +276,7 @@ function App() {
           <CyberpunkBackground />
           <Toaster position="top-right" />
           
-          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} />
+          <Navigation soundMuted={soundMuted} hasSounds={hasSounds} onToggleMute={toggleSoundMute} sectionLabels={data.sectionLabels} tracks={playerTracks} />
           
           <motion.div
             initial={{ opacity: 0 }}
@@ -434,11 +433,6 @@ function App() {
                 onDatenschutz={() => setDatenschutzOpen(true)}
               />
             </motion.div>
-
-            {/* Persistent music player fixed to the bottom of the viewport */}
-            <div className="fixed bottom-0 left-0 right-0 z-40" data-track="music-player">
-              <MusicPlayer tracks={playerTracks} />
-            </div>
 
             {isOwner && (
               <EditControls 

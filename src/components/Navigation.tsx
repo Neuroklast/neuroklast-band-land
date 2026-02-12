@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { List, X, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react'
+import { List, X, SpeakerHigh, SpeakerSlash, MusicNote } from '@phosphor-icons/react'
+import MusicPlayer from '@/components/MusicPlayer'
+import type { Track } from '@/components/MusicPlayer'
 import type { SectionLabels } from '@/lib/types'
 import {
-  NAV_SCROLL_THRESHOLD_PX,
   NAV_GLITCH_PROBABILITY,
   NAV_GLITCH_DURATION_MS,
   NAV_GLITCH_INTERVAL_MS,
@@ -16,20 +17,14 @@ interface NavigationProps {
   hasSounds?: boolean
   onToggleMute?: () => void
   sectionLabels?: SectionLabels
+  /** Tracks for the expandable music player */
+  tracks?: Track[]
 }
 
-export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels }: NavigationProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
+export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectionLabels, tracks = [] }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > NAV_SCROLL_THRESHOLD_PX)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const [playerOpen, setPlayerOpen] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -65,9 +60,7 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
   return (
     <>
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element' : 'bg-background/70 backdrop-blur-sm'
-        } ${glitch ? 'red-glitch-element' : ''}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-background/95 backdrop-blur-md border-b border-primary/20 hud-element ${glitch ? 'red-glitch-element' : ''}`}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -92,6 +85,16 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-200 group-hover:w-full"></span>
               </button>
             ))}
+            {tracks.length > 0 && (
+              <button
+                onClick={() => setPlayerOpen(o => !o)}
+                data-track="nav::MUSIC_PLAYER"
+                className={`p-1 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+                title={playerOpen ? 'Close music player' : 'Open music player'}
+              >
+                <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+              </button>
+            )}
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -104,6 +107,16 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
+            {tracks.length > 0 && (
+              <button
+                onClick={() => setPlayerOpen(o => !o)}
+                data-track="nav::MUSIC_PLAYER"
+                className={`p-2 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+                title={playerOpen ? 'Close music player' : 'Open music player'}
+              >
+                <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+              </button>
+            )}
             {hasSounds && onToggleMute && (
               <button
                 onClick={onToggleMute}
@@ -122,10 +135,28 @@ export default function Navigation({ soundMuted, hasSounds, onToggleMute, sectio
             </Button>
           </div>
         </div>
+
+        {/* Expandable music player dropdown */}
+        <AnimatePresence>
+          {playerOpen && tracks.length > 0 && (
+            <motion.div
+              key="music-player-dropdown"
+              className="border-t border-primary/20"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+              data-track="music-player"
+            >
+              <div className="max-w-7xl mx-auto">
+                <MusicPlayer tracks={tracks} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
-        {isScrolled && (
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        )}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </motion.nav>
 
       <AnimatePresence>
