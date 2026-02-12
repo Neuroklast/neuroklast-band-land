@@ -39,7 +39,7 @@ export default function CyberpunkBackground() {
   }
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ contain: 'strict' }}>
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ contain: 'layout' }}>
       <div className="absolute inset-0 hud-grid-overlay" />
       
       <div className="absolute top-4 left-4 data-readout hidden md:block">
