@@ -104,6 +104,17 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     }
   }, [selectedImage])
 
+  // URL-based images from KV store (includes Drive-imported images)
+  const urlPhotos = (galleryImages || []).map((img) => ({
+    id: img.id,
+    imageUrl: cachedUrls[img.url] || img.url,
+    caption: img.caption || img.url.split('/').pop()?.split('?')[0] || 'IMG',
+    isLocal: false,
+    originalUrl: img.url
+  }))
+
+  const photos = urlPhotos
+
   // Close overlay and navigate with keyboard
   useEffect(() => {
     if (!selectedImage) return
@@ -130,17 +141,6 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [selectedImage, photos, triggerTransition])
-
-  // URL-based images from KV store (includes Drive-imported images)
-  const urlPhotos = (galleryImages || []).map((img) => ({
-    id: img.id,
-    imageUrl: cachedUrls[img.url] || img.url,
-    caption: img.caption || img.url.split('/').pop()?.split('?')[0] || 'IMG',
-    isLocal: false,
-    originalUrl: img.url
-  }))
-
-  const photos = urlPhotos
 
   const loadDriveFolder = async (url: string, silent = false, replace = false) => {
     const folderId = extractDriveFolderId(url)
