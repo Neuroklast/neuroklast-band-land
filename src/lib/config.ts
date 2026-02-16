@@ -133,7 +133,7 @@ export interface ConfigMeta {
   label: string
   description: string
   group: string
-  type: 'number' | 'string'
+  type: 'number' | 'string' | 'boolean'
 }
 
 export const CONFIG_META: Record<ConfigKey, ConfigMeta> = {
@@ -197,33 +197,33 @@ export const CONFIG_META: Record<ConfigKey, ConfigMeta> = {
   PROFILE_STATUS_TEXT:              { label: 'Profile Status Text',      description: 'Status text shown in member profile overlays',            group: 'Defaults',         type: 'string' },
   SESSION_STATUS_TEXT:              { label: 'Session Status Text',      description: 'Session status text shown in profile overlays',           group: 'Defaults',         type: 'string' },
 
-  PHOSPHOR_GLOW_ENABLED:           { label: 'Enable Phosphor Glow',     description: 'Enable CRT phosphor glow effect on text',                group: 'CRT Effects',      type: 'number' },
+  PHOSPHOR_GLOW_ENABLED:           { label: 'Enable Phosphor Glow',     description: 'Enable CRT phosphor glow effect on text',                group: 'CRT Effects',      type: 'boolean' },
   PHOSPHOR_GLOW_INNER_BLUR_PX:     { label: 'Inner Glow Blur (px)',     description: 'Blur radius for inner phosphor glow',                    group: 'CRT Effects',      type: 'number' },
   PHOSPHOR_GLOW_OUTER_BLUR_PX:     { label: 'Outer Glow Blur (px)',     description: 'Blur radius for outer phosphor glow',                    group: 'CRT Effects',      type: 'number' },
   PHOSPHOR_GLOW_INNER_OPACITY:     { label: 'Inner Glow Opacity',       description: 'Opacity for inner phosphor glow (0-1)',                  group: 'CRT Effects',      type: 'number' },
   PHOSPHOR_GLOW_OUTER_OPACITY:     { label: 'Outer Glow Opacity',       description: 'Opacity for outer phosphor glow (0-1)',                  group: 'CRT Effects',      type: 'number' },
   
-  SCANLINE_MOVEMENT_ENABLED:       { label: 'Enable Scanline Movement', description: 'Enable animated CRT scanline refresh',                   group: 'CRT Effects',      type: 'number' },
+  SCANLINE_MOVEMENT_ENABLED:       { label: 'Enable Scanline Movement', description: 'Enable animated CRT scanline refresh',                   group: 'CRT Effects',      type: 'boolean' },
   SCANLINE_ANIMATION_DURATION_S:   { label: 'Scanline Duration (s)',    description: 'Duration for scanline to traverse screen',               group: 'CRT Effects',      type: 'number' },
   SCANLINE_HEIGHT_PX:              { label: 'Scanline Height (px)',     description: 'Height of the moving scanline',                          group: 'CRT Effects',      type: 'number' },
   SCANLINE_OPACITY:                { label: 'Scanline Opacity',         description: 'Opacity of the moving scanline (0-1)',                   group: 'CRT Effects',      type: 'number' },
   
-  HUD_METADATA_ENABLED:            { label: 'Enable HUD Metadata',      description: 'Show system monitor metadata overlays',                  group: 'HUD Monitor',      type: 'number' },
+  HUD_METADATA_ENABLED:            { label: 'Enable HUD Metadata',      description: 'Show system monitor metadata overlays',                  group: 'HUD Monitor',      type: 'boolean' },
   HUD_METADATA_UPDATE_INTERVAL_MS: { label: 'Metadata Update Interval', description: 'How often HUD metadata refreshes (ms)',                  group: 'HUD Monitor',      type: 'number' },
-  HUD_SHOW_TIMESTAMP:              { label: 'Show Timestamp',           description: 'Display current timestamp in HUD',                       group: 'HUD Monitor',      type: 'number' },
-  HUD_SHOW_PSEUDO_IP:              { label: 'Show Pseudo IP',           description: 'Display pseudo IP address in HUD',                       group: 'HUD Monitor',      type: 'number' },
-  HUD_SHOW_UPTIME:                 { label: 'Show Uptime',              description: 'Display system uptime in HUD',                           group: 'HUD Monitor',      type: 'number' },
-  HUD_SHOW_SECTOR:                 { label: 'Show Sector',              description: 'Display current sector designation in HUD',              group: 'HUD Monitor',      type: 'number' },
-  HUD_SHOW_SCROLL_SPEED:           { label: 'Show Scroll Speed',        description: 'Display scroll speed as data transfer rate',             group: 'HUD Monitor',      type: 'number' },
+  HUD_SHOW_TIMESTAMP:              { label: 'Show Timestamp',           description: 'Display current timestamp in HUD',                       group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_PSEUDO_IP:              { label: 'Show Pseudo IP',           description: 'Display pseudo IP address in HUD',                       group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_UPTIME:                 { label: 'Show Uptime',              description: 'Display system uptime in HUD',                           group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_SECTOR:                 { label: 'Show Sector',              description: 'Display current sector designation in HUD',              group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_SCROLL_SPEED:           { label: 'Show Scroll Speed',        description: 'Display scroll speed as data transfer rate',             group: 'HUD Monitor',      type: 'boolean' },
   
-  CURSOR_BLINK_ENABLED:            { label: 'Enable Cursor Blink',      description: 'Show blinking cursors on text elements',                 group: 'Cursor Effects',   type: 'number' },
+  CURSOR_BLINK_ENABLED:            { label: 'Enable Cursor Blink',      description: 'Show blinking cursors on text elements',                 group: 'Cursor Effects',   type: 'boolean' },
   CURSOR_BLINK_SPEED_MS:           { label: 'Cursor Blink Speed (ms)',  description: 'Blink cycle duration for cursors',                       group: 'Cursor Effects',   type: 'number' },
   
-  IMAGE_GLITCH_ON_HOVER_ENABLED:   { label: 'Enable Image Glitch',      description: 'Enable glitch/slice effect on image hover',              group: 'Image Effects',    type: 'number' },
+  IMAGE_GLITCH_ON_HOVER_ENABLED:   { label: 'Enable Image Glitch',      description: 'Enable glitch/slice effect on image hover',              group: 'Image Effects',    type: 'boolean' },
   IMAGE_GLITCH_SLICE_COUNT:        { label: 'Glitch Slice Count',       description: 'Number of slices in image glitch effect',                group: 'Image Effects',    type: 'number' },
   IMAGE_GLITCH_DURATION_MS:        { label: 'Glitch Duration (ms)',     description: 'Duration of image glitch animation',                     group: 'Image Effects',    type: 'number' },
   
-  TEXT_DECRYPT_ENABLED:            { label: 'Enable Text Decryption',   description: 'Enable text decryption effect on load',                  group: 'Text Effects',     type: 'number' },
+  TEXT_DECRYPT_ENABLED:            { label: 'Enable Text Decryption',   description: 'Enable text decryption effect on load',                  group: 'Text Effects',     type: 'boolean' },
   TEXT_DECRYPT_DURATION_MS:        { label: 'Decrypt Duration (ms)',    description: 'Total duration of decryption animation',                 group: 'Text Effects',     type: 'number' },
   TEXT_DECRYPT_CHAR_DELAY_MS:      { label: 'Decrypt Char Delay (ms)',  description: 'Delay between character decryptions',                    group: 'Text Effects',     type: 'number' },
   TEXT_DECRYPT_CHARS:              { label: 'Decrypt Characters',       description: 'Characters used for decryption scramble',                group: 'Text Effects',     type: 'string' },
