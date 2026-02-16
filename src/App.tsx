@@ -28,7 +28,10 @@ import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import StatsDashboard from '@/components/StatsDashboard'
+import { MovingScanline } from '@/components/MovingScanline'
+import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import { useSound } from '@/hooks/use-sound'
+import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
@@ -95,6 +98,9 @@ function App() {
   const [showSoundSettings, setShowSoundSettings] = useState(false)
   const [showConfigEditor, setShowConfigEditor] = useState(false)
   const [showStats, setShowStats] = useState(false)
+
+  // Apply CRT effects
+  useCRTEffects()
 
   // Track page view on mount
   useEffect(() => {
@@ -236,6 +242,10 @@ function App() {
         onSave={(datenschutz) => setBandData((current) => ({ ...(current || defaultBandData), datenschutz }))}
       />
       <CookieBanner />
+      
+      {/* CRT/Monitor Effects */}
+      <MovingScanline />
+      <SystemMonitorHUD />
       
       <AnimatePresence>
         {loading && (
