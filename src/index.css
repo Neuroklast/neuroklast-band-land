@@ -40,6 +40,12 @@
 
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Space Grotesk', sans-serif;
+
+  /* CRT/Phosphor Effect Variables */
+  --phosphor-inner-blur: 3px;
+  --phosphor-outer-blur: 12px;
+  --phosphor-inner-opacity: 0.4;
+  --phosphor-outer-opacity: 0.15;
 }
 
 @theme {
@@ -79,8 +85,8 @@ body {
   overscroll-behavior-y: contain;
   overflow-x: hidden;
   text-shadow: 
-    0 0 3px oklch(1 0 0 / 0.3),
-    0 0 6px oklch(0.50 0.22 25 / 0.15),
+    0 0 var(--phosphor-inner-blur) oklch(1 0 0 / var(--phosphor-inner-opacity)),
+    0 0 var(--phosphor-outer-blur) oklch(0.50 0.22 25 / var(--phosphor-outer-opacity)),
     1px 0 0 oklch(0.50 0.22 25 / 0.1),
     -1px 0 0 oklch(0.50 0.22 25 / 0.1);
 }
@@ -149,8 +155,8 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   text-shadow: 
-    0 0 4px oklch(1 0 0 / 0.4),
-    0 0 8px oklch(0.50 0.22 25 / 0.2),
+    0 0 calc(var(--phosphor-inner-blur) * 1.3) oklch(1 0 0 / calc(var(--phosphor-inner-opacity) * 1.3)),
+    0 0 calc(var(--phosphor-outer-blur) * 1.2) oklch(0.50 0.22 25 / calc(var(--phosphor-outer-opacity) * 1.5)),
     1.5px 0 0 oklch(0.50 0.22 25 / 0.15),
     -1.5px 0 0 oklch(0.50 0.22 25 / 0.15);
 }

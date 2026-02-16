@@ -84,6 +84,43 @@ const DEFAULTS = {
   DEFAULT_LABEL: 'Darktunes Music Group',
   PROFILE_STATUS_TEXT: 'ACTIVE',
   SESSION_STATUS_TEXT: 'SESSION ACTIVE',
+
+  // CRT/Phosphor Effects
+  PHOSPHOR_GLOW_ENABLED: true,
+  PHOSPHOR_GLOW_INNER_BLUR_PX: 3,
+  PHOSPHOR_GLOW_OUTER_BLUR_PX: 12,
+  PHOSPHOR_GLOW_INNER_OPACITY: 0.4,
+  PHOSPHOR_GLOW_OUTER_OPACITY: 0.15,
+  
+  // Scanline Effects
+  SCANLINE_MOVEMENT_ENABLED: true,
+  SCANLINE_ANIMATION_DURATION_S: 8,
+  SCANLINE_HEIGHT_PX: 3,
+  SCANLINE_OPACITY: 0.7,
+  
+  // System Monitor HUD
+  HUD_METADATA_ENABLED: true,
+  HUD_METADATA_UPDATE_INTERVAL_MS: 1000,
+  HUD_SHOW_TIMESTAMP: true,
+  HUD_SHOW_PSEUDO_IP: true,
+  HUD_SHOW_UPTIME: true,
+  HUD_SHOW_SECTOR: true,
+  HUD_SHOW_SCROLL_SPEED: true,
+  
+  // Cursor Effects
+  CURSOR_BLINK_ENABLED: true,
+  CURSOR_BLINK_SPEED_MS: 800,
+  
+  // Image Glitch Effects
+  IMAGE_GLITCH_ON_HOVER_ENABLED: true,
+  IMAGE_GLITCH_SLICE_COUNT: 8,
+  IMAGE_GLITCH_DURATION_MS: 400,
+  
+  // Text Decryption Effects
+  TEXT_DECRYPT_ENABLED: true,
+  TEXT_DECRYPT_DURATION_MS: 800,
+  TEXT_DECRYPT_CHAR_DELAY_MS: 30,
+  TEXT_DECRYPT_CHARS: '$%#@&!*+=<>?',
 } as const
 
 export type ConfigKey = keyof typeof DEFAULTS
@@ -96,7 +133,7 @@ export interface ConfigMeta {
   label: string
   description: string
   group: string
-  type: 'number' | 'string'
+  type: 'number' | 'string' | 'boolean'
 }
 
 export const CONFIG_META: Record<ConfigKey, ConfigMeta> = {
@@ -159,6 +196,37 @@ export const CONFIG_META: Record<ConfigKey, ConfigMeta> = {
   DEFAULT_LABEL:                   { label: 'Default Label',            description: 'Default record label name',                              group: 'Defaults',         type: 'string' },
   PROFILE_STATUS_TEXT:              { label: 'Profile Status Text',      description: 'Status text shown in member profile overlays',            group: 'Defaults',         type: 'string' },
   SESSION_STATUS_TEXT:              { label: 'Session Status Text',      description: 'Session status text shown in profile overlays',           group: 'Defaults',         type: 'string' },
+
+  PHOSPHOR_GLOW_ENABLED:           { label: 'Enable Phosphor Glow',     description: 'Enable CRT phosphor glow effect on text',                group: 'CRT Effects',      type: 'boolean' },
+  PHOSPHOR_GLOW_INNER_BLUR_PX:     { label: 'Inner Glow Blur (px)',     description: 'Blur radius for inner phosphor glow',                    group: 'CRT Effects',      type: 'number' },
+  PHOSPHOR_GLOW_OUTER_BLUR_PX:     { label: 'Outer Glow Blur (px)',     description: 'Blur radius for outer phosphor glow',                    group: 'CRT Effects',      type: 'number' },
+  PHOSPHOR_GLOW_INNER_OPACITY:     { label: 'Inner Glow Opacity',       description: 'Opacity for inner phosphor glow (0-1)',                  group: 'CRT Effects',      type: 'number' },
+  PHOSPHOR_GLOW_OUTER_OPACITY:     { label: 'Outer Glow Opacity',       description: 'Opacity for outer phosphor glow (0-1)',                  group: 'CRT Effects',      type: 'number' },
+  
+  SCANLINE_MOVEMENT_ENABLED:       { label: 'Enable Scanline Movement', description: 'Enable animated CRT scanline refresh',                   group: 'CRT Effects',      type: 'boolean' },
+  SCANLINE_ANIMATION_DURATION_S:   { label: 'Scanline Duration (s)',    description: 'Duration for scanline to traverse screen',               group: 'CRT Effects',      type: 'number' },
+  SCANLINE_HEIGHT_PX:              { label: 'Scanline Height (px)',     description: 'Height of the moving scanline',                          group: 'CRT Effects',      type: 'number' },
+  SCANLINE_OPACITY:                { label: 'Scanline Opacity',         description: 'Opacity of the moving scanline (0-1)',                   group: 'CRT Effects',      type: 'number' },
+  
+  HUD_METADATA_ENABLED:            { label: 'Enable HUD Metadata',      description: 'Show system monitor metadata overlays',                  group: 'HUD Monitor',      type: 'boolean' },
+  HUD_METADATA_UPDATE_INTERVAL_MS: { label: 'Metadata Update Interval', description: 'How often HUD metadata refreshes (ms)',                  group: 'HUD Monitor',      type: 'number' },
+  HUD_SHOW_TIMESTAMP:              { label: 'Show Timestamp',           description: 'Display current timestamp in HUD',                       group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_PSEUDO_IP:              { label: 'Show Pseudo IP',           description: 'Display pseudo IP address in HUD',                       group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_UPTIME:                 { label: 'Show Uptime',              description: 'Display system uptime in HUD',                           group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_SECTOR:                 { label: 'Show Sector',              description: 'Display current sector designation in HUD',              group: 'HUD Monitor',      type: 'boolean' },
+  HUD_SHOW_SCROLL_SPEED:           { label: 'Show Scroll Speed',        description: 'Display scroll speed as data transfer rate',             group: 'HUD Monitor',      type: 'boolean' },
+  
+  CURSOR_BLINK_ENABLED:            { label: 'Enable Cursor Blink',      description: 'Show blinking cursors on text elements',                 group: 'Cursor Effects',   type: 'boolean' },
+  CURSOR_BLINK_SPEED_MS:           { label: 'Cursor Blink Speed (ms)',  description: 'Blink cycle duration for cursors',                       group: 'Cursor Effects',   type: 'number' },
+  
+  IMAGE_GLITCH_ON_HOVER_ENABLED:   { label: 'Enable Image Glitch',      description: 'Enable glitch/slice effect on image hover',              group: 'Image Effects',    type: 'boolean' },
+  IMAGE_GLITCH_SLICE_COUNT:        { label: 'Glitch Slice Count',       description: 'Number of slices in image glitch effect',                group: 'Image Effects',    type: 'number' },
+  IMAGE_GLITCH_DURATION_MS:        { label: 'Glitch Duration (ms)',     description: 'Duration of image glitch animation',                     group: 'Image Effects',    type: 'number' },
+  
+  TEXT_DECRYPT_ENABLED:            { label: 'Enable Text Decryption',   description: 'Enable text decryption effect on load',                  group: 'Text Effects',     type: 'boolean' },
+  TEXT_DECRYPT_DURATION_MS:        { label: 'Decrypt Duration (ms)',    description: 'Total duration of decryption animation',                 group: 'Text Effects',     type: 'number' },
+  TEXT_DECRYPT_CHAR_DELAY_MS:      { label: 'Decrypt Char Delay (ms)',  description: 'Delay between character decryptions',                    group: 'Text Effects',     type: 'number' },
+  TEXT_DECRYPT_CHARS:              { label: 'Decrypt Characters',       description: 'Characters used for decryption scramble',                group: 'Text Effects',     type: 'string' },
 }
 
 // ---------------------------------------------------------------------------
@@ -251,3 +319,40 @@ export const SYNC_INTERVAL_MS                = DEFAULTS.SYNC_INTERVAL_MS
 export const DEFAULT_LABEL                   = DEFAULTS.DEFAULT_LABEL
 export const PROFILE_STATUS_TEXT             = DEFAULTS.PROFILE_STATUS_TEXT
 export const SESSION_STATUS_TEXT             = DEFAULTS.SESSION_STATUS_TEXT
+
+// CRT/Phosphor Effects
+export const PHOSPHOR_GLOW_ENABLED           = DEFAULTS.PHOSPHOR_GLOW_ENABLED
+export const PHOSPHOR_GLOW_INNER_BLUR_PX     = DEFAULTS.PHOSPHOR_GLOW_INNER_BLUR_PX
+export const PHOSPHOR_GLOW_OUTER_BLUR_PX     = DEFAULTS.PHOSPHOR_GLOW_OUTER_BLUR_PX
+export const PHOSPHOR_GLOW_INNER_OPACITY     = DEFAULTS.PHOSPHOR_GLOW_INNER_OPACITY
+export const PHOSPHOR_GLOW_OUTER_OPACITY     = DEFAULTS.PHOSPHOR_GLOW_OUTER_OPACITY
+
+// Scanline Effects
+export const SCANLINE_MOVEMENT_ENABLED       = DEFAULTS.SCANLINE_MOVEMENT_ENABLED
+export const SCANLINE_ANIMATION_DURATION_S   = DEFAULTS.SCANLINE_ANIMATION_DURATION_S
+export const SCANLINE_HEIGHT_PX              = DEFAULTS.SCANLINE_HEIGHT_PX
+export const SCANLINE_OPACITY                = DEFAULTS.SCANLINE_OPACITY
+
+// System Monitor HUD
+export const HUD_METADATA_ENABLED            = DEFAULTS.HUD_METADATA_ENABLED
+export const HUD_METADATA_UPDATE_INTERVAL_MS = DEFAULTS.HUD_METADATA_UPDATE_INTERVAL_MS
+export const HUD_SHOW_TIMESTAMP              = DEFAULTS.HUD_SHOW_TIMESTAMP
+export const HUD_SHOW_PSEUDO_IP              = DEFAULTS.HUD_SHOW_PSEUDO_IP
+export const HUD_SHOW_UPTIME                 = DEFAULTS.HUD_SHOW_UPTIME
+export const HUD_SHOW_SECTOR                 = DEFAULTS.HUD_SHOW_SECTOR
+export const HUD_SHOW_SCROLL_SPEED           = DEFAULTS.HUD_SHOW_SCROLL_SPEED
+
+// Cursor Effects
+export const CURSOR_BLINK_ENABLED            = DEFAULTS.CURSOR_BLINK_ENABLED
+export const CURSOR_BLINK_SPEED_MS           = DEFAULTS.CURSOR_BLINK_SPEED_MS
+
+// Image Glitch Effects
+export const IMAGE_GLITCH_ON_HOVER_ENABLED   = DEFAULTS.IMAGE_GLITCH_ON_HOVER_ENABLED
+export const IMAGE_GLITCH_SLICE_COUNT        = DEFAULTS.IMAGE_GLITCH_SLICE_COUNT
+export const IMAGE_GLITCH_DURATION_MS        = DEFAULTS.IMAGE_GLITCH_DURATION_MS
+
+// Text Decryption Effects
+export const TEXT_DECRYPT_ENABLED            = DEFAULTS.TEXT_DECRYPT_ENABLED
+export const TEXT_DECRYPT_DURATION_MS        = DEFAULTS.TEXT_DECRYPT_DURATION_MS
+export const TEXT_DECRYPT_CHAR_DELAY_MS      = DEFAULTS.TEXT_DECRYPT_CHAR_DELAY_MS
+export const TEXT_DECRYPT_CHARS              = DEFAULTS.TEXT_DECRYPT_CHARS
