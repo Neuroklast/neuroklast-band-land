@@ -4,6 +4,21 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import { loadServerAnalytics, loadHeatmapData, resetAnalytics, loadAnalytics } from '@/lib/analytics'
 import type { SiteAnalytics, DailyStats, HeatmapPoint } from '@/lib/analytics'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts'
 
 interface StatsDashboardProps {
   open: boolean
@@ -367,6 +382,160 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                           <MiniBarChart data={stats.last30Days} dataKey="interactions" color="bg-primary/70" />
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Enhanced Recharts Visualizations */}
+                  {stats.last30Days.length > 0 && (
+                    <div className="space-y-6">
+                      <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                        ENHANCED ANALYTICS // RECHARTS VISUALIZATIONS
+                      </h3>
+                      
+                      {/* Line Chart - Trends over time */}
+                      <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
+                        <p className="text-[10px] font-mono text-primary/60 uppercase">Activity Trends (Last 30 Days)</p>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <LineChart data={stats.last30Days}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
+                            <XAxis 
+                              dataKey="date" 
+                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                              tickFormatter={(value) => value.slice(-5)}
+                              stroke="oklch(0.50 0.22 25 / 0.3)"
+                            />
+                            <YAxis 
+                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                              stroke="oklch(0.50 0.22 25 / 0.3)"
+                            />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'oklch(0 0 0 / 0.95)', 
+                                border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                borderRadius: '2px',
+                                fontSize: '10px',
+                                fontFamily: 'var(--font-mono)'
+                              }}
+                              labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
+                            />
+                            <Legend 
+                              wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="pageViews" 
+                              stroke="oklch(0.50 0.22 25)" 
+                              strokeWidth={2}
+                              dot={{ fill: 'oklch(0.50 0.22 25)', r: 3 }}
+                              activeDot={{ r: 5 }}
+                              name="Page Views"
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="sectionViews" 
+                              stroke="oklch(0.60 0.24 25)" 
+                              strokeWidth={2}
+                              dot={{ fill: 'oklch(0.60 0.24 25)', r: 3 }}
+                              activeDot={{ r: 5 }}
+                              name="Section Views"
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="interactions" 
+                              stroke="oklch(0.70 0.20 25)" 
+                              strokeWidth={2}
+                              dot={{ fill: 'oklch(0.70 0.20 25)', r: 3 }}
+                              activeDot={{ r: 5 }}
+                              name="Interactions"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Bar Chart - Comparison */}
+                      <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
+                        <p className="text-[10px] font-mono text-primary/60 uppercase">Weekly Comparison (Last 7 Days)</p>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <BarChart data={stats.last7Days}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
+                            <XAxis 
+                              dataKey="date" 
+                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                              tickFormatter={(value) => value.slice(-5)}
+                              stroke="oklch(0.50 0.22 25 / 0.3)"
+                            />
+                            <YAxis 
+                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                              stroke="oklch(0.50 0.22 25 / 0.3)"
+                            />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'oklch(0 0 0 / 0.95)', 
+                                border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                borderRadius: '2px',
+                                fontSize: '10px',
+                                fontFamily: 'var(--font-mono)'
+                              }}
+                              labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
+                            />
+                            <Legend 
+                              wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
+                            />
+                            <Bar 
+                              dataKey="pageViews" 
+                              fill="oklch(0.50 0.22 25 / 0.8)" 
+                              name="Page Views"
+                            />
+                            <Bar 
+                              dataKey="sectionViews" 
+                              fill="oklch(0.60 0.24 25 / 0.8)" 
+                              name="Section Views"
+                            />
+                            <Bar 
+                              dataKey="interactions" 
+                              fill="oklch(0.70 0.20 25 / 0.8)" 
+                              name="Interactions"
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Pie Chart - Device Distribution */}
+                      {Object.keys(analytics.devices).length > 0 && (
+                        <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
+                          <p className="text-[10px] font-mono text-primary/60 uppercase">Device Distribution</p>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <PieChart>
+                              <Pie
+                                data={Object.entries(analytics.devices).map(([name, value]) => ({ name, value }))}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={70}
+                                fill="oklch(0.50 0.22 25)"
+                                dataKey="value"
+                              >
+                                {Object.entries(analytics.devices).map((_, index) => (
+                                  <Cell 
+                                    key={`cell-${index}`} 
+                                    fill={index === 0 ? 'oklch(0.50 0.22 25)' : 'oklch(0.60 0.24 25)'} 
+                                  />
+                                ))}
+                              </Pie>
+                              <Tooltip 
+                                contentStyle={{ 
+                                  backgroundColor: 'oklch(0 0 0 / 0.95)', 
+                                  border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                  borderRadius: '2px',
+                                  fontSize: '10px',
+                                  fontFamily: 'var(--font-mono)'
+                                }}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
                     </div>
                   )}
 
