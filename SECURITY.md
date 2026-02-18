@@ -89,6 +89,7 @@ Decoy records are planted in the KV database (`api/_honeytokens.js`):
 | `KV_REST_API_TOKEN` | Vercel KV auth token | Yes |
 | `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting) | Recommended |
 | `ADMIN_RESET_EMAIL` | Email for password reset verification | For reset feature |
+| `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.com`) | Recommended |
 
 ## Best Practices for Deployment
 

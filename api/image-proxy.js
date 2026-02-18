@@ -15,6 +15,7 @@ import { imageProxyQuerySchema, validate } from './_schemas.js'
 const MAX_CACHEABLE_IMAGE_SIZE = 4 * 1024 * 1024 // 4 MB — larger images are served but not cached
 const MAX_IMAGE_SIZE = 16 * 1024 * 1024 // 16 MB — absolute maximum, rejects larger payloads
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 30 // 30 days
+const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
 
 /** Block requests to private/internal networks to prevent SSRF */
 const BLOCKED_HOST_PATTERNS = [
@@ -167,7 +168,7 @@ export default async function handler(req, res) {
       const buf = Buffer.from(cached.data, 'base64')
       res.setHeader('Content-Type', cached.contentType)
       res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=2592000')
-      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
       return res.status(200).send(buf)
     }
   } catch (e) {
@@ -225,7 +226,7 @@ export default async function handler(req, res) {
       // Serve but don't cache very large images
       res.setHeader('Content-Type', contentType)
       res.setHeader('Cache-Control', 'public, max-age=86400')
-      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
       return res.status(200).send(Buffer.from(arrayBuf))
     }
 
@@ -238,7 +239,7 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', contentType)
     res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=2592000')
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
     return res.status(200).send(Buffer.from(arrayBuf))
   } catch (error) {
     console.error('Image proxy error:', error)

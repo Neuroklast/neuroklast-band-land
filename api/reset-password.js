@@ -52,7 +52,8 @@ export default async function handler(req, res) {
       // Hash the new password server-side with scrypt
       const hashedPassword = await hashPassword(newPassword)
 
-      // Set new password hash and delete the reset token atomically via pipeline
+      // SECURITY: Delete the reset token atomically with the password update.
+      // This ensures the token cannot be reused even under race conditions.
       const pipe = kv.pipeline()
       pipe.set('admin-password-hash', hashedPassword)
       pipe.del(RESET_TOKEN_KEY)

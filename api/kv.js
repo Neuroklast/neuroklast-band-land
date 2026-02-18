@@ -14,6 +14,9 @@ const isKVConfigured = () => {
  * All other keys require a valid session cookie.
  * This prevents accidental leakage of sensitive data stored under
  * arbitrary key names (e.g. stripe_api_key, db_password, etc.).
+ * 
+ * band-data is publicly readable but is sanitised on write to strip
+ * any fields matching sensitive patterns (token, secret, password, etc.).
  */
 const ALLOWED_PUBLIC_READ_KEYS = new Set([
   'band-data',
@@ -151,6 +154,17 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 
+      // Sanitise band-data writes: strip any fields that look like secrets/tokens
+      // to prevent accidental exposure since band-data is publicly readable.
+      if (key === 'band-data' && value && typeof value === 'object' && !Array.isArray(value)) {
+        const SENSITIVE_FIELD_PATTERNS = [/token/i, /secret/i, /password/i, /apikey/i, /api_key/i, /credential/i]
+        const sanitised = Object.fromEntries(
+          Object.entries(value).filter(([k]) => !SENSITIVE_FIELD_PATTERNS.some(p => p.test(k)))
+        )
+        await kv.set(key, sanitised)
+        return res.json({ success: true })
+      }
+
       await kv.set(key, value)
       return res.json({ success: true })
     }
@@ -162,8 +176,8 @@ export default async function handler(req, res) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('KV API error details:', {
       message: errorMessage,
-      key: req.body?.key,
-      method: req.method
+      method: req.method,
+      // key name intentionally omitted to avoid logging potentially sensitive identifiers
     })
     
     // Check if it's a KV-specific configuration error from @vercel/kv

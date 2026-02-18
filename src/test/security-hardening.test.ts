@@ -127,8 +127,11 @@ describe('vercel.json Content-Security-Policy', () => {
     expect(cspHeader.value).toContain("default-src 'self'")
   })
 
-  it('allows inline scripts for React/Framer Motion', () => {
-    expect(cspHeader.value).toContain("script-src 'self' 'unsafe-inline'")
+  it('does not allow unsafe-inline scripts', () => {
+    const scriptSrc = cspHeader.value.match(/script-src ([^;]+)/)
+    expect(scriptSrc).toBeTruthy()
+    expect(scriptSrc[1]).not.toContain("'unsafe-inline'")
+    expect(scriptSrc[1].trim()).toBe("'self'")
   })
 
   it('allows inline styles', () => {
