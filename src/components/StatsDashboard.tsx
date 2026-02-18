@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut, Globe, Browser, Monitor } from '@phosphor-icons/react'
+import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut, Globe, Browser, Monitor, TrendUp, ChartBar, Target, MapPin } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { loadServerAnalytics, loadHeatmapData, resetAnalytics, loadAnalytics } from '@/lib/analytics'
 import type { SiteAnalytics, DailyStats, HeatmapPoint } from '@/lib/analytics'
@@ -24,6 +24,15 @@ interface StatsDashboardProps {
   open: boolean
   onClose: () => void
 }
+
+type TabId = 'overview' | 'traffic' | 'engagement' | 'heatmap'
+
+const TABS: { id: TabId; label: string; icon: React.ComponentType<{ size: number; className?: string }> }[] = [
+  { id: 'overview', label: 'OVERVIEW', icon: TrendUp },
+  { id: 'traffic', label: 'TRAFFIC', icon: Globe },
+  { id: 'engagement', label: 'ENGAGEMENT', icon: Target },
+  { id: 'heatmap', label: 'HEATMAP', icon: MapPin },
+]
 
 /** Simple bar chart for daily stats */
 function MiniBarChart({ data, dataKey, color = 'bg-primary' }: { data: DailyStats[]; dataKey: keyof DailyStats; color?: string }) {
@@ -98,19 +107,33 @@ function TopList({ items, limit = 5 }: { items: Record<string, number>; limit?: 
   )
 }
 
-/** Heatmap canvas visualization */
+/** Heatmap canvas visualization — uses full available width with 16:9 aspect ratio */
 function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
-    if (!canvas || points.length === 0) return
+    const container = containerRef.current
+    if (!canvas || !container || points.length === 0) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const w = canvas.width
-    const h = canvas.height
+    // Size canvas to container width with a comfortable aspect ratio
+    const containerWidth = container.clientWidth
+    const dpr = window.devicePixelRatio || 1
+    const displayWidth = containerWidth
+    const displayHeight = Math.round(containerWidth * 0.5625) // 16:9 aspect ratio
+
+    canvas.width = displayWidth * dpr
+    canvas.height = displayHeight * dpr
+    canvas.style.width = `${displayWidth}px`
+    canvas.style.height = `${displayHeight}px`
+    ctx.scale(dpr, dpr)
+
+    const w = displayWidth
+    const h = displayHeight
     ctx.clearRect(0, 0, w, h)
 
     // Draw grid lines for reference
@@ -128,10 +151,10 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
     }
 
     // Draw grid labels
-    ctx.font = '9px monospace'
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'
-    ctx.fillText('TOP', 4, 12)
-    ctx.fillText('BOTTOM', 4, h - 4)
+    ctx.font = '10px monospace'
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+    ctx.fillText('TOP', 4, 14)
+    ctx.fillText('BOTTOM', 4, h - 6)
     ctx.fillText('LEFT', 4, h / 2)
     ctx.textAlign = 'right'
     ctx.fillText('RIGHT', w - 4, h / 2)
@@ -141,7 +164,7 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
     for (const p of points) {
       const px = p.x * w
       const py = p.y * h
-      const radius = 12
+      const radius = 16
 
       const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius)
       gradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)')
@@ -156,6 +179,9 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
 
   useEffect(() => {
     draw()
+    const handleResize = () => draw()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [draw])
 
   if (points.length === 0) {
@@ -163,12 +189,10 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" ref={containerRef}>
       <canvas
         ref={canvasRef}
-        width={400}
-        height={300}
-        className="w-full h-48 border border-primary/10 bg-black/50 rounded"
+        className="w-full border border-primary/10 bg-black/50 rounded"
       />
       <div className="flex items-center gap-4 text-[9px] font-mono text-primary/40">
         <div className="flex items-center gap-1">
@@ -236,10 +260,10 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
   const [analytics, setAnalytics] = useState<SiteAnalytics | null>(null)
   const [heatmapPoints, setHeatmapPoints] = useState<HeatmapPoint[]>([])
   const [dataSource, setDataSource] = useState<'server' | 'local'>('server')
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
 
   useEffect(() => {
     if (open) {
-      // Try loading from server first, fall back to localStorage
       loadServerAnalytics()
         .then(data => {
           setAnalytics(data)
@@ -275,8 +299,12 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
     const avgDailyViews = last30Days.length > 0
       ? Math.round(last30Days.reduce((a, d) => a + d.pageViews, 0) / last30Days.length)
       : 0
+    const totalClicks = last30Days.reduce((a, d) => a + (d.clicks || 0), 0)
+    const nonInteractionRate = analytics.totalSessions > 0
+      ? Math.round((1 - totalInteractions / Math.max(analytics.totalPageViews, 1)) * 100)
+      : 0
 
-    return { totalSectionViews, totalInteractions, last7Days, last30Days, avgDailyViews }
+    return { totalSectionViews, totalInteractions, last7Days, last30Days, avgDailyViews, totalClicks, nonInteractionRate }
   }, [analytics])
 
   const handleReset = async () => {
@@ -299,7 +327,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
           <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
 
           <motion.div
-            className="w-full max-w-4xl max-h-[85dvh] bg-card border border-primary/30 relative overflow-hidden flex flex-col"
+            className="w-full max-w-5xl max-h-[90dvh] bg-card border border-primary/30 relative overflow-hidden flex flex-col"
             initial={{ scale: 0.85, y: 30, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -317,7 +345,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
-                  SITE ANALYTICS // ADMIN DASHBOARD
+                  SITE ANALYTICS // MARKETING DASHBOARD
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -332,175 +360,215 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
               </div>
             </div>
 
+            {/* Tab bar */}
+            <div className="flex border-b border-primary/20 bg-black/20 flex-shrink-0 overflow-x-auto">
+              {TABS.map(tab => {
+                const TabIcon = tab.icon
+                const isActive = activeTab === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 flex-shrink-0 ${
+                      isActive
+                        ? 'border-primary text-primary bg-primary/5'
+                        : 'border-transparent text-primary/40 hover:text-primary/70 hover:bg-primary/5'
+                    }`}
+                  >
+                    <TabIcon size={12} />
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
+
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
               {analytics && stats && (
                 <>
-                  {/* Overview stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <StatCard
-                      icon={Eye}
-                      label="Page Views"
-                      value={analytics.totalPageViews}
-                      sublabel={`~${stats.avgDailyViews}/day avg`}
-                    />
-                    <StatCard
-                      icon={Users}
-                      label="Sessions"
-                      value={analytics.totalSessions}
-                      sublabel={analytics.firstTracked ? `Since ${analytics.firstTracked}` : undefined}
-                    />
-                    <StatCard
-                      icon={ArrowSquareOut}
-                      label="Section Views"
-                      value={stats.totalSectionViews}
-                    />
-                    <StatCard
-                      icon={CursorClick}
-                      label="Interactions"
-                      value={stats.totalInteractions}
-                    />
-                  </div>
-
-                  {/* Daily charts */}
-                  {stats.last30Days.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                        DAILY ACTIVITY // LAST {stats.last30Days.length} DAYS
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="border border-primary/10 p-3 space-y-2">
-                          <p className="text-[9px] font-mono text-primary/40">PAGE VIEWS</p>
-                          <MiniBarChart data={stats.last30Days} dataKey="pageViews" color="bg-primary" />
-                        </div>
-                        <div className="border border-primary/10 p-3 space-y-2">
-                          <p className="text-[9px] font-mono text-primary/40">SECTION VIEWS</p>
-                          <MiniBarChart data={stats.last30Days} dataKey="sectionViews" color="bg-accent" />
-                        </div>
-                        <div className="border border-primary/10 p-3 space-y-2">
-                          <p className="text-[9px] font-mono text-primary/40">INTERACTIONS</p>
-                          <MiniBarChart data={stats.last30Days} dataKey="interactions" color="bg-primary/70" />
-                        </div>
+                  {/* OVERVIEW TAB */}
+                  {activeTab === 'overview' && (
+                    <>
+                      {/* KPI cards */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <StatCard
+                          icon={Eye}
+                          label="Page Views"
+                          value={analytics.totalPageViews}
+                          sublabel={`~${stats.avgDailyViews}/day avg`}
+                        />
+                        <StatCard
+                          icon={Users}
+                          label="Sessions"
+                          value={analytics.totalSessions}
+                          sublabel={analytics.firstTracked ? `Since ${analytics.firstTracked}` : undefined}
+                        />
+                        <StatCard
+                          icon={ArrowSquareOut}
+                          label="Section Views"
+                          value={stats.totalSectionViews}
+                        />
+                        <StatCard
+                          icon={CursorClick}
+                          label="Interactions"
+                          value={stats.totalInteractions}
+                        />
                       </div>
-                    </div>
+
+                      {/* Engagement rate & bounce estimate */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <StatCard
+                          icon={ChartBar}
+                          label="Total Clicks"
+                          value={stats.totalClicks}
+                          sublabel="Last 30 days"
+                        />
+                        <StatCard
+                          icon={Target}
+                          label="Est. Bounce Rate"
+                          value={`${Math.max(0, Math.min(100, stats.nonInteractionRate))}%`}
+                          sublabel="Non-interaction rate (lower is better)"
+                        />
+                        <StatCard
+                          icon={TrendUp}
+                          label="Views/Session"
+                          value={analytics.totalSessions > 0 ? (analytics.totalPageViews / analytics.totalSessions).toFixed(1) : '—'}
+                          sublabel="Engagement depth"
+                        />
+                        <StatCard
+                          icon={Eye}
+                          label="Tracking Period"
+                          value={stats.last30Days.length}
+                          sublabel="Days with data"
+                        />
+                      </div>
+
+                      {/* Daily activity mini-charts */}
+                      {stats.last30Days.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                            DAILY ACTIVITY // LAST {stats.last30Days.length} DAYS
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="border border-primary/10 p-3 space-y-2">
+                              <p className="text-[9px] font-mono text-primary/40">PAGE VIEWS</p>
+                              <MiniBarChart data={stats.last30Days} dataKey="pageViews" color="bg-primary" />
+                            </div>
+                            <div className="border border-primary/10 p-3 space-y-2">
+                              <p className="text-[9px] font-mono text-primary/40">SECTION VIEWS</p>
+                              <MiniBarChart data={stats.last30Days} dataKey="sectionViews" color="bg-accent" />
+                            </div>
+                            <div className="border border-primary/10 p-3 space-y-2">
+                              <p className="text-[9px] font-mono text-primary/40">INTERACTIONS</p>
+                              <MiniBarChart data={stats.last30Days} dataKey="interactions" color="bg-primary/70" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Trend line chart */}
+                      {stats.last30Days.length > 0 && (
+                        <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
+                          <p className="text-[10px] font-mono text-primary/60 uppercase">Activity Trends (Last 30 Days)</p>
+                          <ResponsiveContainer width="100%" height={220}>
+                            <LineChart data={stats.last30Days}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
+                              <XAxis 
+                                dataKey="date" 
+                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                                tickFormatter={(value) => value.slice(-5)}
+                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                              />
+                              <YAxis 
+                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                              />
+                              <Tooltip 
+                                contentStyle={{ 
+                                  backgroundColor: 'oklch(0 0 0 / 0.95)', 
+                                  border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                  borderRadius: '2px',
+                                  fontSize: '10px',
+                                  fontFamily: 'var(--font-mono)'
+                                }}
+                                labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
+                              />
+                              <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
+                              <Line type="monotone" dataKey="pageViews" stroke="oklch(0.50 0.22 25)" strokeWidth={2} dot={{ fill: 'oklch(0.50 0.22 25)', r: 3 }} activeDot={{ r: 5 }} name="Page Views" />
+                              <Line type="monotone" dataKey="sectionViews" stroke="oklch(0.60 0.24 25)" strokeWidth={2} dot={{ fill: 'oklch(0.60 0.24 25)', r: 3 }} activeDot={{ r: 5 }} name="Section Views" />
+                              <Line type="monotone" dataKey="interactions" stroke="oklch(0.70 0.20 25)" strokeWidth={2} dot={{ fill: 'oklch(0.70 0.20 25)', r: 3 }} activeDot={{ r: 5 }} name="Interactions" />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </>
                   )}
 
-                  {/* Enhanced Recharts Visualizations */}
-                  {stats.last30Days.length > 0 && (
-                    <div className="space-y-6">
-                      <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                        ENHANCED ANALYTICS // RECHARTS VISUALIZATIONS
-                      </h3>
-                      
-                      {/* Line Chart - Trends over time */}
-                      <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
-                        <p className="text-[10px] font-mono text-primary/60 uppercase">Activity Trends (Last 30 Days)</p>
-                        <ResponsiveContainer width="100%" height={200}>
-                          <LineChart data={stats.last30Days}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
-                            <XAxis 
-                              dataKey="date" 
-                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
-                              tickFormatter={(value) => value.slice(-5)}
-                              stroke="oklch(0.50 0.22 25 / 0.3)"
-                            />
-                            <YAxis 
-                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
-                              stroke="oklch(0.50 0.22 25 / 0.3)"
-                            />
-                            <Tooltip 
-                              contentStyle={{ 
-                                backgroundColor: 'oklch(0 0 0 / 0.95)', 
-                                border: '1px solid oklch(0.50 0.22 25 / 0.5)',
-                                borderRadius: '2px',
-                                fontSize: '10px',
-                                fontFamily: 'var(--font-mono)'
-                              }}
-                              labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
-                            />
-                            <Legend 
-                              wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="pageViews" 
-                              stroke="oklch(0.50 0.22 25)" 
-                              strokeWidth={2}
-                              dot={{ fill: 'oklch(0.50 0.22 25)', r: 3 }}
-                              activeDot={{ r: 5 }}
-                              name="Page Views"
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="sectionViews" 
-                              stroke="oklch(0.60 0.24 25)" 
-                              strokeWidth={2}
-                              dot={{ fill: 'oklch(0.60 0.24 25)', r: 3 }}
-                              activeDot={{ r: 5 }}
-                              name="Section Views"
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="interactions" 
-                              stroke="oklch(0.70 0.20 25)" 
-                              strokeWidth={2}
-                              dot={{ fill: 'oklch(0.70 0.20 25)', r: 3 }}
-                              activeDot={{ r: 5 }}
-                              name="Interactions"
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
+                  {/* TRAFFIC TAB */}
+                  {activeTab === 'traffic' && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Referrers */}
+                        <div className="space-y-3">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                            TRAFFIC SOURCES
+                          </h3>
+                          <TopList items={analytics.referrers} limit={10} />
+                        </div>
+
+                        {/* Devices */}
+                        <div className="space-y-3">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                            DEVICES
+                          </h3>
+                          <div className="flex gap-4 flex-wrap">
+                            {Object.entries(analytics.devices).map(([device, count]) => (
+                              <div key={device} className="flex items-center gap-2">
+                                {device === 'mobile' ? <DeviceMobile size={16} className="text-primary/60" /> : <Desktop size={16} className="text-primary/60" />}
+                                <div>
+                                  <p className="text-xs font-mono text-foreground/80 capitalize">{device}</p>
+                                  <p className="text-[9px] font-mono text-primary/40">{count} visits</p>
+                                </div>
+                              </div>
+                            ))}
+                            {Object.keys(analytics.devices).length === 0 && (
+                              <p className="text-[10px] text-primary/30 font-mono">NO DATA YET</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Browsers */}
+                        {analytics.browsers && Object.keys(analytics.browsers).length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                              <Browser size={12} className="inline mr-1" />BROWSERS
+                            </h3>
+                            <TopList items={analytics.browsers} limit={10} />
+                          </div>
+                        )}
+
+                        {/* Screen Resolutions */}
+                        {analytics.screenResolutions && Object.keys(analytics.screenResolutions).length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                              <Monitor size={12} className="inline mr-1" />SCREEN RESOLUTIONS
+                            </h3>
+                            <TopList items={analytics.screenResolutions} limit={10} />
+                          </div>
+                        )}
+
+                        {/* Landing Pages */}
+                        {analytics.landingPages && Object.keys(analytics.landingPages).length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                              LANDING PAGES
+                            </h3>
+                            <TopList items={analytics.landingPages} limit={10} />
+                          </div>
+                        )}
                       </div>
 
-                      {/* Bar Chart - Comparison */}
-                      <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
-                        <p className="text-[10px] font-mono text-primary/60 uppercase">Weekly Comparison (Last 7 Days)</p>
-                        <ResponsiveContainer width="100%" height={200}>
-                          <BarChart data={stats.last7Days}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
-                            <XAxis 
-                              dataKey="date" 
-                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
-                              tickFormatter={(value) => value.slice(-5)}
-                              stroke="oklch(0.50 0.22 25 / 0.3)"
-                            />
-                            <YAxis 
-                              tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
-                              stroke="oklch(0.50 0.22 25 / 0.3)"
-                            />
-                            <Tooltip 
-                              contentStyle={{ 
-                                backgroundColor: 'oklch(0 0 0 / 0.95)', 
-                                border: '1px solid oklch(0.50 0.22 25 / 0.5)',
-                                borderRadius: '2px',
-                                fontSize: '10px',
-                                fontFamily: 'var(--font-mono)'
-                              }}
-                              labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
-                            />
-                            <Legend 
-                              wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
-                            />
-                            <Bar 
-                              dataKey="pageViews" 
-                              fill="oklch(0.50 0.22 25 / 0.8)" 
-                              name="Page Views"
-                            />
-                            <Bar 
-                              dataKey="sectionViews" 
-                              fill="oklch(0.60 0.24 25 / 0.8)" 
-                              name="Section Views"
-                            />
-                            <Bar 
-                              dataKey="interactions" 
-                              fill="oklch(0.70 0.20 25 / 0.8)" 
-                              name="Interactions"
-                            />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-
-                      {/* Pie Chart - Device Distribution */}
+                      {/* Device distribution pie chart */}
                       {Object.keys(analytics.devices).length > 0 && (
                         <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
                           <p className="text-[10px] font-mono text-primary/60 uppercase">Device Distribution</p>
@@ -519,7 +587,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                                 {Object.entries(analytics.devices).map((_, index) => (
                                   <Cell 
                                     key={`cell-${index}`} 
-                                    fill={index === 0 ? 'oklch(0.50 0.22 25)' : 'oklch(0.60 0.24 25)'} 
+                                    fill={['oklch(0.50 0.22 25)', 'oklch(0.60 0.24 25)', 'oklch(0.45 0.18 25)'][index % 3]} 
                                   />
                                 ))}
                               </Pie>
@@ -536,125 +604,119 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                           </ResponsiveContainer>
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {/* Breakdown */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Section views */}
-                    <div className="space-y-3">
-                      <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                        TOP SECTIONS
-                      </h3>
-                      <TopList items={analytics.sectionViews} />
-                    </div>
-
-                    {/* Interactions */}
-                    <div className="space-y-3">
-                      <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                        TOP INTERACTIONS
-                      </h3>
-                      <TopList items={analytics.interactions} />
-                    </div>
-
-                    {/* Referrers */}
-                    <div className="space-y-3">
-                      <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                        TRAFFIC SOURCES
-                      </h3>
-                      <TopList items={analytics.referrers} />
-                    </div>
-
-                    {/* Devices */}
-                    <div className="space-y-3">
-                      <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                        DEVICES
-                      </h3>
-                      <div className="flex gap-4">
-                        {Object.entries(analytics.devices).map(([device, count]) => (
-                          <div key={device} className="flex items-center gap-2">
-                            {device === 'mobile' ? <DeviceMobile size={16} className="text-primary/60" /> : <Desktop size={16} className="text-primary/60" />}
-                            <div>
-                              <p className="text-xs font-mono text-foreground/80 capitalize">{device}</p>
-                              <p className="text-[9px] font-mono text-primary/40">{count} visits</p>
-                            </div>
+                      {/* UTM Marketing sources */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {analytics.utmSources && Object.keys(analytics.utmSources).length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                              <Globe size={12} className="inline mr-1" />UTM SOURCES
+                            </h3>
+                            <TopList items={analytics.utmSources} limit={10} />
                           </div>
-                        ))}
-                        {Object.keys(analytics.devices).length === 0 && (
-                          <p className="text-[10px] text-primary/30 font-mono">NO DATA YET</p>
+                        )}
+
+                        {analytics.utmMediums && Object.keys(analytics.utmMediums).length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                              UTM MEDIUMS
+                            </h3>
+                            <TopList items={analytics.utmMediums} limit={10} />
+                          </div>
+                        )}
+
+                        {analytics.utmCampaigns && Object.keys(analytics.utmCampaigns).length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                              UTM CAMPAIGNS
+                            </h3>
+                            <TopList items={analytics.utmCampaigns} limit={10} />
+                          </div>
                         )}
                       </div>
-                    </div>
+                    </>
+                  )}
 
-                    {/* Browsers */}
-                    {analytics.browsers && Object.keys(analytics.browsers).length > 0 && (
+                  {/* ENGAGEMENT TAB */}
+                  {activeTab === 'engagement' && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Section views */}
+                        <div className="space-y-3">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                            TOP SECTIONS
+                          </h3>
+                          <TopList items={analytics.sectionViews} limit={10} />
+                        </div>
+
+                        {/* Interactions */}
+                        <div className="space-y-3">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                            TOP INTERACTIONS
+                          </h3>
+                          <TopList items={analytics.interactions} limit={10} />
+                        </div>
+                      </div>
+
+                      {/* Weekly comparison bar chart */}
+                      {stats.last7Days.length > 0 && (
+                        <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
+                          <p className="text-[10px] font-mono text-primary/60 uppercase">Weekly Comparison (Last 7 Days)</p>
+                          <ResponsiveContainer width="100%" height={220}>
+                            <BarChart data={stats.last7Days}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
+                              <XAxis 
+                                dataKey="date" 
+                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                                tickFormatter={(value) => value.slice(-5)}
+                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                              />
+                              <YAxis 
+                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                              />
+                              <Tooltip 
+                                contentStyle={{ 
+                                  backgroundColor: 'oklch(0 0 0 / 0.95)', 
+                                  border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                  borderRadius: '2px',
+                                  fontSize: '10px',
+                                  fontFamily: 'var(--font-mono)'
+                                }}
+                                labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
+                              />
+                              <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
+                              <Bar dataKey="pageViews" fill="oklch(0.50 0.22 25 / 0.8)" name="Page Views" />
+                              <Bar dataKey="sectionViews" fill="oklch(0.60 0.24 25 / 0.8)" name="Section Views" />
+                              <Bar dataKey="interactions" fill="oklch(0.70 0.20 25 / 0.8)" name="Interactions" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* HEATMAP TAB */}
+                  {activeTab === 'heatmap' && (
+                    <>
                       <div className="space-y-3">
                         <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          <Browser size={12} className="inline mr-1" />BROWSERS
+                          CLICK HEATMAP // {heatmapPoints.length} POINTS
                         </h3>
-                        <TopList items={analytics.browsers} />
+                        <p className="text-[9px] font-mono text-primary/30">
+                          Shows where users click on the page. Red areas = more clicks. X axis = horizontal position, Y axis = vertical scroll position.
+                        </p>
+                        <HeatmapCanvas points={heatmapPoints} />
                       </div>
-                    )}
 
-                    {/* Screen Resolutions */}
-                    {analytics.screenResolutions && Object.keys(analytics.screenResolutions).length > 0 && (
                       <div className="space-y-3">
                         <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          <Monitor size={12} className="inline mr-1" />SCREEN RESOLUTIONS
+                          CLICKS BY ELEMENT TYPE
                         </h3>
-                        <TopList items={analytics.screenResolutions} />
+                        <ClickTable points={heatmapPoints} />
                       </div>
-                    )}
-
-                    {/* Landing Pages */}
-                    {analytics.landingPages && Object.keys(analytics.landingPages).length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          LANDING PAGES
-                        </h3>
-                        <TopList items={analytics.landingPages} />
-                      </div>
-                    )}
-
-                    {/* UTM Sources */}
-                    {analytics.utmSources && Object.keys(analytics.utmSources).length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          <Globe size={12} className="inline mr-1" />UTM SOURCES
-                        </h3>
-                        <TopList items={analytics.utmSources} />
-                      </div>
-                    )}
-
-                    {/* UTM Campaigns */}
-                    {analytics.utmCampaigns && Object.keys(analytics.utmCampaigns).length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          UTM CAMPAIGNS
-                        </h3>
-                        <TopList items={analytics.utmCampaigns} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Heatmap */}
-                  <div className="space-y-3">
-                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                      CLICK HEATMAP // {heatmapPoints.length} POINTS
-                    </h3>
-                    <p className="text-[9px] font-mono text-primary/30">
-                      Shows where users click on the page. Red areas = more clicks. X axis = horizontal position, Y axis = vertical scroll position.
-                    </p>
-                    <HeatmapCanvas points={heatmapPoints} />
-                  </div>
-
-                  {/* Click table */}
-                  <div className="space-y-3">
-                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                      CLICKS BY ELEMENT TYPE
-                    </h3>
-                    <ClickTable points={heatmapPoints} />
-                  </div>
+                    </>
+                  )}
                 </>
               )}
 
