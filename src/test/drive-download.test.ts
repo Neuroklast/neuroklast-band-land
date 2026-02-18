@@ -82,7 +82,7 @@ describe('Drive download API', () => {
         ok: true,
         json: () => Promise.resolve({ name: 'test.pdf', mimeType: 'application/pdf', size: '1234' }),
       })
-      .mockResolvedValueOnce({ ok: false, status: 403 })
+      .mockResolvedValueOnce({ ok: false, status: 403, headers: { get: () => null } })
     const res = mockRes()
     await handler({ method: 'GET', query: { fileId: 'abc123' }, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(502)
@@ -97,6 +97,7 @@ describe('Drive download API', () => {
       })
       .mockResolvedValueOnce({
         ok: true,
+        headers: { get: () => 'application/pdf' },
         arrayBuffer: () => Promise.resolve(fileContent),
       })
     const res = mockRes()
@@ -114,7 +115,7 @@ describe('Drive download API', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('calls Drive API with correct URLs', async () => {
+  it('calls Drive API with correct URLs and User-Agent header', async () => {
     const fileContent = new ArrayBuffer(4)
     mockFetch
       .mockResolvedValueOnce({
@@ -123,6 +124,7 @@ describe('Drive download API', () => {
       })
       .mockResolvedValueOnce({
         ok: true,
+        headers: { get: () => 'application/zip' },
         arrayBuffer: () => Promise.resolve(fileContent),
       })
     const res = mockRes()
@@ -139,6 +141,10 @@ describe('Drive download API', () => {
     expect(dlUrl).toContain('drive.google.com/uc')
     expect(dlUrl).toContain('export=download')
     expect(dlUrl).toContain('id=testId123')
+
+    // Verify User-Agent header is sent
+    const dlOptions = mockFetch.mock.calls[1][1]
+    expect(dlOptions?.headers?.['User-Agent']).toBe('Mozilla/5.0 (compatible; neuroklast-band-land/1.0)')
   })
 
   it('redirects large files (>10MB) to Google Drive directly', async () => {
@@ -171,6 +177,7 @@ describe('Drive download API', () => {
       })
       .mockResolvedValueOnce({
         ok: true,
+        headers: { get: () => 'application/pdf' },
         arrayBuffer: () => Promise.resolve(fileContent),
       })
     const res = mockRes()
@@ -182,5 +189,94 @@ describe('Drive download API', () => {
     expect(res.send).toHaveBeenCalled()
     // Should fetch both metadata and file content
     expect(mockFetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('handles virus-scan confirmation page and makes second request', async () => {
+    const fileContent = new ArrayBuffer(1024)
+    const htmlWithConfirm = `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <form action="https://drive.google.com/uc?export=download&amp;id=testId&amp;confirm=t" method="get">
+            <input type="hidden" name="confirm" value="t">
+            <button>Download anyway</button>
+          </form>
+        </body>
+      </html>
+    `
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ name: 'large-file.zip', mimeType: 'application/zip', size: '5000000' }),
+      })
+      // First download attempt returns HTML confirmation page
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: (name: string) => (name === 'content-type' ? 'text/html; charset=utf-8' : null) },
+        text: () => Promise.resolve(htmlWithConfirm),
+      })
+      // Second download attempt with confirm token returns actual file
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/zip' },
+        arrayBuffer: () => Promise.resolve(fileContent),
+      })
+
+    const res = mockRes()
+    await handler({ method: 'GET', query: { fileId: 'testId' }, headers: {} }, res)
+
+    // Should make 3 fetch calls: metadata, first download (HTML), second download (file)
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+
+    // Verify second download request includes confirm token
+    const secondDlUrl = mockFetch.mock.calls[2][0]
+    expect(secondDlUrl).toContain('confirm=t')
+
+    // Verify file was sent successfully
+    expect(res.send).toHaveBeenCalled()
+  })
+
+  it('handles virus-scan confirmation with URL-based confirm token', async () => {
+    const fileContent = new ArrayBuffer(1024)
+    const htmlWithUrlConfirm = `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <p>Google Drive can't scan this file for viruses.</p>
+          <a href="/uc?export=download&amp;id=testId2&amp;confirm=abc123xyz">Download anyway</a>
+        </body>
+      </html>
+    `
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ name: 'another-file.zip', mimeType: 'application/zip', size: '3000000' }),
+      })
+      // First download returns HTML with confirm in URL
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: (name: string) => (name === 'content-type' ? 'text/html' : null) },
+        text: () => Promise.resolve(htmlWithUrlConfirm),
+      })
+      // Second download with extracted token
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/zip' },
+        arrayBuffer: () => Promise.resolve(fileContent),
+      })
+
+    const res = mockRes()
+    await handler({ method: 'GET', query: { fileId: 'testId2' }, headers: {} }, res)
+
+    // Should make 3 fetch calls
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+
+    // Verify second download includes the extracted confirm token
+    const secondDlUrl = mockFetch.mock.calls[2][0]
+    expect(secondDlUrl).toContain('confirm=abc123xyz')
+
+    expect(res.send).toHaveBeenCalled()
   })
 })

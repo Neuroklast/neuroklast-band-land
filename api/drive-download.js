@@ -60,13 +60,35 @@ export default async function handler(req, res) {
 
     // Download file content using public download URL (no OAuth required for publicly shared files)
     // Note: fileId is validated via regex in _schemas.js to only allow [A-Za-z0-9_-]+
-    const dlRes = await fetch(
-      `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`,
-      { redirect: 'follow' }
-    )
+    const baseUrl = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (compatible; neuroklast-band-land/1.0)',
+    }
+
+    let dlRes = await fetch(baseUrl, { redirect: 'follow', headers })
 
     if (!dlRes.ok) {
       return res.status(502).json({ error: `Drive download returned ${dlRes.status}` })
+    }
+
+    // Handle Google virus-scan confirmation page for large files
+    const responseContentType = dlRes.headers.get('content-type') || ''
+    if (responseContentType.includes('text/html')) {
+      // Google is showing a virus-scan confirmation page
+      // Extract the confirm token from the HTML
+      const html = await dlRes.text()
+      const confirmMatch = html.match(/confirm=([0-9A-Za-z_\-]+)/) ||
+                           html.match(/name="confirm"\s+value="([^"]+)"/)
+      if (confirmMatch) {
+        const confirmToken = confirmMatch[1]
+        dlRes = await fetch(
+          `${baseUrl}&confirm=${confirmToken}`,
+          { redirect: 'follow', headers }
+        )
+        if (!dlRes.ok) {
+          return res.status(502).json({ error: `Drive download returned ${dlRes.status}` })
+        }
+      }
     }
 
     const fileName = meta.name || 'download'
