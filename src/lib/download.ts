@@ -53,25 +53,23 @@ async function downloadViaDriveProxy(
   fileName: string,
   onProgress: (progress: DownloadProgress) => void,
 ): Promise<void> {
+  // The API endpoint returns a 307 redirect to drive.google.com.
+  // We cannot fetch() cross-origin redirects to Google (CORS).
+  // Instead, trigger the download via a hidden <a> tag pointing to our API endpoint.
+  // The browser follows the redirect natively and downloads the file.
   onProgress({ state: 'downloading', progress: 0 })
 
-  try {
-    const response = await fetch(`/api/drive-download?fileId=${encodeURIComponent(fileId)}`)
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status}`)
-    }
+  const downloadUrl = `/api/drive-download?fileId=${encodeURIComponent(fileId)}`
+  const a = document.createElement('a')
+  a.href = downloadUrl
+  a.download = fileName
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
 
-    const blob = await trackResponseProgress(response, onProgress)
-    triggerBlobDownload(blob, fileName)
-    onProgress({ state: 'complete', progress: 1 })
-  } catch (err) {
-    // Fallback: Open the Google Drive link in a new tab
-    const driveUrl = `https://drive.google.com/file/d/${fileId}/view`
-    window.open(driveUrl, '_blank', 'noopener,noreferrer')
-    
-    const message = err instanceof Error ? err.message : 'Download failed'
-    onProgress({ state: 'error', progress: 0, error: `${message}. Opening in new tab...` })
-  }
+  // Since we cannot track native browser download progress,
+  // mark as complete immediately after triggering
+  onProgress({ state: 'complete', progress: 1 })
 }
 
 async function downloadDirect(
