@@ -149,6 +149,14 @@ export const terminalCommandSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// Drive download API — GET query
+// ---------------------------------------------------------------------------
+
+export const driveDownloadQuerySchema = z.object({
+  fileId: z.string().min(1, 'fileId parameter is required').regex(/^[A-Za-z0-9_-]+$/, 'Invalid fileId format'),
+})
+
+// ---------------------------------------------------------------------------
 // Helper: validate and return first error message
 // ---------------------------------------------------------------------------
 
