@@ -34,6 +34,12 @@ export default async function handler(req, res) {
       const { key } = req.query
       if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
 
+      // Block access to sensitive keys to prevent credential leakage
+      const lowerKey = key.toLowerCase()
+      if (key === 'admin-password-hash' || lowerKey.includes('token') || lowerKey.includes('secret')) {
+        return res.status(403).json({ error: 'Forbidden' })
+      }
+
       const value = await kv.get(key)
       return res.json({ value: value ?? null })
     }
