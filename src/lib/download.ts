@@ -65,8 +65,12 @@ async function downloadViaDriveProxy(
     triggerBlobDownload(blob, fileName)
     onProgress({ state: 'complete', progress: 1 })
   } catch (err) {
+    // Fallback: Open the Google Drive link in a new tab
+    const driveUrl = `https://drive.google.com/file/d/${fileId}/view`
+    window.open(driveUrl, '_blank', 'noopener,noreferrer')
+    
     const message = err instanceof Error ? err.message : 'Download failed'
-    onProgress({ state: 'error', progress: 0, error: message })
+    onProgress({ state: 'error', progress: 0, error: `${message}. Opening in new tab...` })
   }
 }
 
