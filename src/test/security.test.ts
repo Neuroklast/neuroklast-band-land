@@ -40,6 +40,7 @@ function mockRes(): Res {
 }
 
 const { default: kvHandler, timingSafeEqual } = await import('../../api/kv.js')
+const { validate, kvKeySchema, resetPasswordSchema, analyticsPostSchema } = await import('../../api/_schemas.js')
 
 // ---------------------------------------------------------------------------
 describe('Security: timingSafeEqual constant-time comparison', () => {
@@ -274,5 +275,180 @@ describe('Security: Image proxy SSRF protections', () => {
     expect(isBlockedHost('drive.google.com')).toBe(false)
     expect(isBlockedHost('example.com')).toBe(false)
     expect(isBlockedHost('lh3.googleusercontent.com')).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('Security: Honeytoken detection', () => {
+  const honeytokenKeys = [
+    'admin_backup',
+    'admin-backup-hash',
+    'db-credentials',
+    'api-master-key',
+    'backup-admin-password',
+  ]
+
+  beforeEach(() => vi.clearAllMocks())
+
+  it('identifies all honeytoken keys', () => {
+    for (const key of honeytokenKeys) {
+      expect(honeytokenKeys.includes(key.toLowerCase())).toBe(true)
+    }
+  })
+
+  it('does not flag legitimate keys as honeytokens', () => {
+    const legitimateKeys = ['band-data', 'admin-password-hash', 'site-config', 'bio-text']
+    for (const key of legitimateKeys) {
+      expect(honeytokenKeys.includes(key.toLowerCase())).toBe(false)
+    }
+  })
+
+  it('returns 403 when accessing a honeytoken key via GET', async () => {
+    const { isHoneytoken, triggerHoneytokenAlarm } = await import('../../api/_honeytokens.js') as any
+    vi.mocked(isHoneytoken).mockReturnValueOnce(true)
+
+    const res = mockRes()
+    await kvHandler({ method: 'GET', query: { key: 'admin_backup' }, body: {}, headers: {} }, res)
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(triggerHoneytokenAlarm).toHaveBeenCalled()
+  })
+
+  it('returns 403 when writing to a honeytoken key via POST', async () => {
+    const { isHoneytoken, triggerHoneytokenAlarm } = await import('../../api/_honeytokens.js') as any
+    vi.mocked(isHoneytoken).mockReturnValueOnce(true)
+
+    const res = mockRes()
+    await kvHandler({
+      method: 'POST',
+      query: {},
+      body: { key: 'admin_backup', value: 'evil' },
+      headers: {},
+    }, res)
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(triggerHoneytokenAlarm).toHaveBeenCalled()
+    expect(mockKvSet).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('Security: Zod input validation schemas', () => {
+  describe('kvKeySchema', () => {
+    it('accepts valid keys', () => {
+      const result = kvKeySchema.safeParse('band-data')
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects empty string', () => {
+      const result = kvKeySchema.safeParse('')
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects keys longer than 200 chars', () => {
+      const result = kvKeySchema.safeParse('a'.repeat(201))
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects keys with newlines', () => {
+      const result = kvKeySchema.safeParse('test\nkey')
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects keys with carriage return', () => {
+      const result = kvKeySchema.safeParse('test\rkey')
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects keys with null bytes', () => {
+      const result = kvKeySchema.safeParse('test\0key')
+      expect(result.success).toBe(false)
+    })
+  })
+
+  describe('resetPasswordSchema', () => {
+    it('accepts valid email', () => {
+      const result = resetPasswordSchema.safeParse({ email: 'admin@example.com' })
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects missing email', () => {
+      const result = resetPasswordSchema.safeParse({})
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects invalid email format', () => {
+      const result = resetPasswordSchema.safeParse({ email: 'not-an-email' })
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects email that is just spaces', () => {
+      const result = resetPasswordSchema.safeParse({ email: '   ' })
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects overly long email', () => {
+      const result = resetPasswordSchema.safeParse({ email: 'a'.repeat(250) + '@example.com' })
+      expect(result.success).toBe(false)
+    })
+  })
+
+  describe('analyticsPostSchema', () => {
+    it('accepts valid page_view event', () => {
+      const result = analyticsPostSchema.safeParse({
+        type: 'page_view',
+        target: 'home',
+      })
+      expect(result.success).toBe(true)
+    })
+
+    it('accepts valid event with full meta', () => {
+      const result = analyticsPostSchema.safeParse({
+        type: 'interaction',
+        target: 'play-button',
+        meta: { browser: 'Chrome', device: 'desktop' },
+      })
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects invalid event type', () => {
+      const result = analyticsPostSchema.safeParse({
+        type: 'invalid_type',
+      })
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects missing type', () => {
+      const result = analyticsPostSchema.safeParse({
+        target: 'home',
+      })
+      expect(result.success).toBe(false)
+    })
+
+    it('validates heatmap coordinates are in range', () => {
+      const valid = analyticsPostSchema.safeParse({
+        type: 'click',
+        heatmap: { x: 0.5, y: 1.5 },
+      })
+      expect(valid.success).toBe(true)
+
+      const outOfRange = analyticsPostSchema.safeParse({
+        type: 'click',
+        heatmap: { x: 2.0, y: 0.5 },
+      })
+      expect(outOfRange.success).toBe(false)
+    })
+  })
+
+  describe('validate helper', () => {
+    it('returns { success: true, data } for valid input', () => {
+      const result = validate(kvKeySchema, 'band-data')
+      expect(result.success).toBe(true)
+      expect(result.data).toBe('band-data')
+    })
+
+    it('returns { success: false, error } for invalid input', () => {
+      const result = validate(kvKeySchema, '')
+      expect(result.success).toBe(false)
+      expect(typeof result.error).toBe('string')
+    })
   })
 })
