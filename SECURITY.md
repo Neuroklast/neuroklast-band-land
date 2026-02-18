@@ -33,22 +33,63 @@ We release patches for security vulnerabilities for the latest version of the pr
 | Latest  | :white_check_mark: |
 | < Latest| :x:                |
 
-## Security Considerations
+## Security Architecture
 
-This is a public-facing band website with the following security features:
-
-- **Admin Authentication**: Password-based authentication for content management
-- **Data Validation**: Input validation and sanitization for all user-editable content
-- **HTTPS Only**: All production deployments should use HTTPS
+### Authentication & Access Control
+- **Admin Authentication**: SHA-256 password hashing with constant-time comparison (`timingSafeEqual`)
 - **CSRF Protection**: No state-changing operations via GET requests
-- **XSS Prevention**: All user-generated content is properly escaped
-- **Dependencies**: Regular dependency updates to patch known vulnerabilities
+- **Sensitive Key Protection**: `admin-password-hash`, keys containing `token` or `secret` are blocked from API reads
+
+### Input Validation (Zod)
+All API inputs are validated through strict [Zod](https://zod.dev/) schemas (`api/_schemas.js`):
+- **KV API**: Key format, length (max 200), no control characters; value presence check
+- **Reset Password**: Email must be a valid RFC 5322 email (max 254 chars)
+- **Analytics**: Event type must be one of `page_view | section_view | interaction | click`; meta fields are bounded strings; heatmap coordinates clamped to `[0,1]×[0,2]`
+- **Drive Folder**: `folderId` restricted to `[A-Za-z0-9_-]+`
+- **iTunes / Odesli**: Search terms and URLs are length-bounded and type-checked
+- **Image Proxy**: URL is validated, protocol restricted to `http:` / `https:`, SSRF blocklist enforced
+
+### Rate Limiting
+All API endpoints are protected by rate limiting (`api/_ratelimit.js`):
+- **Algorithm**: Sliding window — 5 requests per 10 seconds per client
+- **Backend**: `@upstash/ratelimit` with Vercel KV (Redis)
+- **GDPR Compliance**: Client IPs are hashed with SHA-256 + a secret salt before use as rate-limit keys. No plaintext IPs are stored. Rate-limit state auto-expires after the window period.
+- **Response**: HTTP 429 `Too Many Requests` when the limit is exceeded
+- **Graceful Degradation**: If KV is unavailable, requests are allowed through
+
+### SSRF Protection (Image Proxy)
+- Blocklist for private/internal networks: `127.x`, `10.x`, `172.16-31.x`, `192.168.x`, `169.254.x`, IPv6 loopback/mapped/link-local/unique-local, metadata endpoints
+- Hex, octal, and decimal integer IP notation blocked
+- Protocol allowlist: only `http:` and `https:`
+- Redirect target re-validated after fetch
+- Content-type restricted to `image/*`
+
+### Honeytokens (Intrusion Detection)
+Decoy records are planted in the KV database (`api/_honeytokens.js`):
+- Keys: `admin_backup`, `admin-backup-hash`, `db-credentials`, `api-master-key`, `backup-admin-password`
+- Any read or write to these keys triggers a **silent alarm**: logged to `stderr` (for SIEM/log-drain pickup) and persisted to `nk-honeytoken-alerts` in KV
+- The API returns a generic `403 Forbidden` so the attacker does not learn they were detected
+
+### XSS Prevention
+- All user-generated content rendered through `SafeText` component
+- YouTube embeds use `youtube-nocookie.com` with `sandbox` attribute
+- Image proxy rejects non-`image/*` content types
+
+## Environment Variables
+
+| Variable | Purpose | Required |
+|---|---|---|
+| `KV_REST_API_URL` | Vercel KV endpoint | Yes |
+| `KV_REST_API_TOKEN` | Vercel KV auth token | Yes |
+| `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting) | Recommended |
+| `ADMIN_RESET_EMAIL` | Email for password reset verification | For reset feature |
 
 ## Best Practices for Deployment
 
 1. **Environment Variables**: Never commit sensitive API keys or tokens
-2. **Admin Password**: Use a strong, unique password for admin access
-3. **HTTPS**: Always deploy behind HTTPS
-4. **Regular Updates**: Keep dependencies up to date
-5. **Rate Limiting**: Consider implementing rate limiting for API endpoints
+2. **Rate Limit Salt**: Set `RATE_LIMIT_SALT` to a unique, random value in production
+3. **Admin Password**: Use a strong password (minimum 8 characters)
+4. **HTTPS**: Always deploy behind HTTPS
+5. **Regular Updates**: Keep dependencies up to date
 6. **CSP Headers**: Configure Content Security Policy headers in production
+7. **Log Monitoring**: Monitor `[HONEYTOKEN ALERT]` entries in server logs for intrusion detection

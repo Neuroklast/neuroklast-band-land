@@ -102,16 +102,46 @@ This document summarizes the implementation of CRT/terminal aesthetic enhancemen
   - JSDoc comments for all exported functions
   - No security vulnerabilities (CodeQL scan: 0 alerts)
 
+### Security Hardening ✅
+
+#### Rate Limiting
+- **Implementation**: `@upstash/ratelimit` with Vercel KV (sliding window: 5 req / 10 s)
+- **GDPR**: IP addresses hashed with SHA-256 + salt; no plaintext IPs stored; auto-expires
+- **Files**: `api/_ratelimit.js`, all 7 API handlers
+
+#### Input Validation (Zod)
+- **Implementation**: Strict Zod schemas for all API inputs
+- **Coverage**: KV key/value, email, analytics events, folder IDs, URLs, search terms
+- **Files**: `api/_schemas.js`, all 7 API handlers
+
+#### Honeytokens (Intrusion Detection)
+- **Implementation**: Decoy records in KV; any access triggers silent alarm
+- **Decoys**: `admin_backup`, `admin-backup-hash`, `db-credentials`, `api-master-key`, `backup-admin-password`
+- **Files**: `api/_honeytokens.js`, `api/kv.js`
+
+#### SSRF Protection
+- **Implementation**: Comprehensive blocklist for private/internal networks
+- **Coverage**: IPv4, IPv6, hex/octal/decimal IPs, metadata endpoints, redirect targets
+- **Files**: `api/image-proxy.js`
+
+#### Additional Hardening
+- Constant-time string comparison (`timingSafeEqual`)
+- Content-type validation on image proxy
+- YouTube iframe sandboxing
+- Minimum password length (8 characters)
+- Reserved key prefix protection
+
 ### 4. Legal Compliance ✅
 
 #### GDPR Compliance
 - **Status**: ✅ Good compliance level
 - **Features**:
   - Cookie consent banner
-  - Privacy policy (Datenschutz)
+  - Privacy policy (Datenschutz) with rate limiting & attack defense sections
   - Local storage notice
   - User data control
   - Transparent data practices
+  - GDPR-compliant IP anonymisation for rate limiting
 - **Documentation**: `GDPR_COMPLIANCE.md`
 
 #### Privacy Policy
@@ -121,6 +151,8 @@ This document summarizes the implementation of CRT/terminal aesthetic enhancemen
   - Editable via admin interface
   - Clear data processing explanation
   - Third-party service disclosure
+  - Attack defense / rate limiting disclosure (Art. 6(1)(f) GDPR)
+  - Input validation disclosure
 - **Location**: `src/components/DatenschutzWindow.tsx`
 
 #### Accessibility

@@ -63,7 +63,19 @@ Diese Website kann Videos von YouTube (Google Ireland Limited, Gordon House, Bar
 Lokaler Musik-Player
 Diese Website stellt einen eigenen Musik-Player bereit, der Audiodateien direkt vom eigenen Server abspielt. Es werden dabei keine Daten an Drittanbieter übermittelt. Es werden keine externen Dienste eingebunden und keine Cookies gesetzt.
 
-5. Ihre Rechte
+5. Schutz vor automatisierten Angriffen (Rate Limiting)
+
+Zum Schutz dieser Website vor automatisierten Angriffen (z. B. Brute-Force-Attacken, Denial-of-Service) wird eine Anfragenratenbegrenzung (Rate Limiting) eingesetzt. Dabei wird die Anzahl der zulässigen API-Anfragen pro Nutzer innerhalb eines Zeitfensters von 10 Sekunden auf maximal 5 begrenzt. Bei Überschreitung wird die Anfrage mit dem HTTP-Statuscode 429 (Too Many Requests) abgelehnt.
+
+Pseudonymisierung der IP-Adresse: Ihre IP-Adresse wird vor der Verarbeitung mittels eines kryptografischen Einweg-Hash-Verfahrens (SHA-256) in Verbindung mit einem geheimen systemweiten Zusatzwert (Salt) in eine nicht rückrechenbare Zeichenkette umgewandelt. Ihre IP-Adresse wird zu keinem Zeitpunkt im Klartext gespeichert oder protokolliert. Die gehashten Daten werden ausschließlich für die Dauer des Zeitfensters (10 Sekunden) vorgehalten und danach automatisch gelöscht.
+
+Rechtsgrundlage für diese Verarbeitung ist unser berechtigtes Interesse am Schutz der Website und ihrer Nutzer vor automatisierten Angriffen gemäß Art. 6 Abs. 1 lit. f DSGVO. Die Maßnahme ist verhältnismäßig, da nur pseudonymisierte Daten mit kürzestmöglicher Aufbewahrungsfrist verarbeitet werden und kein Profiling stattfindet.
+
+6. Eingabevalidierung
+
+Alle Eingaben an die Programmierschnittstellen (APIs) dieser Website werden durch strenge Validierungsschemata geprüft, um die Integrität des Systems und den Schutz Ihrer Daten sicherzustellen. Ungültige oder manipulierte Eingaben werden automatisch abgewiesen. Es werden dabei keine personenbezogenen Daten gespeichert.
+
+7. Ihre Rechte
 
 Sie haben jederzeit das Recht:
 - Auskunft über Ihre gespeicherten personenbezogenen Daten zu erhalten (Art. 15 DSGVO)
@@ -74,7 +86,7 @@ Sie haben jederzeit das Recht:
 - Datenübertragbarkeit zu verlangen (Art. 20 DSGVO)
 - Sich bei einer Aufsichtsbehörde zu beschweren (Art. 77 DSGVO)
 
-6. Links zu externen Websites
+8. Links zu externen Websites
 
 Diese Website enthält Links zu externen Websites (z. B. Spotify, YouTube, Instagram, etc.). Beim Anklicken dieser Links verlassen Sie unsere Website. Für die Datenschutzpraktiken dieser externen Websites sind wir nicht verantwortlich. Bitte informieren Sie sich dort über die jeweiligen Datenschutzbestimmungen.`
 
@@ -126,7 +138,19 @@ This website may embed videos from YouTube (Google Ireland Limited, Gordon House
 Local Music Player
 This website provides its own music player that plays audio files directly from our own server. No data is transmitted to third-party providers. No external services are integrated and no cookies are set.
 
-5. Your Rights
+5. Protection Against Automated Attacks (Rate Limiting)
+
+To protect this website from automated attacks (e.g. brute-force attacks, denial of service), a request rate limiter is employed. The number of permitted API requests per user is limited to a maximum of 5 within a 10-second window. If the limit is exceeded, the request is rejected with HTTP status code 429 (Too Many Requests).
+
+IP address pseudonymisation: Your IP address is converted into a non-reversible character string using a cryptographic one-way hash function (SHA-256) combined with a secret system-wide salt value before any processing takes place. Your IP address is never stored or logged in plaintext. The hashed data is retained only for the duration of the time window (10 seconds) and is automatically deleted thereafter.
+
+The legal basis for this processing is our legitimate interest in protecting the website and its users from automated attacks pursuant to Art. 6(1)(f) GDPR. The measure is proportionate as only pseudonymised data with the shortest possible retention period is processed and no profiling takes place.
+
+6. Input Validation
+
+All inputs to the application programming interfaces (APIs) of this website are checked against strict validation schemas to ensure the integrity of the system and the protection of your data. Invalid or manipulated inputs are automatically rejected. No personal data is stored in this process.
+
+7. Your Rights
 
 You have the right at any time to:
 - Obtain information about your stored personal data (Art. 15 GDPR)
@@ -137,7 +161,7 @@ You have the right at any time to:
 - Request data portability (Art. 20 GDPR)
 - Lodge a complaint with a supervisory authority (Art. 77 GDPR)
 
-6. Links to External Websites
+8. Links to External Websites
 
 This website contains links to external websites (e.g. Spotify, YouTube, Instagram, etc.). By clicking these links you leave our website. We are not responsible for the data protection practices of these external websites. Please refer to their respective privacy policies.`
 
