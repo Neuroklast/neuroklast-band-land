@@ -81,12 +81,15 @@ export default async function handler(req, res) {
                            html.match(/name="confirm"\s+value="([^"]+)"/)
       if (confirmMatch) {
         const confirmToken = confirmMatch[1]
-        dlRes = await fetch(
-          `${baseUrl}&confirm=${confirmToken}`,
-          { redirect: 'follow', headers }
-        )
-        if (!dlRes.ok) {
-          return res.status(502).json({ error: `Drive download returned ${dlRes.status}` })
+        // Validate token format for security (only alphanumeric, underscore, hyphen)
+        if (/^[0-9A-Za-z_\-]+$/.test(confirmToken)) {
+          dlRes = await fetch(
+            `${baseUrl}&confirm=${encodeURIComponent(confirmToken)}`,
+            { redirect: 'follow', headers }
+          )
+          if (!dlRes.ok) {
+            return res.status(502).json({ error: `Drive download returned ${dlRes.status}` })
+          }
         }
       }
     }
@@ -94,8 +97,11 @@ export default async function handler(req, res) {
     const fileName = meta.name || 'download'
     const contentType = meta.mimeType || 'application/octet-stream'
 
+    // Sanitize filename for Content-Disposition header to prevent header injection
+    const safeFileName = fileName.replace(/["\r\n]/g, '')
+
     res.setHeader('Content-Type', contentType)
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`)
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`)
     if (meta.size) {
       res.setHeader('Content-Length', meta.size)
     }

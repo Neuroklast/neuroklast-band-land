@@ -47,6 +47,7 @@ All API inputs are validated through strict [Zod](https://zod.dev/) schemas (`ap
 - **Reset Password**: Email must be a valid RFC 5322 email (max 254 chars)
 - **Analytics**: Event type must be one of `page_view | section_view | interaction | click`; meta fields are bounded strings; heatmap coordinates clamped to `[0,1]×[0,2]`
 - **Drive Folder**: `folderId` restricted to `[A-Za-z0-9_-]+`
+- **Drive Download**: `fileId` restricted to `[A-Za-z0-9_-]+` to prevent directory traversal and injection attacks
 - **iTunes / Odesli**: Search terms and URLs are length-bounded and type-checked
 - **Image Proxy**: URL is validated, protocol restricted to `http:` / `https:`, SSRF blocklist enforced
 
@@ -81,6 +82,13 @@ Decoy records are planted in the KV database (`api/_honeytokens.js`):
 - YouTube embeds use `youtube-nocookie.com` with `sandbox` attribute
 - Image proxy rejects non-`image/*` content types
 
+### Google Drive Download Security
+- **Input Validation**: File IDs restricted to `[A-Za-z0-9_-]+` pattern to prevent injection attacks
+- **User-Agent Headers**: Server-side requests include proper User-Agent to comply with Google's requirements
+- **Virus-Scan Handling**: Automatic detection and handling of Google's virus-scan confirmation pages for large files
+- **Size Limits**: Files >10 MB are redirected to Google Drive directly to prevent bandwidth abuse
+- **Fallback Protection**: Failed downloads gracefully fall back to opening Drive in new tab
+
 ## Environment Variables
 
 | Variable | Purpose | Required |
@@ -93,6 +101,7 @@ Decoy records are planted in the KV database (`api/_honeytokens.js`):
 | `RESEND_API_KEY` | Resend API key for sending password reset emails | For email delivery |
 | `EMAIL_FROM` | From email address for reset emails (default: `noreply@neuroklast.com`) | Optional |
 | `SITE_URL` | Site URL for reset links (default: `https://neuroklast.com`) | Optional |
+| `GOOGLE_DRIVE_API_KEY` | Google Drive API key for file metadata | Optional |
 
 ## Best Practices for Deployment
 

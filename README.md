@@ -56,6 +56,19 @@ Dark industrial / cyberpunk HUD aesthetic with:
 - Profile overlays with loading → glitch → reveal phase animations
 - Responsive layout for mobile and desktop
 
+## 📦 Google Drive Integration
+
+The site supports direct file downloads from Google Drive with automatic handling of:
+- **User-Agent headers** to prevent server-side 403 errors
+- **Virus-scan confirmation pages** for large files (>25 MB)
+- **Automatic fallback** to open Drive links in new tab if download fails
+- **Link auto-conversion** in edit mode (Drive share links → direct download URLs)
+
+When users download files via the Media Archive, the system automatically:
+1. Attempts to download through the API proxy for files <10 MB
+2. Redirects to Google Drive for files >10 MB
+3. Falls back to opening Drive in a new tab if the download fails
+
 ## 🔧 Development
 
 ```bash
@@ -126,6 +139,7 @@ This site is designed to be deployed on **Vercel** with:
 For production deployment, configure:
 - `KV_REST_API_URL` - Redis/KV storage URL
 - `KV_REST_API_TOKEN` - Redis/KV storage token
+- `GOOGLE_DRIVE_API_KEY` - Google Drive API key for file metadata (optional)
 
 ## 📄 License
 

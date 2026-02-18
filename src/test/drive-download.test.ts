@@ -279,4 +279,31 @@ describe('Drive download API', () => {
 
     expect(res.send).toHaveBeenCalled()
   })
+
+  it('sanitizes filename to prevent header injection', async () => {
+    const fileContent = new ArrayBuffer(8)
+    // Malicious filename with newlines and quotes
+    const maliciousName = 'file"\r\nContent-Type: text/html\r\n\r\n<script>alert("XSS")</script>.pdf'
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ name: maliciousName, mimeType: 'application/pdf', size: '1234' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/pdf' },
+        arrayBuffer: () => Promise.resolve(fileContent),
+      })
+    const res = mockRes()
+    await handler({ method: 'GET', query: { fileId: 'abc123' }, headers: {} }, res)
+
+    // Verify that the filename in Content-Disposition header is sanitized
+    const dispositionCalls = res.setHeader.mock.calls.filter(call => call[0] === 'Content-Disposition')
+    expect(dispositionCalls.length).toBe(1)
+    const dispositionValue = dispositionCalls[0][1]
+    // Should not contain newlines or unescaped quotes
+    expect(dispositionValue).not.toContain('\r')
+    expect(dispositionValue).not.toContain('\n')
+    expect(res.send).toHaveBeenCalled()
+  })
 })
