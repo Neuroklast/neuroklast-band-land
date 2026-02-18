@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    { "source": "/admin/:p*", "destination": "/api/denied?_src=/admin/:p*" },
+    { "source": "/dashboard/:p*", "destination": "/api/denied?_src=/dashboard/:p*" },
+    { "source": "/backup/:p*", "destination": "/api/denied?_src=/backup/:p*" },
+    { "source": "/config/:p*", "destination": "/api/denied?_src=/config/:p*" },
+    { "source": "/debug/:p*", "destination": "/api/denied?_src=/debug/:p*" },
+    { "source": "/staging/:p*", "destination": "/api/denied?_src=/staging/:p*" },
+    { "source": "/internal/:p*", "destination": "/api/denied?_src=/internal/:p*" },
+    { "source": "/private/:p*", "destination": "/api/denied?_src=/private/:p*" },
+    { "source": "/data/:p*", "destination": "/api/denied?_src=/data/:p*" },
+    { "source": "/logs/:p*", "destination": "/api/denied?_src=/logs/:p*" },
+    { "source": "/tmp/:p*", "destination": "/api/denied?_src=/tmp/:p*" },
+    { "source": "/wp-admin/:p*", "destination": "/api/denied?_src=/wp-admin/:p*" },
+    { "source": "/wp-login.php", "destination": "/api/denied?_src=/wp-login.php" },
+    { "source": "/phpmyadmin/:p*", "destination": "/api/denied?_src=/phpmyadmin/:p*" },
+    { "source": "/server-status", "destination": "/api/denied?_src=/server-status" },
+    { "source": "/server-info", "destination": "/api/denied?_src=/server-info" },
+    { "source": "/cgi-bin/:p*", "destination": "/api/denied?_src=/cgi-bin/:p*" },
+    { "source": "/xmlrpc.php", "destination": "/api/denied?_src=/xmlrpc.php" },
+    { "source": "/.env", "destination": "/api/denied?_src=/.env" },
+    { "source": "/.git/:p*", "destination": "/api/denied?_src=/.git/:p*" }
+  ]
+}

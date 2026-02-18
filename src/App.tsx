@@ -28,6 +28,8 @@ import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import StatsDashboard from '@/components/StatsDashboard'
+import SecurityIncidentsDashboard from '@/components/SecurityIncidentsDashboard'
+import SecuritySettingsDialog from '@/components/SecuritySettingsDialog'
 import { MovingScanline } from '@/components/MovingScanline'
 import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import { useSound } from '@/hooks/use-sound'
@@ -98,6 +100,8 @@ function App() {
   const [showSoundSettings, setShowSoundSettings] = useState(false)
   const [showConfigEditor, setShowConfigEditor] = useState(false)
   const [showStats, setShowStats] = useState(false)
+  const [showSecurityIncidents, setShowSecurityIncidents] = useState(false)
+  const [showSecuritySettings, setShowSecuritySettings] = useState(false)
 
   // Apply CRT effects
   useCRTEffects()
@@ -480,10 +484,14 @@ function App() {
                 onOpenSoundSettings={() => setShowSoundSettings(true)}
                 onOpenConfigEditor={() => setShowConfigEditor(true)}
                 onOpenStats={() => setShowStats(true)}
+                onOpenSecurityIncidents={() => setShowSecurityIncidents(true)}
+                onOpenSecuritySettings={() => setShowSecuritySettings(true)}
               />
             )}
 
             <StatsDashboard open={showStats} onClose={() => setShowStats(false)} />
+            <SecurityIncidentsDashboard open={showSecurityIncidents} onClose={() => setShowSecurityIncidents(false)} />
+            <SecuritySettingsDialog open={showSecuritySettings} onClose={() => setShowSecuritySettings(false)} />
 
             <AnimatePresence>
               {showSoundSettings && (

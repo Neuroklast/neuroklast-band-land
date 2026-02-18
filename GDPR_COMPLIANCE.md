@@ -49,7 +49,7 @@ This document reviews the GDPR compliance status of the NEUROKLAST band website.
 
 **Server-Side Data (Vercel KV / Redis):**
 - Band content and configuration
-- Admin password hash (SHA-256)
+- Admin password hash (scrypt, with legacy SHA-256 migration)
 - Anonymous analytics counters (no personal data)
 - Rate-limit state: SHA-256 hashed IP + salt, auto-expires after 10 seconds
 - Honeytoken alert log (hashed IPs only, no plaintext)
@@ -75,7 +75,7 @@ This document reviews the GDPR compliance status of the NEUROKLAST band website.
 
 3. **Admin Features**
    - Password-protected admin mode
-   - SHA-256 password hashing
+   - scrypt password hashing
    - No transmission of credentials
 
 4. **Rate Limiting & Attack Defense (Art. 6(1)(f) GDPR)**
@@ -91,6 +91,11 @@ This document reviews the GDPR compliance status of the NEUROKLAST band website.
    - Alert logs contain only hashed IPs and timestamps — no plaintext personal data
    - Legal basis: Legitimate interest in IT security (Art. 6(1)(f) GDPR)
 
+6. **robots.txt Access Violations**
+   - Violations of robots.txt Disallow rules are logged for security monitoring
+   - Logs contain only hashed IPs — no plaintext personal data stored
+   - Legal basis: Legitimate interest in IT security (Art. 6(1)(f) GDPR)
+
 ### GDPR Rights Implementation
 
 ✅ **Right to Access**: Users control their localStorage data
@@ -104,7 +109,7 @@ This document reviews the GDPR compliance status of the NEUROKLAST band website.
 
 | Measure | Implementation |
 |---|---|
-| Password hashing | SHA-256, constant-time comparison |
+| Password hashing | scrypt (with legacy SHA-256 migration), constant-time comparison |
 | Input validation | Zod schemas on all API endpoints |
 | Rate limiting | Sliding window, GDPR-compliant IP hashing |
 | SSRF protection | Blocklist for private networks, protocol allowlist |

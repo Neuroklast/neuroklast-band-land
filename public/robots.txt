@@ -1,0 +1,30 @@
+# https://neuroklast.com
+# Crawlers: Please respect these access rules.
+
+User-agent: *
+Allow: /
+
+# Private and restricted areas — access prohibited
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /internal/
+Disallow: /staging/
+Disallow: /backup/
+Disallow: /private/
+Disallow: /debug/
+Disallow: /config/
+Disallow: /data/
+Disallow: /logs/
+Disallow: /tmp/
+Disallow: /.git/
+Disallow: /.env
+Disallow: /wp-admin/
+Disallow: /wp-login.php
+Disallow: /phpmyadmin/
+Disallow: /server-status
+Disallow: /server-info
+Disallow: /cgi-bin/
+Disallow: /xmlrpc.php
+
+Crawl-delay: 10
