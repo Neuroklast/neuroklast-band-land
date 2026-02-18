@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { timingSafeEqual } from './kv.js'
+import { applyRateLimit } from './_ratelimit.js'
 
 const ANALYTICS_KEY = 'nk-analytics'
 const HEATMAP_KEY = 'nk-heatmap'
@@ -190,6 +191,10 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
+
+  // Rate limiting — blocks analytics spam / DoS (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
 
   if (!isKVConfigured()) {
     return res.status(503).json({

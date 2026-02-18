@@ -1,4 +1,10 @@
+import { applyRateLimit } from './_ratelimit.js'
+
 export default async function handler(req, res) {
+  // Rate limiting (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
+
   const { url } = req.query;
 
   if (!url) {

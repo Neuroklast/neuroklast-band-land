@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { applyRateLimit } from './_ratelimit.js'
 
 /**
  * Server-side image proxy that fetches remote images, caches them in Vercel KV,
@@ -67,6 +68,10 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
+
+  // Rate limiting — blocks image proxy abuse (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
 
   const { url } = req.query
   if (!url) {

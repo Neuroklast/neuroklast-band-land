@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { timingSafeEqual } from './kv.js'
+import { applyRateLimit } from './_ratelimit.js'
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
@@ -10,6 +11,10 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
+
+  // Rate limiting — blocks brute-force password reset attempts (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })

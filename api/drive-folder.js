@@ -8,10 +8,16 @@
  * object with a proxied URL so that CORS is not an issue and caching works.
  */
 
+import { applyRateLimit } from './_ratelimit.js'
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
+
+  // Rate limiting (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
 
   const { folderId } = req.query
   if (!folderId) {
