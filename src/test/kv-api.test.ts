@@ -76,6 +76,39 @@ describe('KV API handler', () => {
       expect(res.json).toHaveBeenCalledWith({ value: null })
     })
 
+    // Sensitive key protection tests
+    it('returns 403 when reading admin-password-hash', async () => {
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'admin-password-hash' }, body: {}, headers: {} }, res)
+      expect(res.status).toHaveBeenCalledWith(403)
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Forbidden' }))
+      expect(mockKvGet).not.toHaveBeenCalled()
+    })
+
+    it('returns 403 when key contains "token"', async () => {
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'my-token-value' }, body: {}, headers: {} }, res)
+      expect(res.status).toHaveBeenCalledWith(403)
+    })
+
+    it('returns 403 when key contains "secret"', async () => {
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'app-secret-key' }, body: {}, headers: {} }, res)
+      expect(res.status).toHaveBeenCalledWith(403)
+    })
+
+    it('returns 403 for case-insensitive sensitive key patterns', async () => {
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'MY-SECRET-KEY' }, body: {}, headers: {} }, res)
+      expect(res.status).toHaveBeenCalledWith(403)
+    })
+
+    it('returns 403 for case-insensitive admin-password-hash', async () => {
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'Admin-Password-Hash' }, body: {}, headers: {} }, res)
+      expect(res.status).toHaveBeenCalledWith(403)
+    })
+
     it('returns 500 when KV throws', async () => {
       mockKvGet.mockRejectedValue(new Error('KV unavailable'))
       const res = mockRes()
