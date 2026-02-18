@@ -9,6 +9,7 @@
  */
 
 import { applyRateLimit } from './_ratelimit.js'
+import { driveFolderQuerySchema, validate } from './_schemas.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -19,15 +20,10 @@ export default async function handler(req, res) {
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
 
-  const { folderId } = req.query
-  if (!folderId) {
-    return res.status(400).json({ error: 'folderId parameter is required' })
-  }
-
-  // Validate folderId format — Google Drive IDs are alphanumeric with hyphens/underscores
-  if (typeof folderId !== 'string' || !/^[A-Za-z0-9_-]+$/.test(folderId)) {
-    return res.status(400).json({ error: 'Invalid folderId format' })
-  }
+  // Zod validation
+  const parsed = validate(driveFolderQuerySchema, req.query)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error })
+  const { folderId } = parsed.data
 
   try {
     // Google Drive public folder listing via the embedlink/list endpoint

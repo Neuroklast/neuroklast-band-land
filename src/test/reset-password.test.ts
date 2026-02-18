@@ -84,7 +84,7 @@ describe('Reset Password API handler', () => {
     const res = mockRes()
     await handler({ method: 'POST', query: {}, body: {}, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'email is required' }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Required' }))
   })
 
   it('resets password when email matches', async () => {

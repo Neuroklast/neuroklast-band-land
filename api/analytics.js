@@ -217,13 +217,10 @@ export default async function handler(req, res) {
         return res.status(413).json({ error: 'Request body too large' })
       }
 
-      const { type, target, meta, heatmap } = req.body
-
-      // Validate event type
-      const validTypes = ['page_view', 'section_view', 'interaction', 'click']
-      if (!type || !validTypes.includes(type)) {
-        return res.status(400).json({ error: 'Invalid event type' })
-      }
+      // Zod validation — validates event type + meta shape
+      const parsed = validate(analyticsPostSchema, req.body)
+      if (!parsed.success) return res.status(400).json({ error: parsed.error })
+      const { type, target, meta, heatmap } = parsed.data
 
       // Sanitize string inputs to prevent injection into Redis keys
       const sanitize = (s) => (typeof s === 'string' ? s.slice(0, 200).replace(/[\n\r\0:*?\[\]{}]/g, '') : undefined)

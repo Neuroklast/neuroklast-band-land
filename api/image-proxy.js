@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { applyRateLimit } from './_ratelimit.js'
+import { imageProxyQuerySchema, validate } from './_schemas.js'
 
 /**
  * Server-side image proxy that fetches remote images, caches them in Vercel KV,
@@ -73,10 +74,10 @@ export default async function handler(req, res) {
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
 
-  const { url } = req.query
-  if (!url) {
-    return res.status(400).json({ error: 'url parameter is required' })
-  }
+  // Zod validation
+  const qParsed = validate(imageProxyQuerySchema, req.query)
+  if (!qParsed.success) return res.status(400).json({ error: qParsed.error })
+  const { url } = qParsed.data
 
   // Validate and block dangerous URLs
   let parsed

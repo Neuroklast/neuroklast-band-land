@@ -1,15 +1,15 @@
 import { applyRateLimit } from './_ratelimit.js'
+import { odesliQuerySchema, validate } from './_schemas.js'
 
 export default async function handler(req, res) {
   // Rate limiting (GDPR-compliant, IP is hashed)
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
 
-  const { url } = req.query;
-
-  if (!url) {
-    return res.status(400).json({ error: 'A streaming URL is required' });
-  }
+  // Zod validation
+  const parsed = validate(odesliQuerySchema, req.query)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error })
+  const { url } = parsed.data;
 
   try {
     const response = await fetch(

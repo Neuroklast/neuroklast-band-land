@@ -1,15 +1,15 @@
 import { applyRateLimit } from './_ratelimit.js'
+import { itunesQuerySchema, validate } from './_schemas.js'
 
 export default async function handler(req, res) {
   // Rate limiting (GDPR-compliant, IP is hashed)
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
 
-  const { term, entity } = req.query;
-
-  if (!term) {
-    return res.status(400).json({ error: 'Search term is required' });
-  }
+  // Zod validation
+  const parsed = validate(itunesQuerySchema, req.query)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error })
+  const { term, entity } = parsed.data;
 
   try {
     // When entity is "all", fetch both songs and albums to capture every release

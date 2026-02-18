@@ -15,6 +15,12 @@ vi.mock('../../api/_ratelimit.js', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(true),
 }))
 
+// Mock honeytokens — disable in tests
+vi.mock('../../api/_honeytokens.js', () => ({
+  isHoneytoken: vi.fn().mockReturnValue(false),
+  triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
+}))
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn> }
 
@@ -78,14 +84,14 @@ describe('Security: KV API key validation', () => {
     const res = mockRes()
     await kvHandler({ method: 'GET', query: { key: 'a'.repeat(201) }, body: {}, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'key is too long' }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'String must contain at most 200 character(s)' }))
   })
 
   it('rejects GET with key containing newline characters', async () => {
     const res = mockRes()
     await kvHandler({ method: 'GET', query: { key: 'test\nkey' }, body: {}, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'key contains invalid characters' }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Must not contain control characters' }))
   })
 
   it('rejects GET with key containing carriage return', async () => {
@@ -104,7 +110,7 @@ describe('Security: KV API key validation', () => {
     const res = mockRes()
     await kvHandler({ method: 'POST', query: {}, body: { key: 'a'.repeat(201), value: 'test' }, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'key is too long' }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'String must contain at most 200 character(s)' }))
   })
 
   it('rejects POST with key containing newline', async () => {
