@@ -36,7 +36,8 @@ We release patches for security vulnerabilities for the latest version of the pr
 ## Security Architecture
 
 ### Authentication & Access Control
-- **Admin Authentication**: SHA-256 password hashing with constant-time comparison (`timingSafeEqual`)
+- **Admin Authentication**: scrypt password hashing (with legacy SHA-256 migration) and constant-time comparison (`timingSafeEqual`)
+- **Session Binding**: Session fingerprinting to prevent session hijacking
 - **CSRF Protection**: No state-changing operations via GET requests
 - **Sensitive Key Protection**: `admin-password-hash`, keys containing `token` or `secret` are blocked from API reads
 
@@ -69,6 +70,11 @@ Decoy records are planted in the KV database (`api/_honeytokens.js`):
 - Keys: `admin_backup`, `admin-backup-hash`, `db-credentials`, `api-master-key`, `backup-admin-password`
 - Any read or write to these keys triggers a **silent alarm**: logged to `stderr` (for SIEM/log-drain pickup) and persisted to `nk-honeytoken-alerts` in KV
 - The API returns a generic `403 Forbidden` so the attacker does not learn they were detected
+
+### robots.txt Access Control
+- `Disallow` paths in `robots.txt` establish access rules; violations trigger defensive measures
+- Suspicious User-Agent detection and tarpitting for known malicious crawlers
+- Access violations are logged with hashed IPs only (no plaintext)
 
 ### XSS Prevention
 - All user-generated content rendered through `SafeText` component

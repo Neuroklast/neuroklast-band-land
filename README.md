@@ -94,7 +94,7 @@ Admin users can access the built-in analytics dashboard to view:
 - **Traffic sources** (referrer domains)
 - **Device breakdown** (desktop/mobile/tablet)
 
-Data is stored locally in the browser using localStorage.
+Data is stored in persistent server storage with local browser fallback.
 
 ## 🔒 Security
 
@@ -102,11 +102,15 @@ For security considerations and reporting vulnerabilities, please see [SECURITY.
 
 ### Security Features
 
-- Password-protected admin mode with SHA-256 hashing
-- Input validation and sanitization
+- Password-protected admin mode with scrypt password hashing (with legacy SHA-256 migration)
+- Zod input validation and sanitization on all API endpoints
 - XSS prevention through proper escaping
 - CSRF protection
 - HTTPS enforcement in production
+- Rate limiting with GDPR-compliant IP hashing
+- Honeytoken intrusion detection
+- SSRF protection on image proxy
+- robots.txt access control with violation detection
 - Regular dependency updates
 
 ## 🌐 Deployment
