@@ -1,16 +1,21 @@
 import { kv } from '@vercel/kv'
+import { applyRateLimit } from './_ratelimit.js'
+import { isHoneytoken, triggerHoneytokenAlarm } from './_honeytokens.js'
+import { kvGetQuerySchema, kvPostSchema, validate } from './_schemas.js'
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
 
-// Constant-time string comparison to prevent timing attacks on hash comparison
+// Constant-time string comparison to prevent timing attacks on hash comparison.
+// Always compares the full length of the longer string to avoid leaking length.
 export function timingSafeEqual(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false
-  let result = 0
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  if (typeof a !== 'string' || typeof b !== 'string') return false
+  const len = Math.max(a.length, b.length)
+  let result = a.length ^ b.length
+  for (let i = 0; i < len; i++) {
+    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0)
   }
   return result === 0
 }
@@ -19,6 +24,10 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
+
+  // Rate limiting — blocks brute-force and DoS attacks (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
 
   // Check if KV is configured
   if (!isKVConfigured()) {
@@ -31,8 +40,16 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { key } = req.query
-      if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
+      // Zod validation
+      const parsed = validate(kvGetQuerySchema, req.query)
+      if (!parsed.success) return res.status(400).json({ error: parsed.error })
+      const { key } = parsed.data
+
+      // Honeytoken detection — silent alarm
+      if (isHoneytoken(key)) {
+        await triggerHoneytokenAlarm(req, key)
+        return res.status(403).json({ error: 'Forbidden' })
+      }
 
       // Block access to sensitive keys to prevent credential leakage
       const lowerKey = key.toLowerCase()
@@ -49,9 +66,22 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Request body is required' })
       }
 
-      const { key, value } = req.body
-      if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
-      if (value === undefined) return res.status(400).json({ error: 'value is required' })
+      // Zod validation
+      const parsed = validate(kvPostSchema, req.body)
+      if (!parsed.success) return res.status(400).json({ error: parsed.error })
+      const { key, value } = parsed.data
+
+      // Honeytoken detection — silent alarm
+      if (isHoneytoken(key)) {
+        await triggerHoneytokenAlarm(req, key)
+        return res.status(403).json({ error: 'Forbidden' })
+      }
+
+      // Block writes to internal keys used by analytics or system functions
+      const lowerKey = key.toLowerCase()
+      if (lowerKey.startsWith('nk-analytics') || lowerKey.startsWith('nk-heatmap') || lowerKey.startsWith('img-cache:')) {
+        return res.status(403).json({ error: 'Forbidden: reserved key prefix' })
+      }
 
       const token = req.headers['x-admin-token'] || ''
 

@@ -10,6 +10,17 @@ vi.mock('@vercel/kv', () => ({
   kv: { get: mockKvGet, set: mockKvSet },
 }))
 
+// Mock rate limiter — always allow requests in tests
+vi.mock('../../api/_ratelimit.js', () => ({
+  applyRateLimit: vi.fn().mockResolvedValue(true),
+}))
+
+// Mock honeytokens — disable in tests
+vi.mock('../../api/_honeytokens.js', () => ({
+  isHoneytoken: vi.fn().mockReturnValue(false),
+  triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
+}))
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
 
@@ -51,7 +62,7 @@ describe('KV API handler', () => {
       const res = mockRes()
       await handler({ method: 'GET', query: {}, body: {}, headers: {} }, res)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'key is required' }))
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Required' }))
     })
 
     it('returns value when key exists in KV', async () => {
@@ -131,7 +142,7 @@ describe('KV API handler', () => {
       const res = mockRes()
       await handler({ method: 'POST', query: {}, body: { value: 'x' }, headers: {} }, res)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'key is required' }))
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Required' }))
     })
 
     it('returns 400 when value is undefined', async () => {

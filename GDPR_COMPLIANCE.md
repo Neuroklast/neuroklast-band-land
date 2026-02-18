@@ -1,6 +1,6 @@
 # GDPR Compliance Review - NEUROKLAST Band Website
 
-## Date: 2026-02-16
+## Date: 2026-02-18
 
 ### Overview
 This document reviews the GDPR compliance status of the NEUROKLAST band website.
@@ -47,6 +47,13 @@ This document reviews the GDPR compliance status of the NEUROKLAST band website.
 - `sound-settings`: Audio preferences
 - Image cache (IndexedDB)
 
+**Server-Side Data (Vercel KV / Redis):**
+- Band content and configuration
+- Admin password hash (SHA-256)
+- Anonymous analytics counters (no personal data)
+- Rate-limit state: SHA-256 hashed IP + salt, auto-expires after 10 seconds
+- Honeytoken alert log (hashed IPs only, no plaintext)
+
 **External Services:**
 - iTunes API: Fetches public release information
 - Odesli API: Resolves streaming links
@@ -71,14 +78,39 @@ This document reviews the GDPR compliance status of the NEUROKLAST band website.
    - SHA-256 password hashing
    - No transmission of credentials
 
+4. **Rate Limiting & Attack Defense (Art. 6(1)(f) GDPR)**
+   - IP addresses are pseudonymised using SHA-256 + secret salt before processing
+   - Hashed IP is used solely for rate-limit enforcement (5 requests / 10 s)
+   - Rate-limit state is ephemeral: auto-deleted after the 10-second window
+   - No plaintext IP addresses are stored or logged
+   - Legal basis: Legitimate interest in protecting the website and its users from automated attacks (Art. 6(1)(f) GDPR)
+   - Proportionality: Minimal data (hash only), shortest possible retention (10 s), no profiling
+
+5. **Honeytokens (Intrusion Detection)**
+   - Decoy records in the database trigger silent alarms on unauthorised access
+   - Alert logs contain only hashed IPs and timestamps — no plaintext personal data
+   - Legal basis: Legitimate interest in IT security (Art. 6(1)(f) GDPR)
+
 ### GDPR Rights Implementation
 
 ✅ **Right to Access**: Users control their localStorage data
-✅ **Right to Erasure**: Users can clear browser data
+✅ **Right to Erasure**: Users can clear browser data; rate-limit data auto-expires
 ✅ **Right to Rectification**: Admin can update all content
 ✅ **Right to Data Portability**: JSON export/import supported
 ✅ **Right to Object**: Users can reject cookie consent
 ✅ **Transparency**: Clear privacy policy provided
+
+### Security Measures (Art. 32 GDPR)
+
+| Measure | Implementation |
+|---|---|
+| Password hashing | SHA-256, constant-time comparison |
+| Input validation | Zod schemas on all API endpoints |
+| Rate limiting | Sliding window, GDPR-compliant IP hashing |
+| SSRF protection | Blocklist for private networks, protocol allowlist |
+| Intrusion detection | Honeytoken decoy records with silent alarms |
+| XSS prevention | Content sanitisation, iframe sandboxing |
+| Timing attack prevention | Constant-time string comparison |
 
 ### Recommendations
 
@@ -94,19 +126,22 @@ This document reviews the GDPR compliance status of the NEUROKLAST band website.
 
 3. **Security Measures**
    - ✅ Password hashing implemented
-   - ✅ Input validation present
+   - ✅ Input validation via Zod schemas
+   - ✅ Rate limiting with IP anonymisation
    - ✅ XSS prevention measures
-   - Consider adding CSRF tokens for admin actions
+   - ✅ Honeytoken intrusion detection
 
 4. **Data Minimization**
    - ✅ Only essential data collected
-   - ✅ No personal identifiers
+   - ✅ No personal identifiers stored
    - ✅ Anonymous analytics
+   - ✅ Rate-limit state ephemeral (10 s TTL)
+   - ✅ IP addresses always hashed before processing
 
 5. **Documentation**
-   - ✅ Privacy policy present
+   - ✅ Privacy policy present (DE/EN)
    - ✅ Legal notice (Impressum) present
-   - Consider adding data retention policy
+   - ✅ SECURITY.md with full architecture docs
    - Consider adding data processing agreement for third parties
 
 ### Compliance Status
@@ -120,29 +155,19 @@ The website demonstrates strong GDPR compliance with:
 - Local-first data storage
 - Clear privacy policy
 - User control over data
+- GDPR-compliant attack defense (pseudonymised rate limiting)
 
 ### Action Items
 
 Priority | Item | Status
 ---------|------|-------
 High | ✅ Cookie consent banner | Complete
-High | ✅ Privacy policy | Complete
+High | ✅ Privacy policy (DE/EN) | Complete
 High | ✅ Impressum/Legal notice | Complete
+High | ✅ Rate limiting with IP anonymisation | Complete
+High | ✅ Input validation (Zod) | Complete
 Medium | ⚠️ Review external service agreements | Pending
-Medium | ⚠️ Document data processing activities | Pending
-Low | ⚠️ Add data retention policy | Optional
 Low | ⚠️ Enhanced consent logging | Optional
-
-### Conclusion
-
-The NEUROKLAST website demonstrates good GDPR compliance through:
-1. Transparent data practices
-2. Minimal data collection
-3. User consent mechanisms
-4. Local-first approach
-5. Clear documentation
-
-The website prioritizes user privacy by storing data locally and avoiding unnecessary tracking. The few external services used are clearly disclosed in the privacy policy.
 
 ### Contact
 

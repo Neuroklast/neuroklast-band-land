@@ -8,15 +8,22 @@
  * object with a proxied URL so that CORS is not an issue and caching works.
  */
 
+import { applyRateLimit } from './_ratelimit.js'
+import { driveFolderQuerySchema, validate } from './_schemas.js'
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { folderId } = req.query
-  if (!folderId) {
-    return res.status(400).json({ error: 'folderId parameter is required' })
-  }
+  // Rate limiting (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
+
+  // Zod validation
+  const parsed = validate(driveFolderQuerySchema, req.query)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error })
+  const { folderId } = parsed.data
 
   try {
     // Google Drive public folder listing via the embedlink/list endpoint

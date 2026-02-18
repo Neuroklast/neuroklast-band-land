@@ -1,5 +1,7 @@
 import { kv } from '@vercel/kv'
 import { timingSafeEqual } from './kv.js'
+import { applyRateLimit } from './_ratelimit.js'
+import { analyticsPostSchema, validate } from './_schemas.js'
 
 const ANALYTICS_KEY = 'nk-analytics'
 const HEATMAP_KEY = 'nk-heatmap'
@@ -191,6 +193,10 @@ export default async function handler(req, res) {
     return res.status(200).end()
   }
 
+  // Rate limiting — blocks analytics spam / DoS (GDPR-compliant, IP is hashed)
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
+
   if (!isKVConfigured()) {
     return res.status(503).json({
       error: 'Service unavailable',
@@ -205,18 +211,22 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Request body is required' })
       }
 
-      const { type, target, meta, heatmap } = req.body
-
-      // Validate event type
-      const validTypes = ['page_view', 'section_view', 'interaction', 'click']
-      if (!type || !validTypes.includes(type)) {
-        return res.status(400).json({ error: 'Invalid event type' })
+      // Reject excessively large payloads (protect against abuse)
+      const bodySize = JSON.stringify(req.body).length
+      if (bodySize > 4096) {
+        return res.status(413).json({ error: 'Request body too large' })
       }
 
-      // Sanitize string inputs to prevent injection into Redis keys
-      const sanitize = (s) => (typeof s === 'string' ? s.slice(0, 200).replace(/[\n\r:*?\[\]]/g, '') : undefined)
+      // Zod validation — validates event type + meta shape
+      const parsed = validate(analyticsPostSchema, req.body)
+      if (!parsed.success) return res.status(400).json({ error: parsed.error })
+      const { type, target, meta, heatmap } = parsed.data
 
-      const sanitizedMeta = meta ? {
+      // Sanitize string inputs to prevent injection into Redis keys
+      const sanitize = (s) => (typeof s === 'string' ? s.slice(0, 200).replace(/[\n\r\0:*?\[\]{}]/g, '') : undefined)
+
+      // Limit the number of meta fields to prevent unbounded key pollution
+      const sanitizedMeta = meta && typeof meta === 'object' ? {
         referrer: sanitize(meta.referrer),
         device: sanitize(meta.device),
         browser: sanitize(meta.browser),
@@ -230,11 +240,14 @@ export default async function handler(req, res) {
 
       await mergeAnalytics({ type, target: sanitize(target), meta: sanitizedMeta })
 
-      // Store heatmap data if present
+      // Store heatmap data if present — validate coordinates are in valid range
+      // x: normalized viewport width (0-1), y: normalized document height (0-2, allows scrolling beyond viewport)
       if (heatmap && typeof heatmap.x === 'number' && typeof heatmap.y === 'number') {
+        const hx = Math.round(Math.max(0, Math.min(1, heatmap.x)) * 10000) / 10000
+        const hy = Math.round(Math.max(0, Math.min(2, heatmap.y)) * 10000) / 10000
         await storeHeatmapClick({
-          x: Math.round(heatmap.x * 10000) / 10000,
-          y: Math.round(heatmap.y * 10000) / 10000,
+          x: hx,
+          y: hy,
           page: sanitize(heatmap.page),
           elementTag: sanitize(heatmap.elementTag),
         })
