@@ -117,13 +117,14 @@ export default async function handler(req, res) {
         console.log(`[SECURITY] Password reset email sent to ${resetEmail}`)
       } catch (emailError) {
         // Log email failure but still return success to prevent email enumeration
-        console.error('[SECURITY] Failed to send reset email:', emailError)
-        // Fall back to logging the token
-        console.log(`[SECURITY] Password reset token generated (expires in ${RESET_TOKEN_TTL}s): ${token}`)
+        const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error'
+        console.error('[SECURITY] Failed to send reset email:', errorMessage)
+        // Fall back to logging that a token was generated (without exposing the token itself)
+        console.log(`[SECURITY] Password reset token generated (expires in ${RESET_TOKEN_TTL}s) - retrieve from KV: ${RESET_TOKEN_KEY}`)
       }
     } else {
-      // No email service configured - log token for manual retrieval
-      console.log(`[SECURITY] Password reset token generated (expires in ${RESET_TOKEN_TTL}s): ${token}`)
+      // No email service configured - log that token is available in KV
+      console.log(`[SECURITY] Password reset token generated (expires in ${RESET_TOKEN_TTL}s) - retrieve from KV: ${RESET_TOKEN_KEY}`)
       console.log(`[SECURITY] Set RESEND_API_KEY environment variable to enable email delivery`)
     }
 
