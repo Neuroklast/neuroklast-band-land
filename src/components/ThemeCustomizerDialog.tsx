@@ -626,7 +626,7 @@ export default function ThemeCustomizerDialog({
                       >
                         {FONT_OPTIONS.map(opt => (
                           <option key={opt.value} value={opt.value} style={{ fontFamily: opt.value }}>
-                            {opt.label}{opt.google ? ' ⟡' : ''}
+                            {opt.label}{opt.google ? ' (Google)' : ''}
                           </option>
                         ))}
                       </select>
