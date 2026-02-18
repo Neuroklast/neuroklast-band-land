@@ -15,7 +15,7 @@ const isKVConfigured = () => {
  * This prevents accidental leakage of sensitive data stored under
  * arbitrary key names (e.g. stripe_api_key, db_password, etc.).
  * 
- * band-data is publicly readable but is sanitised on write to strip
+ * band-data is publicly readable but is sanitized on write to strip
  * any fields matching sensitive patterns (token, secret, password, etc.).
  */
 const ALLOWED_PUBLIC_READ_KEYS = new Set([
@@ -154,14 +154,14 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 
-      // Sanitise band-data writes: strip any fields that look like secrets/tokens
+      // Sanitize band-data writes: strip any fields that look like secrets/tokens
       // to prevent accidental exposure since band-data is publicly readable.
       if (key === 'band-data' && value && typeof value === 'object' && !Array.isArray(value)) {
         const SENSITIVE_FIELD_PATTERNS = [/token/i, /secret/i, /password/i, /apikey/i, /api_key/i, /credential/i]
-        const sanitised = Object.fromEntries(
+        const sanitized = Object.fromEntries(
           Object.entries(value).filter(([k]) => !SENSITIVE_FIELD_PATTERNS.some(p => p.test(k)))
         )
-        await kv.set(key, sanitised)
+        await kv.set(key, sanitized)
         return res.json({ success: true })
       }
 

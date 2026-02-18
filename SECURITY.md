@@ -90,6 +90,9 @@ Decoy records are planted in the KV database (`api/_honeytokens.js`):
 | `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting) | Recommended |
 | `ADMIN_RESET_EMAIL` | Email for password reset verification | For reset feature |
 | `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.com`) | Recommended |
+| `RESEND_API_KEY` | Resend API key for sending password reset emails | For email delivery |
+| `EMAIL_FROM` | From email address for reset emails (default: `noreply@neuroklast.com`) | Optional |
+| `SITE_URL` | Site URL for reset links (default: `https://neuroklast.com`) | Optional |
 
 ## Best Practices for Deployment
 
