@@ -17,6 +17,11 @@ import { createHash } from 'node:crypto'
 
 const SALT = process.env.RATE_LIMIT_SALT || 'nk-default-rate-limit-salt-change-me'
 
+// Warn at startup if the salt is not configured (production should always set it)
+if (!process.env.RATE_LIMIT_SALT && process.env.NODE_ENV === 'production') {
+  console.warn('[SECURITY] RATE_LIMIT_SALT environment variable is not set. Using a default value. Set a unique random salt in production.')
+}
+
 /**
  * Hash an IP address with SHA-256 + salt so it can be used as a rate-limit
  * key without storing PII.

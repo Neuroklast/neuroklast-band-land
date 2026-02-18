@@ -65,7 +65,7 @@ Diese Website stellt einen eigenen Musik-Player bereit, der Audiodateien direkt 
 
 5. Schutz vor automatisierten Angriffen (Rate Limiting)
 
-Zum Schutz dieser Website vor automatisierten Angriffen (z. B. Brute-Force-Attacken, Denial-of-Service) wird eine Anfragenratenbegrenzung (Rate Limiting) eingesetzt. Dabei wird die Anzahl der zulässigen API-Anfragen pro Nutzer innerhalb eines Zeitfensters von 10 Sekunden auf maximal 5 begrenzt. Bei Überschreitung wird die Anfrage mit dem HTTP-Statuscode 429 (Too Many Requests) abgelehnt.
+Zum Schutz dieser Website vor automatisierten Angriffen (z. B. Brute-Force-Attacken, Denial-of-Service) wird eine Anfrageratenbegrenzung (Rate Limiting) eingesetzt. Dabei wird die Anzahl der zulässigen API-Anfragen pro Nutzer innerhalb eines Zeitfensters von 10 Sekunden auf maximal 5 begrenzt. Bei Überschreitung wird die Anfrage mit dem HTTP-Statuscode 429 (Too Many Requests) abgelehnt.
 
 Pseudonymisierung der IP-Adresse: Ihre IP-Adresse wird vor der Verarbeitung mittels eines kryptografischen Einweg-Hash-Verfahrens (SHA-256) in Verbindung mit einem geheimen systemweiten Zusatzwert (Salt) in eine nicht rückrechenbare Zeichenkette umgewandelt. Ihre IP-Adresse wird zu keinem Zeitpunkt im Klartext gespeichert oder protokolliert. Die gehashten Daten werden ausschließlich für die Dauer des Zeitfensters (10 Sekunden) vorgehalten und danach automatisch gelöscht.
 

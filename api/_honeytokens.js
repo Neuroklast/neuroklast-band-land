@@ -77,7 +77,7 @@ export async function seedHoneytokens() {
     try {
       // Only seed if the key doesn't already exist (don't overwrite on every call)
       const existing = await kv.get(key)
-      if (existing === null || existing === undefined) {
+      if (existing == null) {
         await kv.set(key, value)
       }
     } catch {
