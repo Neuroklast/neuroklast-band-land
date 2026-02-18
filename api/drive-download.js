@@ -53,13 +53,13 @@ export default async function handler(req, res) {
     
     if (fileSizeBytes > MAX_PROXY_SIZE) {
       // Redirect to Google Drive public download URL (no OAuth required)
-      const redirectUrl = `https://drive.google.com/uc?export=download&id=${fileId}`
+      const redirectUrl = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
       return res.redirect(307, redirectUrl)
     }
 
     // Download file content using public download URL (no OAuth required)
     const dlRes = await fetch(
-      `https://drive.google.com/uc?export=download&id=${fileId}`,
+      `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`,
       { redirect: 'follow' }
     )
 
