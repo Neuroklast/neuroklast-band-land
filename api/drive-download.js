@@ -1,11 +1,11 @@
 /**
- * API route that proxies file downloads from Google Drive.
+ * API route that redirects file downloads to Google Drive.
  *
  * GET /api/drive-download?fileId=<id>
  *
- * Streams the file content directly to the client so the browser does not
- * need to open a new Google Drive tab.  Returns proper Content-Disposition
- * headers to trigger a browser download.
+ * Redirects the browser to the public Google Drive download URL.
+ * This works for all publicly shared files without any API key.
+ * The browser follows the redirect and downloads the file directly from Google.
  */
 
 import { applyRateLimit } from './_ratelimit.js'
@@ -25,95 +25,10 @@ export default async function handler(req, res) {
   if (!parsed.success) return res.status(400).json({ error: parsed.error })
   const { fileId } = parsed.data
 
-  try {
-    const apiKey = process.env.GOOGLE_DRIVE_API_KEY
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Drive API key is not configured' })
-    }
-
-    // Get file metadata first (name, mimeType)
-    const metaParams = new URLSearchParams({
-      fields: 'name, mimeType, size',
-      key: apiKey,
-      supportsAllDrives: 'true',
-    })
-    const metaRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${fileId}?${metaParams}`
-    )
-
-    if (!metaRes.ok) {
-      return res.status(502).json({ error: `Drive API returned ${metaRes.status}` })
-    }
-
-    const meta = await metaRes.json()
-
-    // For large files (>10MB), redirect directly to Google Drive to save Vercel bandwidth
-    const fileSizeBytes = parseInt(meta.size || '0', 10)
-    const MAX_PROXY_SIZE = 10 * 1024 * 1024 // 10 MB
-    
-    if (fileSizeBytes > MAX_PROXY_SIZE) {
-      // Redirect to Google Drive public download URL (no OAuth required for publicly shared files)
-      // Note: fileId is validated via regex in _schemas.js to only allow [A-Za-z0-9_-]+
-      const redirectUrl = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
-      return res.redirect(307, redirectUrl)
-    }
-
-    // Download file content using public download URL (no OAuth required for publicly shared files)
-    // Note: fileId is validated via regex in _schemas.js to only allow [A-Za-z0-9_-]+
-    const baseUrl = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (compatible; neuroklast-band-land/1.0)',
-    }
-
-    let dlRes = await fetch(baseUrl, { redirect: 'follow', headers })
-
-    if (!dlRes.ok) {
-      return res.status(502).json({ error: `Drive download returned ${dlRes.status}` })
-    }
-
-    // Handle Google virus-scan confirmation page for large files
-    const responseContentType = dlRes.headers.get('content-type') || ''
-    if (responseContentType.includes('text/html')) {
-      // Google is showing a virus-scan confirmation page
-      // Extract the confirm token from the HTML
-      const html = await dlRes.text()
-      // Both patterns now use the same restrictive character set
-      const confirmMatch = html.match(/confirm=([0-9A-Za-z_\-]+)/) ||
-                           html.match(/name="confirm"\s+value="([0-9A-Za-z_\-]+)"/)
-      if (confirmMatch) {
-        const confirmToken = confirmMatch[1]
-        // Validate token format for security (only alphanumeric, underscore, hyphen)
-        if (/^[0-9A-Za-z_\-]+$/.test(confirmToken)) {
-          dlRes = await fetch(
-            `${baseUrl}&confirm=${encodeURIComponent(confirmToken)}`,
-            { redirect: 'follow', headers }
-          )
-          if (!dlRes.ok) {
-            return res.status(502).json({ error: `Drive download returned ${dlRes.status}` })
-          }
-        }
-      }
-    }
-
-    const fileName = meta.name || 'download'
-    const contentType = meta.mimeType || 'application/octet-stream'
-
-    // Sanitize filename for Content-Disposition header to prevent header injection
-    // Remove quotes, newlines, control characters, and backslashes
-    const safeFileName = fileName.replace(/["\r\n\x00-\x1f\x7f\\]/g, '')
-
-    res.setHeader('Content-Type', contentType)
-    res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`)
-    if (meta.size) {
-      res.setHeader('Content-Length', meta.size)
-    }
-    res.setHeader('Cache-Control', 'private, max-age=300')
-
-    // Stream the response body
-    const buffer = Buffer.from(await dlRes.arrayBuffer())
-    return res.send(buffer)
-  } catch (error) {
-    console.error('Drive download error:', error)
-    return res.status(502).json({ error: 'Failed to download file from Drive' })
-  }
+  // Simply redirect the browser to the public Google Drive download URL.
+  // This works for all publicly shared files without any API key.
+  // The browser follows the redirect and downloads the file directly from Google.
+  // Note: fileId is validated via regex in _schemas.js to only allow [A-Za-z0-9_-]+
+  const downloadUrl = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
+  return res.redirect(307, downloadUrl)
 }
