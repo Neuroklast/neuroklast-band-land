@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv'
-import { timingSafeEqual } from './kv.js'
+import { validateSession } from './auth.js'
 import { applyRateLimit } from './_ratelimit.js'
 import { analyticsPostSchema, validate } from './_schemas.js'
 
@@ -258,9 +258,8 @@ export default async function handler(req, res) {
 
     // GET: retrieve analytics snapshot (admin only)
     if (req.method === 'GET') {
-      const token = req.headers['x-admin-token'] || ''
-      const adminHash = await kv.get('admin-password-hash')
-      if (adminHash && !timingSafeEqual(token, adminHash)) {
+      const sessionValid = await validateSession(req)
+      if (!sessionValid) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 
@@ -280,9 +279,8 @@ export default async function handler(req, res) {
 
     // DELETE: reset analytics (admin only)
     if (req.method === 'DELETE') {
-      const token = req.headers['x-admin-token'] || ''
-      const adminHash = await kv.get('admin-password-hash')
-      if (!adminHash || !timingSafeEqual(token, adminHash)) {
+      const sessionValid = await validateSession(req)
+      if (!sessionValid) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 

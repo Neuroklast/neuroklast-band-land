@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { applyRateLimit } from './_ratelimit.js'
 import { isHoneytoken, triggerHoneytokenAlarm } from './_honeytokens.js'
 import { kvGetQuerySchema, kvPostSchema, validate } from './_schemas.js'
+import { validateSession } from './auth.js'
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
@@ -10,7 +11,7 @@ const isKVConfigured = () => {
 
 /**
  * Allow-list of keys that may be read without admin authentication.
- * All other keys require a valid x-admin-token header.
+ * All other keys require a valid session cookie.
  * This prevents accidental leakage of sensitive data stored under
  * arbitrary key names (e.g. stripe_api_key, db_password, etc.).
  */
@@ -62,12 +63,11 @@ export default async function handler(req, res) {
       }
 
       // Allow-list: only explicitly listed keys are publicly readable.
-      // All other keys require admin authentication to prevent leakage
+      // All other keys require a valid session to prevent leakage
       // of sensitive data stored under arbitrary key names.
       if (!ALLOWED_PUBLIC_READ_KEYS.has(key)) {
-        const token = req.headers['x-admin-token'] || ''
-        const adminHash = await kv.get('admin-password-hash')
-        if (!adminHash || !timingSafeEqual(token, adminHash)) {
+        const sessionValid = await validateSession(req)
+        if (!sessionValid) {
           return res.status(403).json({ error: 'Forbidden' })
         }
       }
@@ -98,21 +98,15 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Forbidden: reserved key prefix' })
       }
 
-      const token = req.headers['x-admin-token'] || ''
-
+      // Block direct writes to admin-password-hash — only allowed through /api/auth
       if (key === 'admin-password-hash') {
-        // Allow setting password if none exists (initial setup)
-        // Require auth to change an existing password
-        const existingHash = await kv.get('admin-password-hash')
-        if (existingHash && !timingSafeEqual(token, existingHash)) {
-          return res.status(403).json({ error: 'Unauthorized' })
-        }
-      } else {
-        // All other writes require a valid admin token
-        const adminHash = await kv.get('admin-password-hash')
-        if (adminHash && !timingSafeEqual(token, adminHash)) {
-          return res.status(403).json({ error: 'Unauthorized' })
-        }
+        return res.status(403).json({ error: 'Forbidden: use /api/auth to manage passwords' })
+      }
+
+      // All other writes require a valid session
+      const sessionValid = await validateSession(req)
+      if (!sessionValid) {
+        return res.status(403).json({ error: 'Unauthorized' })
       }
 
       await kv.set(key, value)
@@ -127,8 +121,7 @@ export default async function handler(req, res) {
     console.error('KV API error details:', {
       message: errorMessage,
       key: req.body?.key,
-      method: req.method,
-      hasToken: !!req.headers['x-admin-token']
+      method: req.method
     })
     
     // Check if it's a KV-specific configuration error from @vercel/kv

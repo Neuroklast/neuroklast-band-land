@@ -55,7 +55,25 @@ export const resetPasswordSchema = z.object({
 
 export const confirmResetPasswordSchema = z.object({
   token: z.string().min(1, 'token is required').max(200),
-  newPasswordHash: z.string().min(1, 'newPasswordHash is required').max(200),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters').max(200),
+})
+
+// ---------------------------------------------------------------------------
+// Auth API — POST body schemas
+// ---------------------------------------------------------------------------
+
+export const authLoginSchema = z.object({
+  password: z.string().min(1, 'password is required').max(200),
+})
+
+export const authSetupSchema = z.object({
+  password: z.string().min(8, 'Password must be at least 8 characters').max(200),
+  action: z.literal('setup'),
+})
+
+export const authChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'current password is required').max(200),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters').max(200),
 })
 
 // ---------------------------------------------------------------------------

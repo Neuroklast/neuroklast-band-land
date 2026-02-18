@@ -16,7 +16,7 @@ import PartnersAndFriendsSection from '@/components/PartnersAndFriendsSection'
 import InstagramGallery from '@/components/InstagramGallery'
 import Footer from '@/components/Footer'
 import EditControls from '@/components/EditControls'
-import AdminLoginDialog, { hashPassword } from '@/components/AdminLoginDialog'
+import AdminLoginDialog from '@/components/AdminLoginDialog'
 import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
@@ -85,8 +85,8 @@ function collectImageUrls(data: BandData): string[] {
 
 function App() {
   const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
-  const [adminPasswordHash, setAdminPasswordHash] = useKV<string>('admin-password-hash', '')
   const [isOwner, setIsOwner] = useState(false)
+  const [needsSetup, setNeedsSetup] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [terminalOpen, setTerminalOpen] = useState(false)
@@ -134,32 +134,44 @@ function App() {
     }
   }, [])
 
-  // Restore admin session from localStorage when the password hash loads.
-  // This keeps admin mode alive across page reloads, tab closes, and deployments.
+  // Check auth status on mount via cookie-based session
   useEffect(() => {
-    if (!adminPasswordHash) return
-    const storedToken = localStorage.getItem('admin-token')
-    if (storedToken && storedToken === adminPasswordHash) {
-      setIsOwner(true)
-    }
-  }, [adminPasswordHash])
+    fetch('/api/auth', { credentials: 'same-origin' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          if (data.authenticated) setIsOwner(true)
+          setNeedsSetup(data.needsSetup)
+        }
+      })
+      .catch(() => { /* ignore — local dev without API */ })
+  }, [])
 
-  // Open setup dialog once KV data has loaded and confirms no password exists
+  // Open setup dialog once auth check confirms no password exists
   useEffect(() => {
-    if (wantsSetup.current && adminPasswordHash !== undefined && !adminPasswordHash) {
+    if (wantsSetup.current && needsSetup) {
       wantsSetup.current = false
       setShowSetupDialog(true)
     }
-  }, [adminPasswordHash])
+  }, [needsSetup])
 
   const handleAdminLogin = async (password: string): Promise<boolean> => {
-    const hash = await hashPassword(password)
-    if (hash === adminPasswordHash) {
-      localStorage.setItem('admin-token', hash)
-      setIsOwner(true)
-      return true
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ password }),
+      })
+      if (res.ok) {
+        setIsOwner(true)
+        setNeedsSetup(false)
+        return true
+      }
+      return false
+    } catch {
+      return false
     }
-    return false
   }
 
   const handleFontSizeChange = (key: keyof FontSizeSettings, value: string) => {
@@ -177,25 +189,46 @@ function App() {
   }
 
   const handleSetAdminPassword = async (password: string): Promise<void> => {
-    const hash = await hashPassword(password)
-    localStorage.setItem('admin-token', hash)
-    setAdminPasswordHash(hash)
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ password, action: 'setup' }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to set password')
+    }
+    setNeedsSetup(false)
   }
 
   const handleSetupAdminPassword = async (password: string): Promise<void> => {
-    const hash = await hashPassword(password)
-    localStorage.setItem('admin-token', hash)
-    setAdminPasswordHash(hash)
+    await handleSetAdminPassword(password)
     setIsOwner(true)
   }
 
   const handleChangeAdminPassword = async (password: string): Promise<void> => {
-    const hash = await hashPassword(password)
-    // Persist to KV first while the OLD token is still in localStorage so
-    // the server can authenticate the write against the existing hash.
-    setAdminPasswordHash(hash)
-    // Then update the stored token for future requests.
-    localStorage.setItem('admin-token', hash)
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ newPassword: password }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to change password')
+    }
+  }
+
+  const handleAdminLogout = async (): Promise<void> => {
+    try {
+      await fetch('/api/auth', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      })
+    } catch { /* ignore */ }
+    setIsOwner(false)
+    setEditMode(false)
   }
 
   const handleTerminalActivation = () => {
@@ -428,7 +461,7 @@ function App() {
                 socialLinks={safeSocialLinks} 
                 genres={data.genres}
                 label={data.label}
-                onAdminLogin={!isOwner && adminPasswordHash ? () => setShowLoginDialog(true) : undefined}
+                onAdminLogin={!isOwner && !needsSetup ? () => setShowLoginDialog(true) : undefined}
                 onImpressum={() => setImpressumOpen(true)}
                 onDatenschutz={() => setDatenschutzOpen(true)}
               />
@@ -438,7 +471,7 @@ function App() {
               <EditControls 
                 editMode={editMode}
                 onToggleEdit={() => setEditMode(!editMode)}
-                hasPassword={!!adminPasswordHash}
+                hasPassword={!needsSetup}
                 onChangePassword={handleChangeAdminPassword}
                 onSetPassword={handleSetAdminPassword}
                 bandData={data}

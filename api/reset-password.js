@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { timingSafeEqual } from './kv.js'
+import { hashPassword } from './auth.js'
 import { applyRateLimit } from './_ratelimit.js'
 import { resetPasswordSchema, confirmResetPasswordSchema, validate } from './_schemas.js'
 
@@ -36,11 +37,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Request body is required' })
   }
 
-  // --- Confirm reset flow: { token, newPasswordHash } ---
+  // --- Confirm reset flow: { token, newPassword } ---
   if (req.body.token) {
     const parsed = validate(confirmResetPasswordSchema, req.body)
     if (!parsed.success) return res.status(400).json({ error: parsed.error })
-    const { token, newPasswordHash } = parsed.data
+    const { token, newPassword } = parsed.data
 
     try {
       const storedToken = await kv.get(RESET_TOKEN_KEY)
@@ -48,9 +49,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid or expired reset token' })
       }
 
+      // Hash the new password server-side with scrypt
+      const hashedPassword = await hashPassword(newPassword)
+
       // Set new password hash and delete the reset token atomically via pipeline
       const pipe = kv.pipeline()
-      pipe.set('admin-password-hash', newPasswordHash)
+      pipe.set('admin-password-hash', hashedPassword)
       pipe.del(RESET_TOKEN_KEY)
       await pipe.exec()
 
