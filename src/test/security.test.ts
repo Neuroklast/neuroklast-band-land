@@ -310,13 +310,13 @@ describe('Security: Honeytoken detection', () => {
     }
   })
 
-  it('returns 403 when accessing a honeytoken key via GET', async () => {
+  it('returns value:null (indistinguishable from not-found) when accessing a honeytoken key via GET', async () => {
     const { isHoneytoken, triggerHoneytokenAlarm } = await import('../../api/_honeytokens.js') as any
     vi.mocked(isHoneytoken).mockReturnValueOnce(true)
 
     const res = mockRes()
     await kvHandler({ method: 'GET', query: { key: 'admin_backup' }, body: {}, headers: {} }, res)
-    expect(res.status).toHaveBeenCalledWith(403)
+    expect(res.json).toHaveBeenCalledWith({ value: null })
     expect(triggerHoneytokenAlarm).toHaveBeenCalled()
   })
 

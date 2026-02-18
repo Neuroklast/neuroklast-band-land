@@ -12,6 +12,7 @@ import { imageProxyQuerySchema, validate } from './_schemas.js'
  */
 
 const MAX_CACHEABLE_IMAGE_SIZE = 4 * 1024 * 1024 // 4 MB — larger images are served but not cached
+const MAX_IMAGE_SIZE = 16 * 1024 * 1024 // 16 MB — absolute maximum, rejects larger payloads
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 30 // 30 days
 
 /** Block requests to private/internal networks to prevent SSRF */
@@ -179,6 +180,11 @@ export default async function handler(req, res) {
         if (!ALLOWED_PROTOCOLS.has(finalUrl.protocol) || isBlockedHost(finalUrl.hostname)) {
           return res.status(400).json({ error: 'Blocked redirect target' })
         }
+        // DNS rebinding protection: also resolve the final hostname after redirect
+        // to mitigate TOCTOU attacks where DNS changes between our check and fetch
+        if (await hasBlockedResolvedIP(finalUrl.hostname)) {
+          return res.status(400).json({ error: 'Blocked redirect target' })
+        }
       } catch {
         return res.status(400).json({ error: 'Invalid redirect URL' })
       }
@@ -195,7 +201,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Unsupported content type' })
     }
 
+    // Check Content-Length header before loading body into memory to prevent
+    // image bombs from exhausting serverless function memory.
+    const contentLength = parseInt(response.headers.get('content-length') || '0', 10)
+    if (contentLength > MAX_IMAGE_SIZE) {
+      return res.status(413).json({ error: 'Image too large' })
+    }
+
     const arrayBuf = await response.arrayBuffer()
+
+    // Double-check actual size (Content-Length can be missing or lie)
+    if (arrayBuf.byteLength > MAX_IMAGE_SIZE) {
+      return res.status(413).json({ error: 'Image too large' })
+    }
     if (arrayBuf.byteLength > MAX_CACHEABLE_IMAGE_SIZE) {
       // Serve but don't cache very large images
       res.setHeader('Content-Type', contentType)

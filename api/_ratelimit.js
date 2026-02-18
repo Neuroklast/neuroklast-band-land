@@ -17,9 +17,10 @@ import { createHash } from 'node:crypto'
 
 const SALT = process.env.RATE_LIMIT_SALT || 'nk-default-rate-limit-salt-change-me'
 
-// Warn at startup if the salt is not configured (production should always set it)
+// Refuse to start in production without a unique salt — a static fallback would
+// allow attackers to reverse IP hashes via rainbow tables since the code is public.
 if (!process.env.RATE_LIMIT_SALT && process.env.NODE_ENV === 'production') {
-  console.warn('[SECURITY] RATE_LIMIT_SALT environment variable is not set. Using a default value. Set a unique random salt in production.')
+  throw new Error('[SECURITY] RATE_LIMIT_SALT environment variable is not set. A unique random salt is required in production to protect IP hashes.')
 }
 
 /**
@@ -97,9 +98,13 @@ export async function applyRateLimit(req, res) {
     }
     return true
   } catch (err) {
-    // If rate limiting itself fails (e.g. KV outage), allow the request
-    // through rather than blocking all traffic.
-    console.warn('Rate limit check failed, allowing request:', err)
-    return true
+    // If rate limiting itself fails (e.g. KV outage), fail closed to prevent
+    // brute-force bypass by destabilizing the KV backend.
+    console.error('Rate limit check failed, blocking request:', err)
+    res.status(503).json({
+      error: 'Service Unavailable',
+      message: 'Rate limiting service is temporarily unavailable. Please try again later.',
+    })
+    return false
   }
 }
