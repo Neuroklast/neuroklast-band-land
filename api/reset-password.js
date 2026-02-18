@@ -90,7 +90,8 @@ export default async function handler(req, res) {
     await kv.set(RESET_TOKEN_KEY, token, { ex: RESET_TOKEN_TTL })
 
     // In production, this token should be sent via email to the admin.
-    // For now, log it server-side so it can be retrieved from Vercel logs.
+    // TODO: Integrate email sending (e.g., via Resend, SendGrid, or Vercel Email).
+    // Until then, retrieve the token from Vercel deployment logs.
     console.log(`[SECURITY] Password reset token generated (expires in ${RESET_TOKEN_TTL}s)`)
 
     return res.json({ success: true, message: 'If the email matches, a reset link has been generated.' })

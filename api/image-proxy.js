@@ -71,8 +71,10 @@ async function hasBlockedResolvedIP(hostname) {
   if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname.startsWith('[')) return false
 
   try {
-    const ipv4 = await resolve4(hostname).catch(() => [])
-    const ipv6 = await resolve6(hostname).catch(() => [])
+    const [ipv4, ipv6] = await Promise.all([
+      resolve4(hostname).catch(() => []),
+      resolve6(hostname).catch(() => []),
+    ])
     const allIPs = [...ipv4, ...ipv6]
     return allIPs.some(ip => BLOCKED_IP_PATTERNS.some(p => p.test(ip)))
   } catch {

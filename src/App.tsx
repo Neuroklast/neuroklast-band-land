@@ -474,6 +474,7 @@ function App() {
                 hasPassword={!needsSetup}
                 onChangePassword={handleChangeAdminPassword}
                 onSetPassword={handleSetAdminPassword}
+                onLogout={handleAdminLogout}
                 bandData={data}
                 onImportData={(imported) => setBandData(imported)}
                 onOpenSoundSettings={() => setShowSoundSettings(true)}
