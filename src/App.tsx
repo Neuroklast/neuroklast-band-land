@@ -66,23 +66,23 @@ const defaultBandData: BandData = {
   ]
 }
 
-/** Collect all image URLs from band data for background precaching. */
+/**
+ * Collect a small set of critical image URLs for preloading during the
+ * initial loading screen.  Only the first few news images and member
+ * photos are included — everything else is lazy-loaded when the user
+ * scrolls to keep mobile data usage and memory consumption low.
+ */
+const MAX_PRECACHE_IMAGES = 6
+
 function collectImageUrls(data: BandData): string[] {
   const urls: string[] = []
-  data.galleryImages?.forEach(img => { if (img.url) urls.push(img.url) })
+  // Preload first few news images (visible above the fold)
+  data.news?.slice(0, 3).forEach(item => { if (item.photo) urls.push(item.photo) })
+  // Preload member photos (biography section)
   data.biography?.members?.forEach(member => {
     if (typeof member !== 'string' && member.photo) urls.push(member.photo)
   })
-  data.biography?.friends?.forEach(friend => {
-    if (friend.photo) urls.push(friend.photo)
-    if (friend.iconPhoto) urls.push(friend.iconPhoto)
-    if (friend.profilePhoto) urls.push(friend.profilePhoto)
-  })
-  data.biography?.photos?.forEach(photo => { if (photo) urls.push(photo) })
-  data.releases?.forEach(release => { if (release.artwork) urls.push(release.artwork) })
-  data.gigs?.forEach(gig => { if (gig.photo) urls.push(gig.photo) })
-  data.news?.forEach(item => { if (item.photo) urls.push(item.photo) })
-  return urls
+  return urls.slice(0, MAX_PRECACHE_IMAGES)
 }
 
 function App() {
