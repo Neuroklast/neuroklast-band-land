@@ -93,7 +93,7 @@ export async function isMarkedAttacker(req) {
 }
 
 /**
- * Header-Flooding / Entropy Injection counter-measure.
+ * Entropy Injection counter-measure against automated scanners.
  *
  * Injects a large number of random custom headers into the response to
  * confuse automated scanners and fuzzing tools that rely on clean,

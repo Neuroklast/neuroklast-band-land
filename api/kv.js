@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
 
-  // Header-Flooding: inject entropy headers for flagged attacker IPs
+  // Entropy injection counter-measure: inject noise headers for flagged attacker IPs
   if (await isMarkedAttacker(req)) {
     injectEntropyHeaders(res)
   }
