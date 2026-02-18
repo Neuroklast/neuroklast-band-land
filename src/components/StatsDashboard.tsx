@@ -300,11 +300,11 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
       ? Math.round(last30Days.reduce((a, d) => a + d.pageViews, 0) / last30Days.length)
       : 0
     const totalClicks = last30Days.reduce((a, d) => a + (d.clicks || 0), 0)
-    const bounceEstimate = analytics.totalSessions > 0
+    const nonInteractionRate = analytics.totalSessions > 0
       ? Math.round((1 - totalInteractions / Math.max(analytics.totalPageViews, 1)) * 100)
       : 0
 
-    return { totalSectionViews, totalInteractions, last7Days, last30Days, avgDailyViews, totalClicks, bounceEstimate }
+    return { totalSectionViews, totalInteractions, last7Days, last30Days, avgDailyViews, totalClicks, nonInteractionRate }
   }, [analytics])
 
   const handleReset = async () => {
@@ -426,8 +426,8 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                         <StatCard
                           icon={Target}
                           label="Est. Bounce Rate"
-                          value={`${Math.max(0, Math.min(100, stats.bounceEstimate))}%`}
-                          sublabel="Lower is better"
+                          value={`${Math.max(0, Math.min(100, stats.nonInteractionRate))}%`}
+                          sublabel="Non-interaction rate (lower is better)"
                         />
                         <StatCard
                           icon={TrendUp}

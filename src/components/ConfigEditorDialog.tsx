@@ -238,7 +238,7 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
             {/* Scrollable body */}
             <div className="max-h-[60vh] overflow-y-auto p-4 space-y-4">
               {Array.from(filteredGroups).map(([group, keys]) => {
-                const collapsed = collapsedGroups.has(group) && !!filter === false
+                const collapsed = collapsedGroups.has(group) && !filter
                 const groupOverrides = keys.filter(k => isOverridden(k)).length
                 return (
                   <div key={group} className="border border-primary/10 rounded overflow-hidden">

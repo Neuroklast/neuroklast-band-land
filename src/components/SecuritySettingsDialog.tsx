@@ -110,7 +110,7 @@ function SliderRow({ label, description, value, onChange, min, max, step = 1, un
             step={step}
             className="w-24 bg-black/50 border border-primary/20 px-2 py-1 font-mono text-[11px] text-foreground/80 text-right focus:border-primary/50 focus:outline-none"
           />
-          {unit && <span className="text-[9px] font-mono text-primary/40 w-6">{unit}</span>}
+          {unit && <span className="text-[9px] font-mono text-primary/40 min-w-[2rem]">{unit}</span>}
         </div>
       </div>
       <div className="flex items-center gap-2">
