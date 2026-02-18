@@ -4,14 +4,14 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "NODE_OPTIONS='--disable-warning=DEP0169' vite",
         "kill": "fuser -k 5000/tcp",
-        "build": "tsc -b --noCheck && vite build",
+        "build": "NODE_OPTIONS='--disable-warning=DEP0169' tsc -b --noCheck && NODE_OPTIONS='--disable-warning=DEP0169' vite build",
         "lint": "eslint .",
-        "optimize": "vite optimize",
-        "preview": "vite preview",
-        "test": "vitest run",
-        "test:watch": "vitest"
+        "optimize": "NODE_OPTIONS='--disable-warning=DEP0169' vite optimize",
+        "preview": "NODE_OPTIONS='--disable-warning=DEP0169' vite preview",
+        "test": "NODE_OPTIONS='--disable-warning=DEP0169' vitest run",
+        "test:watch": "NODE_OPTIONS='--disable-warning=DEP0169' vitest"
     },
     "dependencies": {
         "@hookform/resolvers": "^4.1.3",
