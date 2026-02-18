@@ -8,6 +8,16 @@ const isKVConfigured = () => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
 
+/**
+ * Allow-list of keys that may be read without admin authentication.
+ * All other keys require a valid x-admin-token header.
+ * This prevents accidental leakage of sensitive data stored under
+ * arbitrary key names (e.g. stripe_api_key, db_password, etc.).
+ */
+const ALLOWED_PUBLIC_READ_KEYS = new Set([
+  'band-data',
+])
+
 // Constant-time string comparison to prevent timing attacks on hash comparison.
 // Always compares the full length of the longer string to avoid leaking length.
 export function timingSafeEqual(a, b) {
@@ -51,10 +61,15 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Forbidden' })
       }
 
-      // Block access to sensitive keys to prevent credential leakage
-      const lowerKey = key.toLowerCase()
-      if (lowerKey === 'admin-password-hash' || lowerKey.includes('token') || lowerKey.includes('secret')) {
-        return res.status(403).json({ error: 'Forbidden' })
+      // Allow-list: only explicitly listed keys are publicly readable.
+      // All other keys require admin authentication to prevent leakage
+      // of sensitive data stored under arbitrary key names.
+      if (!ALLOWED_PUBLIC_READ_KEYS.has(key)) {
+        const token = req.headers['x-admin-token'] || ''
+        const adminHash = await kv.get('admin-password-hash')
+        if (!adminHash || !timingSafeEqual(token, adminHash)) {
+          return res.status(403).json({ error: 'Forbidden' })
+        }
       }
 
       const value = await kv.get(key)

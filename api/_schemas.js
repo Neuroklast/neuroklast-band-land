@@ -50,6 +50,15 @@ export const resetPasswordSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// Reset Password Confirm API — POST body (token-based reset)
+// ---------------------------------------------------------------------------
+
+export const confirmResetPasswordSchema = z.object({
+  token: z.string().min(1, 'token is required').max(200),
+  newPasswordHash: z.string().min(1, 'newPasswordHash is required').max(200),
+})
+
+// ---------------------------------------------------------------------------
 // Analytics API — POST body
 // ---------------------------------------------------------------------------
 
