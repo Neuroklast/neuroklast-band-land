@@ -24,6 +24,10 @@ const {
   isMarkedAttacker,
   injectEntropyHeaders,
   triggerHoneytokenAlarm,
+  TAUNT_MESSAGES,
+  getRandomTaunt,
+  setDefenseHeaders,
+  serveFingerprintPixel,
 } = await import('../../api/_honeytokens.js')
 
 // ---------------------------------------------------------------------------
@@ -121,5 +125,81 @@ describe('Entropy Injection: triggerHoneytokenAlarm marks attacker', () => {
     // Should have called kv.set for the flagged IP
     expect(mockKvSet).toHaveBeenCalledWith('nk-flagged:hashed-ip-1234', true, { ex: 86400 })
     consoleSpy.mockRestore()
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('Taunting messages: TAUNT_MESSAGES and getRandomTaunt', () => {
+  it('contains 4 taunt messages', () => {
+    expect(TAUNT_MESSAGES).toHaveLength(4)
+  })
+
+  it('includes the expected confrontational messages', () => {
+    expect(TAUNT_MESSAGES).toContain('Nice try, mf. Your IP hash is now a permanent resident in our blacklist.')
+    expect(TAUNT_MESSAGES).toContain('CONNECTION_TERMINATED: You\'re not half as fast as you think you are.')
+    expect(TAUNT_MESSAGES).toContain('FATAL_ERROR: Neural link severed. Go back to the playground.')
+    expect(TAUNT_MESSAGES).toContain('NOOB_DETECTED: Next time, try changing your User-Agent before hacking a band.')
+  })
+
+  it('getRandomTaunt returns one of the taunt messages', () => {
+    const result = getRandomTaunt()
+    expect(TAUNT_MESSAGES).toContain(result)
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('Defense headers: setDefenseHeaders', () => {
+  it('sets X-Neural-Defense, X-Netrunner-Status, and X-Warning headers', () => {
+    const res = { setHeader: vi.fn() }
+    setDefenseHeaders(res)
+    expect(res.setHeader).toHaveBeenCalledWith('X-Neural-Defense', 'Active. Target identified.')
+    expect(res.setHeader).toHaveBeenCalledWith('X-Netrunner-Status', 'Nice try, but you\'re barking up the wrong tree.')
+    expect(res.setHeader).toHaveBeenCalledWith('X-Warning', 'Stop poking the Baphomet. It might poke back.')
+    expect(res.setHeader).toHaveBeenCalledTimes(3)
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('Fingerprint pixel: serveFingerprintPixel', () => {
+  it('returns a 200 PNG response with fingerprinting headers', () => {
+    const res = {
+      setHeader: vi.fn(),
+      status: vi.fn(),
+      send: vi.fn(),
+    }
+    res.status.mockReturnValue(res)
+    res.send.mockReturnValue(res)
+
+    serveFingerprintPixel(res)
+
+    expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'image/png')
+    expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store, no-cache, must-revalidate')
+    // Accept-CH header requests Client Hints for browser fingerprinting
+    expect(res.setHeader).toHaveBeenCalledWith('Accept-CH', expect.stringContaining('Sec-CH-UA'))
+    expect(res.setHeader).toHaveBeenCalledWith('Critical-CH', expect.stringContaining('Sec-CH-UA'))
+    // Defense headers also set
+    expect(res.setHeader).toHaveBeenCalledWith('X-Neural-Defense', 'Active. Target identified.')
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.send).toHaveBeenCalledWith(expect.any(Buffer))
+  })
+
+  it('sends a valid PNG (starts with PNG magic bytes)', () => {
+    const res = {
+      setHeader: vi.fn(),
+      status: vi.fn(),
+      send: vi.fn(),
+    }
+    res.status.mockReturnValue(res)
+    res.send.mockReturnValue(res)
+
+    serveFingerprintPixel(res)
+
+    expect(res.send).toHaveBeenCalledTimes(1)
+    const sentData: Buffer = res.send.mock.calls[0][0]
+    // PNG starts with \x89PNG
+    expect(sentData[0]).toBe(0x89)
+    expect(sentData[1]).toBe(0x50) // 'P'
+    expect(sentData[2]).toBe(0x4E) // 'N'
+    expect(sentData[3]).toBe(0x47) // 'G'
   })
 })

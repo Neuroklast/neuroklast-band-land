@@ -93,6 +93,32 @@ export async function isMarkedAttacker(req) {
 }
 
 /**
+ * Confrontational taunt messages returned to detected attackers.
+ * Displayed in JSON error responses when honeytokens are triggered.
+ */
+export const TAUNT_MESSAGES = [
+  'Nice try, mf. Your IP hash is now a permanent resident in our blacklist.',
+  'CONNECTION_TERMINATED: You\'re not half as fast as you think you are.',
+  'FATAL_ERROR: Neural link severed. Go back to the playground.',
+  'NOOB_DETECTED: Next time, try changing your User-Agent before hacking a band.',
+]
+
+/** Pick a random taunt message */
+export function getRandomTaunt() {
+  return TAUNT_MESSAGES[Math.floor(Math.random() * TAUNT_MESSAGES.length)]
+}
+
+/**
+ * Set confrontational defense warning headers on responses to flagged attackers.
+ * Many scanners log response headers — these will appear in their output.
+ */
+export function setDefenseHeaders(res) {
+  res.setHeader('X-Neural-Defense', 'Active. Target identified.')
+  res.setHeader('X-Netrunner-Status', 'Nice try, but you\'re barking up the wrong tree.')
+  res.setHeader('X-Warning', 'Stop poking the Baphomet. It might poke back.')
+}
+
+/**
  * Entropy Injection counter-measure against automated scanners.
  *
  * Injects a large number of random custom headers into the response to
@@ -105,6 +131,32 @@ export function injectEntropyHeaders(res, count = 200) {
     const idx = String(i).padStart(3, '0')
     res.setHeader(`X-Neural-Noise-${idx}`, randomBytes(16).toString('hex'))
   }
+}
+
+/**
+ * 1×1 transparent PNG pixel (89 bytes).
+ * Served to flagged attackers through the image proxy instead of the real image
+ * to collect browser fingerprinting information via response headers.
+ */
+const TRACKING_PIXEL = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAB' +
+  'Nl7BcQAAAABJRU5ErkJggg==',
+  'base64'
+)
+
+/**
+ * Serve a 1×1 transparent tracking pixel with fingerprinting headers.
+ * The response includes headers that encourage the browser to reveal
+ * rendering capabilities, helping identify the attacker across sessions.
+ */
+export function serveFingerprintPixel(res) {
+  res.setHeader('Content-Type', 'image/png')
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+  res.setHeader('Accept-CH', 'Sec-CH-UA, Sec-CH-UA-Platform, Sec-CH-UA-Mobile, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Arch, Sec-CH-UA-Bitness, Sec-CH-UA-Model, Device-Memory, DPR, Viewport-Width, Width')
+  res.setHeader('Critical-CH', 'Sec-CH-UA-Full-Version-List, Sec-CH-UA-Arch, Sec-CH-UA-Bitness, Sec-CH-UA-Model')
+  res.setHeader('Vary', 'Sec-CH-UA, Sec-CH-UA-Platform, Sec-CH-UA-Arch, Sec-CH-UA-Model')
+  setDefenseHeaders(res)
+  return res.status(200).send(TRACKING_PIXEL)
 }
 
 /**
