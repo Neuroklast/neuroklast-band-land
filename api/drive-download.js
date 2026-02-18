@@ -35,6 +35,7 @@ export default async function handler(req, res) {
     const metaParams = new URLSearchParams({
       fields: 'name, mimeType, size',
       key: apiKey,
+      supportsAllDrives: 'true',
     })
     const metaRes = await fetch(
       `https://www.googleapis.com/drive/v3/files/${fileId}?${metaParams}`
@@ -46,10 +47,28 @@ export default async function handler(req, res) {
 
     const meta = await metaRes.json()
 
+    // For large files (>10MB), redirect directly to Google Drive to save Vercel bandwidth
+    const fileSizeBytes = parseInt(meta.size || '0', 10)
+    const MAX_PROXY_SIZE = 10 * 1024 * 1024 // 10 MB
+    
+    if (fileSizeBytes > MAX_PROXY_SIZE) {
+      // Redirect to Google Drive direct download URL
+      const redirectParams = new URLSearchParams({
+        alt: 'media',
+        key: apiKey,
+        supportsAllDrives: 'true',
+        acknowledgeAbuse: 'true',
+      })
+      const redirectUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?${redirectParams}`
+      return res.redirect(307, redirectUrl)
+    }
+
     // Download file content
     const dlParams = new URLSearchParams({
       alt: 'media',
       key: apiKey,
+      supportsAllDrives: 'true',
+      acknowledgeAbuse: 'true',
     })
     const dlRes = await fetch(
       `https://www.googleapis.com/drive/v3/files/${fileId}?${dlParams}`
