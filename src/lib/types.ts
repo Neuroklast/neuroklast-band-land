@@ -161,6 +161,8 @@ export interface BandData {
   configOverrides?: Record<string, unknown>
   /** Custom secret code key sequence (replaces the default Konami code) */
   secretCode?: string[]
+  /** Custom HUD background text labels */
+  hudTexts?: HudTexts
   /** Custom section headings and display labels */
   sectionLabels?: SectionLabels
   /** News items for the band */
@@ -228,4 +230,25 @@ export interface FontSizeSettings {
   releasesText?: string
   connectText?: string
   footerText?: string
+}
+
+export interface HudTexts {
+  /** Top-left line 1 (default: "SYSTEM: ONLINE") */
+  topLeft1?: string
+  /** Top-left line 2 (default: "TIME: <clock>") – set to empty string to hide */
+  topLeft2?: string
+  /** Top-left status text (default: "ACTIVE") */
+  topLeftStatus?: string
+  /** Top-right line 1 (default: "NEUROKLAST v1.0") */
+  topRight1?: string
+  /** Top-right line 2 (default: "ID: NK-<random>") */
+  topRight2?: string
+  /** Bottom-left line 1 (default: "PROTOCOL: TECHNO") */
+  bottomLeft1?: string
+  /** Bottom-left line 2 (default: "STATUS: TRANSMITTING") */
+  bottomLeft2?: string
+  /** Bottom-right line 1 (default: "FREQ: 140-180 BPM") */
+  bottomRight1?: string
+  /** Bottom-right line 2 (default: "MODE: HARD") */
+  bottomRight2?: string
 }

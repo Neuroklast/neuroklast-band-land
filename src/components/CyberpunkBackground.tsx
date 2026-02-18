@@ -1,4 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
+import type { HudTexts } from '@/lib/types'
+
+interface CyberpunkBackgroundProps {
+  hudTexts?: HudTexts
+}
 
 /**
  * CyberpunkBackground – pure-CSS animated HUD overlay.
@@ -7,7 +12,7 @@ import { useEffect, useState, useRef } from 'react'
  * continuous JS → DOM updates that trigger layout/paint on every frame.
  * The clock now only ticks when the tab is visible to avoid wasted work.
  */
-export default function CyberpunkBackground() {
+export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundProps) {
   const [time, setTime] = useState(new Date())
   const intervalRef = useRef<ReturnType<typeof setInterval>>()
 
@@ -43,27 +48,27 @@ export default function CyberpunkBackground() {
       <div className="absolute inset-0 hud-grid-overlay" />
       
       <div className="absolute top-4 left-4 data-readout hidden md:block">
-        <div className="mb-1">SYSTEM: ONLINE</div>
-        <div>TIME: {formatTime(time)}</div>
+        <div className="mb-1">{hudTexts?.topLeft1 ?? 'SYSTEM: ONLINE'}</div>
+        <div>{hudTexts?.topLeft2 !== undefined ? hudTexts.topLeft2 : `TIME: ${formatTime(time)}`}</div>
         <div className="mt-1 flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 6px oklch(0.50 0.22 25)' }}></div>
-          <span>ACTIVE</span>
+          <span>{hudTexts?.topLeftStatus ?? 'ACTIVE'}</span>
         </div>
       </div>
 
       <div className="absolute top-4 right-4 data-readout hidden md:block text-right">
-        <div className="mb-1">NEUROKLAST v1.0</div>
-        <div>ID: NK-{Date.now().toString().slice(-6)}</div>
+        <div className="mb-1">{hudTexts?.topRight1 ?? 'NEUROKLAST v1.0'}</div>
+        <div>{hudTexts?.topRight2 ?? `ID: NK-${Date.now().toString().slice(-6)}`}</div>
       </div>
 
       <div className="absolute bottom-4 left-4 data-readout hidden md:block">
-        <div>PROTOCOL: TECHNO</div>
-        <div className="mt-1">STATUS: TRANSMITTING</div>
+        <div>{hudTexts?.bottomLeft1 ?? 'PROTOCOL: TECHNO'}</div>
+        <div className="mt-1">{hudTexts?.bottomLeft2 ?? 'STATUS: TRANSMITTING'}</div>
       </div>
 
       <div className="absolute bottom-4 right-4 data-readout hidden md:block text-right">
-        <div>FREQ: 140-180 BPM</div>
-        <div className="mt-1">MODE: HARD</div>
+        <div>{hudTexts?.bottomRight1 ?? 'FREQ: 140-180 BPM'}</div>
+        <div className="mt-1">{hudTexts?.bottomRight2 ?? 'MODE: HARD'}</div>
       </div>
 
       {/* Data streams – pure CSS animations instead of framer-motion */}

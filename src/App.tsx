@@ -312,7 +312,7 @@ function App() {
               <div className="absolute inset-0 hud-scanline opacity-30" />
             </div>
             
-            <CyberpunkBackground />
+            <CyberpunkBackground hudTexts={data.hudTexts} />
             <Toaster position="top-right" />
           
           <motion.div
