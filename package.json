@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "NODE_OPTIONS='--disable-warning=DEP0169' vite",
         "kill": "fuser -k 5000/tcp",
-        "build": "NODE_OPTIONS='--disable-warning=DEP0169' tsc -b --noCheck && NODE_OPTIONS='--disable-warning=DEP0169' vite build",
+        "build": "export NODE_OPTIONS='--disable-warning=DEP0169' && tsc -b --noCheck && vite build",
         "lint": "eslint .",
         "optimize": "NODE_OPTIONS='--disable-warning=DEP0169' vite optimize",
         "preview": "NODE_OPTIONS='--disable-warning=DEP0169' vite preview",
