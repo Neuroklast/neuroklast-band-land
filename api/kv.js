@@ -1,5 +1,7 @@
 import { kv } from '@vercel/kv'
 import { applyRateLimit } from './_ratelimit.js'
+import { isHoneytoken, triggerHoneytokenAlarm } from './_honeytokens.js'
+import { kvGetQuerySchema, kvPostSchema, validate } from './_schemas.js'
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
@@ -38,12 +40,16 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { key } = req.query
-      if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
+      // Zod validation
+      const parsed = validate(kvGetQuerySchema, req.query)
+      if (!parsed.success) return res.status(400).json({ error: parsed.error })
+      const { key } = parsed.data
 
-      // Validate key length and characters
-      if (key.length > 200) return res.status(400).json({ error: 'key is too long' })
-      if (/[\n\r\0]/.test(key)) return res.status(400).json({ error: 'key contains invalid characters' })
+      // Honeytoken detection — silent alarm
+      if (isHoneytoken(key)) {
+        await triggerHoneytokenAlarm(req, key)
+        return res.status(403).json({ error: 'Forbidden' })
+      }
 
       // Block access to sensitive keys to prevent credential leakage
       const lowerKey = key.toLowerCase()
@@ -60,13 +66,16 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Request body is required' })
       }
 
-      const { key, value } = req.body
-      if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
-      if (value === undefined) return res.status(400).json({ error: 'value is required' })
+      // Zod validation
+      const parsed = validate(kvPostSchema, req.body)
+      if (!parsed.success) return res.status(400).json({ error: parsed.error })
+      const { key, value } = parsed.data
 
-      // Validate key length and characters to prevent injection into Redis keyspace
-      if (key.length > 200) return res.status(400).json({ error: 'key is too long' })
-      if (/[\n\r\0]/.test(key)) return res.status(400).json({ error: 'key contains invalid characters' })
+      // Honeytoken detection — silent alarm
+      if (isHoneytoken(key)) {
+        await triggerHoneytokenAlarm(req, key)
+        return res.status(403).json({ error: 'Forbidden' })
+      }
 
       // Block writes to internal keys used by analytics or system functions
       const lowerKey = key.toLowerCase()

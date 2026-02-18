@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { timingSafeEqual } from './kv.js'
 import { applyRateLimit } from './_ratelimit.js'
+import { analyticsPostSchema, validate } from './_schemas.js'
 
 const ANALYTICS_KEY = 'nk-analytics'
 const HEATMAP_KEY = 'nk-heatmap'

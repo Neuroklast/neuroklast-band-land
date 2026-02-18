@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { timingSafeEqual } from './kv.js'
 import { applyRateLimit } from './_ratelimit.js'
+import { resetPasswordSchema, validate } from './_schemas.js'
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
@@ -36,10 +37,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Request body is required' })
   }
 
-  const { email } = req.body
-  if (!email || typeof email !== 'string') {
-    return res.status(400).json({ error: 'email is required' })
-  }
+  // Zod validation — ensures email is a valid email format
+  const parsed = validate(resetPasswordSchema, req.body)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error })
+  const { email } = parsed.data
 
   // Use timing-safe comparison to prevent email enumeration via timing
   const emailMatch = timingSafeEqual(email.trim().toLowerCase(), resetEmail.trim().toLowerCase())
