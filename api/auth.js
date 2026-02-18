@@ -64,14 +64,21 @@ export function getSessionFromCookie(req) {
 }
 
 /**
- * Derive a client fingerprint from User-Agent and IP prefix (/24 subnet).
+ * Derive a client fingerprint from User-Agent and IP prefix.
+ * Uses /24 subnet for IPv4 (first 3 octets) or /48 for IPv6 (first 3 groups).
  * Used to bind sessions to the originating client and detect session hijacking.
  */
 function getClientFingerprint(req) {
   const ua = req.headers['user-agent'] || ''
   const ip = getClientIp(req)
-  // Use /24 subnet (first 3 octets) to allow minor IP changes within a network
-  const ipPrefix = ip.split('.').slice(0, 3).join('.')
+  let ipPrefix
+  if (ip.includes(':')) {
+    // IPv6: use first 3 groups (/48 prefix)
+    ipPrefix = ip.split(':').slice(0, 3).join(':')
+  } else {
+    // IPv4: use first 3 octets (/24 prefix)
+    ipPrefix = ip.split('.').slice(0, 3).join('.')
+  }
   return createHash('sha256').update(`${ua}|${ipPrefix}`).digest('hex')
 }
 
