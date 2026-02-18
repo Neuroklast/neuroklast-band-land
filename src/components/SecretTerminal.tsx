@@ -204,7 +204,8 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
         pendingFileRef.current = { url: data.fileUrl, name: fileName }
       }
       setTypingQueue(prev => [...prev, ...output])
-    } catch {
+    } catch (err) {
+      console.error('Terminal API request failed:', err)
       setTypingQueue(prev => [...prev,
         { type: 'error', text: 'CONNECTION ERROR' },
         { type: 'output', text: '' }

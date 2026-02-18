@@ -93,6 +93,7 @@ export default async function handler(req, res) {
       // All other keys require a valid session to prevent leakage
       // of sensitive data stored under arbitrary key names.
       const isPublicRead = ALLOWED_PUBLIC_READ_KEYS.has(key)
+      const isAuthenticated = isPublicRead ? await validateSession(req) : null
       if (!isPublicRead) {
         const sessionValid = await validateSession(req)
         if (!sessionValid) {
@@ -105,12 +106,9 @@ export default async function handler(req, res) {
       // Strip sensitive terminal command data from public band-data reads.
       // Terminal commands contain secrets that should only be served via
       // the dedicated /api/terminal endpoint, not exposed in the full payload.
-      if (key === 'band-data' && isPublicRead && value && typeof value === 'object') {
-        const isAuthenticated = await validateSession(req)
-        if (!isAuthenticated) {
-          const { terminalCommands: _stripped, ...safeValue } = /** @type {Record<string, unknown>} */ (value)
-          return res.json({ value: safeValue })
-        }
+      if (key === 'band-data' && isPublicRead && !isAuthenticated && value && typeof value === 'object') {
+        const { terminalCommands: _stripped, ...safeValue } = /** @type {Record<string, unknown>} */ (value)
+        return res.json({ value: safeValue })
       }
 
       return res.json({ value: value ?? null })
