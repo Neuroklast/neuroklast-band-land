@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv'
-import { timingSafeEqual } from './kv.js'
+import { validateSession } from './auth.js'
 import { applyRateLimit } from './_ratelimit.js'
 import { analyticsPostSchema, validate } from './_schemas.js'
 
@@ -7,6 +7,51 @@ const ANALYTICS_KEY = 'nk-analytics'
 const HEATMAP_KEY = 'nk-heatmap'
 const MAX_HEATMAP_POINTS = 5000
 const MAX_DAILY_ENTRIES = 90
+const MAX_ANALYTICS_FIELDS = 2000 // Safety cap against storage exhaustion DoS
+
+/** Normalize referrer to domain only to limit cardinality */
+function normalizeReferrer(r) {
+  if (!r || r === 'direct') return 'direct'
+  try {
+    const url = new URL(r.startsWith('http') ? r : `https://${r}`)
+    return url.hostname
+  } catch {
+    return r.slice(0, 50)
+  }
+}
+
+const KNOWN_DEVICES = new Set(['desktop', 'mobile', 'tablet'])
+function normalizeDevice(d) {
+  if (!d) return undefined
+  const lower = d.toLowerCase()
+  return KNOWN_DEVICES.has(lower) ? lower : 'other'
+}
+
+const KNOWN_BROWSERS = ['chrome', 'firefox', 'safari', 'edge', 'opera']
+function normalizeBrowser(b) {
+  if (!b) return undefined
+  const lower = b.toLowerCase()
+  for (const known of KNOWN_BROWSERS) {
+    if (lower.includes(known)) return known
+  }
+  return 'other'
+}
+
+function normalizeScreenResolution(r) {
+  if (!r) return undefined
+  const match = r.match(/^(\d{2,5})x(\d{2,5})$/)
+  return match ? `${match[1]}x${match[2]}` : 'unknown'
+}
+
+function normalizeLandingPage(p) {
+  if (!p) return undefined
+  try {
+    const url = new URL(p, 'http://x')
+    return url.pathname.slice(0, 50)
+  } catch {
+    return p.slice(0, 50)
+  }
+}
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
@@ -18,53 +63,63 @@ async function mergeAnalytics(event) {
   const { type, target, meta } = event
   const today = new Date().toISOString().split('T')[0]
 
+  // Safety cap: check total hash fields to prevent storage exhaustion DoS
+  const fieldCount = await kv.hlen(ANALYTICS_KEY) || 0
+  const canAddDynamic = fieldCount < MAX_ANALYTICS_FIELDS
+
   // Use a pipeline for atomic batch updates
   const pipe = kv.pipeline()
 
-  // Increment total counters
+  // Increment total counters (bounded — always allowed)
   pipe.hincrby(ANALYTICS_KEY, 'totalPageViews', type === 'page_view' ? 1 : 0)
   pipe.hincrby(ANALYTICS_KEY, `daily:${today}:pageViews`, type === 'page_view' ? 1 : 0)
   pipe.hincrby(ANALYTICS_KEY, `daily:${today}:sectionViews`, type === 'section_view' ? 1 : 0)
   pipe.hincrby(ANALYTICS_KEY, `daily:${today}:interactions`, type === 'interaction' ? 1 : 0)
   pipe.hincrby(ANALYTICS_KEY, `daily:${today}:clicks`, type === 'click' ? 1 : 0)
 
-  // Track target-specific counters
-  if (type === 'section_view' && target) {
-    pipe.hincrby(ANALYTICS_KEY, `section:${target}`, 1)
-  }
-  if (type === 'interaction' && target) {
-    pipe.hincrby(ANALYTICS_KEY, `interaction:${target}`, 1)
-  }
-
-  // Track referrer
-  if (meta?.referrer) {
-    pipe.hincrby(ANALYTICS_KEY, `referrer:${meta.referrer}`, 1)
-  }
-  // Track device
-  if (meta?.device) {
-    pipe.hincrby(ANALYTICS_KEY, `device:${meta.device}`, 1)
-  }
-  // Track browser
-  if (meta?.browser) {
-    pipe.hincrby(ANALYTICS_KEY, `browser:${meta.browser}`, 1)
-  }
-  // Track screen resolution
-  if (meta?.screenResolution) {
-    pipe.hincrby(ANALYTICS_KEY, `screen:${meta.screenResolution}`, 1)
-  }
-  // Track landing page
-  if (meta?.landingPage) {
-    pipe.hincrby(ANALYTICS_KEY, `landing:${meta.landingPage}`, 1)
-  }
-  // Track UTM parameters
-  if (meta?.utmSource) {
-    pipe.hincrby(ANALYTICS_KEY, `utm_source:${meta.utmSource}`, 1)
-  }
-  if (meta?.utmMedium) {
-    pipe.hincrby(ANALYTICS_KEY, `utm_medium:${meta.utmMedium}`, 1)
-  }
-  if (meta?.utmCampaign) {
-    pipe.hincrby(ANALYTICS_KEY, `utm_campaign:${meta.utmCampaign}`, 1)
+  // Dynamic fields — normalized to limit cardinality + HLEN safety cap
+  if (canAddDynamic) {
+    if (type === 'section_view' && target) {
+      pipe.hincrby(ANALYTICS_KEY, `section:${target}`, 1)
+    }
+    if (type === 'interaction' && target) {
+      pipe.hincrby(ANALYTICS_KEY, `interaction:${target}`, 1)
+    }
+    // Normalized referrer (domain only)
+    const ref = normalizeReferrer(meta?.referrer)
+    if (ref) {
+      pipe.hincrby(ANALYTICS_KEY, `referrer:${ref}`, 1)
+    }
+    // Normalized device (known set only)
+    const dev = normalizeDevice(meta?.device)
+    if (dev) {
+      pipe.hincrby(ANALYTICS_KEY, `device:${dev}`, 1)
+    }
+    // Normalized browser (known set only)
+    const br = normalizeBrowser(meta?.browser)
+    if (br) {
+      pipe.hincrby(ANALYTICS_KEY, `browser:${br}`, 1)
+    }
+    // Normalized screen resolution (NNNNxNNNN format only)
+    const scr = normalizeScreenResolution(meta?.screenResolution)
+    if (scr) {
+      pipe.hincrby(ANALYTICS_KEY, `screen:${scr}`, 1)
+    }
+    // Normalized landing page (path only, max 50 chars)
+    const lp = normalizeLandingPage(meta?.landingPage)
+    if (lp) {
+      pipe.hincrby(ANALYTICS_KEY, `landing:${lp}`, 1)
+    }
+    // UTM parameters (sanitized by schema, capped by HLEN)
+    if (meta?.utmSource) {
+      pipe.hincrby(ANALYTICS_KEY, `utm_source:${meta.utmSource}`, 1)
+    }
+    if (meta?.utmMedium) {
+      pipe.hincrby(ANALYTICS_KEY, `utm_medium:${meta.utmMedium}`, 1)
+    }
+    if (meta?.utmCampaign) {
+      pipe.hincrby(ANALYTICS_KEY, `utm_campaign:${meta.utmCampaign}`, 1)
+    }
   }
 
   // Track this date in the set of known dates
@@ -258,9 +313,8 @@ export default async function handler(req, res) {
 
     // GET: retrieve analytics snapshot (admin only)
     if (req.method === 'GET') {
-      const token = req.headers['x-admin-token'] || ''
-      const adminHash = await kv.get('admin-password-hash')
-      if (adminHash && !timingSafeEqual(token, adminHash)) {
+      const sessionValid = await validateSession(req)
+      if (!sessionValid) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 
@@ -280,9 +334,8 @@ export default async function handler(req, res) {
 
     // DELETE: reset analytics (admin only)
     if (req.method === 'DELETE') {
-      const token = req.headers['x-admin-token'] || ''
-      const adminHash = await kv.get('admin-password-hash')
-      if (!adminHash || !timingSafeEqual(token, adminHash)) {
+      const sessionValid = await validateSession(req)
+      if (!sessionValid) {
         return res.status(403).json({ error: 'Unauthorized' })
       }
 

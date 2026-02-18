@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 /**
  * Custom KV hook backed by Vercel KV API routes, with localStorage fallback for local dev.
  * Uses /api/kv (Vercel KV) for persistence, with localStorage fallback for local dev.
- * The admin token from localStorage is sent with write requests for auth.
+ * Auth is handled via HttpOnly session cookies (set by /api/auth).
  *
  * Returns [value, updateValue, loaded] — `loaded` is true once the initial
  * KV/localStorage/default fetch has completed so consumers can avoid acting on
@@ -64,8 +64,6 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
         ? (updater as (current: T | undefined) => T)(prev)
         : updater
 
-      const adminToken = localStorage.getItem('admin-token') || ''
-
       const persistLocally = () => {
         try {
           localStorage.setItem(`kv:${key}`, JSON.stringify(newValue))
@@ -77,20 +75,18 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
       // Always persist to localStorage as a backup
       persistLocally()
 
-      // Only write to the remote KV once the initial load has finished and
-      // the user is authenticated (has an admin token) to prevent
-      // unnecessary 500 errors for non-admin visitors.
-      if (loadedRef.current && adminToken) {
+      // Write to the remote KV once the initial load has finished.
+      // Auth is handled via HttpOnly session cookie (sent automatically).
+      // Non-admin writes will get 403 which we suppress silently.
+      if (loadedRef.current) {
         fetch('/api/kv', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-token': adminToken
-          },
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({ key, value: newValue }),
         }).then(async res => {
-          if (!res.ok) {
-            // Try to get more detailed error info
+          if (!res.ok && res.status !== 403) {
+            // Suppress 403 (unauthorized) silently — expected for non-admins
             try {
               const errorData = await res.json()
               if (res.status === 503) {

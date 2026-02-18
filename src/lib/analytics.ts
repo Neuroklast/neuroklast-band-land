@@ -395,10 +395,9 @@ export async function resetAnalytics(): Promise<void> {
   localStorage.removeItem(STORAGE_KEY)
 
   try {
-    const adminToken = localStorage.getItem('admin-token') || ''
     await fetch('/api/analytics', {
       method: 'DELETE',
-      headers: { 'x-admin-token': adminToken },
+      credentials: 'same-origin',
     })
   } catch {
     // Server reset failed, local is already cleared

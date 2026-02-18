@@ -21,6 +21,12 @@ vi.mock('../../api/_honeytokens.js', () => ({
   triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
 }))
 
+// Mock auth.js — session-based auth
+const mockValidateSession = vi.fn()
+vi.mock('../../api/auth.js', () => ({
+  validateSession: mockValidateSession,
+}))
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
 
@@ -76,14 +82,14 @@ describe('KV API handler', () => {
     it('returns null when key does not exist', async () => {
       mockKvGet.mockResolvedValue(undefined)
       const res = mockRes()
-      await handler({ method: 'GET', query: { key: 'nonexistent' }, body: {}, headers: {} }, res)
+      await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
       expect(res.json).toHaveBeenCalledWith({ value: null })
     })
 
     it('returns null when KV returns null', async () => {
       mockKvGet.mockResolvedValue(null)
       const res = mockRes()
-      await handler({ method: 'GET', query: { key: 'empty' }, body: {}, headers: {} }, res)
+      await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
       expect(res.json).toHaveBeenCalledWith({ value: null })
     })
 
@@ -124,7 +130,7 @@ describe('KV API handler', () => {
       mockKvGet.mockRejectedValue(new Error('KV unavailable'))
       const res = mockRes()
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      await handler({ method: 'GET', query: { key: 'bad' }, body: {}, headers: {} }, res)
+      await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
       expect(res.status).toHaveBeenCalledWith(500)
       consoleSpy.mockRestore()
     })
@@ -152,8 +158,8 @@ describe('KV API handler', () => {
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'value is required' }))
     })
 
-    it('saves value when no admin password is set', async () => {
-      mockKvGet.mockResolvedValue(null) // no password in KV
+    it('saves value with valid session', async () => {
+      mockValidateSession.mockResolvedValue(true)
       mockKvSet.mockResolvedValue('OK')
       const res = mockRes()
       await handler({
@@ -166,36 +172,22 @@ describe('KV API handler', () => {
       expect(res.json).toHaveBeenCalledWith({ success: true })
     })
 
-    it('saves value with valid admin token', async () => {
-      const hash = 'abc123'
-      mockKvGet.mockResolvedValue(hash)
+    it('saves value with valid session (no x-admin-token needed)', async () => {
+      mockValidateSession.mockResolvedValue(true)
       mockKvSet.mockResolvedValue('OK')
       const res = mockRes()
       await handler({
         method: 'POST',
         query: {},
         body: { key: 'band-data', value: { name: 'updated' } },
-        headers: { 'x-admin-token': hash },
+        headers: {},
       }, res)
       expect(mockKvSet).toHaveBeenCalledWith('band-data', { name: 'updated' })
       expect(res.json).toHaveBeenCalledWith({ success: true })
     })
 
-    it('rejects write with invalid admin token', async () => {
-      mockKvGet.mockResolvedValue('correct-hash')
-      const res = mockRes()
-      await handler({
-        method: 'POST',
-        query: {},
-        body: { key: 'band-data', value: 'x' },
-        headers: { 'x-admin-token': 'wrong-hash' },
-      }, res)
-      expect(res.status).toHaveBeenCalledWith(403)
-      expect(mockKvSet).not.toHaveBeenCalled()
-    })
-
-    it('rejects write with missing admin token when password is set', async () => {
-      mockKvGet.mockResolvedValue('some-hash')
+    it('rejects write with invalid session', async () => {
+      mockValidateSession.mockResolvedValue(false)
       const res = mockRes()
       await handler({
         method: 'POST',
@@ -207,11 +199,22 @@ describe('KV API handler', () => {
       expect(mockKvSet).not.toHaveBeenCalled()
     })
 
-    // Admin password key special handling
+    it('rejects write with no valid session', async () => {
+      mockValidateSession.mockResolvedValue(false)
+      const res = mockRes()
+      await handler({
+        method: 'POST',
+        query: {},
+        body: { key: 'band-data', value: 'x' },
+        headers: {},
+      }, res)
+      expect(res.status).toHaveBeenCalledWith(403)
+      expect(mockKvSet).not.toHaveBeenCalled()
+    })
+
+    // Admin password key — direct writes blocked
     describe('admin-password-hash key', () => {
-      it('allows initial password setup without token', async () => {
-        mockKvGet.mockResolvedValue(null) // no existing password
-        mockKvSet.mockResolvedValue('OK')
+      it('blocks direct write to admin-password-hash (use /api/auth)', async () => {
         const res = mockRes()
         await handler({
           method: 'POST',
@@ -219,32 +222,31 @@ describe('KV API handler', () => {
           body: { key: 'admin-password-hash', value: 'new-hash' },
           headers: {},
         }, res)
-        expect(mockKvSet).toHaveBeenCalledWith('admin-password-hash', 'new-hash')
-        expect(res.json).toHaveBeenCalledWith({ success: true })
+        expect(res.status).toHaveBeenCalledWith(403)
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('/api/auth') }))
+        expect(mockKvSet).not.toHaveBeenCalled()
       })
 
-      it('allows password change with correct current token', async () => {
-        const currentHash = 'current-hash'
-        mockKvGet.mockResolvedValue(currentHash)
-        mockKvSet.mockResolvedValue('OK')
+      it('blocks direct write to admin-password-hash even with valid session', async () => {
+        mockValidateSession.mockResolvedValue(true)
         const res = mockRes()
         await handler({
           method: 'POST',
           query: {},
           body: { key: 'admin-password-hash', value: 'new-hash' },
-          headers: { 'x-admin-token': currentHash },
+          headers: {},
         }, res)
-        expect(mockKvSet).toHaveBeenCalledWith('admin-password-hash', 'new-hash')
+        expect(res.status).toHaveBeenCalledWith(403)
+        expect(mockKvSet).not.toHaveBeenCalled()
       })
 
-      it('rejects password change with wrong token', async () => {
-        mockKvGet.mockResolvedValue('correct-hash')
+      it('blocks direct password change via KV API (use /api/auth)', async () => {
         const res = mockRes()
         await handler({
           method: 'POST',
           query: {},
           body: { key: 'admin-password-hash', value: 'evil-hash' },
-          headers: { 'x-admin-token': 'wrong-token' },
+          headers: {},
         }, res)
         expect(res.status).toHaveBeenCalledWith(403)
         expect(mockKvSet).not.toHaveBeenCalled()
@@ -252,14 +254,14 @@ describe('KV API handler', () => {
     })
 
     it('returns 500 when kv.set throws', async () => {
-      mockKvGet.mockResolvedValue(null) // no password
+      mockValidateSession.mockResolvedValue(true)
       mockKvSet.mockRejectedValue(new Error('KV write failure'))
       const res = mockRes()
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       await handler({
         method: 'POST',
         query: {},
-        body: { key: 'test', value: 'data' },
+        body: { key: 'band-data', value: 'data' },
         headers: {},
       }, res)
       expect(res.status).toHaveBeenCalledWith(500)

@@ -58,9 +58,10 @@ export default async function handler(req, res) {
       const isImage = !fileName || /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(lowerName)
 
       if (isImage && !images.find(i => i.id === fileId)) {
+        const resizeUrl = `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${fileId}&w=800&q=80`
         images.push({
           id: `drive-${fileId}`,
-          url: `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${fileId}`,
+          url: `/api/image-proxy?url=${encodeURIComponent(resizeUrl)}`,
           caption: fileName.replace(/\.[^.]+$/, '') || `IMG_${images.length}`,
         })
       }
@@ -72,9 +73,10 @@ export default async function handler(req, res) {
       while ((match = linkPattern.exec(html)) !== null) {
         const fileId = match[1]
         if (!images.find(i => i.id === `drive-${fileId}`)) {
+          const resizeUrl = `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${fileId}&w=800&q=80`
           images.push({
             id: `drive-${fileId}`,
-            url: `https://wsrv.nl/?url=https://lh3.googleusercontent.com/d/${fileId}`,
+            url: `/api/image-proxy?url=${encodeURIComponent(resizeUrl)}`,
             caption: `IMG_${images.length}`,
           })
         }

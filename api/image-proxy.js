@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { resolve4, resolve6 } from 'node:dns/promises'
 import { applyRateLimit } from './_ratelimit.js'
 import { imageProxyQuerySchema, validate } from './_schemas.js'
 
@@ -44,6 +45,44 @@ function isBlockedHost(hostname) {
   return false
 }
 
+/** Patterns for checking resolved IP addresses against private/internal ranges */
+const BLOCKED_IP_PATTERNS = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^0\./,
+  /^169\.254\./,
+  /^::1$/,
+  /^::ffff:(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i,
+  /^fe80:/i,
+  /^fc/i,
+  /^fd/i,
+]
+
+/**
+ * DNS rebinding protection: resolve the hostname and check all resolved IPs
+ * against blocked private/internal ranges before making the actual fetch.
+ * This mitigates TOCTOU attacks where DNS returns a safe IP during our
+ * hostname check but a private IP when fetch resolves it.
+ */
+async function hasBlockedResolvedIP(hostname) {
+  // Skip DNS check for IP literals (already checked by isBlockedHost)
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname.startsWith('[')) return false
+
+  try {
+    const [ipv4, ipv6] = await Promise.all([
+      resolve4(hostname).catch(() => []),
+      resolve6(hostname).catch(() => []),
+    ])
+    const allIPs = [...ipv4, ...ipv6]
+    return allIPs.some(ip => BLOCKED_IP_PATTERNS.some(p => p.test(ip)))
+  } catch {
+    // DNS resolution failure — let fetch handle it
+    return false
+  }
+}
+
 function toDirectUrl(url) {
   const driveFile = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)
   if (driveFile) return `https://drive.google.com/uc?export=view&id=${driveFile[1]}`
@@ -55,9 +94,6 @@ function toDirectUrl(url) {
   // Handle lh3 CDN URLs — convert back to reliable export URL
   const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([^/?#]+)/)
   if (lh3Match) return `https://drive.google.com/uc?export=view&id=${lh3Match[1]}`
-  // Handle wsrv.nl-wrapped lh3 URLs — extract the file ID and convert
-  const wsrvLh3Match = url.match(/wsrv\.nl\/\?url=https?:\/\/lh3\.googleusercontent\.com\/d\/([^/?#&]+)/)
-  if (wsrvLh3Match) return `https://drive.google.com/uc?export=view&id=${wsrvLh3Match[1]}`
   return url
 }
 
@@ -98,13 +134,20 @@ export default async function handler(req, res) {
   const directUrl = toDirectUrl(url)
 
   // Re-validate the transformed URL as well
+  let parsedDirect
   try {
-    const parsedDirect = new URL(directUrl)
+    parsedDirect = new URL(directUrl)
     if (!ALLOWED_PROTOCOLS.has(parsedDirect.protocol) || isBlockedHost(parsedDirect.hostname)) {
       return res.status(400).json({ error: 'Blocked host' })
     }
   } catch {
     return res.status(400).json({ error: 'Invalid URL' })
+  }
+
+  // DNS rebinding protection: resolve the hostname and check all IPs
+  // before fetch to mitigate TOCTOU attacks
+  if (await hasBlockedResolvedIP(parsedDirect.hostname)) {
+    return res.status(400).json({ error: 'Blocked host' })
   }
 
   const key = cacheKey(directUrl)

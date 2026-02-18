@@ -21,6 +21,12 @@ vi.mock('../../api/_honeytokens.js', () => ({
   triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
 }))
 
+// Mock auth.js — session-based auth
+const mockValidateSession = vi.fn().mockResolvedValue(false)
+vi.mock('../../api/auth.js', () => ({
+  validateSession: mockValidateSession,
+}))
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn> }
 
@@ -145,6 +151,7 @@ describe('Security: KV API key validation', () => {
   })
 
   it('allows POST writes to legitimate keys', async () => {
+    mockValidateSession.mockResolvedValueOnce(true)
     mockKvGet.mockResolvedValue(null)
     mockKvSet.mockResolvedValue('OK')
     const res = mockRes()

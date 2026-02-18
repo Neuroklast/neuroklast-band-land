@@ -2,11 +2,22 @@ import { kv } from '@vercel/kv'
 import { applyRateLimit } from './_ratelimit.js'
 import { isHoneytoken, triggerHoneytokenAlarm } from './_honeytokens.js'
 import { kvGetQuerySchema, kvPostSchema, validate } from './_schemas.js'
+import { validateSession } from './auth.js'
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
+
+/**
+ * Allow-list of keys that may be read without admin authentication.
+ * All other keys require a valid session cookie.
+ * This prevents accidental leakage of sensitive data stored under
+ * arbitrary key names (e.g. stripe_api_key, db_password, etc.).
+ */
+const ALLOWED_PUBLIC_READ_KEYS = new Set([
+  'band-data',
+])
 
 // Constant-time string comparison to prevent timing attacks on hash comparison.
 // Always compares the full length of the longer string to avoid leaking length.
@@ -20,9 +31,31 @@ export function timingSafeEqual(a, b) {
   return result === 0
 }
 
+/** Suspicious User-Agent patterns used by hacking/fuzzing tools */
+const SUSPICIOUS_UA_PATTERNS = [/wfuzz/i, /nikto/i, /sqlmap/i, /dirbuster/i, /gobuster/i, /ffuf/i]
+
+function isSuspiciousUA(req) {
+  const ua = req.headers['user-agent'] || ''
+  return SUSPICIOUS_UA_PATTERNS.some(p => p.test(ua))
+}
+
+/** Artificial delay for tarpit — slows down automated tools */
+function tarpitDelay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
+  }
+
+  // Wfuzz / hacking tool detection — mock and tarpit
+  if (isSuspiciousUA(req)) {
+    await tarpitDelay(3000 + Math.random() * 2000)
+    return res.status(403).json({
+      error: 'NOOB_DETECTED',
+      tip: 'Next time, try changing your User-Agent before hacking a band.',
+    })
   }
 
   // Rate limiting — blocks brute-force and DoS attacks (GDPR-compliant, IP is hashed)
@@ -51,10 +84,14 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Forbidden' })
       }
 
-      // Block access to sensitive keys to prevent credential leakage
-      const lowerKey = key.toLowerCase()
-      if (lowerKey === 'admin-password-hash' || lowerKey.includes('token') || lowerKey.includes('secret')) {
-        return res.status(403).json({ error: 'Forbidden' })
+      // Allow-list: only explicitly listed keys are publicly readable.
+      // All other keys require a valid session to prevent leakage
+      // of sensitive data stored under arbitrary key names.
+      if (!ALLOWED_PUBLIC_READ_KEYS.has(key)) {
+        const sessionValid = await validateSession(req)
+        if (!sessionValid) {
+          return res.status(403).json({ error: 'Forbidden' })
+        }
       }
 
       const value = await kv.get(key)
@@ -83,21 +120,15 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Forbidden: reserved key prefix' })
       }
 
-      const token = req.headers['x-admin-token'] || ''
-
+      // Block direct writes to admin-password-hash — only allowed through /api/auth
       if (key === 'admin-password-hash') {
-        // Allow setting password if none exists (initial setup)
-        // Require auth to change an existing password
-        const existingHash = await kv.get('admin-password-hash')
-        if (existingHash && !timingSafeEqual(token, existingHash)) {
-          return res.status(403).json({ error: 'Unauthorized' })
-        }
-      } else {
-        // All other writes require a valid admin token
-        const adminHash = await kv.get('admin-password-hash')
-        if (adminHash && !timingSafeEqual(token, adminHash)) {
-          return res.status(403).json({ error: 'Unauthorized' })
-        }
+        return res.status(403).json({ error: 'Forbidden: use /api/auth to manage passwords' })
+      }
+
+      // All other writes require a valid session
+      const sessionValid = await validateSession(req)
+      if (!sessionValid) {
+        return res.status(403).json({ error: 'Unauthorized' })
       }
 
       await kv.set(key, value)
@@ -112,8 +143,7 @@ export default async function handler(req, res) {
     console.error('KV API error details:', {
       message: errorMessage,
       key: req.body?.key,
-      method: req.method,
-      hasToken: !!req.headers['x-admin-token']
+      method: req.method
     })
     
     // Check if it's a KV-specific configuration error from @vercel/kv

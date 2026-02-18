@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,6 +18,7 @@ interface EditControlsProps {
   hasPassword: boolean
   onChangePassword: (password: string) => Promise<void>
   onSetPassword: (password: string) => Promise<void>
+  onLogout?: () => Promise<void>
   bandData?: BandData
   onImportData?: (data: BandData) => void
   onOpenSoundSettings?: () => void
@@ -34,7 +35,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenStats }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenStats }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -292,6 +293,25 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 <Key size={20} className="hidden md:block" weight="bold" />
               </Button>
             </motion.div>
+
+            {onLogout && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              >
+                <Button
+                  onClick={onLogout}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
+                  size="icon"
+                  title="Logout"
+                >
+                  <SignOut size={18} className="md:hidden" weight="bold" />
+                  <SignOut size={20} className="hidden md:block" weight="bold" />
+                </Button>
+              </motion.div>
+            )}
           </>
         )}
 
