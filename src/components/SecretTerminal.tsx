@@ -121,73 +121,96 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     return () => clearTimeout(timer)
   }, [isTyping, typingQueue])
 
-  const handleCommand = (cmd: string) => {
+  const handleCommand = async (cmd: string) => {
     const trimmedCmd = cmd.trim().toLowerCase()
     
     setHistory(prev => [...prev, { type: 'command', text: `> ${cmd}` }])
 
-    let output: Array<{ type: 'command' | 'output' | 'error', text: string }> = []
+    // Built-in commands handled locally
+    switch (trimmedCmd) {
+      case 'clear':
+        setHistory([
+          { type: 'output', text: '> TERMINAL CLEARED' },
+          { type: 'output', text: '' }
+        ])
+        setTypingQueue([])
+        setCurrentTyping(null)
+        setIsTyping(false)
+        setInput('')
+        return
 
-    // Check custom commands first
-    const customCmd = customCommands.find(c => c.name?.toLowerCase() === trimmedCmd)
-
-    if (customCmd) {
-      output = [
-        ...customCmd.output.map(text => ({ type: 'output' as const, text })),
-        { type: 'output' as const, text: '' }
-      ]
-      if (customCmd.fileUrl) {
-        const fileName = customCmd.fileName || 'download'
-        output.push({ type: 'output' as const, text: `INITIATING DOWNLOAD: ${fileName}...` })
-        pendingFileRef.current = { url: customCmd.fileUrl, name: fileName }
-      }
-    } else {
-      switch (trimmedCmd) {
-        case 'help': {
-          const allCommands = [
-            { name: 'help', description: 'Show this message' },
-            ...customCommands.map(c => ({ name: c.name, description: c.description })),
-            { name: 'clear', description: 'Clear terminal' },
-            { name: 'exit', description: 'Close terminal' },
-          ]
-          output = [
-            { type: 'output', text: 'AVAILABLE COMMANDS:' },
-            ...allCommands.map(c => ({
-              type: 'output' as const,
-              text: `  ${c.name.padEnd(10)} - ${c.description}`
-            })),
-            { type: 'output', text: '' }
-          ]
-          break
-        }
-
-
-        case 'clear':
-          setHistory([
-            { type: 'output', text: '> TERMINAL CLEARED' },
-            { type: 'output', text: '' }
-          ])
-          setTypingQueue([])
-          setCurrentTyping(null)
-          setIsTyping(false)
-          setInput('')
-          return
-
-        case 'exit':
-          onClose()
-          return
-
-        default:
-          output = [
-            { type: 'error', text: `COMMAND NOT FOUND: ${cmd}` },
-            { type: 'error', text: 'TYPE "help" FOR AVAILABLE COMMANDS' },
-            { type: 'output', text: '' }
-          ]
-          break
-      }
+      case 'exit':
+        onClose()
+        return
     }
 
-    setTypingQueue(prev => [...prev, ...output])
+    // All other commands (including "help") go through the API
+    try {
+      const res = await fetch('/api/terminal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: trimmedCmd }),
+      })
+
+      if (!res.ok) {
+        setTypingQueue(prev => [...prev,
+          { type: 'error', text: 'TERMINAL API ERROR' },
+          { type: 'output', text: '' }
+        ])
+        setInput('')
+        return
+      }
+
+      const data = await res.json()
+
+      if (trimmedCmd === 'help') {
+        const serverCmds: Array<{ name: string; description: string }> = data.listing || []
+        const allCommands = [
+          { name: 'help', description: 'Show this message' },
+          ...serverCmds,
+          { name: 'clear', description: 'Clear terminal' },
+          { name: 'exit', description: 'Close terminal' },
+        ]
+        const output = [
+          { type: 'output' as const, text: 'AVAILABLE COMMANDS:' },
+          ...allCommands.map(c => ({
+            type: 'output' as const,
+            text: `  ${c.name.padEnd(10)} - ${c.description}`
+          })),
+          { type: 'output' as const, text: '' }
+        ]
+        setTypingQueue(prev => [...prev, ...output])
+        setInput('')
+        return
+      }
+
+      if (!data.found) {
+        setTypingQueue(prev => [...prev,
+          { type: 'error', text: `COMMAND NOT FOUND: ${cmd}` },
+          { type: 'error', text: 'TYPE "help" FOR AVAILABLE COMMANDS' },
+          { type: 'output', text: '' }
+        ])
+        setInput('')
+        return
+      }
+
+      const output: Array<{ type: 'command' | 'output' | 'error', text: string }> = [
+        ...(data.output || []).map((text: string) => ({ type: 'output' as const, text })),
+        { type: 'output' as const, text: '' }
+      ]
+      if (data.fileUrl) {
+        const fileName = data.fileName || 'download'
+        output.push({ type: 'output' as const, text: `INITIATING DOWNLOAD: ${fileName}...` })
+        pendingFileRef.current = { url: data.fileUrl, name: fileName }
+      }
+      setTypingQueue(prev => [...prev, ...output])
+    } catch {
+      setTypingQueue(prev => [...prev,
+        { type: 'error', text: 'CONNECTION ERROR' },
+        { type: 'output', text: '' }
+      ])
+    }
+
     setInput('')
   }
 

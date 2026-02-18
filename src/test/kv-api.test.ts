@@ -138,6 +138,30 @@ describe('KV API handler', () => {
       expect(res.status).toHaveBeenCalledWith(500)
       consoleSpy.mockRestore()
     })
+
+    // Terminal commands stripping for public reads
+    it('strips terminalCommands from band-data for unauthenticated reads', async () => {
+      mockValidateSession.mockResolvedValue(false)
+      mockKvGet.mockResolvedValue({
+        name: 'NEUROKLAST',
+        terminalCommands: [{ name: 'secret', output: ['TOP SECRET'] }],
+      })
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
+      const returned = res.json.mock.calls[0][0].value
+      expect(returned.name).toBe('NEUROKLAST')
+      expect(returned.terminalCommands).toBeUndefined()
+    })
+
+    it('includes terminalCommands in band-data for authenticated reads', async () => {
+      mockValidateSession.mockResolvedValue(true)
+      const commands = [{ name: 'secret', output: ['TOP SECRET'] }]
+      mockKvGet.mockResolvedValue({ name: 'NEUROKLAST', terminalCommands: commands })
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
+      const returned = res.json.mock.calls[0][0].value
+      expect(returned.terminalCommands).toEqual(commands)
+    })
   })
 
   // ======= POST =======

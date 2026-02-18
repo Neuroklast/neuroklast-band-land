@@ -140,6 +140,15 @@ export const imageProxyQuerySchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// Terminal API — POST body
+// ---------------------------------------------------------------------------
+
+export const terminalCommandSchema = z.object({
+  command: z.string().min(1, 'command is required').max(100)
+    .regex(/^[a-z0-9_-]+$/, 'Invalid command format'),
+})
+
+// ---------------------------------------------------------------------------
 // Helper: validate and return first error message
 // ---------------------------------------------------------------------------
 
