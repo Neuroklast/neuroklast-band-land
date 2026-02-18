@@ -164,6 +164,26 @@ export interface ThemeSettings {
   fontMono?: string
   /** Active theme preset name (if using a preset) */
   activePreset?: string
+  /** Base border radius in rem (default 0.125) */
+  borderRadius?: number
+  /** Overlay effects configuration */
+  overlayEffects?: OverlayEffects
+}
+
+/** Individual overlay effect configuration */
+export interface OverlayEffect {
+  enabled: boolean
+  intensity: number
+}
+
+/** Configurable visual overlay effects */
+export interface OverlayEffects {
+  dotMatrix?: OverlayEffect
+  scanlines?: OverlayEffect
+  crt?: OverlayEffect
+  noise?: OverlayEffect
+  vignette?: OverlayEffect
+  chromatic?: OverlayEffect
 }
 
 /** Controls visibility of individual sections and UI elements */

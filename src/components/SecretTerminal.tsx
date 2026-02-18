@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import type { TerminalCommand } from '@/lib/types'
+import { downloadFile, type DownloadProgress } from '@/lib/download'
 
 import {
   TERMINAL_RESERVED_COMMANDS,
   TERMINAL_TYPING_SPEED_MS,
-  TERMINAL_FILE_LOADING_DURATION_MS,
 } from '@/lib/config'
 
 interface SecretTerminalProps {
@@ -24,7 +24,6 @@ interface SecretTerminalProps {
 
 const RESERVED = TERMINAL_RESERVED_COMMANDS
 const TYPING_SPEED_MS = TERMINAL_TYPING_SPEED_MS
-const FILE_LOADING_DURATION_MS = TERMINAL_FILE_LOADING_DURATION_MS
 
 export default function SecretTerminal({ isOpen, onClose, customCommands = [], editMode, onSaveCommands }: SecretTerminalProps) {
   const [input, setInput] = useState('')
@@ -68,6 +67,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
   const [isTyping, setIsTyping] = useState(false)
   // File loading state
   const [fileLoading, setFileLoading] = useState(false)
+  const [fileDlProgress, setFileDlProgress] = useState<DownloadProgress>({ state: 'idle', progress: 0 })
   const pendingFileRef = useRef<{ url: string; name: string } | null>(null)
 
   useEffect(() => {
@@ -105,20 +105,25 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     return () => clearTimeout(timer)
   }, [currentTyping])
 
-  // After typing finishes, handle pending file download with loading animation
+  // After typing finishes, handle pending file download with direct download + progress
   useEffect(() => {
     if (isTyping || typingQueue.length > 0) return
     if (!pendingFileRef.current) return
     const { url, name } = pendingFileRef.current
     pendingFileRef.current = null
     setFileLoading(true)
-    // Show loading animation then open file
-    const timer = setTimeout(() => {
-      setFileLoading(false)
-      setHistory(prev => [...prev, { type: 'output', text: `DOWNLOAD STARTED: ${name}` }, { type: 'output', text: '' }])
-      window.open(url, '_blank', 'noopener,noreferrer')
-    }, FILE_LOADING_DURATION_MS)
-    return () => clearTimeout(timer)
+    setFileDlProgress({ state: 'downloading', progress: 0 })
+
+    downloadFile(url, name, (progress) => {
+      setFileDlProgress(progress)
+      if (progress.state === 'complete') {
+        setFileLoading(false)
+        setHistory(prev => [...prev, { type: 'output', text: `DOWNLOAD COMPLETE: ${name}` }, { type: 'output', text: '' }])
+      } else if (progress.state === 'error') {
+        setFileLoading(false)
+        setHistory(prev => [...prev, { type: 'error', text: `DOWNLOAD FAILED: ${progress.error || 'Unknown error'}` }, { type: 'output', text: '' }])
+      }
+    })
   }, [isTyping, typingQueue])
 
   const handleCommand = async (cmd: string) => {
@@ -434,16 +439,18 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
                   {/* File loading animation */}
                   {fileLoading && (
                     <div className="my-3">
-                      <div className="text-primary/70 mb-2 text-xs">LOADING FILE...</div>
-                      <div className="w-48 h-1 bg-primary/20 overflow-hidden">
+                      <div className="text-primary/70 mb-2 text-xs">DOWNLOADING FILE...</div>
+                      <div className="w-48 h-1.5 bg-primary/20 overflow-hidden">
                         <motion.div
                           className="h-full bg-primary"
                           initial={{ width: '0%' }}
-                          animate={{ width: '100%' }}
-                          transition={{ duration: 1.8, ease: 'easeInOut' }}
+                          animate={{ width: `${Math.max(fileDlProgress.progress * 100, 5)}%` }}
+                          transition={{ duration: 0.3, ease: 'easeOut' }}
                         />
                       </div>
-                      <div className="text-primary/40 text-[10px] mt-1 tracking-wider">DECRYPTING &amp; PREPARING...</div>
+                      <div className="text-primary/40 text-[10px] mt-1 tracking-wider">
+                        {fileDlProgress.progress > 0 ? `${Math.round(fileDlProgress.progress * 100)}% COMPLETE` : 'INITIATING TRANSFER...'}
+                      </div>
                     </div>
                   )}
                 </div>

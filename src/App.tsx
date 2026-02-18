@@ -28,6 +28,7 @@ import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
 import ThemeCustomizerDialog, { applyThemeToDOM } from '@/components/ThemeCustomizerDialog'
+import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
 import StatsDashboard from '@/components/StatsDashboard'
 import SecurityIncidentsDashboard from '@/components/SecurityIncidentsDashboard'
 import SecuritySettingsDialog from '@/components/SecuritySettingsDialog'
@@ -292,6 +293,7 @@ function App() {
       {/* CRT/Monitor Effects */}
       {vis.scanline !== false && <MovingScanline />}
       {vis.systemMonitor !== false && <SystemMonitorHUD />}
+      <OverlayEffectsLayer effects={data.themeSettings?.overlayEffects} />
       
       <AnimatePresence>
         {loading && (

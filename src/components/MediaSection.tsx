@@ -9,8 +9,9 @@ import { useOverlayTransition } from '@/components/OverlayTransition'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import MusicPlayer from '@/components/MusicPlayer'
 import YouTubeEmbed, { extractYouTubeId } from '@/components/YouTubeEmbed'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import type { MediaFile, SectionLabels } from '@/lib/types'
+import { downloadFile, type DownloadProgress } from '@/lib/download'
 import {
   TITLE_TYPING_SPEED_MS,
   TITLE_TYPING_START_DELAY_MS,
@@ -147,6 +148,18 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
 
 /** File detail panel shown on the right side */
 function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles: MediaFile[] }) {
+  const [dlProgress, setDlProgress] = useState<DownloadProgress>({ state: 'idle', progress: 0 })
+
+  const handleDownload = useCallback(() => {
+    if (!file || dlProgress.state === 'downloading') return
+    downloadFile(file.url, file.name, setDlProgress)
+  }, [file, dlProgress.state])
+
+  // Reset progress when file changes
+  useEffect(() => {
+    setDlProgress({ state: 'idle', progress: 0 })
+  }, [file?.id])
+
   if (!file) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
@@ -211,15 +224,43 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
       </div>
 
       {!youtubeId && (
-        <a
-          href={file.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
-        >
-          <DownloadSimple size={16} />
-          DOWNLOAD
-        </a>
+        <div className="space-y-2">
+          <button
+            onClick={handleDownload}
+            disabled={dlProgress.state === 'downloading'}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <DownloadSimple size={16} />
+            {dlProgress.state === 'downloading' ? 'DOWNLOADING...' : dlProgress.state === 'complete' ? 'DOWNLOADED ✓' : 'DOWNLOAD'}
+          </button>
+
+          {/* Download progress bar */}
+          {dlProgress.state === 'downloading' && (
+            <div className="space-y-1">
+              <div className="w-full h-1.5 bg-primary/20 overflow-hidden">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${Math.max(dlProgress.progress * 100, 5)}%` }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                />
+              </div>
+              <p className="font-mono text-[9px] text-primary/50 tracking-wider">
+                DOWNLOADING... {Math.round(dlProgress.progress * 100)}%
+              </p>
+            </div>
+          )}
+
+          {dlProgress.state === 'complete' && (
+            <p className="font-mono text-[9px] text-primary/70 tracking-wider">DOWNLOAD COMPLETE</p>
+          )}
+
+          {dlProgress.state === 'error' && (
+            <p className="font-mono text-[9px] text-destructive/70 tracking-wider">
+              ERROR: {dlProgress.error || 'Download failed'}
+            </p>
+          )}
+        </div>
       )}
 
       <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-2">

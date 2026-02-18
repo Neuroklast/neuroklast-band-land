@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { X, ArrowCounterClockwise, Export, ArrowSquareIn, FloppyDisk, Eye, EyeSlash } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import type { ThemeSettings, SectionVisibility } from '@/lib/types'
+import type { ThemeSettings, SectionVisibility, OverlayEffect } from '@/lib/types'
 
 /* ─── Theme presets ─── */
 export interface ThemePreset {
@@ -120,12 +120,56 @@ export const THEME_PRESETS: ThemePreset[] = [
 ]
 
 const FONT_OPTIONS = [
-  { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace" },
-  { label: 'Space Grotesk', value: "'Space Grotesk', sans-serif" },
-  { label: 'System Mono', value: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" },
-  { label: 'System Sans', value: "ui-sans-serif, system-ui, sans-serif" },
-  { label: 'System Serif', value: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif" },
+  { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace", google: false },
+  { label: 'Space Grotesk', value: "'Space Grotesk', sans-serif", google: false },
+  { label: 'System Mono', value: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace", google: false },
+  { label: 'System Sans', value: "ui-sans-serif, system-ui, sans-serif", google: false },
+  { label: 'System Serif', value: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif", google: false },
+  { label: 'Orbitron', value: "'Orbitron', sans-serif", google: true },
+  { label: 'Share Tech Mono', value: "'Share Tech Mono', monospace", google: true },
+  { label: 'VT323', value: "'VT323', monospace", google: true },
+  { label: 'Press Start 2P', value: "'Press Start 2P', monospace", google: true },
+  { label: 'Audiowide', value: "'Audiowide', sans-serif", google: true },
+  { label: 'Rajdhani', value: "'Rajdhani', sans-serif", google: true },
+  { label: 'Chakra Petch', value: "'Chakra Petch', sans-serif", google: true },
+  { label: 'Exo 2', value: "'Exo 2', sans-serif", google: true },
+  { label: 'Tektur', value: "'Tektur', sans-serif", google: true },
+  { label: 'Oxanium', value: "'Oxanium', sans-serif", google: true },
+  { label: 'Iceland', value: "'Iceland', monospace", google: true },
+  { label: 'Michroma', value: "'Michroma', sans-serif", google: true },
+  { label: 'Russo One', value: "'Russo One', sans-serif", google: true },
+  { label: 'Bruno Ace', value: "'Bruno Ace', sans-serif", google: true },
+  { label: 'Electrolize', value: "'Electrolize', sans-serif", google: true },
 ]
+
+/** Load Google Fonts by injecting a stylesheet link */
+const loadedFonts = new Set<string>()
+function loadGoogleFont(fontLabel: string) {
+  if (loadedFonts.has(fontLabel)) return
+  loadedFonts.add(fontLabel)
+  const family = fontLabel.replace(/ /g, '+')
+  const link = document.createElement('link')
+  link.rel = 'stylesheet'
+  link.href = `https://fonts.googleapis.com/css2?family=${family}:wght@400;500;700&display=swap`
+  document.head.appendChild(link)
+}
+
+/** Pre-load all Google Fonts for preview */
+function loadAllGoogleFonts() {
+  FONT_OPTIONS.filter(f => f.google).forEach(f => loadGoogleFont(f.label))
+}
+
+/** Default overlay effect */
+const DEFAULT_OVERLAY: OverlayEffect = { enabled: false, intensity: 0.5 }
+
+const OVERLAY_LABELS: Record<string, { name: string; description: string }> = {
+  dotMatrix: { name: 'Dot Matrix', description: 'Retro dot-grid pattern overlay' },
+  scanlines: { name: 'Scanlines', description: 'Horizontal CRT scanline bars' },
+  crt: { name: 'CRT Curvature', description: 'Curved screen edge distortion' },
+  noise: { name: 'Static Noise', description: 'Subtle random noise grain' },
+  vignette: { name: 'Vignette', description: 'Dark edges / spotlight center' },
+  chromatic: { name: 'Chromatic Aberration', description: 'RGB color fringe shift' },
+}
 
 const SECTION_LABELS: Record<keyof SectionVisibility, string> = {
   news: 'News Section',
@@ -172,6 +216,14 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
     root.style.setProperty('--font-heading', theme.fontHeading)
   }
 
+  // Border radius
+  if (theme.borderRadius !== undefined) {
+    root.style.setProperty('--radius', `${theme.borderRadius}rem`)
+  }
+
+  // Overlay effects
+  applyOverlayEffectsToDOM(theme)
+
   // Update ring & destructive to match primary
   if (theme.primary) {
     root.style.setProperty('--ring', theme.primary)
@@ -191,6 +243,26 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
   if (theme.mutedForeground) {
     root.style.setProperty('--muted', theme.mutedForeground)
   }
+
+  // Load Google Fonts if selected
+  for (const key of ['fontHeading', 'fontBody', 'fontMono'] as const) {
+    const val = theme[key]
+    if (!val) continue
+    const match = FONT_OPTIONS.find(f => f.value === val)
+    if (match?.google) loadGoogleFont(match.label)
+  }
+}
+
+/** Apply overlay effect CSS classes to root element */
+function applyOverlayEffectsToDOM(theme: ThemeSettings | undefined) {
+  const root = document.documentElement
+  const effects = theme?.overlayEffects
+  root.style.setProperty('--overlay-dot-matrix', effects?.dotMatrix?.enabled ? String(effects.dotMatrix.intensity) : '0')
+  root.style.setProperty('--overlay-scanlines', effects?.scanlines?.enabled ? String(effects.scanlines.intensity) : '0')
+  root.style.setProperty('--overlay-crt', effects?.crt?.enabled ? String(effects.crt.intensity) : '0')
+  root.style.setProperty('--overlay-noise', effects?.noise?.enabled ? String(effects.noise.intensity) : '0')
+  root.style.setProperty('--overlay-vignette', effects?.vignette?.enabled ? String(effects.vignette.intensity) : '0')
+  root.style.setProperty('--overlay-chromatic', effects?.chromatic?.enabled ? String(effects.chromatic.intensity) : '0')
 }
 
 /** Reset all custom CSS variables set by theme */
@@ -202,6 +274,9 @@ export function resetThemeDOM() {
     '--font-heading', '--ring', '--destructive', '--primary-foreground',
     '--secondary-foreground', '--accent-foreground', '--card-foreground',
     '--popover-foreground', '--destructive-foreground', '--popover', '--muted',
+    '--radius',
+    '--overlay-dot-matrix', '--overlay-scanlines', '--overlay-crt',
+    '--overlay-noise', '--overlay-vignette', '--overlay-chromatic',
   ]
   props.forEach(p => root.style.removeProperty(p))
 }
@@ -286,7 +361,7 @@ export default function ThemeCustomizerDialog({
 }: ThemeCustomizerDialogProps) {
   const [draft, setDraft] = useState<ThemeSettings>(themeSettings || {})
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
-  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'presets' | 'visibility'>('presets')
+  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'presets' | 'visibility' | 'effects'>('presets')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   // Sync draft when props change
@@ -296,6 +371,11 @@ export default function ThemeCustomizerDialog({
       setVisDraft(sectionVisibility || {})
     }
   }, [open, themeSettings, sectionVisibility])
+
+  // Load all Google Fonts when fonts tab is opened
+  useEffect(() => {
+    if (open && activeTab === 'fonts') loadAllGoogleFonts()
+  }, [open, activeTab])
 
   // Live preview: apply to DOM as user changes colors
   useEffect(() => {
@@ -364,10 +444,21 @@ export default function ThemeCustomizerDialog({
     setVisDraft(prev => ({ ...prev, [key]: prev[key] === false }))
   }
 
+  const updateOverlayEffect = (key: string, updates: Partial<OverlayEffect>) => {
+    setDraft(prev => ({
+      ...prev,
+      overlayEffects: {
+        ...prev.overlayEffects,
+        [key]: { ...(prev.overlayEffects?.[key as keyof typeof prev.overlayEffects] || DEFAULT_OVERLAY), ...updates },
+      },
+    }))
+  }
+
   const tabs = [
     { key: 'presets' as const, label: 'PRESETS' },
     { key: 'colors' as const, label: 'COLORS' },
     { key: 'fonts' as const, label: 'FONTS' },
+    { key: 'effects' as const, label: 'EFFECTS' },
     { key: 'visibility' as const, label: 'VISIBILITY' },
   ]
 
@@ -471,7 +562,7 @@ export default function ThemeCustomizerDialog({
               {activeTab === 'colors' && (
                 <div className="space-y-2">
                   <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Customize individual colors. Changes preview live.
+                    Customize individual colors and border radius. Changes preview live.
                   </p>
                   <ColorInput label="Primary" value={draft.primary || 'oklch(0.50 0.22 25)'} onChange={v => updateColor('primary', v)} />
                   <ColorInput label="Accent" value={draft.accent || 'oklch(0.60 0.24 25)'} onChange={v => updateColor('accent', v)} />
@@ -481,6 +572,32 @@ export default function ThemeCustomizerDialog({
                   <ColorInput label="Muted Text" value={draft.mutedForeground || 'oklch(0.55 0 0)'} onChange={v => updateColor('mutedForeground', v)} />
                   <ColorInput label="Border" value={draft.border || 'oklch(0.15 0 0)'} onChange={v => updateColor('border', v)} />
                   <ColorInput label="Secondary" value={draft.secondary || 'oklch(0.10 0 0)'} onChange={v => updateColor('secondary', v)} />
+
+                  {/* Border Radius Slider */}
+                  <div className="pt-4 border-t border-primary/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="font-mono text-xs text-muted-foreground">Border Radius</Label>
+                      <span className="font-mono text-[10px] text-primary/70">{(draft.borderRadius ?? 0.125).toFixed(3)}rem</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1.5"
+                      step="0.025"
+                      value={draft.borderRadius ?? 0.125}
+                      onChange={e => setDraft(prev => ({ ...prev, borderRadius: parseFloat(e.target.value) }))}
+                      className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
+                    />
+                    <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
+                      <span>SHARP</span>
+                      <span>ROUNDED</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="w-16 h-10 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(draft.borderRadius ?? 0.125) * 16}px` }} />
+                      <div className="w-20 h-8 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(draft.borderRadius ?? 0.125) * 16}px` }} />
+                      <span className="font-mono text-[9px] text-muted-foreground/50">Preview</span>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -488,7 +605,7 @@ export default function ThemeCustomizerDialog({
               {activeTab === 'fonts' && (
                 <div className="space-y-4">
                   <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Change font families for different parts of the site.
+                    Choose from local and Google Fonts. Font previews are shown below each selector.
                   </p>
                   {[
                     { key: 'fontHeading' as const, label: 'Heading Font' },
@@ -499,18 +616,81 @@ export default function ThemeCustomizerDialog({
                       <Label className="font-mono text-xs text-muted-foreground">{label}</Label>
                       <select
                         value={draft[key] || FONT_OPTIONS[0].value}
-                        onChange={e => setDraft(prev => ({ ...prev, [key]: e.target.value }))}
-                        className="w-full h-9 rounded border border-primary/20 bg-card px-3 font-mono text-xs text-foreground"
+                        onChange={e => {
+                          const opt = FONT_OPTIONS.find(f => f.value === e.target.value)
+                          if (opt?.google) loadGoogleFont(opt.label)
+                          setDraft(prev => ({ ...prev, [key]: e.target.value }))
+                        }}
+                        className="w-full h-9 rounded border border-primary/20 bg-card px-3 text-xs text-foreground"
+                        style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}
                       >
                         {FONT_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          <option key={opt.value} value={opt.value} style={{ fontFamily: opt.value }}>
+                            {opt.label}{opt.google ? ' ⟡' : ''}
+                          </option>
                         ))}
                       </select>
-                      <p className="font-mono text-[10px] text-muted-foreground/40" style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}>
-                        Preview: The quick brown fox jumps over the lazy dog — 0123456789
-                      </p>
+                      <div
+                        className="border border-primary/10 bg-black/30 p-3 mt-1"
+                        style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}
+                      >
+                        <p className="text-sm text-foreground/80">
+                          NEUROKLAST — The quick brown fox jumps over the lazy dog
+                        </p>
+                        <p className="text-xs text-foreground/50 mt-1">
+                          0123456789 !@#$%^&amp;*() ABCDEFGHIJKLMNOPQRSTUVWXYZ
+                        </p>
+                      </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* EFFECTS TAB */}
+              {activeTab === 'effects' && (
+                <div className="space-y-3">
+                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
+                    Enable, disable, and adjust visual overlay effects.
+                  </p>
+                  {Object.entries(OVERLAY_LABELS).map(([key, { name, description }]) => {
+                    const effect = draft.overlayEffects?.[key as keyof typeof draft.overlayEffects] || DEFAULT_OVERLAY
+                    return (
+                      <div key={key} className="border border-primary/10 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-mono text-xs text-foreground/90">{name}</span>
+                            <p className="font-mono text-[9px] text-muted-foreground/50">{description}</p>
+                          </div>
+                          <button
+                            onClick={() => updateOverlayEffect(key, { enabled: !effect.enabled })}
+                            className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-mono transition-colors ${
+                              effect.enabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
+                            }`}
+                          >
+                            {effect.enabled ? <Eye size={14} /> : <EyeSlash size={14} />}
+                            {effect.enabled ? 'ON' : 'OFF'}
+                          </button>
+                        </div>
+                        {effect.enabled && (
+                          <div className="flex items-center gap-3">
+                            <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">Intensity</Label>
+                            <input
+                              type="range"
+                              min="0.05"
+                              max="1"
+                              step="0.05"
+                              value={effect.intensity}
+                              onChange={e => updateOverlayEffect(key, { intensity: parseFloat(e.target.value) })}
+                              className="flex-1 h-1 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
+                            />
+                            <span className="font-mono text-[10px] text-primary/70 w-8 text-right">
+                              {Math.round(effect.intensity * 100)}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
 
