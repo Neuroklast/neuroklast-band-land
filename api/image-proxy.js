@@ -132,13 +132,20 @@ export default async function handler(req, res) {
   const directUrl = toDirectUrl(url)
 
   // Re-validate the transformed URL as well
+  let parsedDirect
   try {
-    const parsedDirect = new URL(directUrl)
+    parsedDirect = new URL(directUrl)
     if (!ALLOWED_PROTOCOLS.has(parsedDirect.protocol) || isBlockedHost(parsedDirect.hostname)) {
       return res.status(400).json({ error: 'Blocked host' })
     }
   } catch {
     return res.status(400).json({ error: 'Invalid URL' })
+  }
+
+  // DNS rebinding protection: resolve the hostname and check all IPs
+  // before fetch to mitigate TOCTOU attacks
+  if (await hasBlockedResolvedIP(parsedDirect.hostname)) {
+    return res.status(400).json({ error: 'Blocked host' })
   }
 
   const key = cacheKey(directUrl)

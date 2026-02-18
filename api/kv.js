@@ -31,9 +31,31 @@ export function timingSafeEqual(a, b) {
   return result === 0
 }
 
+/** Suspicious User-Agent patterns used by hacking/fuzzing tools */
+const SUSPICIOUS_UA_PATTERNS = [/wfuzz/i, /nikto/i, /sqlmap/i, /dirbuster/i, /gobuster/i, /ffuf/i]
+
+function isSuspiciousUA(req) {
+  const ua = req.headers['user-agent'] || ''
+  return SUSPICIOUS_UA_PATTERNS.some(p => p.test(ua))
+}
+
+/** Artificial delay for tarpit — slows down automated tools */
+function tarpitDelay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
+  }
+
+  // Wfuzz / hacking tool detection — mock and tarpit
+  if (isSuspiciousUA(req)) {
+    await tarpitDelay(3000 + Math.random() * 2000)
+    return res.status(403).json({
+      error: 'NOOB_DETECTED',
+      tip: 'Next time, try changing your User-Agent before hacking a band.',
+    })
   }
 
   // Rate limiting — blocks brute-force and DoS attacks (GDPR-compliant, IP is hashed)

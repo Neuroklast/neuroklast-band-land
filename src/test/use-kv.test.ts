@@ -158,47 +158,44 @@ describe('useKV', () => {
     await waitFor(() => expect(result.current[2]).toBe(true))
   })
 
-  it('sends admin token with POST when authenticated', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ value: 'data' }), { status: 200 })
+  it('sends POST without x-admin-token header (cookies handle auth)', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ value: null }), { status: 200, headers: { 'Content-Type': 'application/json' } })
     )
-
-    localStorage.setItem('admin-token', 'my-token')
-
     const { result } = renderHook(() => useKV('auth-key', 'default'))
-    await waitFor(() => expect(result.current[2]).toBe(true))
 
-    act(() => { result.current[1]('new-value') })
+    await waitFor(() => expect(result.current[0]).toBe('default'))
+
+    act(() => result.current[1]('new-value'))
 
     await waitFor(() => {
-      const postCalls = fetchSpy.mock.calls.filter(
+      const postCalls = vi.mocked(fetch).mock.calls.filter(
         (call) => call[1] && (call[1] as RequestInit).method === 'POST'
       )
-      expect(postCalls).toHaveLength(1)
+      expect(postCalls.length).toBeGreaterThan(0)
       const headers = (postCalls[0][1] as RequestInit).headers as Record<string, string>
-      expect(headers['x-admin-token']).toBe('my-token')
+      // Verify NO x-admin-token header (cookies handle auth now)
+      expect(headers['x-admin-token']).toBeUndefined()
     })
   })
 
-  it('does not POST when no admin token is present', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ value: 'data' }), { status: 200 })
+  it('always attempts POST on value change (auth via cookies)', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ value: null }), { status: 200, headers: { 'Content-Type': 'application/json' } })
     )
-
-    // Make sure no admin token
-    localStorage.removeItem('admin-token')
 
     const { result } = renderHook(() => useKV('no-auth-key', 'default'))
-    await waitFor(() => expect(result.current[2]).toBe(true))
+    await waitFor(() => expect(result.current[0]).toBe('default'))
 
-    act(() => { result.current[1]('new-value') })
+    act(() => result.current[1]('updated'))
 
-    // The decision to POST is synchronous inside setValue, so we can
-    // check immediately — no POST should have been initiated.
-    const postCalls = fetchSpy.mock.calls.filter(
-      (call) => call[1] && (call[1] as RequestInit).method === 'POST'
-    )
-    expect(postCalls).toHaveLength(0)
+    // POST should be attempted (server will reject if no valid session cookie)
+    await waitFor(() => {
+      const postCalls = vi.mocked(fetch).mock.calls.filter(
+        (call) => call[1] && (call[1] as RequestInit).method === 'POST'
+      )
+      expect(postCalls.length).toBeGreaterThan(0)
+    })
   })
 
   it('still updates local state and localStorage when POST fails', async () => {

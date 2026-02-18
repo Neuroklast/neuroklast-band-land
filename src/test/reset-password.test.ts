@@ -4,15 +4,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // Mock @vercel/kv — must be declared before importing the handler
 // ---------------------------------------------------------------------------
 const mockKvGet = vi.fn()
+const mockKvSet = vi.fn()
 const mockKvDel = vi.fn()
+const mockPipeExec = vi.fn()
+const mockKvPipeline = vi.fn(() => ({
+  set: vi.fn(),
+  del: vi.fn(),
+  exec: mockPipeExec,
+}))
 
 vi.mock('@vercel/kv', () => ({
-  kv: { get: mockKvGet, set: vi.fn(), del: mockKvDel },
+  kv: { get: mockKvGet, set: mockKvSet, del: mockKvDel, pipeline: mockKvPipeline },
 }))
 
 // Mock rate limiter — always allow requests in tests
 vi.mock('../../api/_ratelimit.js', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(true),
+}))
+
+// Mock auth.js hashPassword
+vi.mock('../../api/auth.js', () => ({
+  hashPassword: vi.fn().mockResolvedValue('scrypt:salt:hashedvalue'),
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,19 +100,19 @@ describe('Reset Password API handler', () => {
   })
 
   it('resets password when email matches', async () => {
-    mockKvDel.mockResolvedValue(1)
+    mockKvSet.mockResolvedValue('OK')
     const res = mockRes()
     await handler({ method: 'POST', query: {}, body: { email: 'admin@example.com' }, headers: {} }, res)
-    expect(mockKvDel).toHaveBeenCalledWith('admin-password-hash')
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }))
+    expect(mockKvSet).toHaveBeenCalledWith('admin-reset-token', expect.any(String), expect.objectContaining({ ex: 600 }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, message: expect.stringContaining('reset link') }))
   })
 
   it('resets password with case-insensitive email match', async () => {
-    mockKvDel.mockResolvedValue(1)
+    mockKvSet.mockResolvedValue('OK')
     const res = mockRes()
     await handler({ method: 'POST', query: {}, body: { email: 'Admin@Example.COM' }, headers: {} }, res)
-    expect(mockKvDel).toHaveBeenCalledWith('admin-password-hash')
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }))
+    expect(mockKvSet).toHaveBeenCalledWith('admin-reset-token', expect.any(String), expect.objectContaining({ ex: 600 }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, message: expect.stringContaining('reset link') }))
   })
 
   it('returns same success message for non-matching email (prevents enumeration)', async () => {
@@ -111,7 +123,7 @@ describe('Reset Password API handler', () => {
   })
 
   it('returns 500 when KV throws during reset', async () => {
-    mockKvDel.mockRejectedValue(new Error('KV failure'))
+    mockKvSet.mockRejectedValue(new Error('KV failure'))
     const res = mockRes()
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     await handler({ method: 'POST', query: {}, body: { email: 'admin@example.com' }, headers: {} }, res)
