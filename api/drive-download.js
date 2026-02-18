@@ -77,8 +77,9 @@ export default async function handler(req, res) {
       // Google is showing a virus-scan confirmation page
       // Extract the confirm token from the HTML
       const html = await dlRes.text()
+      // Both patterns now use the same restrictive character set
       const confirmMatch = html.match(/confirm=([0-9A-Za-z_\-]+)/) ||
-                           html.match(/name="confirm"\s+value="([^"]+)"/)
+                           html.match(/name="confirm"\s+value="([0-9A-Za-z_\-]+)"/)
       if (confirmMatch) {
         const confirmToken = confirmMatch[1]
         // Validate token format for security (only alphanumeric, underscore, hyphen)
@@ -98,7 +99,8 @@ export default async function handler(req, res) {
     const contentType = meta.mimeType || 'application/octet-stream'
 
     // Sanitize filename for Content-Disposition header to prevent header injection
-    const safeFileName = fileName.replace(/["\r\n]/g, '')
+    // Remove quotes, newlines, control characters, and backslashes
+    const safeFileName = fileName.replace(/["\r\n\x00-\x1f\x7f\\]/g, '')
 
     res.setHeader('Content-Type', contentType)
     res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`)
