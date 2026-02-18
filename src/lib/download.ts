@@ -60,7 +60,6 @@ async function downloadViaDriveProxy(
   onProgress({ state: 'downloading', progress: 0 })
 
   const downloadUrl = `/api/drive-download?fileId=${encodeURIComponent(fileId)}`
-  
   const a = document.createElement('a')
   a.href = downloadUrl
   a.download = fileName
