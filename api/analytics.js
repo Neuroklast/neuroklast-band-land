@@ -238,6 +238,7 @@ export default async function handler(req, res) {
       await mergeAnalytics({ type, target: sanitize(target), meta: sanitizedMeta })
 
       // Store heatmap data if present — validate coordinates are in valid range
+      // x: normalized viewport width (0-1), y: normalized document height (0-2, allows scrolling beyond viewport)
       if (heatmap && typeof heatmap.x === 'number' && typeof heatmap.y === 'number') {
         const hx = Math.round(Math.max(0, Math.min(1, heatmap.x)) * 10000) / 10000
         const hy = Math.round(Math.max(0, Math.min(2, heatmap.y)) * 10000) / 10000

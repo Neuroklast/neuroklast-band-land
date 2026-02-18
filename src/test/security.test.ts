@@ -184,7 +184,7 @@ describe('Security: Image proxy SSRF protections', () => {
     /^\[fc/i,
     /^\[fd/i,
     /^metadata\.google\.internal$/i,
-    /^0x[0-9a-f]/i,
+    /^0x[0-9a-f]+$/i,
     /^0[0-7]+\./,
   ]
 

@@ -48,6 +48,8 @@ export default function YouTubeEmbed({ videoId, title }: YouTubeEmbedProps) {
         </div>
       )}
       <div className="relative w-full aspect-video border border-primary/20 bg-black overflow-hidden">
+        {/* sandbox: allow-same-origin is required for YouTube player API; safe because
+            youtube-nocookie.com is a different origin from our site */}
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${safeVideoId}`}
           title={title || 'YouTube video'}
