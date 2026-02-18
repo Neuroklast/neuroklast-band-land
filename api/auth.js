@@ -28,6 +28,7 @@ export async function hashPassword(password) {
  * Supports both scrypt (new) and legacy SHA-256 formats.
  */
 async function verifyPassword(password, stored) {
+  // TODO: Remove legacy SHA-256 path after all passwords have been migrated to scrypt.
   if (!stored.startsWith('scrypt:')) {
     // Legacy SHA-256 format
     const hash = createHash('sha256').update(password).digest('hex')
@@ -212,12 +213,12 @@ export default async function handler(req, res) {
 
         const storedHash = await kv.get('admin-password-hash')
         if (!storedHash) {
-          return res.status(401).json({ error: 'No password configured' })
+          return res.status(401).json({ error: 'Invalid credentials' })
         }
 
         const valid = await verifyPassword(parsed.data.password, storedHash)
         if (!valid) {
-          return res.status(401).json({ error: 'Invalid password' })
+          return res.status(401).json({ error: 'Invalid credentials' })
         }
 
         // Migration: rehash legacy SHA-256 to scrypt on successful login
