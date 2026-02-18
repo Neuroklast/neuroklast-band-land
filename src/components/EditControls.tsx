@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,6 +24,8 @@ interface EditControlsProps {
   onOpenSoundSettings?: () => void
   onOpenConfigEditor?: () => void
   onOpenStats?: () => void
+  onOpenSecurityIncidents?: () => void
+  onOpenSecuritySettings?: () => void
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -35,7 +37,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenStats }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenStats, onOpenSecurityIncidents, onOpenSecuritySettings }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -274,6 +276,28 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 >
                   <ChartBar size={18} className="md:hidden" weight="bold" />
                   <ChartBar size={20} className="hidden md:block" weight="bold" />
+                </Button>
+              )}
+              {onOpenSecurityIncidents && (
+                <Button
+                  onClick={onOpenSecurityIncidents}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
+                  size="icon"
+                  title="Security incidents"
+                >
+                  <ShieldWarning size={18} className="md:hidden" weight="bold" />
+                  <ShieldWarning size={20} className="hidden md:block" weight="bold" />
+                </Button>
+              )}
+              {onOpenSecuritySettings && (
+                <Button
+                  onClick={onOpenSecuritySettings}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
+                  size="icon"
+                  title="Security settings"
+                >
+                  <ShieldCheck size={18} className="md:hidden" weight="bold" />
+                  <ShieldCheck size={20} className="hidden md:block" weight="bold" />
                 </Button>
               )}
             </motion.div>
