@@ -739,3 +739,175 @@ h1, h2, h3, h4, h5, h6 {
     oklch(0 0 0 / 0.06) 2px
   );
 }
+
+/* ─── Cyberpunk 2077 style background animations ─── */
+
+/* Circuit trace: dash animation along SVG paths */
+@keyframes circuit-trace-dash {
+  0% {
+    stroke-dashoffset: 600;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+.cyberpunk-circuit-trace {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: circuit-trace-dash 8s linear infinite;
+}
+
+/* Glitch blocks: random flash/translate */
+@keyframes glitch-block-flash {
+  0%, 90%, 100% {
+    opacity: 0;
+    transform: translateX(0) scaleX(1);
+  }
+  92% {
+    opacity: 0.5;
+    transform: translateX(-5px) scaleX(1.5);
+    background: var(--primary, oklch(0.50 0.22 25));
+  }
+  94% {
+    opacity: 0;
+    transform: translateX(10px) scaleX(0.8);
+  }
+  96% {
+    opacity: 0.7;
+    transform: translateX(-2px) scaleX(2);
+    background: var(--primary, oklch(0.50 0.22 25));
+  }
+  98% {
+    opacity: 0;
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+.cyberpunk-glitch-block {
+  background: var(--primary, oklch(0.50 0.22 25));
+  opacity: 0;
+  animation: glitch-block-flash 6s step-end infinite;
+}
+
+/* Hex grid fade in/out */
+@keyframes hex-fade {
+  0%, 100% {
+    opacity: 0.03;
+  }
+  50% {
+    opacity: 0.06;
+  }
+}
+
+.cyberpunk-hex-fade {
+  animation: hex-fade 12s ease-in-out infinite;
+}
+
+/* Scanning beam: a diagonal sweep across the screen */
+@keyframes scan-beam-sweep {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(35deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.08;
+  }
+  95% {
+    opacity: 0.08;
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(35deg);
+    opacity: 0;
+  }
+}
+
+.cyberpunk-scan-beam {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--primary, oklch(0.50 0.22 25)) 48%,
+    transparent 52%,
+    transparent 100%
+  );
+  height: 200%;
+  width: 200%;
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  animation: scan-beam-sweep 15s linear infinite;
+  pointer-events: none;
+}
+
+/* Data particles floating upward */
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+    transform: translateY(90vh) scale(1);
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-10vh) scale(0);
+    opacity: 0;
+  }
+}
+
+.cyberpunk-particle {
+  animation: particle-float 10s linear infinite;
+}
+
+/* Pulse ring expanding outward */
+@keyframes pulse-ring-expand {
+  0% {
+    width: 0;
+    height: 0;
+    border-width: 1px;
+    opacity: 0.3;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    width: 120px;
+    height: 120px;
+    border-width: 0.5px;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.cyberpunk-pulse-ring {
+  border: 1px solid var(--primary, oklch(0.50 0.22 25));
+  border-radius: 50%;
+  animation: pulse-ring-expand 5s ease-out infinite;
+  transform: translate(-50%, -50%);
+}
+
+/* Corner bracket glow pulse */
+@keyframes corner-bracket-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.cyberpunk-corner-bracket {
+  animation: corner-bracket-pulse 4s ease-in-out infinite;
+}

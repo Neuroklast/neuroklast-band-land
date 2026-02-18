@@ -27,6 +27,7 @@ import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
 import SoundSettingsDialog from '@/components/SoundSettingsDialog'
 import ConfigEditorDialog from '@/components/ConfigEditorDialog'
+import ThemeCustomizerDialog, { applyThemeToDOM } from '@/components/ThemeCustomizerDialog'
 import StatsDashboard from '@/components/StatsDashboard'
 import SecurityIncidentsDashboard from '@/components/SecurityIncidentsDashboard'
 import SecuritySettingsDialog from '@/components/SecuritySettingsDialog'
@@ -35,7 +36,7 @@ import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
-import type { BandData, FontSizeSettings, SectionLabels, SoundSettings } from '@/lib/types'
+import type { BandData, FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 
@@ -102,6 +103,7 @@ function App() {
   const [showStats, setShowStats] = useState(false)
   const [showSecurityIncidents, setShowSecurityIncidents] = useState(false)
   const [showSecuritySettings, setShowSecuritySettings] = useState(false)
+  const [showThemeCustomizer, setShowThemeCustomizer] = useState(false)
 
   // Apply CRT effects
   useCRTEffects()
@@ -253,6 +255,13 @@ function App() {
     applyConfigOverrides(data.configOverrides)
   }, [data.configOverrides])
 
+  // Apply theme settings to DOM whenever they change
+  useEffect(() => {
+    applyThemeToDOM(data.themeSettings)
+  }, [data.themeSettings])
+
+  const vis = data.sectionVisibility || {}
+
   return (
     <>
       <KonamiListener onCodeActivated={handleTerminalActivation} customCode={data.secretCode} />
@@ -281,8 +290,8 @@ function App() {
       <CookieBanner />
       
       {/* CRT/Monitor Effects */}
-      <MovingScanline />
-      <SystemMonitorHUD />
+      {vis.scanline !== false && <MovingScanline />}
+      {vis.systemMonitor !== false && <SystemMonitorHUD />}
       
       <AnimatePresence>
         {loading && (
@@ -306,13 +315,13 @@ function App() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <AudioVisualizer />
+            {vis.audioVisualizer !== false && <AudioVisualizer />}
             
             <div className="fixed inset-0 pointer-events-none z-[100]">
               <div className="absolute inset-0 hud-scanline opacity-30" />
             </div>
             
-            <CyberpunkBackground hudTexts={data.hudTexts} />
+            {vis.hudBackground !== false && <CyberpunkBackground hudTexts={data.hudTexts} />}
             <Toaster position="top-right" />
           
           <motion.div
@@ -328,6 +337,7 @@ function App() {
             />
 
             <main className="relative">
+              {vis.news !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -341,7 +351,9 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
 
+              {vis.biography !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -357,7 +369,9 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
 
+              {vis.gallery !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -373,7 +387,9 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
 
+              {vis.gigs !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -390,7 +406,9 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
 
+              {vis.releases !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -407,7 +425,9 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
 
+              {vis.media !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -421,7 +441,9 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
 
+              {vis.social !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -437,7 +459,9 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
 
+              {vis.partnersAndFriends !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -454,6 +478,7 @@ function App() {
                   onLabelChange={handleLabelChange}
                 />
               </motion.div>
+              )}
             </main>
 
             <motion.div
@@ -486,6 +511,7 @@ function App() {
                 onOpenStats={() => setShowStats(true)}
                 onOpenSecurityIncidents={() => setShowSecurityIncidents(true)}
                 onOpenSecuritySettings={() => setShowSecuritySettings(true)}
+                onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}
               />
             )}
 
@@ -508,6 +534,15 @@ function App() {
               onClose={() => setShowConfigEditor(false)}
               overrides={data.configOverrides || {}}
               onSave={(configOverrides) => setBandData((current) => ({ ...(current || defaultBandData), configOverrides }))}
+            />
+
+            <ThemeCustomizerDialog
+              open={showThemeCustomizer}
+              onClose={() => setShowThemeCustomizer(false)}
+              themeSettings={data.themeSettings}
+              onSaveTheme={(themeSettings: ThemeSettings) => setBandData((current) => ({ ...(current || defaultBandData), themeSettings }))}
+              sectionVisibility={data.sectionVisibility}
+              onSaveSectionVisibility={(sectionVisibility: SectionVisibility) => setBandData((current) => ({ ...(current || defaultBandData), sectionVisibility }))}
             />
 
             <AdminLoginDialog

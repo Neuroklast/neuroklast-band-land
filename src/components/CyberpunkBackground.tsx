@@ -6,15 +6,13 @@ interface CyberpunkBackgroundProps {
 }
 
 /**
- * CyberpunkBackground – pure-CSS animated HUD overlay.
- *
- * Replaced framer-motion infinite animations with CSS keyframes to avoid
- * continuous JS → DOM updates that trigger layout/paint on every frame.
- * The clock now only ticks when the tab is visible to avoid wasted work.
+ * CyberpunkBackground – pure-CSS animated HUD overlay with complex
+ * Cyberpunk 2077-style animations: hexagonal grid, glitch blocks,
+ * circuit traces, and particle effects.
  */
 export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundProps) {
   const [time, setTime] = useState(new Date())
-  const intervalRef = useRef<ReturnType<typeof setInterval>>()
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
 
   useEffect(() => {
     const tick = () => setTime(new Date())
@@ -47,11 +45,12 @@ export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundPro
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ contain: 'layout' }}>
       <div className="absolute inset-0 hud-grid-overlay" />
       
+      {/* HUD Data readouts */}
       <div className="absolute top-4 left-4 data-readout hidden md:block">
         <div className="mb-1">{hudTexts?.topLeft1 ?? 'SYSTEM: ONLINE'}</div>
         <div>{hudTexts?.topLeft2 !== undefined ? hudTexts.topLeft2 : `TIME: ${formatTime(time)}`}</div>
         <div className="mt-1 flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 6px oklch(0.50 0.22 25)' }}></div>
+          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 6px var(--primary, oklch(0.50 0.22 25))' }}></div>
           <span>{hudTexts?.topLeftStatus ?? 'ACTIVE'}</span>
         </div>
       </div>
@@ -71,65 +70,130 @@ export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundPro
         <div className="mt-1">{hudTexts?.bottomRight2 ?? 'MODE: HARD'}</div>
       </div>
 
-      {/* Data streams – pure CSS animations instead of framer-motion */}
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={`data-stream-${i}`}
-          className="absolute w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent cyberpunk-data-stream"
-          style={{
-            left: `${15 + (i * 25)}%`,
-            height: '60vh',
-            top: '-60vh',
-            animationDuration: `${8 + i * 2}s`,
-            animationDelay: `${i * 3}s`,
-          }}
+      {/* ─── Circuit trace lines (diagonal animated paths) ─── */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.07] text-primary" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="circuit-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0" />
+            <stop offset="40%" stopColor="currentColor" stopOpacity="0.8" />
+            <stop offset="60%" stopColor="currentColor" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 0 200 L 150 200 L 180 170 L 350 170 L 380 200 L 500 200"
+          stroke="url(#circuit-grad)"
+          strokeWidth="1"
+          fill="none"
+          className="cyberpunk-circuit-trace"
+          style={{ animationDelay: '0s' }}
         />
-      ))}
-      
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/2 to-transparent opacity-20" />
-      
-      {/* Scan lines – pure CSS animations */}
-      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <path
+          d="M 600 400 L 750 400 L 780 370 L 950 370 L 980 340 L 1100 340"
+          stroke="url(#circuit-grad)"
+          strokeWidth="1"
+          fill="none"
+          className="cyberpunk-circuit-trace"
+          style={{ animationDelay: '2s' }}
+        />
+        <path
+          d="M 200 600 L 350 600 L 380 570 L 550 570 L 580 600 L 700 600"
+          stroke="url(#circuit-grad)"
+          strokeWidth="1"
+          fill="none"
+          className="cyberpunk-circuit-trace"
+          style={{ animationDelay: '4s' }}
+        />
+      </svg>
+
+      {/* ─── Glitch blocks – random rectangular flashes ─── */}
+      {[0, 1, 2, 3, 4].map(i => (
         <div
-          key={`scan-${i}`}
-          className="absolute w-px bg-gradient-to-b from-transparent via-primary/15 to-transparent cyberpunk-scan-pulse"
+          key={`glitch-block-${i}`}
+          className="absolute cyberpunk-glitch-block"
           style={{
-            left: `${(i * 16.66)}%`,
-            height: '100%',
-            animationDelay: `${i * 0.4}s`,
+            top: `${10 + i * 18}%`,
+            left: `${5 + (i % 3) * 35}%`,
+            width: `${40 + i * 15}px`,
+            height: `${3 + (i % 2)}px`,
+            animationDelay: `${i * 1.7}s`,
+            animationDuration: `${6 + i * 1.5}s`,
           }}
         />
       ))}
 
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,oklch(0.50_0.22_25/0.02)_0%,transparent_50%)]" />
+      {/* ─── Hex grid overlay ─── */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.04] text-primary" preserveAspectRatio="none">
+        <defs>
+          <pattern id="hex-pattern" x="0" y="0" width="60" height="52" patternUnits="userSpaceOnUse">
+            <polygon
+              points="30,2 56,15 56,37 30,50 4,37 4,15"
+              stroke="currentColor"
+              strokeWidth="0.5"
+              fill="none"
+            />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hex-pattern)" className="cyberpunk-hex-fade" />
+      </svg>
+
+      {/* ─── Scanning beam (wide, diagonal) ─── */}
+      <div className="absolute inset-0 cyberpunk-scan-beam" />
+
+      {/* ─── Data particles (floating dots) ─── */}
+      {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
+        <div
+          key={`particle-${i}`}
+          className="absolute w-1 h-1 rounded-full bg-primary/30 cyberpunk-particle"
+          style={{
+            left: `${8 + i * 12}%`,
+            animationDuration: `${10 + i * 3}s`,
+            animationDelay: `${i * 1.5}s`,
+          }}
+        />
+      ))}
+
+      {/* ─── Pulsing rings ─── */}
+      {[0, 1, 2].map(i => (
+        <div
+          key={`ring-${i}`}
+          className="absolute cyberpunk-pulse-ring"
+          style={{
+            top: `${20 + i * 25}%`,
+            left: `${15 + (i % 2) * 60}%`,
+            animationDelay: `${i * 2.5}s`,
+          }}
+        />
+      ))}
+
+      {/* Ambient radial glow */}
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 50%, var(--primary, oklch(0.50 0.22 25)) 0%, transparent 50%)', opacity: 0.02 }} />
       
-      <svg className="absolute inset-0 w-full h-full opacity-5" preserveAspectRatio="none">
+      {/* Dot pattern */}
+      <svg className="absolute inset-0 w-full h-full opacity-5 text-primary" preserveAspectRatio="none">
         <defs>
           <pattern id="hud-dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="0.5" fill="oklch(0.50 0.22 25)" />
+            <circle cx="1" cy="1" r="0.5" fill="currentColor" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#hud-dots)" />
       </svg>
 
-      {/* Corner glows – pure CSS animations */}
-      {[0, 1, 2].map((i) => (
+      {/* ─── Corner brackets (cyberpunk HUD corners) ─── */}
+      {[
+        { top: '5%', left: '3%' },
+        { top: '5%', right: '3%', transform: 'rotate(90deg)' },
+        { bottom: '5%', left: '3%', transform: 'rotate(270deg)' },
+        { bottom: '5%', right: '3%', transform: 'rotate(180deg)' },
+      ].map((pos, i) => (
         <div
-          key={`corner-${i}`}
-          className="absolute cyberpunk-corner-glow"
-          style={{
-            top: i === 0 ? '20%' : i === 1 ? '50%' : '70%',
-            left: i % 2 === 0 ? '10%' : '85%',
-            animationDelay: `${i * 1.5}s`,
-          }}
+          key={`corner-bracket-${i}`}
+          className="absolute hidden md:block cyberpunk-corner-bracket"
+          style={{ ...pos, animationDelay: `${i * 0.5}s` } as React.CSSProperties}
         >
-          <svg width="30" height="30" viewBox="0 0 30 30">
-            <path
-              d="M 0 0 L 15 0 L 0 15 Z"
-              stroke="oklch(0.50 0.22 25)"
-              strokeWidth="0.5"
-              fill="none"
-            />
+          <svg width="40" height="40" viewBox="0 0 40 40" className="text-primary">
+            <path d="M 0 15 L 0 0 L 15 0" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.3" />
+            <path d="M 0 8 L 0 0 L 8 0" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.5" />
           </svg>
         </div>
       ))}

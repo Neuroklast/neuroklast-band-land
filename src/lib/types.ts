@@ -138,6 +138,50 @@ export interface Datenschutz {
   customTextEn?: string
 }
 
+/** Theme color & font customization settings */
+export interface ThemeSettings {
+  /** Primary color in oklch format e.g. "oklch(0.50 0.22 25)" */
+  primary?: string
+  /** Accent color */
+  accent?: string
+  /** Background color */
+  background?: string
+  /** Card background color */
+  card?: string
+  /** Foreground text color */
+  foreground?: string
+  /** Muted foreground text color */
+  mutedForeground?: string
+  /** Border color */
+  border?: string
+  /** Secondary color */
+  secondary?: string
+  /** Heading font family */
+  fontHeading?: string
+  /** Body font family */
+  fontBody?: string
+  /** Mono/code font family */
+  fontMono?: string
+  /** Active theme preset name (if using a preset) */
+  activePreset?: string
+}
+
+/** Controls visibility of individual sections and UI elements */
+export interface SectionVisibility {
+  news?: boolean
+  biography?: boolean
+  gallery?: boolean
+  gigs?: boolean
+  releases?: boolean
+  media?: boolean
+  social?: boolean
+  partnersAndFriends?: boolean
+  hudBackground?: boolean
+  audioVisualizer?: boolean
+  scanline?: boolean
+  systemMonitor?: boolean
+}
+
 export interface BandData {
   name: string
   genres: string[]
@@ -169,6 +213,10 @@ export interface BandData {
   news?: NewsItem[]
   /** Media files for press kits, logos, etc. */
   mediaFiles?: MediaFile[]
+  /** Theme color/font customization */
+  themeSettings?: ThemeSettings
+  /** Section visibility toggles */
+  sectionVisibility?: SectionVisibility
 }
 
 export interface SoundSettings {
