@@ -103,6 +103,12 @@ describe('KV API handler', () => {
       expect(res.status).toHaveBeenCalledWith(403)
     })
 
+    it('returns 403 for case-insensitive admin-password-hash', async () => {
+      const res = mockRes()
+      await handler({ method: 'GET', query: { key: 'Admin-Password-Hash' }, body: {}, headers: {} }, res)
+      expect(res.status).toHaveBeenCalledWith(403)
+    })
+
     it('returns 500 when KV throws', async () => {
       mockKvGet.mockRejectedValue(new Error('KV unavailable'))
       const res = mockRes()

@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
       // Block access to sensitive keys to prevent credential leakage
       const lowerKey = key.toLowerCase()
-      if (key === 'admin-password-hash' || lowerKey.includes('token') || lowerKey.includes('secret')) {
+      if (lowerKey === 'admin-password-hash' || lowerKey.includes('token') || lowerKey.includes('secret')) {
         return res.status(403).json({ error: 'Forbidden' })
       }
 
