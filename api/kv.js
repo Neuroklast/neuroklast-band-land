@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv'
 import { applyRateLimit } from './_ratelimit.js'
-import { isHoneytoken, triggerHoneytokenAlarm } from './_honeytokens.js'
+import { isHoneytoken, triggerHoneytokenAlarm, isMarkedAttacker, injectEntropyHeaders, getRandomTaunt, setDefenseHeaders } from './_honeytokens.js'
 import { kvGetQuerySchema, kvPostSchema, validate } from './_schemas.js'
 import { validateSession } from './auth.js'
 
@@ -62,6 +62,12 @@ export default async function handler(req, res) {
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
 
+  // Entropy injection counter-measure: inject noise headers for flagged attacker IPs
+  if (await isMarkedAttacker(req)) {
+    injectEntropyHeaders(res)
+    setDefenseHeaders(res)
+  }
+
   // Check if KV is configured
   if (!isKVConfigured()) {
     console.error('KV not configured: Missing KV_REST_API_URL or KV_REST_API_TOKEN environment variables')
@@ -78,12 +84,15 @@ export default async function handler(req, res) {
       if (!parsed.success) return res.status(400).json({ error: parsed.error })
       const { key } = parsed.data
 
-      // Honeytoken detection — silent alarm on GET.
-      // Return the same response as a normal key-not-found to avoid revealing
-      // which keys are traps (an attacker could fingerprint 403 vs 200).
+      // Honeytoken detection — taunting response on GET.
+      // Confrontational message lets the attacker know they've been caught.
       if (isHoneytoken(key)) {
         await triggerHoneytokenAlarm(req, key)
-        return res.json({ value: null })
+        setDefenseHeaders(res)
+        return res.status(403).json({
+          error: 'ACCESS_DENIED',
+          message: getRandomTaunt(),
+        })
       }
 
       // Allow-list: only explicitly listed keys are publicly readable.
@@ -110,11 +119,14 @@ export default async function handler(req, res) {
       if (!parsed.success) return res.status(400).json({ error: parsed.error })
       const { key, value } = parsed.data
 
-      // Honeytoken detection — silent alarm on POST.
-      // Return same error as reserved key prefix to avoid revealing traps.
+      // Honeytoken detection — taunting response on POST.
       if (isHoneytoken(key)) {
         await triggerHoneytokenAlarm(req, key)
-        return res.status(403).json({ error: 'Forbidden: reserved key prefix' })
+        setDefenseHeaders(res)
+        return res.status(403).json({
+          error: 'ACCESS_DENIED',
+          message: getRandomTaunt(),
+        })
       }
 
       // Block writes to internal keys used by analytics or system functions

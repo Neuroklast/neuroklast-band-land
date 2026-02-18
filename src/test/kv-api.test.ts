@@ -19,6 +19,10 @@ vi.mock('../../api/_ratelimit.js', () => ({
 vi.mock('../../api/_honeytokens.js', () => ({
   isHoneytoken: vi.fn().mockReturnValue(false),
   triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
+  isMarkedAttacker: vi.fn().mockResolvedValue(false),
+  injectEntropyHeaders: vi.fn(),
+  getRandomTaunt: vi.fn().mockReturnValue('test-taunt'),
+  setDefenseHeaders: vi.fn(),
 }))
 
 // Mock auth.js — session-based auth

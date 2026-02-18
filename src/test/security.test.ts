@@ -19,6 +19,10 @@ vi.mock('../../api/_ratelimit.js', () => ({
 vi.mock('../../api/_honeytokens.js', () => ({
   isHoneytoken: vi.fn().mockReturnValue(false),
   triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
+  isMarkedAttacker: vi.fn().mockResolvedValue(false),
+  injectEntropyHeaders: vi.fn(),
+  getRandomTaunt: vi.fn().mockReturnValue('Nice try, mf. Your IP hash is now a permanent resident in our blacklist.'),
+  setDefenseHeaders: vi.fn(),
 }))
 
 // Mock auth.js — session-based auth
@@ -310,18 +314,20 @@ describe('Security: Honeytoken detection', () => {
     }
   })
 
-  it('returns value:null (indistinguishable from not-found) when accessing a honeytoken key via GET', async () => {
-    const { isHoneytoken, triggerHoneytokenAlarm } = await import('../../api/_honeytokens.js') as any
+  it('returns 403 with taunting message when accessing a honeytoken key via GET', async () => {
+    const { isHoneytoken, triggerHoneytokenAlarm, setDefenseHeaders } = await import('../../api/_honeytokens.js') as any
     vi.mocked(isHoneytoken).mockReturnValueOnce(true)
 
     const res = mockRes()
     await kvHandler({ method: 'GET', query: { key: 'admin_backup' }, body: {}, headers: {} }, res)
-    expect(res.json).toHaveBeenCalledWith({ value: null })
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'ACCESS_DENIED', message: expect.any(String) }))
     expect(triggerHoneytokenAlarm).toHaveBeenCalled()
+    expect(setDefenseHeaders).toHaveBeenCalledWith(res)
   })
 
-  it('returns 403 when writing to a honeytoken key via POST', async () => {
-    const { isHoneytoken, triggerHoneytokenAlarm } = await import('../../api/_honeytokens.js') as any
+  it('returns 403 with taunting message when writing to a honeytoken key via POST', async () => {
+    const { isHoneytoken, triggerHoneytokenAlarm, setDefenseHeaders } = await import('../../api/_honeytokens.js') as any
     vi.mocked(isHoneytoken).mockReturnValueOnce(true)
 
     const res = mockRes()
@@ -332,8 +338,46 @@ describe('Security: Honeytoken detection', () => {
       headers: {},
     }, res)
     expect(res.status).toHaveBeenCalledWith(403)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'ACCESS_DENIED', message: expect.any(String) }))
     expect(triggerHoneytokenAlarm).toHaveBeenCalled()
+    expect(setDefenseHeaders).toHaveBeenCalledWith(res)
     expect(mockKvSet).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('Security: Entropy injection for flagged attackers', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    process.env.KV_REST_API_URL = 'https://fake-kv.vercel.test'
+    process.env.KV_REST_API_TOKEN = 'fake-token'
+  })
+
+  it('injects entropy headers and defense headers when the request comes from a flagged attacker', async () => {
+    const { isMarkedAttacker, injectEntropyHeaders, setDefenseHeaders } = await import('../../api/_honeytokens.js') as any
+    vi.mocked(isMarkedAttacker).mockResolvedValueOnce(true)
+
+    mockKvGet.mockResolvedValue({ name: 'test' })
+    const res = mockRes()
+    await kvHandler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
+
+    expect(isMarkedAttacker).toHaveBeenCalled()
+    expect(injectEntropyHeaders).toHaveBeenCalledWith(res)
+    expect(setDefenseHeaders).toHaveBeenCalledWith(res)
+    // Should still return the normal response
+    expect(res.json).toHaveBeenCalledWith({ value: { name: 'test' } })
+  })
+
+  it('does not inject entropy headers for normal requests', async () => {
+    const { isMarkedAttacker, injectEntropyHeaders } = await import('../../api/_honeytokens.js') as any
+    vi.mocked(isMarkedAttacker).mockResolvedValueOnce(false)
+
+    mockKvGet.mockResolvedValue({ name: 'test' })
+    const res = mockRes()
+    await kvHandler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
+
+    expect(isMarkedAttacker).toHaveBeenCalled()
+    expect(injectEntropyHeaders).not.toHaveBeenCalled()
   })
 })
 

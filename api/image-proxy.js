@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { resolve4, resolve6 } from 'node:dns/promises'
 import { applyRateLimit } from './_ratelimit.js'
+import { isMarkedAttacker, serveFingerprintPixel } from './_honeytokens.js'
 import { imageProxyQuerySchema, validate } from './_schemas.js'
 
 /**
@@ -110,6 +111,12 @@ export default async function handler(req, res) {
   // Rate limiting — blocks image proxy abuse (GDPR-compliant, IP is hashed)
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
+
+  // Fingerprinting counter-measure: serve a tracking pixel to flagged attackers
+  // instead of the real image, collecting browser Client Hints for identification
+  if (await isMarkedAttacker(req)) {
+    return serveFingerprintPixel(res)
+  }
 
   // Zod validation
   const qParsed = validate(imageProxyQuerySchema, req.query)
