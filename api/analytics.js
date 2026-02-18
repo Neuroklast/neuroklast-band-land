@@ -205,6 +205,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Request body is required' })
       }
 
+      // Reject excessively large payloads (protect against abuse)
+      const bodySize = JSON.stringify(req.body).length
+      if (bodySize > 4096) {
+        return res.status(413).json({ error: 'Request body too large' })
+      }
+
       const { type, target, meta, heatmap } = req.body
 
       // Validate event type
@@ -214,9 +220,10 @@ export default async function handler(req, res) {
       }
 
       // Sanitize string inputs to prevent injection into Redis keys
-      const sanitize = (s) => (typeof s === 'string' ? s.slice(0, 200).replace(/[\n\r:*?\[\]]/g, '') : undefined)
+      const sanitize = (s) => (typeof s === 'string' ? s.slice(0, 200).replace(/[\n\r\0:*?\[\]{}]/g, '') : undefined)
 
-      const sanitizedMeta = meta ? {
+      // Limit the number of meta fields to prevent unbounded key pollution
+      const sanitizedMeta = meta && typeof meta === 'object' ? {
         referrer: sanitize(meta.referrer),
         device: sanitize(meta.device),
         browser: sanitize(meta.browser),
@@ -230,11 +237,13 @@ export default async function handler(req, res) {
 
       await mergeAnalytics({ type, target: sanitize(target), meta: sanitizedMeta })
 
-      // Store heatmap data if present
+      // Store heatmap data if present — validate coordinates are in valid range
       if (heatmap && typeof heatmap.x === 'number' && typeof heatmap.y === 'number') {
+        const hx = Math.round(Math.max(0, Math.min(1, heatmap.x)) * 10000) / 10000
+        const hy = Math.round(Math.max(0, Math.min(2, heatmap.y)) * 10000) / 10000
         await storeHeatmapClick({
-          x: Math.round(heatmap.x * 10000) / 10000,
-          y: Math.round(heatmap.y * 10000) / 10000,
+          x: hx,
+          y: hy,
           page: sanitize(heatmap.page),
           elementTag: sanitize(heatmap.elementTag),
         })

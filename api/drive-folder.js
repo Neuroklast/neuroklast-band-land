@@ -18,6 +18,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'folderId parameter is required' })
   }
 
+  // Validate folderId format — Google Drive IDs are alphanumeric with hyphens/underscores
+  if (typeof folderId !== 'string' || !/^[A-Za-z0-9_-]+$/.test(folderId)) {
+    return res.status(400).json({ error: 'Invalid folderId format' })
+  }
+
   try {
     // Google Drive public folder listing via the embedlink/list endpoint
     const listUrl = `https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(folderId)}#list`

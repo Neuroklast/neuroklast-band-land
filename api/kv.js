@@ -5,12 +5,14 @@ const isKVConfigured = () => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
 
-// Constant-time string comparison to prevent timing attacks on hash comparison
+// Constant-time string comparison to prevent timing attacks on hash comparison.
+// Always compares the full length of the longer string to avoid leaking length.
 export function timingSafeEqual(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false
-  let result = 0
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  if (typeof a !== 'string' || typeof b !== 'string') return false
+  const len = Math.max(a.length, b.length)
+  let result = a.length ^ b.length
+  for (let i = 0; i < len; i++) {
+    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0)
   }
   return result === 0
 }
@@ -34,6 +36,10 @@ export default async function handler(req, res) {
       const { key } = req.query
       if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
 
+      // Validate key length and characters
+      if (key.length > 200) return res.status(400).json({ error: 'key is too long' })
+      if (/[\n\r\0]/.test(key)) return res.status(400).json({ error: 'key contains invalid characters' })
+
       // Block access to sensitive keys to prevent credential leakage
       const lowerKey = key.toLowerCase()
       if (lowerKey === 'admin-password-hash' || lowerKey.includes('token') || lowerKey.includes('secret')) {
@@ -52,6 +58,16 @@ export default async function handler(req, res) {
       const { key, value } = req.body
       if (!key || typeof key !== 'string') return res.status(400).json({ error: 'key is required' })
       if (value === undefined) return res.status(400).json({ error: 'value is required' })
+
+      // Validate key length and characters to prevent injection into Redis keyspace
+      if (key.length > 200) return res.status(400).json({ error: 'key is too long' })
+      if (/[\n\r\0]/.test(key)) return res.status(400).json({ error: 'key contains invalid characters' })
+
+      // Block writes to internal keys used by analytics or system functions
+      const lowerKey = key.toLowerCase()
+      if (lowerKey.startsWith('nk-analytics') || lowerKey.startsWith('nk-heatmap') || lowerKey.startsWith('img-cache:')) {
+        return res.status(403).json({ error: 'Forbidden: reserved key prefix' })
+      }
 
       const token = req.headers['x-admin-token'] || ''
 

@@ -21,11 +21,25 @@ const BLOCKED_HOST_PATTERNS = [
   /^0\./,
   /^169\.254\./,
   /^\[::1\]/,
+  /^\[::ffff:/i,
+  /^\[fe80:/i,
+  /^\[fc/i,
+  /^\[fd/i,
   /^metadata\.google\.internal$/i,
+  /^0x[0-9a-f]/i,
+  /^0[0-7]+\./,
 ]
 
+/** Allowed URL protocols */
+const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
+
 function isBlockedHost(hostname) {
-  return BLOCKED_HOST_PATTERNS.some(p => p.test(hostname))
+  if (BLOCKED_HOST_PATTERNS.some(p => p.test(hostname))) return true
+  // Block numeric-only hostnames (decimal IP like 2130706433 = 127.0.0.1)
+  if (/^\d+$/.test(hostname)) return true
+  // Block hostnames without a dot (e.g. "internal", "localhost")
+  if (!hostname.includes('.') && !hostname.startsWith('[')) return true
+  return false
 }
 
 function toDirectUrl(url) {
@@ -59,22 +73,34 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'url parameter is required' })
   }
 
-  // Only allow http(s) URLs
-  if (!/^https?:\/\//i.test(url)) {
+  // Validate and block dangerous URLs
+  let parsed
+  try {
+    parsed = new URL(url)
+  } catch {
     return res.status(400).json({ error: 'Invalid URL' })
   }
-
+  // Only allow http(s) protocols (blocks file://, data://, javascript://, etc.)
+  if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
+    return res.status(400).json({ error: 'Invalid URL protocol' })
+  }
   // Block requests to private/internal networks (SSRF prevention)
+  if (isBlockedHost(parsed.hostname)) {
+    return res.status(400).json({ error: 'Blocked host' })
+  }
+
+  const directUrl = toDirectUrl(url)
+
+  // Re-validate the transformed URL as well
   try {
-    const parsed = new URL(url)
-    if (isBlockedHost(parsed.hostname)) {
+    const parsedDirect = new URL(directUrl)
+    if (!ALLOWED_PROTOCOLS.has(parsedDirect.protocol) || isBlockedHost(parsedDirect.hostname)) {
       return res.status(400).json({ error: 'Blocked host' })
     }
   } catch {
     return res.status(400).json({ error: 'Invalid URL' })
   }
 
-  const directUrl = toDirectUrl(url)
   const key = cacheKey(directUrl)
 
   try {
@@ -96,6 +122,18 @@ export default async function handler(req, res) {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NeuroklastImageProxy/1.0)' },
       redirect: 'follow',
     })
+
+    // Validate the final URL after redirects to prevent SSRF via redirect
+    if (response.url) {
+      try {
+        const finalUrl = new URL(response.url)
+        if (!ALLOWED_PROTOCOLS.has(finalUrl.protocol) || isBlockedHost(finalUrl.hostname)) {
+          return res.status(400).json({ error: 'Blocked redirect target' })
+        }
+      } catch {
+        return res.status(400).json({ error: 'Invalid redirect URL' })
+      }
+    }
 
     if (!response.ok) {
       return res.status(response.status).json({ error: `Upstream returned ${response.status}` })
