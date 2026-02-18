@@ -17,7 +17,7 @@ vi.mock('../../api/_ratelimit.js', () => ({
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn> }
+type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn>; redirect: ReturnType<typeof vi.fn> }
 
 function mockRes(): Res {
   const res: Res = {
@@ -25,6 +25,7 @@ function mockRes(): Res {
     json: vi.fn(),
     setHeader: vi.fn(),
     send: vi.fn(),
+    redirect: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
@@ -131,10 +132,57 @@ describe('Drive download API', () => {
     const metaUrl = mockFetch.mock.calls[0][0]
     expect(metaUrl).toContain('googleapis.com/drive/v3/files/testId123')
     expect(metaUrl).toContain('fields=')
+    expect(metaUrl).toContain('supportsAllDrives=true')
 
     // Second call: download
     const dlUrl = mockFetch.mock.calls[1][0]
     expect(dlUrl).toContain('googleapis.com/drive/v3/files/testId123')
     expect(dlUrl).toContain('alt=media')
+    expect(dlUrl).toContain('supportsAllDrives=true')
+    expect(dlUrl).toContain('acknowledgeAbuse=true')
+  })
+
+  it('redirects large files (>10MB) to Google Drive directly', async () => {
+    const largeFileSize = 15 * 1024 * 1024 // 15 MB
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ name: 'large-video.mp4', mimeType: 'video/mp4', size: largeFileSize.toString() }),
+    })
+    const res = mockRes()
+    res.redirect = vi.fn()
+    await handler({ method: 'GET', query: { fileId: 'largeFileId' }, headers: {} }, res)
+
+    // Should redirect instead of proxying
+    expect(res.redirect).toHaveBeenCalled()
+    const redirectUrl = res.redirect.mock.calls[0][1]
+    expect(redirectUrl).toContain('googleapis.com/drive/v3/files/largeFileId')
+    expect(redirectUrl).toContain('alt=media')
+    expect(redirectUrl).toContain('supportsAllDrives=true')
+    expect(redirectUrl).toContain('acknowledgeAbuse=true')
+    // Should only fetch metadata, not the file content
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('proxies small files (<10MB) through Vercel', async () => {
+    const smallFileSize = 5 * 1024 * 1024 // 5 MB
+    const fileContent = new ArrayBuffer(smallFileSize)
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ name: 'small.pdf', mimeType: 'application/pdf', size: smallFileSize.toString() }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(fileContent),
+      })
+    const res = mockRes()
+    res.redirect = vi.fn()
+    await handler({ method: 'GET', query: { fileId: 'smallFileId' }, headers: {} }, res)
+
+    // Should proxy, not redirect
+    expect(res.redirect).not.toHaveBeenCalled()
+    expect(res.send).toHaveBeenCalled()
+    // Should fetch both metadata and file content
+    expect(mockFetch).toHaveBeenCalledTimes(2)
   })
 })
