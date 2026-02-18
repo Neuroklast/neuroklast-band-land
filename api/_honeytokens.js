@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { randomBytes } from 'node:crypto'
 import { getClientIp, hashIp } from './_ratelimit.js'
 
 /**
@@ -55,6 +56,54 @@ export async function triggerHoneytokenAlarm(req, key) {
     await kv.ltrim('nk-honeytoken-alerts', 0, 499) // keep last 500 alerts
   } catch {
     // Persistence failure must not block the response
+  }
+
+  // Mark this IP as an attacker for entropy injection
+  await markAttacker(hashedIp)
+}
+
+/** KV prefix and TTL for flagged attacker IPs */
+const FLAGGED_PREFIX = 'nk-flagged:'
+const FLAGGED_TTL = 86400 // 24 hours
+
+/**
+ * Mark an IP hash as a known attacker in KV.
+ * Flagged IPs receive entropy-injected responses to confuse scanners.
+ */
+export async function markAttacker(hashedIp) {
+  try {
+    await kv.set(`${FLAGGED_PREFIX}${hashedIp}`, true, { ex: FLAGGED_TTL })
+  } catch {
+    // Marking failure must not block the response
+  }
+}
+
+/**
+ * Check whether the request originates from an IP previously flagged as an attacker.
+ */
+export async function isMarkedAttacker(req) {
+  try {
+    const ip = getClientIp(req)
+    const hashedIp = hashIp(ip)
+    const flagged = await kv.get(`${FLAGGED_PREFIX}${hashedIp}`)
+    return !!flagged
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Header-Flooding / Entropy Injection counter-measure.
+ *
+ * Injects a large number of random custom headers into the response to
+ * confuse automated scanners and fuzzing tools that rely on clean,
+ * predictable HTTP headers.  Each header contains cryptographically
+ * random hex data so the output cannot be predicted or filtered easily.
+ */
+export function injectEntropyHeaders(res, count = 200) {
+  for (let i = 0; i < count; i++) {
+    const idx = String(i).padStart(3, '0')
+    res.setHeader(`X-Neural-Noise-${idx}`, randomBytes(16).toString('hex'))
   }
 }
 

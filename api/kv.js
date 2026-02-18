@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv'
 import { applyRateLimit } from './_ratelimit.js'
-import { isHoneytoken, triggerHoneytokenAlarm } from './_honeytokens.js'
+import { isHoneytoken, triggerHoneytokenAlarm, isMarkedAttacker, injectEntropyHeaders } from './_honeytokens.js'
 import { kvGetQuerySchema, kvPostSchema, validate } from './_schemas.js'
 import { validateSession } from './auth.js'
 
@@ -61,6 +61,11 @@ export default async function handler(req, res) {
   // Rate limiting — blocks brute-force and DoS attacks (GDPR-compliant, IP is hashed)
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
+
+  // Header-Flooding: inject entropy headers for flagged attacker IPs
+  if (await isMarkedAttacker(req)) {
+    injectEntropyHeaders(res)
+  }
 
   // Check if KV is configured
   if (!isKVConfigured()) {

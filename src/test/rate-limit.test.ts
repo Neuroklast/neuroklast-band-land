@@ -21,6 +21,14 @@ vi.mock('../../api/_ratelimit.js', () => ({
   getClientIp: vi.fn().mockReturnValue('1.2.3.4'),
 }))
 
+// Mock honeytokens — disable in rate-limit tests
+vi.mock('../../api/_honeytokens.js', () => ({
+  isHoneytoken: vi.fn().mockReturnValue(false),
+  triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
+  isMarkedAttacker: vi.fn().mockResolvedValue(false),
+  injectEntropyHeaders: vi.fn(),
+}))
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
 
