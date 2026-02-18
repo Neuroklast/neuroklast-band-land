@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShieldCheck } from '@phosphor-icons/react'
+import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 
 interface SecuritySettings {
@@ -40,32 +40,45 @@ interface ToggleRowProps {
   description: string
   checked: boolean
   onChange: (v: boolean) => void
+  icon?: React.ComponentType<{ size: number; className?: string }>
 }
 
-function ToggleRow({ label, description, checked, onChange }: ToggleRowProps) {
+function ToggleRow({ label, description, checked, onChange, icon: Icon }: ToggleRowProps) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2 border-b border-primary/5">
-      <div>
-        <p className="font-mono text-[11px] text-foreground/80 uppercase tracking-wider">{label}</p>
-        <p className="text-[9px] text-primary/40 mt-0.5">{description}</p>
+    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-primary/5">
+      <div className="flex items-start gap-3">
+        {Icon && (
+          <div className={`mt-0.5 ${checked ? 'text-primary/70' : 'text-primary/20'}`}>
+            <Icon size={16} />
+          </div>
+        )}
+        <div>
+          <p className="font-mono text-[11px] text-foreground/80 uppercase tracking-wider">{label}</p>
+          <p className="text-[9px] text-primary/40 mt-0.5">{description}</p>
+        </div>
       </div>
-      <button
-        onClick={() => onChange(!checked)}
-        className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
-          checked ? 'bg-primary/60' : 'bg-primary/15'
-        }`}
-      >
-        <div
-          className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-            checked ? 'translate-x-5' : 'translate-x-0.5'
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <span className={`font-mono text-[8px] tracking-wider ${checked ? 'text-green-400/70' : 'text-red-400/50'}`}>
+          {checked ? 'ACTIVE' : 'DISABLED'}
+        </span>
+        <button
+          onClick={() => onChange(!checked)}
+          className={`relative w-11 h-6 rounded-full transition-colors ${
+            checked ? 'bg-primary/60' : 'bg-primary/15'
           }`}
-        />
-      </button>
+        >
+          <div
+            className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+              checked ? 'translate-x-[22px]' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
+      </div>
     </div>
   )
 }
 
-interface NumberRowProps {
+interface SliderRowProps {
   label: string
   description: string
   value: number
@@ -76,9 +89,9 @@ interface NumberRowProps {
   unit?: string
 }
 
-function NumberRow({ label, description, value, onChange, min, max, step = 1, unit }: NumberRowProps) {
+function SliderRow({ label, description, value, onChange, min, max, step = 1, unit }: SliderRowProps) {
   return (
-    <div className="py-2 border-b border-primary/5 space-y-1">
+    <div className="py-2.5 border-b border-primary/5 space-y-2">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="font-mono text-[11px] text-foreground/80 uppercase tracking-wider">{label}</p>
@@ -97,8 +110,21 @@ function NumberRow({ label, description, value, onChange, min, max, step = 1, un
             step={step}
             className="w-24 bg-black/50 border border-primary/20 px-2 py-1 font-mono text-[11px] text-foreground/80 text-right focus:border-primary/50 focus:outline-none"
           />
-          {unit && <span className="text-[9px] font-mono text-primary/40">{unit}</span>}
+          {unit && <span className="text-[9px] font-mono text-primary/40 w-6">{unit}</span>}
         </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-[8px] text-primary/30 w-12 text-right">{min}{unit}</span>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="flex-1 h-1.5 accent-primary cursor-pointer"
+        />
+        <span className="font-mono text-[8px] text-primary/30 w-12">{max}{unit}</span>
       </div>
     </div>
   )
@@ -162,6 +188,14 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
     setSettings(prev => ({ ...prev, [key]: value }))
   }
 
+  const activeModules = useMemo(() => {
+    const bools: (keyof SecuritySettings)[] = [
+      'honeytokensEnabled', 'rateLimitEnabled', 'robotsTrapEnabled',
+      'entropyInjectionEnabled', 'suspiciousUaBlockingEnabled', 'sessionBindingEnabled'
+    ]
+    return bools.filter(k => settings[k]).length
+  }, [settings])
+
   return (
     <AnimatePresence>
       {open && (
@@ -215,6 +249,29 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
 
               {!loading && !error && (
                 <>
+                  {/* Security status overview */}
+                  <div className="border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${activeModules >= 5 ? 'bg-green-500' : activeModules >= 3 ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`} />
+                      <div>
+                        <p className="font-mono text-[11px] text-foreground/80 uppercase">
+                          SECURITY LEVEL: {activeModules >= 5 ? 'HIGH' : activeModules >= 3 ? 'MEDIUM' : 'LOW'}
+                        </p>
+                        <p className="font-mono text-[9px] text-primary/50">
+                          {activeModules}/6 defense modules active
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      {[...Array(6)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`w-2 h-4 ${i < activeModules ? 'bg-primary/60' : 'bg-primary/10'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Info banner */}
                   <div className="border border-primary/15 bg-primary/5 p-3">
                     <p className="font-mono text-[9px] text-primary/50">
@@ -225,40 +282,47 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
 
                   {/* Toggle settings */}
                   <div className="space-y-0">
-                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider mb-2">
+                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider mb-2 flex items-center gap-2">
+                      <ShieldWarning size={12} />
                       DEFENSE MODULES
                     </h3>
                     <ToggleRow
+                      icon={Bug}
                       label="Honeytoken Detection"
                       description="Decoy database records that trigger silent alarms on unauthorized access"
                       checked={settings.honeytokensEnabled}
                       onChange={(v) => update('honeytokensEnabled', v)}
                     />
                     <ToggleRow
+                      icon={ShieldCheck}
                       label="Rate Limiting"
                       description="Sliding window rate limit (5 req/10s) with GDPR-compliant IP hashing"
                       checked={settings.rateLimitEnabled}
                       onChange={(v) => update('rateLimitEnabled', v)}
                     />
                     <ToggleRow
+                      icon={Robot}
                       label="Robots.txt Access Control"
                       description="Defensive tarpit for bots that ignore Disallow directives"
                       checked={settings.robotsTrapEnabled}
                       onChange={(v) => update('robotsTrapEnabled', v)}
                     />
                     <ToggleRow
+                      icon={Lock}
                       label="Entropy Injection"
                       description="Inject noise headers into responses for flagged attacker IPs"
                       checked={settings.entropyInjectionEnabled}
                       onChange={(v) => update('entropyInjectionEnabled', v)}
                     />
                     <ToggleRow
+                      icon={ShieldWarning}
                       label="Suspicious UA Blocking"
                       description="Block known hacking tools (wfuzz, nikto, sqlmap, etc.) with tarpit delay"
                       checked={settings.suspiciousUaBlockingEnabled}
                       onChange={(v) => update('suspiciousUaBlockingEnabled', v)}
                     />
                     <ToggleRow
+                      icon={Fingerprint}
                       label="Session Binding"
                       description="Bind admin sessions to User-Agent + IP subnet to detect hijacking"
                       checked={settings.sessionBindingEnabled}
@@ -266,12 +330,13 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                     />
                   </div>
 
-                  {/* Numeric settings */}
+                  {/* Numeric settings with sliders */}
                   <div className="space-y-0">
-                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider mb-2">
+                    <h3 className="text-[10px] font-mono text-primary/50 tracking-wider mb-2 flex items-center gap-2">
+                      <Lock size={12} />
                       PARAMETERS
                     </h3>
-                    <NumberRow
+                    <SliderRow
                       label="Max Alerts Stored"
                       description="Maximum number of security incidents kept in the alert log"
                       value={settings.maxAlertsStored}
@@ -280,7 +345,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       max={10000}
                       step={10}
                     />
-                    <NumberRow
+                    <SliderRow
                       label="Tarpit Min Delay"
                       description="Minimum delay applied to flagged requests"
                       value={settings.tarpitMinMs}
@@ -290,7 +355,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       step={500}
                       unit="ms"
                     />
-                    <NumberRow
+                    <SliderRow
                       label="Tarpit Max Delay"
                       description="Maximum delay applied to flagged requests"
                       value={settings.tarpitMaxMs}
@@ -300,7 +365,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       step={500}
                       unit="ms"
                     />
-                    <NumberRow
+                    <SliderRow
                       label="Session TTL"
                       description="Admin session lifetime before re-authentication is required"
                       value={settings.sessionTtlSeconds}
@@ -308,7 +373,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       min={300}
                       max={86400}
                       step={300}
-                      unit="sec"
+                      unit="s"
                     />
                   </div>
 

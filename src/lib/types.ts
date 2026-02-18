@@ -159,6 +159,8 @@ export interface BandData {
   soundSettings?: SoundSettings
   /** Runtime overrides for config.ts constants (keys are ConfigKey names) */
   configOverrides?: Record<string, unknown>
+  /** Custom secret code key sequence (replaces the default Konami code) */
+  secretCode?: string[]
   /** Custom section headings and display labels */
   sectionLabels?: SectionLabels
   /** News items for the band */

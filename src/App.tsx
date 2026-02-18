@@ -255,7 +255,7 @@ function App() {
 
   return (
     <>
-      <KonamiListener onCodeActivated={handleTerminalActivation} />
+      <KonamiListener onCodeActivated={handleTerminalActivation} customCode={data.secretCode} />
       <SecretTerminal
         isOpen={terminalOpen}
         onClose={() => setTerminalOpen(false)}

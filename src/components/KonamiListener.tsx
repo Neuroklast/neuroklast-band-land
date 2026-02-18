@@ -2,9 +2,11 @@ import { useEffect } from 'react'
 
 interface KonamiListenerProps {
   onCodeActivated: () => void
+  /** Custom key sequence. Falls back to the classic Konami code when omitted. */
+  customCode?: string[]
 }
 
-const KONAMI_CODE = [
+export const DEFAULT_KONAMI_CODE = [
   'ArrowUp',
   'ArrowUp',
   'ArrowDown',
@@ -17,18 +19,20 @@ const KONAMI_CODE = [
   'a'
 ]
 
-export default function KonamiListener({ onCodeActivated }: KonamiListenerProps) {
+export default function KonamiListener({ onCodeActivated, customCode }: KonamiListenerProps) {
+  const code = customCode && customCode.length > 0 ? customCode : DEFAULT_KONAMI_CODE
+
   useEffect(() => {
     let konamiIndex = 0
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase()
-      const expectedKey = KONAMI_CODE[konamiIndex].toLowerCase()
+      const expectedKey = code[konamiIndex].toLowerCase()
 
       if (key === expectedKey) {
         konamiIndex++
         
-        if (konamiIndex === KONAMI_CODE.length) {
+        if (konamiIndex === code.length) {
           konamiIndex = 0
           onCodeActivated()
         }
@@ -42,7 +46,7 @@ export default function KonamiListener({ onCodeActivated }: KonamiListenerProps)
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [onCodeActivated])
+  }, [onCodeActivated, code])
 
   return null
 }
