@@ -136,10 +136,9 @@ describe('Drive download API', () => {
 
     // Second call: download
     const dlUrl = mockFetch.mock.calls[1][0]
-    expect(dlUrl).toContain('googleapis.com/drive/v3/files/testId123')
-    expect(dlUrl).toContain('alt=media')
-    expect(dlUrl).toContain('supportsAllDrives=true')
-    expect(dlUrl).toContain('acknowledgeAbuse=true')
+    expect(dlUrl).toContain('drive.google.com/uc')
+    expect(dlUrl).toContain('export=download')
+    expect(dlUrl).toContain('id=testId123')
   })
 
   it('redirects large files (>10MB) to Google Drive directly', async () => {
@@ -155,10 +154,9 @@ describe('Drive download API', () => {
     // Should redirect instead of proxying
     expect(res.redirect).toHaveBeenCalled()
     const redirectUrl = res.redirect.mock.calls[0][1]
-    expect(redirectUrl).toContain('googleapis.com/drive/v3/files/largeFileId')
-    expect(redirectUrl).toContain('alt=media')
-    expect(redirectUrl).toContain('supportsAllDrives=true')
-    expect(redirectUrl).toContain('acknowledgeAbuse=true')
+    expect(redirectUrl).toContain('drive.google.com/uc')
+    expect(redirectUrl).toContain('export=download')
+    expect(redirectUrl).toContain('id=largeFileId')
     // Should only fetch metadata, not the file content
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
