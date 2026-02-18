@@ -39,19 +39,13 @@ function isSuspiciousUA(req) {
   return SUSPICIOUS_UA_PATTERNS.some(p => p.test(ua))
 }
 
-/** Artificial delay for tarpit — slows down automated tools */
-function tarpitDelay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
 
-  // Wfuzz / hacking tool detection — mock and tarpit
+  // Wfuzz / hacking tool detection — immediate block (no tarpit to prevent FDoS)
   if (isSuspiciousUA(req)) {
-    await tarpitDelay(3000 + Math.random() * 2000)
     return res.status(403).json({
       error: 'NOOB_DETECTED',
       tip: 'Next time, try changing your User-Agent before hacking a band.',
@@ -98,7 +92,9 @@ export default async function handler(req, res) {
       // Allow-list: only explicitly listed keys are publicly readable.
       // All other keys require a valid session to prevent leakage
       // of sensitive data stored under arbitrary key names.
-      if (!ALLOWED_PUBLIC_READ_KEYS.has(key)) {
+      const isPublicRead = ALLOWED_PUBLIC_READ_KEYS.has(key)
+      const isAuthenticated = isPublicRead ? await validateSession(req) : null
+      if (!isPublicRead) {
         const sessionValid = await validateSession(req)
         if (!sessionValid) {
           return res.status(403).json({ error: 'Forbidden' })
@@ -106,6 +102,15 @@ export default async function handler(req, res) {
       }
 
       const value = await kv.get(key)
+
+      // Strip sensitive terminal command data from public band-data reads.
+      // Terminal commands contain secrets that should only be served via
+      // the dedicated /api/terminal endpoint, not exposed in the full payload.
+      if (key === 'band-data' && isPublicRead && !isAuthenticated && value && typeof value === 'object') {
+        const { terminalCommands: _stripped, ...safeValue } = /** @type {Record<string, unknown>} */ (value)
+        return res.json({ value: safeValue })
+      }
+
       return res.json({ value: value ?? null })
     }
 

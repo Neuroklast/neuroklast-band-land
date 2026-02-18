@@ -6,10 +6,6 @@
  * GET /api/admin/logs/:id
  */
 
-function tarpitDelay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 function randomHex(len) {
   const chars = '0123456789abcdef'
   let result = ''
@@ -36,9 +32,6 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
-
-  // Slow down scanners with an artificial delay (tarpit)
-  await tarpitDelay(2000 + Math.random() * 3000)
 
   const { id } = req.query
   const numericId = parseInt(id, 10) || Math.floor(Math.random() * 100000)
