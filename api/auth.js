@@ -1,12 +1,12 @@
 import { kv } from '@vercel/kv'
 import { scrypt, randomBytes, createHash, timingSafeEqual as cryptoTimingSafeEqual } from 'node:crypto'
 import { promisify } from 'node:util'
-import { applyRateLimit } from './_ratelimit.js'
+import { applyRateLimit, getClientIp } from './_ratelimit.js'
 import { authLoginSchema, authSetupSchema, authChangePasswordSchema, validate } from './_schemas.js'
 
 const scryptAsync = promisify(scrypt)
 
-const SESSION_TTL = 86400 // 24 hours
+const SESSION_TTL = 14400 // 4 hours (reduced from 24h to limit session hijacking window)
 const COOKIE_NAME = 'nk-session'
 
 const isKVConfigured = () => {
@@ -63,19 +63,57 @@ export function getSessionFromCookie(req) {
   return match ? match[1] : null
 }
 
+/**
+ * Derive a client fingerprint from User-Agent and IP prefix (/24 subnet).
+ * Used to bind sessions to the originating client and detect session hijacking.
+ */
+function getClientFingerprint(req) {
+  const ua = req.headers['user-agent'] || ''
+  const ip = getClientIp(req)
+  // Use /24 subnet (first 3 octets) to allow minor IP changes within a network
+  const ipPrefix = ip.split('.').slice(0, 3).join('.')
+  return createHash('sha256').update(`${ua}|${ipPrefix}`).digest('hex')
+}
+
 /** Validate that the request has a valid session. Returns true/false. */
 export async function validateSession(req) {
   const token = getSessionFromCookie(req)
   if (!token) return false
   const sessionData = await kv.get(`session:${token}`)
-  return !!sessionData
+  if (!sessionData) return false
+  // Validate client binding — reject if User-Agent or IP subnet changed
+  if (sessionData.fingerprint) {
+    const currentFingerprint = getClientFingerprint(req)
+    if (sessionData.fingerprint !== currentFingerprint) return false
+  }
+  return true
 }
 
-async function createSession(res) {
+async function createSession(req, res) {
   const token = randomBytes(32).toString('hex')
-  await kv.set(`session:${token}`, { created: Date.now() }, { ex: SESSION_TTL })
+  const fingerprint = getClientFingerprint(req)
+  await kv.set(`session:${token}`, { created: Date.now(), fingerprint }, { ex: SESSION_TTL })
   setSessionCookie(res, token)
   return token
+}
+
+/**
+ * Invalidate all existing sessions by scanning and deleting session:* keys.
+ * Called after a password change to force re-authentication.
+ */
+async function invalidateAllSessions() {
+  try {
+    let cursor = 0
+    do {
+      const [nextCursor, keys] = await kv.scan(cursor, { match: 'session:*', count: 100 })
+      cursor = nextCursor
+      if (keys.length > 0) {
+        await Promise.all(keys.map(key => kv.del(key)))
+      }
+    } while (cursor !== 0)
+  } catch (err) {
+    console.error('Failed to invalidate sessions:', err)
+  }
 }
 
 export default async function handler(req, res) {
@@ -119,11 +157,11 @@ export default async function handler(req, res) {
 
         const hashed = await hashPassword(parsed.data.password)
         await kv.set('admin-password-hash', hashed)
-        await createSession(res)
+        await createSession(req, res)
         return res.json({ success: true })
       }
 
-      // --- Change password flow: { currentPassword, newPassword } or session + { newPassword } ---
+      // --- Change password flow: { currentPassword, newPassword } ---
       if (newPassword) {
         const sessionValid = await validateSession(req)
         if (!sessionValid) {
@@ -135,15 +173,13 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'No password set' })
         }
 
-        // If currentPassword is provided, validate it for defense-in-depth
-        if (req.body.currentPassword) {
-          const parsed = validate(authChangePasswordSchema, req.body)
-          if (!parsed.success) return res.status(400).json({ error: parsed.error })
+        // currentPassword is always required to prevent session-hijacking password changes
+        const parsed = validate(authChangePasswordSchema, req.body)
+        if (!parsed.success) return res.status(400).json({ error: parsed.error })
 
-          const valid = await verifyPassword(parsed.data.currentPassword, storedHash)
-          if (!valid) {
-            return res.status(403).json({ error: 'Current password is incorrect' })
-          }
+        const valid = await verifyPassword(parsed.data.currentPassword, storedHash)
+        if (!valid) {
+          return res.status(403).json({ error: 'Current password is incorrect' })
         }
 
         // Validate newPassword constraints
@@ -153,6 +189,12 @@ export default async function handler(req, res) {
 
         const hashed = await hashPassword(newPassword)
         await kv.set('admin-password-hash', hashed)
+
+        // Invalidate all existing sessions after password change
+        await invalidateAllSessions()
+
+        // Create a fresh session for the current user
+        await createSession(req, res)
         return res.json({ success: true })
       }
 
@@ -177,7 +219,7 @@ export default async function handler(req, res) {
           await kv.set('admin-password-hash', rehashed)
         }
 
-        await createSession(res)
+        await createSession(req, res)
         return res.json({ success: true })
       }
 

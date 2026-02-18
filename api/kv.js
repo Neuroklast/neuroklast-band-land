@@ -78,10 +78,12 @@ export default async function handler(req, res) {
       if (!parsed.success) return res.status(400).json({ error: parsed.error })
       const { key } = parsed.data
 
-      // Honeytoken detection — silent alarm
+      // Honeytoken detection — silent alarm on GET.
+      // Return the same response as a normal key-not-found to avoid revealing
+      // which keys are traps (an attacker could fingerprint 403 vs 200).
       if (isHoneytoken(key)) {
         await triggerHoneytokenAlarm(req, key)
-        return res.status(403).json({ error: 'Forbidden' })
+        return res.json({ value: null })
       }
 
       // Allow-list: only explicitly listed keys are publicly readable.
@@ -108,10 +110,11 @@ export default async function handler(req, res) {
       if (!parsed.success) return res.status(400).json({ error: parsed.error })
       const { key, value } = parsed.data
 
-      // Honeytoken detection — silent alarm
+      // Honeytoken detection — silent alarm on POST.
+      // Return same error as reserved key prefix to avoid revealing traps.
       if (isHoneytoken(key)) {
         await triggerHoneytokenAlarm(req, key)
-        return res.status(403).json({ error: 'Forbidden' })
+        return res.status(403).json({ error: 'Forbidden: reserved key prefix' })
       }
 
       // Block writes to internal keys used by analytics or system functions
@@ -158,14 +161,12 @@ export default async function handler(req, res) {
     if (isKVConfigError) {
       return res.status(503).json({ 
         error: 'Service unavailable',
-        message: 'KV storage configuration error. Please check environment variables.',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        message: 'KV storage configuration error. Please check environment variables.'
       })
     }
     
     return res.status(500).json({ 
-      error: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      error: 'Internal server error'
     })
   }
 }
