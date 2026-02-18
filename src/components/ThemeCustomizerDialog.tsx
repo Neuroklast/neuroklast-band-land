@@ -361,7 +361,7 @@ export default function ThemeCustomizerDialog({
   }
 
   const toggleVisibility = (key: keyof SectionVisibility) => {
-    setVisDraft(prev => ({ ...prev, [key]: prev[key] === false ? true : false }))
+    setVisDraft(prev => ({ ...prev, [key]: prev[key] === false }))
   }
 
   const tabs = [
