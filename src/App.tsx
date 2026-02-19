@@ -351,6 +351,8 @@ function App() {
               genres={data.genres}
               editMode={editMode && isOwner}
               onEdit={() => setShowBandInfoEdit(true)}
+              logoUrl={data.logoUrl}
+              titleImageUrl={data.titleImageUrl}
             />
 
             <main className="relative">
@@ -599,7 +601,9 @@ function App() {
               name={data.name}
               genres={data.genres}
               label={data.label}
-              onSave={({ name, genres, label }) => setBandData((current) => ({ ...(current || defaultBandData), name, genres, label }))}
+              logoUrl={data.logoUrl}
+              titleImageUrl={data.titleImageUrl}
+              onSave={({ name, genres, label, logoUrl, titleImageUrl }) => setBandData((current) => ({ ...(current || defaultBandData), name, genres, label, logoUrl, titleImageUrl }))}
             />
           </motion.div>
           </motion.div>

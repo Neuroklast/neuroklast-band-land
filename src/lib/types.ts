@@ -210,6 +210,8 @@ export interface BandData {
   releases: Release[]
   biography?: Biography
   label?: string
+  logoUrl?: string       // URL or Data-URL for the Logo
+  titleImageUrl?: string // URL or Data-URL for the Title Image
   terminalCommands?: TerminalCommand[]
   impressum?: Impressum
   galleryImages?: GalleryImage[]
