@@ -193,6 +193,18 @@ export interface OverlayEffects {
   noise?: OverlayEffect
   vignette?: OverlayEffect
   chromatic?: OverlayEffect
+  movingScanline?: OverlayEffect
+}
+
+export interface NewsletterSettings {
+  enabled?: boolean
+  title?: string
+  description?: string
+  placeholder?: string
+  buttonText?: string
+  provider?: 'mailchimp' | 'brevo' | 'none'
+  showInFooter?: boolean
+  showAfterGigs?: boolean
 }
 
 /** Controls visibility of individual sections and UI elements */
@@ -248,6 +260,8 @@ export interface BandData {
   themeSettings?: ThemeSettings
   /** Section visibility toggles */
   sectionVisibility?: SectionVisibility
+  /** Newsletter settings */
+  newsletterSettings?: NewsletterSettings
 }
 
 export interface SoundSettings {

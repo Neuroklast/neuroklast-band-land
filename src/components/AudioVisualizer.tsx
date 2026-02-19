@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { getFrequencyData } from '@/lib/audio-context'
 import {
   VISUALIZER_BAR_COUNT,
   VISUALIZER_TIME_INCREMENT,
@@ -71,8 +72,15 @@ export default function AudioVisualizer() {
 
       time += VISUALIZER_TIME_INCREMENT
 
+      const frequencyData = getFrequencyData()
       bars.forEach((bar, i) => {
-        bar.height = Math.sin(time * bar.speed + bar.phase) * 0.3 + 0.5
+        if (frequencyData && frequencyData.length > 0) {
+          const binIndex = Math.floor((i / bars.length) * frequencyData.length)
+          const rawValue = frequencyData[binIndex] / 255
+          bar.height = bar.height * 0.3 + rawValue * 0.7
+        } else {
+          bar.height = Math.sin(time * bar.speed + bar.phase) * 0.3 + 0.5
+        }
         
         if (Math.random() < VISUALIZER_GLITCH_PROBABILITY) {
           bar.glitchOffset = (Math.random() - 0.5) * VISUALIZER_GLITCH_OFFSET

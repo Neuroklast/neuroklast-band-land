@@ -10,7 +10,23 @@ export function MovingScanline() {
 
   useEffect(() => {
     const isEnabled = get('SCANLINE_MOVEMENT_ENABLED')
-    setEnabled(Boolean(isEnabled))
+    if (!isEnabled) {
+      setEnabled(false)
+      return
+    }
+    const scanlineEnabled = getComputedStyle(document.documentElement).getPropertyValue('--overlay-moving-scanline').trim()
+    if (scanlineEnabled === '0') {
+      setEnabled(false)
+      return
+    }
+    setEnabled(true)
+    // Watch for CSS variable changes
+    const observer = new MutationObserver(() => {
+      const val = getComputedStyle(document.documentElement).getPropertyValue('--overlay-moving-scanline').trim()
+      setEnabled(val !== '0')
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
+    return () => observer.disconnect()
   }, [])
 
   if (!enabled) return null

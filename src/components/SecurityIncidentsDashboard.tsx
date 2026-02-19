@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash, ShieldWarning, Globe, Clock, User, Hash, Eye } from '@phosphor-icons/react'
+import { Trash, ShieldWarning, Globe, Clock, User, Hash, Eye, ShieldCheck } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 
@@ -11,6 +11,10 @@ interface SecurityIncident {
   timestamp: string
   threatScore?: number
   threatLevel?: string
+  countermeasure?: string
+  countermeasureDetails?: string
+  autoBlocked?: boolean
+  blockExpiry?: string
 }
 
 interface SecurityIncidentsDashboardProps {
@@ -33,6 +37,17 @@ function classifyIncident(key: string): { label: string; color: string } {
 function shortHash(hash: string): string {
   if (!hash || hash.length < 12) return hash || '—'
   return `${hash.slice(0, 8)}…${hash.slice(-4)}`
+}
+
+function classifyCountermeasure(incident: SecurityIncident): string {
+  if (incident.autoBlocked) return 'BLOCKED'
+  if (incident.countermeasure) return incident.countermeasure
+  if (incident.threatLevel === 'BLOCK') return 'BLOCKED'
+  if (incident.threatLevel === 'TARPIT') return 'TARPITTED'
+  if (incident.threatLevel === 'WARN') return 'RATE_LIMITED'
+  if (incident.key.startsWith('blocked:')) return 'BLOCKED'
+  if (incident.key.startsWith('threat:')) return 'TARPITTED'
+  return 'GELOGGT'
 }
 
 /** Format timestamp for display */
@@ -89,6 +104,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
   const honeytokenCount = incidents.filter(i => !i.key.startsWith('robots:')).length
   const robotsCount = incidents.filter(i => i.key.startsWith('robots:')).length
   const blockedCount = incidents.filter(i => i.key?.startsWith('blocked:')).length
+  const autoBlockedCount = incidents.filter(i => i.autoBlocked || i.key?.startsWith('blocked:')).length
 
   const handleClear = async () => {
     if (!window.confirm('Clear all security incident records? This cannot be undone.')) return
@@ -190,6 +206,13 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                       </div>
                       <p className="text-xl font-mono font-bold text-foreground">{uniqueIps}</p>
                     </div>
+                    <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
+                      <div className="flex items-center gap-2 text-green-400/60">
+                        <ShieldCheck size={16} />
+                        <span className="text-[11px] font-mono tracking-wider uppercase">Auto-Geblockt</span>
+                      </div>
+                      <p className="text-xl font-mono font-bold text-green-400">{autoBlockedCount}</p>
+                    </div>
                   </div>
 
                   {/* Filter tabs */}
@@ -225,6 +248,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                             <th className="text-left px-3 py-2 tracking-wider">TIME</th>
                             <th className="text-left px-3 py-2 tracking-wider">TYPE</th>
                             <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell">THREAT</th>
+                            <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell">GEGENMASSNAHME</th>
                             <th className="text-left px-3 py-2 tracking-wider">TARGET</th>
                             <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell">METHOD</th>
                             <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell">IP HASH</th>
@@ -263,6 +287,31 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                                 </td>
                                 <td className="px-3 py-2 hidden lg:table-cell">
                                   {getThreatBadge() || <span className="text-primary/30">—</span>}
+                                </td>
+                                <td className="px-3 py-2 hidden lg:table-cell">
+                                  {(() => {
+                                    const cm = classifyCountermeasure(inc)
+                                    const colors: Record<string, string> = {
+                                      BLOCKED: 'bg-red-500/20 text-red-400 border-red-500/30',
+                                      TARPITTED: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+                                      RATE_LIMITED: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+                                      GELOGGT: 'bg-primary/20 text-primary border-primary/30',
+                                    }
+                                    const colorClass = colors[cm] || colors.GELOGGT
+                                    return (
+                                      <div className="space-y-0.5">
+                                        <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold tracking-wider border rounded ${colorClass}`}>
+                                          {cm}
+                                        </span>
+                                        {inc.countermeasureDetails && (
+                                          <p className="text-[9px] text-foreground/40 font-mono">{inc.countermeasureDetails}</p>
+                                        )}
+                                        {inc.autoBlocked && inc.blockExpiry && (
+                                          <p className="text-[9px] text-red-400/60 font-mono">Gesperrt bis: {new Date(inc.blockExpiry).toLocaleString('de-DE')}</p>
+                                        )}
+                                      </div>
+                                    )
+                                  })()}
                                 </td>
                                 <td className="px-3 py-2 text-foreground/70 max-w-[200px] truncate" title={inc.key}>
                                   {inc.key}

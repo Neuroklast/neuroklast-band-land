@@ -126,6 +126,12 @@ async function mergeAnalytics(event) {
   // Track this date in the set of known dates
   pipe.sadd(`${ANALYTICS_KEY}:dates`, today)
 
+  // Track hourly visits for best posting time analysis
+  if (type === 'page_view') {
+    const hour = new Date().getUTCHours() // UTC hours; dashboard shows these as-is for consistency
+    pipe.hincrby(ANALYTICS_KEY, `hourly:${hour}`, 1)
+  }
+
   // Set first/last tracked
   pipe.hsetnx(ANALYTICS_KEY, 'firstTracked', today)
   pipe.hset(ANALYTICS_KEY, 'lastTracked', today)
@@ -176,6 +182,7 @@ async function buildAnalyticsSnapshot() {
       utmSources: {},
       utmMediums: {},
       utmCampaigns: {},
+      hourlyVisits: {},
     }
   }
 
@@ -195,6 +202,7 @@ async function buildAnalyticsSnapshot() {
     utmSources: {},
     utmMediums: {},
     utmCampaigns: {},
+    hourlyVisits: {},
   }
 
   // Parse hash fields into categories
@@ -220,6 +228,8 @@ async function buildAnalyticsSnapshot() {
       result.utmMediums[key.slice(11)] = num
     } else if (key.startsWith('utm_campaign:')) {
       result.utmCampaigns[key.slice(13)] = num
+    } else if (key.startsWith('hourly:')) {
+      result.hourlyVisits[key.slice(7)] = num
     }
   }
 

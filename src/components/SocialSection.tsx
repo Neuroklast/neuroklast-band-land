@@ -7,6 +7,7 @@ import type { SocialLinks, FontSizeSettings, SectionLabels } from '@/lib/types'
 import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import { trackSocialClick } from '@/lib/analytics'
 import {
   TITLE_TYPING_SPEED_MS,
   TITLE_TYPING_START_DELAY_MS,
@@ -45,7 +46,7 @@ const socialPlatforms = [
   { key: 'bandcamp' as keyof SocialLinks, icon: bandcampIcon, label: 'Bandcamp' }
 ]
 
-function SocialButton({ iconSrc, url, label, index, isInView }: { iconSrc: string; url?: string; label: string; index: number; isInView: boolean }) {
+function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconSrc: string; url?: string; label: string; index: number; isInView: boolean; onClick?: () => void }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -68,7 +69,7 @@ function SocialButton({ iconSrc, url, label, index, isInView }: { iconSrc: strin
             : '0 0 8px oklch(0.50 0.22 25 / 0.15), inset 0 0 8px oklch(0.50 0.22 25 / 0.03)',
         }}
       >
-        <a href={url} target="_blank" rel="noopener noreferrer">
+        <a href={url} target="_blank" rel="noopener noreferrer" onClick={onClick}>
           <span className="corner-bl"></span>
           <span className="corner-br"></span>
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
@@ -171,7 +172,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
             const url = safeSocialLinks[platform.key]
 
             return (
-              <SocialButton key={platform.key} iconSrc={platform.icon} url={url} label={platform.label} index={index} isInView={isInView} />
+              <SocialButton key={platform.key} iconSrc={platform.icon} url={url} label={platform.label} index={index} isInView={isInView} onClick={() => trackSocialClick(platform.key, url || '')} />
             )
           })}
         </div>
