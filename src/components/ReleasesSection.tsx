@@ -1,4 +1,5 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
+import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -203,7 +204,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
           <motion.h2 
-            className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text ${glitchActive ? 'glitch-text-effect' : ''}`}
+            className={`text-4xl md:text-5xl lg:text-6xl font-bold font-mono ${glitchActive ? 'glitch-text-effect' : ''}`}
             data-text={`${headingPrefix} ${displayedTitle}`}
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
@@ -328,21 +329,14 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
               </div>
             </div>
 
-            <AnimatePresence>
+            <CyberModalBackdrop open={!!expandedReleaseId} zIndex="z-[9999]">
               {expandedReleaseId && (() => {
                 const release = sortedReleases.find(r => r.id === expandedReleaseId)
                 if (!release) return null
                 return (
                   <motion.div
                     key="release-links"
-                    className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-6"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
-                    <motion.div
-                      className="w-full max-w-2xl bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter"
+                    className="w-full max-w-2xl bg-card border border-primary/30 relative glitch-overlay-enter"
                       initial={{ scale: 0.85, y: 30, opacity: 0 }}
                       animate={{ scale: 1, y: 0, opacity: 1 }}
                       exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -373,7 +367,6 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                               className="w-full h-full object-cover"
                               style={{ filter: 'contrast(1.15) brightness(0.85)' }}
                             />
-                            <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
                           </div>
                         )}
                         <div className="text-center">
@@ -427,10 +420,9 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                         </div>
                       </div>
                     </motion.div>
-                  </motion.div>
                 )
               })()}
-            </AnimatePresence>
+            </CyberModalBackdrop>
 
             {/* Desktop: grid layout */}
             <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -441,7 +433,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                   animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                 >
-                  <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation hud-element hud-corner hud-scanline cursor-pointer"
+                  <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation cursor-pointer"
                     onClick={() => { if (!editMode) { triggerTransition(); setExpandedReleaseId(expandedReleaseId === release.id ? null : release.id) } }}
                   >
                     <span className="corner-bl"></span>
@@ -452,7 +444,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                         REL_{String(index).padStart(2, '0')}
                       </div>
                       <div className="absolute top-2 right-2 z-10">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 6px oklch(0.50 0.22 25)' }}></div>
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" style={{ boxShadow: '0 0 6px var(--color-primary)' }}></div>
                       </div>
                       
                       {release.artwork ? (

@@ -287,8 +287,10 @@ function App() {
         isOpen={terminalOpen}
         onClose={() => setTerminalOpen(false)}
         customCommands={data.terminalCommands || []}
+        secretCode={data.secretCode}
         editMode={editMode && isOwner}
         onSaveCommands={(terminalCommands) => setBandData((current) => ({ ...(current || defaultBandData), terminalCommands }))}
+        onSaveSecretCode={(secretCode) => setBandData((current) => ({ ...(current || defaultBandData), secretCode }))}
       />
       <ImpressumWindow
         isOpen={impressumOpen}
