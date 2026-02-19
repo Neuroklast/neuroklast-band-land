@@ -399,7 +399,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md overflow-y-auto flex items-start justify-center p-4 md:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

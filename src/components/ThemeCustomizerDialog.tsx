@@ -218,8 +218,12 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
   }
 
   // Border radius
+  // We set both --radius (used by index.css @theme) and --radius-factor
+  // (used by theme.css #root rules which have higher CSS specificity).
+  // Default: --radius = 0.125rem → --radius-factor = 1, so factor = radius / 0.125
   if (theme.borderRadius !== undefined) {
     root.style.setProperty('--radius', `${theme.borderRadius}rem`)
+    root.style.setProperty('--radius-factor', String(theme.borderRadius / 0.125))
   }
 
   // Overlay effects
@@ -276,7 +280,7 @@ export function resetThemeDOM() {
     '--font-heading', '--ring', '--destructive', '--primary-foreground',
     '--secondary-foreground', '--accent-foreground', '--card-foreground',
     '--popover-foreground', '--destructive-foreground', '--popover', '--muted',
-    '--radius',
+    '--radius', '--radius-factor',
     '--overlay-dot-matrix', '--overlay-scanlines', '--overlay-crt',
     '--overlay-noise', '--overlay-vignette', '--overlay-chromatic',
     '--overlay-moving-scanline',

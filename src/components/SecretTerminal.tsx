@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { PencilSimple, Plus, Trash, CaretDown, CaretUp } from '@phosphor-icons/react'
+import { PencilSimple, Plus, Trash, CaretDown, CaretUp, Keyboard } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import type { TerminalCommand } from '@/lib/types'
 import { downloadFile, type DownloadProgress } from '@/lib/download'
 
@@ -13,19 +14,23 @@ import {
   TERMINAL_TYPING_SPEED_MS,
 } from '@/lib/config'
 
+import { DEFAULT_KONAMI_CODE } from '@/components/KonamiListener'
+
 interface SecretTerminalProps {
   isOpen: boolean
   onClose: () => void
   customCommands?: TerminalCommand[]
+  secretCode?: string[]
   editMode?: boolean
   onEdit?: () => void
   onSaveCommands?: (commands: TerminalCommand[]) => void
+  onSaveSecretCode?: (code: string[]) => void
 }
 
 const RESERVED = TERMINAL_RESERVED_COMMANDS
 const TYPING_SPEED_MS = TERMINAL_TYPING_SPEED_MS
 
-export default function SecretTerminal({ isOpen, onClose, customCommands = [], editMode, onSaveCommands }: SecretTerminalProps) {
+export default function SecretTerminal({ isOpen, onClose, customCommands = [], secretCode, editMode, onSaveCommands, onSaveSecretCode }: SecretTerminalProps) {
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([
     { type: 'output', text: '> NEUROKLAST TERMINAL v1.3.37' },
@@ -38,8 +43,11 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
 
   // Inline editing state
   const [isEditing, setIsEditing] = useState(false)
+  const [editTab, setEditTab] = useState<'commands' | 'shortcut'>('commands')
   const [cmds, setCmds] = useState<TerminalCommand[]>(customCommands)
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
+  const [codeKeys, setCodeKeys] = useState<string[]>(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
+  const [isRecordingKey, setIsRecordingKey] = useState(false)
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -47,10 +55,12 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     }
     if (isOpen) {
       setCmds(customCommands)
+      setCodeKeys(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
       setIsEditing(false)
+      setEditTab('commands')
       setExpandedIdx(null)
     }
-  }, [isOpen, customCommands])
+  }, [isOpen, customCommands, secretCode])
 
   useEffect(() => {
     if (!isOpen) return
@@ -268,6 +278,13 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
     setIsEditing(false)
   }
 
+  const handleSaveShortcut = () => {
+    if (codeKeys.length >= 2) {
+      onSaveSecretCode?.(codeKeys)
+      setIsEditing(false)
+    }
+  }
+
   const hasNameConflict = (name: string, index: number) => {
     const lower = (name || '').toLowerCase().trim()
     if (RESERVED.includes(lower)) return 'Reserved command name'
@@ -276,14 +293,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
   }
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-start justify-center p-4 pt-8 overflow-y-auto"
-        >
+    <CyberModalBackdrop open={isOpen} zIndex="z-[10000]" bgClass="bg-background/95 backdrop-blur-sm">
           <motion.div
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -297,7 +307,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary uppercase tracking-wider">
-                  {isEditing ? 'EDIT COMMANDS' : 'TERMINAL ACTIVE'}
+                  {isEditing ? (editTab === 'shortcut' ? 'EDIT KEY SEQUENCE' : 'EDIT COMMANDS') : 'TERMINAL ACTIVE'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -318,87 +328,172 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
             </div>
 
             {isEditing ? (
-              <div className="absolute top-12 left-0 right-0 bottom-0 overflow-y-auto p-6 space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Add custom commands for the secret terminal. Built-in commands (help, glitch, matrix, clear, exit) cannot be overridden.
-                </p>
+              <div className="absolute top-12 left-0 right-0 bottom-0 flex flex-col overflow-hidden">
+                {/* Edit tabs */}
+                <div className="flex border-b border-primary/20 bg-primary/5 flex-shrink-0">
+                  <button
+                    onClick={() => setEditTab('commands')}
+                    className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 ${editTab === 'commands' ? 'text-primary border-primary' : 'text-primary/40 border-transparent hover:text-primary/70'}`}
+                  >
+                    <PencilSimple size={12} /> COMMANDS
+                  </button>
+                  <button
+                    onClick={() => setEditTab('shortcut')}
+                    className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 ${editTab === 'shortcut' ? 'text-primary border-primary' : 'text-primary/40 border-transparent hover:text-primary/70'}`}
+                  >
+                    <Keyboard size={12} /> KEY SEQUENCE
+                  </button>
+                </div>
 
-                {cmds.map((cmd, idx) => {
-                  const conflict = hasNameConflict(cmd.name, idx)
-                  const isExpanded = expandedIdx === idx
-                  return (
-                    <div key={idx} className="border border-border rounded-md p-3 space-y-2">
-                      <div className="flex gap-2 items-center">
-                        <Input
-                          value={cmd.name}
-                          onChange={(e) => updateField(idx, 'name', e.target.value.toLowerCase().replace(/\s/g, ''))}
-                          placeholder="command"
-                          className="w-28 font-mono text-sm"
-                        />
-                        <Input
-                          value={cmd.description}
-                          onChange={(e) => updateField(idx, 'description', e.target.value)}
-                          placeholder="Description"
-                          className="flex-1 text-sm"
-                        />
-                        <Button variant="ghost" size="icon" onClick={() => setExpandedIdx(isExpanded ? null : idx)}>
-                          {isExpanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
+                <div className="flex-1 overflow-y-auto p-6 space-y-3">
+                  {editTab === 'commands' ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Add custom commands for the secret terminal. Built-in commands (help, glitch, matrix, clear, exit) cannot be overridden.
+                      </p>
+
+                      {cmds.map((cmd, idx) => {
+                        const conflict = hasNameConflict(cmd.name, idx)
+                        const isExpanded = expandedIdx === idx
+                        return (
+                          <div key={idx} className="border border-border rounded-md p-3 space-y-2">
+                            <div className="flex gap-2 items-center">
+                              <Input
+                                value={cmd.name}
+                                onChange={(e) => updateField(idx, 'name', e.target.value.toLowerCase().replace(/\s/g, ''))}
+                                placeholder="command"
+                                className="w-28 font-mono text-sm"
+                              />
+                              <Input
+                                value={cmd.description}
+                                onChange={(e) => updateField(idx, 'description', e.target.value)}
+                                placeholder="Description"
+                                className="flex-1 text-sm"
+                              />
+                              <Button variant="ghost" size="icon" onClick={() => setExpandedIdx(isExpanded ? null : idx)}>
+                                {isExpanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => removeCommand(idx)}>
+                                <Trash size={16} className="text-destructive" />
+                              </Button>
+                            </div>
+                            {conflict && (
+                              <p className="text-xs text-destructive">{conflict}</p>
+                            )}
+                            {isExpanded && (
+                              <div className="space-y-2 pl-2 border-l-2 border-primary/20 ml-2">
+                                <Label className="text-xs text-muted-foreground">Output lines</Label>
+                                {cmd.output.map((line, lineIdx) => (
+                                  <div key={lineIdx} className="flex gap-2 items-center">
+                                    <span className="text-xs text-muted-foreground font-mono w-4">{lineIdx + 1}</span>
+                                    <Input
+                                      value={line}
+                                      onChange={(e) => updateOutputLine(idx, lineIdx, e.target.value)}
+                                      placeholder="Output text..."
+                                      className="flex-1 font-mono text-xs"
+                                    />
+                                    {cmd.output.length > 1 && (
+                                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeOutputLine(idx, lineIdx)}>
+                                        <Trash size={12} />
+                                      </Button>
+                                    )}
+                                  </div>
+                                ))}
+                                <Button variant="outline" size="sm" onClick={() => addOutputLine(idx)} className="text-xs">
+                                  <Plus size={12} className="mr-1" /> Add line
+                                </Button>
+                                <Label className="text-xs text-muted-foreground mt-2">File Download (optional)</Label>
+                                <Input
+                                  value={cmd.fileUrl || ''}
+                                  onChange={(e) => updateField(idx, 'fileUrl', e.target.value)}
+                                  placeholder="File URL"
+                                  className="flex-1 text-xs"
+                                />
+                                <Input
+                                  value={cmd.fileName || ''}
+                                  onChange={(e) => updateField(idx, 'fileName', e.target.value)}
+                                  placeholder="File Name"
+                                  className="flex-1 text-xs"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+
+                      <Button variant="outline" onClick={addCommand} className="w-full">
+                        <Plus size={16} className="mr-2" /> Add Command
+                      </Button>
+
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                        <Button onClick={handleSaveCommands}>Save Commands</Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Define the key sequence that activates the secret terminal. Minimum 2 keys. Click "Record Key" then press any key.
+                      </p>
+                      <div className="flex flex-wrap gap-2 min-h-[48px] p-3 border border-border bg-background/30">
+                        {codeKeys.map((key, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 border border-primary/30 font-mono text-xs text-primary"
+                          >
+                            {key}
+                            <button
+                              onClick={() => setCodeKeys(codeKeys.filter((_, ki) => ki !== i))}
+                              className="text-primary/40 hover:text-destructive transition-colors ml-1"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                        {codeKeys.length === 0 && (
+                          <span className="text-muted-foreground text-xs font-mono">No keys defined</span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={`font-mono text-xs ${isRecordingKey ? 'border-primary text-primary animate-pulse' : ''}`}
+                          onKeyDown={(e) => {
+                            if (!isRecordingKey) return
+                            e.preventDefault()
+                            e.stopPropagation()
+                            // Skip bare modifier keys — they must be combined with a real key
+                            const modifierOnly = ['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab']
+                            if (modifierOnly.includes(e.key)) return
+                            setCodeKeys(prev => [...prev, e.key])
+                            setIsRecordingKey(false)
+                          }}
+                          onBlur={() => setIsRecordingKey(false)}
+                          onClick={() => setIsRecordingKey(true)}
+                          onFocus={() => {}}
+                        >
+                          <Keyboard size={12} className="mr-1" />
+                          {isRecordingKey ? 'PRESS A KEY…' : 'Record Key'}
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => removeCommand(idx)}>
-                          <Trash size={16} className="text-destructive" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-muted-foreground"
+                          onClick={() => setCodeKeys(DEFAULT_KONAMI_CODE)}
+                        >
+                          Reset to Default
                         </Button>
                       </div>
-                      {conflict && (
-                        <p className="text-xs text-destructive">{conflict}</p>
+                      {codeKeys.length < 2 && (
+                        <p className="text-xs text-destructive">Minimum 2 keys required.</p>
                       )}
-                      {isExpanded && (
-                        <div className="space-y-2 pl-2 border-l-2 border-primary/20 ml-2">
-                          <Label className="text-xs text-muted-foreground">Output lines</Label>
-                          {cmd.output.map((line, lineIdx) => (
-                            <div key={lineIdx} className="flex gap-2 items-center">
-                              <span className="text-xs text-muted-foreground font-mono w-4">{lineIdx + 1}</span>
-                              <Input
-                                value={line}
-                                onChange={(e) => updateOutputLine(idx, lineIdx, e.target.value)}
-                                placeholder="Output text..."
-                                className="flex-1 font-mono text-xs"
-                              />
-                              {cmd.output.length > 1 && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeOutputLine(idx, lineIdx)}>
-                                  <Trash size={12} />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                          <Button variant="outline" size="sm" onClick={() => addOutputLine(idx)} className="text-xs">
-                            <Plus size={12} className="mr-1" /> Add line
-                          </Button>
-                          <Label className="text-xs text-muted-foreground mt-2">File Download (optional)</Label>
-                          <Input
-                            value={cmd.fileUrl || ''}
-                            onChange={(e) => updateField(idx, 'fileUrl', e.target.value)}
-                            placeholder="File URL"
-                            className="flex-1 text-xs"
-                          />
-                          <Input
-                            value={cmd.fileName || ''}
-                            onChange={(e) => updateField(idx, 'fileName', e.target.value)}
-                            placeholder="File Name"
-                            className="flex-1 text-xs"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-
-                <Button variant="outline" onClick={addCommand} className="w-full">
-                  <Plus size={16} className="mr-2" /> Add Command
-                </Button>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                  <Button onClick={handleSaveCommands}>Save Commands</Button>
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                        <Button onClick={handleSaveShortcut} disabled={codeKeys.length < 2}>Save Shortcut</Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
@@ -474,8 +569,6 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], e
               </>
             )}
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </CyberModalBackdrop>
   )
 }

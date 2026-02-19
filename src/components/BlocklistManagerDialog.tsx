@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { ProhibitInset, Trash, Clock, Warning, Plus, CheckCircle } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
@@ -143,18 +144,9 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
   const manualBlocked = totalBlocked - autoBlocked
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
-
+    <CyberModalBackdrop open={open} zIndex="z-[9999]">
           <motion.div
-            className="w-full max-w-4xl max-h-[85dvh] bg-card border border-primary/30 relative overflow-hidden flex flex-col"
+            className="w-full max-w-4xl max-h-[90dvh] bg-card border border-primary/30 relative overflow-hidden flex flex-col"
             initial={{ scale: 0.85, y: 30, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -338,8 +330,6 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
               )}
             </div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </CyberModalBackdrop>
   )
 }

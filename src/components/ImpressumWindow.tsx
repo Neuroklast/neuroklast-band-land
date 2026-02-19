@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -105,25 +106,17 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
   }
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
-        >
+    <CyberModalBackdrop open={isOpen} zIndex="z-[10000]" bgClass="bg-background/95 backdrop-blur-sm">
           <motion.div
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 20, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter"
+            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative flex flex-col glitch-overlay-enter"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
-
-            <div className="absolute top-0 left-0 right-0 h-12 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
+            {/* Header */}
+            <div className="h-12 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4 flex-shrink-0">
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary uppercase tracking-wider">
@@ -179,7 +172,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
               </div>
             </div>
 
-            <div className="pt-16 pb-8 px-8 font-mono text-sm space-y-6 max-h-[80vh] overflow-y-auto">
+            <div className="pb-8 px-8 pt-6 font-mono text-sm space-y-6 overflow-y-auto">
               {isEditing ? (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">{editLang === 'de' ? t.legalRef : 'Information according to § 5 DDG'}</p>
@@ -327,8 +320,6 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
               )}
             </div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </CyberModalBackdrop>
   )
 }
