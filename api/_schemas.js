@@ -68,7 +68,7 @@ export const authLoginSchema = z.object({
 
 export const authLoginTotpSchema = z.object({
   password: z.string().min(1, 'password is required').max(200),
-  totpCode: z.string().min(6, 'TOTP code must be 6 digits').max(6).regex(/^\d{6}$/, 'TOTP code must be 6 digits').optional(),
+  totpCode: z.string().length(6, 'TOTP code must be 6 digits').regex(/^\d{6}$/, 'TOTP code must be 6 digits').optional(),
 })
 
 export const authSetupSchema = z.object({
