@@ -1,5 +1,6 @@
 import { applyRateLimit } from './_ratelimit.js'
 import { itunesQuerySchema, validate } from './_schemas.js'
+import { fetchWithRetry } from './_fetch-retry.js'
 
 export default async function handler(req, res) {
   // Rate limiting (GDPR-compliant, IP is hashed)
@@ -15,8 +16,8 @@ export default async function handler(req, res) {
     // When entity is "all", fetch both songs and albums to capture every release
     if (entity === 'all') {
       const [songsRes, albumsRes] = await Promise.all([
-        fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=200`),
-        fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=200`),
+        fetchWithRetry(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=200`),
+        fetchWithRetry(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=200`),
       ]);
 
       if (!songsRes.ok) throw new Error(`iTunes songs API responded with ${songsRes.status}`);
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
 
     // Default: single entity search (backwards compatible)
     const searchEntity = entity || 'album';
-    const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=${encodeURIComponent(searchEntity)}&limit=200`);
+    const response = await fetchWithRetry(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=${encodeURIComponent(searchEntity)}&limit=200`);
     
     if (!response.ok) {
       throw new Error(`iTunes API responded with ${response.status}`);
