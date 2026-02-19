@@ -2,12 +2,15 @@ import { kv } from '@vercel/kv'
 import { scrypt, randomBytes, createHash, timingSafeEqual as cryptoTimingSafeEqual } from 'node:crypto'
 import { promisify } from 'node:util'
 import { applyRateLimit, getClientIp } from './_ratelimit.js'
-import { authLoginSchema, authSetupSchema, authChangePasswordSchema, validate } from './_schemas.js'
+import { authLoginSchema, authSetupSchema, authChangePasswordSchema, authLoginTotpSchema, totpSetupSchema, totpVerifySchema, validate } from './_schemas.js'
+import * as OTPAuth from 'otpauth'
 
 const scryptAsync = promisify(scrypt)
 
 const SESSION_TTL = 14400 // 4 hours (reduced from 24h to limit session hijacking window)
 const COOKIE_NAME = 'nk-session'
+const TOTP_ISSUER = 'NEUROKLAST Admin'
+const TOTP_KEY = 'admin-totp-secret'
 
 const isKVConfigured = () => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
@@ -124,6 +127,54 @@ async function invalidateAllSessions() {
   }
 }
 
+/**
+ * Generate a new TOTP secret and return the provisioning URI for QR code enrollment.
+ */
+function generateTotpSecret() {
+  const secret = new OTPAuth.Secret({ size: 20 })
+  const totp = new OTPAuth.TOTP({
+    issuer: TOTP_ISSUER,
+    label: 'admin',
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret,
+  })
+  return { secret: secret.base32, uri: totp.toString() }
+}
+
+/**
+ * Verify a TOTP code against the stored secret.
+ * Allows ±1 period window (30 s each side) to handle clock skew.
+ */
+function verifyTotpCode(secret, code) {
+  const totp = new OTPAuth.TOTP({
+    issuer: TOTP_ISSUER,
+    label: 'admin',
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: OTPAuth.Secret.fromBase32(secret),
+  })
+  // delta === null means invalid; otherwise returns the time step offset
+  const delta = totp.validate({ token: code, window: 1 })
+  return delta !== null
+}
+
+/**
+ * Validate the admin setup token.
+ * If ADMIN_SETUP_TOKEN is set, the request must include a matching setupToken.
+ */
+function validateSetupToken(setupToken) {
+  const requiredToken = process.env.ADMIN_SETUP_TOKEN
+  if (!requiredToken) return true // No token configured — allow setup (backward-compatible)
+  if (!setupToken || typeof setupToken !== 'string') return false
+  const a = Buffer.from(requiredToken, 'utf8')
+  const b = Buffer.from(setupToken, 'utf8')
+  if (a.length !== b.length) return false
+  return cryptoTimingSafeEqual(a, b)
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
@@ -139,13 +190,16 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const authenticated = await validateSession(req)
       const storedHash = await kv.get('admin-password-hash')
+      const totpSecret = await kv.get(TOTP_KEY)
       return res.json({
         authenticated,
         needsSetup: !storedHash,
+        totpEnabled: !!totpSecret,
+        setupTokenRequired: !!process.env.ADMIN_SETUP_TOKEN,
       })
     }
 
-    // POST — login, setup, or change password
+    // POST — login, setup, change password, or TOTP management
     if (req.method === 'POST') {
       if (!req.body || typeof req.body !== 'object') {
         return res.status(400).json({ error: 'Request body is required' })
@@ -153,10 +207,15 @@ export default async function handler(req, res) {
 
       const { action, newPassword } = req.body
 
-      // --- Setup flow: { password, action: 'setup' } ---
+      // --- Setup flow: { password, action: 'setup', setupToken? } ---
       if (action === 'setup') {
         const parsed = validate(authSetupSchema, req.body)
         if (!parsed.success) return res.status(400).json({ error: parsed.error })
+
+        // Validate setup token if ADMIN_SETUP_TOKEN is configured
+        if (!validateSetupToken(req.body.setupToken)) {
+          return res.status(403).json({ error: 'Invalid setup token' })
+        }
 
         const existingHash = await kv.get('admin-password-hash')
         if (existingHash) {
@@ -167,6 +226,81 @@ export default async function handler(req, res) {
         await kv.set('admin-password-hash', hashed)
         await createSession(req, res)
         return res.json({ success: true })
+      }
+
+      // --- TOTP enrollment: { action: 'totp-setup' } ---
+      if (action === 'totp-setup') {
+        const sessionValid = await validateSession(req)
+        if (!sessionValid) {
+          return res.status(401).json({ error: 'Authentication required' })
+        }
+
+        const existingTotp = await kv.get(TOTP_KEY)
+        if (existingTotp) {
+          return res.status(409).json({ error: 'TOTP is already configured. Disable it first to re-enroll.' })
+        }
+
+        const { secret, uri } = generateTotpSecret()
+        // Store the pending secret temporarily (5 min TTL) until confirmed
+        await kv.set('admin-totp-pending', secret, { ex: 300 })
+        return res.json({ success: true, totpUri: uri, totpSecret: secret })
+      }
+
+      // --- TOTP confirm enrollment: { action: 'totp-verify', code } ---
+      if (action === 'totp-verify') {
+        const sessionValid = await validateSession(req)
+        if (!sessionValid) {
+          return res.status(401).json({ error: 'Authentication required' })
+        }
+
+        const parsed = validate(totpVerifySchema, req.body)
+        if (!parsed.success) return res.status(400).json({ error: parsed.error })
+
+        const pendingSecret = await kv.get('admin-totp-pending')
+        if (!pendingSecret) {
+          return res.status(400).json({ error: 'No pending TOTP enrollment. Start setup first.' })
+        }
+
+        if (!verifyTotpCode(pendingSecret, parsed.data.code)) {
+          return res.status(403).json({ error: 'Invalid TOTP code. Please try again.' })
+        }
+
+        // Persist the secret and remove the pending key
+        const pipe = kv.pipeline()
+        pipe.set(TOTP_KEY, pendingSecret)
+        pipe.del('admin-totp-pending')
+        await pipe.exec()
+
+        return res.json({ success: true, message: 'TOTP 2FA has been enabled.' })
+      }
+
+      // --- TOTP disable: { action: 'totp-disable', password, code } ---
+      if (action === 'totp-disable') {
+        const sessionValid = await validateSession(req)
+        if (!sessionValid) {
+          return res.status(401).json({ error: 'Authentication required' })
+        }
+
+        const parsed = validate(totpSetupSchema, req.body)
+        if (!parsed.success) return res.status(400).json({ error: parsed.error })
+
+        // Require password to disable TOTP (prevents session-hijacking TOTP removal)
+        const storedHash = await kv.get('admin-password-hash')
+        if (!storedHash) return res.status(400).json({ error: 'No password set' })
+
+        const valid = await verifyPassword(parsed.data.password, storedHash)
+        if (!valid) return res.status(403).json({ error: 'Invalid password' })
+
+        // Require a valid TOTP code to confirm the owner has the authenticator
+        const totpSecret = await kv.get(TOTP_KEY)
+        if (!totpSecret) return res.status(400).json({ error: 'TOTP is not enabled' })
+
+        if (!verifyTotpCode(totpSecret, parsed.data.code)) {
+          return res.status(403).json({ error: 'Invalid TOTP code' })
+        }
+
+        await kv.del(TOTP_KEY)
+        return res.json({ success: true, message: 'TOTP 2FA has been disabled.' })
       }
 
       // --- Change password flow: { currentPassword, newPassword } ---
@@ -206,9 +340,13 @@ export default async function handler(req, res) {
         return res.json({ success: true })
       }
 
-      // --- Login flow: { password } ---
-      if (req.body.password) {
-        const parsed = validate(authLoginSchema, req.body)
+      // --- Login flow: { password, totpCode? } ---
+      if (req.body.password && !action) {
+        const totpSecret = await kv.get(TOTP_KEY)
+
+        // If TOTP is enabled, use the extended login schema
+        const schema = totpSecret ? authLoginTotpSchema : authLoginSchema
+        const parsed = validate(schema, req.body)
         if (!parsed.success) return res.status(400).json({ error: parsed.error })
 
         const storedHash = await kv.get('admin-password-hash')
@@ -219,6 +357,16 @@ export default async function handler(req, res) {
         const valid = await verifyPassword(parsed.data.password, storedHash)
         if (!valid) {
           return res.status(401).json({ error: 'Invalid credentials' })
+        }
+
+        // If TOTP is enabled, verify the code
+        if (totpSecret) {
+          if (!parsed.data.totpCode) {
+            return res.status(403).json({ error: 'TOTP code required', totpRequired: true })
+          }
+          if (!verifyTotpCode(totpSecret, parsed.data.totpCode)) {
+            return res.status(403).json({ error: 'Invalid TOTP code', totpRequired: true })
+          }
         }
 
         // Migration: rehash legacy SHA-256 to scrypt on successful login

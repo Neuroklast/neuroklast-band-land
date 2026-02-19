@@ -66,14 +66,31 @@ export const authLoginSchema = z.object({
   password: z.string().min(1, 'password is required').max(200),
 })
 
+export const authLoginTotpSchema = z.object({
+  password: z.string().min(1, 'password is required').max(200),
+  totpCode: z.string().min(6, 'TOTP code must be 6 digits').max(6).regex(/^\d{6}$/, 'TOTP code must be 6 digits').optional(),
+})
+
 export const authSetupSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters').max(200),
   action: z.literal('setup'),
+  setupToken: z.string().max(200).optional(),
 })
 
 export const authChangePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'current password is required').max(200),
   newPassword: z.string().min(8, 'New password must be at least 8 characters').max(200),
+})
+
+export const totpVerifySchema = z.object({
+  action: z.literal('totp-verify'),
+  code: z.string().length(6, 'TOTP code must be 6 digits').regex(/^\d{6}$/, 'TOTP code must be 6 digits'),
+})
+
+export const totpSetupSchema = z.object({
+  action: z.literal('totp-disable'),
+  password: z.string().min(1, 'password is required').max(200),
+  code: z.string().length(6, 'TOTP code must be 6 digits').regex(/^\d{6}$/, 'TOTP code must be 6 digits'),
 })
 
 // ---------------------------------------------------------------------------
