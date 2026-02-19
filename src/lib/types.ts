@@ -1,11 +1,12 @@
 export interface Gig {
   id: string
-  date: string
+  date: string // ISO 8601: "2025-03-15" or "2025-03-15T19:00"
   venue: string
-  location: string
+  location: string // City, Country
   ticketUrl?: string
   gigType?: 'concert' | 'dj'
   allDay?: boolean
+  status?: 'confirmed' | 'cancelled' | 'soldout' | 'announced'
   eventLinks?: {
     facebook?: string
     instagram?: string

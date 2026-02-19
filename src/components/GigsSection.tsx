@@ -30,6 +30,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   const [isLoading, setIsLoading] = useState(false)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
+  const [showAllGigs, setShowAllGigs] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
   useTrackSection('gigs')
@@ -92,7 +93,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   }
 
   const upcomingGigs = (gigs || [])
-    .filter(gig => !isPast(new Date(gig.date)))
+    .filter(gig => showAllGigs || !isPast(new Date(gig.date)))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   const handleDelete = (id: string) => {
@@ -138,6 +139,15 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                 placeholder="UPCOMING GIGS"
                 className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
               />
+            )}
+            {editMode && (
+              <Button
+                onClick={() => setShowAllGigs(!showAllGigs)}
+                variant="outline"
+                className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
+              >
+                {showAllGigs ? 'Show Upcoming' : 'Show All'}
+              </Button>
             )}
             <Button
               onClick={() => loadGigsFromAPI(false)}
@@ -232,6 +242,16 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                             {gig.gigType && (
                               <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${gig.gigType === 'concert' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent'}`}>
                                 {gig.gigType === 'concert' ? 'CONCERT' : 'DJ SET'}
+                              </span>
+                            )}
+                            {gig.status && (
+                              <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                                gig.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
+                                gig.status === 'soldout' ? 'bg-yellow-500/20 text-yellow-400' :
+                                gig.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+                                'bg-blue-500/20 text-blue-400'
+                              }`}>
+                                {gig.status}
                               </span>
                             )}
                           </div>
