@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
+import { PencilSimple } from '@phosphor-icons/react'
 import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
 import BandInfoEditDialog from '@/components/BandInfoEditDialog'
@@ -346,6 +347,26 @@ function App() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
+            {/* Edit Mode Banner */}
+            <AnimatePresence>
+              {editMode && isOwner && (
+                <motion.div
+                  className="fixed top-0 left-0 right-0 z-40 bg-primary/20 backdrop-blur-sm border-b border-primary/40"
+                  initial={{ y: -50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -50, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                >
+                  <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-2">
+                    <PencilSimple size={16} weight="bold" className="text-primary" />
+                    <span className="text-xs md:text-sm font-mono text-primary tracking-wider">
+                      EDIT MODE ACTIVE — click any section to edit
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <Hero 
               name={data.name} 
               genres={data.genres}
