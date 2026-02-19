@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash, ShieldWarning, Globe, Clock, User, Hash } from '@phosphor-icons/react'
+import { Trash, ShieldWarning, Globe, Clock, User, Hash, Eye } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 
@@ -9,16 +9,21 @@ interface SecurityIncident {
   hashedIp: string
   userAgent: string
   timestamp: string
+  threatScore?: number
+  threatLevel?: string
 }
 
 interface SecurityIncidentsDashboardProps {
   open: boolean
   onClose: () => void
+  onViewProfile?: (hashedIp: string) => void
 }
 
 /** Classify incident type from the key field */
 function classifyIncident(key: string): { label: string; color: string } {
   if (key.startsWith('robots:')) return { label: 'ROBOTS.TXT VIOLATION', color: 'text-orange-400' }
+  if (key.startsWith('threat:')) return { label: 'THREAT ESCALATION', color: 'text-purple-400' }
+  if (key.startsWith('blocked:')) return { label: 'HARD BLOCK', color: 'text-red-600' }
   if (key.includes('backup') || key.includes('credential') || key.includes('master-key') || key.includes('password'))
     return { label: 'HONEYTOKEN ACCESS', color: 'text-red-400' }
   return { label: 'SECURITY EVENT', color: 'text-yellow-400' }
@@ -43,7 +48,7 @@ function formatTime(ts: string): string {
   }
 }
 
-export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIncidentsDashboardProps) {
+export default function SecurityIncidentsDashboard({ open, onClose, onViewProfile }: SecurityIncidentsDashboardProps) {
   const [incidents, setIncidents] = useState<SecurityIncident[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,6 +88,7 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
   const uniqueIps = new Set(incidents.map(i => i.hashedIp)).size
   const honeytokenCount = incidents.filter(i => !i.key.startsWith('robots:')).length
   const robotsCount = incidents.filter(i => i.key.startsWith('robots:')).length
+  const blockedCount = incidents.filter(i => i.key?.startsWith('blocked:')).length
 
   const handleClear = async () => {
     if (!window.confirm('Clear all security incident records? This cannot be undone.')) return
@@ -121,7 +127,7 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
             <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
+                <span className="font-mono text-[11px] text-primary/70 tracking-wider uppercase">
                   SECURITY INCIDENTS // THREAT MONITOR
                 </span>
               </div>
@@ -142,13 +148,13 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
               {loading && (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-4 h-4 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
-                  <span className="ml-3 font-mono text-[10px] text-primary/50">LOADING SECURITY DATA...</span>
+                  <span className="ml-3 font-mono text-[11px] text-primary/50">LOADING SECURITY DATA...</span>
                 </div>
               )}
 
               {error && (
                 <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-                  <p className="font-mono text-[11px] text-red-400">FAILED TO LOAD: {error}</p>
+                  <p className="font-mono text-[12px] text-red-400">FAILED TO LOAD: {error}</p>
                 </div>
               )}
 
@@ -158,29 +164,29 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
                       <div className="flex items-center gap-2 text-primary/60">
-                        <ShieldWarning size={14} />
-                        <span className="text-[10px] font-mono tracking-wider uppercase">Total Events</span>
+                        <ShieldWarning size={16} />
+                        <span className="text-[11px] font-mono tracking-wider uppercase">Total Events</span>
                       </div>
                       <p className="text-xl font-mono font-bold text-foreground">{incidents.length}</p>
                     </div>
                     <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
                       <div className="flex items-center gap-2 text-red-400/60">
-                        <Hash size={14} />
-                        <span className="text-[10px] font-mono tracking-wider uppercase">Honeytoken</span>
+                        <Hash size={16} />
+                        <span className="text-[11px] font-mono tracking-wider uppercase">Honeytoken</span>
                       </div>
                       <p className="text-xl font-mono font-bold text-red-400">{honeytokenCount}</p>
                     </div>
                     <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
                       <div className="flex items-center gap-2 text-orange-400/60">
-                        <Globe size={14} />
-                        <span className="text-[10px] font-mono tracking-wider uppercase">Robots Violations</span>
+                        <Globe size={16} />
+                        <span className="text-[11px] font-mono tracking-wider uppercase">Robots Violations</span>
                       </div>
                       <p className="text-xl font-mono font-bold text-orange-400">{robotsCount}</p>
                     </div>
                     <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
                       <div className="flex items-center gap-2 text-primary/60">
-                        <User size={14} />
-                        <span className="text-[10px] font-mono tracking-wider uppercase">Unique IPs</span>
+                        <User size={16} />
+                        <span className="text-[11px] font-mono tracking-wider uppercase">Unique IPs</span>
                       </div>
                       <p className="text-xl font-mono font-bold text-foreground">{uniqueIps}</p>
                     </div>
@@ -192,7 +198,7 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
                       <button
                         key={f}
                         onClick={() => setFilter(f)}
-                        className={`font-mono text-[10px] px-3 py-1 uppercase tracking-wider transition-colors ${
+                        className={`font-mono text-[11px] px-3 py-1.5 uppercase tracking-wider transition-colors ${
                           filter === f
                             ? 'text-primary bg-primary/10 border border-primary/30'
                             : 'text-primary/40 hover:text-primary/70'
@@ -209,48 +215,79 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
                   {filteredIncidents.length === 0 ? (
                     <div className="text-center py-12">
                       <ShieldWarning size={32} className="text-primary/20 mx-auto mb-3" />
-                      <p className="font-mono text-[11px] text-primary/30">NO INCIDENTS RECORDED</p>
+                      <p className="font-mono text-[12px] text-primary/30">NO INCIDENTS RECORDED</p>
                     </div>
                   ) : (
                     <div className="border border-primary/10 overflow-hidden">
-                      <table className="w-full text-[10px] font-mono">
+                      <table className="w-full text-[11px] font-mono">
                         <thead>
                           <tr className="bg-primary/10 text-primary/70">
-                            <th className="text-left px-3 py-1.5 tracking-wider">TIME</th>
-                            <th className="text-left px-3 py-1.5 tracking-wider">TYPE</th>
-                            <th className="text-left px-3 py-1.5 tracking-wider">TARGET</th>
-                            <th className="text-left px-3 py-1.5 tracking-wider hidden md:table-cell">METHOD</th>
-                            <th className="text-left px-3 py-1.5 tracking-wider hidden md:table-cell">IP HASH</th>
-                            <th className="text-left px-3 py-1.5 tracking-wider hidden lg:table-cell">USER AGENT</th>
+                            <th className="text-left px-3 py-2 tracking-wider">TIME</th>
+                            <th className="text-left px-3 py-2 tracking-wider">TYPE</th>
+                            <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell">THREAT</th>
+                            <th className="text-left px-3 py-2 tracking-wider">TARGET</th>
+                            <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell">METHOD</th>
+                            <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell">IP HASH</th>
+                            <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell">USER AGENT</th>
+                            {onViewProfile && <th className="text-left px-3 py-2 tracking-wider">ACTION</th>}
                           </tr>
                         </thead>
                         <tbody>
                           {filteredIncidents.map((inc, i) => {
                             const { label, color } = classifyIncident(inc.key)
+                            const getThreatBadge = () => {
+                              if (!inc.threatLevel) return null
+                              const colors = {
+                                BLOCK: 'bg-red-500/20 text-red-400 border-red-500/30',
+                                TARPIT: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+                                WARN: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+                                CLEAN: 'bg-green-500/20 text-green-400 border-green-500/30'
+                              }
+                              return (
+                                <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold tracking-wider border rounded ${colors[inc.threatLevel as keyof typeof colors] || colors.CLEAN}`}>
+                                  {inc.threatLevel} {inc.threatScore ? `(${inc.threatScore})` : ''}
+                                </span>
+                              )
+                            }
                             return (
                               <tr
                                 key={`${inc.timestamp}-${i}`}
                                 className="border-t border-primary/5 hover:bg-primary/5 transition-colors"
                               >
-                                <td className="px-3 py-1.5 text-foreground/50 whitespace-nowrap">
-                                  <Clock size={10} className="inline mr-1 opacity-50" />
+                                <td className="px-3 py-2 text-foreground/50 whitespace-nowrap">
+                                  <Clock size={11} className="inline mr-1 opacity-50" />
                                   {formatTime(inc.timestamp)}
                                 </td>
-                                <td className={`px-3 py-1.5 ${color} whitespace-nowrap`}>
+                                <td className={`px-3 py-2 ${color} whitespace-nowrap`}>
                                   {label}
                                 </td>
-                                <td className="px-3 py-1.5 text-foreground/70 max-w-[200px] truncate" title={inc.key}>
+                                <td className="px-3 py-2 hidden lg:table-cell">
+                                  {getThreatBadge() || <span className="text-primary/30">—</span>}
+                                </td>
+                                <td className="px-3 py-2 text-foreground/70 max-w-[200px] truncate" title={inc.key}>
                                   {inc.key}
                                 </td>
-                                <td className="px-3 py-1.5 text-foreground/50 hidden md:table-cell">
+                                <td className="px-3 py-2 text-foreground/50 hidden md:table-cell">
                                   {inc.method}
                                 </td>
-                                <td className="px-3 py-1.5 text-foreground/40 hidden md:table-cell font-mono" title={inc.hashedIp}>
+                                <td className="px-3 py-2 text-foreground/40 hidden md:table-cell font-mono" title={inc.hashedIp}>
                                   {shortHash(inc.hashedIp)}
                                 </td>
-                                <td className="px-3 py-1.5 text-foreground/30 hidden lg:table-cell max-w-[200px] truncate" title={inc.userAgent}>
+                                <td className="px-3 py-2 text-foreground/30 hidden lg:table-cell max-w-[200px] truncate" title={inc.userAgent}>
                                   {inc.userAgent || '—'}
                                 </td>
+                                {onViewProfile && (
+                                  <td className="px-3 py-2">
+                                    <button
+                                      onClick={() => onViewProfile(inc.hashedIp)}
+                                      className="px-2 py-1 border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
+                                      title="View attacker profile"
+                                    >
+                                      <Eye size={12} />
+                                      <span className="text-[10px] font-mono uppercase">Profile</span>
+                                    </button>
+                                  </td>
+                                )}
                               </tr>
                             )
                           })}
@@ -262,7 +299,7 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
               )}
 
               {/* Footer */}
-              <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-2 border-t border-primary/10">
+              <div className="flex items-center gap-2 text-[10px] text-primary/40 pt-2 border-t border-primary/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500/60 animate-pulse" />
                 <span>THREAT MONITOR ACTIVE</span>
                 <span className="ml-auto">

@@ -2,6 +2,10 @@ import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { getClientIp, hashIp } from './_ratelimit.js'
 import { markAttacker, injectEntropyHeaders, setDefenseHeaders } from './_honeytokens.js'
+import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
+import { isHardBlocked } from './_blocklist.js'
+import { serveZipBomb } from './_zipbomb.js'
+import { recordIncident } from './_attacker-profile.js'
 
 /**
  * Handles requests to paths listed as Disallow in robots.txt.
@@ -84,6 +88,12 @@ ${links.map(l => `<a href="${l}">${l.slice(1)}</a>`).join('\n')}
 }
 
 export default async function handler(req, res) {
+  // Check if IP is hard-blocked first
+  const blocked = await isHardBlocked(req)
+  if (blocked) {
+    return res.status(403).json({ error: 'FORBIDDEN' })
+  }
+
   const ip = getClientIp(req)
   const hashedIp = hashIp(ip)
   const path = req.query._src || req.url || '/'
@@ -111,9 +121,42 @@ export default async function handler(req, res) {
   // Flag this IP — subsequent requests to any endpoint will receive noise
   await markAttacker(hashedIp)
 
+  // Increment threat score
+  let threatResult = { score: 0, level: 'CLEAN' }
+  try {
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points)
+  } catch {
+    // Threat scoring failure must not block the response
+  }
+
+  // Record incident in attacker profile
+  try {
+    await recordIncident(hashedIp, {
+      type: 'robots_violation',
+      key: path,
+      method: req.method,
+      userAgent: ua,
+      threatScore: threatResult.score,
+      threatLevel: threatResult.level,
+      timestamp: entry.timestamp
+    })
+  } catch {
+    // Profile recording failure must not block the response
+  }
+
   // Defensive delay — limits scanner throughput
   const ms = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS)
   await sleep(ms)
+
+  // Check if zip bomb is enabled
+  try {
+    const settings = await kv.get('nk-security-settings').catch(() => null)
+    if (settings?.zipBombEnabled) {
+      return await serveZipBomb(res)
+    }
+  } catch {
+    // Zip bomb failure must not block the response
+  }
 
   // Noise injection on response headers
   injectEntropyHeaders(res, 50)

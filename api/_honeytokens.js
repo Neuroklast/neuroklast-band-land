@@ -1,6 +1,10 @@
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { getClientIp, hashIp } from './_ratelimit.js'
+import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
+import { sendSecurityAlert } from './_alerting.js'
+import { serveZipBomb } from './_zipbomb.js'
+import { recordIncident } from './_attacker-profile.js'
 
 /**
  * Honeytokens — decoy records planted in the database.
@@ -36,7 +40,7 @@ export function isHoneytoken(key) {
  * can review intrusion attempts.  Also logs to stderr for server-side
  * monitoring (e.g. Vercel log drain → SIEM).
  */
-export async function triggerHoneytokenAlarm(req, key) {
+export async function triggerHoneytokenAlarm(req, key, res = null) {
   const ip = getClientIp(req)
   const hashedIp = hashIp(ip)
   const entry = {
@@ -60,6 +64,61 @@ export async function triggerHoneytokenAlarm(req, key) {
 
   // Mark this IP as an attacker for entropy injection
   await markAttacker(hashedIp)
+
+  // Increment threat score
+  let threatResult = { score: 0, level: 'CLEAN' }
+  try {
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.HONEYTOKEN_ACCESS.reason, THREAT_REASONS.HONEYTOKEN_ACCESS.points)
+  } catch {
+    // Threat scoring failure must not block the response
+  }
+
+  // Record incident in attacker profile
+  try {
+    await recordIncident(hashedIp, {
+      type: 'honeytoken_access',
+      key,
+      method: req.method,
+      userAgent: entry.userAgent,
+      threatScore: threatResult.score,
+      threatLevel: threatResult.level,
+      timestamp: entry.timestamp
+    })
+  } catch {
+    // Profile recording failure must not block the response
+  }
+
+  // Send security alert if enabled
+  try {
+    const settings = await kv.get('nk-security-settings').catch(() => null)
+    if (settings?.alertingEnabled) {
+      await sendSecurityAlert({
+        type: 'HONEYTOKEN ACCESS',
+        key,
+        method: req.method,
+        hashedIp,
+        userAgent: entry.userAgent,
+        timestamp: entry.timestamp,
+        threatScore: threatResult.score,
+        threatLevel: threatResult.level,
+        severity: 'critical',
+      })
+    }
+  } catch {
+    // Alerting failure must not block the response
+  }
+
+  // Serve zip bomb if enabled and response object provided
+  try {
+    if (res) {
+      const settings = await kv.get('nk-security-settings').catch(() => null)
+      if (settings?.zipBombEnabled) {
+        return await serveZipBomb(res)
+      }
+    }
+  } catch {
+    // Zip bomb failure must not block the response
+  }
 }
 
 /** KV prefix and TTL for flagged attacker IPs */

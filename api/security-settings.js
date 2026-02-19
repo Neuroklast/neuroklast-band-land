@@ -33,6 +33,11 @@ const DEFAULTS = {
   tarpitMinMs: 3000,
   tarpitMaxMs: 8000,
   sessionTtlSeconds: 14400,
+  threatScoringEnabled: true,
+  zipBombEnabled: false,        // Default OFF — explizit aktivieren erforderlich
+  alertingEnabled: false,       // Default OFF — nur wenn DISCORD_WEBHOOK_URL gesetzt
+  hardBlockEnabled: true,
+  autoBlockThreshold: 12,       // Score ab dem auto-geblockt wird
 }
 
 /** Zod schema for security settings */
@@ -47,6 +52,11 @@ const securitySettingsSchema = z.object({
   tarpitMinMs: z.number().int().min(0).max(30000).optional(),
   tarpitMaxMs: z.number().int().min(0).max(60000).optional(),
   sessionTtlSeconds: z.number().int().min(300).max(86400).optional(),
+  threatScoringEnabled: z.boolean().optional(),
+  zipBombEnabled: z.boolean().optional(),
+  alertingEnabled: z.boolean().optional(),
+  hardBlockEnabled: z.boolean().optional(),
+  autoBlockThreshold: z.number().int().min(3).max(50).optional(),
 })
 
 export default async function handler(req, res) {

@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { validateSession } from './auth.js'
 import { applyRateLimit } from './_ratelimit.js'
 import { analyticsPostSchema, validate } from './_schemas.js'
+import { isHardBlocked } from './_blocklist.js'
 
 const ANALYTICS_KEY = 'nk-analytics'
 const HEATMAP_KEY = 'nk-heatmap'
@@ -246,6 +247,12 @@ async function buildAnalyticsSnapshot() {
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
+  }
+
+  // Hard-block check — immediate rejection
+  const blocked = await isHardBlocked(req)
+  if (blocked) {
+    return res.status(403).json({ error: 'FORBIDDEN' })
   }
 
   // Rate limiting — blocks analytics spam / DoS (GDPR-compliant, IP is hashed)

@@ -72,10 +72,59 @@ Decoy records are planted in the KV database (`api/_honeytokens.js`):
 - Any read or write to these keys triggers a **silent alarm**: logged to `stderr` (for SIEM/log-drain pickup) and persisted to `nk-honeytoken-alerts` in KV
 - The API returns a generic `403 Forbidden` so the attacker does not learn they were detected
 
+### Threat Score System (Behavioral IDS)
+Requests are scored based on suspicious behavior patterns (`api/_threat-score.js`):
+- **Algorithm**: Cumulative score per (hashed) IP, 1-hour TTL
+- **Score Sources**: robots.txt violations (+3), honeytoken access (+5), suspicious UA (+4), missing browser headers (+2), rate limit exceeded (+2)
+- **Escalation**: WARN (≥3) → TARPIT (≥7) → AUTO-BLOCK (≥12, configurable)
+- **Storage**: Ephemeral scores in KV with 1-hour TTL
+- **Auto-blocking**: IPs exceeding threshold are automatically added to the hard blocklist
+
+### Hard Blocklist
+Persistent IP blocklist for confirmed attackers (`api/_blocklist.js`, `api/blocklist.js`):
+- Auto-populated when threat score exceeds threshold (default: 12 points)
+- Admin-manageable via dashboard (add/remove entries)
+- Configurable TTL (default 7 days, up to 1 year)
+- All API endpoints check blocklist before processing
+- Index maintained in KV for efficient lookups
+
+### Zip Bomb (Optional, Disabled by Default)
+When enabled, serves a gzip-compressed 10 MB null-byte payload to confirmed bots (`api/_zipbomb.js`):
+- Only triggered for IPs already flagged as attackers (robots.txt violators, honeytoken accessors)
+- Response claims to be a small ZIP file; decompresses to waste bot memory/CPU
+- Disabled by default — enable explicitly in Security Settings
+- **WARNING**: Aggressive countermeasure — use with caution
+
+### Real-time Alerting (Optional)
+Critical security events trigger immediate notifications (`api/_alerting.js`):
+- **Discord**: Webhook with color-coded embeds (red=critical, orange=high, yellow=medium)
+- **Email**: Via Resend API (reuses existing RESEND_API_KEY configuration)
+- **Deduplication**: Max 1 alert per IP per 5 minutes to prevent spam
+- **Configuration**: Set `DISCORD_WEBHOOK_URL` environment variable to enable
+- **Event Types**: Honeytoken access, auto-blocks, critical threat escalations
+
 ### robots.txt Access Control
 - `Disallow` paths in `robots.txt` establish access rules; violations trigger defensive measures
 - Suspicious User-Agent detection and tarpitting for known malicious crawlers
 - Access violations are logged with hashed IPs only (no plaintext)
+- Violations increment threat score and may trigger auto-blocking
+
+### Attacker Profiling System
+Detailed per-attacker analytics aggregating behavioral data per IP hash:
+- **Threat Score History**: Timeline of score changes with reasons
+- **Attack Type Analysis**: Frequency distribution of attack patterns (honeytoken, robots.txt, suspicious UA, etc.)
+- **User-Agent Analysis**: Classification into categories (bot, script, browser, attack tool) with diversity metrics
+- **Behavioral Pattern Detection**: Automated identification of attack signatures:
+  - **Rapid Escalation**: Threat score increases >5 points within 1 hour
+  - **Diverse Attacks**: Using 3+ different attack types
+  - **UA Rotation**: Rotating between 3+ User-Agents (bot evasion)
+  - **Persistent Attacker**: 10+ incidents recorded
+  - **Automated Scan**: Rapid consecutive requests (<5s average interval)
+- **Incident Timeline**: Chronological log of last 50 incidents per attacker
+- **Data Retention**: Profiles expire after 30 days of inactivity
+- **Privacy**: All data uses SHA-256 hashed IPs only (GDPR compliant)
+- **UI**: Interactive dashboard with charts (Recharts) for threat score timeline, attack type distribution, and UA category breakdown
+- **Files**: `api/_attacker-profile.js`, `api/attacker-profile.js`, `src/components/AttackerProfileDialog.tsx`
 
 ### XSS Prevention
 - All user-generated content rendered through `SafeText` component
@@ -96,11 +145,12 @@ Decoy records are planted in the KV database (`api/_honeytokens.js`):
 | `KV_REST_API_URL` | Vercel KV endpoint | Yes |
 | `KV_REST_API_TOKEN` | Vercel KV auth token | Yes |
 | `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting) | Recommended |
-| `ADMIN_RESET_EMAIL` | Email for password reset verification | For reset feature |
+| `ADMIN_RESET_EMAIL` | Email for password reset verification & security alerts | For reset & alerting |
 | `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.com`) | Recommended |
-| `RESEND_API_KEY` | Resend API key for sending password reset emails | For email delivery |
-| `EMAIL_FROM` | From email address for reset emails (default: `noreply@neuroklast.com`) | Optional |
-| `SITE_URL` | Site URL for reset links (default: `https://neuroklast.com`) | Optional |
+| `DISCORD_WEBHOOK_URL` | Discord webhook URL for security alerts | Optional (for alerting) |
+| `RESEND_API_KEY` | Resend API key for email alerts & password reset | Optional (for alerting & reset) |
+| `EMAIL_FROM` | Sender address for email alerts & reset (default: noreply@neuroklast.com) | Optional |
+| `SITE_URL` | Site URL included in alert messages & reset links (default: neuroklast.com) | Optional |
 | `GOOGLE_DRIVE_API_KEY` | Google Drive API key for file metadata | Optional |
 
 ## Best Practices for Deployment

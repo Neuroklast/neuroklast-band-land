@@ -32,6 +32,8 @@ import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
 import StatsDashboard from '@/components/StatsDashboard'
 import SecurityIncidentsDashboard from '@/components/SecurityIncidentsDashboard'
 import SecuritySettingsDialog from '@/components/SecuritySettingsDialog'
+import BlocklistManagerDialog from '@/components/BlocklistManagerDialog'
+import AttackerProfileDialog from '@/components/AttackerProfileDialog'
 import { MovingScanline } from '@/components/MovingScanline'
 import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import { useSound } from '@/hooks/use-sound'
@@ -104,6 +106,9 @@ function App() {
   const [showStats, setShowStats] = useState(false)
   const [showSecurityIncidents, setShowSecurityIncidents] = useState(false)
   const [showSecuritySettings, setShowSecuritySettings] = useState(false)
+  const [showBlocklist, setShowBlocklist] = useState(false)
+  const [showAttackerProfile, setShowAttackerProfile] = useState(false)
+  const [selectedAttackerIp, setSelectedAttackerIp] = useState<string>('')
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false)
 
   // Apply CRT effects
@@ -513,13 +518,27 @@ function App() {
                 onOpenStats={() => setShowStats(true)}
                 onOpenSecurityIncidents={() => setShowSecurityIncidents(true)}
                 onOpenSecuritySettings={() => setShowSecuritySettings(true)}
+                onOpenBlocklist={() => setShowBlocklist(true)}
                 onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}
               />
             )}
 
             <StatsDashboard open={showStats} onClose={() => setShowStats(false)} />
-            <SecurityIncidentsDashboard open={showSecurityIncidents} onClose={() => setShowSecurityIncidents(false)} />
+            <SecurityIncidentsDashboard 
+              open={showSecurityIncidents} 
+              onClose={() => setShowSecurityIncidents(false)} 
+              onViewProfile={(hashedIp) => {
+                setSelectedAttackerIp(hashedIp)
+                setShowAttackerProfile(true)
+              }}
+            />
             <SecuritySettingsDialog open={showSecuritySettings} onClose={() => setShowSecuritySettings(false)} />
+            <BlocklistManagerDialog open={showBlocklist} onClose={() => setShowBlocklist(false)} />
+            <AttackerProfileDialog 
+              open={showAttackerProfile} 
+              onClose={() => setShowAttackerProfile(false)} 
+              hashedIp={selectedAttackerIp}
+            />
 
             <AnimatePresence>
               {showSoundSettings && (

@@ -3,6 +3,7 @@ import { applyRateLimit } from './_ratelimit.js'
 import { isHoneytoken, triggerHoneytokenAlarm, isMarkedAttacker, injectEntropyHeaders, getRandomTaunt, setDefenseHeaders } from './_honeytokens.js'
 import { kvGetQuerySchema, kvPostSchema, validate } from './_schemas.js'
 import { validateSession } from './auth.js'
+import { isHardBlocked } from './_blocklist.js'
 
 // Check if KV is properly configured
 const isKVConfigured = () => {
@@ -45,6 +46,12 @@ function isSuspiciousUA(req) {
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
+  }
+
+  // Hard-block check — immediate rejection
+  const blocked = await isHardBlocked(req)
+  if (blocked) {
+    return res.status(403).json({ error: 'FORBIDDEN' })
   }
 
   // Wfuzz / hacking tool detection — immediate block (no tarpit to prevent FDoS)
