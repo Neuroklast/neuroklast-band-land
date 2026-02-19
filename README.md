@@ -91,12 +91,13 @@ npm run dev
 
 The site supports full content management through admin mode:
 
-1. Navigate to `?admin-setup` to create an admin password (first-time setup)
+1. Set `ADMIN_SETUP_TOKEN` environment variable, then navigate to `?admin-setup` to create an admin password (first-time setup requires the token)
 2. Click the edit button (bottom-right) to toggle edit mode
 3. All sections support inline editing of content, images, and settings
 4. Changes persist automatically via Vercel KV storage
 5. Export/import data as JSON for backup
 6. Optional auto-sync from a Google Drive JSON file
+7. Enable TOTP two-factor authentication via admin settings for stronger security
 
 ### Analytics Dashboard
 
