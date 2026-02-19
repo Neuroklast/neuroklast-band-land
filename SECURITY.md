@@ -109,6 +109,23 @@ Critical security events trigger immediate notifications (`api/_alerting.js`):
 - Access violations are logged with hashed IPs only (no plaintext)
 - Violations increment threat score and may trigger auto-blocking
 
+### Attacker Profiling System
+Detailed per-attacker analytics aggregating behavioral data per IP hash:
+- **Threat Score History**: Timeline of score changes with reasons
+- **Attack Type Analysis**: Frequency distribution of attack patterns (honeytoken, robots.txt, suspicious UA, etc.)
+- **User-Agent Analysis**: Classification into categories (bot, script, browser, attack tool) with diversity metrics
+- **Behavioral Pattern Detection**: Automated identification of attack signatures:
+  - **Rapid Escalation**: Threat score increases >5 points within 1 hour
+  - **Diverse Attacks**: Using 3+ different attack types
+  - **UA Rotation**: Rotating between 3+ User-Agents (bot evasion)
+  - **Persistent Attacker**: 10+ incidents recorded
+  - **Automated Scan**: Rapid consecutive requests (<5s average interval)
+- **Incident Timeline**: Chronological log of last 50 incidents per attacker
+- **Data Retention**: Profiles expire after 30 days of inactivity
+- **Privacy**: All data uses SHA-256 hashed IPs only (GDPR compliant)
+- **UI**: Interactive dashboard with charts (Recharts) for threat score timeline, attack type distribution, and UA category breakdown
+- **Files**: `api/_attacker-profile.js`, `api/attacker-profile.js`, `src/components/AttackerProfileDialog.tsx`
+
 ### XSS Prevention
 - All user-generated content rendered through `SafeText` component
 - YouTube embeds use `youtube-nocookie.com` with `sandbox` attribute

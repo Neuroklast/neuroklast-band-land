@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash, ShieldWarning, Globe, Clock, User, Hash } from '@phosphor-icons/react'
+import { Trash, ShieldWarning, Globe, Clock, User, Hash, Eye } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 
@@ -16,6 +16,7 @@ interface SecurityIncident {
 interface SecurityIncidentsDashboardProps {
   open: boolean
   onClose: () => void
+  onViewProfile?: (hashedIp: string) => void
 }
 
 /** Classify incident type from the key field */
@@ -47,7 +48,7 @@ function formatTime(ts: string): string {
   }
 }
 
-export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIncidentsDashboardProps) {
+export default function SecurityIncidentsDashboard({ open, onClose, onViewProfile }: SecurityIncidentsDashboardProps) {
   const [incidents, setIncidents] = useState<SecurityIncident[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -228,6 +229,7 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
                             <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell">METHOD</th>
                             <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell">IP HASH</th>
                             <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell">USER AGENT</th>
+                            {onViewProfile && <th className="text-left px-3 py-2 tracking-wider">ACTION</th>}
                           </tr>
                         </thead>
                         <tbody>
@@ -274,6 +276,18 @@ export default function SecurityIncidentsDashboard({ open, onClose }: SecurityIn
                                 <td className="px-3 py-2 text-foreground/30 hidden lg:table-cell max-w-[200px] truncate" title={inc.userAgent}>
                                   {inc.userAgent || '—'}
                                 </td>
+                                {onViewProfile && (
+                                  <td className="px-3 py-2">
+                                    <button
+                                      onClick={() => onViewProfile(inc.hashedIp)}
+                                      className="px-2 py-1 border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
+                                      title="View attacker profile"
+                                    >
+                                      <Eye size={12} />
+                                      <span className="text-[10px] font-mono uppercase">Profile</span>
+                                    </button>
+                                  </td>
+                                )}
                               </tr>
                             )
                           })}
