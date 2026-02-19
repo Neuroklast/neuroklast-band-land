@@ -441,7 +441,10 @@ export default function ThemeCustomizerDialog({
   }
 
   const toggleVisibility = (key: keyof SectionVisibility) => {
-    setVisDraft(prev => ({ ...prev, [key]: prev[key] === false }))
+    setVisDraft(prev => {
+      const currentlyVisible = prev[key] !== false
+      return { ...prev, [key]: !currentlyVisible }
+    })
   }
 
   const updateOverlayEffect = (key: string, updates: Partial<OverlayEffect>) => {

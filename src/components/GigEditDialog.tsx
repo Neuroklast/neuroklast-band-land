@@ -22,6 +22,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
     ticketUrl: '',
     gigType: '' as '' | 'concert' | 'dj',
     allDay: false,
+    status: '' as '' | 'confirmed' | 'cancelled' | 'soldout' | 'announced',
     eventLinks: {
       facebook: '',
       instagram: '',
@@ -43,6 +44,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
         ticketUrl: gig.ticketUrl || '',
         gigType: gig.gigType || '',
         allDay: gig.allDay || false,
+        status: gig.status || '',
         eventLinks: {
           facebook: gig.eventLinks?.facebook || '',
           instagram: gig.eventLinks?.instagram || '',
@@ -95,6 +97,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
       ...(formData.ticketUrl && { ticketUrl: formData.ticketUrl }),
       ...(formData.gigType && { gigType: formData.gigType }),
       ...(formData.allDay && { allDay: true }),
+      ...(formData.status && { status: formData.status }),
       ...(Object.keys(eventLinks).length > 0 && { eventLinks }),
       ...(supportingArtists.length > 0 && { supportingArtists }),
       ...(formData.photo && { photo: toDirectImageUrl(formData.photo) })
@@ -149,6 +152,22 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
               <option value="">— None —</option>
               <option value="concert">Concert</option>
               <option value="dj">DJ Set</option>
+            </select>
+          </div>
+
+          <div>
+            <Label htmlFor="status">Status (optional)</Label>
+            <select
+              id="status"
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as '' | 'confirmed' | 'cancelled' | 'soldout' | 'announced' })}
+              className="flex h-10 w-full rounded-md border border-input bg-secondary px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">— None —</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="announced">Announced</option>
+              <option value="soldout">Sold Out</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 

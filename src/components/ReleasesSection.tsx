@@ -74,6 +74,9 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
 
   const sortedReleases = [...(releases || [])].sort(
     (a, b) => {
+      // Featured releases are shown first
+      if (a.featured && !b.featured) return -1
+      if (!a.featured && b.featured) return 1
       // Releases without a date are treated as upcoming/future → shown first
       if (!a.releaseDate && !b.releaseDate) return 0
       if (!a.releaseDate) return -1

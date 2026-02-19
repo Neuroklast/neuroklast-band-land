@@ -19,9 +19,11 @@ interface HeroProps {
   genres: string[]
   editMode?: boolean
   onEdit?: () => void
+  logoUrl?: string       // if set, display this logo
+  titleImageUrl?: string // if set, display this title image
 }
 
-export default function Hero({ name, genres, editMode, onEdit }: HeroProps) {
+export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleImageUrl }: HeroProps) {
   const [glitchLogo, setGlitchLogo] = useState(false)
   const [glitchTitle, setGlitchTitle] = useState(false)
 
@@ -168,7 +170,7 @@ export default function Hero({ name, genres, editMode, onEdit }: HeroProps) {
           >
             <div className="relative">
               <img 
-                src={logoPng} 
+                src={logoUrl ?? logoPng} 
                 alt="NEUROKLAST Logo" 
                 className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
               />
@@ -212,7 +214,7 @@ export default function Hero({ name, genres, editMode, onEdit }: HeroProps) {
           >
             <div className="relative">
               <img 
-                src={titlePng} 
+                src={titleImageUrl ?? titlePng} 
                 alt="NEUROKLAST" 
                 className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
                 style={{ 

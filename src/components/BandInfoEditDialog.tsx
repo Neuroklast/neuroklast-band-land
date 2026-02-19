@@ -11,21 +11,27 @@ interface BandInfoEditDialogProps {
   name: string
   genres: string[]
   label?: string
-  onSave: (data: { name: string; genres: string[]; label?: string }) => void
+  logoUrl?: string
+  titleImageUrl?: string
+  onSave: (data: { name: string; genres: string[]; label?: string; logoUrl?: string; titleImageUrl?: string }) => void
 }
 
-export default function BandInfoEditDialog({ open, onOpenChange, name, genres, label, onSave }: BandInfoEditDialogProps) {
+export default function BandInfoEditDialog({ open, onOpenChange, name, genres, label, logoUrl, titleImageUrl, onSave }: BandInfoEditDialogProps) {
   const [bandName, setBandName] = useState(name)
   const [bandGenres, setBandGenres] = useState<string[]>(genres)
   const [bandLabel, setBandLabel] = useState(label || '')
+  const [bandLogoUrl, setBandLogoUrl] = useState(logoUrl || '')
+  const [bandTitleImageUrl, setBandTitleImageUrl] = useState(titleImageUrl || '')
   const [newGenre, setNewGenre] = useState('')
 
   useEffect(() => {
     setBandName(name)
     setBandGenres(genres)
     setBandLabel(label || '')
+    setBandLogoUrl(logoUrl || '')
+    setBandTitleImageUrl(titleImageUrl || '')
     setNewGenre('')
-  }, [name, genres, label])
+  }, [name, genres, label, logoUrl, titleImageUrl])
 
   const addGenre = () => {
     if (newGenre.trim()) {
@@ -43,6 +49,8 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
       name: bandName,
       genres: bandGenres,
       label: bandLabel || undefined,
+      logoUrl: bandLogoUrl || undefined,
+      titleImageUrl: bandTitleImageUrl || undefined,
     })
     onOpenChange(false)
   }
@@ -73,6 +81,38 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
               onChange={(e) => setBandLabel(e.target.value)}
               placeholder="e.g., Darktunes Music Group"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="logo-url">Logo URL (optional)</Label>
+            <Input
+              id="logo-url"
+              value={bandLogoUrl}
+              onChange={(e) => setBandLogoUrl(e.target.value)}
+              placeholder="https://... or data:image/..."
+            />
+            {bandLogoUrl && (
+              <div className="mt-2 flex justify-center">
+                <img src={bandLogoUrl} alt="Logo Preview" className="max-w-[200px] max-h-[200px] object-contain border border-border rounded p-2" />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">Leave empty to use default logo</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="title-image-url">Title Image URL (optional)</Label>
+            <Input
+              id="title-image-url"
+              value={bandTitleImageUrl}
+              onChange={(e) => setBandTitleImageUrl(e.target.value)}
+              placeholder="https://... or data:image/..."
+            />
+            {bandTitleImageUrl && (
+              <div className="mt-2 flex justify-center">
+                <img src={bandTitleImageUrl} alt="Title Preview" className="max-w-full max-h-[100px] object-contain border border-border rounded p-2" />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">Leave empty to use default title image</p>
           </div>
 
           <div className="space-y-2">

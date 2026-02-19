@@ -1,11 +1,12 @@
 export interface Gig {
   id: string
-  date: string
+  date: string // ISO 8601: "2025-03-15" or "2025-03-15T19:00"
   venue: string
-  location: string
+  location: string // City, Country
   ticketUrl?: string
   gigType?: 'concert' | 'dj'
   allDay?: boolean
+  status?: 'confirmed' | 'cancelled' | 'soldout' | 'announced'
   eventLinks?: {
     facebook?: string
     instagram?: string
@@ -19,15 +20,23 @@ export interface Gig {
 export interface Release {
   id: string
   title: string
+  type?: 'album' | 'ep' | 'single' | 'remix' | 'compilation'
   artwork?: string
-  releaseDate?: string
+  releaseDate?: string // ISO 8601: "2024-11-01"
+  description?: string
+  featured?: boolean
   streamingLinks: {
     spotify?: string
     soundcloud?: string
     bandcamp?: string
     youtube?: string
     appleMusic?: string
+    beatport?: string
   }
+  tracks?: Array<{
+    title: string
+    duration?: string // "4:23"
+  }>
 }
 
 export interface SocialLinks {
@@ -210,6 +219,8 @@ export interface BandData {
   releases: Release[]
   biography?: Biography
   label?: string
+  logoUrl?: string       // URL or Data-URL for the Logo
+  titleImageUrl?: string // URL or Data-URL for the Title Image
   terminalCommands?: TerminalCommand[]
   impressum?: Impressum
   galleryImages?: GalleryImage[]
