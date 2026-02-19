@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Pause, SkipBack, SkipForward, SpeakerHigh, SpeakerSlash, SpeakerLow, MusicNote } from '@phosphor-icons/react'
+import { connectAudioElement, resumeAudioContext } from '@/lib/audio-context'
 
 export interface Track {
   title: string
@@ -24,6 +25,7 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
   const currentTrack = tracks[currentIndex]
 
   const play = useCallback(() => {
+    resumeAudioContext()
     audioRef.current?.play().catch(() => {})
     setIsPlaying(true)
   }, [])
@@ -79,6 +81,13 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
     setProgress(0)
   }, [currentIndex, isPlaying])
   
+  // Connect audio element to analyser for visualizer
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    connectAudioElement(audio)
+  }, [])
+
   // Update volume without reloading track
   useEffect(() => {
     if (audioRef.current) {

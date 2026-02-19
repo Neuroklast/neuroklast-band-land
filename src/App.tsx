@@ -37,6 +37,7 @@ import BlocklistManagerDialog from '@/components/BlocklistManagerDialog'
 import AttackerProfileDialog from '@/components/AttackerProfileDialog'
 import { MovingScanline } from '@/components/MovingScanline'
 import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
+import NewsletterWidget from '@/components/NewsletterWidget'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -448,6 +449,19 @@ function App() {
               </motion.div>
               )}
 
+              {(data.newsletterSettings?.showAfterGigs !== false && data.newsletterSettings?.enabled) && (
+                <div className="py-8 px-4 max-w-2xl mx-auto">
+                  <NewsletterWidget
+                    enabled={data.newsletterSettings?.enabled}
+                    title={data.newsletterSettings?.title}
+                    description={data.newsletterSettings?.description}
+                    placeholder={data.newsletterSettings?.placeholder}
+                    buttonText={data.newsletterSettings?.buttonText}
+                    source="gigs-section"
+                  />
+                </div>
+              )}
+
               {vis.releases !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -535,6 +549,19 @@ function App() {
                 onDatenschutz={() => setDatenschutzOpen(true)}
               />
             </motion.div>
+
+            {data.newsletterSettings?.showInFooter && data.newsletterSettings?.enabled && (
+              <div className="py-8 px-4 max-w-2xl mx-auto">
+                <NewsletterWidget
+                  enabled={data.newsletterSettings?.enabled}
+                  title={data.newsletterSettings?.title}
+                  description={data.newsletterSettings?.description}
+                  placeholder={data.newsletterSettings?.placeholder}
+                  buttonText={data.newsletterSettings?.buttonText}
+                  source="footer"
+                />
+              </div>
+            )}
 
             {isOwner && (
               <EditControls 

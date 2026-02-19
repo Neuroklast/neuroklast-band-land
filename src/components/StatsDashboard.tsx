@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut, Globe, Browser, Monitor, TrendUp, ChartBar, Target, MapPin } from '@phosphor-icons/react'
+import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut, Globe, Browser, Monitor, TrendUp, ChartBar, Target, MapPin, LinkSimple } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { loadServerAnalytics, loadHeatmapData, resetAnalytics, loadAnalytics } from '@/lib/analytics'
 import type { SiteAnalytics, DailyStats, HeatmapPoint } from '@/lib/analytics'
@@ -25,13 +26,14 @@ interface StatsDashboardProps {
   onClose: () => void
 }
 
-type TabId = 'overview' | 'traffic' | 'engagement' | 'heatmap'
+type TabId = 'overview' | 'traffic' | 'engagement' | 'heatmap' | 'utm'
 
 const TABS: { id: TabId; label: string; icon: React.ComponentType<{ size: number; className?: string }> }[] = [
   { id: 'overview', label: 'OVERVIEW', icon: TrendUp },
   { id: 'traffic', label: 'TRAFFIC', icon: Globe },
   { id: 'engagement', label: 'ENGAGEMENT', icon: Target },
   { id: 'heatmap', label: 'HEATMAP', icon: MapPin },
+  { id: 'utm', label: 'UTM BUILDER', icon: LinkSimple },
 ]
 
 /** Simple bar chart for daily stats */
@@ -261,6 +263,16 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
   const [heatmapPoints, setHeatmapPoints] = useState<HeatmapPoint[]>([])
   const [dataSource, setDataSource] = useState<'server' | 'local'>('server')
   const [activeTab, setActiveTab] = useState<TabId>('overview')
+  // UTM Builder state
+  const [utmBase, setUtmBase] = useState('https://neuroklast.com')
+  const [utmSource, setUtmSource] = useState('')
+  const [utmMedium, setUtmMedium] = useState('')
+  const [utmCampaign, setUtmCampaign] = useState('')
+  const [utmContent, setUtmContent] = useState('')
+  const [utmTerm, setUtmTerm] = useState('')
+  const [utmHistory, setUtmHistory] = useState<Array<{ url: string; campaign: string; date: string }>>(() => {
+    try { return JSON.parse(localStorage.getItem('nk-utm-history') || '[]') } catch { return [] }
+  })
 
   useEffect(() => {
     if (open) {
@@ -306,6 +318,21 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
 
     return { totalSectionViews, totalInteractions, last7Days, last30Days, avgDailyViews, totalClicks, nonInteractionRate }
   }, [analytics])
+
+  const generatedUrl = useMemo(() => {
+    if (!utmBase) return ''
+    try {
+      const url = new URL(utmBase)
+      if (utmSource) url.searchParams.set('utm_source', utmSource)
+      if (utmMedium) url.searchParams.set('utm_medium', utmMedium)
+      if (utmCampaign) url.searchParams.set('utm_campaign', utmCampaign)
+      if (utmContent) url.searchParams.set('utm_content', utmContent)
+      if (utmTerm) url.searchParams.set('utm_term', utmTerm)
+      return url.toString()
+    } catch {
+      return utmBase
+    }
+  }, [utmBase, utmSource, utmMedium, utmCampaign, utmContent, utmTerm])
 
   const handleReset = async () => {
     if (window.confirm('Reset all analytics data? This cannot be undone.')) {
@@ -440,6 +467,12 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                           label="Tracking Period"
                           value={stats.last30Days.length}
                           sublabel="Days with data"
+                        />
+                        <StatCard
+                          icon={Users}
+                          label="Newsletter Signups"
+                          value={analytics.interactions['newsletter_signup'] || 0}
+                          sublabel="Total signups"
                         />
                       </div>
 
@@ -634,10 +667,54 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                           </div>
                         )}
                       </div>
+
+                      {/* Tageszeit / Hourly visits */}
+                      {analytics.hourlyVisits && Object.keys(analytics.hourlyVisits).length > 0 ? (
+                        <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                            BESTE POSTING-ZEITEN
+                          </h3>
+                          {(() => {
+                            const hourlyData = Array.from({ length: 24 }, (_, h) => ({
+                              hour: `${h.toString().padStart(2, '0')}`,
+                              visits: analytics.hourlyVisits?.[String(h)] || 0,
+                            }))
+                            const sorted = [...hourlyData].sort((a, b) => b.visits - a.visits)
+                            const top3 = new Set(sorted.slice(0, 3).map(d => d.hour))
+                            const bestTimes = sorted.slice(0, 3).filter(d => d.visits > 0).map(d => `${d.hour}:00`)
+                            return (
+                              <>
+                                <ResponsiveContainer width="100%" height={160}>
+                                  <BarChart data={hourlyData} barSize={8}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
+                                    <XAxis dataKey="hour" tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 8 }} stroke="oklch(0.50 0.22 25 / 0.3)" />
+                                    <YAxis tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 8 }} stroke="oklch(0.50 0.22 25 / 0.3)" />
+                                    <Tooltip contentStyle={{ backgroundColor: 'oklch(0 0 0 / 0.95)', border: '1px solid oklch(0.50 0.22 25 / 0.5)', borderRadius: '2px', fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
+                                    <Bar dataKey="visits" fill="oklch(0.50 0.22 25 / 0.6)">
+                                      {hourlyData.map((entry) => (
+                                        <Cell key={entry.hour} fill={top3.has(entry.hour) ? 'oklch(0.60 0.24 25)' : 'oklch(0.50 0.22 25 / 0.4)'} />
+                                      ))}
+                                    </Bar>
+                                  </BarChart>
+                                </ResponsiveContainer>
+                                {bestTimes.length > 0 && (
+                                  <div className="space-y-1 text-[10px] font-mono text-foreground/60">
+                                    <p>🕐 Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr</p>
+                                    <p className="text-primary/50">→ Poste auf Instagram/Facebook ca. 30 Minuten vor dem Peak für maximale Reichweite</p>
+                                  </div>
+                                )}
+                              </>
+                            )
+                          })()}
+                        </div>
+                      ) : (
+                        <div className="border border-primary/20 bg-black/30 p-4">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider mb-2">BESTE POSTING-ZEITEN</h3>
+                          <p className="text-[10px] font-mono text-primary/30">Noch nicht genug Daten (min. 7 Tage)</p>
+                        </div>
+                      )}
                     </>
                   )}
-
-                  {/* ENGAGEMENT TAB */}
                   {activeTab === 'engagement' && (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -693,10 +770,26 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                           </ResponsiveContainer>
                         </div>
                       )}
+
+                      {/* Social click tracking */}
+                      <div className="space-y-3 md:col-span-2">
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
+                          SOCIAL KLICK-TRACKING
+                        </h3>
+                        {(() => {
+                          const socialData = Object.fromEntries(
+                            Object.entries(analytics.interactions)
+                              .filter(([k]) => k.startsWith('social_click_'))
+                              .map(([k, v]) => [k.replace('social_click_', ''), v])
+                          )
+                          if (Object.keys(socialData).length === 0) {
+                            return <p className="text-[10px] text-primary/30 font-mono">Noch keine Social-Klicks getrackt</p>
+                          }
+                          return <TopList items={socialData} limit={10} />
+                        })()}
+                      </div>
                     </>
                   )}
-
-                  {/* HEATMAP TAB */}
                   {activeTab === 'heatmap' && (
                     <>
                       <div className="space-y-3">
@@ -715,6 +808,179 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                         </h3>
                         <ClickTable points={heatmapPoints} />
                       </div>
+                    </>
+                  )}
+
+                  {/* UTM BUILDER TAB */}
+                  {activeTab === 'utm' && (
+                    <>
+                      {/* UTM Link Generator */}
+                      <div className="border border-primary/20 bg-black/30 p-4 space-y-4">
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">UTM LINK GENERATOR</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono text-primary/50">Base URL *</label>
+                            <input
+                              type="url"
+                              value={utmBase}
+                              onChange={e => setUtmBase(e.target.value)}
+                              className="w-full bg-transparent border border-primary/30 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                              placeholder="https://neuroklast.com"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono text-primary/50">utm_source *</label>
+                            <input
+                              type="text"
+                              value={utmSource}
+                              onChange={e => setUtmSource(e.target.value)}
+                              className="w-full bg-transparent border border-primary/30 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                              placeholder="instagram"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono text-primary/50">utm_medium</label>
+                            <input
+                              type="text"
+                              value={utmMedium}
+                              onChange={e => setUtmMedium(e.target.value)}
+                              className="w-full bg-transparent border border-primary/30 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                              placeholder="social"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono text-primary/50">utm_campaign</label>
+                            <input
+                              type="text"
+                              value={utmCampaign}
+                              onChange={e => setUtmCampaign(e.target.value)}
+                              className="w-full bg-transparent border border-primary/30 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                              placeholder="release-2025"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono text-primary/50">utm_content</label>
+                            <input
+                              type="text"
+                              value={utmContent}
+                              onChange={e => setUtmContent(e.target.value)}
+                              className="w-full bg-transparent border border-primary/30 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                              placeholder="banner-top"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono text-primary/50">utm_term</label>
+                            <input
+                              type="text"
+                              value={utmTerm}
+                              onChange={e => setUtmTerm(e.target.value)}
+                              className="w-full bg-transparent border border-primary/30 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                              placeholder="techno"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono text-primary/50">GENERIERTER LINK</label>
+                          <textarea
+                            readOnly
+                            value={generatedUrl}
+                            className="w-full bg-transparent border border-primary/20 px-3 py-2 text-[10px] font-mono text-foreground/70 resize-none focus:outline-none"
+                            rows={3}
+                          />
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                if (!generatedUrl) return
+                                navigator.clipboard.writeText(generatedUrl).then(() => {
+                                  toast('Link kopiert!')
+                                  if (utmSource) {
+                                    const entry = { url: generatedUrl, campaign: utmCampaign || utmSource, date: new Date().toLocaleDateString('de-DE') }
+                                    setUtmHistory(prev => {
+                                      const updated = [entry, ...prev].slice(0, 10)
+                                      try { localStorage.setItem('nk-utm-history', JSON.stringify(updated)) } catch { /* ignore */ }
+                                      return updated
+                                    })
+                                  }
+                                }).catch(() => {})
+                              }}
+                              className="px-3 py-1.5 bg-primary/20 border border-primary/50 text-primary text-[10px] font-mono tracking-wider hover:bg-primary/30 transition-colors"
+                            >
+                              KOPIEREN
+                            </button>
+                          </div>
+                          <p className="text-[9px] font-mono text-primary/30">Tipp: Nutze einen QR-Code-Generator für Flyer/Merch</p>
+                        </div>
+                      </div>
+
+                      {/* Gespeicherte Kampagnen */}
+                      <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">GESPEICHERTE KAMPAGNEN</h3>
+                          {utmHistory.length > 0 && (
+                            <button
+                              onClick={() => {
+                                try { localStorage.removeItem('nk-utm-history') } catch { /* ignore */ }
+                                setUtmHistory([])
+                              }}
+                              className="text-[9px] font-mono text-destructive/60 hover:text-destructive transition-colors"
+                            >
+                              Verlauf löschen
+                            </button>
+                          )}
+                        </div>
+                        {utmHistory.length === 0 ? (
+                          <p className="text-[10px] text-primary/30 font-mono">Noch keine Kampagnen gespeichert</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {utmHistory.map((entry, i) => (
+                              <div key={i} className="flex items-center justify-between border border-primary/10 px-3 py-2">
+                                <div>
+                                  <p className="text-[10px] font-mono text-foreground/70">{entry.campaign || '—'}</p>
+                                  <p className="text-[9px] font-mono text-primary/40">{entry.date}</p>
+                                </div>
+                                <button
+                                  onClick={() => navigator.clipboard.writeText(entry.url).then(() => toast('Link kopiert!')).catch(() => {})}
+                                  className="text-[9px] font-mono text-primary/50 hover:text-primary transition-colors border border-primary/20 px-2 py-1"
+                                >
+                                  COPY
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* UTM Performance */}
+                      {analytics && (
+                        <div className="border border-primary/20 bg-black/30 p-4 space-y-4">
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">KAMPAGNEN-PERFORMANCE (Live)</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {analytics.utmSources && Object.keys(analytics.utmSources).length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-[9px] font-mono text-primary/40 uppercase">UTM Sources</p>
+                                <TopList items={analytics.utmSources} limit={10} />
+                              </div>
+                            )}
+                            {analytics.utmMediums && Object.keys(analytics.utmMediums).length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-[9px] font-mono text-primary/40 uppercase">UTM Mediums</p>
+                                <TopList items={analytics.utmMediums} limit={10} />
+                              </div>
+                            )}
+                            {analytics.utmCampaigns && Object.keys(analytics.utmCampaigns).length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-[9px] font-mono text-primary/40 uppercase">UTM Campaigns</p>
+                                <TopList items={analytics.utmCampaigns} limit={10} />
+                              </div>
+                            )}
+                            {(!analytics.utmSources || Object.keys(analytics.utmSources).length === 0) &&
+                             (!analytics.utmMediums || Object.keys(analytics.utmMediums).length === 0) &&
+                             (!analytics.utmCampaigns || Object.keys(analytics.utmCampaigns).length === 0) && (
+                              <p className="text-[10px] text-primary/30 font-mono md:col-span-3">Noch keine UTM-Daten vorhanden</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </>

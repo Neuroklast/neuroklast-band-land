@@ -169,6 +169,7 @@ const OVERLAY_LABELS: Record<string, { name: string; description: string }> = {
   noise: { name: 'Static Noise', description: 'Subtle random noise grain' },
   vignette: { name: 'Vignette', description: 'Dark edges / spotlight center' },
   chromatic: { name: 'Chromatic Aberration', description: 'RGB color fringe shift' },
+  movingScanline: { name: 'Moving Scanline', description: 'CRT-Auffrischungslinie die sich bewegt' },
 }
 
 const SECTION_LABELS: Record<keyof SectionVisibility, string> = {
@@ -263,6 +264,7 @@ function applyOverlayEffectsToDOM(theme: ThemeSettings | undefined) {
   root.style.setProperty('--overlay-noise', effects?.noise?.enabled ? String(effects.noise.intensity) : '0')
   root.style.setProperty('--overlay-vignette', effects?.vignette?.enabled ? String(effects.vignette.intensity) : '0')
   root.style.setProperty('--overlay-chromatic', effects?.chromatic?.enabled ? String(effects.chromatic.intensity) : '0')
+  root.style.setProperty('--overlay-moving-scanline', effects?.movingScanline?.enabled ? '1' : '0')
 }
 
 /** Reset all custom CSS variables set by theme */
@@ -277,6 +279,7 @@ export function resetThemeDOM() {
     '--radius',
     '--overlay-dot-matrix', '--overlay-scanlines', '--overlay-crt',
     '--overlay-noise', '--overlay-vignette', '--overlay-chromatic',
+    '--overlay-moving-scanline',
   ]
   props.forEach(p => root.style.removeProperty(p))
 }

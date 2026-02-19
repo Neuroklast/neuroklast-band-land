@@ -49,6 +49,8 @@ export interface SiteAnalytics {
   utmMediums?: Record<string, number>
   /** UTM campaign counts */
   utmCampaigns?: Record<string, number>
+  /** Hourly visit counts (key: hour "0"-"23", value: count) */
+  hourlyVisits?: Record<string, number>
   /** First tracked date */
   firstTracked?: string
   /** Last tracked date */
@@ -83,6 +85,7 @@ function emptyAnalytics(): SiteAnalytics {
     utmSources: {},
     utmMediums: {},
     utmCampaigns: {},
+    hourlyVisits: {},
   }
 }
 
@@ -402,4 +405,14 @@ export async function resetAnalytics(): Promise<void> {
   } catch {
     // Server reset failed, local is already cleared
   }
+}
+
+/** Track a social platform click */
+export function trackSocialClick(platform: string, _url: string): void {
+  trackInteraction(`social_click_${platform}`)
+}
+
+/** Track a newsletter signup */
+export function trackNewsletterSignup(): void {
+  trackInteraction('newsletter_signup')
 }
