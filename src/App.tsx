@@ -525,8 +525,8 @@ function App() {
                 onImportData={(imported) => setBandData(imported)}
                 onOpenSoundSettings={() => setShowSoundSettings(true)}
                 onOpenConfigEditor={() => setShowConfigEditor(true)}
-                onOpenStats={() => setShowStats(true)}
-                onOpenSecurityIncidents={() => setShowSecurityIncidents(true)}
+                onOpenAnalytics={() => setShowStats(true)}
+                onOpenSecurityLog={() => setShowSecurityIncidents(true)}
                 onOpenSecuritySettings={() => setShowSecuritySettings(true)}
                 onOpenBlocklist={() => setShowBlocklist(true)}
                 onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}

@@ -23,8 +23,8 @@ interface EditControlsProps {
   onImportData?: (data: BandData) => void
   onOpenSoundSettings?: () => void
   onOpenConfigEditor?: () => void
-  onOpenStats?: () => void
-  onOpenSecurityIncidents?: () => void
+  onOpenAnalytics?: () => void
+  onOpenSecurityLog?: () => void
   onOpenSecuritySettings?: () => void
   onOpenBlocklist?: () => void
   onOpenThemeCustomizer?: () => void
@@ -39,14 +39,14 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenStats, onOpenSecurityIncidents, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const importInputRef = useRef<HTMLInputElement>(null)
 
-  const handleExport = () => {
+  const handleExportData = () => {
     if (!bandData) return
     const json = JSON.stringify(bandData, null, 2)
     const blob = new Blob([json], { type: 'application/json' })
@@ -61,7 +61,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     toast.success('Data exported successfully')
   }
 
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportDataFromFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !onImportData) return
     const reader = new FileReader()
@@ -82,7 +82,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     e.target.value = ''
   }
 
-  const importFromUrl = useCallback(async (url: string, silent = false) => {
+  const importDataFromUrl = useCallback(async (url: string, silent = false) => {
     if (!url || !onImportData) return
     setIsImporting(true)
     try {
@@ -112,7 +112,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
   const handleImportUrl = () => {
     const url = importUrl.trim()
     if (!url) return
-    importFromUrl(url)
+    importDataFromUrl(url)
     setShowUrlImport(false)
     setImportUrl('')
   }
@@ -123,7 +123,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     if (!syncUrl) return
 
     const checkSync = () => {
-      importFromUrl(syncUrl, true)
+      importDataFromUrl(syncUrl, true)
     }
 
     const initialTimeout = setTimeout(checkSync, INITIAL_SYNC_DELAY_MS)
@@ -133,7 +133,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
       clearTimeout(initialTimeout)
       clearInterval(interval)
     }
-  }, [bandData?.syncUrl, importFromUrl])
+  }, [bandData?.syncUrl, importDataFromUrl])
 
   return (
     <>
@@ -142,7 +142,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
         type="file"
         accept=".json,application/json"
         className="hidden"
-        onChange={handleImportFile}
+        onChange={handleImportDataFromFile}
       />
 
       {/* URL import overlay */}
@@ -221,7 +221,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               className="flex gap-2"
             >
               <Button
-                onClick={handleExport}
+                onClick={handleExportData}
                 className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
                 size="icon"
                 title="Export data as JSON"
@@ -269,9 +269,9 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   <Sliders size={20} className="hidden md:block" weight="bold" />
                 </Button>
               )}
-              {onOpenStats && (
+              {onOpenAnalytics && (
                 <Button
-                  onClick={onOpenStats}
+                  onClick={onOpenAnalytics}
                   className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
                   size="icon"
                   title="Site analytics"
@@ -280,9 +280,9 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   <ChartBar size={20} className="hidden md:block" weight="bold" />
                 </Button>
               )}
-              {onOpenSecurityIncidents && (
+              {onOpenSecurityLog && (
                 <Button
-                  onClick={onOpenSecurityIncidents}
+                  onClick={onOpenSecurityLog}
                   className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
                   size="icon"
                   title="Security incidents"
