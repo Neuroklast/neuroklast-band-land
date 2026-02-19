@@ -1,5 +1,5 @@
-import { useKV } from '@/hooks/use-kv'
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useKV, type KVSaveResult } from '@/hooks/use-kv'
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -94,21 +94,30 @@ function collectImageUrls(data: BandData): string[] {
 }
 
 function App() {
-  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData, {
-    onSaveResult: (result) => {
-      if (result.ok) return // success is logged to console by useKV; no toast to avoid noise
-      if (result.status === 403) {
-        toast.error('Not saved globally — admin login required', { id: 'kv-save-403' })
-      } else if (result.status === 503) {
-        toast.error('KV not configured — data saved locally only', { id: 'kv-save-503' })
-      } else if (result.status === 0) {
-        toast.error('Not saved globally — network error', { id: 'kv-save-net' })
-      } else {
-        toast.error(`Global save failed (${result.status})`, { id: 'kv-save-err' })
-      }
-    },
-  })
+  // isOwner must be declared before useKV so the onSaveResult callback can reference it
   const [isOwner, setIsOwner] = useState(false)
+
+  // Stable callback: only changes when isOwner flips, preventing the useEffect inside
+  // useKV (which keeps the ref in sync) from running on every render.
+  const handleKVSaveResult = useCallback((result: KVSaveResult) => {
+    if (result.ok) {
+      if (isOwner) toast.success('Saved globally ✓', { id: 'kv-save-ok' })
+      return
+    }
+    if (result.status === 403) {
+      toast.error('Not saved globally — admin login required', { id: 'kv-save-403' })
+    } else if (result.status === 503) {
+      toast.error('KV not configured — data saved locally only', { id: 'kv-save-503' })
+    } else if (result.status === 0) {
+      toast.error('Not saved globally — network error', { id: 'kv-save-net' })
+    } else {
+      toast.error(`Global save failed (${result.status})`, { id: 'kv-save-err' })
+    }
+  }, [isOwner])
+
+  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData, {
+    onSaveResult: handleKVSaveResult,
+  })
   const [needsSetup, setNeedsSetup] = useState(false)
   const [totpEnabled, setTotpEnabled] = useState(false)
   const [setupTokenRequired, setSetupTokenRequired] = useState(false)
