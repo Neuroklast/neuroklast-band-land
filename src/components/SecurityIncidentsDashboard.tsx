@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash, ShieldWarning, Globe, Clock, User, Hash, Activity } from '@phosphor-icons/react'
+import { Trash, ShieldWarning, Globe, Clock, User, Hash } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 

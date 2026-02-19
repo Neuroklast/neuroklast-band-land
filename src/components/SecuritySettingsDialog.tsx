@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint, Activity, ProhibitInset, Package, BellRinging } from '@phosphor-icons/react'
+import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint, ChartLine, ProhibitInset, Package, BellRinging } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
@@ -327,7 +327,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       onChange={(v) => update('robotsTrapEnabled', v)}
                     />
                     <ToggleRow
-                      icon={Activity}
+                      icon={ChartLine}
                       label="Threat Score System"
                       description="Behavioral IDS: assigns threat scores to suspicious request patterns"
                       checked={settings.threatScoringEnabled}
