@@ -266,7 +266,7 @@ function App() {
     })
   }
 
-  const data = bandData || defaultBandData
+  const data = bandData ? { ...defaultBandData, ...bandData } : defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
   const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
   const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
@@ -333,7 +333,7 @@ function App() {
         <>
           <Navigation
             sectionLabels={data.sectionLabels}
-            terminalMorseCode={data.terminalMorseCode}
+            terminalMorseCode={data.terminalMorseCode || defaultBandData.terminalMorseCode}
             onTerminalActivation={handleTerminalActivation}
           />
           
@@ -590,6 +590,7 @@ function App() {
                 onOpenBlocklist={() => setShowBlocklist(true)}
                 onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}
                 onOpenTerminalSettings={() => setShowTerminalSettings(true)}
+                onOpenTerminal={() => setTerminalOpen(true)}
               />
             )}
 

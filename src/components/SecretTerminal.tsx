@@ -49,18 +49,21 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
   const [codeKeys, setCodeKeys] = useState<string[]>(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
   const [isRecordingKey, setIsRecordingKey] = useState(false)
 
+  const prevIsOpenRef = useRef(false)
+
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus()
-    }
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       setCmds(customCommands)
       setCodeKeys(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
       setIsEditing(false)
       setEditTab('commands')
       setExpandedIdx(null)
     }
-  }, [isOpen, customCommands, secretCode])
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus()
+    }
+    prevIsOpenRef.current = isOpen
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen) return

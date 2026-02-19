@@ -29,6 +29,7 @@ interface EditControlsProps {
   onOpenBlocklist?: () => void
   onOpenThemeCustomizer?: () => void
   onOpenTerminalSettings?: () => void
+  onOpenTerminal?: () => void
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -40,7 +41,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer, onOpenTerminalSettings }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer, onOpenTerminalSettings, onOpenTerminal }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -323,6 +324,16 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 >
                   <Terminal size={20} weight="bold" />
                   <span className="text-[9px] font-mono leading-none">TERMINAL</span>
+                </Button>
+              )}
+              {onOpenTerminal && (
+                <Button
+                  onClick={onOpenTerminal}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  title="Open secret terminal"
+                >
+                  <Terminal size={20} weight="fill" />
+                  <span className="text-[9px] font-mono leading-none">OPEN TERMINAL</span>
                 </Button>
               )}
             </motion.div>
