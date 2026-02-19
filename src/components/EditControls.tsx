@@ -281,7 +281,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Security incidents"
                 >
                   <ShieldWarning size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">SEC LOG</span>
+                  <span className="text-[9px] font-mono leading-none">SEC. LOG</span>
                 </Button>
               )}
               {onOpenSecuritySettings && (
@@ -327,7 +327,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 title={hasPassword ? 'Change admin password' : 'Set admin password'}
               >
                 <Key size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">PASSWORT</span>
+                <span className="text-[9px] font-mono leading-none">PASSWORD</span>
               </Button>
             </motion.div>
 
