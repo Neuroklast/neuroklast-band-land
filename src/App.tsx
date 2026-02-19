@@ -328,7 +328,11 @@ function App() {
 
       {!loading && (
         <>
-          <Navigation sectionLabels={data.sectionLabels} />
+          <Navigation
+            sectionLabels={data.sectionLabels}
+            terminalMorseCode={data.terminalMorseCode}
+            onTerminalActivation={handleTerminalActivation}
+          />
           
           <motion.div 
             className="min-h-screen bg-background text-foreground overflow-x-hidden relative"
