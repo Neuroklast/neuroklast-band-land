@@ -271,7 +271,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
   const [utmContent, setUtmContent] = useState('')
   const [utmTerm, setUtmTerm] = useState('')
   const [utmHistory, setUtmHistory] = useState<Array<{ url: string; campaign: string; date: string }>>(() => {
-    try { return JSON.parse(localStorage.getItem('nk-utm-history') || '[]') } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('nk-utm-history') || '[]') } catch (e) { console.warn('Failed to parse UTM history:', e); return [] }
   })
 
   useEffect(() => {
@@ -699,7 +699,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                                 </ResponsiveContainer>
                                 {bestTimes.length > 0 && (
                                   <div className="space-y-1 text-[10px] font-mono text-foreground/60">
-                                    <p>🕐 Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr</p>
+                                    <p>🕐 Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr (UTC)</p>
                                     <p className="text-primary/50">→ Poste auf Instagram/Facebook ca. 30 Minuten vor dem Peak für maximale Reichweite</p>
                                   </div>
                                 )}
@@ -897,7 +897,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                                     const entry = { url: generatedUrl, campaign: utmCampaign || utmSource, date: new Date().toLocaleDateString('de-DE') }
                                     setUtmHistory(prev => {
                                       const updated = [entry, ...prev].slice(0, 10)
-                                      try { localStorage.setItem('nk-utm-history', JSON.stringify(updated)) } catch { /* ignore */ }
+                                      try { localStorage.setItem('nk-utm-history', JSON.stringify(updated)) } catch (e) { console.warn('Failed to save UTM history:', e) }
                                       return updated
                                     })
                                   }
@@ -919,7 +919,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                           {utmHistory.length > 0 && (
                             <button
                               onClick={() => {
-                                try { localStorage.removeItem('nk-utm-history') } catch { /* ignore */ }
+                                try { localStorage.removeItem('nk-utm-history') } catch (e) { console.warn('Failed to clear UTM history:', e) }
                                 setUtmHistory([])
                               }}
                               className="text-[9px] font-mono text-destructive/60 hover:text-destructive transition-colors"

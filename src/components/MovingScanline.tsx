@@ -14,8 +14,8 @@ export function MovingScanline() {
       setEnabled(false)
       return
     }
-    const cssVal = getComputedStyle(document.documentElement).getPropertyValue('--overlay-moving-scanline').trim()
-    if (cssVal === '0') {
+    const scanlineEnabled = getComputedStyle(document.documentElement).getPropertyValue('--overlay-moving-scanline').trim()
+    if (scanlineEnabled === '0') {
       setEnabled(false)
       return
     }

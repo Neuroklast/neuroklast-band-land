@@ -408,8 +408,10 @@ export async function resetAnalytics(): Promise<void> {
 }
 
 /** Track a social platform click */
-export function trackSocialClick(platform: string, _url: string): void {
+export function trackSocialClick(platform: string, url: string): void {
   trackInteraction(`social_click_${platform}`)
+  // url parameter is kept for future extended click tracking
+  void url
 }
 
 /** Track a newsletter signup */

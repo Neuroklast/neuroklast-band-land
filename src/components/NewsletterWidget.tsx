@@ -46,7 +46,8 @@ export default function NewsletterWidget({
         trackNewsletterSignup()
         onSuccess?.()
       }
-    } catch {
+    } catch (err) {
+      console.error('Newsletter signup failed:', err)
       setStatus('error')
       setErrorMsg('Netzwerkfehler. Bitte versuche es später erneut.')
     }
