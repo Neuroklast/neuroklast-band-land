@@ -41,11 +41,16 @@ export function useMorseCode({ targetCode, onMatch }: MorseCodeOptions): MorseCo
 
   const onPointerUp = useCallback(() => {
     if (downTime.current === null) return
+    if (!targetRef.current) return
     const duration = Date.now() - downTime.current
     downTime.current = null
     const symbol = duration < DOT_THRESHOLD_MS ? '.' : '-'
 
     sequenceRef.current += symbol
+
+    if (targetRef.current.length > 0 && sequenceRef.current.length > targetRef.current.length) {
+      sequenceRef.current = symbol
+    }
 
     if (sequenceRef.current.length > 0 && sequenceRef.current === targetRef.current) {
       matchRef.current()

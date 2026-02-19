@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PencilSimple, Plus, Trash, CaretDown, CaretUp, Keyboard } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -79,6 +79,50 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
   const [fileLoading, setFileLoading] = useState(false)
   const [fileDlProgress, setFileDlProgress] = useState<DownloadProgress>({ state: 'idle', progress: 0 })
   const pendingFileRef = useRef<{ url: string; name: string } | null>(null)
+
+  // CP2077 download animation state
+  const [pseudoProgress, setPseudoProgress] = useState(0)
+  const [fakeStats, setFakeStats] = useState({ rate: '2.4', enc: 'AES-256-NK', node: 'NK-SECURE-7734' })
+  const [accessPhase, setAccessPhase] = useState(0)
+  const pseudoProgressRef = useRef(0)
+
+  const buildHexNoise = useCallback(() =>
+    Array.from({ length: 6 }, () => Math.floor(Math.random() * 0xffff).toString(16).padStart(4, '0').toUpperCase()).join(' '),
+  [])
+  const [hexNoise, setHexNoise] = useState(() => buildHexNoise())
+
+  const ACCESS_CHARS = '!@#$%^&*<>?/\\|~0123456789ABCDEF'
+  const scramble = useCallback((text: string, frame: number) =>
+    text.split('').map((ch, i) =>
+      ch === ' ' ? ' ' : i % 3 === frame % 3 ? ACCESS_CHARS[Math.floor(Math.random() * ACCESS_CHARS.length)] : ch
+    ).join(''),
+  [])
+
+  useEffect(() => {
+    if (!fileLoading) {
+      setPseudoProgress(0)
+      pseudoProgressRef.current = 0
+      return
+    }
+    const interval = setInterval(() => {
+      if (fileDlProgress.progress === 0) {
+        pseudoProgressRef.current = Math.min(pseudoProgressRef.current + 0.007, 0.95)
+      } else {
+        pseudoProgressRef.current = fileDlProgress.progress
+      }
+      setPseudoProgress(pseudoProgressRef.current)
+      if (Math.random() < 0.3) {
+        setFakeStats({
+          rate: (1.5 + Math.random() * 3.5).toFixed(1),
+          enc: ['AES-256-NK', 'RSA-4096-NK', 'NK-CIPHER-X7', 'DARKNET-SSL'][Math.floor(Math.random() * 4)],
+          node: `NK-SECURE-${Math.floor(1000 + Math.random() * 9000)}`,
+        })
+        setHexNoise(buildHexNoise())
+      }
+      setAccessPhase(prev => (prev + 1) % 10)
+    }, 120)
+    return () => clearInterval(interval)
+  }, [fileLoading, fileDlProgress.progress, buildHexNoise])
 
   useEffect(() => {
     if (historyRef.current) {
@@ -531,23 +575,74 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                       <span className="animate-pulse">▌</span>
                     </div>
                   )}
-                  {/* File loading animation */}
-                  {fileLoading && (
-                    <div className="my-3">
-                      <div className="text-primary/70 mb-2 text-xs">DOWNLOADING FILE...</div>
-                      <div className="w-48 h-1.5 bg-primary/20 overflow-hidden">
-                        <motion.div
-                          className="h-full bg-primary"
-                          initial={{ width: '0%' }}
-                          animate={{ width: `${Math.max(fileDlProgress.progress * 100, 5)}%` }}
-                          transition={{ duration: 0.3, ease: 'easeOut' }}
-                        />
-                      </div>
-                      <div className="text-primary/40 text-[10px] mt-1 tracking-wider">
-                        {fileDlProgress.progress > 0 ? `${Math.round(fileDlProgress.progress * 100)}% COMPLETE` : 'INITIATING TRANSFER...'}
-                      </div>
-                    </div>
-                  )}
+                  {/* CP2077 Download Animation */}
+                  {fileLoading && (() => {
+                    const pct = fileDlProgress.state === 'complete' ? 1 : pseudoProgress
+                    const totalSegs = 20
+                    const filled = Math.round(pct * totalSegs)
+                    const bar = '▓'.repeat(filled) + '░'.repeat(totalSegs - filled)
+                    const isAccessing = pct < 0.1
+                    const isComplete = fileDlProgress.state === 'complete'
+
+                    return (
+                      <AnimatePresence mode="wait">
+                        {isComplete ? (
+                          <motion.div
+                            key="complete"
+                            className="my-3 px-2 py-2 border border-primary/40 bg-primary/10"
+                            initial={{ opacity: 0, scale: 1.05 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                          >
+                            <div className="text-primary font-mono text-xs tracking-widest">
+                              &gt; TRANSFER COMPLETE
+                            </div>
+                          </motion.div>
+                        ) : isAccessing ? (
+                          <motion.div
+                            key="accessing"
+                            className="my-3 space-y-1 font-mono text-xs select-none"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                          >
+                            <div className="text-primary/80 tracking-widest">
+                              {scramble('ACCESSING SECURE NODE...', accessPhase)}
+                            </div>
+                            <div className="text-primary/60 tracking-[0.15em]">
+                              {'[' + '■'.repeat(accessPhase % 4) + '□'.repeat(4 - accessPhase % 4) + ']'}
+                            </div>
+                            <div className="text-primary/30 text-[9px] tracking-widest">{hexNoise}</div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="downloading"
+                            className="my-3 space-y-1.5 font-mono text-xs select-none"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                          >
+                            <div className="text-primary/50 text-[9px] tracking-widest text-right">{hexNoise}</div>
+                            {/* Segmented progress bar */}
+                            <div className="relative w-full overflow-hidden">
+                              <div className="text-primary/80 tracking-[0.05em] leading-none">{bar} {Math.round(pct * 100)}%</div>
+                              {/* Scan-ray overlay */}
+                              <motion.div
+                                className="absolute top-0 bottom-0 w-4 bg-primary/30 blur-sm pointer-events-none"
+                                animate={{ left: [`${(pct * 100) - 5}%`, `${Math.min(pct * 100 + 2, 99)}%`] }}
+                                transition={{ duration: 0.12, ease: 'linear', repeat: Infinity, repeatType: 'mirror' }}
+                              />
+                            </div>
+                            {/* Fake stats */}
+                            <div className="text-primary/50 space-y-0.5 text-[9px] tracking-wider">
+                              <div>TRANSFER RATE: <span className="text-primary/80">{fakeStats.rate} MB/s</span></div>
+                              <div>ENCRYPTION: <span className="text-primary/80">{fakeStats.enc}</span></div>
+                              <div>NODE: <span className="text-primary/80">{fakeStats.node}</span></div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    )
+                  })()}
                 </div>
 
                 <form 
