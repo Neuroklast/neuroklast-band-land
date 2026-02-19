@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -28,6 +28,7 @@ interface EditControlsProps {
   onOpenSecuritySettings?: () => void
   onOpenBlocklist?: () => void
   onOpenThemeCustomizer?: () => void
+  onOpenTerminalSettings?: () => void
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -39,7 +40,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer, onOpenTerminalSettings }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -312,6 +313,16 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 >
                   <Palette size={20} weight="bold" />
                   <span className="text-[9px] font-mono leading-none">THEME</span>
+                </Button>
+              )}
+              {onOpenTerminalSettings && (
+                <Button
+                  onClick={onOpenTerminalSettings}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  title="Terminal settings (commands, key sequence, morse code)"
+                >
+                  <Terminal size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">TERMINAL</span>
                 </Button>
               )}
             </motion.div>

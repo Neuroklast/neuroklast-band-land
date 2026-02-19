@@ -22,6 +22,7 @@ import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import SecretTerminal from '@/components/SecretTerminal'
+import TerminalSettingsDialog from '@/components/TerminalSettingsDialog'
 import ImpressumWindow from '@/components/ImpressumWindow'
 import DatenschutzWindow from '@/components/DatenschutzWindow'
 import CookieBanner from '@/components/CookieBanner'
@@ -69,7 +70,8 @@ const defaultBandData: BandData = {
   terminalCommands: [
     { name: 'status', description: 'System status', output: ['SYSTEM STATUS:', '  AUDIO ENGINE: ACTIVE', '  HUD SYSTEMS: OPERATIONAL', '  THREAT LEVEL: CLASSIFIED'] },
     { name: 'info', description: 'Band information', output: ['NEUROKLAST - HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO', 'LABEL: DARKTUNES MUSIC GROUP', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
-  ]
+  ],
+  terminalMorseCode: '...',
 }
 
 /**
@@ -114,6 +116,7 @@ function App() {
   const [showAttackerProfile, setShowAttackerProfile] = useState(false)
   const [selectedAttackerIp, setSelectedAttackerIp] = useState<string>('')
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false)
+  const [showTerminalSettings, setShowTerminalSettings] = useState(false)
 
   // Apply CRT effects
   useCRTEffects()
@@ -586,6 +589,7 @@ function App() {
                 onOpenSecuritySettings={() => setShowSecuritySettings(true)}
                 onOpenBlocklist={() => setShowBlocklist(true)}
                 onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}
+                onOpenTerminalSettings={() => setShowTerminalSettings(true)}
               />
             )}
 
@@ -630,6 +634,17 @@ function App() {
               onSaveTheme={(themeSettings: ThemeSettings) => setBandData((current) => ({ ...(current || defaultBandData), themeSettings }))}
               sectionVisibility={data.sectionVisibility}
               onSaveSectionVisibility={(sectionVisibility: SectionVisibility) => setBandData((current) => ({ ...(current || defaultBandData), sectionVisibility }))}
+            />
+
+            <TerminalSettingsDialog
+              open={showTerminalSettings}
+              onClose={() => setShowTerminalSettings(false)}
+              commands={data.terminalCommands || []}
+              secretCode={data.secretCode || []}
+              morseCode={data.terminalMorseCode || '...'}
+              onSave={(terminalCommands, secretCode, terminalMorseCode) =>
+                setBandData((current) => ({ ...(current || defaultBandData), terminalCommands, secretCode, terminalMorseCode }))
+              }
             />
 
             <AdminLoginDialog
