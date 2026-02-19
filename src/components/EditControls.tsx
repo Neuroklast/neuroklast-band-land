@@ -218,110 +218,100 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="flex gap-2"
+              className="flex flex-wrap gap-2 justify-end max-w-md"
             >
               <Button
                 onClick={handleExportData}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                size="icon"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title="Export data as JSON"
               >
-                <Export size={18} className="md:hidden" weight="bold" />
-                <Export size={20} className="hidden md:block" weight="bold" />
+                <Export size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">EXPORT</span>
               </Button>
               <Button
                 onClick={() => importInputRef.current?.click()}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                size="icon"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title="Import data from JSON file"
               >
-                <ArrowSquareIn size={18} className="md:hidden" weight="bold" />
-                <ArrowSquareIn size={20} className="hidden md:block" weight="bold" />
+                <ArrowSquareIn size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">IMPORT</span>
               </Button>
               <Button
                 onClick={() => setShowUrlImport(true)}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                size="icon"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title="Import data from URL (Google Drive)"
               >
-                <Globe size={18} className="md:hidden" weight="bold" />
-                <Globe size={20} className="hidden md:block" weight="bold" />
+                <Globe size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">SYNC URL</span>
               </Button>
               {onOpenSoundSettings && (
                 <Button
                   onClick={onOpenSoundSettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Sound effects settings"
                 >
-                  <SpeakerHigh size={18} className="md:hidden" weight="bold" />
-                  <SpeakerHigh size={20} className="hidden md:block" weight="bold" />
+                  <SpeakerHigh size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">SOUND</span>
                 </Button>
               )}
               {onOpenConfigEditor && (
                 <Button
                   onClick={onOpenConfigEditor}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Config variables editor"
                 >
-                  <Sliders size={18} className="md:hidden" weight="bold" />
-                  <Sliders size={20} className="hidden md:block" weight="bold" />
+                  <Sliders size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">CONFIG</span>
                 </Button>
               )}
               {onOpenAnalytics && (
                 <Button
                   onClick={onOpenAnalytics}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Site analytics"
                 >
-                  <ChartBar size={18} className="md:hidden" weight="bold" />
-                  <ChartBar size={20} className="hidden md:block" weight="bold" />
+                  <ChartBar size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">ANALYTICS</span>
                 </Button>
               )}
               {onOpenSecurityLog && (
                 <Button
                   onClick={onOpenSecurityLog}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Security incidents"
                 >
-                  <ShieldWarning size={18} className="md:hidden" weight="bold" />
-                  <ShieldWarning size={20} className="hidden md:block" weight="bold" />
+                  <ShieldWarning size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">SEC LOG</span>
                 </Button>
               )}
               {onOpenSecuritySettings && (
                 <Button
                   onClick={onOpenSecuritySettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Security settings"
                 >
-                  <ShieldCheck size={18} className="md:hidden" weight="bold" />
-                  <ShieldCheck size={20} className="hidden md:block" weight="bold" />
+                  <ShieldCheck size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">SECURITY</span>
                 </Button>
               )}
               {onOpenBlocklist && (
                 <Button
                   onClick={onOpenBlocklist}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Blocklist manager"
                 >
-                  <ProhibitInset size={18} className="md:hidden" weight="bold" />
-                  <ProhibitInset size={20} className="hidden md:block" weight="bold" />
+                  <ProhibitInset size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">BLOCKLIST</span>
                 </Button>
               )}
               {onOpenThemeCustomizer && (
                 <Button
                   onClick={onOpenThemeCustomizer}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Theme customizer (colors, fonts, visibility)"
                 >
-                  <Palette size={18} className="md:hidden" weight="bold" />
-                  <Palette size={20} className="hidden md:block" weight="bold" />
+                  <Palette size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">THEME</span>
                 </Button>
               )}
             </motion.div>
@@ -333,12 +323,11 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
             >
               <Button
                 onClick={() => setShowPasswordDialog(true)}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                size="icon"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title={hasPassword ? 'Change admin password' : 'Set admin password'}
               >
-                <Key size={18} className="md:hidden" weight="bold" />
-                <Key size={20} className="hidden md:block" weight="bold" />
+                <Key size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">PASSWORT</span>
               </Button>
             </motion.div>
 
@@ -351,12 +340,11 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               >
                 <Button
                   onClick={onLogout}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
-                  size="icon"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Logout"
                 >
-                  <SignOut size={18} className="md:hidden" weight="bold" />
-                  <SignOut size={20} className="hidden md:block" weight="bold" />
+                  <SignOut size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">LOGOUT</span>
                 </Button>
               </motion.div>
             )}
