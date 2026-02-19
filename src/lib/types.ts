@@ -20,15 +20,23 @@ export interface Gig {
 export interface Release {
   id: string
   title: string
+  type?: 'album' | 'ep' | 'single' | 'remix' | 'compilation'
   artwork?: string
-  releaseDate?: string
+  releaseDate?: string // ISO 8601: "2024-11-01"
+  description?: string
+  featured?: boolean
   streamingLinks: {
     spotify?: string
     soundcloud?: string
     bandcamp?: string
     youtube?: string
     appleMusic?: string
+    beatport?: string
   }
+  tracks?: Array<{
+    title: string
+    duration?: string // "4:23"
+  }>
 }
 
 export interface SocialLinks {
