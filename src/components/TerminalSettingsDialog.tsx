@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { PencilSimple, Plus, Trash, CaretDown, CaretUp, Keyboard, Terminal } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -47,8 +47,10 @@ export default function TerminalSettingsDialog({
   const [morseInput, setMorseInput] = useState(morseCode)
   const [morseError, setMorseError] = useState<string | null>(null)
 
+  const prevOpenRef = useRef(false)
+
   useEffect(() => {
-    if (open) {
+    if (open && !prevOpenRef.current) {
       setCmds(commands)
       setCodeKeys(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
       setMorseInput(morseCode)
@@ -57,7 +59,8 @@ export default function TerminalSettingsDialog({
       setExpandedIdx(null)
       setIsRecordingKey(false)
     }
-  }, [open, commands, secretCode, morseCode])
+    prevOpenRef.current = open
+  }, [open])
 
   const hasNameConflict = (name: string, index: number) => {
     const lower = (name || '').toLowerCase().trim()

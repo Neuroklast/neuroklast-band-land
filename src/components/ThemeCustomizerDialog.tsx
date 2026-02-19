@@ -370,14 +370,16 @@ export default function ThemeCustomizerDialog({
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
   const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'presets' | 'visibility' | 'effects'>('presets')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const prevOpenRef = useRef(false)
 
-  // Sync draft when props change
+  // Sync draft when dialog opens (not on every prop change while open)
   useEffect(() => {
-    if (open) {
+    if (open && !prevOpenRef.current) {
       setDraft(themeSettings || {})
       setVisDraft(sectionVisibility || {})
     }
-  }, [open, themeSettings, sectionVisibility])
+    prevOpenRef.current = open
+  }, [open])
 
   // Load all Google Fonts when fonts tab is opened
   useEffect(() => {
