@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, Palette } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -26,6 +26,7 @@ interface EditControlsProps {
   onOpenStats?: () => void
   onOpenSecurityIncidents?: () => void
   onOpenSecuritySettings?: () => void
+  onOpenBlocklist?: () => void
   onOpenThemeCustomizer?: () => void
 }
 
@@ -38,7 +39,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenStats, onOpenSecurityIncidents, onOpenSecuritySettings, onOpenThemeCustomizer }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenStats, onOpenSecurityIncidents, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -299,6 +300,17 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 >
                   <ShieldCheck size={18} className="md:hidden" weight="bold" />
                   <ShieldCheck size={20} className="hidden md:block" weight="bold" />
+                </Button>
+              )}
+              {onOpenBlocklist && (
+                <Button
+                  onClick={onOpenBlocklist}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg transition-all touch-manipulation"
+                  size="icon"
+                  title="Blocklist manager"
+                >
+                  <ProhibitInset size={18} className="md:hidden" weight="bold" />
+                  <ProhibitInset size={20} className="hidden md:block" weight="bold" />
                 </Button>
               )}
               {onOpenThemeCustomizer && (
