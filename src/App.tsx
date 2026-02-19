@@ -93,6 +93,8 @@ function App() {
   const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
   const [isOwner, setIsOwner] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
+  const [totpEnabled, setTotpEnabled] = useState(false)
+  const [setupTokenRequired, setSetupTokenRequired] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [terminalOpen, setTerminalOpen] = useState(false)
@@ -154,6 +156,8 @@ function App() {
         if (data) {
           if (data.authenticated) setIsOwner(true)
           setNeedsSetup(data.needsSetup)
+          setTotpEnabled(data.totpEnabled || false)
+          setSetupTokenRequired(data.setupTokenRequired || false)
         }
       })
       .catch(() => { /* ignore — local dev without API */ })
@@ -167,19 +171,23 @@ function App() {
     }
   }, [needsSetup])
 
-  const handleAdminLogin = async (password: string): Promise<boolean> => {
+  const handleAdminLogin = async (password: string, totpCode?: string): Promise<boolean | 'totp-required'> => {
     try {
+      const body: Record<string, string> = { password }
+      if (totpCode) body.totpCode = totpCode
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ password }),
+        body: JSON.stringify(body),
       })
       if (res.ok) {
         setIsOwner(true)
         setNeedsSetup(false)
         return true
       }
+      const data = await res.json().catch(() => ({}))
+      if (data.totpRequired) return 'totp-required'
       return false
     } catch {
       return false
@@ -200,12 +208,14 @@ function App() {
     }))
   }
 
-  const handleSetAdminPassword = async (password: string): Promise<void> => {
+  const handleSetAdminPassword = async (password: string, setupToken?: string): Promise<void> => {
+    const body: Record<string, string> = { password, action: 'setup' }
+    if (setupToken) body.setupToken = setupToken
     const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ password, action: 'setup' }),
+      body: JSON.stringify(body),
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
@@ -214,8 +224,8 @@ function App() {
     setNeedsSetup(false)
   }
 
-  const handleSetupAdminPassword = async (password: string): Promise<void> => {
-    await handleSetAdminPassword(password)
+  const handleSetupAdminPassword = async (password: string, setupToken?: string): Promise<void> => {
+    await handleSetAdminPassword(password, setupToken)
     setIsOwner(true)
   }
 
@@ -570,6 +580,7 @@ function App() {
               open={showLoginDialog}
               onOpenChange={setShowLoginDialog}
               mode="login"
+              totpEnabled={totpEnabled}
               onLogin={handleAdminLogin}
               onSetPassword={handleSetAdminPassword}
             />
@@ -578,6 +589,7 @@ function App() {
               open={showSetupDialog}
               onOpenChange={setShowSetupDialog}
               mode="setup"
+              setupTokenRequired={setupTokenRequired}
               onSetPassword={handleSetupAdminPassword}
             />
 

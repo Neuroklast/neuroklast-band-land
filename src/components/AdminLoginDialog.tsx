@@ -3,22 +3,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LockSimple, Eye, EyeSlash, Key } from '@phosphor-icons/react'
+import { LockSimple, Eye, EyeSlash, Key, ShieldCheck } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface AdminLoginDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   mode: 'login' | 'setup'
-  onLogin?: (password: string) => Promise<boolean>
-  onSetPassword: (password: string) => Promise<void>
+  totpEnabled?: boolean
+  setupTokenRequired?: boolean
+  onLogin?: (password: string, totpCode?: string) => Promise<boolean | 'totp-required'>
+  onSetPassword: (password: string, setupToken?: string) => Promise<void>
 }
 
-export default function AdminLoginDialog({ open, onOpenChange, mode, onLogin, onSetPassword }: AdminLoginDialogProps) {
+export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled, setupTokenRequired, onLogin, onSetPassword }: AdminLoginDialogProps) {
   const isLoginMode = mode === 'login'
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [setupToken, setSetupToken] = useState('')
+  const [totpCode, setTotpCode] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showTotpInput, setShowTotpInput] = useState(totpEnabled || false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -29,12 +34,18 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, onLogin, on
     setIsLoading(true)
     setError('')
     try {
-      const success = await onLogin!(password)
-      if (success) {
+      const result = await onLogin!(password, showTotpInput ? totpCode : undefined)
+      if (result === 'totp-required') {
+        setShowTotpInput(true)
+        setError('Enter your authenticator code')
+        return
+      }
+      if (result) {
         toast.success('ADMIN ACCESS GRANTED', {
           description: 'Edit mode is now available'
         })
         setPassword('')
+        setTotpCode('')
         onOpenChange(false)
       } else {
         setError('Invalid password')
@@ -63,12 +74,13 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, onLogin, on
     setIsLoading(true)
     setError('')
     try {
-      await onSetPassword(password)
+      await onSetPassword(password, setupTokenRequired ? setupToken : undefined)
       toast.success('ADMIN PASSWORD SET', {
         description: 'You can now use this password to access edit mode'
       })
       setPassword('')
       setConfirmPassword('')
+      setSetupToken('')
       onOpenChange(false)
     } catch {
       setError('Failed to set password')
@@ -81,8 +93,11 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, onLogin, on
     if (!isOpen) {
       setPassword('')
       setConfirmPassword('')
+      setSetupToken('')
+      setTotpCode('')
       setError('')
       setShowPassword(false)
+      setShowTotpInput(totpEnabled || false)
     }
     onOpenChange(isOpen)
   }
@@ -104,6 +119,24 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, onLogin, on
         </DialogHeader>
 
         <form onSubmit={isLoginMode ? handleLogin : handleSetPassword} className="space-y-4">
+          {!isLoginMode && setupTokenRequired && (
+            <div className="space-y-2">
+              <Label htmlFor="admin-setup-token">Setup Token</Label>
+              <div className="relative">
+                <ShieldCheck size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="admin-setup-token"
+                  type="password"
+                  value={setupToken}
+                  onChange={(e) => { setSetupToken(e.target.value); setError('') }}
+                  placeholder="Enter setup token..."
+                  className="bg-secondary border-input pl-9"
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="admin-password">Password</Label>
             <div className="relative">
@@ -141,6 +174,26 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, onLogin, on
                   placeholder="Confirm your password..."
                   className="bg-secondary border-input pl-9"
                   autoComplete="new-password"
+                />
+              </div>
+            </div>
+          )}
+
+          {isLoginMode && showTotpInput && (
+            <div className="space-y-2">
+              <Label htmlFor="admin-totp-code">Authenticator Code</Label>
+              <div className="relative">
+                <ShieldCheck size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="admin-totp-code"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={totpCode}
+                  onChange={(e) => { setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
+                  placeholder="000000"
+                  className="bg-secondary border-input pl-9 font-mono tracking-widest"
+                  autoComplete="one-time-code"
                 />
               </div>
             </div>

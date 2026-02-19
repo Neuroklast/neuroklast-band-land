@@ -37,7 +37,10 @@ We release patches for security vulnerabilities for the latest version of the pr
 
 ### Authentication & Access Control
 - **Admin Authentication**: scrypt password hashing (with legacy SHA-256 migration) and constant-time comparison (`timingSafeEqual`)
-- **Session Binding**: Session fingerprinting to prevent session hijacking
+- **Setup Token Protection**: Initial admin setup requires a one-time `ADMIN_SETUP_TOKEN` (set via environment variable) to prevent unauthorized setup. Timing-safe comparison prevents token enumeration.
+- **TOTP Two-Factor Authentication**: Optional TOTP (Time-based One-Time Password) via authenticator apps (Google Authenticator, Authy, etc.). Uses `otpauth` library with SHA-1, 6-digit codes, 30-second period, ±1 window for clock skew tolerance. Enrollment requires active session; disabling requires both password and valid TOTP code.
+- **Session Binding**: Session fingerprinting (User-Agent + IP /24 subnet) to prevent session hijacking
+- **Session Cookies**: `HttpOnly; Secure; SameSite=Strict` cookies with 4-hour TTL. No client-side JavaScript access to session tokens. All sessions invalidated on password change.
 - **CSRF Protection**: No state-changing operations via GET requests
 - **Sensitive Key Protection**: `admin-password-hash`, keys containing `token` or `secret` are blocked from API reads
 
@@ -145,6 +148,7 @@ Detailed per-attacker analytics aggregating behavioral data per IP hash:
 | `KV_REST_API_URL` | Vercel KV endpoint | Yes |
 | `KV_REST_API_TOKEN` | Vercel KV auth token | Yes |
 | `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting) | Recommended |
+| `ADMIN_SETUP_TOKEN` | One-time token required for initial admin password setup. Prevents unauthorized setup via URL guessing. | Recommended |
 | `ADMIN_RESET_EMAIL` | Email for password reset verification & security alerts | For reset & alerting |
 | `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.com`) | Recommended |
 | `DISCORD_WEBHOOK_URL` | Discord webhook URL for security alerts | Optional (for alerting) |
@@ -157,8 +161,10 @@ Detailed per-attacker analytics aggregating behavioral data per IP hash:
 
 1. **Environment Variables**: Never commit sensitive API keys or tokens
 2. **Rate Limit Salt**: Set `RATE_LIMIT_SALT` to a unique, random value in production
-3. **Admin Password**: Use a strong password (minimum 8 characters)
-4. **HTTPS**: Always deploy behind HTTPS
-5. **Regular Updates**: Keep dependencies up to date
-6. **CSP Headers**: Configure Content Security Policy headers in production
-7. **Log Monitoring**: Monitor `[HONEYTOKEN ALERT]` entries in server logs for intrusion detection
+3. **Admin Setup Token**: Set `ADMIN_SETUP_TOKEN` to a strong, random value before deploying. This token is required for the initial admin password setup and prevents unauthorized access.
+4. **Admin Password**: Use a strong password (minimum 8 characters)
+5. **Enable 2FA**: After setting up the admin password, enable TOTP two-factor authentication via the admin settings for stronger protection against credential theft
+6. **HTTPS**: Always deploy behind HTTPS
+7. **Regular Updates**: Keep dependencies up to date (Dependabot auto-merge is configured for patch and minor updates)
+8. **CSP Headers**: Configure Content Security Policy headers in production
+9. **Log Monitoring**: Monitor `[HONEYTOKEN ALERT]` entries in server logs for intrusion detection
