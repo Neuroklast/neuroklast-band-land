@@ -262,6 +262,8 @@ export interface BandData {
   sectionVisibility?: SectionVisibility
   /** Newsletter settings */
   newsletterSettings?: NewsletterSettings
+  /** Morse code sequence (dots and dashes) that opens the secret terminal */
+  terminalMorseCode?: string
 }
 
 export interface SoundSettings {

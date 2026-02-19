@@ -11,6 +11,7 @@ import {
 } from '@/lib/config'
 import MusicPlayer from '@/components/MusicPlayer'
 import type { Track } from '@/components/MusicPlayer'
+import { useMorseCode } from '@/hooks/use-morse-code'
 
 /** Local tracks served from public/music/ */
 const LOCAL_TRACKS: Track[] = [
@@ -22,12 +23,19 @@ const LOCAL_TRACKS: Track[] = [
 
 interface NavigationProps {
   sectionLabels?: SectionLabels
+  terminalMorseCode?: string
+  onTerminalActivation?: () => void
 }
 
-export default function Navigation({ sectionLabels }: NavigationProps) {
+export default function Navigation({ sectionLabels, terminalMorseCode, onTerminalActivation }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
   const [playerOpen, setPlayerOpen] = useState(false)
+
+  const morseHandlers = useMorseCode({
+    targetCode: terminalMorseCode || '',
+    onMatch: () => onTerminalActivation?.(),
+  })
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -71,6 +79,9 @@ export default function Navigation({ sectionLabels }: NavigationProps) {
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={() => scrollToSection('hero')}
+            onPointerDown={morseHandlers.onPointerDown}
+            onPointerUp={morseHandlers.onPointerUp}
+            style={{ touchAction: 'none' }}
             className={`text-base md:text-lg font-mono tracking-[0.08em] hover:text-primary/80 active:text-primary transition-colors touch-manipulation hud-text ${glitch ? 'red-glitch-text' : ''}`}
           >
             <span className="text-primary/60">&gt;</span> NEUROKLAST
