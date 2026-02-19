@@ -4,6 +4,7 @@ import { getClientIp, hashIp } from './_ratelimit.js'
 import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
 import { sendSecurityAlert } from './_alerting.js'
 import { serveZipBomb } from './_zipbomb.js'
+import { recordIncident } from './_attacker-profile.js'
 
 /**
  * Honeytokens — decoy records planted in the database.
@@ -70,6 +71,21 @@ export async function triggerHoneytokenAlarm(req, key, res = null) {
     threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.HONEYTOKEN_ACCESS.reason, THREAT_REASONS.HONEYTOKEN_ACCESS.points)
   } catch {
     // Threat scoring failure must not block the response
+  }
+
+  // Record incident in attacker profile
+  try {
+    await recordIncident(hashedIp, {
+      type: 'honeytoken_access',
+      key,
+      method: req.method,
+      userAgent: entry.userAgent,
+      threatScore: threatResult.score,
+      threatLevel: threatResult.level,
+      timestamp: entry.timestamp
+    })
+  } catch {
+    // Profile recording failure must not block the response
   }
 
   // Send security alert if enabled

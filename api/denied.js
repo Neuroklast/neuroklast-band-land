@@ -5,6 +5,7 @@ import { markAttacker, injectEntropyHeaders, setDefenseHeaders } from './_honeyt
 import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
 import { isHardBlocked } from './_blocklist.js'
 import { serveZipBomb } from './_zipbomb.js'
+import { recordIncident } from './_attacker-profile.js'
 
 /**
  * Handles requests to paths listed as Disallow in robots.txt.
@@ -121,10 +122,26 @@ export default async function handler(req, res) {
   await markAttacker(hashedIp)
 
   // Increment threat score
+  let threatResult = { score: 0, level: 'CLEAN' }
   try {
-    await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points)
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points)
   } catch {
     // Threat scoring failure must not block the response
+  }
+
+  // Record incident in attacker profile
+  try {
+    await recordIncident(hashedIp, {
+      type: 'robots_violation',
+      key: path,
+      method: req.method,
+      userAgent: ua,
+      threatScore: threatResult.score,
+      threatLevel: threatResult.level,
+      timestamp: entry.timestamp
+    })
+  } catch {
+    // Profile recording failure must not block the response
   }
 
   // Defensive delay — limits scanner throughput
