@@ -170,6 +170,13 @@ describe('index.html CSP compliance', () => {
       expect(tag).toMatch(/\bsrc=/)
     }
   })
+
+  it('does not contain inline event handlers on HTML elements', () => {
+    // Matches on* attributes like oncontextmenu, onclick, etc.
+    const inlineHandlerPattern = /\bon\w+\s*=\s*["']/gi
+    const matches = html.match(inlineHandlerPattern)
+    expect(matches).toBeNull()
+  })
 })
 
 // ---------------------------------------------------------------------------

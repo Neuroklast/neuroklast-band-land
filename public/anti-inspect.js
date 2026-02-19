@@ -1,4 +1,5 @@
 // Anti-inspection: block DevTools shortcuts and right-click to deter script-kiddies
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 document.addEventListener('keydown', function(e) {
   // Block F12
   if (e.key === 'F12') { e.preventDefault(); return false; }
