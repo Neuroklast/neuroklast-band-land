@@ -3,6 +3,7 @@ import { resolve4, resolve6 } from 'node:dns/promises'
 import { applyRateLimit } from './_ratelimit.js'
 import { isMarkedAttacker, serveFingerprintPixel } from './_honeytokens.js'
 import { imageProxyQuerySchema, validate } from './_schemas.js'
+import { isHardBlocked } from './_blocklist.js'
 
 /**
  * Server-side image proxy that fetches remote images, caches them in Vercel KV,
@@ -107,6 +108,12 @@ function cacheKey(url) {
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Hard-block check — immediate rejection
+  const blocked = await isHardBlocked(req)
+  if (blocked) {
+    return res.status(403).json({ error: 'FORBIDDEN' })
   }
 
   // Rate limiting — blocks image proxy abuse (GDPR-compliant, IP is hashed)
