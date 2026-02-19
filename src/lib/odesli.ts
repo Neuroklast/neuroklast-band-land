@@ -1,3 +1,5 @@
+import { fetchWithRetry } from './fetch-retry'
+
 interface OdesliPlatformLink {
   url: string
   entityUniqueId: string
@@ -39,7 +41,7 @@ export interface OdesliResult {
 
 export async function fetchOdesliLinks(streamingUrl: string): Promise<OdesliResult | null> {
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `/api/odesli?url=${encodeURIComponent(streamingUrl)}`
     )
 

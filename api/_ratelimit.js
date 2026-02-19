@@ -90,7 +90,7 @@ export async function applyRateLimit(req, res) {
   try {
     const { success } = await rl.limit(identifier)
     if (!success) {
-      res.status(429).json({
+      res.status(429).set('Retry-After', '10').json({
         error: 'Too Many Requests',
         message: 'Rate limit exceeded. Please try again in a few seconds.',
       })
