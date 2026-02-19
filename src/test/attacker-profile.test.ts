@@ -300,8 +300,14 @@ describe('Attacker Profile Module', () => {
       expect(analysis.userAgents).toHaveLength(5)
       expect(analysis.userAgents[0].category).toBe('browser')
       expect(analysis.userAgents[1].category).toBe('script')
-      expect(analysis.userAgents.find((ua) => ua.userAgent.includes('Googlebot')).category).toBe('bot')
-      expect(analysis.userAgents.find((ua) => ua.userAgent.includes('sqlmap')).category).toBe('attack_tool')
+      
+      const googlebotEntry = analysis.userAgents.find((ua) => ua.userAgent.includes('Googlebot'))
+      expect(googlebotEntry).toBeDefined()
+      expect(googlebotEntry?.category).toBe('bot')
+      
+      const sqlmapEntry = analysis.userAgents.find((ua) => ua.userAgent.includes('sqlmap'))
+      expect(sqlmapEntry).toBeDefined()
+      expect(sqlmapEntry?.category).toBe('attack_tool')
     })
 
     it('should handle empty user agents', () => {

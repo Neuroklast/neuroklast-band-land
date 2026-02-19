@@ -251,7 +251,7 @@ function analyzeBehavioralPatterns(profile) {
  */
 export function analyzeUserAgents(profile) {
   if (!profile || !profile.userAgents) {
-    return { total: 0, userAgents: [], topUserAgent: null, diversity: 0 }
+    return { total: 0, userAgents: [], topUserAgent: null, diversity: '0.000' }
   }
   
   const userAgents = Object.entries(profile.userAgents)

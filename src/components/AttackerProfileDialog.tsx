@@ -229,9 +229,17 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                       </div>
                       <div className="text-right">
                         <p className="font-mono text-[10px] text-primary/50 uppercase">Current Threat Score</p>
-                        <p className="font-mono text-[24px] font-bold" style={{ color: THREAT_LEVEL_COLORS[profile.threatScoreHistory[profile.threatScoreHistory.length - 1]?.level as keyof typeof THREAT_LEVEL_COLORS] || '#22c55e' }}>
-                          {profile.threatScoreHistory[profile.threatScoreHistory.length - 1]?.score || 0}
-                        </p>
+                        {(() => {
+                          const lastEntry = profile.threatScoreHistory[profile.threatScoreHistory.length - 1]
+                          const threatColor = lastEntry?.level 
+                            ? THREAT_LEVEL_COLORS[lastEntry.level as keyof typeof THREAT_LEVEL_COLORS] || '#22c55e'
+                            : '#22c55e'
+                          return (
+                            <p className="font-mono text-[24px] font-bold" style={{ color: threatColor }}>
+                              {lastEntry?.score || 0}
+                            </p>
+                          )
+                        })()}
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-4 pt-2 border-t border-primary/10">
