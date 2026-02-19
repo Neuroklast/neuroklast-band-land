@@ -318,17 +318,17 @@ export default function TerminalSettingsDialog({
                 {morseError && <p className="text-xs text-destructive">{morseError}</p>}
                 {!morseError && morseInput && (
                   <p className="text-xs text-primary/60 font-mono">
-                    Aktueller Code: <span className="text-primary tracking-[0.3em]">{morseInput}</span>
+                    Current Code: <span className="text-primary tracking-[0.3em]">{morseInput}</span>
                   </p>
                 )}
               </div>
               <div className="mt-4 p-3 border border-primary/20 bg-primary/5 space-y-1">
                 <p className="text-xs font-mono text-primary/60">HINT</p>
                 <p className="text-xs text-muted-foreground">
-                  Halte den NEUROKLAST-Button <span className="text-primary font-mono">kurz</span> für <span className="font-mono text-primary">·</span> (Dot) und <span className="text-primary font-mono">lang</span> für <span className="font-mono text-primary">–</span> (Dash).
+                  Hold the NEUROKLAST button <span className="text-primary font-mono">briefly</span> for <span className="font-mono text-primary">·</span> (Dot) and <span className="text-primary font-mono">longer</span> for <span className="font-mono text-primary">–</span> (Dash).
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Kurz = unter 300 ms · Lang = 300 ms oder länger · Pause = 1,5 s setzt zurück
+                  Short = under 300 ms · Long = 300 ms or longer · Pause = 1.5 s resets
                 </p>
               </div>
             </>
