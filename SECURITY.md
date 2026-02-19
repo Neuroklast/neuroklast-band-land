@@ -131,12 +131,9 @@ Critical security events trigger immediate notifications (`api/_alerting.js`):
 | `ADMIN_RESET_EMAIL` | Email for password reset verification & security alerts | For reset & alerting |
 | `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.com`) | Recommended |
 | `DISCORD_WEBHOOK_URL` | Discord webhook URL for security alerts | Optional (for alerting) |
-| `RESEND_API_KEY` | Resend API key for email alerts | Optional (for alerting) |
-| `EMAIL_FROM` | Sender address for email alerts | Optional (defaults to noreply@neuroklast.com) |
-| `SITE_URL` | Site URL included in alert messages | Optional (defaults to neuroklast.com) |
-| `RESEND_API_KEY` | Resend API key for sending password reset emails | For email delivery |
-| `EMAIL_FROM` | From email address for reset emails (default: `noreply@neuroklast.com`) | Optional |
-| `SITE_URL` | Site URL for reset links (default: `https://neuroklast.com`) | Optional |
+| `RESEND_API_KEY` | Resend API key for email alerts & password reset | Optional (for alerting & reset) |
+| `EMAIL_FROM` | Sender address for email alerts & reset (default: noreply@neuroklast.com) | Optional |
+| `SITE_URL` | Site URL included in alert messages & reset links (default: neuroklast.com) | Optional |
 | `GOOGLE_DRIVE_API_KEY` | Google Drive API key for file metadata | Optional |
 
 ## Best Practices for Deployment

@@ -206,6 +206,10 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
     setSettings(prev => ({ ...prev, [key]: value }))
   }
 
+  const TOTAL_MODULES = 10
+  const SECURITY_LEVEL_HIGH_THRESHOLD = 7
+  const SECURITY_LEVEL_MEDIUM_THRESHOLD = 5
+
   const activeModules = useMemo(() => {
     const bools: (keyof SecuritySettings)[] = [
       'honeytokensEnabled', 'rateLimitEnabled', 'robotsTrapEnabled',
@@ -271,18 +275,18 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                   {/* Security status overview */}
                   <div className="border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${activeModules >= 7 ? 'bg-green-500' : activeModules >= 5 ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`} />
+                      <div className={`w-3 h-3 rounded-full ${activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? 'bg-green-500' : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`} />
                       <div>
                         <p className="font-mono text-[12px] text-foreground/85 uppercase">
-                          SECURITY LEVEL: {activeModules >= 7 ? 'HIGH' : activeModules >= 5 ? 'MEDIUM' : 'LOW'}
+                          SECURITY LEVEL: {activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? 'HIGH' : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? 'MEDIUM' : 'LOW'}
                         </p>
                         <p className="font-mono text-[10px] text-primary/50 mt-0.5">
-                          {activeModules}/10 defense modules active
+                          {activeModules}/{TOTAL_MODULES} defense modules active
                         </p>
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      {[...Array(10)].map((_, i) => (
+                      {[...Array(TOTAL_MODULES)].map((_, i) => (
                         <div
                           key={i}
                           className={`w-1.5 h-4 ${i < activeModules ? 'bg-primary/60' : 'bg-primary/10'}`}

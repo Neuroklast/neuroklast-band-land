@@ -6,21 +6,23 @@ import { Readable } from 'node:stream'
 let ZIP_BOMB_BUFFER = null
 
 function getZipBombBuffer() {
-  if (ZIP_BOMB_BUFFER) return ZIP_BOMB_BUFFER
+  if (ZIP_BOMB_BUFFER) return Promise.resolve(ZIP_BOMB_BUFFER)
   return new Promise((resolve, reject) => {
     const chunks = []
     const gz = createGzip({ level: 9 })
+    const total = 10 * 1024 * 1024
+    let sent = 0
+    const chunkSize = 65536
     const source = new Readable({
-      read(size) {
-        // Push 10 MB null bytes in 64k chunks
-        const total = 10 * 1024 * 1024
-        let sent = 0
-        const chunk = Buffer.alloc(65536, 0)
-        while (sent < total) {
-          this.push(chunk.slice(0, Math.min(65536, total - sent)))
-          sent += 65536
+      read() {
+        // Push one chunk at a time when requested by the stream
+        if (sent >= total) {
+          this.push(null)
+          return
         }
-        this.push(null)
+        const size = Math.min(chunkSize, total - sent)
+        this.push(Buffer.alloc(size, 0))
+        sent += size
       }
     })
     source.pipe(gz)

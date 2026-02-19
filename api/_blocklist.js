@@ -3,7 +3,7 @@ import { getClientIp, hashIp } from './_ratelimit.js'
 
 export const BLOCK_PREFIX = 'nk-blocked:'
 export const BLOCK_INDEX_KEY = 'nk-blocked-index'
-export const BLOCK_TTL = 604800 // 7 Tage default
+export const BLOCK_TTL = 604800 // 7 days default
 
 export async function blockIp(hashedIp, reason = 'manual', ttlSeconds = BLOCK_TTL) {
   const entry = { hashedIp, reason, blockedAt: new Date().toISOString(), autoBlocked: false }

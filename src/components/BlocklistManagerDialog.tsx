@@ -253,7 +253,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                         <option value={86400}>24 hours</option>
                         <option value={604800}>7 days</option>
                         <option value={2592000}>30 days</option>
-                        <option value={31536000}>1 year (permanent)</option>
+                        <option value={31536000}>1 year</option>
                       </select>
                     </div>
                     <button

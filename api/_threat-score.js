@@ -2,9 +2,9 @@ import { kv } from '@vercel/kv'
 import { getClientIp, hashIp } from './_ratelimit.js'
 
 const THREAT_SCORE_PREFIX = 'nk-threat:'
-const THREAT_SCORE_TTL = 3600 // 1 Stunde
+const THREAT_SCORE_TTL = 3600 // 1 hour
 const BLOCK_PREFIX = 'nk-blocked:'
-const BLOCK_TTL = 604800 // 7 Tage
+const BLOCK_TTL = 604800 // 7 days
 
 export const THREAT_LEVELS = {
   CLEAN: 0,

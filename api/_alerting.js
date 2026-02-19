@@ -1,7 +1,7 @@
 import { kv } from '@vercel/kv'
 
 const ALERT_DEDUP_PREFIX = 'nk-alert-dedup:'
-const ALERT_DEDUP_TTL = 300 // 5 Minuten Cooldown pro IP+Eventtyp
+const ALERT_DEDUP_TTL = 300 // 5 minutes cooldown per IP+event type
 
 /**
  * Send a critical security alert via Discord Webhook and/or Resend email.
