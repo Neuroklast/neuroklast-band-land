@@ -94,7 +94,20 @@ function collectImageUrls(data: BandData): string[] {
 }
 
 function App() {
-  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
+  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData, {
+    onSaveResult: (result) => {
+      if (result.ok) return // success is logged to console by useKV; no toast to avoid noise
+      if (result.status === 403) {
+        toast.error('Not saved globally — admin login required', { id: 'kv-save-403' })
+      } else if (result.status === 503) {
+        toast.error('KV not configured — data saved locally only', { id: 'kv-save-503' })
+      } else if (result.status === 0) {
+        toast.error('Not saved globally — network error', { id: 'kv-save-net' })
+      } else {
+        toast.error(`Global save failed (${result.status})`, { id: 'kv-save-err' })
+      }
+    },
+  })
   const [isOwner, setIsOwner] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
   const [totpEnabled, setTotpEnabled] = useState(false)
