@@ -644,7 +644,7 @@ function App() {
               secretCode={data.secretCode || []}
               morseCode={data.terminalMorseCode || '...'}
               onSave={(terminalCommands, secretCode, terminalMorseCode) =>
-                setBandData((current) => ({ ...(current || defaultBandData), terminalCommands, secretCode, terminalMorseCode }))
+                setBandData((current) => ({ ...(current || defaultBandData), terminalCommands, secretCode, terminalMorseCode: terminalMorseCode?.trim() || defaultBandData.terminalMorseCode || '...' }))
               }
             />
 
