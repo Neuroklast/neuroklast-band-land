@@ -1,14 +1,14 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useCallback } from 'react'
 
-/** Number of glitch block elements per pattern */
-const BLOCK_COUNT = 8
+/** Number of glitch elements per pattern */
+const ELEMENT_COUNT = 8
 
 /** Cyberpunk 2077-style glitch transition patterns */
 const patterns = [
   // Pattern 0: Glitch blocks — random horizontal slices with chromatic shift
   {
-    blockStyle: (i: number, total: number) => {
+    elementStyle: (i: number, total: number) => {
       const h = 100 / total
       return {
         position: 'absolute' as const,
@@ -37,7 +37,7 @@ const patterns = [
   },
   // Pattern 1: Digital noise burst — scattered glitch rectangles
   {
-    blockStyle: (i: number, total: number) => {
+    elementStyle: (i: number, total: number) => {
       const seed = ((i * 7 + 3) % total) / total
       return {
         position: 'absolute' as const,
@@ -62,7 +62,7 @@ const patterns = [
   },
   // Pattern 2: Chromatic split — two-color offset flash
   {
-    blockStyle: (i: number, total: number) => {
+    elementStyle: (i: number, total: number) => {
       const isRed = i < total / 2
       return {
         position: 'absolute' as const,
@@ -102,8 +102,9 @@ interface OverlayTransitionProps {
   onComplete?: () => void
 }
 
-/** Total duration of the transition effect in milliseconds */
-const TRANSITION_DURATION_MS = 450
+/** Total duration of the transition effect in milliseconds.
+ *  Covers the longest pattern: 0.4s base + 7×0.015s stagger ≈ 505ms. */
+const TRANSITION_DURATION_MS = 500
 
 /**
  * Cyberpunk 2077-style glitch transition played when an overlay opens.
@@ -136,11 +137,11 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
           exit={{ opacity: 0 }}
           transition={{ duration: 0.12 }}
         >
-          {Array.from({ length: BLOCK_COUNT }).map((_, i) => (
+          {Array.from({ length: ELEMENT_COUNT }).map((_, i) => (
             <motion.div
               key={i}
-              style={pattern.blockStyle(i, BLOCK_COUNT)}
-              animate={pattern.animate(i, BLOCK_COUNT)}
+              style={pattern.elementStyle(i, ELEMENT_COUNT)}
+              animate={pattern.animate(i, ELEMENT_COUNT)}
               transition={pattern.transition(i)}
             />
           ))}
