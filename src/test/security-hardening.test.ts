@@ -195,3 +195,49 @@ describe('Rate limit salt production guard', () => {
     expect(source).toMatch(/throw new Error/)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Test: robots.txt AI/LLM crawler blocks
+// ---------------------------------------------------------------------------
+
+describe('robots.txt AI crawler blocks', () => {
+  const robotsTxt = readFileSync(resolve(__dirname, '../../public/robots.txt'), 'utf-8')
+
+  it('blocks GPTBot', () => {
+    expect(robotsTxt).toMatch(/User-agent: GPTBot[\s\S]*?Disallow: \//)
+  })
+
+  it('blocks anthropic-ai', () => {
+    expect(robotsTxt).toMatch(/User-agent: anthropic-ai[\s\S]*?Disallow: \//)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Test: vercel.json sitemap-trap rewrite
+// ---------------------------------------------------------------------------
+
+describe('vercel.json sitemap-trap rewrite', () => {
+  const vercelConfig = JSON.parse(
+    readFileSync(resolve(__dirname, '../../vercel.json'), 'utf-8')
+  )
+
+  it('contains sitemap-extended.xml rewrite to /api/sitemap-trap', () => {
+    const rewrite = vercelConfig.rewrites?.find(
+      (r: { source: string; destination: string }) => r.source === '/sitemap-extended.xml'
+    )
+    expect(rewrite).toBeDefined()
+    expect(rewrite?.destination).toBe('/api/sitemap-trap')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Test: vite.config.ts imports vite-plugin-obfuscator
+// ---------------------------------------------------------------------------
+
+describe('vite.config.ts obfuscator plugin', () => {
+  const viteConfig = readFileSync(resolve(__dirname, '../../vite.config.ts'), 'utf-8')
+
+  it('imports vite-plugin-obfuscator', () => {
+    expect(viteConfig).toContain("from 'vite-plugin-obfuscator'")
+  })
+})
