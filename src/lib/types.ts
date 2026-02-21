@@ -175,6 +175,8 @@ export interface ThemeSettings {
   activePreset?: string
   /** Base border radius in rem (default 0.125) */
   borderRadius?: number
+  /** Base font size factor (default 1.0, range 0.75–1.5) */
+  fontSize?: number
   /** Overlay effects configuration */
   overlayEffects?: OverlayEffects
 }

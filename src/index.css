@@ -5,6 +5,14 @@
   * {
     @apply border-border
   }
+  /* Ensure form controls without an explicit Tailwind rounded-* class
+     participate in the global radius scale. Tailwind utilities in
+     @layer utilities override this for elements that declare a specific size. */
+  input,
+  select,
+  textarea {
+    border-radius: var(--radius-md, 0.125rem);
+  }
 }
 
 :root {
@@ -37,6 +45,7 @@
   --ring: oklch(0.50 0.22 25);
 
   --radius: 0.125rem;
+  --font-size-factor: 1;
 
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Space Grotesk', sans-serif;
@@ -83,6 +92,10 @@
   --radius-xl: calc(var(--radius) * 2);
   --radius-2xl: calc(var(--radius) * 3);
   --radius-full: 9999px;
+}
+
+html {
+  font-size: calc(1rem * var(--font-size-factor, 1));
 }
 
 body {
@@ -133,6 +146,26 @@ input, textarea, select {
   background: oklch(0.50 0.22 25 / 0.6);
 }
 
+/* Admin surface readability — dialogs must be legible without CRT phosphor effects */
+[role="dialog"],
+[data-radix-dialog-content],
+[data-slot="dialog-content"] {
+  text-shadow: none;
+}
+
+[role="dialog"] *,
+[data-radix-dialog-content] *,
+[data-slot="dialog-content"] * {
+  text-shadow: none;
+}
+
+/* Ensure admin dialog text is readable: dialogs use the base font size
+   from the theme so very small utility classes remain legible */
+[role="dialog"],
+[data-slot="dialog-content"] {
+  font-size: max(0.75rem, 1em);
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: oklch(0.50 0.22 25 / 0.4) oklch(0.03 0 0);
@@ -153,7 +186,7 @@ input, textarea, select {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 0.1 0 0 0 0 0 0.1 0 0 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   opacity: 0.08;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 6;
   mix-blend-mode: screen;
 }
 
@@ -927,7 +960,7 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 5;
   background-image: radial-gradient(circle, oklch(0 0 0 / calc(var(--overlay-dot-matrix) * 0.3)) 1px, transparent 1px);
   background-size: 3px 3px;
   mix-blend-mode: multiply;
@@ -938,7 +971,7 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 5;
   background-image: repeating-linear-gradient(
     0deg,
     transparent,
@@ -953,7 +986,7 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 5;
   box-shadow: inset 0 0 calc(var(--overlay-crt) * 120px) calc(var(--overlay-crt) * 40px) oklch(0 0 0 / calc(var(--overlay-crt) * 0.5));
   border-radius: calc(var(--overlay-crt) * 12px);
 }
@@ -963,7 +996,7 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 5;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: calc(var(--overlay-noise) * 0.12);
   mix-blend-mode: overlay;
@@ -974,7 +1007,7 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 5;
   background: radial-gradient(
     ellipse at center,
     transparent 40%,
@@ -987,8 +1020,69 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 5;
   box-shadow:
     inset calc(var(--overlay-chromatic) * 2px) 0 calc(var(--overlay-chromatic) * 4px) oklch(0.50 0.22 25 / calc(var(--overlay-chromatic) * 0.15)),
     inset calc(var(--overlay-chromatic) * -2px) 0 calc(var(--overlay-chromatic) * 4px) oklch(0.50 0.22 250 / calc(var(--overlay-chromatic) * 0.15));
+}
+
+/* ─── Accessibility: prefers-reduced-motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Accessibility: enhanced focus indicators ─── */
+:focus-visible {
+  outline: 2px solid var(--primary, oklch(0.50 0.22 25));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 2px);
+}
+
+/* ─── Accessibility: prefers-contrast ─── */
+@media (prefers-contrast: more) {
+  :root {
+    --foreground: oklch(1 0 0);
+    --background: oklch(0 0 0);
+    --border: oklch(0.6 0 0);
+    --muted-foreground: oklch(0.8 0 0);
+  }
+  body,
+  h1, h2, h3, h4, h5, h6 {
+    text-shadow: none;
+  }
+  .overlay-dot-matrix,
+  .overlay-scanlines,
+  .overlay-crt,
+  .overlay-noise,
+  .overlay-vignette,
+  .overlay-chromatic {
+    display: none;
+  }
+}
+
+/* ─── Skip navigation link for keyboard accessibility ─── */
+.skip-to-main {
+  position: absolute;
+  top: -9999px;
+  left: 0;
+  z-index: 99999;
+  padding: 0.75rem 1.25rem;
+  background: var(--primary, oklch(0.50 0.22 25));
+  color: oklch(1 0 0);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.875rem;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+.skip-to-main:focus {
+  top: 0.5rem;
+  left: 0.5rem;
 }

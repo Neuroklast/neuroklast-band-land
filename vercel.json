@@ -34,6 +34,7 @@
     { "source": "/cgi-bin/:p*", "destination": "/api/denied?_src=/cgi-bin/:p*" },
     { "source": "/xmlrpc.php", "destination": "/api/denied?_src=/xmlrpc.php" },
     { "source": "/.env", "destination": "/api/denied?_src=/.env" },
-    { "source": "/.git/:p*", "destination": "/api/denied?_src=/.git/:p*" }
+    { "source": "/.git/:p*", "destination": "/api/denied?_src=/.git/:p*" },
+    { "source": "/sitemap-extended.xml", "destination": "/api/sitemap-trap" }
   ]
 }
