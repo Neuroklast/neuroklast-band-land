@@ -265,7 +265,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto flex items-start justify-center p-4">
+    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto flex items-center justify-center p-4">
       <motion.div
         className="w-full max-w-md bg-card border border-primary/30 p-6 space-y-4 max-h-[90vh] overflow-y-auto"
         initial={{ scale: 0.9, opacity: 0 }}

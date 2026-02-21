@@ -302,11 +302,6 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                                 draggable={false}
                                 style={{ filter: 'contrast(1.15) brightness(0.85)' }}
                               />
-                              <div className="absolute inset-0 pointer-events-none"
-                                style={{
-                                  backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, oklch(0 0 0 / 0.08) 2px, oklch(0 0 0 / 0.08) 3px)`
-                                }}
-                              />
                             </div>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
@@ -455,18 +450,6 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                             className="w-full h-full object-cover group-hover:scale-105 group-active:scale-110 transition-transform duration-500 select-none"
                             draggable={false}
                             style={{ filter: 'contrast(1.15) brightness(0.85)' }}
-                          />
-                          {/* Dot matrix scales with viewport: min 2px, max 4px */}
-                          <div className="absolute inset-0 pointer-events-none z-[1]"
-                            style={{
-                              backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.4) 1px, transparent 1px)`,
-                              backgroundSize: 'clamp(2px, 0.3vw, 4px) clamp(2px, 0.3vw, 4px)'
-                            }}
-                          />
-                          <div className="absolute inset-0 pointer-events-none z-[2]"
-                            style={{
-                              backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, oklch(0 0 0 / 0.08) 2px, oklch(0 0 0 / 0.08) 3px)`
-                            }}
                           />
                         </div>
                       ) : (

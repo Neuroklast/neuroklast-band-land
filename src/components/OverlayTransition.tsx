@@ -1,86 +1,96 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useCallback } from 'react'
 
-/** Number of scan lines to render */
-const LINE_COUNT = 12
+/** Number of glitch elements per pattern */
+const ELEMENT_COUNT = 8
 
-/** Three different animation patterns for overlay transitions */
+/** Cyberpunk 2077-style glitch transition patterns */
 const patterns = [
-  // Pattern 0: Horizontal scan lines that converge to center
+  // Pattern 0: Glitch blocks — random horizontal slices with chromatic shift
   {
-    lineStyle: (i: number, total: number) => ({
-      position: 'absolute' as const,
-      left: 0,
-      right: 0,
-      height: '1px',
-      top: `${(i / total) * 100}%`,
-      background: 'oklch(0.50 0.22 25)',
-      boxShadow: '0 0 6px oklch(0.50 0.22 25 / 0.6)',
-    }),
-    animate: (i: number, total: number) => ({
-      scaleX: [0, 1, 1, 0],
-      opacity: [0, 1, 1, 0],
-      top: [`${(i / total) * 100}%`, `${(i / total) * 100}%`, '50%', '50%'],
-    }),
-    transition: (i: number) => ({
-      duration: 0.4,
-      delay: i * 0.015,
-      ease: 'easeInOut' as const,
-    }),
-  },
-  // Pattern 1: Vertical bars that expand outward
-  {
-    lineStyle: (i: number, total: number) => ({
-      position: 'absolute' as const,
-      top: 0,
-      bottom: 0,
-      width: '1px',
-      left: `${(i / total) * 100}%`,
-      background: 'oklch(0.50 0.22 25)',
-      boxShadow: '0 0 4px oklch(0.50 0.22 25 / 0.5)',
-    }),
-    animate: (_i: number) => ({
-      scaleY: [0, 1, 1, 0],
-      opacity: [0, 0.8, 0.8, 0],
-    }),
+    elementStyle: (i: number, total: number) => {
+      const h = 100 / total
+      return {
+        position: 'absolute' as const,
+        left: 0,
+        right: 0,
+        height: `${h + 2}%`,
+        top: `${i * h}%`,
+        background: 'var(--primary, oklch(0.50 0.22 25))',
+        mixBlendMode: 'screen' as const,
+      }
+    },
+    animate: (i: number) => {
+      const dir = i % 2 === 0 ? 1 : -1
+      const shift = (5 + (i % 3) * 8) * dir
+      return {
+        x: [0, shift, -shift * 0.6, shift * 0.3, 0],
+        opacity: [0, 0.7, 0.5, 0.8, 0],
+        scaleX: [1, 1.3, 0.8, 1.1, 1],
+      }
+    },
     transition: (i: number) => ({
       duration: 0.35,
       delay: i * 0.02,
+      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+    }),
+  },
+  // Pattern 1: Digital noise burst — scattered glitch rectangles
+  {
+    elementStyle: (i: number, total: number) => {
+      const seed = ((i * 7 + 3) % total) / total
+      return {
+        position: 'absolute' as const,
+        left: `${seed * 70}%`,
+        top: `${((i * 13 + 5) % total) / total * 80}%`,
+        width: `${20 + seed * 40}%`,
+        height: `${3 + (i % 3) * 4}%`,
+        background: 'var(--primary, oklch(0.50 0.22 25))',
+        mixBlendMode: 'screen' as const,
+      }
+    },
+    animate: (i: number) => ({
+      opacity: [0, 0.9, 0, 0.6, 0],
+      scaleX: [0.5, 1.5, 0.8, 1.2, 0],
+      x: [0, i % 2 === 0 ? 15 : -15, 0],
+    }),
+    transition: (i: number) => ({
+      duration: 0.3,
+      delay: i * 0.025,
       ease: 'easeOut' as const,
     }),
   },
-  // Pattern 2: Corner brackets that assemble into a frame
+  // Pattern 2: Chromatic split — two-color offset flash
   {
-    lineStyle: (i: number, total: number) => {
-      const side = i % 4
-      const segment = Math.floor(i / 4)
-      const segTotal = Math.ceil(total / 4)
-      const pct = segment / segTotal
-      const styles: Record<string, string | number> = {
-        position: 'absolute',
-        background: 'oklch(0.50 0.22 25)',
-        boxShadow: '0 0 6px oklch(0.50 0.22 25 / 0.5)',
+    elementStyle: (i: number, total: number) => {
+      const isRed = i < total / 2
+      return {
+        position: 'absolute' as const,
+        inset: 0,
+        background: isRed
+          ? 'var(--primary, oklch(0.50 0.22 25))'
+          : 'oklch(0.50 0.22 250)',
+        mixBlendMode: 'screen' as const,
       }
-      if (side === 0) { // top
-        Object.assign(styles, { top: 0, left: `${pct * 100}%`, width: `${100 / segTotal}%`, height: '1px' })
-      } else if (side === 1) { // right
-        Object.assign(styles, { right: 0, top: `${pct * 100}%`, width: '1px', height: `${100 / segTotal}%` })
-      } else if (side === 2) { // bottom
-        Object.assign(styles, { bottom: 0, right: `${pct * 100}%`, width: `${100 / segTotal}%`, height: '1px' })
-      } else { // left
-        Object.assign(styles, { left: 0, bottom: `${pct * 100}%`, width: '1px', height: `${100 / segTotal}%` })
-      }
-      return styles as React.CSSProperties
     },
-    animate: () => ({
-      scaleX: [0, 1],
-      scaleY: [0, 1],
-      opacity: [0, 1, 1, 0],
-    }),
+    animate: (i: number, total: number) => {
+      const isRed = i < total / 2
+      const offset = isRed ? -4 : 4
+      return {
+        x: [0, offset, -offset * 0.5, 0],
+        opacity: [0, 0.4, 0.2, 0],
+        clipPath: [
+          'inset(0 100% 0 0)',
+          `inset(${(i % 4) * 25}% 0 ${100 - ((i % 4) + 1) * 25}% 0)`,
+          `inset(${(i % 3) * 33}% 10% ${100 - ((i % 3) + 1) * 33}% 0)`,
+          'inset(0 0 0 100%)',
+        ],
+      }
+    },
     transition: (i: number) => ({
       duration: 0.4,
-      delay: i * 0.02,
-      ease: 'easeOut' as const,
+      delay: i * 0.015,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
     }),
   },
 ]
@@ -92,12 +102,14 @@ interface OverlayTransitionProps {
   onComplete?: () => void
 }
 
-/** Total duration of the transition effect in milliseconds */
+/** Total duration of the transition effect in milliseconds.
+ *  Covers the longest pattern: 0.4s base + 7×0.015s stagger ≈ 505ms. */
 const TRANSITION_DURATION_MS = 500
 
 /**
- * Lightweight cyberpunk scan-line transition played when an overlay opens.
- * Randomly selects one of three visual patterns on each mount.
+ * Cyberpunk 2077-style glitch transition played when an overlay opens.
+ * Randomly selects one of three visual patterns: glitch blocks,
+ * digital noise burst, or chromatic split effect.
  */
 export default function OverlayTransition({ show, onComplete }: OverlayTransitionProps) {
   const [patternIdx] = useState(() => Math.floor(Math.random() * patterns.length))
@@ -120,16 +132,16 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 z-[99999] pointer-events-none"
+          className="fixed inset-0 z-[99999] pointer-events-none overflow-hidden"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: 0.12 }}
         >
-          {Array.from({ length: LINE_COUNT }).map((_, i) => (
+          {Array.from({ length: ELEMENT_COUNT }).map((_, i) => (
             <motion.div
               key={i}
-              style={pattern.lineStyle(i, LINE_COUNT)}
-              animate={pattern.animate(i, LINE_COUNT)}
+              style={pattern.elementStyle(i, ELEMENT_COUNT)}
+              animate={pattern.animate(i, ELEMENT_COUNT)}
               transition={pattern.transition(i)}
             />
           ))}

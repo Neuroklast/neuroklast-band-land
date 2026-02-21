@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion'
  * Architecture contract:
  *  - The backdrop is `overflow-y-auto` so the inner panel can never be
  *    clipped or pushed off-screen, regardless of viewport height.
- *  - The inner flex wrapper uses `items-start` + `min-h-full` so the panel
- *    sits at the top and the backdrop scrolls around it.
+ *  - The inner flex wrapper uses `items-center` + `min-h-full` so the panel
+ *    is vertically centered and the backdrop scrolls around it.
  *  - Children are responsible only for the panel itself (motion.div with
  *    its own entry/exit animation, max-width, flex-col layout, etc.).
  *
@@ -41,7 +41,7 @@ export default function CyberModalBackdrop({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="min-h-full flex items-start justify-center p-4 md:p-6">
+          <div className="min-h-full flex items-center justify-center p-4 md:p-6">
             {children}
           </div>
         </motion.div>

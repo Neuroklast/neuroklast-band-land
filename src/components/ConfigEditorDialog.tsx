@@ -186,7 +186,7 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-start justify-center p-4 pt-8 overflow-y-auto"
+          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4 pt-8 overflow-y-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

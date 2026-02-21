@@ -515,7 +515,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
       <AnimatePresence>
         {selectedImage && (
           <motion.div
-            className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/95 backdrop-blur-md px-4 py-8"
+            className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/95 backdrop-blur-md px-4 py-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
