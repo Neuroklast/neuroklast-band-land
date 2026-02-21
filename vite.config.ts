@@ -2,7 +2,9 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import { resolve } from 'path'
-import obfuscator from 'vite-plugin-obfuscator';
+import JavaScriptObfuscator from 'javascript-obfuscator';
+import type { ObfuscatorOptions } from 'javascript-obfuscator';
+import type { OutputBundle } from 'rollup';
 
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
@@ -17,38 +19,49 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
-      ...(isProduction ? [obfuscator({
-        options: {
-          compact: true,
-          controlFlowFlattening: false,
-          controlFlowFlatteningThreshold: 0,
-          deadCodeInjection: false,
-          debugProtection: false,
-          debugProtectionInterval: 0,
-          disableConsoleOutput: true,
-          identifierNamesGenerator: 'mangled',
-          log: false,
-          numbersToExpressions: false,
-          renameGlobals: false,
-          selfDefending: true,
-          simplify: true,
-          splitStrings: true,
-          splitStringsChunkLength: 10,
-          stringArray: true,
-          stringArrayCallsTransform: true,
-          stringArrayCallsTransformThreshold: 0.5,
-          stringArrayEncoding: ['base64'],
-          stringArrayIndexShift: true,
-          stringArrayRotate: true,
-          stringArrayShuffle: true,
-          stringArrayWrappersCount: 2,
-          stringArrayWrappersChunkSize: 2,
-          stringArrayWrappersParametersMaxCount: 4,
-          stringArrayWrappersType: 'function',
-          stringArrayThreshold: 0.6,
-          unicodeEscapeSequence: false,
+      ...(isProduction ? [{
+        name: 'vite:obfuscatefiles',
+        generateBundle(_options: unknown, bundle: OutputBundle) {
+          const obfuscatorOptions: ObfuscatorOptions = {
+            compact: true,
+            controlFlowFlattening: false,
+            controlFlowFlatteningThreshold: 0,
+            deadCodeInjection: false,
+            debugProtection: false,
+            debugProtectionInterval: 0,
+            disableConsoleOutput: true,
+            identifierNamesGenerator: 'mangled',
+            log: false,
+            numbersToExpressions: false,
+            renameGlobals: false,
+            selfDefending: true,
+            simplify: true,
+            splitStrings: true,
+            splitStringsChunkLength: 10,
+            stringArray: true,
+            stringArrayCallsTransform: true,
+            stringArrayCallsTransformThreshold: 0.5,
+            stringArrayEncoding: ['base64'],
+            stringArrayIndexShift: true,
+            stringArrayRotate: true,
+            stringArrayShuffle: true,
+            stringArrayWrappersCount: 2,
+            stringArrayWrappersChunkSize: 2,
+            stringArrayWrappersParametersMaxCount: 4,
+            stringArrayWrappersType: 'function',
+            stringArrayThreshold: 0.6,
+            unicodeEscapeSequence: false,
+          };
+          console.log('\nObfuscate files');
+          for (const [fileName, chunk] of Object.entries(bundle)) {
+            if (chunk.type === 'chunk' && chunk.code) {
+              console.log(`Obfuscating ${fileName}...`);
+              chunk.code = JavaScriptObfuscator.obfuscate(chunk.code, obfuscatorOptions).getObfuscatedCode();
+            }
+          }
+          console.log('Obfuscate done');
         },
-      })] : []),
+      }] : []),
     ],
     resolve: {
       alias: {
