@@ -677,7 +677,7 @@ export default function ThemeCustomizerDialog({
                     <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
                       <span>KLEIN (75%)</span>
                       <span>NORMAL (100%)</span>
-                      <span>GROSS (150%)</span>
+                      <span>GROß (150%)</span>
                     </div>
                   </div>
                 </div>

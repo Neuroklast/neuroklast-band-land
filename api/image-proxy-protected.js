@@ -22,6 +22,12 @@ import { isHardBlocked } from './_blocklist.js'
 const MAX_IMAGE_SIZE = 16 * 1024 * 1024 // 16 MB — absolute maximum
 const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
 
+/** Adversarial noise parameters — perceptually invisible but statistically disruptive */
+const NOISE_BRIGHTNESS_JITTER = 0.008  // ±0.4% max brightness shift
+const NOISE_SHARPEN_SIGMA = 0.4        // gentle sharpening radius
+const NOISE_SHARPEN_M1 = 0             // flat region sharpening factor
+const NOISE_SHARPEN_M2 = 3             // edge sharpening factor
+
 /** Block requests to private/internal networks to prevent SSRF */
 const BLOCKED_HOST_PATTERNS = [
   /^localhost$/i,
@@ -96,8 +102,8 @@ async function hasBlockedResolvedIP(hostname) {
  */
 async function applyAdversarialNoise(imageBuffer) {
   return sharp(imageBuffer)
-    .modulate({ brightness: 1 + (Math.random() * 0.008 - 0.004) })
-    .sharpen({ sigma: 0.4, m1: 0, m2: 3 })
+    .modulate({ brightness: 1 + (Math.random() * NOISE_BRIGHTNESS_JITTER - NOISE_BRIGHTNESS_JITTER / 2) })
+    .sharpen({ sigma: NOISE_SHARPEN_SIGMA, m1: NOISE_SHARPEN_M1, m2: NOISE_SHARPEN_M2 })
     .toBuffer()
 }
 
@@ -194,9 +200,9 @@ export default async function handler(req, res) {
     res.setHeader('X-Image-GPS', '48.8566,2.3522')
     res.setHeader('X-Image-Date', '2019-03-14')
     res.setHeader('Content-Type', contentType)
-    // Poisoned images are non-deterministic — prevent CDN caching to avoid
-    // serving stale noise to legitimate users
-    res.setHeader('Cache-Control', isAttacker ? 'public, max-age=86400' : 'no-store, no-cache')
+    // Poisoned images are non-deterministic — prevent CDN/proxy caching.
+    // Attacker responses are also not cached to avoid polluting shared caches.
+    res.setHeader('Cache-Control', 'no-store, no-cache')
     res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
     return res.status(200).send(outputBuffer)
   } catch (error) {

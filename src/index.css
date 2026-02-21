@@ -5,14 +5,12 @@
   * {
     @apply border-border
   }
-  /* Ensure ALL interactive elements respect the global radius scale.
-     Elements with explicit rounded-* Tailwind classes will override this
-     via @layer utilities which has higher precedence. */
-  button:not([class*="rounded-full"]),
+  /* Ensure form controls without an explicit Tailwind rounded-* class
+     participate in the global radius scale. Tailwind utilities in
+     @layer utilities override this for elements that declare a specific size. */
   input,
   select,
-  textarea,
-  [role="dialog"] {
+  textarea {
     border-radius: var(--radius-md, 0.125rem);
   }
 }
@@ -161,11 +159,11 @@ input, textarea, select {
   text-shadow: none;
 }
 
-/* Ensure admin dialog text is readable at minimum 12px regardless of theme scale */
-[role="dialog"] .text-\[9px\],
-[role="dialog"] .text-\[10px\],
-[role="dialog"] .text-\[11px\] {
-  font-size: 0.75rem !important;
+/* Ensure admin dialog text is readable: dialogs use the base font size
+   from the theme so very small utility classes remain legible */
+[role="dialog"],
+[data-slot="dialog-content"] {
+  font-size: max(0.75rem, 1em);
 }
 
 * {
