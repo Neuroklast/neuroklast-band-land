@@ -272,4 +272,115 @@ describe('useKV', () => {
     act(() => { result.current[1](null) })
     expect(result.current[0]).toBeNull()
   })
+
+  // --- onSaveResult callback tests ---
+
+  it('calls onSaveResult with ok:true when POST succeeds', async () => {
+    let callCount = 0
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => {
+      callCount++
+      if (callCount === 1) {
+        return Promise.resolve(new Response(JSON.stringify({ value: 'initial' }), { status: 200 }))
+      }
+      return Promise.resolve(new Response(JSON.stringify({ success: true }), { status: 200 }))
+    })
+
+    const onSaveResult = vi.fn()
+    const { result } = renderHook(() => useKV('save-ok-key', 'default', { onSaveResult }))
+    await waitFor(() => expect(result.current[2]).toBe(true))
+
+    act(() => { result.current[1]('new-value') })
+
+    await waitFor(() => expect(onSaveResult).toHaveBeenCalledWith({ ok: true }))
+  })
+
+  it('calls onSaveResult with ok:false, status:403 when POST returns 403', async () => {
+    let callCount = 0
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => {
+      callCount++
+      if (callCount === 1) {
+        return Promise.resolve(new Response(JSON.stringify({ value: 'initial' }), { status: 200 }))
+      }
+      return Promise.resolve(new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 }))
+    })
+
+    const onSaveResult = vi.fn()
+    const { result } = renderHook(() => useKV('save-403-key', 'default', { onSaveResult }))
+    await waitFor(() => expect(result.current[2]).toBe(true))
+
+    act(() => { result.current[1]('new-value') })
+
+    await waitFor(() => expect(onSaveResult).toHaveBeenCalledWith(
+      expect.objectContaining({ ok: false, status: 403 })
+    ))
+    // Local state should still update despite 403
+    expect(result.current[0]).toBe('new-value')
+    expect(JSON.parse(localStorage.getItem('kv:save-403-key')!)).toBe('new-value')
+  })
+
+  it('calls onSaveResult with ok:false, status:503 when POST returns 503', async () => {
+    let callCount = 0
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => {
+      callCount++
+      if (callCount === 1) {
+        return Promise.resolve(new Response(JSON.stringify({ value: 'initial' }), { status: 200 }))
+      }
+      return Promise.resolve(new Response(JSON.stringify({ error: 'KV not configured' }), { status: 503 }))
+    })
+
+    const onSaveResult = vi.fn()
+    const { result } = renderHook(() => useKV('save-503-key', 'default', { onSaveResult }))
+    await waitFor(() => expect(result.current[2]).toBe(true))
+
+    act(() => { result.current[1]('new-value') })
+
+    await waitFor(() => expect(onSaveResult).toHaveBeenCalledWith(
+      expect.objectContaining({ ok: false, status: 503 })
+    ))
+  })
+
+  it('calls onSaveResult with ok:false, status:0 on network error', async () => {
+    let callCount = 0
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => {
+      callCount++
+      if (callCount === 1) {
+        return Promise.resolve(new Response(JSON.stringify({ value: 'initial' }), { status: 200 }))
+      }
+      return Promise.reject(new Error('Network failure'))
+    })
+
+    const onSaveResult = vi.fn()
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const { result } = renderHook(() => useKV('save-net-key', 'default', { onSaveResult }))
+    await waitFor(() => expect(result.current[2]).toBe(true))
+
+    act(() => { result.current[1]('new-value') })
+
+    await waitFor(() => expect(onSaveResult).toHaveBeenCalledWith(
+      expect.objectContaining({ ok: false, status: 0 })
+    ))
+    // Local state and localStorage should still be updated
+    expect(result.current[0]).toBe('new-value')
+    expect(JSON.parse(localStorage.getItem('kv:save-net-key')!)).toBe('new-value')
+
+    warnSpy.mockRestore()
+  })
+
+  it('works without onSaveResult (backward-compatible when no options passed)', async () => {
+    let callCount = 0
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => {
+      callCount++
+      if (callCount === 1) {
+        return Promise.resolve(new Response(JSON.stringify({ value: null }), { status: 200 }))
+      }
+      return Promise.resolve(new Response(JSON.stringify({ success: true }), { status: 200 }))
+    })
+
+    // No options — should not throw
+    const { result } = renderHook(() => useKV('compat-key', 'default'))
+    await waitFor(() => expect(result.current[2]).toBe(true))
+
+    expect(() => act(() => { result.current[1]('updated') })).not.toThrow()
+    await waitFor(() => expect(result.current[0]).toBe('updated'))
+  })
 })

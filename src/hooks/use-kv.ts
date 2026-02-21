@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
+/** Result reported to the optional onSaveResult callback after each remote write. */
+export type KVSaveResult =
+  | { ok: true }
+  | { ok: false; status: number; error?: string }
+
 /**
  * Custom KV hook backed by Vercel KV API routes, with localStorage fallback for local dev.
  * Uses /api/kv (Vercel KV) for persistence, with localStorage fallback for local dev.
@@ -8,13 +13,26 @@ import { useState, useEffect, useCallback, useRef } from 'react'
  * Returns [value, updateValue, loaded] — `loaded` is true once the initial
  * KV/localStorage/default fetch has completed so consumers can avoid acting on
  * stale default data.
+ *
+ * Pass `options.onSaveResult` to be notified of remote-write outcomes (success,
+ * 403 auth failure, 503 unavailable, network error, etc.) so callers can surface
+ * clear feedback to the user without having to inspect fetch internals.
  */
-export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater: T | ((current: T | undefined) => T)) => void, boolean] {
+export function useKV<T>(
+  key: string,
+  defaultValue: T,
+  options?: { onSaveResult?: (result: KVSaveResult) => void },
+): [T | undefined, (updater: T | ((current: T | undefined) => T)) => void, boolean] {
   const [value, setValue] = useState<T | undefined>(undefined)
   const [loaded, setLoaded] = useState(false)
   const initializedRef = useRef(false)
   const defaultRef = useRef(defaultValue)
   const loadedRef = useRef(false)
+  // Keep a stable ref so updateValue doesn't need to re-create when the callback changes
+  const onSaveResultRef = useRef(options?.onSaveResult)
+  useEffect(() => {
+    onSaveResultRef.current = options?.onSaveResult
+  }, [options?.onSaveResult])
 
   useEffect(() => {
     if (initializedRef.current) return
@@ -77,7 +95,6 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
 
       // Write to the remote KV once the initial load has finished.
       // Auth is handled via HttpOnly session cookie (sent automatically).
-      // Non-admin writes will get 403 which we suppress silently.
       if (loadedRef.current) {
         fetch('/api/kv', {
           method: 'POST',
@@ -85,22 +102,31 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
           credentials: 'same-origin',
           body: JSON.stringify({ key, value: newValue }),
         }).then(async res => {
-          if (!res.ok && res.status !== 403) {
-            // Suppress 403 (unauthorized) silently — expected for non-admins
+          if (res.ok) {
+            console.log(`KV: "${key}" saved globally ✓`)
+            onSaveResultRef.current?.({ ok: true })
+          } else if (res.status === 403) {
+            console.warn(`KV: not authenticated (403) — "${key}" not persisted globally`)
+            onSaveResultRef.current?.({ ok: false, status: 403, error: 'Not authenticated' })
+          } else {
             try {
               const errorData = await res.json()
+              const errorMessage: string = errorData.message || errorData.error || String(res.status)
               if (res.status === 503) {
-                console.error(`KV service unavailable (${res.status}) for key "${key}":`, errorData.message || errorData.error)
+                console.error(`KV service unavailable (503) for key "${key}":`, errorMessage)
                 console.warn('Data is saved locally in localStorage but not synced to server.')
               } else {
                 console.error(`KV POST failed (${res.status}) for key "${key}":`, errorData)
               }
+              onSaveResultRef.current?.({ ok: false, status: res.status, error: errorMessage })
             } catch {
               console.warn(`KV POST failed (${res.status}) for key "${key}"`)
+              onSaveResultRef.current?.({ ok: false, status: res.status })
             }
           }
         }).catch(err => {
           console.error('KV POST error:', err)
+          onSaveResultRef.current?.({ ok: false, status: 0, error: err?.message || 'Network error' })
         })
       }
 
