@@ -226,6 +226,9 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
     root.style.setProperty('--radius-factor', String(theme.borderRadius / 0.125))
   }
 
+  // Font size factor — scales html { font-size } so all rem-based values follow
+  root.style.setProperty('--font-size-factor', String(theme.fontSize ?? 1))
+
   // Overlay effects
   applyOverlayEffectsToDOM(theme)
 
@@ -280,7 +283,7 @@ export function resetThemeDOM() {
     '--font-heading', '--ring', '--destructive', '--primary-foreground',
     '--secondary-foreground', '--accent-foreground', '--card-foreground',
     '--popover-foreground', '--destructive-foreground', '--popover', '--muted',
-    '--radius', '--radius-factor',
+    '--radius', '--radius-factor', '--font-size-factor',
     '--overlay-dot-matrix', '--overlay-scanlines', '--overlay-crt',
     '--overlay-noise', '--overlay-vignette', '--overlay-chromatic',
     '--overlay-moving-scanline',
@@ -478,7 +481,7 @@ export default function ThemeCustomizerDialog({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-start justify-center p-4 pt-8 overflow-y-auto"
+          className="fixed inset-0 z-[10000] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -655,6 +658,28 @@ export default function ThemeCustomizerDialog({
                       </div>
                     </div>
                   ))}
+                  {/* Font Size Slider */}
+                  <div className="pt-4 border-t border-primary/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="font-mono text-xs text-muted-foreground">Schriftgröße (Basis)</Label>
+                      <span className="font-mono text-[10px] text-primary/70">{Math.round((draft.fontSize ?? 1) * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.75"
+                      max="1.5"
+                      step="0.05"
+                      value={draft.fontSize ?? 1}
+                      onChange={e => setDraft(prev => ({ ...prev, fontSize: parseFloat(e.target.value) }))}
+                      className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
+                      aria-label="Schriftgröße"
+                    />
+                    <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
+                      <span>KLEIN (75%)</span>
+                      <span>NORMAL (100%)</span>
+                      <span>GROSS (150%)</span>
+                    </div>
+                  </div>
                 </div>
               )}
 

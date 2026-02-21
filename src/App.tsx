@@ -285,6 +285,10 @@ function App() {
 
   return (
     <>
+      {/* Skip navigation link for keyboard/screen-reader users */}
+      <a href="#main-content" className="skip-to-main">
+        Zum Hauptinhalt springen
+      </a>
       <KonamiListener onCodeActivated={handleTerminalActivation} customCode={data.secretCode} />
       <SecretTerminal
         isOpen={terminalOpen}
@@ -386,7 +390,7 @@ function App() {
               titleImageUrl={data.titleImageUrl}
             />
 
-            <main className="relative">
+            <main id="main-content" className="relative">
               {vis.news !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
