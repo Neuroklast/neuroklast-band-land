@@ -195,7 +195,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
           <div className="mb-6">
               {photos.length > 0 && (
                 <motion.div
-                  className={`relative overflow-hidden rounded-lg aspect-square md:aspect-video group mb-6 ${glitchActive ? 'glitch-effect' : ''}`}
+                  className={`relative overflow-hidden aspect-square md:aspect-video group mb-6 ${glitchActive ? 'glitch-effect' : ''}`}
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                   transition={{ duration: 0.7, delay: 0.2 }}
@@ -209,7 +209,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                     alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 rounded-lg cyber-border" />
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 cyber-border" />
                   
                   {photos.length > 1 && (
                     <>
@@ -285,13 +285,13 @@ export default function BiographySection({ biography = defaultBiography, editMod
                         return (
                           <button
                             key={index}
-                            className="w-full text-left border border-border/50 rounded-lg p-3 hover:border-primary/30 transition-colors duration-200 cursor-pointer"
+                            className="w-full text-left border border-border/50 p-3 hover:border-primary/30 transition-colors duration-200 cursor-pointer"
                             onClick={() => { triggerTransition(); trackInteraction('member_profile'); setSelectedMember(member) }}
                             aria-label={`View profile of ${member.name}`}
                           >
                             <div className="flex items-center gap-3">
                               {member.photo ? (
-                                <div className={`w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ${glitchActive ? 'glitch-effect' : ''} red-tint`}>
+                                <div className={`w-10 h-10 overflow-hidden flex-shrink-0 ${glitchActive ? 'glitch-effect' : ''} red-tint`}>
                                   <ProgressiveImage
                                     src={resolvePhoto(member.photo)}
                                     alt={member.name}
@@ -299,7 +299,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                                   />
                                 </div>
                               ) : (
-                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 bg-muted flex items-center justify-center flex-shrink-0">
                                   <User size={20} className="text-muted-foreground" />
                                 </div>
                               )}
