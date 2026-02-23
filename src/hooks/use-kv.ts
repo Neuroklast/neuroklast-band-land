@@ -85,8 +85,22 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
           credentials: 'same-origin',
           body: JSON.stringify({ key, value: newValue }),
         }).then(async res => {
-          if (!res.ok && res.status !== 403) {
-            // Suppress 403 (unauthorized) silently — expected for non-admins
+          if (res.status === 403) {
+            // Session may have expired — check auth status and reload if needed
+            // so the next login starts with a clean state (no stale 503 errors)
+            try {
+              const authRes = await fetch('/api/auth', { credentials: 'same-origin' })
+              if (authRes.ok) {
+                const authData = await authRes.json()
+                if (!authData.authenticated) {
+                  window.location.reload()
+                  return
+                }
+              }
+            } catch { /* ignore — transient network error */ }
+            return
+          }
+          if (!res.ok) {
             try {
               const errorData = await res.json()
               if (res.status === 503) {

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
-import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint, ChartLine, ProhibitInset, Package, BellRinging, Info, Lightning } from '@phosphor-icons/react'
+import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint, ChartLine, ProhibitInset, Package, BellRinging, Info, Lightning, FileText, Database, Detective } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
@@ -29,6 +29,21 @@ export interface SecuritySettings {
   zipBombOnBlock: boolean
   zipBombOnHoneytoken: boolean
   zipBombOnRepeatOffender: boolean
+  // Countermeasures
+  sqlBackfireEnabled: boolean
+  canaryDocumentsEnabled: boolean
+  logPoisoningEnabled: boolean
+  // SQL Backfire rules
+  sqlBackfireOnScannerDetection: boolean
+  sqlBackfireOnHoneytokenAccess: boolean
+  // Canary Document rules
+  canaryPhoneHomeOnOpen: boolean
+  canaryCollectFingerprint: boolean
+  canaryAlertOnCallback: boolean
+  // Log Poisoning rules
+  logPoisonFakeHeaders: boolean
+  logPoisonTerminalEscape: boolean
+  logPoisonFakePaths: boolean
 }
 
 export const DEFAULT_SETTINGS: SecuritySettings = {
@@ -54,6 +69,21 @@ export const DEFAULT_SETTINGS: SecuritySettings = {
   zipBombOnBlock: false,
   zipBombOnHoneytoken: false,
   zipBombOnRepeatOffender: false,
+  // Countermeasures — defaults (OFF until explicitly enabled)
+  sqlBackfireEnabled: false,
+  canaryDocumentsEnabled: false,
+  logPoisoningEnabled: false,
+  // SQL Backfire rules
+  sqlBackfireOnScannerDetection: true,
+  sqlBackfireOnHoneytokenAccess: false,
+  // Canary Document rules
+  canaryPhoneHomeOnOpen: true,
+  canaryCollectFingerprint: true,
+  canaryAlertOnCallback: true,
+  // Log Poisoning rules
+  logPoisonFakeHeaders: true,
+  logPoisonTerminalEscape: true,
+  logPoisonFakePaths: true,
 }
 
 interface SecuritySettingsDialogProps {
@@ -247,19 +277,31 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
     setSettings(DEFAULT_SETTINGS)
   }
 
+  const handleExportJson = () => {
+    const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `neuroklast-security-config-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success(L('settings.exported'))
+  }
+
   const update = <K extends keyof SecuritySettings>(key: K, value: SecuritySettings[K]) => {
     setSettings(prev => ({ ...prev, [key]: value }))
   }
 
-  const TOTAL_MODULES = 10
-  const SECURITY_LEVEL_HIGH_THRESHOLD = 7
-  const SECURITY_LEVEL_MEDIUM_THRESHOLD = 5
+  const TOTAL_MODULES = 13
+  const SECURITY_LEVEL_HIGH_THRESHOLD = 9
+  const SECURITY_LEVEL_MEDIUM_THRESHOLD = 6
 
   const activeModules = useMemo(() => {
     const bools: (keyof SecuritySettings)[] = [
       'honeytokensEnabled', 'rateLimitEnabled', 'robotsTrapEnabled',
       'entropyInjectionEnabled', 'suspiciousUaBlockingEnabled', 'sessionBindingEnabled',
-      'threatScoringEnabled', 'hardBlockEnabled', 'zipBombEnabled', 'alertingEnabled'
+      'threatScoringEnabled', 'hardBlockEnabled', 'zipBombEnabled', 'alertingEnabled',
+      'sqlBackfireEnabled', 'canaryDocumentsEnabled', 'logPoisoningEnabled'
     ]
     return bools.filter(k => settings[k]).length
   }, [settings])
@@ -589,6 +631,127 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                     />
                   </div>
 
+                  {/* SQL Injection Backfire */}
+                  <div className="space-y-0">
+                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                      <Database size={14} />
+                      {L('settings.sqlBackfire')}
+                    </h3>
+                    <ToggleRow
+                      icon={Database}
+                      label={L('mod.sqlBackfire')}
+                      description={L('mod.sqlBackfireDesc')}
+                      tooltip={LT('mod.sqlBackfire')}
+                      checked={settings.sqlBackfireEnabled}
+                      onChange={(v) => update('sqlBackfireEnabled', v)}
+                      badge="⚠ OFFENSIVE"
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.sqlBackfireOnScanner')}
+                      description={L('rules.sqlBackfireOnScannerDesc')}
+                      checked={settings.sqlBackfireOnScannerDetection}
+                      onChange={(v) => update('sqlBackfireOnScannerDetection', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.sqlBackfireOnHoneytoken')}
+                      description={L('rules.sqlBackfireOnHoneytokenDesc')}
+                      checked={settings.sqlBackfireOnHoneytokenAccess}
+                      onChange={(v) => update('sqlBackfireOnHoneytokenAccess', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                  </div>
+
+                  {/* Canary Documents */}
+                  <div className="space-y-0">
+                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                      <FileText size={14} />
+                      {L('settings.canaryDocuments')}
+                    </h3>
+                    <ToggleRow
+                      icon={FileText}
+                      label={L('mod.canaryDocuments')}
+                      description={L('mod.canaryDocumentsDesc')}
+                      tooltip={LT('mod.canaryDocuments')}
+                      checked={settings.canaryDocumentsEnabled}
+                      onChange={(v) => update('canaryDocumentsEnabled', v)}
+                      badge="⚠ OFFENSIVE"
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.canaryPhoneHome')}
+                      description={L('rules.canaryPhoneHomeDesc')}
+                      checked={settings.canaryPhoneHomeOnOpen}
+                      onChange={(v) => update('canaryPhoneHomeOnOpen', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.canaryFingerprint')}
+                      description={L('rules.canaryFingerprintDesc')}
+                      checked={settings.canaryCollectFingerprint}
+                      onChange={(v) => update('canaryCollectFingerprint', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.canaryAlert')}
+                      description={L('rules.canaryAlertDesc')}
+                      checked={settings.canaryAlertOnCallback}
+                      onChange={(v) => update('canaryAlertOnCallback', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                  </div>
+
+                  {/* Log Poisoning */}
+                  <div className="space-y-0">
+                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                      <Detective size={14} />
+                      {L('settings.logPoisoning')}
+                    </h3>
+                    <ToggleRow
+                      icon={Detective}
+                      label={L('mod.logPoisoning')}
+                      description={L('mod.logPoisoningDesc')}
+                      tooltip={LT('mod.logPoisoning')}
+                      checked={settings.logPoisoningEnabled}
+                      onChange={(v) => update('logPoisoningEnabled', v)}
+                      badge="⚠ OFFENSIVE"
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.logPoisonFakeHeaders')}
+                      description={L('rules.logPoisonFakeHeadersDesc')}
+                      checked={settings.logPoisonFakeHeaders}
+                      onChange={(v) => update('logPoisonFakeHeaders', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.logPoisonTerminal')}
+                      description={L('rules.logPoisonTerminalDesc')}
+                      checked={settings.logPoisonTerminalEscape}
+                      onChange={(v) => update('logPoisonTerminalEscape', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.logPoisonFakePaths')}
+                      description={L('rules.logPoisonFakePathsDesc')}
+                      checked={settings.logPoisonFakePaths}
+                      onChange={(v) => update('logPoisonFakePaths', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                  </div>
+
                   {/* Actions */}
                   <div className="flex gap-3 pt-2">
                     <button
@@ -597,6 +760,12 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       className="flex-1 bg-primary/80 hover:bg-primary text-white font-mono text-[11px] uppercase tracking-wider py-2 px-4 transition-colors disabled:opacity-50"
                     >
                       {saving ? L('settings.saving') : L('settings.save')}
+                    </button>
+                    <button
+                      onClick={handleExportJson}
+                      className="bg-primary/10 hover:bg-primary/20 text-primary/70 font-mono text-[11px] uppercase tracking-wider py-2 px-4 transition-colors"
+                    >
+                      {L('settings.exportJson')}
                     </button>
                     <button
                       onClick={handleReset}

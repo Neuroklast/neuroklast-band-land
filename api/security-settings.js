@@ -45,6 +45,21 @@ const DEFAULTS = {
   zipBombOnBlock: false,
   zipBombOnHoneytoken: false,
   zipBombOnRepeatOffender: false,
+  // Countermeasures — Log Poisoning, SQL Backfire, Canary Documents
+  sqlBackfireEnabled: false,
+  canaryDocumentsEnabled: false,
+  logPoisoningEnabled: false,
+  // SQL Backfire rules
+  sqlBackfireOnScannerDetection: true,
+  sqlBackfireOnHoneytokenAccess: false,
+  // Canary Document rules
+  canaryPhoneHomeOnOpen: true,
+  canaryCollectFingerprint: true,
+  canaryAlertOnCallback: true,
+  // Log Poisoning rules
+  logPoisonFakeHeaders: true,
+  logPoisonTerminalEscape: true,
+  logPoisonFakePaths: true,
 }
 
 /** Zod schema for security settings */
@@ -71,6 +86,21 @@ const securitySettingsSchema = z.object({
   zipBombOnBlock: z.boolean().optional(),
   zipBombOnHoneytoken: z.boolean().optional(),
   zipBombOnRepeatOffender: z.boolean().optional(),
+  // Countermeasures
+  sqlBackfireEnabled: z.boolean().optional(),
+  canaryDocumentsEnabled: z.boolean().optional(),
+  logPoisoningEnabled: z.boolean().optional(),
+  // SQL Backfire rules
+  sqlBackfireOnScannerDetection: z.boolean().optional(),
+  sqlBackfireOnHoneytokenAccess: z.boolean().optional(),
+  // Canary Document rules
+  canaryPhoneHomeOnOpen: z.boolean().optional(),
+  canaryCollectFingerprint: z.boolean().optional(),
+  canaryAlertOnCallback: z.boolean().optional(),
+  // Log Poisoning rules
+  logPoisonFakeHeaders: z.boolean().optional(),
+  logPoisonTerminalEscape: z.boolean().optional(),
+  logPoisonFakePaths: z.boolean().optional(),
 })
 
 export default async function handler(req, res) {
