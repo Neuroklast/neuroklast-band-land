@@ -38,6 +38,7 @@ const DEFAULTS = {
   alertingEnabled: false,       // Default OFF — nur wenn DISCORD_WEBHOOK_URL gesetzt
   hardBlockEnabled: true,
   autoBlockThreshold: 12,       // Score ab dem auto-geblockt wird
+  underAttackMode: false,       // Emergency mode — disables expensive countermeasures, returns 429
   // Tarpit & Zip Bomb rules
   tarpitOnWarn: true,
   tarpitOnSuspiciousUa: true,
@@ -79,6 +80,7 @@ const securitySettingsSchema = z.object({
   alertingEnabled: z.boolean().optional(),
   hardBlockEnabled: z.boolean().optional(),
   autoBlockThreshold: z.number().int().min(3).max(50).optional(),
+  underAttackMode: z.boolean().optional(),
   // Tarpit & Zip Bomb rules
   tarpitOnWarn: z.boolean().optional(),
   tarpitOnSuspiciousUa: z.boolean().optional(),

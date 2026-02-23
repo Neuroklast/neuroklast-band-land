@@ -239,6 +239,17 @@ const translations: Record<string, Record<Locale, string>> = {
   // ── Config Export ─────────────────────────────────────────────────
   'settings.exported':            { en: 'Security config exported to JSON', de: 'Sicherheitskonfiguration als JSON exportiert' },
   'settings.exportJson':          { en: 'EXPORT JSON', de: 'JSON EXPORTIEREN' },
+
+  // ── Tab labels ─────────────────────────────────────────────────────
+  'settings.tabModules':          { en: 'MODULES', de: 'MODULE' },
+  'settings.tabParameters':       { en: 'PARAMETERS', de: 'PARAMETER' },
+  'settings.tabRules':            { en: 'RULES', de: 'REGELN' },
+  'settings.tabCountermeasures':  { en: 'COUNTERMEASURES', de: 'GEGENMAẞNAHMEN' },
+
+  // ── Under Attack Mode ──────────────────────────────────────────────
+  'mod.underAttack':              { en: 'Under Attack Mode', de: 'Angriffsmodus' },
+  'mod.underAttackDesc':          { en: 'Emergency kill-switch — disables all expensive countermeasures and returns minimal 429 responses to save resources', de: 'Notfall-Schalter — deaktiviert alle aufwändigen Gegenmaßnahmen und gibt nur minimale 429-Antworten zurück, um Ressourcen zu sparen' },
+  'mod.underAttackTip':           { en: 'Activating this mode immediately stops tarpitting, zip bombs, log poisoning, and canary documents. All requests to tarpit endpoints receive an empty 429 response with Connection: close. Use during active Layer-7 DDoS attacks to minimize Vercel costs. The global circuit breaker in the edge middleware can also activate this automatically.', de: 'Die Aktivierung dieses Modus stoppt sofort Tarpitting, Zip-Bomben, Log-Poisoning und Canary-Dokumente. Alle Anfragen an Tarpit-Endpunkte erhalten eine leere 429-Antwort mit Connection: close. Bei aktiven Layer-7-DDoS-Angriffen verwenden, um Vercel-Kosten zu minimieren. Der globale Circuit Breaker in der Edge Middleware kann dies auch automatisch aktivieren.' },
 }
 
 /** Get a translated string for a key and locale */

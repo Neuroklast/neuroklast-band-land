@@ -107,6 +107,15 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'FORBIDDEN' })
   }
 
+  // Under Attack Mode — skip all expensive countermeasures, return minimal 429
+  try {
+    const secSettings = await kv.get('nk-security-settings').catch(() => null)
+    if (secSettings?.underAttackMode) {
+      res.setHeader('Connection', 'close')
+      return res.status(429).end()
+    }
+  } catch { /* under attack check failure must not block the response */ }
+
   const ip = getClientIp(req)
   const hashedIp = hashIp(ip)
   const path = req.query._src || req.url || '/'
