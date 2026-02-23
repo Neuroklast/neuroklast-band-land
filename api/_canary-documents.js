@@ -133,7 +133,7 @@ th{background:#16213e;color:#e94560}
   try{var c=document.createElement('canvas');var g=c.getContext('2d');
     g.textBaseline='top';g.font='14px Arial';g.fillText('fp',2,2);
     d.cvs=c.toDataURL().slice(-32)}catch(e){}
-  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
     r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
     r.onicecandidate=function(e){if(e.candidate){
       var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
@@ -195,18 +195,23 @@ export async function handleCanaryCallback(req, res) {
 
   // Parse JS fingerprint data if this is a POST callback
   if (req.method === 'POST' && req.body && typeof req.body === 'object') {
+    // Validate WebRTC-reported IP format before hashing
+    const rawRealIp = req.body.realIp
+    const isValidIp = typeof rawRealIp === 'string' && /^(\d{1,3}\.){3}\d{1,3}$/.test(rawRealIp)
+      && rawRealIp.split('.').every(o => Number(o) >= 0 && Number(o) <= 255)
+
     fingerprint.jsFingerprint = {
-      timezone: req.body.tz,
-      language: req.body.lang,
-      platform: req.body.plat,
-      cores: req.body.cores,
-      memory: req.body.mem,
-      screenWidth: req.body.sw,
-      screenHeight: req.body.sh,
-      colorDepth: req.body.cd,
-      touchSupport: req.body.touch,
-      canvasHash: req.body.cvs,
-      realIp: req.body.realIp ? hashIp(req.body.realIp) : null,
+      timezone: typeof req.body.tz === 'string' ? req.body.tz.slice(0, 100) : null,
+      language: typeof req.body.lang === 'string' ? req.body.lang.slice(0, 50) : null,
+      platform: typeof req.body.plat === 'string' ? req.body.plat.slice(0, 100) : null,
+      cores: typeof req.body.cores === 'number' ? req.body.cores : null,
+      memory: typeof req.body.mem === 'number' ? req.body.mem : null,
+      screenWidth: typeof req.body.sw === 'number' ? req.body.sw : null,
+      screenHeight: typeof req.body.sh === 'number' ? req.body.sh : null,
+      colorDepth: typeof req.body.cd === 'number' ? req.body.cd : null,
+      touchSupport: typeof req.body.touch === 'boolean' ? req.body.touch : null,
+      canvasHash: typeof req.body.cvs === 'string' ? req.body.cvs.slice(0, 64) : null,
+      realIp: isValidIp ? hashIp(rawRealIp) : null,
     }
   }
 
