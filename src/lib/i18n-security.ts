@@ -55,7 +55,7 @@ const translations: Record<string, Record<Locale, string>> = {
   'sec.colAction':                { en: 'ACTION', de: 'AKTION' },
 
   // ── Incident types ────────────────────────────────────────────────
-  'sec.typeRobots':               { en: 'ROBOTS.TXT VIOLATION', de: 'ROBOTS.TXT-VERSTOŚ' },
+  'sec.typeRobots':               { en: 'ROBOTS.TXT VIOLATION', de: 'ROBOTS.TXT-VERSTOẞ' },
   'sec.typeThreat':               { en: 'THREAT ESCALATION', de: 'BEDROHUNGSESKALATION' },
   'sec.typeBlocked':              { en: 'HARD BLOCK', de: 'HARD BLOCK' },
   'sec.typeHoneytoken':           { en: 'HONEYTOKEN ACCESS', de: 'HONEYTOKEN-ZUGRIFF' },
