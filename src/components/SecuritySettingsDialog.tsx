@@ -22,6 +22,7 @@ export interface SecuritySettings {
   alertingEnabled: boolean
   hardBlockEnabled: boolean
   autoBlockThreshold: number
+  underAttackMode: boolean
   // Tarpit & Zip Bomb rules
   tarpitOnWarn: boolean
   tarpitOnSuspiciousUa: boolean
@@ -62,6 +63,7 @@ export const DEFAULT_SETTINGS: SecuritySettings = {
   alertingEnabled: false,
   hardBlockEnabled: true,
   autoBlockThreshold: 12,
+  underAttackMode: false,
   // Tarpit & Zip Bomb rules — defaults
   tarpitOnWarn: true,
   tarpitOnSuspiciousUa: true,
@@ -292,12 +294,15 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
     setSettings(prev => ({ ...prev, [key]: value }))
   }
 
-  const TOTAL_MODULES = 13
+  const [activeTab, setActiveTab] = useState<string>('modules')
+
+  const TOTAL_MODULES = 14
   const SECURITY_LEVEL_HIGH_THRESHOLD = 9
   const SECURITY_LEVEL_MEDIUM_THRESHOLD = 6
 
   const activeModules = useMemo(() => {
     const bools: (keyof SecuritySettings)[] = [
+      'underAttackMode',
       'honeytokensEnabled', 'rateLimitEnabled', 'robotsTrapEnabled',
       'entropyInjectionEnabled', 'suspiciousUaBlockingEnabled', 'sessionBindingEnabled',
       'threatScoringEnabled', 'hardBlockEnabled', 'zipBombEnabled', 'alertingEnabled',
@@ -310,6 +315,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
     <CyberModalBackdrop open={open} zIndex="z-[9999]">
           <motion.div
             className="w-full max-w-2xl max-h-[90dvh] bg-card border border-primary/30 relative overflow-hidden flex flex-col"
+            style={{ textShadow: 'none' }}
             initial={{ scale: 0.85, y: 30, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -397,360 +403,400 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                     </p>
                   </div>
 
-                  {/* Toggle settings */}
-                  <div className="space-y-0">
-                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
-                      <ShieldWarning size={14} />
-                      {L('settings.defenseModules')}
-                    </h3>
-                    <ToggleRow
-                      icon={Bug}
-                      label={L('mod.honeytoken')}
-                      description={L('mod.honeytokenDesc')}
-                      tooltip={LT('mod.honeytoken')}
-                      checked={settings.honeytokensEnabled}
-                      onChange={(v) => update('honeytokensEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={ShieldCheck}
-                      label={L('mod.rateLimit')}
-                      description={L('mod.rateLimitDesc')}
-                      tooltip={LT('mod.rateLimit')}
-                      checked={settings.rateLimitEnabled}
-                      onChange={(v) => update('rateLimitEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={Robot}
-                      label={L('mod.robotsTrap')}
-                      description={L('mod.robotsTrapDesc')}
-                      tooltip={LT('mod.robotsTrap')}
-                      checked={settings.robotsTrapEnabled}
-                      onChange={(v) => update('robotsTrapEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={ChartLine}
-                      label={L('mod.threatScoring')}
-                      description={L('mod.threatScoringDesc')}
-                      tooltip={LT('mod.threatScoring')}
-                      checked={settings.threatScoringEnabled}
-                      onChange={(v) => update('threatScoringEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={ProhibitInset}
-                      label={L('mod.hardBlock')}
-                      description={L('mod.hardBlockDesc')}
-                      tooltip={LT('mod.hardBlock')}
-                      checked={settings.hardBlockEnabled}
-                      onChange={(v) => update('hardBlockEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={Lock}
-                      label={L('mod.entropy')}
-                      description={L('mod.entropyDesc')}
-                      tooltip={LT('mod.entropy')}
-                      checked={settings.entropyInjectionEnabled}
-                      onChange={(v) => update('entropyInjectionEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={Package}
-                      label={L('mod.zipBomb')}
-                      description={L('mod.zipBombDesc')}
-                      tooltip={LT('mod.zipBomb')}
-                      checked={settings.zipBombEnabled}
-                      onChange={(v) => update('zipBombEnabled', v)}
-                      badge="⚠ AGGRESSIVE"
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={BellRinging}
-                      label={L('mod.alerting')}
-                      description={L('mod.alertingDesc')}
-                      tooltip={LT('mod.alerting')}
-                      checked={settings.alertingEnabled}
-                      onChange={(v) => update('alertingEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={ShieldWarning}
-                      label={L('mod.suspiciousUa')}
-                      description={L('mod.suspiciousUaDesc')}
-                      tooltip={LT('mod.suspiciousUa')}
-                      checked={settings.suspiciousUaBlockingEnabled}
-                      onChange={(v) => update('suspiciousUaBlockingEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      icon={Fingerprint}
-                      label={L('mod.sessionBinding')}
-                      description={L('mod.sessionBindingDesc')}
-                      tooltip={LT('mod.sessionBinding')}
-                      checked={settings.sessionBindingEnabled}
-                      onChange={(v) => update('sessionBindingEnabled', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
+                  {/* Tab navigation */}
+                  <div className="flex border-b border-primary/15">
+                    {([
+                      { key: 'modules', label: L('settings.tabModules') },
+                      { key: 'parameters', label: L('settings.tabParameters') },
+                      { key: 'rules', label: L('settings.tabRules') },
+                      { key: 'countermeasures', label: L('settings.tabCountermeasures') },
+                    ] as const).map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                          activeTab === tab.key
+                            ? 'bg-primary/20 text-primary border-b-2 border-primary'
+                            : 'text-primary/40 hover:text-primary/60'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Numeric settings with sliders */}
-                  <div className="space-y-0">
-                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
-                      <Lock size={14} />
-                      {L('settings.parameters')}
-                    </h3>
-                    <SliderRow
-                      label={L('param.autoBlockThreshold')}
-                      description={L('param.autoBlockThresholdDesc')}
-                      tooltip={LT('param.autoBlockThreshold')}
-                      value={settings.autoBlockThreshold}
-                      onChange={(v) => update('autoBlockThreshold', v)}
-                      min={3}
-                      max={50}
-                      step={1}
-                      unit="pts"
-                    />
-                    <SliderRow
-                      label={L('param.maxAlerts')}
-                      description={L('param.maxAlertsDesc')}
-                      value={settings.maxAlertsStored}
-                      onChange={(v) => update('maxAlertsStored', v)}
-                      min={10}
-                      max={10000}
-                      step={10}
-                    />
-                    <SliderRow
-                      label={L('param.tarpitMin')}
-                      description={L('param.tarpitMinDesc')}
-                      tooltip={LT('param.tarpitMin')}
-                      value={settings.tarpitMinMs}
-                      onChange={(v) => update('tarpitMinMs', v)}
-                      min={0}
-                      max={30000}
-                      step={500}
-                      unit="ms"
-                    />
-                    <SliderRow
-                      label={L('param.tarpitMax')}
-                      description={L('param.tarpitMaxDesc')}
-                      tooltip={LT('param.tarpitMax')}
-                      value={settings.tarpitMaxMs}
-                      onChange={(v) => update('tarpitMaxMs', v)}
-                      min={0}
-                      max={60000}
-                      step={500}
-                      unit="ms"
-                    />
-                    <SliderRow
-                      label={L('param.sessionTtl')}
-                      description={L('param.sessionTtlDesc')}
-                      tooltip={LT('param.sessionTtl')}
-                      value={settings.sessionTtlSeconds}
-                      onChange={(v) => update('sessionTtlSeconds', v)}
-                      min={300}
-                      max={86400}
-                      step={300}
-                      unit="s"
-                    />
-                  </div>
+                  {/* Tab 1: MODULES */}
+                  {activeTab === 'modules' && (
+                    <div className="space-y-0">
+                      {/* Under Attack Mode */}
+                      <div className="border border-red-500/30 bg-red-500/5 p-3 mb-3">
+                        <ToggleRow
+                          icon={ShieldWarning}
+                          label={L('mod.underAttack')}
+                          description={L('mod.underAttackDesc')}
+                          tooltip={LT('mod.underAttack')}
+                          checked={settings.underAttackMode}
+                          onChange={(v) => update('underAttackMode', v)}
+                          badge="⚠ EMERGENCY"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                      </div>
 
-                  {/* Tarpit & Zip Bomb Rules */}
-                  <div className="space-y-0">
-                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
-                      <Lightning size={14} />
-                      {L('settings.tarpitZipRules')}
-                    </h3>
-                    <ToggleRow
-                      label={L('rules.tarpitOnWarn')}
-                      description={L('rules.tarpitOnWarnDesc')}
-                      tooltip={LT('rules.tarpitOnWarn')}
-                      checked={settings.tarpitOnWarn}
-                      onChange={(v) => update('tarpitOnWarn', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.tarpitOnSuspiciousUa')}
-                      description={L('rules.tarpitOnSuspiciousUaDesc')}
-                      tooltip={LT('rules.tarpitOnSuspiciousUa')}
-                      checked={settings.tarpitOnSuspiciousUa}
-                      onChange={(v) => update('tarpitOnSuspiciousUa', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.tarpitOnRobotsViolation')}
-                      description={L('rules.tarpitOnRobotsViolationDesc')}
-                      checked={settings.tarpitOnRobotsViolation}
-                      onChange={(v) => update('tarpitOnRobotsViolation', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.zipBombOnBlock')}
-                      description={L('rules.zipBombOnBlockDesc')}
-                      tooltip={LT('rules.zipBombOnBlock')}
-                      checked={settings.zipBombOnBlock}
-                      onChange={(v) => update('zipBombOnBlock', v)}
-                      badge="⚠ AGGRESSIVE"
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.zipBombOnHoneytoken')}
-                      description={L('rules.zipBombOnHoneytokenDesc')}
-                      tooltip={LT('rules.zipBombOnHoneytoken')}
-                      checked={settings.zipBombOnHoneytoken}
-                      onChange={(v) => update('zipBombOnHoneytoken', v)}
-                      badge="⚠ AGGRESSIVE"
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.zipBombOnRepeatOffender')}
-                      description={L('rules.zipBombOnRepeatOffenderDesc')}
-                      tooltip={LT('rules.zipBombOnRepeatOffender')}
-                      checked={settings.zipBombOnRepeatOffender}
-                      onChange={(v) => update('zipBombOnRepeatOffender', v)}
-                      badge="⚠ AGGRESSIVE"
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                  </div>
+                      <ToggleRow
+                        icon={Bug}
+                        label={L('mod.honeytoken')}
+                        description={L('mod.honeytokenDesc')}
+                        tooltip={LT('mod.honeytoken')}
+                        checked={settings.honeytokensEnabled}
+                        onChange={(v) => update('honeytokensEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={ShieldCheck}
+                        label={L('mod.rateLimit')}
+                        description={L('mod.rateLimitDesc')}
+                        tooltip={LT('mod.rateLimit')}
+                        checked={settings.rateLimitEnabled}
+                        onChange={(v) => update('rateLimitEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={Robot}
+                        label={L('mod.robotsTrap')}
+                        description={L('mod.robotsTrapDesc')}
+                        tooltip={LT('mod.robotsTrap')}
+                        checked={settings.robotsTrapEnabled}
+                        onChange={(v) => update('robotsTrapEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={ChartLine}
+                        label={L('mod.threatScoring')}
+                        description={L('mod.threatScoringDesc')}
+                        tooltip={LT('mod.threatScoring')}
+                        checked={settings.threatScoringEnabled}
+                        onChange={(v) => update('threatScoringEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={ProhibitInset}
+                        label={L('mod.hardBlock')}
+                        description={L('mod.hardBlockDesc')}
+                        tooltip={LT('mod.hardBlock')}
+                        checked={settings.hardBlockEnabled}
+                        onChange={(v) => update('hardBlockEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={Lock}
+                        label={L('mod.entropy')}
+                        description={L('mod.entropyDesc')}
+                        tooltip={LT('mod.entropy')}
+                        checked={settings.entropyInjectionEnabled}
+                        onChange={(v) => update('entropyInjectionEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={Package}
+                        label={L('mod.zipBomb')}
+                        description={L('mod.zipBombDesc')}
+                        tooltip={LT('mod.zipBomb')}
+                        checked={settings.zipBombEnabled}
+                        onChange={(v) => update('zipBombEnabled', v)}
+                        badge="⚠ AGGRESSIVE"
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={BellRinging}
+                        label={L('mod.alerting')}
+                        description={L('mod.alertingDesc')}
+                        tooltip={LT('mod.alerting')}
+                        checked={settings.alertingEnabled}
+                        onChange={(v) => update('alertingEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={ShieldWarning}
+                        label={L('mod.suspiciousUa')}
+                        description={L('mod.suspiciousUaDesc')}
+                        tooltip={LT('mod.suspiciousUa')}
+                        checked={settings.suspiciousUaBlockingEnabled}
+                        onChange={(v) => update('suspiciousUaBlockingEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        icon={Fingerprint}
+                        label={L('mod.sessionBinding')}
+                        description={L('mod.sessionBindingDesc')}
+                        tooltip={LT('mod.sessionBinding')}
+                        checked={settings.sessionBindingEnabled}
+                        onChange={(v) => update('sessionBindingEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                    </div>
+                  )}
 
-                  {/* SQL Injection Backfire */}
-                  <div className="space-y-0">
-                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
-                      <Database size={14} />
-                      {L('settings.sqlBackfire')}
-                    </h3>
-                    <ToggleRow
-                      icon={Database}
-                      label={L('mod.sqlBackfire')}
-                      description={L('mod.sqlBackfireDesc')}
-                      tooltip={LT('mod.sqlBackfire')}
-                      checked={settings.sqlBackfireEnabled}
-                      onChange={(v) => update('sqlBackfireEnabled', v)}
-                      badge="⚠ OFFENSIVE"
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.sqlBackfireOnScanner')}
-                      description={L('rules.sqlBackfireOnScannerDesc')}
-                      checked={settings.sqlBackfireOnScannerDetection}
-                      onChange={(v) => update('sqlBackfireOnScannerDetection', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.sqlBackfireOnHoneytoken')}
-                      description={L('rules.sqlBackfireOnHoneytokenDesc')}
-                      checked={settings.sqlBackfireOnHoneytokenAccess}
-                      onChange={(v) => update('sqlBackfireOnHoneytokenAccess', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                  </div>
+                  {/* Tab 2: PARAMETERS */}
+                  {activeTab === 'parameters' && (
+                    <div className="space-y-0">
+                      <SliderRow
+                        label={L('param.autoBlockThreshold')}
+                        description={L('param.autoBlockThresholdDesc')}
+                        tooltip={LT('param.autoBlockThreshold')}
+                        value={settings.autoBlockThreshold}
+                        onChange={(v) => update('autoBlockThreshold', v)}
+                        min={3}
+                        max={50}
+                        step={1}
+                        unit="pts"
+                      />
+                      <SliderRow
+                        label={L('param.maxAlerts')}
+                        description={L('param.maxAlertsDesc')}
+                        value={settings.maxAlertsStored}
+                        onChange={(v) => update('maxAlertsStored', v)}
+                        min={10}
+                        max={10000}
+                        step={10}
+                      />
+                      <SliderRow
+                        label={L('param.tarpitMin')}
+                        description={L('param.tarpitMinDesc')}
+                        tooltip={LT('param.tarpitMin')}
+                        value={settings.tarpitMinMs}
+                        onChange={(v) => update('tarpitMinMs', v)}
+                        min={0}
+                        max={30000}
+                        step={500}
+                        unit="ms"
+                      />
+                      <SliderRow
+                        label={L('param.tarpitMax')}
+                        description={L('param.tarpitMaxDesc')}
+                        tooltip={LT('param.tarpitMax')}
+                        value={settings.tarpitMaxMs}
+                        onChange={(v) => update('tarpitMaxMs', v)}
+                        min={0}
+                        max={60000}
+                        step={500}
+                        unit="ms"
+                      />
+                      <SliderRow
+                        label={L('param.sessionTtl')}
+                        description={L('param.sessionTtlDesc')}
+                        tooltip={LT('param.sessionTtl')}
+                        value={settings.sessionTtlSeconds}
+                        onChange={(v) => update('sessionTtlSeconds', v)}
+                        min={300}
+                        max={86400}
+                        step={300}
+                        unit="s"
+                      />
+                    </div>
+                  )}
 
-                  {/* Canary Documents */}
-                  <div className="space-y-0">
-                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
-                      <FileText size={14} />
-                      {L('settings.canaryDocuments')}
-                    </h3>
-                    <ToggleRow
-                      icon={FileText}
-                      label={L('mod.canaryDocuments')}
-                      description={L('mod.canaryDocumentsDesc')}
-                      tooltip={LT('mod.canaryDocuments')}
-                      checked={settings.canaryDocumentsEnabled}
-                      onChange={(v) => update('canaryDocumentsEnabled', v)}
-                      badge="⚠ OFFENSIVE"
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.canaryPhoneHome')}
-                      description={L('rules.canaryPhoneHomeDesc')}
-                      checked={settings.canaryPhoneHomeOnOpen}
-                      onChange={(v) => update('canaryPhoneHomeOnOpen', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.canaryFingerprint')}
-                      description={L('rules.canaryFingerprintDesc')}
-                      checked={settings.canaryCollectFingerprint}
-                      onChange={(v) => update('canaryCollectFingerprint', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.canaryAlert')}
-                      description={L('rules.canaryAlertDesc')}
-                      checked={settings.canaryAlertOnCallback}
-                      onChange={(v) => update('canaryAlertOnCallback', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                  </div>
+                  {/* Tab 3: RULES */}
+                  {activeTab === 'rules' && (
+                    <div className="space-y-0">
+                      <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                        <Lightning size={14} />
+                        {L('settings.tarpitZipRules')}
+                      </h3>
+                      <ToggleRow
+                        label={L('rules.tarpitOnWarn')}
+                        description={L('rules.tarpitOnWarnDesc')}
+                        tooltip={LT('rules.tarpitOnWarn')}
+                        checked={settings.tarpitOnWarn}
+                        onChange={(v) => update('tarpitOnWarn', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        label={L('rules.tarpitOnSuspiciousUa')}
+                        description={L('rules.tarpitOnSuspiciousUaDesc')}
+                        tooltip={LT('rules.tarpitOnSuspiciousUa')}
+                        checked={settings.tarpitOnSuspiciousUa}
+                        onChange={(v) => update('tarpitOnSuspiciousUa', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        label={L('rules.tarpitOnRobotsViolation')}
+                        description={L('rules.tarpitOnRobotsViolationDesc')}
+                        checked={settings.tarpitOnRobotsViolation}
+                        onChange={(v) => update('tarpitOnRobotsViolation', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        label={L('rules.zipBombOnBlock')}
+                        description={L('rules.zipBombOnBlockDesc')}
+                        tooltip={LT('rules.zipBombOnBlock')}
+                        checked={settings.zipBombOnBlock}
+                        onChange={(v) => update('zipBombOnBlock', v)}
+                        badge="⚠ AGGRESSIVE"
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        label={L('rules.zipBombOnHoneytoken')}
+                        description={L('rules.zipBombOnHoneytokenDesc')}
+                        tooltip={LT('rules.zipBombOnHoneytoken')}
+                        checked={settings.zipBombOnHoneytoken}
+                        onChange={(v) => update('zipBombOnHoneytoken', v)}
+                        badge="⚠ AGGRESSIVE"
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        label={L('rules.zipBombOnRepeatOffender')}
+                        description={L('rules.zipBombOnRepeatOffenderDesc')}
+                        tooltip={LT('rules.zipBombOnRepeatOffender')}
+                        checked={settings.zipBombOnRepeatOffender}
+                        onChange={(v) => update('zipBombOnRepeatOffender', v)}
+                        badge="⚠ AGGRESSIVE"
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                    </div>
+                  )}
 
-                  {/* Log Poisoning */}
-                  <div className="space-y-0">
-                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
-                      <Detective size={14} />
-                      {L('settings.logPoisoning')}
-                    </h3>
-                    <ToggleRow
-                      icon={Detective}
-                      label={L('mod.logPoisoning')}
-                      description={L('mod.logPoisoningDesc')}
-                      tooltip={LT('mod.logPoisoning')}
-                      checked={settings.logPoisoningEnabled}
-                      onChange={(v) => update('logPoisoningEnabled', v)}
-                      badge="⚠ OFFENSIVE"
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.logPoisonFakeHeaders')}
-                      description={L('rules.logPoisonFakeHeadersDesc')}
-                      checked={settings.logPoisonFakeHeaders}
-                      onChange={(v) => update('logPoisonFakeHeaders', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.logPoisonTerminal')}
-                      description={L('rules.logPoisonTerminalDesc')}
-                      checked={settings.logPoisonTerminalEscape}
-                      onChange={(v) => update('logPoisonTerminalEscape', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                    <ToggleRow
-                      label={L('rules.logPoisonFakePaths')}
-                      description={L('rules.logPoisonFakePathsDesc')}
-                      checked={settings.logPoisonFakePaths}
-                      onChange={(v) => update('logPoisonFakePaths', v)}
-                      statusActive={L('settings.active')}
-                      statusDisabled={L('settings.disabled')}
-                    />
-                  </div>
+                  {/* Tab 4: COUNTERMEASURES */}
+                  {activeTab === 'countermeasures' && (
+                    <div className="space-y-4">
+                      {/* SQL Injection Backfire */}
+                      <div className="space-y-0">
+                        <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                          <Database size={14} />
+                          {L('settings.sqlBackfire')}
+                        </h3>
+                        <ToggleRow
+                          icon={Database}
+                          label={L('mod.sqlBackfire')}
+                          description={L('mod.sqlBackfireDesc')}
+                          tooltip={LT('mod.sqlBackfire')}
+                          checked={settings.sqlBackfireEnabled}
+                          onChange={(v) => update('sqlBackfireEnabled', v)}
+                          badge="⚠ OFFENSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.sqlBackfireOnScanner')}
+                          description={L('rules.sqlBackfireOnScannerDesc')}
+                          checked={settings.sqlBackfireOnScannerDetection}
+                          onChange={(v) => update('sqlBackfireOnScannerDetection', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.sqlBackfireOnHoneytoken')}
+                          description={L('rules.sqlBackfireOnHoneytokenDesc')}
+                          checked={settings.sqlBackfireOnHoneytokenAccess}
+                          onChange={(v) => update('sqlBackfireOnHoneytokenAccess', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                      </div>
+
+                      {/* Canary Documents */}
+                      <div className="space-y-0">
+                        <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                          <FileText size={14} />
+                          {L('settings.canaryDocuments')}
+                        </h3>
+                        <ToggleRow
+                          icon={FileText}
+                          label={L('mod.canaryDocuments')}
+                          description={L('mod.canaryDocumentsDesc')}
+                          tooltip={LT('mod.canaryDocuments')}
+                          checked={settings.canaryDocumentsEnabled}
+                          onChange={(v) => update('canaryDocumentsEnabled', v)}
+                          badge="⚠ OFFENSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.canaryPhoneHome')}
+                          description={L('rules.canaryPhoneHomeDesc')}
+                          checked={settings.canaryPhoneHomeOnOpen}
+                          onChange={(v) => update('canaryPhoneHomeOnOpen', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.canaryFingerprint')}
+                          description={L('rules.canaryFingerprintDesc')}
+                          checked={settings.canaryCollectFingerprint}
+                          onChange={(v) => update('canaryCollectFingerprint', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.canaryAlert')}
+                          description={L('rules.canaryAlertDesc')}
+                          checked={settings.canaryAlertOnCallback}
+                          onChange={(v) => update('canaryAlertOnCallback', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                      </div>
+
+                      {/* Log Poisoning */}
+                      <div className="space-y-0">
+                        <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                          <Detective size={14} />
+                          {L('settings.logPoisoning')}
+                        </h3>
+                        <ToggleRow
+                          icon={Detective}
+                          label={L('mod.logPoisoning')}
+                          description={L('mod.logPoisoningDesc')}
+                          tooltip={LT('mod.logPoisoning')}
+                          checked={settings.logPoisoningEnabled}
+                          onChange={(v) => update('logPoisoningEnabled', v)}
+                          badge="⚠ OFFENSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.logPoisonFakeHeaders')}
+                          description={L('rules.logPoisonFakeHeadersDesc')}
+                          checked={settings.logPoisonFakeHeaders}
+                          onChange={(v) => update('logPoisonFakeHeaders', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.logPoisonTerminal')}
+                          description={L('rules.logPoisonTerminalDesc')}
+                          checked={settings.logPoisonTerminalEscape}
+                          onChange={(v) => update('logPoisonTerminalEscape', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.logPoisonFakePaths')}
+                          description={L('rules.logPoisonFakePathsDesc')}
+                          checked={settings.logPoisonFakePaths}
+                          onChange={(v) => update('logPoisonFakePaths', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div className="flex gap-3 pt-2">
