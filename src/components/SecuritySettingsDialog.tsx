@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
-import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint, ChartLine, ProhibitInset, Package, BellRinging } from '@phosphor-icons/react'
+import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint, ChartLine, ProhibitInset, Package, BellRinging, Info, Lightning } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
+import { t, tip, type Locale, LOCALES } from '@/lib/i18n-security'
 
-interface SecuritySettings {
+export interface SecuritySettings {
   honeytokensEnabled: boolean
   rateLimitEnabled: boolean
   robotsTrapEnabled: boolean
@@ -21,9 +22,16 @@ interface SecuritySettings {
   alertingEnabled: boolean
   hardBlockEnabled: boolean
   autoBlockThreshold: number
+  // Tarpit & Zip Bomb rules
+  tarpitOnWarn: boolean
+  tarpitOnSuspiciousUa: boolean
+  tarpitOnRobotsViolation: boolean
+  zipBombOnBlock: boolean
+  zipBombOnHoneytoken: boolean
+  zipBombOnRepeatOffender: boolean
 }
 
-const DEFAULT_SETTINGS: SecuritySettings = {
+export const DEFAULT_SETTINGS: SecuritySettings = {
   honeytokensEnabled: true,
   rateLimitEnabled: true,
   robotsTrapEnabled: true,
@@ -39,6 +47,13 @@ const DEFAULT_SETTINGS: SecuritySettings = {
   alertingEnabled: false,
   hardBlockEnabled: true,
   autoBlockThreshold: 12,
+  // Tarpit & Zip Bomb rules — defaults
+  tarpitOnWarn: true,
+  tarpitOnSuspiciousUa: true,
+  tarpitOnRobotsViolation: true,
+  zipBombOnBlock: false,
+  zipBombOnHoneytoken: false,
+  zipBombOnRepeatOffender: false,
 }
 
 interface SecuritySettingsDialogProps {
@@ -53,9 +68,12 @@ interface ToggleRowProps {
   onChange: (v: boolean) => void
   icon?: React.ComponentType<{ size: number; className?: string }>
   badge?: string
+  tooltip?: string
+  statusActive: string
+  statusDisabled: string
 }
 
-function ToggleRow({ label, description, checked, onChange, icon: Icon, badge }: ToggleRowProps) {
+function ToggleRow({ label, description, checked, onChange, icon: Icon, badge, tooltip, statusActive, statusDisabled }: ToggleRowProps) {
   return (
     <div className="flex items-center justify-between gap-4 py-3 border-b border-primary/5">
       <div className="flex items-start gap-3">
@@ -72,13 +90,21 @@ function ToggleRow({ label, description, checked, onChange, icon: Icon, badge }:
                 {badge}
               </span>
             )}
+            {tooltip && (
+              <span className="relative group/tip cursor-help">
+                <Info size={12} className="text-primary/30 hover:text-primary/60 transition-colors" />
+                <span className="absolute z-50 left-0 bottom-full mb-1.5 hidden group-hover/tip:block w-64 px-2 py-1.5 bg-black border border-primary/30 text-[10px] text-primary/80 font-mono leading-relaxed pointer-events-none whitespace-normal">
+                  {tooltip}
+                </span>
+              </span>
+            )}
           </div>
           <p className="text-[11px] text-primary/50 mt-1 leading-relaxed">{description}</p>
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <span className={`font-mono text-[9px] tracking-wider ${checked ? 'text-green-400/70' : 'text-red-400/50'}`}>
-          {checked ? 'ACTIVE' : 'DISABLED'}
+          {checked ? statusActive : statusDisabled}
         </span>
         <button
           onClick={() => onChange(!checked)}
@@ -106,14 +132,25 @@ interface SliderRowProps {
   max: number
   step?: number
   unit?: string
+  tooltip?: string
 }
 
-function SliderRow({ label, description, value, onChange, min, max, step = 1, unit }: SliderRowProps) {
+function SliderRow({ label, description, value, onChange, min, max, step = 1, unit, tooltip }: SliderRowProps) {
   return (
     <div className="py-3 border-b border-primary/5 space-y-2">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="font-mono text-[12px] text-foreground/85 uppercase tracking-wider">{label}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-mono text-[12px] text-foreground/85 uppercase tracking-wider">{label}</p>
+            {tooltip && (
+              <span className="relative group/tip cursor-help">
+                <Info size={12} className="text-primary/30 hover:text-primary/60 transition-colors" />
+                <span className="absolute z-50 left-0 bottom-full mb-1.5 hidden group-hover/tip:block w-64 px-2 py-1.5 bg-black border border-primary/30 text-[10px] text-primary/80 font-mono leading-relaxed pointer-events-none whitespace-normal">
+                  {tooltip}
+                </span>
+              </span>
+            )}
+          </div>
           <p className="text-[11px] text-primary/50 mt-1 leading-relaxed">{description}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -154,6 +191,13 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [locale, setLocale] = useState<Locale>(() => {
+    if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
+    return 'en'
+  })
+
+  const L = (key: string) => t(key, locale)
+  const LT = (key: string) => tip(key, locale)
 
   useEffect(() => {
     if (!open) return
@@ -191,9 +235,9 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || `HTTP ${res.status}`)
       }
-      toast.success('Security settings saved')
+      toast.success(L('settings.saved'))
     } catch (err) {
-      toast.error(`Failed to save: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toast.error(`${L('settings.failedSave')}: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setSaving(false)
     }
@@ -241,10 +285,27 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
               <div className="flex items-center gap-3">
                 <ShieldCheck size={16} className="text-primary/70" />
                 <span className="font-mono text-[11px] text-primary/70 tracking-wider uppercase">
-                  SECURITY SETTINGS // SERVER-SIDE CONFIG
+                  {L('settings.title')}
                 </span>
               </div>
-              <CyberCloseButton onClick={onClose} label="CLOSE" />
+              <div className="flex items-center gap-2">
+                {/* Language switch */}
+                <div className="flex border border-primary/20">
+                  {LOCALES.map(loc => (
+                    <button
+                      key={loc.value}
+                      onClick={() => setLocale(loc.value)}
+                      className={`px-2 py-0.5 text-[9px] font-mono transition-colors ${
+                        locale === loc.value ? 'bg-primary/30 text-primary' : 'text-primary/40 hover:text-primary/70'
+                      }`}
+                      title={loc.value === 'en' ? 'English' : 'Deutsch'}
+                    >
+                      {loc.label}
+                    </button>
+                  ))}
+                </div>
+                <CyberCloseButton onClick={onClose} label={L('sec.close')} />
+              </div>
             </div>
 
             {/* Content */}
@@ -252,13 +313,13 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
               {loading && (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-4 h-4 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
-                  <span className="ml-3 font-mono text-[11px] text-primary/50">LOADING SETTINGS...</span>
+                  <span className="ml-3 font-mono text-[11px] text-primary/50">{L('settings.loading')}</span>
                 </div>
               )}
 
               {error && (
                 <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-                  <p className="font-mono text-[12px] text-red-400">FAILED TO LOAD: {error}</p>
+                  <p className="font-mono text-[12px] text-red-400">{L('sec.failedToLoad')}: {error}</p>
                 </div>
               )}
 
@@ -270,10 +331,10 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       <div className={`w-3 h-3 rounded-full ${activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? 'bg-green-500' : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`} />
                       <div>
                         <p className="font-mono text-[12px] text-foreground/85 uppercase">
-                          SECURITY LEVEL: {activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? 'HIGH' : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? 'MEDIUM' : 'LOW'}
+                          {L('settings.securityLevel')}: {activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? L('settings.high') : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? L('settings.medium') : L('settings.low')}
                         </p>
                         <p className="font-mono text-[10px] text-primary/50 mt-0.5">
-                          {activeModules}/{TOTAL_MODULES} defense modules active
+                          {activeModules}/{TOTAL_MODULES} {L('settings.defenseModulesActive')}
                         </p>
                       </div>
                     </div>
@@ -290,8 +351,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                   {/* Info banner */}
                   <div className="border border-primary/15 bg-primary/5 p-3">
                     <p className="font-mono text-[10px] text-primary/50 leading-relaxed">
-                      These settings are persisted server-side in encrypted storage. Changes take effect immediately
-                      and are not included in the public band-data JSON export.
+                      {L('settings.infoText')}
                     </p>
                   </div>
 
@@ -299,78 +359,108 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                   <div className="space-y-0">
                     <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
                       <ShieldWarning size={14} />
-                      DEFENSE MODULES
+                      {L('settings.defenseModules')}
                     </h3>
                     <ToggleRow
                       icon={Bug}
-                      label="Honeytoken Detection"
-                      description="Decoy database records that trigger silent alarms on unauthorized access"
+                      label={L('mod.honeytoken')}
+                      description={L('mod.honeytokenDesc')}
+                      tooltip={LT('mod.honeytoken')}
                       checked={settings.honeytokensEnabled}
                       onChange={(v) => update('honeytokensEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={ShieldCheck}
-                      label="Rate Limiting"
-                      description="Sliding window rate limit (5 req/10s) with GDPR-compliant IP hashing"
+                      label={L('mod.rateLimit')}
+                      description={L('mod.rateLimitDesc')}
+                      tooltip={LT('mod.rateLimit')}
                       checked={settings.rateLimitEnabled}
                       onChange={(v) => update('rateLimitEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={Robot}
-                      label="Robots.txt Access Control"
-                      description="Defensive tarpit for bots that ignore Disallow directives"
+                      label={L('mod.robotsTrap')}
+                      description={L('mod.robotsTrapDesc')}
+                      tooltip={LT('mod.robotsTrap')}
                       checked={settings.robotsTrapEnabled}
                       onChange={(v) => update('robotsTrapEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={ChartLine}
-                      label="Threat Score System"
-                      description="Behavioral IDS: assigns threat scores to suspicious request patterns"
+                      label={L('mod.threatScoring')}
+                      description={L('mod.threatScoringDesc')}
+                      tooltip={LT('mod.threatScoring')}
                       checked={settings.threatScoringEnabled}
                       onChange={(v) => update('threatScoringEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={ProhibitInset}
-                      label="Hard Block (Blocklist)"
-                      description="Permanently block flagged IPs until manually removed or TTL expires"
+                      label={L('mod.hardBlock')}
+                      description={L('mod.hardBlockDesc')}
+                      tooltip={LT('mod.hardBlock')}
                       checked={settings.hardBlockEnabled}
                       onChange={(v) => update('hardBlockEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={Lock}
-                      label="Entropy Injection"
-                      description="Inject noise headers into responses for flagged attacker IPs"
+                      label={L('mod.entropy')}
+                      description={L('mod.entropyDesc')}
+                      tooltip={LT('mod.entropy')}
                       checked={settings.entropyInjectionEnabled}
                       onChange={(v) => update('entropyInjectionEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={Package}
-                      label="Zip Bomb"
-                      description="Serve compressed junk data to confirmed bots (wastes bot memory/CPU)"
+                      label={L('mod.zipBomb')}
+                      description={L('mod.zipBombDesc')}
+                      tooltip={LT('mod.zipBomb')}
                       checked={settings.zipBombEnabled}
                       onChange={(v) => update('zipBombEnabled', v)}
                       badge="⚠ AGGRESSIVE"
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={BellRinging}
-                      label="Real-time Alerting"
-                      description="Send Discord/email alerts on critical security events"
+                      label={L('mod.alerting')}
+                      description={L('mod.alertingDesc')}
+                      tooltip={LT('mod.alerting')}
                       checked={settings.alertingEnabled}
                       onChange={(v) => update('alertingEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={ShieldWarning}
-                      label="Suspicious UA Blocking"
-                      description="Block known hacking tools (wfuzz, nikto, sqlmap, etc.) with tarpit delay"
+                      label={L('mod.suspiciousUa')}
+                      description={L('mod.suspiciousUaDesc')}
+                      tooltip={LT('mod.suspiciousUa')}
                       checked={settings.suspiciousUaBlockingEnabled}
                       onChange={(v) => update('suspiciousUaBlockingEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                     <ToggleRow
                       icon={Fingerprint}
-                      label="Session Binding"
-                      description="Bind admin sessions to User-Agent + IP subnet to detect hijacking"
+                      label={L('mod.sessionBinding')}
+                      description={L('mod.sessionBindingDesc')}
+                      tooltip={LT('mod.sessionBinding')}
                       checked={settings.sessionBindingEnabled}
                       onChange={(v) => update('sessionBindingEnabled', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                   </div>
 
@@ -378,11 +468,12 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                   <div className="space-y-0">
                     <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
                       <Lock size={14} />
-                      PARAMETERS
+                      {L('settings.parameters')}
                     </h3>
                     <SliderRow
-                      label="Auto-Block Threshold"
-                      description="Threat score at which IPs are automatically hard-blocked"
+                      label={L('param.autoBlockThreshold')}
+                      description={L('param.autoBlockThresholdDesc')}
+                      tooltip={LT('param.autoBlockThreshold')}
                       value={settings.autoBlockThreshold}
                       onChange={(v) => update('autoBlockThreshold', v)}
                       min={3}
@@ -391,8 +482,8 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       unit="pts"
                     />
                     <SliderRow
-                      label="Max Alerts Stored"
-                      description="Maximum number of security incidents kept in the alert log"
+                      label={L('param.maxAlerts')}
+                      description={L('param.maxAlertsDesc')}
                       value={settings.maxAlertsStored}
                       onChange={(v) => update('maxAlertsStored', v)}
                       min={10}
@@ -400,8 +491,9 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       step={10}
                     />
                     <SliderRow
-                      label="Tarpit Min Delay"
-                      description="Minimum delay applied to flagged requests"
+                      label={L('param.tarpitMin')}
+                      description={L('param.tarpitMinDesc')}
+                      tooltip={LT('param.tarpitMin')}
                       value={settings.tarpitMinMs}
                       onChange={(v) => update('tarpitMinMs', v)}
                       min={0}
@@ -410,8 +502,9 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       unit="ms"
                     />
                     <SliderRow
-                      label="Tarpit Max Delay"
-                      description="Maximum delay applied to flagged requests"
+                      label={L('param.tarpitMax')}
+                      description={L('param.tarpitMaxDesc')}
+                      tooltip={LT('param.tarpitMax')}
                       value={settings.tarpitMaxMs}
                       onChange={(v) => update('tarpitMaxMs', v)}
                       min={0}
@@ -420,14 +513,79 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       unit="ms"
                     />
                     <SliderRow
-                      label="Session TTL"
-                      description="Admin session lifetime before re-authentication is required"
+                      label={L('param.sessionTtl')}
+                      description={L('param.sessionTtlDesc')}
+                      tooltip={LT('param.sessionTtl')}
                       value={settings.sessionTtlSeconds}
                       onChange={(v) => update('sessionTtlSeconds', v)}
                       min={300}
                       max={86400}
                       step={300}
                       unit="s"
+                    />
+                  </div>
+
+                  {/* Tarpit & Zip Bomb Rules */}
+                  <div className="space-y-0">
+                    <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                      <Lightning size={14} />
+                      {L('settings.tarpitZipRules')}
+                    </h3>
+                    <ToggleRow
+                      label={L('rules.tarpitOnWarn')}
+                      description={L('rules.tarpitOnWarnDesc')}
+                      tooltip={LT('rules.tarpitOnWarn')}
+                      checked={settings.tarpitOnWarn}
+                      onChange={(v) => update('tarpitOnWarn', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.tarpitOnSuspiciousUa')}
+                      description={L('rules.tarpitOnSuspiciousUaDesc')}
+                      tooltip={LT('rules.tarpitOnSuspiciousUa')}
+                      checked={settings.tarpitOnSuspiciousUa}
+                      onChange={(v) => update('tarpitOnSuspiciousUa', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.tarpitOnRobotsViolation')}
+                      description={L('rules.tarpitOnRobotsViolationDesc')}
+                      checked={settings.tarpitOnRobotsViolation}
+                      onChange={(v) => update('tarpitOnRobotsViolation', v)}
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.zipBombOnBlock')}
+                      description={L('rules.zipBombOnBlockDesc')}
+                      tooltip={LT('rules.zipBombOnBlock')}
+                      checked={settings.zipBombOnBlock}
+                      onChange={(v) => update('zipBombOnBlock', v)}
+                      badge="⚠ AGGRESSIVE"
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.zipBombOnHoneytoken')}
+                      description={L('rules.zipBombOnHoneytokenDesc')}
+                      tooltip={LT('rules.zipBombOnHoneytoken')}
+                      checked={settings.zipBombOnHoneytoken}
+                      onChange={(v) => update('zipBombOnHoneytoken', v)}
+                      badge="⚠ AGGRESSIVE"
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
+                    />
+                    <ToggleRow
+                      label={L('rules.zipBombOnRepeatOffender')}
+                      description={L('rules.zipBombOnRepeatOffenderDesc')}
+                      tooltip={LT('rules.zipBombOnRepeatOffender')}
+                      checked={settings.zipBombOnRepeatOffender}
+                      onChange={(v) => update('zipBombOnRepeatOffender', v)}
+                      badge="⚠ AGGRESSIVE"
+                      statusActive={L('settings.active')}
+                      statusDisabled={L('settings.disabled')}
                     />
                   </div>
 
@@ -438,13 +596,13 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       disabled={saving}
                       className="flex-1 bg-primary/80 hover:bg-primary text-white font-mono text-[11px] uppercase tracking-wider py-2 px-4 transition-colors disabled:opacity-50"
                     >
-                      {saving ? 'SAVING...' : 'SAVE SETTINGS'}
+                      {saving ? L('settings.saving') : L('settings.save')}
                     </button>
                     <button
                       onClick={handleReset}
                       className="bg-primary/10 hover:bg-primary/20 text-primary/70 font-mono text-[11px] uppercase tracking-wider py-2 px-4 transition-colors"
                     >
-                      RESET DEFAULTS
+                      {L('settings.resetDefaults')}
                     </button>
                   </div>
                 </>
@@ -453,7 +611,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
               {/* Footer */}
               <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-2 border-t border-primary/10">
                 <ShieldCheck size={10} className="text-primary/40" />
-                <span>Settings stored in server-side encrypted storage (not in public JSON)</span>
+                <span>{L('settings.footer')}</span>
               </div>
             </div>
           </motion.div>

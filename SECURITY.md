@@ -80,6 +80,7 @@ Requests are scored based on suspicious behavior patterns (`api/_threat-score.js
 - **Algorithm**: Cumulative score per (hashed) IP, 1-hour TTL
 - **Score Sources**: robots.txt violations (+3), honeytoken access (+5), suspicious UA (+4), missing browser headers (+2), rate limit exceeded (+2)
 - **Escalation**: WARN (≥3) → TARPIT (≥7) → AUTO-BLOCK (≥12, configurable)
+- **Tarpit Rules**: Configurable rules define when tarpitting is applied (on WARN level, suspicious UA detection, robots.txt violations)
 - **Storage**: Ephemeral scores in KV with 1-hour TTL
 - **Auto-blocking**: IPs exceeding threshold are automatically added to the hard blocklist
 
@@ -96,6 +97,10 @@ When enabled, serves a gzip-compressed 10 MB null-byte payload to confirmed bots
 - Only triggered for IPs already flagged as attackers (robots.txt violators, honeytoken accessors)
 - Response claims to be a small ZIP file; decompresses to waste bot memory/CPU
 - Disabled by default — enable explicitly in Security Settings
+- **Configurable rules** for when zip bombs are deployed:
+  - On BLOCK threat level (score ≥ threshold)
+  - On honeytoken access (immediate response to credential theft attempts)
+  - On repeat offenders (IPs blocked 3+ times)
 - **WARNING**: Aggressive countermeasure — use with caution
 
 ### Real-time Alerting (Optional)
@@ -133,6 +138,34 @@ Detailed per-attacker analytics aggregating behavioral data per IP hash:
 - All user-generated content rendered through `SafeText` component
 - YouTube embeds use `youtube-nocookie.com` with `sandbox` attribute
 - Image proxy rejects non-`image/*` content types
+
+### Security Center (Admin Dashboard)
+A state-of-the-art admin security center provides full visibility and control:
+
+**Incident Log & Analysis:**
+- Real-time feed of all security events (honeytoken triggers, robots.txt violations, threat escalations, hard blocks)
+- Sortable by time, type, threat score, or IP hash (ascending/descending)
+- Groupable by incident type, IP hash, threat level, or countermeasure
+- Full-text search across IP hashes, user agents, target paths, and incident types
+- Expanded detail view showing threat assessment, request details, and captured request content (body, headers, path)
+
+**Tarpit & Zip Bomb Rules:**
+- Configurable rules for when tarpitting is applied (on WARN level, suspicious UA, robots.txt violations)
+- Configurable rules for when zip bombs are deployed (on BLOCK level, honeytoken access, repeat offenders)
+- All rules independently toggleable through the admin UI
+
+**Data Export:**
+- Export filtered/sorted incident data as JSON for SIEM integration
+- Export as CSV for spreadsheet analysis
+- All exports respect current filter, search, and sort settings
+
+**Localization (EN/DE):**
+- Full English and German language support across the security dashboard and settings
+- Language toggle in the dashboard header
+- Automatic locale detection based on browser language
+- Detailed tooltips for every module, parameter, and rule in both languages
+
+**Files:** `src/components/SecurityIncidentsDashboard.tsx`, `src/components/SecuritySettingsDialog.tsx`, `src/components/AttackerProfileDialog.tsx`, `src/lib/i18n-security.ts`
 
 ### Google Drive Download Security
 - **Input Validation**: File IDs restricted to `[A-Za-z0-9_-]+` pattern to prevent injection attacks

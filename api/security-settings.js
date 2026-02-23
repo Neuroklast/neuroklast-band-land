@@ -38,6 +38,13 @@ const DEFAULTS = {
   alertingEnabled: false,       // Default OFF — nur wenn DISCORD_WEBHOOK_URL gesetzt
   hardBlockEnabled: true,
   autoBlockThreshold: 12,       // Score ab dem auto-geblockt wird
+  // Tarpit & Zip Bomb rules
+  tarpitOnWarn: true,
+  tarpitOnSuspiciousUa: true,
+  tarpitOnRobotsViolation: true,
+  zipBombOnBlock: false,
+  zipBombOnHoneytoken: false,
+  zipBombOnRepeatOffender: false,
 }
 
 /** Zod schema for security settings */
@@ -57,6 +64,13 @@ const securitySettingsSchema = z.object({
   alertingEnabled: z.boolean().optional(),
   hardBlockEnabled: z.boolean().optional(),
   autoBlockThreshold: z.number().int().min(3).max(50).optional(),
+  // Tarpit & Zip Bomb rules
+  tarpitOnWarn: z.boolean().optional(),
+  tarpitOnSuspiciousUa: z.boolean().optional(),
+  tarpitOnRobotsViolation: z.boolean().optional(),
+  zipBombOnBlock: z.boolean().optional(),
+  zipBombOnHoneytoken: z.boolean().optional(),
+  zipBombOnRepeatOffender: z.boolean().optional(),
 })
 
 export default async function handler(req, res) {
