@@ -418,6 +418,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
     <CyberModalBackdrop open={open} zIndex="z-[9999]">
       <motion.div
         className="w-full max-w-6xl max-h-[90dvh] bg-card border border-primary/30 relative flex flex-col overflow-hidden"
+        style={{ textShadow: 'none' }}
         initial={{ scale: 0.85, y: 30, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.85, y: 30, opacity: 0 }}
