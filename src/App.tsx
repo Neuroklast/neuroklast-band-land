@@ -168,6 +168,31 @@ function App() {
       .catch(() => { /* ignore — local dev without API */ })
   }, [])
 
+  // Periodically check session validity — if the admin session expired
+  // server-side, reload the entire page so that the next login starts
+  // with a clean state and avoids stale 503/403 errors.
+  useEffect(() => {
+    if (!isOwner) return
+    const SESSION_CHECK_INTERVAL = 60_000 // every 60 s
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await fetch('/api/auth', { credentials: 'same-origin' })
+        if (!res.ok) {
+          // Server unreachable or error — don't logout, could be transient
+          return
+        }
+        const data = await res.json()
+        if (!data.authenticated) {
+          // Session expired server-side — full page reload for clean state
+          window.location.reload()
+        }
+      } catch {
+        // Network error — don't logout, could be transient
+      }
+    }, SESSION_CHECK_INTERVAL)
+    return () => clearInterval(intervalId)
+  }, [isOwner])
+
   // Open setup dialog once auth check confirms no password exists
   useEffect(() => {
     if (wantsSetup.current && needsSetup) {

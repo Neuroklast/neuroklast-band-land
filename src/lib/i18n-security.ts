@@ -201,6 +201,44 @@ const translations: Record<string, Record<Locale, string>> = {
   'rules.zipBombOnRepeatOffender':{ en: 'Zip bomb on repeat offenders', de: 'Zip-Bombe bei Wiederholungstätern' },
   'rules.zipBombOnRepeatOffenderDesc':{ en: 'Serve zip bomb to IPs with ≥3 blocked incidents', de: 'Zip-Bombe an IPs mit ≥3 blockierten Vorfällen senden' },
   'rules.zipBombOnRepeatOffenderTip':{ en: 'IPs that have been blocked 3 or more times are considered repeat offenders. When enabled, they receive zip bomb payloads on any subsequent access attempt.', de: 'IPs, die 3 oder mehr Mal gesperrt wurden, gelten als Wiederholungstäter. Wenn aktiviert, erhalten sie bei jedem weiteren Zugriffsversuch Zip-Bomben-Nutzlasten.' },
+
+  // ── SQL Injection Backfire ────────────────────────────────────────
+  'settings.sqlBackfire':         { en: 'SQL INJECTION BACKFIRE', de: 'SQL-INJECTION-BACKFIRE' },
+  'mod.sqlBackfire':              { en: 'SQL Injection Backfire', de: 'SQL-Injection-Backfire' },
+  'mod.sqlBackfireDesc':          { en: 'Return poisoned SQL data that corrupts the attacker\'s scanner database', de: 'Vergiftete SQL-Daten zurückgeben, die die Scanner-Datenbank des Angreifers korrumpieren' },
+  'mod.sqlBackfireTip':           { en: 'When a scanner probes for SQL injections, the server responds with SQL commands (DROP TABLE, DELETE, corrupt inserts) embedded in the response body and headers. These payloads target the scanner\'s local analysis database (e.g. sqlmap\'s SQLite session store).', de: 'Wenn ein Scanner nach SQL-Injections sucht, antwortet der Server mit SQL-Befehlen (DROP TABLE, DELETE, korrupte Inserts) in Response-Body und -Headern. Diese Payloads zielen auf die lokale Analyse-Datenbank des Scanners (z.B. sqlmaps SQLite-Session-Store).' },
+  'rules.sqlBackfireOnScanner':   { en: 'Backfire on scanner detection', de: 'Backfire bei Scanner-Erkennung' },
+  'rules.sqlBackfireOnScannerDesc':{ en: 'Activate when SQL injection patterns are detected in requests', de: 'Aktivieren wenn SQL-Injection-Muster in Anfragen erkannt werden' },
+  'rules.sqlBackfireOnHoneytoken':{ en: 'Backfire on honeytoken access', de: 'Backfire bei Honeytoken-Zugriff' },
+  'rules.sqlBackfireOnHoneytokenDesc':{ en: 'Return poisoned SQL data when honeytokens are accessed', de: 'Vergiftete SQL-Daten zurückgeben wenn Honeytokens aufgerufen werden' },
+
+  // ── Canary Documents ──────────────────────────────────────────────
+  'settings.canaryDocuments':     { en: 'CANARY DOCUMENTS', de: 'CANARY-DOKUMENTE' },
+  'mod.canaryDocuments':          { en: 'Canary Documents', de: 'Canary-Dokumente' },
+  'mod.canaryDocumentsDesc':      { en: 'Trackable decoy documents in tarpit directories that phone home when opened', de: 'Verfolgbare Köder-Dokumente in Tarpit-Verzeichnissen, die beim Öffnen "nach Hause telefonieren"' },
+  'mod.canaryDocumentsTip':       { en: 'Places realistic-looking documents (credentials, DB exports, API keys) in tarpit directories like /admin/backup/. When an attacker downloads and opens them, embedded tracking reveals their real IP, OS, browser, timezone, and screen resolution — even behind proxies (via WebRTC STUN).', de: 'Platziert realistisch aussehende Dokumente (Zugangsdaten, DB-Exporte, API-Keys) in Tarpit-Verzeichnissen wie /admin/backup/. Wenn ein Angreifer sie herunterlädt und öffnet, enthüllt eingebettetes Tracking seine echte IP, OS, Browser, Zeitzone und Bildschirmauflösung — selbst hinter Proxies (via WebRTC STUN).' },
+  'rules.canaryPhoneHome':       { en: 'Phone-home on document open', de: 'Nach-Hause-Telefonieren beim Öffnen' },
+  'rules.canaryPhoneHomeDesc':   { en: 'Embed tracking callbacks that fire when documents are opened', de: 'Tracking-Callbacks einbetten, die beim Öffnen der Dokumente ausgelöst werden' },
+  'rules.canaryFingerprint':     { en: 'Collect browser fingerprint', de: 'Browser-Fingerabdruck sammeln' },
+  'rules.canaryFingerprintDesc': { en: 'Gather timezone, screen size, language, WebRTC IP from the opener', de: 'Zeitzone, Bildschirmgröße, Sprache, WebRTC-IP vom Öffner sammeln' },
+  'rules.canaryAlert':           { en: 'Alert on canary callback', de: 'Alarm bei Canary-Callback' },
+  'rules.canaryAlertDesc':       { en: 'Send Discord/email alert when a canary document phones home', de: 'Discord/E-Mail-Alarm senden wenn ein Canary-Dokument nach Hause telefoniert' },
+
+  // ── Log Poisoning ─────────────────────────────────────────────────
+  'settings.logPoisoning':       { en: 'LOG POISONING & CANARY TOKENS', de: 'LOG-POISONING & CANARY-TOKENS' },
+  'mod.logPoisoning':            { en: 'Log Poisoning', de: 'Log-Poisoning' },
+  'mod.logPoisoningDesc':        { en: 'Inject misleading data into responses to corrupt attacker analysis tools', de: 'Irreführende Daten in Antworten injizieren, um Analyse-Tools des Angreifers zu korrumpieren' },
+  'mod.logPoisoningTip':         { en: 'Injects fake server info, internal paths, credentials, and terminal escape sequences into response headers. Attackers who log responses get corrupted data — fake routes to probe, terminal poison that corrupts CLI viewers, and misleading server fingerprints.', de: 'Injiziert gefälschte Server-Infos, interne Pfade, Zugangsdaten und Terminal-Escape-Sequenzen in Response-Header. Angreifer, die Antworten loggen, erhalten korrumpierte Daten — gefälschte Routen zum Sondieren, Terminal-Gift das CLI-Viewer korrumpiert, und irreführende Server-Fingerprints.' },
+  'rules.logPoisonFakeHeaders':  { en: 'Fake server headers', de: 'Gefälschte Server-Header' },
+  'rules.logPoisonFakeHeadersDesc':{ en: 'Inject misleading X-Powered-By, X-Backend, X-Debug headers', de: 'Irreführende X-Powered-By, X-Backend, X-Debug Header injizieren' },
+  'rules.logPoisonTerminal':     { en: 'Terminal escape sequences', de: 'Terminal-Escape-Sequenzen' },
+  'rules.logPoisonTerminalDesc': { en: 'Inject ANSI codes that corrupt CLI-based log viewers', de: 'ANSI-Codes injizieren, die CLI-basierte Log-Viewer korrumpieren' },
+  'rules.logPoisonFakePaths':    { en: 'Fake internal paths', de: 'Gefälschte interne Pfade' },
+  'rules.logPoisonFakePathsDesc':{ en: 'Include fake API routes and debug endpoints in responses', de: 'Gefälschte API-Routen und Debug-Endpunkte in Antworten einbinden' },
+
+  // ── Config Export ─────────────────────────────────────────────────
+  'settings.exported':            { en: 'Security config exported to JSON', de: 'Sicherheitskonfiguration als JSON exportiert' },
+  'settings.exportJson':          { en: 'EXPORT JSON', de: 'JSON EXPORTIEREN' },
 }
 
 /** Get a translated string for a key and locale */

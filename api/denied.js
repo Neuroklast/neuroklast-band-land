@@ -6,6 +6,9 @@ import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
 import { isHardBlocked } from './_blocklist.js'
 import { serveZipBomb } from './_zipbomb.js'
 import { recordIncident } from './_attacker-profile.js'
+import { detectSqlInjection, handleSqlInjectionBackfire } from './_sql-backfire.js'
+import { serveCanaryDocument } from './_canary-documents.js'
+import { applyLogPoisoning } from './_log-poisoning.js'
 
 /**
  * Handles requests to paths listed as Disallow in robots.txt.
@@ -51,6 +54,16 @@ function pickLinks(count = 8) {
   return shuffled.slice(0, count)
 }
 
+/** Escape HTML special characters to prevent XSS */
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 /** Generate a standard-looking 403 error page */
 function renderErrorPage(path) {
   const ref = randomBytes(4).toString('hex')
@@ -77,7 +90,7 @@ nav{margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:cent
 <h1>403</h1>
 <p>Access to this resource is restricted.</p>
 <p>Authorized personnel must authenticate before proceeding.</p>
-<p class="ref">Path: ${path} &middot; Ref: ${ref}</p>
+<p class="ref">Path: ${escapeHtml(path)} &middot; Ref: ${ref}</p>
 <nav>
 ${links.map(l => `<a href="${l}">${l.slice(1)}</a>`).join('\n')}
 </nav>
@@ -98,6 +111,20 @@ export default async function handler(req, res) {
   const hashedIp = hashIp(ip)
   const path = req.query._src || req.url || '/'
   const ua = (req.headers['user-agent'] || '').slice(0, 200)
+
+  // SQL Injection Backfire — respond with poisoned data if SQL injection detected
+  try {
+    if (detectSqlInjection(req)) {
+      const backfireResult = await handleSqlInjectionBackfire(req, res)
+      if (backfireResult) return
+    }
+  } catch { /* backfire failure must not block the response */ }
+
+  // Canary Documents — serve trackable decoy files from tarpit directories
+  try {
+    const canaryResult = await serveCanaryDocument(req, res)
+    if (canaryResult) return
+  } catch { /* canary failure must not block the response */ }
 
   // Record the access violation — same log format as other security alerts
   const entry = {
@@ -157,6 +184,11 @@ export default async function handler(req, res) {
   } catch {
     // Zip bomb failure must not block the response
   }
+
+  // Log poisoning — inject misleading data into response headers for flagged attackers
+  try {
+    await applyLogPoisoning(req, res)
+  } catch { /* log poisoning failure must not block the response */ }
 
   // Noise injection on response headers
   injectEntropyHeaders(res, 50)
