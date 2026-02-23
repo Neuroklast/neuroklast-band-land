@@ -122,10 +122,28 @@ For security considerations and reporting vulnerabilities, please see [SECURITY.
 - CSRF protection
 - HTTPS enforcement in production
 - Rate limiting with GDPR-compliant IP hashing
-- Honeytoken intrusion detection
+- Honeytoken intrusion detection with configurable counter-measures
 - SSRF protection on image proxy
 - robots.txt access control with violation detection
+- Behavioral threat scoring (IDS) with automatic escalation
+- Hard blocklist with configurable TTL
 - Regular dependency updates
+
+### Security Center (Admin)
+
+The admin dashboard includes a state-of-the-art **Security Center** with:
+
+- **Incident Log**: Real-time feed of all security events (honeytoken triggers, robots.txt violations, threat escalations, hard blocks)
+- **Sorting & Grouping**: Sort by time, type, score, or IP; group by type, IP hash, threat level, or countermeasure
+- **Full-text Search**: Filter incidents by IP hash, user agent, target path, or incident type
+- **Data Export**: Download incident data as JSON or CSV for external analysis
+- **Attacker Profiling**: Per-IP behavioral analysis with threat score timeline, attack type distribution, UA analysis, and pattern detection
+- **Request Content**: View captured request bodies, headers, and paths from suspicious actors
+- **Tarpit & Zip Bomb Rules**: Configurable rules for when/who/how gets tarpitted or receives a zip bomb payload
+- **Localization**: Full EN/DE language support with toggle in the dashboard
+- **Tooltips**: Detailed explanations for every module, parameter, and rule on hover
+- **Defense Modules**: 10 configurable modules (honeytoken, rate limit, robots trap, threat scoring, hard block, entropy injection, zip bomb, alerting, suspicious UA blocking, session binding)
+- **Real-time Alerting**: Discord webhook + email alerts with deduplication
 
 ## 🌐 Deployment
 
