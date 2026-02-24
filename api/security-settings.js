@@ -39,6 +39,16 @@ const DEFAULTS = {
   hardBlockEnabled: true,
   autoBlockThreshold: 12,       // Score ab dem auto-geblockt wird
   underAttackMode: false,       // Emergency mode — disables expensive countermeasures, returns 429
+  // Threat level thresholds — configurable
+  warnThreshold: 3,
+  tarpitThreshold: 7,
+  // Threat reason points — configurable
+  pointsRobotsViolation: 3,
+  pointsHoneytokenAccess: 5,
+  pointsSuspiciousUa: 4,
+  pointsMissingHeaders: 2,
+  pointsGenericAccept: 1,
+  pointsRateLimitExceeded: 2,
   // Tarpit & Zip Bomb rules
   tarpitOnWarn: true,
   tarpitOnSuspiciousUa: true,
@@ -61,6 +71,9 @@ const DEFAULTS = {
   logPoisonFakeHeaders: true,
   logPoisonTerminalEscape: true,
   logPoisonFakePaths: true,
+  // Alert channels — configurable (overrides env vars when set)
+  discordWebhookUrl: '',
+  alertEmail: '',
 }
 
 /** Zod schema for security settings */
@@ -81,6 +94,16 @@ const securitySettingsSchema = z.object({
   hardBlockEnabled: z.boolean().optional(),
   autoBlockThreshold: z.number().int().min(3).max(50).optional(),
   underAttackMode: z.boolean().optional(),
+  // Threat level thresholds — configurable
+  warnThreshold: z.number().int().min(1).max(50).optional(),
+  tarpitThreshold: z.number().int().min(2).max(50).optional(),
+  // Threat reason points — configurable
+  pointsRobotsViolation: z.number().int().min(0).max(20).optional(),
+  pointsHoneytokenAccess: z.number().int().min(0).max(20).optional(),
+  pointsSuspiciousUa: z.number().int().min(0).max(20).optional(),
+  pointsMissingHeaders: z.number().int().min(0).max(20).optional(),
+  pointsGenericAccept: z.number().int().min(0).max(20).optional(),
+  pointsRateLimitExceeded: z.number().int().min(0).max(20).optional(),
   // Tarpit & Zip Bomb rules
   tarpitOnWarn: z.boolean().optional(),
   tarpitOnSuspiciousUa: z.boolean().optional(),
@@ -103,6 +126,9 @@ const securitySettingsSchema = z.object({
   logPoisonFakeHeaders: z.boolean().optional(),
   logPoisonTerminalEscape: z.boolean().optional(),
   logPoisonFakePaths: z.boolean().optional(),
+  // Alert channels — configurable (overrides env vars when set)
+  discordWebhookUrl: z.string().max(500).optional(),
+  alertEmail: z.string().max(200).optional(),
 })
 
 export default async function handler(req, res) {

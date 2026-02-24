@@ -183,6 +183,39 @@ const translations: Record<string, Record<Locale, string>> = {
   'param.sessionTtlDesc':         { en: 'Admin session lifetime before re-authentication is required', de: 'Admin-Sitzungsdauer vor erneuter Authentifizierung' },
   'param.sessionTtlTip':          { en: 'Time in seconds before the admin session expires and requires re-login. Default: 14400s (4 hours). Lower = more secure, higher = more convenient.', de: 'Zeit in Sekunden bis die Admin-Sitzung abläuft und erneute Anmeldung erfordert. Standard: 14400s (4 Stunden). Niedriger = sicherer, höher = bequemer.' },
 
+  // ── Threat Level Thresholds ────────────────────────────────────────
+  'param.thresholds':             { en: 'THREAT LEVEL THRESHOLDS', de: 'BEDROHUNGSSTUFEN-SCHWELLENWERTE' },
+  'param.warnThreshold':          { en: 'WARN Threshold', de: 'WARN-Schwellenwert' },
+  'param.warnThresholdDesc':      { en: 'Threat score at which WARN level is reached (tarpit applied)', de: 'Bedrohungsscore, ab dem WARN-Stufe erreicht wird (Tarpit wird angewendet)' },
+  'param.warnThresholdTip':       { en: 'IPs reaching this score trigger WARN level. Default: 3 points. At WARN level, tarpit delays may be applied if enabled.', de: 'IPs, die diesen Score erreichen, lösen WARN-Stufe aus. Standard: 3 Punkte. Bei WARN-Stufe werden ggf. Tarpit-Verzögerungen angewendet.' },
+  'param.tarpitThreshold':        { en: 'TARPIT Threshold', de: 'TARPIT-Schwellenwert' },
+  'param.tarpitThresholdDesc':    { en: 'Threat score at which TARPIT level is reached (slower responses)', de: 'Bedrohungsscore, ab dem TARPIT-Stufe erreicht wird (langsamere Antworten)' },
+  'param.tarpitThresholdTip':     { en: 'IPs reaching this score trigger TARPIT level. Default: 7 points. At TARPIT level, all responses are artificially delayed.', de: 'IPs, die diesen Score erreichen, lösen TARPIT-Stufe aus. Standard: 7 Punkte. Bei TARPIT-Stufe werden alle Antworten künstlich verzögert.' },
+
+  // ── Threat Reason Points ───────────────────────────────────────────
+  'param.reasonPoints':           { en: 'THREAT REASON POINTS', de: 'BEDROHUNGS-PUNKTEWERTE' },
+  'param.pointsHoneytoken':       { en: 'Honeytoken Access', de: 'Honeytoken-Zugriff' },
+  'param.pointsHoneytokenDesc':   { en: 'Points awarded per honeytoken access event', de: 'Punkte pro Honeytoken-Zugriff' },
+  'param.pointsSuspiciousUa':     { en: 'Suspicious User-Agent', de: 'Verdächtiger User-Agent' },
+  'param.pointsSuspiciousUaDesc': { en: 'Points awarded for known hacking tool User-Agents', de: 'Punkte für bekannte Hacking-Tool User-Agents' },
+  'param.pointsRobotsViolation':  { en: 'Robots.txt Violation', de: 'Robots.txt-Verstoß' },
+  'param.pointsRobotsViolationDesc':{ en: 'Points awarded per robots.txt Disallow violation', de: 'Punkte pro robots.txt-Disallow-Verstoß' },
+  'param.pointsMissingHeaders':   { en: 'Missing Browser Headers', de: 'Fehlende Browser-Header' },
+  'param.pointsMissingHeadersDesc':{ en: 'Points for requests missing standard browser headers', de: 'Punkte für Anfragen ohne Standard-Browser-Header' },
+  'param.pointsRateLimit':        { en: 'Rate Limit Exceeded', de: 'Ratenbegrenzung überschritten' },
+  'param.pointsRateLimitDesc':    { en: 'Points awarded when rate limit is exceeded', de: 'Punkte bei Überschreitung der Ratenbegrenzung' },
+  'param.pointsGenericAccept':    { en: 'Generic Accept Header', de: 'Generischer Accept-Header' },
+  'param.pointsGenericAcceptDesc':{ en: 'Points for requests with generic Accept: */* header', de: 'Punkte für Anfragen mit generischem Accept: */* Header' },
+
+  // ── Alert Channels ─────────────────────────────────────────────────
+  'param.alertChannels':          { en: 'ALERT CHANNELS', de: 'ALARM-KANÄLE' },
+  'param.discordWebhook':         { en: 'Discord Webhook URL', de: 'Discord-Webhook-URL' },
+  'param.discordWebhookDesc':     { en: 'Discord webhook URL for security alerts (overrides env var)', de: 'Discord-Webhook-URL für Sicherheitsalarme (überschreibt Umgebungsvariable)' },
+  'param.discordWebhookTip':      { en: 'Enter a Discord webhook URL to receive real-time security alerts in a Discord channel. This overrides the DISCORD_WEBHOOK_URL environment variable when set.', de: 'Discord-Webhook-URL eingeben, um Echtzeit-Sicherheitsalarme in einem Discord-Kanal zu erhalten. Überschreibt die DISCORD_WEBHOOK_URL Umgebungsvariable wenn gesetzt.' },
+  'param.alertEmail':             { en: 'Alert Email', de: 'Alarm-E-Mail' },
+  'param.alertEmailDesc':         { en: 'Email address for security alert notifications (overrides env var)', de: 'E-Mail-Adresse für Sicherheitsalarm-Benachrichtigungen (überschreibt Umgebungsvariable)' },
+  'param.alertEmailTip':          { en: 'Enter an email address to receive security alert emails via Resend API. Requires RESEND_API_KEY to be set. This overrides the ADMIN_RESET_EMAIL environment variable when set.', de: 'E-Mail-Adresse eingeben, um Sicherheitsalarm-E-Mails über die Resend-API zu erhalten. Erfordert, dass RESEND_API_KEY gesetzt ist. Überschreibt die ADMIN_RESET_EMAIL Umgebungsvariable wenn gesetzt.' },
+
   // ── Tarpit & Zip Bomb Rules ───────────────────────────────────────
   'rules.tarpitOnWarn':           { en: 'Tarpit on WARN level', de: 'Tarpit bei WARN-Stufe' },
   'rules.tarpitOnWarnDesc':       { en: 'Apply tarpit delay when threat level reaches WARN', de: 'Tarpit-Verzögerung anwenden wenn Bedrohungsstufe WARN erreicht' },

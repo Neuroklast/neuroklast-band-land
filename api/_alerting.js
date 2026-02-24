@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 
+const KV_SETTINGS_KEY = 'nk-security-settings'
 const ALERT_DEDUP_PREFIX = 'nk-alert-dedup:'
 const ALERT_DEDUP_TTL = 300 // 5 minutes cooldown per IP+event type
 
@@ -7,11 +8,12 @@ const ALERT_DEDUP_TTL = 300 // 5 minutes cooldown per IP+event type
  * Send a critical security alert via Discord Webhook and/or Resend email.
  * Includes alert deduplication to prevent spam (1 alert per IP per 5 min).
  *
- * Environment variables:
- *   DISCORD_WEBHOOK_URL  — Discord webhook URL (optional)
- *   RESEND_API_KEY       — if set, also sends email
- *   ADMIN_RESET_EMAIL    — destination email for alerts
- *   SITE_URL             — used for context in alert messages
+ * Alert channels are resolved from KV settings first, falling back to
+ * environment variables:
+ *   discordWebhookUrl  → DISCORD_WEBHOOK_URL
+ *   alertEmail          → ADMIN_RESET_EMAIL
+ *   RESEND_API_KEY      — if set, also sends email
+ *   SITE_URL            — used for context in alert messages
  */
 export async function sendSecurityAlert(event) {
   try {
@@ -22,10 +24,19 @@ export async function sendSecurityAlert(event) {
 
     await kv.set(dedupKey, 1, { ex: ALERT_DEDUP_TTL }).catch(() => {})
 
+    // Resolve alert channel config from KV settings, then env vars
+    let settings = null
+    try {
+      settings = await kv.get(KV_SETTINGS_KEY)
+    } catch { /* ignore */ }
+
+    const webhookUrl = (settings?.discordWebhookUrl || '').trim() || process.env.DISCORD_WEBHOOK_URL
+    const alertEmail = (settings?.alertEmail || '').trim() || process.env.ADMIN_RESET_EMAIL
+    const resendApiKey = process.env.RESEND_API_KEY
+
     const promises = []
 
     // Discord Webhook
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL
     if (webhookUrl) {
       promises.push(
         fetch(webhookUrl, {
@@ -54,8 +65,6 @@ export async function sendSecurityAlert(event) {
     }
 
     // Resend E-Mail
-    const resendApiKey = process.env.RESEND_API_KEY
-    const alertEmail = process.env.ADMIN_RESET_EMAIL
     if (resendApiKey && alertEmail) {
       const { Resend } = await import('resend')
       const resend = new Resend(resendApiKey)
