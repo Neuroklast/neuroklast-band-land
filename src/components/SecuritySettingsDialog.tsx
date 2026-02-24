@@ -23,6 +23,16 @@ export interface SecuritySettings {
   hardBlockEnabled: boolean
   autoBlockThreshold: number
   underAttackMode: boolean
+  // Threat level thresholds — configurable
+  warnThreshold: number
+  tarpitThreshold: number
+  // Threat reason points — configurable
+  pointsRobotsViolation: number
+  pointsHoneytokenAccess: number
+  pointsSuspiciousUa: number
+  pointsMissingHeaders: number
+  pointsGenericAccept: number
+  pointsRateLimitExceeded: number
   // Tarpit & Zip Bomb rules
   tarpitOnWarn: boolean
   tarpitOnSuspiciousUa: boolean
@@ -45,6 +55,9 @@ export interface SecuritySettings {
   logPoisonFakeHeaders: boolean
   logPoisonTerminalEscape: boolean
   logPoisonFakePaths: boolean
+  // Alert channels — configurable (overrides env vars when set)
+  discordWebhookUrl: string
+  alertEmail: string
 }
 
 export const DEFAULT_SETTINGS: SecuritySettings = {
@@ -64,6 +77,16 @@ export const DEFAULT_SETTINGS: SecuritySettings = {
   hardBlockEnabled: true,
   autoBlockThreshold: 12,
   underAttackMode: false,
+  // Threat level thresholds — configurable
+  warnThreshold: 3,
+  tarpitThreshold: 7,
+  // Threat reason points — configurable
+  pointsRobotsViolation: 3,
+  pointsHoneytokenAccess: 5,
+  pointsSuspiciousUa: 4,
+  pointsMissingHeaders: 2,
+  pointsGenericAccept: 1,
+  pointsRateLimitExceeded: 2,
   // Tarpit & Zip Bomb rules — defaults
   tarpitOnWarn: true,
   tarpitOnSuspiciousUa: true,
@@ -86,6 +109,9 @@ export const DEFAULT_SETTINGS: SecuritySettings = {
   logPoisonFakeHeaders: true,
   logPoisonTerminalEscape: true,
   logPoisonFakePaths: true,
+  // Alert channels — configurable
+  discordWebhookUrl: '',
+  alertEmail: '',
 }
 
 interface SecuritySettingsDialogProps {
@@ -214,6 +240,43 @@ function SliderRow({ label, description, value, onChange, min, max, step = 1, un
         />
         <span className="font-mono text-[9px] text-primary/30 w-12">{max}{unit}</span>
       </div>
+    </div>
+  )
+}
+
+interface TextInputRowProps {
+  label: string
+  description: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  tooltip?: string
+}
+
+function TextInputRow({ label, description, value, onChange, placeholder, tooltip }: TextInputRowProps) {
+  return (
+    <div className="py-3 border-b border-primary/5 space-y-2">
+      <div>
+        <div className="flex items-center gap-2">
+          <p className="font-mono text-[12px] text-foreground/85 uppercase tracking-wider">{label}</p>
+          {tooltip && (
+            <span className="relative group/tip cursor-help">
+              <Info size={12} className="text-primary/30 hover:text-primary/60 transition-colors" />
+              <span className="absolute z-50 left-0 bottom-full mb-1.5 hidden group-hover/tip:block w-64 px-2 py-1.5 bg-black border border-primary/30 text-[10px] text-primary/80 font-mono leading-relaxed pointer-events-none whitespace-normal">
+                {tooltip}
+              </span>
+            </span>
+          )}
+        </div>
+        <p className="text-[11px] text-primary/50 mt-1 leading-relaxed">{description}</p>
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-black/50 border border-primary/20 px-2 py-1.5 font-mono text-[12px] text-foreground/80 focus:border-primary/50 focus:outline-none placeholder:text-primary/20"
+      />
     </div>
   )
 }
@@ -602,6 +665,122 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                         max={86400}
                         step={300}
                         unit="s"
+                      />
+
+                      {/* Threat Level Thresholds */}
+                      <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mt-4 mb-2 flex items-center gap-2">
+                        <ChartLine size={14} />
+                        {L('param.thresholds')}
+                      </h3>
+                      <SliderRow
+                        label={L('param.warnThreshold')}
+                        description={L('param.warnThresholdDesc')}
+                        tooltip={LT('param.warnThreshold')}
+                        value={settings.warnThreshold}
+                        onChange={(v) => update('warnThreshold', v)}
+                        min={1}
+                        max={50}
+                        step={1}
+                        unit="pts"
+                      />
+                      <SliderRow
+                        label={L('param.tarpitThreshold')}
+                        description={L('param.tarpitThresholdDesc')}
+                        tooltip={LT('param.tarpitThreshold')}
+                        value={settings.tarpitThreshold}
+                        onChange={(v) => update('tarpitThreshold', v)}
+                        min={2}
+                        max={50}
+                        step={1}
+                        unit="pts"
+                      />
+
+                      {/* Threat Reason Points */}
+                      <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mt-4 mb-2 flex items-center gap-2">
+                        <ShieldWarning size={14} />
+                        {L('param.reasonPoints')}
+                      </h3>
+                      <SliderRow
+                        label={L('param.pointsHoneytoken')}
+                        description={L('param.pointsHoneytokenDesc')}
+                        value={settings.pointsHoneytokenAccess}
+                        onChange={(v) => update('pointsHoneytokenAccess', v)}
+                        min={0}
+                        max={20}
+                        step={1}
+                        unit="pts"
+                      />
+                      <SliderRow
+                        label={L('param.pointsSuspiciousUa')}
+                        description={L('param.pointsSuspiciousUaDesc')}
+                        value={settings.pointsSuspiciousUa}
+                        onChange={(v) => update('pointsSuspiciousUa', v)}
+                        min={0}
+                        max={20}
+                        step={1}
+                        unit="pts"
+                      />
+                      <SliderRow
+                        label={L('param.pointsRobotsViolation')}
+                        description={L('param.pointsRobotsViolationDesc')}
+                        value={settings.pointsRobotsViolation}
+                        onChange={(v) => update('pointsRobotsViolation', v)}
+                        min={0}
+                        max={20}
+                        step={1}
+                        unit="pts"
+                      />
+                      <SliderRow
+                        label={L('param.pointsMissingHeaders')}
+                        description={L('param.pointsMissingHeadersDesc')}
+                        value={settings.pointsMissingHeaders}
+                        onChange={(v) => update('pointsMissingHeaders', v)}
+                        min={0}
+                        max={20}
+                        step={1}
+                        unit="pts"
+                      />
+                      <SliderRow
+                        label={L('param.pointsRateLimit')}
+                        description={L('param.pointsRateLimitDesc')}
+                        value={settings.pointsRateLimitExceeded}
+                        onChange={(v) => update('pointsRateLimitExceeded', v)}
+                        min={0}
+                        max={20}
+                        step={1}
+                        unit="pts"
+                      />
+                      <SliderRow
+                        label={L('param.pointsGenericAccept')}
+                        description={L('param.pointsGenericAcceptDesc')}
+                        value={settings.pointsGenericAccept}
+                        onChange={(v) => update('pointsGenericAccept', v)}
+                        min={0}
+                        max={20}
+                        step={1}
+                        unit="pts"
+                      />
+
+                      {/* Alert Channels */}
+                      <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mt-4 mb-2 flex items-center gap-2">
+                        <BellRinging size={14} />
+                        {L('param.alertChannels')}
+                      </h3>
+                      <TextInputRow
+                        label={L('param.discordWebhook')}
+                        description={L('param.discordWebhookDesc')}
+                        tooltip={LT('param.discordWebhook')}
+                        value={settings.discordWebhookUrl}
+                        onChange={(v) => update('discordWebhookUrl', v)}
+                        placeholder="https://discord.com/api/webhooks/..."
+                      />
+                      <TextInputRow
+                        label={L('param.alertEmail')}
+                        description={L('param.alertEmailDesc')}
+                        tooltip={LT('param.alertEmail')}
+                        value={settings.alertEmail}
+                        onChange={(v) => update('alertEmail', v)}
+                        placeholder="admin@example.com"
                       />
                     </div>
                   )}
