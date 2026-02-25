@@ -19,11 +19,14 @@ const unblockSchema = z.object({
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  const allowed = await applyRateLimit(req, res)
-  if (!allowed) return
-
+  // Validate session first — authenticated admins bypass rate limiting
+  // to prevent 429 errors when the dashboard loads multiple endpoints after login
   const sessionValid = await validateSession(req)
-  if (!sessionValid) return res.status(403).json({ error: 'Forbidden' })
+  if (!sessionValid) {
+    const allowed = await applyRateLimit(req, res)
+    if (!allowed) return
+    return res.status(403).json({ error: 'Forbidden' })
+  }
 
   if (!isKVConfigured()) return res.status(503).json({ error: 'Service unavailable' })
 

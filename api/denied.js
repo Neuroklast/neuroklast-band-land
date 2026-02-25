@@ -135,13 +135,42 @@ export default async function handler(req, res) {
     if (canaryResult) return
   } catch { /* canary failure must not block the response */ }
 
-  // Record the access violation — same log format as other security alerts
+  // Increment threat score
+  let threatResult = { score: 0, level: 'CLEAN' }
+  try {
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points)
+  } catch {
+    // Threat scoring failure must not block the response
+  }
+
+  // Determine which countermeasure to apply based on per-rule settings
+  let countermeasure = 'LOGGED'
+  let countermeasureResult = null
+  let settings = null
+  try {
+    settings = await kv.get('nk-security-settings').catch(() => null)
+  } catch { /* ignore */ }
+
+  // Check zip bomb eligibility for robots violation
+  const zipBombApplicable = settings?.zipBombEnabled && settings?.zipBombOnRobotsViolation
+  if (zipBombApplicable) {
+    countermeasure = 'ZIP_BOMB'
+  } else if (threatResult.level === 'BLOCK') {
+    countermeasure = 'BLOCKED'
+  } else if (threatResult.level === 'TARPIT' || (settings?.tarpitOnRobotsViolation !== false)) {
+    countermeasure = 'TARPITTED'
+  }
+
+  // Record the access violation — includes countermeasure info for tracking
   const entry = {
     key: `robots:${path}`,
     method: req.method,
     hashedIp,
     userAgent: ua,
     timestamp: new Date().toISOString(),
+    threatScore: threatResult.score,
+    threatLevel: threatResult.level,
+    countermeasure,
   }
 
   console.error('[ACCESS VIOLATION]', JSON.stringify(entry))
@@ -157,14 +186,6 @@ export default async function handler(req, res) {
   // Flag this IP — subsequent requests to any endpoint will receive noise
   await markAttacker(hashedIp)
 
-  // Increment threat score
-  let threatResult = { score: 0, level: 'CLEAN' }
-  try {
-    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points)
-  } catch {
-    // Threat scoring failure must not block the response
-  }
-
   // Record incident in attacker profile
   try {
     await recordIncident(hashedIp, {
@@ -174,6 +195,7 @@ export default async function handler(req, res) {
       userAgent: ua,
       threatScore: threatResult.score,
       threatLevel: threatResult.level,
+      countermeasure,
       timestamp: entry.timestamp
     })
   } catch {
@@ -184,14 +206,15 @@ export default async function handler(req, res) {
   const ms = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS)
   await sleep(ms)
 
-  // Check if zip bomb is enabled
-  try {
-    const settings = await kv.get('nk-security-settings').catch(() => null)
-    if (settings?.zipBombEnabled) {
+  // Serve zip bomb if applicable per rule settings
+  if (zipBombApplicable) {
+    try {
+      // Update incident with result
+      countermeasureResult = 'ZIP_BOMB_SENT'
       return await serveZipBomb(res)
+    } catch {
+      // Zip bomb failure must not block the response — fall through to error page
     }
-  } catch {
-    // Zip bomb failure must not block the response
   }
 
   // Log poisoning — inject misleading data into response headers for flagged attackers

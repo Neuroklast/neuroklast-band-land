@@ -53,9 +53,14 @@ const DEFAULTS = {
   tarpitOnWarn: true,
   tarpitOnSuspiciousUa: true,
   tarpitOnRobotsViolation: true,
+  tarpitOnHoneytoken: false,
+  tarpitOnBlock: false,
   zipBombOnBlock: false,
   zipBombOnHoneytoken: false,
   zipBombOnRepeatOffender: false,
+  zipBombOnRobotsViolation: false,
+  zipBombOnSuspiciousUa: false,
+  zipBombOnRateLimit: false,
   // Countermeasures — Log Poisoning, SQL Backfire, Canary Documents
   sqlBackfireEnabled: false,
   canaryDocumentsEnabled: false,
@@ -108,9 +113,14 @@ const securitySettingsSchema = z.object({
   tarpitOnWarn: z.boolean().optional(),
   tarpitOnSuspiciousUa: z.boolean().optional(),
   tarpitOnRobotsViolation: z.boolean().optional(),
+  tarpitOnHoneytoken: z.boolean().optional(),
+  tarpitOnBlock: z.boolean().optional(),
   zipBombOnBlock: z.boolean().optional(),
   zipBombOnHoneytoken: z.boolean().optional(),
   zipBombOnRepeatOffender: z.boolean().optional(),
+  zipBombOnRobotsViolation: z.boolean().optional(),
+  zipBombOnSuspiciousUa: z.boolean().optional(),
+  zipBombOnRateLimit: z.boolean().optional(),
   // Countermeasures
   sqlBackfireEnabled: z.boolean().optional(),
   canaryDocumentsEnabled: z.boolean().optional(),
@@ -134,12 +144,12 @@ const securitySettingsSchema = z.object({
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  const allowed = await applyRateLimit(req, res)
-  if (!allowed) return
-
-  // All operations require admin authentication
+  // Validate session first — authenticated admins bypass rate limiting
+  // to prevent 429 errors when the dashboard loads multiple endpoints after login
   const sessionValid = await validateSession(req)
   if (!sessionValid) {
+    const allowed = await applyRateLimit(req, res)
+    if (!allowed) return
     return res.status(403).json({ error: 'Forbidden' })
   }
 

@@ -304,6 +304,11 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
           <td className="px-3 py-2 text-foreground/50 hidden lg:table-cell">
             {inc.threatScore != null ? inc.threatScore : '—'}
           </td>
+          <td className="px-3 py-2 hidden lg:table-cell">
+            <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold tracking-wider border ${cmColors[cm] || cmColors.LOGGED}`}>
+              {cm}
+            </span>
+          </td>
           {onViewProfile && (
             <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
               <button
@@ -319,7 +324,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
         </tr>
         {isExpanded && (
           <tr className="bg-primary/5 border-t border-primary/10">
-            <td colSpan={onViewProfile ? 8 : 7} className="px-4 py-4">
+            <td colSpan={onViewProfile ? 9 : 8} className="px-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-[11px]">
                 {/* Threat assessment */}
                 <div className="space-y-2">
@@ -664,6 +669,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                         <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell cursor-pointer select-none" onClick={() => handleSort('score')}>
                           <span className="flex items-center gap-1">{L('sec.colScore')} <SortIcon field="score" /></span>
                         </th>
+                        <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell">{L('sec.countermeasure')}</th>
                         {onViewProfile && <th className="text-left px-3 py-2 tracking-wider">{L('sec.colAction')}</th>}
                       </tr>
                     </thead>

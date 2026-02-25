@@ -20,12 +20,12 @@ const isKVConfigured = () => {
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  const allowed = await applyRateLimit(req, res)
-  if (!allowed) return
-
-  // All operations require admin authentication
+  // Validate session first — authenticated admins bypass rate limiting
+  // to prevent 429 errors when the dashboard loads multiple endpoints after login
   const sessionValid = await validateSession(req)
   if (!sessionValid) {
+    const allowed = await applyRateLimit(req, res)
+    if (!allowed) return
     return res.status(403).json({ error: 'Forbidden' })
   }
 
