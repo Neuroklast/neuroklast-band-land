@@ -37,9 +37,14 @@ export interface SecuritySettings {
   tarpitOnWarn: boolean
   tarpitOnSuspiciousUa: boolean
   tarpitOnRobotsViolation: boolean
+  tarpitOnHoneytoken: boolean
+  tarpitOnBlock: boolean
   zipBombOnBlock: boolean
   zipBombOnHoneytoken: boolean
   zipBombOnRepeatOffender: boolean
+  zipBombOnRobotsViolation: boolean
+  zipBombOnSuspiciousUa: boolean
+  zipBombOnRateLimit: boolean
   // Countermeasures
   sqlBackfireEnabled: boolean
   canaryDocumentsEnabled: boolean
@@ -91,9 +96,14 @@ export const DEFAULT_SETTINGS: SecuritySettings = {
   tarpitOnWarn: true,
   tarpitOnSuspiciousUa: true,
   tarpitOnRobotsViolation: true,
+  tarpitOnHoneytoken: false,
+  tarpitOnBlock: false,
   zipBombOnBlock: false,
   zipBombOnHoneytoken: false,
   zipBombOnRepeatOffender: false,
+  zipBombOnRobotsViolation: false,
+  zipBombOnSuspiciousUa: false,
+  zipBombOnRateLimit: false,
   // Countermeasures — defaults (OFF until explicitly enabled)
   sqlBackfireEnabled: false,
   canaryDocumentsEnabled: false,
@@ -787,67 +797,126 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
 
                   {/* Tab 3: RULES */}
                   {activeTab === 'rules' && (
-                    <div className="space-y-0">
-                      <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
-                        <Lightning size={14} />
-                        {L('settings.tarpitZipRules')}
-                      </h3>
-                      <ToggleRow
-                        label={L('rules.tarpitOnWarn')}
-                        description={L('rules.tarpitOnWarnDesc')}
-                        tooltip={LT('rules.tarpitOnWarn')}
-                        checked={settings.tarpitOnWarn}
-                        onChange={(v) => update('tarpitOnWarn', v)}
-                        statusActive={L('settings.active')}
-                        statusDisabled={L('settings.disabled')}
-                      />
-                      <ToggleRow
-                        label={L('rules.tarpitOnSuspiciousUa')}
-                        description={L('rules.tarpitOnSuspiciousUaDesc')}
-                        tooltip={LT('rules.tarpitOnSuspiciousUa')}
-                        checked={settings.tarpitOnSuspiciousUa}
-                        onChange={(v) => update('tarpitOnSuspiciousUa', v)}
-                        statusActive={L('settings.active')}
-                        statusDisabled={L('settings.disabled')}
-                      />
-                      <ToggleRow
-                        label={L('rules.tarpitOnRobotsViolation')}
-                        description={L('rules.tarpitOnRobotsViolationDesc')}
-                        checked={settings.tarpitOnRobotsViolation}
-                        onChange={(v) => update('tarpitOnRobotsViolation', v)}
-                        statusActive={L('settings.active')}
-                        statusDisabled={L('settings.disabled')}
-                      />
-                      <ToggleRow
-                        label={L('rules.zipBombOnBlock')}
-                        description={L('rules.zipBombOnBlockDesc')}
-                        tooltip={LT('rules.zipBombOnBlock')}
-                        checked={settings.zipBombOnBlock}
-                        onChange={(v) => update('zipBombOnBlock', v)}
-                        badge="⚠ AGGRESSIVE"
-                        statusActive={L('settings.active')}
-                        statusDisabled={L('settings.disabled')}
-                      />
-                      <ToggleRow
-                        label={L('rules.zipBombOnHoneytoken')}
-                        description={L('rules.zipBombOnHoneytokenDesc')}
-                        tooltip={LT('rules.zipBombOnHoneytoken')}
-                        checked={settings.zipBombOnHoneytoken}
-                        onChange={(v) => update('zipBombOnHoneytoken', v)}
-                        badge="⚠ AGGRESSIVE"
-                        statusActive={L('settings.active')}
-                        statusDisabled={L('settings.disabled')}
-                      />
-                      <ToggleRow
-                        label={L('rules.zipBombOnRepeatOffender')}
-                        description={L('rules.zipBombOnRepeatOffenderDesc')}
-                        tooltip={LT('rules.zipBombOnRepeatOffender')}
-                        checked={settings.zipBombOnRepeatOffender}
-                        onChange={(v) => update('zipBombOnRepeatOffender', v)}
-                        badge="⚠ AGGRESSIVE"
-                        statusActive={L('settings.active')}
-                        statusDisabled={L('settings.disabled')}
-                      />
+                    <div className="space-y-4">
+                      {/* Tarpit Rules Section */}
+                      <div className="space-y-0">
+                        <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                          <Lightning size={14} />
+                          {L('rules.tarpitRulesHeader')}
+                        </h3>
+                        <ToggleRow
+                          label={L('rules.tarpitOnWarn')}
+                          description={L('rules.tarpitOnWarnDesc')}
+                          tooltip={LT('rules.tarpitOnWarn')}
+                          checked={settings.tarpitOnWarn}
+                          onChange={(v) => update('tarpitOnWarn', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.tarpitOnSuspiciousUa')}
+                          description={L('rules.tarpitOnSuspiciousUaDesc')}
+                          tooltip={LT('rules.tarpitOnSuspiciousUa')}
+                          checked={settings.tarpitOnSuspiciousUa}
+                          onChange={(v) => update('tarpitOnSuspiciousUa', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.tarpitOnRobotsViolation')}
+                          description={L('rules.tarpitOnRobotsViolationDesc')}
+                          checked={settings.tarpitOnRobotsViolation}
+                          onChange={(v) => update('tarpitOnRobotsViolation', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.tarpitOnHoneytoken')}
+                          description={L('rules.tarpitOnHoneytokenDesc')}
+                          tooltip={LT('rules.tarpitOnHoneytoken')}
+                          checked={settings.tarpitOnHoneytoken}
+                          onChange={(v) => update('tarpitOnHoneytoken', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.tarpitOnBlock')}
+                          description={L('rules.tarpitOnBlockDesc')}
+                          tooltip={LT('rules.tarpitOnBlock')}
+                          checked={settings.tarpitOnBlock}
+                          onChange={(v) => update('tarpitOnBlock', v)}
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                      </div>
+
+                      {/* Zip Bomb Rules Section */}
+                      <div className="space-y-0">
+                        <h3 className="text-[11px] font-mono text-primary/50 tracking-wider mb-3 flex items-center gap-2">
+                          <Package size={14} />
+                          {L('rules.zipBombRulesHeader')}
+                        </h3>
+                        <ToggleRow
+                          label={L('rules.zipBombOnBlock')}
+                          description={L('rules.zipBombOnBlockDesc')}
+                          tooltip={LT('rules.zipBombOnBlock')}
+                          checked={settings.zipBombOnBlock}
+                          onChange={(v) => update('zipBombOnBlock', v)}
+                          badge="⚠ AGGRESSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.zipBombOnHoneytoken')}
+                          description={L('rules.zipBombOnHoneytokenDesc')}
+                          tooltip={LT('rules.zipBombOnHoneytoken')}
+                          checked={settings.zipBombOnHoneytoken}
+                          onChange={(v) => update('zipBombOnHoneytoken', v)}
+                          badge="⚠ AGGRESSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.zipBombOnRepeatOffender')}
+                          description={L('rules.zipBombOnRepeatOffenderDesc')}
+                          tooltip={LT('rules.zipBombOnRepeatOffender')}
+                          checked={settings.zipBombOnRepeatOffender}
+                          onChange={(v) => update('zipBombOnRepeatOffender', v)}
+                          badge="⚠ AGGRESSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.zipBombOnRobotsViolation')}
+                          description={L('rules.zipBombOnRobotsViolationDesc')}
+                          tooltip={LT('rules.zipBombOnRobotsViolation')}
+                          checked={settings.zipBombOnRobotsViolation}
+                          onChange={(v) => update('zipBombOnRobotsViolation', v)}
+                          badge="⚠ AGGRESSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.zipBombOnSuspiciousUa')}
+                          description={L('rules.zipBombOnSuspiciousUaDesc')}
+                          tooltip={LT('rules.zipBombOnSuspiciousUa')}
+                          checked={settings.zipBombOnSuspiciousUa}
+                          onChange={(v) => update('zipBombOnSuspiciousUa', v)}
+                          badge="⚠ AGGRESSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                        <ToggleRow
+                          label={L('rules.zipBombOnRateLimit')}
+                          description={L('rules.zipBombOnRateLimitDesc')}
+                          tooltip={LT('rules.zipBombOnRateLimit')}
+                          checked={settings.zipBombOnRateLimit}
+                          onChange={(v) => update('zipBombOnRateLimit', v)}
+                          badge="⚠ AGGRESSIVE"
+                          statusActive={L('settings.active')}
+                          statusDisabled={L('settings.disabled')}
+                        />
+                      </div>
                     </div>
                   )}
 

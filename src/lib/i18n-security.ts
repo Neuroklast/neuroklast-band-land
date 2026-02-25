@@ -217,6 +217,8 @@ const translations: Record<string, Record<Locale, string>> = {
   'param.alertEmailTip':          { en: 'Enter an email address to receive security alert emails via Resend API. Requires RESEND_API_KEY to be set. This overrides the ADMIN_RESET_EMAIL environment variable when set.', de: 'E-Mail-Adresse eingeben, um Sicherheitsalarm-E-Mails über die Resend-API zu erhalten. Erfordert, dass RESEND_API_KEY gesetzt ist. Überschreibt die ADMIN_RESET_EMAIL Umgebungsvariable wenn gesetzt.' },
 
   // ── Tarpit & Zip Bomb Rules ───────────────────────────────────────
+  'rules.tarpitRulesHeader':      { en: 'TARPIT TRIGGER RULES', de: 'TARPIT-AUSLÖSEREGELN' },
+  'rules.zipBombRulesHeader':     { en: 'ZIP BOMB TRIGGER RULES', de: 'ZIP-BOMBEN-AUSLÖSEREGELN' },
   'rules.tarpitOnWarn':           { en: 'Tarpit on WARN level', de: 'Tarpit bei WARN-Stufe' },
   'rules.tarpitOnWarnDesc':       { en: 'Apply tarpit delay when threat level reaches WARN', de: 'Tarpit-Verzögerung anwenden wenn Bedrohungsstufe WARN erreicht' },
   'rules.tarpitOnWarnTip':        { en: 'When enabled, IPs that reach WARN threat level (score ≥3) receive artificial response delays. This slows down potential attackers without fully blocking them.', de: 'Wenn aktiviert, erhalten IPs mit WARN-Bedrohungsstufe (Score ≥3) künstliche Antwortverzögerungen. Dies verlangsamt potenzielle Angreifer ohne sie vollständig zu blockieren.' },
@@ -225,6 +227,12 @@ const translations: Record<string, Record<Locale, string>> = {
   'rules.tarpitOnSuspiciousUaTip':{ en: 'Applies tarpit delays to requests from known attack tools (nikto, sqlmap, wfuzz, etc.) regardless of their current threat score.', de: 'Wendet Tarpit-Verzögerungen auf Anfragen von bekannten Angriffs-Tools (nikto, sqlmap, wfuzz etc.) an, unabhängig von ihrem aktuellen Bedrohungsscore.' },
   'rules.tarpitOnRobotsViolation':{ en: 'Tarpit on robots.txt violation', de: 'Tarpit bei robots.txt-Verstoß' },
   'rules.tarpitOnRobotsViolationDesc':{ en: 'Apply tarpit delay for bots ignoring Disallow rules', de: 'Tarpit-Verzögerung für Bots die Disallow-Regeln ignorieren' },
+  'rules.tarpitOnHoneytoken':     { en: 'Tarpit on honeytoken access', de: 'Tarpit bei Honeytoken-Zugriff' },
+  'rules.tarpitOnHoneytokenDesc': { en: 'Apply tarpit delay when decoy records are accessed', de: 'Tarpit-Verzögerung anwenden wenn Köder-Einträge aufgerufen werden' },
+  'rules.tarpitOnHoneytokenTip':  { en: 'Slows down attackers who access honeytoken records. Applied before other countermeasures to waste attacker time.', de: 'Verlangsamt Angreifer, die auf Honeytoken-Einträge zugreifen. Wird vor anderen Gegenmaßnahmen angewendet, um Angreifer-Zeit zu verschwenden.' },
+  'rules.tarpitOnBlock':          { en: 'Tarpit on BLOCK level', de: 'Tarpit bei BLOCK-Stufe' },
+  'rules.tarpitOnBlockDesc':      { en: 'Apply tarpit delay before blocking at BLOCK level', de: 'Tarpit-Verzögerung anwenden bevor bei BLOCK-Stufe gesperrt wird' },
+  'rules.tarpitOnBlockTip':       { en: 'Adds an extra delay before the block response is sent. Wastes maximum attacker time before they realize they are blocked.', de: 'Fügt eine zusätzliche Verzögerung hinzu bevor die Block-Antwort gesendet wird. Verschwendet maximale Angreifer-Zeit bevor sie merken, dass sie gesperrt sind.' },
   'rules.zipBombOnBlock':         { en: 'Zip bomb on BLOCK level', de: 'Zip-Bombe bei BLOCK-Stufe' },
   'rules.zipBombOnBlockDesc':     { en: 'Serve zip bomb payload when threat reaches BLOCK level', de: 'Zip-Bomben-Payload senden wenn Bedrohung BLOCK-Stufe erreicht' },
   'rules.zipBombOnBlockTip':      { en: 'When enabled and zip bomb is active, IPs that reach BLOCK level (score ≥12) receive a compressed junk payload instead of normal responses. Extremely aggressive — use with caution.', de: 'Wenn aktiviert und Zip-Bombe aktiv ist, erhalten IPs mit BLOCK-Stufe (Score ≥12) eine komprimierte Müll-Nutzlast statt normaler Antworten. Extrem aggressiv — mit Vorsicht verwenden.' },
@@ -234,6 +242,23 @@ const translations: Record<string, Record<Locale, string>> = {
   'rules.zipBombOnRepeatOffender':{ en: 'Zip bomb on repeat offenders', de: 'Zip-Bombe bei Wiederholungstätern' },
   'rules.zipBombOnRepeatOffenderDesc':{ en: 'Serve zip bomb to IPs with ≥3 blocked incidents', de: 'Zip-Bombe an IPs mit ≥3 blockierten Vorfällen senden' },
   'rules.zipBombOnRepeatOffenderTip':{ en: 'IPs that have been blocked 3 or more times are considered repeat offenders. When enabled, they receive zip bomb payloads on any subsequent access attempt.', de: 'IPs, die 3 oder mehr Mal gesperrt wurden, gelten als Wiederholungstäter. Wenn aktiviert, erhalten sie bei jedem weiteren Zugriffsversuch Zip-Bomben-Nutzlasten.' },
+  'rules.zipBombOnRobotsViolation':{ en: 'Zip bomb on robots.txt violation', de: 'Zip-Bombe bei robots.txt-Verstoß' },
+  'rules.zipBombOnRobotsViolationDesc':{ en: 'Serve zip bomb to bots violating robots.txt Disallow rules', de: 'Zip-Bombe an Bots senden die robots.txt-Disallow-Regeln verletzen' },
+  'rules.zipBombOnRobotsViolationTip':{ en: 'When enabled, any bot that ignores robots.txt Disallow rules receives a zip bomb payload. Very aggressive — ensure legitimate crawlers are not affected.', de: 'Wenn aktiviert, erhält jeder Bot der robots.txt-Disallow-Regeln ignoriert eine Zip-Bomben-Nutzlast. Sehr aggressiv — sicherstellen, dass legitime Crawler nicht betroffen sind.' },
+  'rules.zipBombOnSuspiciousUa':  { en: 'Zip bomb on suspicious User-Agent', de: 'Zip-Bombe bei verdächtigem User-Agent' },
+  'rules.zipBombOnSuspiciousUaDesc':{ en: 'Serve zip bomb to known hacking tools (sqlmap, nikto, etc.)', de: 'Zip-Bombe an bekannte Hacking-Tools senden (sqlmap, nikto etc.)' },
+  'rules.zipBombOnSuspiciousUaTip':{ en: 'When enabled, requests from known attack tools receive a zip bomb payload immediately. Only triggers for positively identified scanner User-Agents.', de: 'Wenn aktiviert, erhalten Anfragen von bekannten Angriffs-Tools sofort eine Zip-Bomben-Nutzlast. Löst nur bei positiv identifizierten Scanner-User-Agents aus.' },
+  'rules.zipBombOnRateLimit':     { en: 'Zip bomb on rate limit exceeded', de: 'Zip-Bombe bei Ratenbegrenzung überschritten' },
+  'rules.zipBombOnRateLimitDesc': { en: 'Serve zip bomb when client exceeds rate limit threshold', de: 'Zip-Bombe senden wenn Client Ratenbegrenzung überschreitet' },
+  'rules.zipBombOnRateLimitTip':  { en: 'When enabled, clients that exceed the rate limit receive a zip bomb instead of a standard 429 response. Extremely aggressive — may affect legitimate users behind shared IPs.', de: 'Wenn aktiviert, erhalten Clients die das Ratenlimit überschreiten eine Zip-Bombe statt einer Standard-429-Antwort. Extrem aggressiv — kann legitime Nutzer hinter geteilten IPs betreffen.' },
+
+  // ── Countermeasure result labels ───────────────────────────────────
+  'sec.countermeasureResult':     { en: 'Result:', de: 'Ergebnis:' },
+  'sec.resultZipBombSent':       { en: 'ZIP BOMB DELIVERED', de: 'ZIP-BOMBE ZUGESTELLT' },
+  'sec.resultTarpitted':         { en: 'DELAYED', de: 'VERZÖGERT' },
+  'sec.resultBlocked':           { en: 'BLOCKED (403)', de: 'GESPERRT (403)' },
+  'sec.resultRateLimited':       { en: 'RATE LIMITED (429)', de: 'GEDROSSELT (429)' },
+  'sec.resultLogged':            { en: 'LOGGED ONLY', de: 'NUR PROTOKOLLIERT' },
 
   // ── SQL Injection Backfire ────────────────────────────────────────
   'settings.sqlBackfire':         { en: 'SQL INJECTION BACKFIRE', de: 'SQL-INJECTION-BACKFIRE' },
