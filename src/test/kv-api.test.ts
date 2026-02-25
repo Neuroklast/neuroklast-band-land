@@ -189,6 +189,7 @@ describe('KV API handler', () => {
     it('saves value with valid session', async () => {
       mockValidateSession.mockResolvedValue(true)
       mockKvSet.mockResolvedValue('OK')
+      mockKvGet.mockResolvedValue(null)
       const res = mockRes()
       await handler({
         method: 'POST',
@@ -203,6 +204,7 @@ describe('KV API handler', () => {
     it('saves value with valid session (no x-admin-token needed)', async () => {
       mockValidateSession.mockResolvedValue(true)
       mockKvSet.mockResolvedValue('OK')
+      mockKvGet.mockResolvedValue(null)
       const res = mockRes()
       await handler({
         method: 'POST',
@@ -279,6 +281,58 @@ describe('KV API handler', () => {
         expect(res.status).toHaveBeenCalledWith(403)
         expect(mockKvSet).not.toHaveBeenCalled()
       })
+    })
+
+    // secretCode preservation — must not be stripped by the /secret/i sanitizer
+    it('preserves secretCode in band-data writes', async () => {
+      mockValidateSession.mockResolvedValue(true)
+      mockKvSet.mockResolvedValue('OK')
+      const res = mockRes()
+      await handler({
+        method: 'POST',
+        query: {},
+        body: { key: 'band-data', value: { name: 'NK', secretCode: ['ArrowUp', 'ArrowDown'] } },
+        headers: {},
+      }, res)
+      const savedValue = mockKvSet.mock.calls[0][1]
+      expect(savedValue.secretCode).toEqual(['ArrowUp', 'ArrowDown'])
+      expect(res.json).toHaveBeenCalledWith({ success: true })
+    })
+
+    // terminalCommands preservation — must be merged from existing KV data
+    it('preserves terminalCommands from existing KV data when not provided in write', async () => {
+      mockValidateSession.mockResolvedValue(true)
+      mockKvSet.mockResolvedValue('OK')
+      const existingCommands = [{ name: 'status', output: ['ACTIVE'] }]
+      mockKvGet.mockResolvedValue({ name: 'NK', terminalCommands: existingCommands })
+      const res = mockRes()
+      await handler({
+        method: 'POST',
+        query: {},
+        body: { key: 'band-data', value: { name: 'NK-Updated' } },
+        headers: {},
+      }, res)
+      const savedValue = mockKvSet.mock.calls[0][1]
+      expect(savedValue.terminalCommands).toEqual(existingCommands)
+      expect(savedValue.name).toBe('NK-Updated')
+      expect(res.json).toHaveBeenCalledWith({ success: true })
+    })
+
+    it('does not overwrite terminalCommands when explicitly provided in write', async () => {
+      mockValidateSession.mockResolvedValue(true)
+      mockKvSet.mockResolvedValue('OK')
+      const newCommands = [{ name: 'info', output: ['INFO'] }]
+      const res = mockRes()
+      await handler({
+        method: 'POST',
+        query: {},
+        body: { key: 'band-data', value: { name: 'NK', terminalCommands: newCommands } },
+        headers: {},
+      }, res)
+      const savedValue = mockKvSet.mock.calls[0][1]
+      expect(savedValue.terminalCommands).toEqual(newCommands)
+      // Should not have read from KV for existing data
+      expect(mockKvGet).not.toHaveBeenCalled()
     })
 
     it('returns 500 when kv.set throws', async () => {
