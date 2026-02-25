@@ -165,9 +165,26 @@ export default async function handler(req, res) {
       // to prevent accidental exposure since band-data is publicly readable.
       if (key === 'band-data' && value && typeof value === 'object' && !Array.isArray(value)) {
         const SENSITIVE_FIELD_PATTERNS = [/token/i, /secret/i, /password/i, /apikey/i, /api_key/i, /credential/i]
+        // Known-safe fields that match sensitive patterns but are not actual secrets
+        const SAFE_BAND_DATA_FIELDS = new Set(['secretCode'])
         const sanitized = Object.fromEntries(
-          Object.entries(value).filter(([k]) => !SENSITIVE_FIELD_PATTERNS.some(p => p.test(k)))
+          Object.entries(value).filter(([k]) => SAFE_BAND_DATA_FIELDS.has(k) || !SENSITIVE_FIELD_PATTERNS.some(p => p.test(k)))
         )
+
+        // Preserve terminalCommands from existing data when not provided in the
+        // incoming value.  Public (unauthenticated) GET responses strip this field
+        // for security, so a client that loaded the page before logging in will not
+        // have it in its state.  Without this merge the commands would be silently
+        // deleted on the next unrelated save.
+        if (!('terminalCommands' in sanitized)) {
+          try {
+            const existing = await kv.get(key)
+            if (existing && typeof existing === 'object' && Array.isArray(existing.terminalCommands)) {
+              sanitized.terminalCommands = existing.terminalCommands
+            }
+          } catch { /* ignore — best-effort preservation */ }
+        }
+
         await kv.set(key, sanitized)
         return res.json({ success: true })
       }
