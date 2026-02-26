@@ -53,23 +53,10 @@ async function downloadViaDriveProxy(
   fileName: string,
   onProgress: (progress: DownloadProgress) => void,
 ): Promise<void> {
-  // The API endpoint returns a 307 redirect to drive.google.com.
-  // We cannot fetch() cross-origin redirects to Google (CORS).
-  // Instead, trigger the download via a hidden <a> tag pointing to our API endpoint.
-  // The browser follows the redirect natively and downloads the file.
-  onProgress({ state: 'downloading', progress: 0 })
-
+  // The API endpoint proxies the Google Drive file and streams it back so we
+  // can track real download progress — no 307 redirects, no CORS issues.
   const downloadUrl = `/api/drive-download?fileId=${encodeURIComponent(fileId)}`
-  const a = document.createElement('a')
-  a.href = downloadUrl
-  a.download = fileName
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-
-  // Since we cannot track native browser download progress,
-  // mark as complete immediately after triggering
-  onProgress({ state: 'complete', progress: 1 })
+  return downloadDirect(downloadUrl, fileName, onProgress)
 }
 
 async function downloadDirect(

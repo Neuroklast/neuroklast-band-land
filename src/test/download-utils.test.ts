@@ -33,55 +33,56 @@ describe('extractDriveFileId', () => {
 })
 
 describe('downloadFile with Google Drive URLs', () => {
-  let appendChildSpy: ReturnType<typeof vi.spyOn>
-  let removeChildSpy: ReturnType<typeof vi.spyOn>
-  let clickSpy: ReturnType<typeof vi.fn>
+  let originalFetch: typeof globalThis.fetch
 
   beforeEach(() => {
-    // Mock document.body.appendChild and removeChild
-    appendChildSpy = vi.spyOn(document.body, 'appendChild')
-    removeChildSpy = vi.spyOn(document.body, 'removeChild')
-    
-    // Mock the click method on anchor elements
-    clickSpy = vi.fn()
-    const originalCreateElement = document.createElement.bind(document)
-    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-      const element = originalCreateElement(tagName)
-      if (tagName === 'a') {
-        element.click = clickSpy
-      }
-      return element
-    })
+    originalFetch = globalThis.fetch
   })
 
   afterEach(() => {
+    globalThis.fetch = originalFetch
     vi.restoreAllMocks()
   })
 
-  it('downloads Google Drive file via native browser download', async () => {
+  it('downloads Google Drive file via fetch-based proxy with progress', async () => {
     const fileId = 'abc123XYZ'
     const driveUrl = `https://drive.google.com/file/d/${fileId}/view`
     const fileName = 'test-file.zip'
     const progressUpdates: Array<{ state: string; progress: number }> = []
 
+    // Mock fetch to return a streamed response via our proxy
+    const body = new Uint8Array(100)
+    const mockResponse = new Response(body, {
+      status: 200,
+      headers: { 'Content-Length': '100' },
+    })
+    globalThis.fetch = vi.fn().mockResolvedValue(mockResponse)
+
+    // Mock blob download trigger
+    const clickSpy = vi.fn()
+    const originalCreateElement = document.createElement.bind(document)
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      const element = originalCreateElement(tagName)
+      if (tagName === 'a') element.click = clickSpy
+      return element
+    })
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
     await downloadFile(driveUrl, fileName, (progress) => {
       progressUpdates.push({ state: progress.state, progress: progress.progress })
     })
 
-    // Verify progress callbacks
-    expect(progressUpdates).toHaveLength(2)
+    // Should fetch through the proxy API endpoint
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      `/api/drive-download?fileId=${encodeURIComponent(fileId)}`,
+    )
+
+    // Verify progress callbacks include downloading states (not just instant complete)
     expect(progressUpdates[0]).toEqual({ state: 'downloading', progress: 0 })
-    expect(progressUpdates[1]).toEqual({ state: 'complete', progress: 1 })
+    expect(progressUpdates[progressUpdates.length - 1]).toEqual({ state: 'complete', progress: 1 })
 
-    // Verify an anchor element was created and clicked
-    expect(appendChildSpy).toHaveBeenCalledTimes(1)
+    // Verify blob download was triggered
     expect(clickSpy).toHaveBeenCalledTimes(1)
-    expect(removeChildSpy).toHaveBeenCalledTimes(1)
-
-    // Verify the anchor element has correct attributes
-    const anchorElement = appendChildSpy.mock.calls[0][0] as HTMLAnchorElement
-    expect(anchorElement.tagName).toBe('A')
-    expect(anchorElement.href).toContain(`/api/drive-download?fileId=${encodeURIComponent(fileId)}`)
-    expect(anchorElement.download).toBe(fileName)
   })
 })
