@@ -15,6 +15,48 @@ import { Readable } from 'node:stream'
 import { applyRateLimit } from './_ratelimit.js'
 import { driveDownloadQuerySchema, validate } from './_schemas.js'
 
+const MIME_TO_EXT = {
+  'application/pdf': '.pdf',
+  'application/zip': '.zip',
+  'application/x-zip-compressed': '.zip',
+  'application/x-rar-compressed': '.rar',
+  'application/x-7z-compressed': '.7z',
+  'application/x-tar': '.tar',
+  'application/gzip': '.gz',
+  'application/json': '.json',
+  'application/xml': '.xml',
+  'application/msword': '.doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+  'application/vnd.ms-excel': '.xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+  'application/vnd.ms-powerpoint': '.ppt',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+  'text/plain': '.txt',
+  'text/html': '.html',
+  'text/css': '.css',
+  'text/csv': '.csv',
+  'image/png': '.png',
+  'image/jpeg': '.jpg',
+  'image/gif': '.gif',
+  'image/webp': '.webp',
+  'image/svg+xml': '.svg',
+  'audio/mpeg': '.mp3',
+  'audio/wav': '.wav',
+  'audio/ogg': '.ogg',
+  'audio/flac': '.flac',
+  'audio/aac': '.aac',
+  'video/mp4': '.mp4',
+  'video/webm': '.webm',
+  'video/ogg': '.ogv',
+  'video/quicktime': '.mov',
+}
+
+function extensionFromContentType(contentType) {
+  if (!contentType) return ''
+  const base = contentType.split(';')[0].trim().toLowerCase()
+  return MIME_TO_EXT[base] || ''
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -59,7 +101,9 @@ export default async function handler(req, res) {
     // fileId is already validated to [A-Za-z0-9_-]+ by Zod; replace any
     // remaining quote characters as defense-in-depth.
     const safeId = fileId.replace(/"/g, '')
-    res.setHeader('Content-Disposition', `attachment; filename="${safeId}"`)
+    // Derive extension from Content-Type so the fallback filename isn't bare.
+    const ext = extensionFromContentType(contentType)
+    res.setHeader('Content-Disposition', `attachment; filename="${safeId}${ext}"`)
   }
 
   // Stream the body to the client.

@@ -1,3 +1,86 @@
+const MIME_TO_EXT: Record<string, string> = {
+  'application/pdf': '.pdf',
+  'application/zip': '.zip',
+  'application/x-zip-compressed': '.zip',
+  'application/x-rar-compressed': '.rar',
+  'application/x-7z-compressed': '.7z',
+  'application/x-tar': '.tar',
+  'application/gzip': '.gz',
+  'application/json': '.json',
+  'application/xml': '.xml',
+  'application/msword': '.doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+  'application/vnd.ms-excel': '.xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+  'application/vnd.ms-powerpoint': '.ppt',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+  'application/octet-stream': '',
+  'text/plain': '.txt',
+  'text/html': '.html',
+  'text/css': '.css',
+  'text/csv': '.csv',
+  'image/png': '.png',
+  'image/jpeg': '.jpg',
+  'image/gif': '.gif',
+  'image/webp': '.webp',
+  'image/svg+xml': '.svg',
+  'audio/mpeg': '.mp3',
+  'audio/wav': '.wav',
+  'audio/ogg': '.ogg',
+  'audio/flac': '.flac',
+  'audio/aac': '.aac',
+  'video/mp4': '.mp4',
+  'video/webm': '.webm',
+  'video/ogg': '.ogv',
+  'video/quicktime': '.mov',
+}
+
+/**
+ * Returns a file extension (e.g. ".pdf") for the given MIME type, or "" if unknown.
+ */
+export function extensionFromMime(mime: string): string {
+  const base = mime.split(';')[0].trim().toLowerCase()
+  return MIME_TO_EXT[base] ?? ''
+}
+
+const EXT_REGEX = /\.[a-zA-Z0-9]{1,10}$/
+
+/**
+ * Returns true if the filename already contains a recognized file extension.
+ */
+export function hasFileExtension(fileName: string): boolean {
+  return EXT_REGEX.test(fileName)
+}
+
+/**
+ * Ensures the filename has a proper file extension.
+ * If it already has one, return as-is. Otherwise try to derive one from the
+ * Content-Disposition header or the Content-Type header.
+ */
+export function ensureExtension(fileName: string, response: Response): string {
+  if (hasFileExtension(fileName)) return fileName
+
+  // Try Content-Disposition first (e.g. `attachment; filename="report.pdf"`)
+  const disposition = response.headers.get('Content-Disposition')
+  if (disposition) {
+    const match = disposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)"?/i)
+    if (match) {
+      const serverName = decodeURIComponent(match[1].trim())
+      const extMatch = serverName.match(EXT_REGEX)
+      if (extMatch) return fileName + extMatch[0]
+    }
+  }
+
+  // Fall back to Content-Type
+  const contentType = response.headers.get('Content-Type')
+  if (contentType) {
+    const ext = extensionFromMime(contentType)
+    if (ext) return fileName + ext
+  }
+
+  return fileName
+}
+
 /**
  * Extracts a Google Drive file ID from various URL formats.
  * Returns null if the URL is not a recognizable Google Drive link.
@@ -72,8 +155,9 @@ async function downloadDirect(
       throw new Error(`Download failed: ${response.status}`)
     }
 
+    const resolvedName = ensureExtension(fileName, response)
     const blob = await trackResponseProgress(response, onProgress)
-    triggerBlobDownload(blob, fileName)
+    triggerBlobDownload(blob, resolvedName)
     onProgress({ state: 'complete', progress: 1 })
   } catch (err) {
     // If fetch-based download fails (e.g. CORS), fall back to window.open
