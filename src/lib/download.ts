@@ -53,25 +53,41 @@ export function hasFileExtension(fileName: string): boolean {
 }
 
 /**
- * Ensures the filename has a proper file extension.
- * If it already has one, return as-is. Otherwise try to derive one from the
- * Content-Disposition header or the Content-Type header.
+ * Ensures the filename has the correct file extension matching the original file.
+ * The extension from the Content-Disposition header (i.e. the original file name on
+ * the server) always takes precedence, even when the filename already contains an
+ * extension.  This guarantees that files downloaded from Google Drive (or any other
+ * source that sets Content-Disposition) keep their original extension.
+ *
+ * Fallback order:
+ * 1. Extension from Content-Disposition header (always wins)
+ * 2. Extension from Content-Type header (only added when filename has none)
+ * 3. Return filename unchanged
  */
 export function ensureExtension(fileName: string, response: Response): string {
-  if (hasFileExtension(fileName)) return fileName
-
-  // Try Content-Disposition first (e.g. `attachment; filename="report.pdf"`)
+  // Try Content-Disposition first — this reflects the original file name on the
+  // server and should always be authoritative for the extension.
   const disposition = response.headers.get('Content-Disposition')
   if (disposition) {
     const match = disposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)"?/i)
     if (match) {
       const serverName = decodeURIComponent(match[1].trim())
       const extMatch = serverName.match(EXT_REGEX)
-      if (extMatch) return fileName + extMatch[0]
+      if (extMatch) {
+        // Replace any existing extension with the original one
+        const baseName = hasFileExtension(fileName)
+          ? fileName.replace(EXT_REGEX, '')
+          : fileName
+        return baseName + extMatch[0]
+      }
     }
   }
 
-  // Fall back to Content-Type
+  // If the filename already has an extension and there's no Content-Disposition
+  // to override it, keep as-is.
+  if (hasFileExtension(fileName)) return fileName
+
+  // Fall back to Content-Type (only when filename has no extension at all)
   const contentType = response.headers.get('Content-Type')
   if (contentType) {
     const ext = extensionFromMime(contentType)
