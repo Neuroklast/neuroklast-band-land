@@ -328,7 +328,15 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin size={16} className="flex-shrink-0 md:hidden" />
                         <MapPin size={18} className="flex-shrink-0 hidden md:block" />
-                        <span className="text-sm md:text-base break-words">{gig.location}</span>
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gig.venue + ', ' + gig.location)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm md:text-base break-words hover:text-primary transition-colors underline underline-offset-2 decoration-primary/30 hover:decoration-primary"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {gig.location}
+                        </a>
                       </div>
 
                       {gig.supportingArtists && gig.supportingArtists.length > 0 && (

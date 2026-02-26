@@ -1,12 +1,14 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Plus, X, UploadSimple } from '@phosphor-icons/react'
+import { Plus, X, UploadSimple, CheckCircle, WarningCircle, SpinnerGap } from '@phosphor-icons/react'
 import type { Gig } from '@/lib/types'
 import { toast } from 'sonner'
 import { toDirectImageUrl } from '@/lib/image-cache'
+
+type LocationStatus = 'idle' | 'validating' | 'valid' | 'invalid'
 
 interface GigEditDialogProps {
   gig: Gig | null
@@ -34,6 +36,34 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
   const [supportingArtists, setSupportingArtists] = useState<string[]>([])
   const [newArtist, setNewArtist] = useState('')
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle')
+  const locationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const validateLocation = useCallback((location: string) => {
+    if (locationTimerRef.current) clearTimeout(locationTimerRef.current)
+    if (!location.trim()) {
+      setLocationStatus('idle')
+      return
+    }
+    setLocationStatus('validating')
+    locationTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(location)}`,
+          { headers: { 'Accept': 'application/json' } }
+        )
+        if (!res.ok) { setLocationStatus('idle'); return }
+        const data = await res.json()
+        setLocationStatus(Array.isArray(data) && data.length > 0 ? 'valid' : 'invalid')
+      } catch {
+        setLocationStatus('idle')
+      }
+    }, 800)
+  }, [])
+
+  useEffect(() => {
+    return () => { if (locationTimerRef.current) clearTimeout(locationTimerRef.current) }
+  }, [])
 
   useEffect(() => {
     if (gig) {
@@ -185,14 +215,30 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
 
           <div>
             <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              required
-              className="bg-secondary border-input"
-              placeholder="City, Country"
-            />
+            <div className="relative">
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => {
+                  setFormData({ ...formData, location: e.target.value })
+                  validateLocation(e.target.value)
+                }}
+                required
+                className="bg-secondary border-input pr-8"
+                placeholder="City, Country"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                {locationStatus === 'validating' && <SpinnerGap size={16} className="text-muted-foreground animate-spin" />}
+                {locationStatus === 'valid' && <CheckCircle size={16} className="text-green-500" weight="fill" />}
+                {locationStatus === 'invalid' && <WarningCircle size={16} className="text-yellow-500" weight="fill" />}
+              </div>
+            </div>
+            {locationStatus === 'invalid' && (
+              <p className="text-[10px] text-yellow-500 mt-1 font-mono">Address not found – check spelling</p>
+            )}
+            {locationStatus === 'valid' && (
+              <p className="text-[10px] text-green-500 mt-1 font-mono">Address verified ✓</p>
+            )}
           </div>
 
           <div>
