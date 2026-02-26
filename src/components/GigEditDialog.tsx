@@ -10,6 +10,9 @@ import { toDirectImageUrl } from '@/lib/image-cache'
 
 type LocationStatus = 'idle' | 'validating' | 'valid' | 'invalid'
 
+const LOCATION_VALIDATION_DEBOUNCE_MS = 800
+const NOMINATIM_SEARCH_URL = 'https://nominatim.openstreetmap.org/search'
+
 interface GigEditDialogProps {
   gig: Gig | null
   onSave: (gig: Gig) => void
@@ -49,7 +52,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
     locationTimerRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(location)}`,
+          `${NOMINATIM_SEARCH_URL}?format=json&limit=1&q=${encodeURIComponent(location)}`,
           { headers: { 'Accept': 'application/json' } }
         )
         if (!res.ok) { setLocationStatus('idle'); return }
@@ -58,7 +61,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
       } catch {
         setLocationStatus('idle')
       }
-    }, 800)
+    }, LOCATION_VALIDATION_DEBOUNCE_MS)
   }, [])
 
   useEffect(() => {

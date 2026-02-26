@@ -30,6 +30,8 @@ interface NewsSectionProps {
 }
 
 const INITIAL_VISIBLE_COUNT = 3
+const TEXT_TRUNCATE_THRESHOLD = 120
+const DETAILS_TRUNCATE_THRESHOLD = 100
 
 /** Safely render markdown to sanitized HTML */
 function renderMarkdown(text: string): string {
@@ -190,7 +192,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                         LINK
                       </a>
                     )}
-                    {!editMode && (item.text.length > 120 || (item.details && item.details.length > 100)) && (
+                    {!editMode && (item.text.length > TEXT_TRUNCATE_THRESHOLD || (item.details && item.details.length > DETAILS_TRUNCATE_THRESHOLD)) && (
                       <p className="text-[10px] text-primary/50 mt-2 font-mono tracking-wider">CLICK TO READ MORE</p>
                     )}
                   </div>
