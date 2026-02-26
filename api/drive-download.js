@@ -56,7 +56,10 @@ export default async function handler(req, res) {
   if (contentDisposition) {
     res.setHeader('Content-Disposition', contentDisposition)
   } else {
-    res.setHeader('Content-Disposition', `attachment; filename="${fileId}"`)
+    // fileId is already validated to [A-Za-z0-9_-]+ by Zod; replace any
+    // remaining quote characters as defense-in-depth.
+    const safeId = fileId.replace(/"/g, '')
+    res.setHeader('Content-Disposition', `attachment; filename="${safeId}"`)
   }
 
   // Stream the body to the client.

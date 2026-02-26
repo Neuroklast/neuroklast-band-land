@@ -82,6 +82,12 @@ describe('downloadFile with Google Drive URLs', () => {
     expect(progressUpdates[0]).toEqual({ state: 'downloading', progress: 0 })
     expect(progressUpdates[progressUpdates.length - 1]).toEqual({ state: 'complete', progress: 1 })
 
+    // Verify intermediate progress was reported (streaming tracks real progress)
+    const intermediates = progressUpdates.filter(
+      p => p.state === 'downloading' && p.progress > 0 && p.progress < 1,
+    )
+    expect(intermediates.length).toBeGreaterThan(0)
+
     // Verify blob download was triggered
     expect(clickSpy).toHaveBeenCalledTimes(1)
   })
