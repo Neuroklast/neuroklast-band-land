@@ -43,11 +43,13 @@ export function extensionFromMime(mime: string): string {
   return MIME_TO_EXT[base] ?? ''
 }
 
+const EXT_REGEX = /\.[a-zA-Z0-9]{1,10}$/
+
 /**
  * Returns true if the filename already contains a recognized file extension.
  */
 export function hasFileExtension(fileName: string): boolean {
-  return /\.[a-zA-Z0-9]{1,10}$/.test(fileName)
+  return EXT_REGEX.test(fileName)
 }
 
 /**
@@ -64,8 +66,8 @@ export function ensureExtension(fileName: string, response: Response): string {
     const match = disposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)"?/i)
     if (match) {
       const serverName = decodeURIComponent(match[1].trim())
-      const extMatch = serverName.match(/(\.[a-zA-Z0-9]{1,10})$/)
-      if (extMatch) return fileName + extMatch[1]
+      const extMatch = serverName.match(EXT_REGEX)
+      if (extMatch) return fileName + extMatch[0]
     }
   }
 
