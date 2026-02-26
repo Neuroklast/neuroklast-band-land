@@ -132,7 +132,7 @@ describe('hasFileExtension', () => {
 })
 
 describe('ensureExtension', () => {
-  it('keeps filename unchanged when it already has an extension', () => {
+  it('keeps filename unchanged when it already has an extension and no Content-Disposition', () => {
     const response = new Response('', {
       headers: { 'Content-Type': 'application/pdf' },
     })
@@ -178,5 +178,25 @@ describe('ensureExtension', () => {
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     })
     expect(ensureExtension('notes', response)).toBe('notes.txt')
+  })
+
+  it('replaces existing extension with Content-Disposition extension', () => {
+    const response = new Response('', {
+      headers: {
+        'Content-Type': 'audio/wav',
+        'Content-Disposition': 'attachment; filename="original-track.wav"',
+      },
+    })
+    expect(ensureExtension('track.mp3', response)).toBe('track.wav')
+  })
+
+  it('replaces wrong extension when Content-Disposition provides the original', () => {
+    const response = new Response('', {
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': 'attachment; filename="archive.zip"',
+      },
+    })
+    expect(ensureExtension('press-kit.pdf', response)).toBe('press-kit.zip')
   })
 })

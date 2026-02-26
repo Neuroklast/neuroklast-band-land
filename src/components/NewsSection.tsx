@@ -1,14 +1,17 @@
-import { motion, useInView } from 'framer-motion'
-import { Plus, Trash, PencilSimple, ArrowSquareOut } from '@phosphor-icons/react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { Plus, Trash, PencilSimple, ArrowSquareOut, TextB, TextItalic, TextHOne, LinkSimple, ListBullets } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import ProgressiveImage from '@/components/ProgressiveImage'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { format } from 'date-fns'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import type { NewsItem, SectionLabels } from '@/lib/types'
 import {
   TITLE_TYPING_SPEED_MS,
@@ -27,12 +30,36 @@ interface NewsSectionProps {
 }
 
 const INITIAL_VISIBLE_COUNT = 3
+const TEXT_TRUNCATE_THRESHOLD = 120
+const DETAILS_TRUNCATE_THRESHOLD = 100
+
+/** Safely render markdown to sanitized HTML */
+function renderMarkdown(text: string): string {
+  const raw = marked.parse(text, { async: false }) as string
+  return DOMPurify.sanitize(raw)
+}
+
+/** Format a news date for display */
+function formatNewsDate(date: string): string {
+  if (!date) return '---'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) {
+    if (/^\d{4}-\d{2}$/.test(date)) {
+      const [year, month] = date.split('-')
+      const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+      return `${monthNames[parseInt(month) - 1]} ${year}`
+    }
+    return date
+  }
+  return format(d, 'dd.MM.yyyy')
+}
 
 export default function NewsSection({ news = [], editMode, onUpdate, sectionLabels, onLabelChange }: NewsSectionProps) {
   const [glitchActive, setGlitchActive] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [editingItem, setEditingItem] = useState<NewsItem | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const titleText = sectionLabels?.news || 'NEWS'
@@ -129,27 +156,14 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
-              className="border border-border hover:border-primary/50 bg-card/50 p-4 md:p-5 transition-all duration-300 hud-element hud-corner group"
+              className="border border-border hover:border-primary/50 bg-card/50 p-4 md:p-5 transition-all duration-300 hud-element hud-corner group cursor-pointer"
+              onClick={() => !editMode && setSelectedNews(item)}
             >
               <span className="corner-bl"></span>
               <span className="corner-br"></span>
               <div className="flex flex-col">
                 <div className="font-mono text-[10px] text-primary/60 tracking-wider whitespace-nowrap flex-shrink-0 mb-3">
-                  {(() => {
-                    if (!item.date) return '---'
-                    const d = new Date(item.date)
-                    // Check if it's a valid date
-                    if (isNaN(d.getTime())) {
-                      // If date is in YYYY-MM format, show just month and year
-                      if (/^\d{4}-\d{2}$/.test(item.date)) {
-                        const [year, month] = item.date.split('-')
-                        const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-                        return `${monthNames[parseInt(month) - 1]} ${year}`
-                      }
-                      return item.date
-                    }
-                    return format(d, 'dd.MM.yyyy')
-                  })()}
+                  {formatNewsDate(item.date)}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
                   {item.photo && (
@@ -162,9 +176,9 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-base md:text-lg font-medium text-foreground/90 leading-relaxed">{item.text}</p>
+                    <p className="text-base md:text-lg font-medium text-foreground/90 leading-relaxed line-clamp-2">{item.text}</p>
                     {item.details && (
-                      <p className="text-sm md:text-base text-muted-foreground mt-2 leading-relaxed">{item.details}</p>
+                      <p className="text-sm md:text-base text-muted-foreground mt-2 leading-relaxed line-clamp-2">{item.details}</p>
                     )}
                     {item.link && (
                       <a
@@ -172,22 +186,26 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-2 font-mono tracking-wider transition-colors"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <ArrowSquareOut size={12} />
                         LINK
                       </a>
                     )}
+                    {!editMode && (item.text.length > TEXT_TRUNCATE_THRESHOLD || (item.details && item.details.length > DETAILS_TRUNCATE_THRESHOLD)) && (
+                      <p className="text-[10px] text-primary/50 mt-2 font-mono tracking-wider">CLICK TO READ MORE</p>
+                    )}
                   </div>
                   {editMode && (
                     <div className="flex gap-1 flex-shrink-0">
                       <button
-                        onClick={() => setEditingItem(item)}
+                        onClick={(e) => { e.stopPropagation(); setEditingItem(item) }}
                         className="p-1 text-muted-foreground hover:text-primary transition-colors"
                       >
                         <PencilSimple size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(item.id) }}
                         className="p-1 text-muted-foreground hover:text-destructive transition-colors"
                       >
                         <Trash size={16} />
@@ -232,8 +250,145 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
           onClose={() => { setEditingItem(null); setIsAdding(false) }}
         />
       )}
+
+      <AnimatePresence>
+        {selectedNews && (
+          <NewsDetailOverlay
+            item={selectedNews}
+            onClose={() => setSelectedNews(null)}
+            sectionLabels={sectionLabels}
+          />
+        )}
+      </AnimatePresence>
     </section>
   )
+}
+
+/** Full-screen overlay showing a single news item with full text */
+function NewsDetailOverlay({ item, onClose, sectionLabels }: {
+  item: NewsItem
+  onClose: () => void
+  sectionLabels?: SectionLabels
+}) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  const detailsHtml = useMemo(
+    () => item.details ? renderMarkdown(item.details) : '',
+    [item.details]
+  )
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 md:p-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
+
+      <motion.div
+        className="w-full max-w-2xl bg-card border border-primary/30 relative overflow-hidden flex flex-col max-h-[90dvh]"
+        initial={{ scale: 0.85, y: 30, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.85, y: 30, opacity: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* HUD corner accents */}
+        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
+        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
+
+        {/* Header bar */}
+        <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
+              NEWS // {formatNewsDate(item.date)}
+            </span>
+          </div>
+          <CyberCloseButton
+            onClick={onClose}
+            label={sectionLabels?.closeButtonText || 'CLOSE'}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="overflow-y-auto p-6 space-y-4">
+          {item.photo && (
+            <div className="w-full max-h-64 overflow-hidden rounded-sm border border-primary/20">
+              <ProgressiveImage
+                src={item.photo}
+                alt={item.text}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          <h3 className="text-xl md:text-2xl font-bold text-foreground/95 leading-relaxed">
+            {item.text}
+          </h3>
+
+          {item.details && (
+            <div
+              className="text-sm md:text-base text-foreground/80 leading-relaxed prose prose-invert prose-sm max-w-none prose-headings:text-primary prose-a:text-primary prose-strong:text-foreground/90"
+              dangerouslySetInnerHTML={{ __html: detailsHtml }}
+            />
+          )}
+
+          {item.link && (
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
+            >
+              <ArrowSquareOut size={16} />
+              OPEN LINK
+            </a>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center gap-2 text-[9px] text-primary/40 px-4 py-2 border-t border-primary/20 flex-shrink-0">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
+          <span>NEWS ENTRY</span>
+          <span className="ml-auto">NK-NEWS v1.0</span>
+        </div>
+
+        {/* Scanline overlay */}
+        <div className="absolute inset-0 hud-scanline pointer-events-none opacity-10" />
+      </motion.div>
+    </motion.div>
+  )
+}
+
+/** Insert markdown formatting around selected text in a textarea */
+function insertFormatting(
+  textarea: HTMLTextAreaElement,
+  prefix: string,
+  suffix: string,
+  placeholder: string,
+  setValue: (v: string) => void,
+) {
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  const text = textarea.value
+  const selected = text.slice(start, end) || placeholder
+  const newText = text.slice(0, start) + prefix + selected + suffix + text.slice(end)
+  setValue(newText)
+  // Restore cursor position after React re-render
+  requestAnimationFrame(() => {
+    textarea.focus()
+    const cursorPos = start + prefix.length + selected.length
+    textarea.setSelectionRange(cursorPos, cursorPos)
+  })
 }
 
 function NewsEditDialog({ item, onSave, onClose }: {
@@ -241,6 +396,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
   onSave: (item: NewsItem) => void
   onClose: () => void
 }) {
+  const detailsRef = useRef<HTMLTextAreaElement>(null)
   const [formData, setFormData] = useState<NewsItem>(
     item || { id: `news-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, date: new Date().toISOString().slice(0, 7), text: '' }
   )
@@ -318,13 +474,56 @@ function NewsEditDialog({ item, onSave, onClose }: {
             />
           </div>
           <div>
-            <Label className="text-[10px]">Details (optional)</Label>
+            <Label className="text-[10px]">Details (optional, supports Markdown)</Label>
+            <div className="flex gap-1 mb-1">
+              <button
+                type="button"
+                title="Bold"
+                onClick={() => detailsRef.current && insertFormatting(detailsRef.current, '**', '**', 'bold text', (v) => setFormData({ ...formData, details: v || undefined }))}
+                className="p-1 border border-border rounded-sm text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+              >
+                <TextB size={14} />
+              </button>
+              <button
+                type="button"
+                title="Italic"
+                onClick={() => detailsRef.current && insertFormatting(detailsRef.current, '*', '*', 'italic text', (v) => setFormData({ ...formData, details: v || undefined }))}
+                className="p-1 border border-border rounded-sm text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+              >
+                <TextItalic size={14} />
+              </button>
+              <button
+                type="button"
+                title="Heading"
+                onClick={() => detailsRef.current && insertFormatting(detailsRef.current, '## ', '', 'Heading', (v) => setFormData({ ...formData, details: v || undefined }))}
+                className="p-1 border border-border rounded-sm text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+              >
+                <TextHOne size={14} />
+              </button>
+              <button
+                type="button"
+                title="Link"
+                onClick={() => detailsRef.current && insertFormatting(detailsRef.current, '[', '](https://)', 'link text', (v) => setFormData({ ...formData, details: v || undefined }))}
+                className="p-1 border border-border rounded-sm text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+              >
+                <LinkSimple size={14} />
+              </button>
+              <button
+                type="button"
+                title="Bullet List"
+                onClick={() => detailsRef.current && insertFormatting(detailsRef.current, '- ', '', 'list item', (v) => setFormData({ ...formData, details: v || undefined }))}
+                className="p-1 border border-border rounded-sm text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+              >
+                <ListBullets size={14} />
+              </button>
+            </div>
             <textarea
+              ref={detailsRef}
               value={formData.details || ''}
               onChange={(e) => setFormData({ ...formData, details: e.target.value || undefined })}
-              className="flex w-full rounded-sm border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[60px] resize-y"
-              rows={3}
-              placeholder="Additional details..."
+              className="flex w-full rounded-sm border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[100px] resize-y font-mono"
+              rows={5}
+              placeholder="Additional details... (supports **bold**, *italic*, ## headings, [links](url), - lists)"
             />
           </div>
           <div>
