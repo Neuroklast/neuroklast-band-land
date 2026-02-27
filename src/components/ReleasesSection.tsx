@@ -1,6 +1,6 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
-import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise } from '@phosphor-icons/react'
+import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise, ShareNetwork } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -73,6 +73,31 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
     }
   }, [hasAutoLoaded, releases, dataLoaded])
 
+  // Deep-link: open a specific release when the page loads with #releases/{id}
+  useEffect(() => {
+    if (!releases || releases.length === 0) return
+    const hash = window.location.hash
+    const match = hash.match(/^#releases\/(.+)$/)
+    if (match) {
+      const target = releases.find(r => r.id === match[1])
+      if (target) setExpandedReleaseId(target.id)
+    }
+  }, [releases])
+
+  // Listen for hash changes for release deep-links
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash
+      const match = hash.match(/^#releases\/(.+)$/)
+      if (match) {
+        const target = (releases || []).find(r => r.id === match[1])
+        if (target) setExpandedReleaseId(target.id)
+      }
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [releases])
+
   const sortedReleases = [...(releases || [])].sort(
     (a, b) => {
       // Featured releases are shown first
@@ -120,6 +145,29 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
     setEditingRelease(null)
     setIsAdding(false)
   }
+
+  const handleShareRelease = useCallback(async (release: Release) => {
+    const shareUrl = `${window.location.origin}/share/release/${release.id}`
+    const title = release.title
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: title, url: shareUrl })
+        return
+      } catch { /* cancelled — fall through to clipboard */ }
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success('Link copied')
+    } catch {
+      const input = document.createElement('input')
+      input.value = shareUrl
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      toast.success('Link copied')
+    }
+  }, [])
 
   const handleFetchITunesReleases = async (isAutoLoad = false) => {
     setIsFetching(true)
@@ -348,9 +396,20 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                           <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">RELEASE // {release.title.toUpperCase()}</span>
                         </div>
-                        <CyberCloseButton
-                          onClick={() => { triggerTransition(); setExpandedReleaseId(null) }}
-                        />
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleShareRelease(release)}
+                            className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors tracking-wider"
+                            title="Share"
+                            aria-label={`Share ${release.title}`}
+                          >
+                            <ShareNetwork size={12} />
+                            SHARE
+                          </button>
+                          <CyberCloseButton
+                            onClick={() => { triggerTransition(); setExpandedReleaseId(null) }}
+                          />
+                        </div>
                       </div>
 
                       <div className="flex flex-col items-center gap-4 p-6">

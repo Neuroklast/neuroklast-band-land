@@ -1,12 +1,12 @@
 import { motion, useInView } from 'framer-motion'
-import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise, FacebookLogo, InstagramLogo, Link, MusicNote } from '@phosphor-icons/react'
+import { CalendarDots, MapPin, Ticket, Plus, Trash, ArrowsClockwise, FacebookLogo, InstagramLogo, Link, MusicNote, ShareNetwork } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import FontSizePicker from '@/components/FontSizePicker'
 import type { Gig, FontSizeSettings, SectionLabels } from '@/lib/types'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import GigEditDialog from './GigEditDialog'
 import { format, isPast } from 'date-fns'
 import { toast } from 'sonner'
@@ -31,6 +31,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const [showAllGigs, setShowAllGigs] = useState(false)
+  const [highlightedGigId, setHighlightedGigId] = useState<string | null>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true })
   useTrackSection('gigs')
@@ -60,6 +61,34 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
       setHasLoadedOnce(true)
     }
   }, [dataLoaded])
+
+  // Deep-link: highlight and scroll to a specific gig when page loads with #gigs/{id}
+  const handleGigDeepLink = useCallback((hash: string) => {
+    const match = hash.match(/^#gigs\/(.+)$/)
+    if (!match) return
+    const targetId = match[1]
+    const target = (gigs || []).find(g => g.id === targetId)
+    if (!target) return
+    if (isPast(new Date(target.date))) setShowAllGigs(true)
+    setHighlightedGigId(targetId)
+    setTimeout(() => {
+      const el = document.getElementById(`gig-${targetId}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => setHighlightedGigId(null), 3000)
+    }, 300)
+  }, [gigs])
+
+  useEffect(() => {
+    if (!gigs || gigs.length === 0) return
+    handleGigDeepLink(window.location.hash)
+  }, [gigs, handleGigDeepLink])
+
+  // Listen for hash changes for gig deep-links
+  useEffect(() => {
+    const onHashChange = () => handleGigDeepLink(window.location.hash)
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [handleGigDeepLink])
 
   const loadGigsFromAPI = async (isAutoLoad = false) => {
     setIsLoading(true)
@@ -110,6 +139,30 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
     setEditingGig(null)
     setIsAdding(false)
   }
+
+  const handleShareGig = useCallback(async (gig: Gig) => {
+    const shareUrl = `${window.location.origin}/share/gig/${gig.id}`
+    const title = `${gig.venue} – ${gig.location}`
+    const dateStr = (() => { try { return format(new Date(gig.date), 'dd.MM.yyyy') } catch { return gig.date } })()
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: `${title} – ${dateStr}`, url: shareUrl })
+        return
+      } catch { /* cancelled — fall through to clipboard */ }
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success('Link copied')
+    } catch {
+      const input = document.createElement('input')
+      input.value = shareUrl
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      toast.success('Link copied')
+    }
+  }, [])
 
   return (
     <section ref={sectionRef} className="py-24 px-4 bg-gradient-to-b from-background via-background to-secondary/5" id="gigs">
@@ -205,11 +258,12 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
             {upcomingGigs.map((gig, index) => (
               <motion.div
                 key={gig.id}
+                id={`gig-${gig.id}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="p-4 md:p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group relative overflow-hidden touch-manipulation active:scale-[0.99] hud-element hud-corner hud-scanline">
+                <Card className={`p-4 md:p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group relative overflow-hidden touch-manipulation active:scale-[0.99] hud-element hud-corner hud-scanline${highlightedGigId === gig.id ? ' ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}>
                   <span className="corner-bl"></span>
                   <span className="corner-br"></span>
                   
@@ -261,8 +315,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                         </div>
                       </div>
 
-                      {(editMode || gig.ticketUrl || gig.eventLinks) && (
-                        <div className="flex items-center gap-2 sm:flex-shrink-0 flex-wrap">
+                      <div className="flex items-center gap-2 sm:flex-shrink-0 flex-wrap">
                           {editMode && (
                             <>
                               <Button
@@ -307,6 +360,16 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                               )}
                             </>
                           )}
+                          {!editMode && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleShareGig(gig) }}
+                              className="text-muted-foreground hover:text-primary transition-colors"
+                              title="Share"
+                              aria-label={`Share ${gig.venue} gig`}
+                            >
+                              <ShareNetwork size={22} />
+                            </button>
+                          )}
                           {gig.ticketUrl && !editMode && (
                             <Button
                               asChild
@@ -319,7 +382,6 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                             </Button>
                           )}
                         </div>
-                      )}
                     </div>
                     
                     <div className="pl-0 sm:pl-9 md:pl-12">
