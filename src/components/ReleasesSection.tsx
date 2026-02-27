@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { useTrackSection } from '@/hooks/use-track-section'
 import FontSizePicker from '@/components/FontSizePicker'
+import { useLocale } from '@/contexts/LocaleContext'
 
 import { useTouchSwipe } from '@/hooks/use-touch-swipe'
 
@@ -33,6 +34,7 @@ interface ReleasesSectionProps {
 }
 
 export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: ReleasesSectionProps) {
+  const { t } = useLocale()
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -47,7 +49,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
   useTrackSection('releases')
 
-  const titleText = sectionLabels?.releases || 'RELEASES'
+  const titleText = sectionLabels?.releases || t('releases.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -273,7 +275,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                   type="text"
                   value={sectionLabels?.releases || ''}
                   onChange={(e) => onLabelChange('releases', e.target.value)}
-                  placeholder="RELEASES"
+                  placeholder={t('releases.defaultTitle')}
                   className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
                 />
               )}
@@ -284,14 +286,14 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                 className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
               >
                 <ArrowsClockwise className={`${isFetching ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
-                <span className="hidden md:inline">{isFetching ? 'Fetching...' : 'Sync iTunes'}</span>
+                <span className="hidden md:inline">{isFetching ? t('releases.fetching') : t('releases.syncItunes')}</span>
               </Button>
               <Button
                 onClick={() => setIsAdding(true)}
                 className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
               >
                 <Plus className="mr-0 md:mr-2" size={20} />
-                <span className="hidden md:inline">Add Release</span>
+                <span className="hidden md:inline">{t('releases.addRelease')}</span>
               </Button>
             </div>
           )}
@@ -314,7 +316,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
             transition={{ duration: 0.6 }}
           >
             <MusicNote size={64} className="mx-auto mb-6 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground text-lg">No releases yet.</p>
+            <p className="text-muted-foreground text-lg">{t('releases.noReleases')}</p>
           </motion.div>
         ) : (
           <>
@@ -362,7 +364,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                           <p className="text-[10px] text-muted-foreground mt-0.5">
                             {release.releaseDate
                               ? format(new Date(release.releaseDate), 'MMM yyyy')
-                              : 'Upcoming'}
+                              : t('releases.upcoming')}
                           </p>
                         </div>
                       </div>
@@ -404,7 +406,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                             aria-label={`Share ${release.title}`}
                           >
                             <ShareNetwork size={12} />
-                            SHARE
+                            {t('releases.share')}
                           </button>
                           <CyberCloseButton
                             onClick={() => { triggerTransition(); setExpandedReleaseId(null) }}
@@ -428,7 +430,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                           <p className="text-xs text-muted-foreground mt-1">
                             {release.releaseDate
                               ? format(new Date(release.releaseDate), 'MMMM yyyy')
-                              : 'Upcoming Release'}
+                              : t('releases.upcomingRelease')}
                           </p>
                         </div>
                         {release.streamingLinks && (
@@ -469,8 +471,8 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                         )}
                         <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-1 w-full">
                           <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
-                          <span>STREAM ACTIVE</span>
-                          <span className="ml-auto">NK-SYS v1.3.37</span>
+                          <span>{t('releases.streamActive')}</span>
+                          <span className="ml-auto">{t('releases.version')}</span>
                         </div>
                       </div>
                     </motion.div>
@@ -524,7 +526,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                         <p className="text-xs md:text-sm text-muted-foreground">
                           {release.releaseDate
                             ? format(new Date(release.releaseDate), 'MMMM yyyy')
-                            : 'Upcoming Release'}
+                            : t('releases.upcomingRelease')}
                         </p>
                       </div>
 
@@ -562,7 +564,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                   onClick={() => setShowAllDesktop(!showAllDesktop)}
                   className="border-primary/30 hover:bg-primary/10 hover:border-primary transition-all"
                 >
-                  {showAllDesktop ? `Show Less` : `Show More (${sortedReleases.length - DESKTOP_INITIAL_COUNT} more)`}
+                  {showAllDesktop ? t('releases.showLess') : t('releases.showMore').replace('{0}', String(sortedReleases.length - DESKTOP_INITIAL_COUNT))}
                 </Button>
               </div>
             )}
@@ -578,7 +580,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-bold line-clamp-1">{release.title}</h3>
                       <p className="text-[10px] text-muted-foreground">
-                        {release.releaseDate ? format(new Date(release.releaseDate), 'MMM yyyy') : 'Upcoming'}
+                        {release.releaseDate ? format(new Date(release.releaseDate), 'MMM yyyy') : t('releases.upcoming')}
                       </p>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
