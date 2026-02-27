@@ -209,6 +209,26 @@ export interface NewsletterSettings {
   showAfterGigs?: boolean
 }
 
+export interface ContactMessage {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  date: string // ISO 8601
+  read?: boolean
+}
+
+export interface ContactSettings {
+  enabled?: boolean
+  title?: string
+  description?: string
+  emailForwardTo?: string
+  successMessage?: string
+  /** Show the contact section on the public site */
+  showSection?: boolean
+}
+
 /** Controls visibility of individual sections and UI elements */
 export interface SectionVisibility {
   news?: boolean
@@ -219,6 +239,7 @@ export interface SectionVisibility {
   media?: boolean
   social?: boolean
   partnersAndFriends?: boolean
+  contact?: boolean
   hudBackground?: boolean
   audioVisualizer?: boolean
   scanline?: boolean
@@ -264,6 +285,8 @@ export interface BandData {
   sectionVisibility?: SectionVisibility
   /** Newsletter settings */
   newsletterSettings?: NewsletterSettings
+  /** Contact form settings */
+  contactSettings?: ContactSettings
   /** Morse code sequence (dots and dashes) that opens the secret terminal */
   terminalMorseCode?: string
 }
@@ -308,6 +331,7 @@ export interface SectionLabels {
   connect?: string
   media?: string
   news?: string
+  contact?: string
   partnersAndFriends?: string
   profileStatusText?: string
   sessionStatusText?: string

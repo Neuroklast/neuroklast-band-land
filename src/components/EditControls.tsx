@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -30,6 +30,9 @@ interface EditControlsProps {
   onOpenThemeCustomizer?: () => void
   onOpenTerminalSettings?: () => void
   onOpenTerminal?: () => void
+  onOpenContactInbox?: () => void
+  onOpenSubscribers?: () => void
+  onOpenMarketingTools?: () => void
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -41,7 +44,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer, onOpenTerminalSettings, onOpenTerminal }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer, onOpenTerminalSettings, onOpenTerminal, onOpenContactInbox, onOpenSubscribers, onOpenMarketingTools }: EditControlsProps) {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -334,6 +337,36 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 >
                   <Terminal size={20} weight="fill" />
                   <span className="text-[9px] font-mono leading-none">OPEN TERMINAL</span>
+                </Button>
+              )}
+              {onOpenContactInbox && (
+                <Button
+                  onClick={onOpenContactInbox}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  title="Contact inbox"
+                >
+                  <Envelope size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">INBOX</span>
+                </Button>
+              )}
+              {onOpenSubscribers && (
+                <Button
+                  onClick={onOpenSubscribers}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  title="Newsletter subscribers"
+                >
+                  <Users size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">SUBSCRIBERS</span>
+                </Button>
+              )}
+              {onOpenMarketingTools && (
+                <Button
+                  onClick={onOpenMarketingTools}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  title="Marketing tools"
+                >
+                  <Megaphone size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">MARKETING</span>
                 </Button>
               )}
             </motion.div>

@@ -181,6 +181,7 @@ const SECTION_LABELS: Record<keyof SectionVisibility, string> = {
   media: 'Media Section',
   social: 'Social / Connect Section',
   partnersAndFriends: 'Partners & Friends Section',
+  contact: 'Contact Form Section',
   hudBackground: 'HUD Background Overlay',
   audioVisualizer: 'Audio Visualizer',
   scanline: 'CRT Scanline Effect',

@@ -39,6 +39,10 @@ import AttackerProfileDialog from '@/components/AttackerProfileDialog'
 import { MovingScanline } from '@/components/MovingScanline'
 import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import NewsletterWidget from '@/components/NewsletterWidget'
+import ContactSection from '@/components/ContactSection'
+import ContactInboxDialog from '@/components/ContactInboxDialog'
+import SubscriberListDialog from '@/components/SubscriberListDialog'
+import MarketingToolsDialog from '@/components/MarketingToolsDialog'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -117,6 +121,9 @@ function App() {
   const [selectedAttackerIp, setSelectedAttackerIp] = useState<string>('')
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false)
   const [showTerminalSettings, setShowTerminalSettings] = useState(false)
+  const [showContactInbox, setShowContactInbox] = useState(false)
+  const [showSubscribers, setShowSubscribers] = useState(false)
+  const [showMarketingTools, setShowMarketingTools] = useState(false)
 
   // Apply CRT effects
   useCRTEffects()
@@ -553,6 +560,22 @@ function App() {
               </motion.div>
               )}
 
+              {(vis.contact !== false || (editMode && isOwner)) && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.45 }}
+              >
+                <ContactSection
+                  contactSettings={data.contactSettings}
+                  editMode={editMode && isOwner}
+                  onUpdate={(contactSettings) => setBandData((current) => ({ ...(current || defaultBandData), contactSettings }))}
+                  sectionLabels={data.sectionLabels}
+                  onLabelChange={handleLabelChange}
+                />
+              </motion.div>
+              )}
+
               {vis.partnersAndFriends !== false && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -620,6 +643,9 @@ function App() {
                 onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}
                 onOpenTerminalSettings={() => setShowTerminalSettings(true)}
                 onOpenTerminal={() => setTerminalOpen(true)}
+                onOpenContactInbox={() => setShowContactInbox(true)}
+                onOpenSubscribers={() => setShowSubscribers(true)}
+                onOpenMarketingTools={() => setShowMarketingTools(true)}
               />
             )}
 
@@ -638,6 +664,16 @@ function App() {
               open={showAttackerProfile} 
               onClose={() => setShowAttackerProfile(false)} 
               hashedIp={selectedAttackerIp}
+            />
+            <ContactInboxDialog open={showContactInbox} onClose={() => setShowContactInbox(false)} />
+            <SubscriberListDialog open={showSubscribers} onClose={() => setShowSubscribers(false)} />
+            <MarketingToolsDialog
+              open={showMarketingTools}
+              onClose={() => setShowMarketingTools(false)}
+              newsletterSettings={data.newsletterSettings}
+              contactSettings={data.contactSettings}
+              onSaveNewsletter={(newsletterSettings) => setBandData((current) => ({ ...(current || defaultBandData), newsletterSettings }))}
+              onSaveContact={(contactSettings) => setBandData((current) => ({ ...(current || defaultBandData), contactSettings }))}
             />
 
             <AnimatePresence>
