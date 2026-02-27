@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
-import { X, Warning, Clock, Globe, User, ChartLine, List, Shield } from '@phosphor-icons/react'
+import { X, Warning, Clock, Globe, User, ChartLine, List, Shield, Fingerprint } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
@@ -40,6 +40,32 @@ interface UserAgentInfo {
   category: string
 }
 
+interface JsFingerprint {
+  timezone: string | null
+  language: string | null
+  platform: string | null
+  cores: number | null
+  memory: number | null
+  screenWidth: number | null
+  screenHeight: number | null
+  colorDepth: number | null
+  touchSupport: boolean | null
+  canvasHash: string | null
+  realIp: string | null
+}
+
+interface ForensicEntry {
+  token: string
+  event: string
+  timestamp: string
+  documentPath: string
+  userAgent: string
+  acceptLanguage: string
+  openerIp: string
+  downloaderIp: string
+  jsFingerprint: JsFingerprint | null
+}
+
 interface Profile {
   hashedIp: string
   firstSeen: string
@@ -50,6 +76,7 @@ interface Profile {
   threatScoreHistory: ThreatScoreEntry[]
   incidents: Incident[]
   behavioralPatterns: BehavioralPattern[]
+  forensicData?: ForensicEntry[]
   userAgentAnalysis: {
     total: number
     unique: number
@@ -498,6 +525,123 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                       )
                     })()}
                   </div>
+                  {/* Forensic Data — Canary Document Callbacks */}
+                  {profile.forensicData && profile.forensicData.length > 0 && (
+                    <div className="border border-primary/20 bg-card p-4">
+                      <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Fingerprint size={14} />
+                        Forensische Daten ({profile.forensicData.length} Canary-Callbacks)
+                      </h3>
+                      <p className="text-[9px] text-primary/40 mb-3 font-mono">
+                        Art. 6(1)(f) DSGVO — Speicherung aus berechtigtem Interesse zur Abwehr aktiver Angriffe
+                      </p>
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                        {profile.forensicData.slice().reverse().map((entry, idx) => (
+                          <div key={idx} className="border border-primary/10 bg-primary/5 p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-[10px] text-primary/60">
+                                {formatTime(entry.timestamp)}
+                              </span>
+                              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">
+                                {entry.event === 'js' ? 'JS FINGERPRINT' : entry.event === 'img' ? 'TRACKING PIXEL' : (entry.event || 'CALLBACK').toUpperCase()}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                              <div>
+                                <p className="font-mono text-[9px] text-primary/40">Canary Token</p>
+                                <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.token}>{entry.token}</p>
+                              </div>
+                              <div>
+                                <p className="font-mono text-[9px] text-primary/40">Dokument</p>
+                                <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.documentPath}>{entry.documentPath}</p>
+                              </div>
+                              <div>
+                                <p className="font-mono text-[9px] text-primary/40">Opener IP (Hash)</p>
+                                <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.openerIp}>{entry.openerIp || '—'}</p>
+                              </div>
+                              <div>
+                                <p className="font-mono text-[9px] text-primary/40">Downloader IP (Hash)</p>
+                                <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.downloaderIp}>{entry.downloaderIp || '—'}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <p className="font-mono text-[9px] text-primary/40">User-Agent</p>
+                                <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.userAgent}>{entry.userAgent || '—'}</p>
+                              </div>
+                              {entry.acceptLanguage && (
+                                <div className="col-span-2">
+                                  <p className="font-mono text-[9px] text-primary/40">Accept-Language</p>
+                                  <p className="font-mono text-[10px] text-foreground/80">{entry.acceptLanguage}</p>
+                                </div>
+                              )}
+                            </div>
+
+                            {entry.jsFingerprint && (
+                              <div className="border-t border-primary/10 pt-2 mt-2">
+                                <p className="font-mono text-[9px] text-red-400/70 uppercase mb-1">JS Fingerprint — Echte Gerätedaten</p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
+                                  {entry.jsFingerprint.realIp && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">Echte IP (WebRTC, Hash)</p>
+                                      <p className="font-mono text-[10px] text-red-400 font-bold truncate" title={entry.jsFingerprint.realIp}>{entry.jsFingerprint.realIp}</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.timezone && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">Zeitzone</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.timezone}</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.language && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">Sprache</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.language}</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.platform && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">Plattform / OS</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.platform}</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.screenWidth != null && entry.jsFingerprint.screenHeight != null && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">Bildschirm</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.screenWidth}×{entry.jsFingerprint.screenHeight} ({entry.jsFingerprint.colorDepth || '?'}bit)</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.cores != null && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">CPU Kerne</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.cores}</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.memory != null && entry.jsFingerprint.memory > 0 && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">RAM (GB)</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.memory}</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.touchSupport != null && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">Touch</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.touchSupport ? 'Ja' : 'Nein'}</p>
+                                    </div>
+                                  )}
+                                  {entry.jsFingerprint.canvasHash && (
+                                    <div>
+                                      <p className="font-mono text-[9px] text-primary/40">Canvas Hash</p>
+                                      <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.jsFingerprint.canvasHash}>{entry.jsFingerprint.canvasHash}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>

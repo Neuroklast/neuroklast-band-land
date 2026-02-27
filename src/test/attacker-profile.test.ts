@@ -36,6 +36,7 @@ import {
   getAllProfiles,
   analyzeUserAgents,
   deleteProfile,
+  addForensicData,
 } from '../../api/_attacker-profile.js'
 
 const mockKvGet = kv.get as ReturnType<typeof vi.fn>
@@ -439,6 +440,155 @@ describe('Attacker Profile Module', () => {
       const automatedScan = result.behavioralPatterns.find((p) => p.type === 'automated_scan')
       expect(automatedScan).toBeDefined()
       expect(automatedScan.severity).toBe('high')
+    })
+  })
+
+  describe('addForensicData', () => {
+    it('should create a new profile and store forensic data for unknown IP', async () => {
+      const hashedIp = 'new_hash_123'
+      const forensicEntry = {
+        token: 'abc123def456',
+        event: 'js',
+        timestamp: '2024-01-01T00:00:00Z',
+        documentPath: '/admin/login',
+        userAgent: 'Mozilla/5.0',
+        acceptLanguage: 'en-US',
+        openerIp: 'hashed_opener',
+        downloaderIp: 'hashed_downloader',
+        jsFingerprint: {
+          timezone: 'Europe/Berlin',
+          language: 'de',
+          platform: 'Win32',
+          cores: 8,
+          memory: 16,
+          screenWidth: 1920,
+          screenHeight: 1080,
+          colorDepth: 24,
+          touchSupport: false,
+          canvasHash: 'abcd1234',
+          realIp: 'hashed_real_ip',
+        },
+      }
+
+      mockKvGet.mockResolvedValue(null)
+      mockKvSet.mockResolvedValue('OK')
+      mockKvSadd.mockResolvedValue(1)
+
+      const profile = await addForensicData(hashedIp, forensicEntry)
+
+      expect(profile).toBeTruthy()
+      expect(profile.forensicData).toHaveLength(1)
+      expect(profile.forensicData[0].token).toBe('abc123def456')
+      expect(profile.forensicData[0].jsFingerprint.timezone).toBe('Europe/Berlin')
+      expect(profile.forensicData[0].jsFingerprint.realIp).toBe('hashed_real_ip')
+      expect(mockKvSet).toHaveBeenCalledWith(
+        `nk-profile:${hashedIp}`,
+        expect.objectContaining({ forensicData: expect.any(Array) }),
+        { ex: 2592000 }
+      )
+    })
+
+    it('should append forensic data to existing profile', async () => {
+      const hashedIp = 'existing_hash_123'
+      const existingProfile = {
+        hashedIp,
+        firstSeen: '2024-01-01T00:00:00Z',
+        lastSeen: '2024-01-01T01:00:00Z',
+        totalIncidents: 3,
+        attackTypes: { robots_violation: 3 },
+        userAgents: {},
+        threatScoreHistory: [],
+        incidents: [],
+        forensicData: [{
+          token: 'old_token',
+          event: 'img',
+          timestamp: '2024-01-01T00:30:00Z',
+          documentPath: '/admin/',
+          jsFingerprint: null,
+        }],
+      }
+
+      const newEntry = {
+        token: 'new_token',
+        event: 'js',
+        timestamp: '2024-01-01T02:00:00Z',
+        documentPath: '/admin/login',
+        jsFingerprint: { timezone: 'America/New_York' },
+      }
+
+      mockKvGet.mockResolvedValue(existingProfile)
+      mockKvSet.mockResolvedValue('OK')
+      mockKvSadd.mockResolvedValue(1)
+
+      const profile = await addForensicData(hashedIp, newEntry)
+
+      expect(profile.forensicData).toHaveLength(2)
+      expect(profile.forensicData[0].token).toBe('old_token')
+      expect(profile.forensicData[1].token).toBe('new_token')
+    })
+
+    it('should limit forensic data to 50 entries', async () => {
+      const hashedIp = 'full_hash'
+      const existingProfile = {
+        hashedIp,
+        firstSeen: '2024-01-01T00:00:00Z',
+        lastSeen: '2024-01-01T00:00:00Z',
+        totalIncidents: 0,
+        attackTypes: {},
+        userAgents: {},
+        threatScoreHistory: [],
+        incidents: [],
+        forensicData: Array(50).fill({ token: 'old', event: 'img', timestamp: '2024-01-01T00:00:00Z' }),
+      }
+
+      mockKvGet.mockResolvedValue(existingProfile)
+      mockKvSet.mockResolvedValue('OK')
+      mockKvSadd.mockResolvedValue(1)
+
+      const profile = await addForensicData(hashedIp, {
+        token: 'newest',
+        event: 'js',
+        timestamp: '2024-01-02T00:00:00Z',
+      })
+
+      expect(profile.forensicData).toHaveLength(50)
+      expect(profile.forensicData[49].token).toBe('newest')
+    })
+
+    it('should handle errors gracefully', async () => {
+      mockKvGet.mockRejectedValue(new Error('KV error'))
+
+      const result = await addForensicData('test_hash', { token: 'x', event: 'img' })
+
+      expect(result).toBeNull()
+    })
+
+    it('should initialize forensicData array for profiles that lack it', async () => {
+      const hashedIp = 'legacy_hash'
+      const existingProfile = {
+        hashedIp,
+        firstSeen: '2024-01-01T00:00:00Z',
+        lastSeen: '2024-01-01T00:00:00Z',
+        totalIncidents: 5,
+        attackTypes: {},
+        userAgents: {},
+        threatScoreHistory: [],
+        incidents: [],
+        // no forensicData field — simulates a pre-existing profile
+      }
+
+      mockKvGet.mockResolvedValue(existingProfile)
+      mockKvSet.mockResolvedValue('OK')
+      mockKvSadd.mockResolvedValue(1)
+
+      const profile = await addForensicData(hashedIp, {
+        token: 'first_forensic',
+        event: 'js',
+        timestamp: '2024-01-02T00:00:00Z',
+      })
+
+      expect(profile.forensicData).toHaveLength(1)
+      expect(profile.forensicData[0].token).toBe('first_forensic')
     })
   })
 })
