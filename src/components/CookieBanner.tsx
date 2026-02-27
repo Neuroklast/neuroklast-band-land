@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLocale } from '@/contexts/LocaleContext'
 
 export default function CookieBanner() {
+  const { t } = useLocale()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -50,9 +52,9 @@ export default function CookieBanner() {
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse mt-1 flex-shrink-0" style={{ boxShadow: '0 0 6px var(--color-primary)' }} />
                 <div>
-                  <p className="font-mono text-[10px] text-primary/60 tracking-wider mb-1">SYSTEM_NOTICE</p>
+                  <p className="font-mono text-[10px] text-primary/60 tracking-wider mb-1">{t('cookie.notice')}</p>
                   <p className="font-mono text-xs text-foreground/80 leading-relaxed">
-                    Diese Website verwendet technisch notwendige lokale Speicherung (Local Storage, IndexedDB) für Einstellungen und Bildcaching. Es werden keine Tracking-Cookies gesetzt. Weitere Informationen finden Sie in unserer Datenschutzerklärung.
+                    {t('cookie.text')}
                   </p>
                 </div>
               </div>
@@ -62,14 +64,14 @@ export default function CookieBanner() {
                   onClick={handleDecline}
                   className="font-mono text-[10px] md:text-xs text-muted-foreground/50 hover:text-foreground/70 transition-colors px-3 py-1.5 border border-border/50 hover:border-border tracking-wider"
                 >
-                  ABLEHNEN
+                  {t('cookie.decline')}
                 </button>
                 <button
                   onClick={handleAccept}
                   className="font-mono text-[10px] md:text-xs text-primary-foreground bg-primary/80 hover:bg-primary transition-colors px-3 py-1.5 border border-primary/50 tracking-wider"
                   style={{ boxShadow: '0 0 8px var(--color-primary, oklch(0.50 0.22 25))' }}
                 >
-                  AKZEPTIEREN
+                  {t('cookie.accept')}
                 </button>
               </div>
             </div>

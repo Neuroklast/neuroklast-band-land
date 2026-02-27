@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CaretDown, PencilSimple } from '@phosphor-icons/react'
 import logoPng from '@/assets/images/baphomet no text.svg'
 import titlePng from '@/assets/images/titel.png'
+import { useLocale } from '@/contexts/LocaleContext'
 import {
   HERO_LOGO_GLITCH_PROBABILITY,
   HERO_LOGO_GLITCH_DURATION_MS,
@@ -26,6 +27,7 @@ interface HeroProps {
 export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleImageUrl }: HeroProps) {
   const [glitchLogo, setGlitchLogo] = useState(false)
   const [glitchTitle, setGlitchTitle] = useState(false)
+  const { t } = useLocale()
 
   useEffect(() => {
     const logoInterval = setInterval(() => {
@@ -99,10 +101,10 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
         <div className="absolute top-8 left-8 hidden lg:block">
           <div className="hud-element p-3 bg-black/30 backdrop-blur-sm">
             <div className="data-readout text-[9px] space-y-1">
-              <div>SYS: NK-MAIN</div>
+              <div>{t('hero.sysLabel')}</div>
               <div className="flex items-center gap-2">
                 <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
-                <span>ONLINE</span>
+                <span>{t('hero.online')}</span>
               </div>
             </div>
           </div>
@@ -111,8 +113,8 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
         <div className="absolute bottom-8 right-8 hidden lg:block">
           <div className="hud-element p-3 bg-black/30 backdrop-blur-sm">
             <div className="data-readout text-[9px] text-right space-y-1">
-              <div>FREQ: 140-180</div>
-              <div>MODE: HARD</div>
+              <div>{t('hero.freq')}</div>
+              <div>{t('hero.mode')}</div>
             </div>
           </div>
         </div>
@@ -171,7 +173,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             <div className="relative">
               <img 
                 src={logoUrl ?? logoPng} 
-                alt="NEUROKLAST Logo" 
+                alt={t('hero.logoAlt')} 
                 className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
               />
               <div className="absolute inset-0 pointer-events-none z-20">
@@ -215,7 +217,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             <div className="relative">
               <img 
                 src={titleImageUrl ?? titlePng} 
-                alt="NEUROKLAST" 
+                alt={t('hero.titleAlt')} 
                 className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
                 style={{ 
                   filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
@@ -275,7 +277,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               className="border-primary/40 text-primary/80 hover:bg-primary/10 text-[10px] font-mono"
             >
               <PencilSimple size={12} className="mr-1" />
-              Edit Info
+              {t('hero.editInfo')}
             </Button>
           )}
         </motion.div>
@@ -290,7 +292,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             variant="outline"
             className="group border-primary/40 text-foreground/80 hover:bg-primary/5 hover:border-primary/60 hover:text-foreground active:bg-primary/10 active:scale-95 active:border-primary px-8 py-6 md:px-10 md:py-7 text-sm md:text-base font-mono tracking-[0.08em] transition-all touch-manipulation shadow-lg shadow-primary/5 hover:shadow-primary/10 active:shadow-primary/20"
           >
-            ENTER
+            {t('hero.enter')}
             <motion.div
               animate={{ y: [0, 3, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState, useRef } from 'react'
+import { useLocale } from '@/contexts/LocaleContext'
 import logoImage from '@/assets/images/baphomet no text.svg'
 import {
   LOADER_PROGRESS_INCREMENT_MULTIPLIER,
@@ -58,6 +59,7 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
   const [cachingDone, setCachingDone] = useState(precacheUrls.length === 0)
   const onCompleteRef = useRef(onLoadComplete)
   onCompleteRef.current = onLoadComplete
+  const { t } = useLocale()
 
   // Background data caching during the loading screen
   useEffect(() => {
@@ -226,7 +228,7 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
           animate={{ opacity: [0.2, 0.4, 0.2] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          NK-SYS [v2.0] // BOOT SEQUENCE
+          {t('loader.bootSequence')}
         </motion.div>
       </div>
     </motion.div>

@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { trackSocialClick } from '@/lib/analytics'
+import { useLocale } from '@/contexts/LocaleContext'
 import {
   TITLE_TYPING_SPEED_MS,
   TITLE_TYPING_START_DELAY_MS,
@@ -93,11 +94,12 @@ function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconS
 }
 
 export default function SocialSection({ socialLinks, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: SocialSectionProps) {
+  const { t } = useLocale()
   const [isEditing, setIsEditing] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-  const titleText = sectionLabels?.connect || 'CONNECT'
+  const titleText = sectionLabels?.connect || t('social.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -145,7 +147,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
                   type="text"
                   value={sectionLabels?.connect || ''}
                   onChange={(e) => onLabelChange('connect', e.target.value)}
-                  placeholder="CONNECT"
+                  placeholder={t('social.defaultTitle')}
                   className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
                 />
               )}
@@ -153,7 +155,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
                 onClick={() => setIsEditing(true)}
                 className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
               >
-                Edit Links
+                {t('social.editLinks')}
               </Button>
             </div>
           )}
@@ -185,7 +187,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-muted-foreground text-lg">No social links added yet.</p>
+            <p className="text-muted-foreground text-lg">{t('social.noLinks')}</p>
           </motion.div>
         )}
       </div>

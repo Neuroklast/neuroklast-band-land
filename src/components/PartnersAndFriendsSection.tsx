@@ -12,6 +12,7 @@ import { useState, useRef, useMemo } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend, SectionLabels } from '@/lib/types'
+import { useLocale } from '@/contexts/LocaleContext'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { buildFriendDataLines } from '@/lib/profile-data'
 import {
@@ -196,11 +197,12 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
 }
 
 export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels, onLabelChange }: PartnersAndFriendsSectionProps) {
+  const { t } = useLocale()
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
-  const titleText = sectionLabels?.partnersAndFriends || 'PARTNERS & FRIENDS'
+  const titleText = sectionLabels?.partnersAndFriends || t('partners.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -260,7 +262,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
                     type="text"
                     value={sectionLabels?.partnersAndFriends || ''}
                     onChange={(e) => onLabelChange('partnersAndFriends', e.target.value)}
-                    placeholder="PARTNERS & FRIENDS"
+                    placeholder={t('partners.defaultTitle')}
                     className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-40 focus:outline-none focus:border-primary"
                   />
                 </>

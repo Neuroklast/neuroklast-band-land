@@ -1,4 +1,5 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { useLocale } from '@/contexts/LocaleContext'
 import { PencilSimple, CaretLeft, CaretRight, User } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -46,6 +47,7 @@ const defaultBiography: Biography = {
 const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
 
 export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: BiographySectionProps) {
+  const { t } = useLocale()
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [photos, setPhotos] = useState<string[]>(biography.photos || [])
@@ -59,7 +61,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
   useTrackSection('biography')
 
-  const titleText = sectionLabels?.biography || 'BIOGRAPHY'
+  const titleText = sectionLabels?.biography || t('bio.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -173,7 +175,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                       type="text"
                       value={sectionLabels?.biography || ''}
                       onChange={(e) => onLabelChange('biography', e.target.value)}
-                      placeholder="BIOGRAPHY"
+                      placeholder={t('bio.defaultTitle')}
                       className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
                     />
                   </>
@@ -185,7 +187,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                   className="gap-2 active:scale-95 transition-transform touch-manipulation w-full sm:w-auto"
                 >
                   <PencilSimple size={16} />
-                  Edit
+                  {t('bio.edit')}
                 </Button>
               </div>
             )}
@@ -206,7 +208,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 >
                   <ProgressiveImage
                     src={resolvePhoto(photos[currentPhotoIndex])}
-                    alt={`NEUROKLAST photo ${currentPhotoIndex + 1}`}
+                    alt={t('bio.photoAlt').replace('{0}', String(currentPhotoIndex + 1))}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 cyber-border" />
@@ -277,7 +279,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 >
                   <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
                     <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                      Members
+                      {t('bio.members')}
                     </h3>
                     <div className="space-y-3">
                       {biography.members.map((rawMember, index) => {
@@ -323,7 +325,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 >
                   <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
                     <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                      {sectionLabels?.collabs || 'Collabs'}
+                      {sectionLabels?.collabs || t('bio.collabs')}
                     </h3>
                     <ul className="space-y-3">
                       {biography.collabs.map((collab, index) => (
@@ -345,7 +347,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 >
                   <Card className="bg-card border-border p-6 hover:border-primary/50 transition-colors duration-300">
                     <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                      Achievements
+                      {t('bio.achievements')}
                     </h3>
                     <ul className="space-y-3">
                       {biography.achievements.map((achievement, index) => (

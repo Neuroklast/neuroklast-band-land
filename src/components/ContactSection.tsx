@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
+import { useLocale } from '@/contexts/LocaleContext'
 import type { ContactSettings, SectionLabels } from '@/lib/types'
 import {
   TITLE_TYPING_SPEED_MS,
@@ -36,6 +37,7 @@ export default function ContactSection({
   sectionLabels,
   onLabelChange,
 }: ContactSectionProps) {
+  const { t } = useLocale()
   const [glitchActive, setGlitchActive] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -46,7 +48,7 @@ export default function ContactSection({
 
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-  const titleText = sectionLabels?.contact || 'KONTAKT'
+  const titleText = sectionLabels?.contact || t('contact.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -116,7 +118,7 @@ export default function ContactSection({
               type="text"
               value={sectionLabels?.contact || ''}
               onChange={(e) => onLabelChange('contact', e.target.value)}
-              placeholder="KONTAKT"
+              placeholder={t('contact.defaultTitle')}
               className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
             />
           )}
@@ -145,61 +147,61 @@ export default function ContactSection({
             <div className="flex flex-col items-center gap-4 py-8 text-center">
               <CheckCircle size={48} className="text-green-500" weight="duotone" />
               <p className="font-mono text-sm text-green-400">
-                {contactSettings?.successMessage || 'Nachricht gesendet! Wir melden uns bald.'}
+                {contactSettings?.successMessage || t('contact.defaultSuccess')}
               </p>
               <Button
                 onClick={() => setStatus('idle')}
                 className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation font-mono text-xs mt-2"
               >
-                Neue Nachricht
+                {t('contact.newMessage')}
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs text-foreground/60">Name *</Label>
+                <Label className="font-mono text-xs text-foreground/60">{t('contact.nameLabel')}</Label>
                 <Input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Dein Name"
+                  placeholder={t('contact.namePlaceholder')}
                   className={inputClass}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs text-foreground/60">Email *</Label>
+                <Label className="font-mono text-xs text-foreground/60">{t('contact.emailLabel')}</Label>
                 <Input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="deine@email.de"
+                  placeholder={t('contact.emailPlaceholder')}
                   className={inputClass}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs text-foreground/60">Betreff *</Label>
+                <Label className="font-mono text-xs text-foreground/60">{t('contact.subjectLabel')}</Label>
                 <Input
                   type="text"
                   required
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Betreff"
+                  placeholder={t('contact.subjectPlaceholder')}
                   className={inputClass}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs text-foreground/60">Nachricht *</Label>
+                <Label className="font-mono text-xs text-foreground/60">{t('contact.messageLabel')}</Label>
                 <textarea
                   required
                   rows={5}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Deine Nachricht..."
+                  placeholder={t('contact.messagePlaceholder')}
                   className={`${inputClass} w-full resize-y`}
                 />
               </div>
@@ -207,7 +209,7 @@ export default function ContactSection({
               {status === 'error' && (
                 <div className="flex items-center gap-2 text-red-400 font-mono text-xs">
                   <Warning size={16} />
-                  <span>{errorMsg || 'Fehler beim Senden. Bitte erneut versuchen.'}</span>
+                  <span>{errorMsg || t('contact.sendError')}</span>
                 </div>
               )}
 
@@ -217,7 +219,7 @@ export default function ContactSection({
                 className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation font-mono text-xs"
               >
                 <PaperPlaneTilt className="mr-2" size={16} />
-                {status === 'loading' ? 'Sende...' : 'Nachricht senden'}
+                {status === 'loading' ? t('contact.sending') : t('contact.send')}
               </Button>
             </form>
           )}
@@ -229,42 +231,42 @@ export default function ContactSection({
             animate={{ opacity: 1 }}
             className="mt-8 border border-primary/20 bg-card/30 p-4 space-y-3"
           >
-            <p className="font-mono text-xs text-primary/70 uppercase tracking-wider">Contact Settings</p>
+            <p className="font-mono text-xs text-primary/70 uppercase tracking-wider">{t('contact.settings')}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="font-mono text-xs text-foreground/50">Title</Label>
+                <Label className="font-mono text-xs text-foreground/50">{t('contact.titleLabel')}</Label>
                 <Input
                   value={contactSettings?.title || ''}
                   onChange={(e) => onUpdate({ ...contactSettings, title: e.target.value })}
-                  placeholder="Contact title"
+                  placeholder={t('contact.titlePlaceholder')}
                   className={inputClass}
                 />
               </div>
               <div className="space-y-1">
-                <Label className="font-mono text-xs text-foreground/50">Email Forward To</Label>
+                <Label className="font-mono text-xs text-foreground/50">{t('contact.emailForward')}</Label>
                 <Input
                   type="email"
                   value={contactSettings?.emailForwardTo || ''}
                   onChange={(e) => onUpdate({ ...contactSettings, emailForwardTo: e.target.value })}
-                  placeholder="forward@email.de"
+                  placeholder={t('contact.emailForwardPlaceholder')}
                   className={inputClass}
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="font-mono text-xs text-foreground/50">Description</Label>
+                <Label className="font-mono text-xs text-foreground/50">{t('contact.descriptionLabel')}</Label>
                 <Input
                   value={contactSettings?.description || ''}
                   onChange={(e) => onUpdate({ ...contactSettings, description: e.target.value })}
-                  placeholder="Section description"
+                  placeholder={t('contact.descriptionPlaceholder')}
                   className={inputClass}
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="font-mono text-xs text-foreground/50">Success Message</Label>
+                <Label className="font-mono text-xs text-foreground/50">{t('contact.successLabel')}</Label>
                 <Input
                   value={contactSettings?.successMessage || ''}
                   onChange={(e) => onUpdate({ ...contactSettings, successMessage: e.target.value })}
-                  placeholder="Nachricht gesendet! Wir melden uns bald."
+                  placeholder={t('contact.successPlaceholder')}
                   className={inputClass}
                 />
               </div>

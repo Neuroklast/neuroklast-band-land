@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import ProtectedText from '@/components/ProtectedText'
 import type { Impressum } from '@/lib/types'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface ImpressumWindowProps {
   isOpen: boolean
@@ -32,8 +33,9 @@ const emptyImpressum: Impressum = {
 export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, onSave }: ImpressumWindowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<Impressum>(impressum || emptyImpressum)
-  const [lang, setLang] = useState<'de' | 'en'>('de')
-  const [editLang, setEditLang] = useState<'de' | 'en'>('de')
+  const { locale } = useLocale()
+  const [lang, setLang] = useState<'de' | 'en'>(locale)
+  const [editLang, setEditLang] = useState<'de' | 'en'>(locale)
 
   useEffect(() => {
     if (isOpen) {

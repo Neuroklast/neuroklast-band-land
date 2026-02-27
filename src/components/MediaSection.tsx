@@ -1,3 +1,4 @@
+import { useLocale } from '@/contexts/LocaleContext'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Folder, File, DownloadSimple, Plus, Trash, PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -42,13 +43,14 @@ function getFilesInFolder(files: MediaFile[], folder: string | null): MediaFile[
 
 /** Loading glitch animation for the overlay */
 function MediaLoadingScreen() {
-  const [loadingText, setLoadingText] = useState('> INITIALIZING FILE SYSTEM...')
+  const { t } = useLocale()
+  const [loadingText, setLoadingText] = useState(t('media.initFS'))
 
   useEffect(() => {
     const texts = [
-      '> INITIALIZING FILE SYSTEM...',
-      '> DECRYPTING ARCHIVE...',
-      '> ACCESS GRANTED'
+      t('media.initFS'),
+      t('media.decrypt'),
+      t('media.accessGranted')
     ]
     let idx = 0
     const interval = setInterval(() => {
@@ -85,6 +87,7 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
   selectedFile: MediaFile | null
   onSelectFile: (file: MediaFile) => void
 }) {
+  const { t } = useLocale()
   const folders = getFolders(files)
   const rootFiles = getFilesInFolder(files, null)
 
@@ -97,7 +100,7 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
         onClick={() => onSelectFolder(null)}
       >
         <Folder size={14} weight="fill" className="text-primary/60 flex-shrink-0" />
-        <span className="truncate">/ROOT</span>
+        <span className="truncate">{t('media.root')}</span>
       </button>
 
       {folders.map(folder => (
@@ -140,7 +143,7 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
       ))}
 
       {files.length === 0 && (
-        <p className="text-primary/30 text-[10px] px-2 py-4">NO FILES AVAILABLE</p>
+        <p className="text-primary/30 text-[10px] px-2 py-4">{t('media.noFiles')}</p>
       )}
     </div>
   )
@@ -148,6 +151,7 @@ function FileTreeView({ files, selectedFolder, onSelectFolder, selectedFile, onS
 
 /** File detail panel shown on the right side */
 function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles: MediaFile[] }) {
+  const { t } = useLocale()
   const [dlProgress, setDlProgress] = useState<DownloadProgress>({ state: 'idle', progress: 0 })
 
   const handleDownload = useCallback(() => {
@@ -164,7 +168,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
         <File size={48} className="text-primary/20 mb-3" />
-        <p className="text-primary/40 font-mono text-xs tracking-wider">SELECT A FILE TO VIEW DETAILS</p>
+        <p className="text-primary/40 font-mono text-xs tracking-wider">{t('media.selectFile')}</p>
       </div>
     )
   }
@@ -231,7 +235,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
             className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <DownloadSimple size={16} />
-            {dlProgress.state === 'downloading' ? 'DOWNLOADING...' : dlProgress.state === 'complete' ? 'DOWNLOADED ✓' : 'DOWNLOAD'}
+            {dlProgress.state === 'downloading' ? t('media.downloading') : dlProgress.state === 'complete' ? t('media.downloaded') : t('media.download')}
           </button>
 
           {/* Download progress bar */}
@@ -246,18 +250,18 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
                 />
               </div>
               <p className="font-mono text-[9px] text-primary/50 tracking-wider">
-                DOWNLOADING... {Math.round(dlProgress.progress * 100)}%
+                {t('media.downloadProgress').replace('{0}', String(Math.round(dlProgress.progress * 100)))}
               </p>
             </div>
           )}
 
           {dlProgress.state === 'complete' && (
-            <p className="font-mono text-[9px] text-primary/70 tracking-wider">DOWNLOAD COMPLETE</p>
+            <p className="font-mono text-[9px] text-primary/70 tracking-wider">{t('media.downloadComplete')}</p>
           )}
 
           {dlProgress.state === 'error' && (
             <p className="font-mono text-[9px] text-destructive/70 tracking-wider">
-              ERROR: {dlProgress.error || 'Download failed'}
+              {t('media.error').replace('{0}', dlProgress.error || 'Download failed')}
             </p>
           )}
         </div>
@@ -265,8 +269,8 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
 
       <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-2">
         <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
-        <span>FILE READY</span>
-        <span className="ml-auto">NK-FS v1.0</span>
+        <span>{t('media.fileReady')}</span>
+        <span className="ml-auto">{t('media.version')}</span>
       </div>
     </motion.div>
   )
@@ -274,6 +278,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
 
 /** Edit panel for managing media files */
 function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (files: MediaFile[]) => void }) {
+  const { t } = useLocale()
   const [editFiles, setEditFiles] = useState<MediaFile[]>(files)
 
   const addFile = () => {
@@ -300,7 +305,7 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
   return (
     <div className="p-4 space-y-3 overflow-y-auto max-h-[60vh]">
       <p className="text-sm text-muted-foreground font-mono">
-        Manage press kits, logos, and other downloadable media files.
+        {t('media.manageDesc')}
       </p>
 
       {editFiles.map((file, idx) => (
@@ -361,11 +366,11 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
       ))}
 
       <Button variant="outline" onClick={addFile} className="w-full">
-        <Plus size={16} className="mr-2" /> Add File
+        <Plus size={16} className="mr-2" /> {t('media.addFile')}
       </Button>
 
       <div className="flex justify-end gap-2 pt-2">
-        <Button onClick={handleSave}>Save Files</Button>
+        <Button onClick={handleSave}>{t('media.saveFiles')}</Button>
       </div>
     </div>
   )
@@ -383,6 +388,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const { t } = useLocale()
 
   useEffect(() => {
     const timer = setTimeout(() => setPhase('ready'), 1500)
@@ -428,7 +434,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
-                {isEditing ? 'EDIT MEDIA FILES' : 'FILE EXPLORER // MEDIA ARCHIVE'}
+                {isEditing ? t('media.editTitle') : t('media.explorerTitle')}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -443,7 +449,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
               )}
               <CyberCloseButton
                 onClick={() => { if (isEditing) { setIsEditing(false) } else { onClose() } }}
-                label={sectionLabels?.closeButtonText || (isEditing ? 'BACK' : 'CLOSE')}
+                label={sectionLabels?.closeButtonText || (isEditing ? t('media.back') : t('media.close'))}
               />
             </div>
           </div>
@@ -454,7 +460,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
             <div className="flex flex-col md:flex-row flex-1 min-h-0">
               {/* Left: Tree view */}
               <div className="md:w-2/5 border-b md:border-b-0 md:border-r border-primary/20 overflow-y-auto p-3 max-h-[200px] md:max-h-none">
-                <div className="text-[9px] text-primary/40 tracking-wider mb-2 px-2">DIRECTORY</div>
+                <div className="text-[9px] text-primary/40 tracking-wider mb-2 px-2">{t('media.directory')}</div>
                 <FileTreeView
                   files={files}
                   selectedFolder={selectedFolder}
@@ -480,6 +486,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
 }
 
 export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sectionLabels, onLabelChange }: MediaSectionProps) {
+  const { t } = useLocale()
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -550,17 +557,17 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
               </div>
               <div>
                 <p className="font-mono text-sm text-foreground/90 group-hover:text-primary transition-colors tracking-wider">
-                  OPEN MEDIA ARCHIVE
+                  {t('media.openArchive')}
                 </p>
                 <p className="font-mono text-[10px] text-foreground/40 mt-1">
                   {mediaFiles.length > 0
-                    ? `${mediaFiles.length} FILE${mediaFiles.length !== 1 ? 'S' : ''} AVAILABLE // PRESS KITS · LOGOS · ASSETS`
-                    : 'PRESS KITS · LOGOS · ASSETS'}
+                    ? `${mediaFiles.length} FILE${mediaFiles.length !== 1 ? 'S' : ''} AVAILABLE // ${t('media.pressKits')}`
+                    : t('media.pressKits')}
                 </p>
               </div>
               <div className="ml-auto hidden md:flex items-center gap-2 text-[9px] text-primary/40 font-mono">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
-                CLICK TO ACCESS
+                {t('media.clickAccess')}
               </div>
             </div>
           </motion.button>

@@ -6,6 +6,7 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import type { BandData } from '@/lib/types'
+import { useLocale } from '@/contexts/LocaleContext'
 import { toast } from 'sonner'
 import {
   INITIAL_SYNC_DELAY_MS,
@@ -45,6 +46,7 @@ function toDriveJsonUrl(url: string): string {
 }
 
 export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer, onOpenTerminalSettings, onOpenTerminal, onOpenContactInbox, onOpenSubscribers, onOpenMarketingTools }: EditControlsProps) {
+  const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
@@ -167,25 +169,24 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               onClick={(e) => e.stopPropagation()}
             >
               <CyberCloseButton onClick={() => setShowUrlImport(false)} label="CLOSE" className="absolute top-3 right-3" />
-              <h3 className="text-lg font-bold">Import from URL</h3>
+              <h3 className="text-lg font-bold">{t('edit.importUrl')}</h3>
               <p className="text-sm text-muted-foreground">
-                Enter a URL to a JSON file (e.g. Google Drive share link).
-                The data will be auto-synced periodically if the URL is kept.
+                {t('edit.importDesc')}
               </p>
               <Input
                 value={importUrl}
                 onChange={(e) => setImportUrl(e.target.value)}
-                placeholder="https://drive.google.com/file/d/.../view"
+                placeholder={t('edit.urlPlaceholder')}
                 className="text-sm"
               />
               {bandData?.syncUrl && (
                 <p className="text-xs text-muted-foreground">
-                  Current sync URL: <span className="text-primary/60 break-all">{bandData.syncUrl}</span>
+                  {t('edit.currentSync')} <span className="text-primary/60 break-all">{bandData.syncUrl}</span>
                 </p>
               )}
               <div className="flex gap-2">
                 <Button onClick={handleImportUrl} disabled={!importUrl.trim() || isImporting} className="flex-1">
-                  {isImporting ? 'Importing...' : 'Import & Sync'}
+                  {isImporting ? t('edit.importing') : t('edit.importSync')}
                 </Button>
                 {bandData?.syncUrl && (
                   <Button
@@ -200,10 +201,10 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                     }}
                     title="Stop auto-syncing"
                   >
-                    Stop Sync
+                    {t('edit.stopSync')}
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => setShowUrlImport(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setShowUrlImport(false)}>{t('edit.cancel')}</Button>
               </div>
             </motion.div>
           </motion.div>
@@ -231,7 +232,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 title="Export data as JSON"
               >
                 <Export size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">EXPORT</span>
+                <span className="text-[9px] font-mono leading-none">{t('edit.export')}</span>
               </Button>
               <Button
                 onClick={() => importInputRef.current?.click()}
@@ -239,7 +240,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 title="Import data from JSON file"
               >
                 <ArrowSquareIn size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">IMPORT</span>
+                <span className="text-[9px] font-mono leading-none">{t('edit.import')}</span>
               </Button>
               <Button
                 onClick={() => setShowUrlImport(true)}
@@ -247,7 +248,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 title="Import data from URL (Google Drive)"
               >
                 <Globe size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">SYNC URL</span>
+                <span className="text-[9px] font-mono leading-none">{t('edit.syncUrl')}</span>
               </Button>
               {onOpenSoundSettings && (
                 <Button
@@ -256,7 +257,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Sound effects settings"
                 >
                   <SpeakerHigh size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">SOUND</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.sound')}</span>
                 </Button>
               )}
               {onOpenConfigEditor && (
@@ -266,7 +267,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Config variables editor"
                 >
                   <Sliders size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">CONFIG</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.config')}</span>
                 </Button>
               )}
               {onOpenAnalytics && (
@@ -276,7 +277,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Site analytics"
                 >
                   <ChartBar size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">ANALYTICS</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.analytics')}</span>
                 </Button>
               )}
               {onOpenSecurityLog && (
@@ -286,7 +287,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Security incidents"
                 >
                   <ShieldWarning size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">SEC. LOG</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.secLog')}</span>
                 </Button>
               )}
               {onOpenSecuritySettings && (
@@ -296,7 +297,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Security settings"
                 >
                   <ShieldCheck size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">SECURITY</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.security')}</span>
                 </Button>
               )}
               {onOpenBlocklist && (
@@ -306,7 +307,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Blocklist manager"
                 >
                   <ProhibitInset size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">BLOCKLIST</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.blocklist')}</span>
                 </Button>
               )}
               {onOpenThemeCustomizer && (
@@ -316,7 +317,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Theme customizer (colors, fonts, visibility)"
                 >
                   <Palette size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">THEME</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.theme')}</span>
                 </Button>
               )}
               {onOpenTerminalSettings && (
@@ -326,7 +327,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Terminal settings (commands, key sequence, morse code)"
                 >
                   <Terminal size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">TERMINAL</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.terminal')}</span>
                 </Button>
               )}
               {onOpenTerminal && (
@@ -336,7 +337,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Open secret terminal"
                 >
                   <Terminal size={20} weight="fill" />
-                  <span className="text-[9px] font-mono leading-none">OPEN TERMINAL</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.openTerminal')}</span>
                 </Button>
               )}
               {onOpenContactInbox && (
@@ -346,7 +347,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Contact inbox"
                 >
                   <Envelope size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">INBOX</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.inbox')}</span>
                 </Button>
               )}
               {onOpenSubscribers && (
@@ -356,7 +357,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Newsletter subscribers"
                 >
                   <Users size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">SUBSCRIBERS</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.subscribers')}</span>
                 </Button>
               )}
               {onOpenMarketingTools && (
@@ -366,7 +367,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Marketing tools"
                 >
                   <Megaphone size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">MARKETING</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.marketing')}</span>
                 </Button>
               )}
             </motion.div>
@@ -382,7 +383,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 title={hasPassword ? 'Change admin password' : 'Set admin password'}
               >
                 <Key size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">PASSWORD</span>
+                <span className="text-[9px] font-mono leading-none">{t('edit.password')}</span>
               </Button>
             </motion.div>
 
@@ -399,7 +400,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                   title="Logout"
                 >
                   <SignOut size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">LOGOUT</span>
+                  <span className="text-[9px] font-mono leading-none">{t('edit.logout')}</span>
                 </Button>
               </motion.div>
             )}

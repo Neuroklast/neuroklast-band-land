@@ -1,3 +1,4 @@
+import { useLocale } from '@/contexts/LocaleContext'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Plus, Trash, PencilSimple, ArrowSquareOut, TextB, TextItalic, TextHOne, LinkSimple, ListBullets, ShareNetwork, Copy, Check } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -55,6 +56,7 @@ function formatNewsDate(date: string): string {
 }
 
 export default function NewsSection({ news = [], editMode, onUpdate, sectionLabels, onLabelChange }: NewsSectionProps) {
+  const { t } = useLocale()
   const [glitchActive, setGlitchActive] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [editingItem, setEditingItem] = useState<NewsItem | null>(null)
@@ -62,7 +64,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-  const titleText = sectionLabels?.news || 'NEWS'
+  const titleText = sectionLabels?.news || t('news.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -172,7 +174,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                   type="text"
                   value={sectionLabels?.news || ''}
                   onChange={(e) => onLabelChange('news', e.target.value)}
-                  placeholder="NEWS"
+                  placeholder={t('news.defaultTitle')}
                   className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
                 />
               )}
@@ -229,11 +231,11 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                         onClick={(e) => e.stopPropagation()}
                       >
                         <ArrowSquareOut size={12} />
-                        LINK
+                        {t('news.link')}
                       </a>
                     )}
                     {!editMode && (item.text.length > TEXT_TRUNCATE_THRESHOLD || (item.details && item.details.length > DETAILS_TRUNCATE_THRESHOLD)) && (
-                      <p className="text-[10px] text-primary/50 mt-2 font-mono tracking-wider">CLICK TO READ MORE</p>
+                      <p className="text-[10px] text-primary/50 mt-2 font-mono tracking-wider">{t('news.readMore')}</p>
                     )}
                   </div>
                   {editMode && (
@@ -266,7 +268,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-muted-foreground text-lg">No news yet.</p>
+            <p className="text-muted-foreground text-lg">{t('news.noNews')}</p>
           </motion.div>
         )}
 
@@ -277,7 +279,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
               onClick={() => setShowAll(!showAll)}
               className="border-primary/30 hover:bg-primary/10 hover:border-primary transition-all"
             >
-              {showAll ? 'Show Less' : `Show More (${sortedNews.length - INITIAL_VISIBLE_COUNT} more)`}
+              {showAll ? t('news.showLess') : t('news.showMore').replace('{0}', String(sortedNews.length - INITIAL_VISIBLE_COUNT))}
             </Button>
           </div>
         )}
@@ -311,6 +313,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
   sectionLabels?: SectionLabels
 }) {
   const [copied, setCopied] = useState(false)
+  const { t } = useLocale()
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -399,7 +402,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
               title="Share"
             >
               <ShareNetwork size={12} />
-              SHARE
+              {t('news.share')}
             </button>
             <button
               onClick={handleCopyLink}
@@ -407,7 +410,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
               title="Copy link"
             >
               {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-              {copied ? 'COPIED' : 'LINK'}
+              {copied ? t('news.copied') : t('news.link')}
             </button>
             <CyberCloseButton
               onClick={onClose}
@@ -447,7 +450,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
               className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
             >
               <ArrowSquareOut size={16} />
-              OPEN LINK
+              {t('news.openLink')}
             </a>
           )}
         </div>
@@ -455,8 +458,8 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
         {/* Footer */}
         <div className="flex items-center gap-2 text-[9px] text-primary/40 px-4 py-2 border-t border-primary/20 flex-shrink-0">
           <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
-          <span>NEWS ENTRY</span>
-          <span className="ml-auto">NK-NEWS v1.0</span>
+          <span>{t('news.entry')}</span>
+          <span className="ml-auto">{t('news.version')}</span>
         </div>
 
         {/* Scanline overlay */}
@@ -494,6 +497,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
   onClose: () => void
 }) {
   const detailsRef = useRef<HTMLTextAreaElement>(null)
+  const { t } = useLocale()
   const [formData, setFormData] = useState<NewsItem>(
     item || { id: `news-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, date: new Date().toISOString().slice(0, 7), text: '' }
   )
@@ -525,7 +529,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.2 }}
       >
-        <h3 className="font-mono text-sm text-primary tracking-wider">{item ? 'EDIT NEWS' : 'ADD NEWS'}</h3>
+        <h3 className="font-mono text-sm text-primary tracking-wider">{item ? t('news.editTitle') : t('news.addTitle')}</h3>
         <div className="space-y-3">
           <div>
             <Label className="text-[10px]">Date Format</Label>
@@ -538,7 +542,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
                     : 'border-border text-muted-foreground hover:border-primary/50'
                 }`}
               >
-                MONTH/YEAR
+                {t('news.monthYear')}
               </button>
               <button
                 onClick={() => handleDateTypeChange('date')}
@@ -548,12 +552,12 @@ function NewsEditDialog({ item, onSave, onClose }: {
                     : 'border-border text-muted-foreground hover:border-primary/50'
                 }`}
               >
-                FULL DATE
+                {t('news.fullDate')}
               </button>
             </div>
           </div>
           <div>
-            <Label className="text-[10px]">{dateType === 'month' ? 'Month' : 'Date'}</Label>
+            <Label className="text-[10px]">{dateType === 'month' ? t('news.month') : t('news.date')}</Label>
             <Input
               type={dateType}
               value={formData.date}
@@ -567,11 +571,11 @@ function NewsEditDialog({ item, onSave, onClose }: {
               value={formData.text}
               onChange={(e) => setFormData({ ...formData, text: e.target.value })}
               className="text-xs"
-              placeholder="News headline..."
+              placeholder={t('news.headlinePlaceholder')}
             />
           </div>
           <div>
-            <Label className="text-[10px]">Details (optional, supports Markdown)</Label>
+            <Label className="text-[10px]">{t('news.detailsLabel')}</Label>
             <div className="flex gap-1 mb-1">
               <button
                 type="button"
@@ -620,16 +624,16 @@ function NewsEditDialog({ item, onSave, onClose }: {
               onChange={(e) => setFormData({ ...formData, details: e.target.value || undefined })}
               className="flex w-full rounded-sm border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[100px] resize-y font-mono"
               rows={5}
-              placeholder="Additional details... (supports **bold**, *italic*, ## headings, [links](url), - lists)"
+              placeholder={t('news.detailsPlaceholder')}
             />
           </div>
           <div>
-            <Label className="text-[10px]">Image URL (optional)</Label>
+            <Label className="text-[10px]">{t('news.imageUrl')}</Label>
             <Input
               value={formData.photo || ''}
               onChange={(e) => setFormData({ ...formData, photo: e.target.value || undefined })}
               className="text-xs"
-              placeholder="https://... or Google Drive link"
+              placeholder={t('news.imagePlaceholder')}
             />
             {formData.photo && (
               <div className="mt-2 w-24 h-24">
@@ -642,7 +646,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
             )}
           </div>
           <div>
-            <Label className="text-[10px]">Link (optional)</Label>
+            <Label className="text-[10px]">{t('news.linkOptional')}</Label>
             <Input
               value={formData.link || ''}
               onChange={(e) => setFormData({ ...formData, link: e.target.value || undefined })}
@@ -652,8 +656,8 @@ function NewsEditDialog({ item, onSave, onClose }: {
           </div>
         </div>
         <div className="flex gap-2 pt-2">
-          <Button onClick={() => onSave(formData)} className="flex-1">Save</Button>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(formData)} className="flex-1">{t('news.save')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('news.cancel')}</Button>
         </div>
       </motion.div>
     </div>

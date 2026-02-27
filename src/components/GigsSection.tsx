@@ -12,6 +12,7 @@ import { format, isPast } from 'date-fns'
 import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { useTrackSection } from '@/hooks/use-track-section'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface GigsSectionProps {
   gigs: Gig[]
@@ -25,6 +26,7 @@ interface GigsSectionProps {
 }
 
 export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: GigsSectionProps) {
+  const { t } = useLocale()
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -36,7 +38,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   const isInView = useInView(sectionRef, { once: true })
   useTrackSection('gigs')
 
-  const titleText = sectionLabels?.gigs || 'UPCOMING GIGS'
+  const titleText = sectionLabels?.gigs || t('gigs.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -189,7 +191,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                 type="text"
                 value={sectionLabels?.gigs || ''}
                 onChange={(e) => onLabelChange('gigs', e.target.value)}
-                placeholder="UPCOMING GIGS"
+                placeholder={t('gigs.defaultTitle')}
                 className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
               />
             )}
@@ -199,7 +201,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                 variant="outline"
                 className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
               >
-                {showAllGigs ? 'Show Upcoming' : 'Show All'}
+                {showAllGigs ? t('gigs.showUpcoming') : t('gigs.showAll')}
               </Button>
             )}
             <Button
@@ -209,7 +211,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
               className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
             >
               <ArrowsClockwise className={`${isLoading ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
-              <span className="hidden md:inline">{isLoading ? 'Loading...' : 'Refresh'}</span>
+              <span className="hidden md:inline">{isLoading ? t('gigs.loading') : t('gigs.refresh')}</span>
             </Button>
             {editMode && (
               <Button
@@ -217,7 +219,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                 className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
               >
                 <Plus className="mr-0 md:mr-2" size={20} />
-                <span className="hidden md:inline">Add Gig</span>
+                <span className="hidden md:inline">{t('gigs.addGig')}</span>
               </Button>
             )}
           </div>
@@ -239,7 +241,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
             transition={{ duration: 0.6 }}
           >
             <ArrowsClockwise size={64} className="mx-auto mb-6 text-primary animate-spin" />
-            <p className="text-muted-foreground text-lg">Loading upcoming shows...</p>
+            <p className="text-muted-foreground text-lg">{t('gigs.loadingShows')}</p>
           </motion.div>
         ) : upcomingGigs.length === 0 ? (
           <motion.div 
@@ -250,8 +252,8 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
             transition={{ duration: 0.6 }}
           >
             <CalendarDots size={64} className="mx-auto mb-6 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground text-lg mb-2">No upcoming shows scheduled.</p>
-            <p className="text-muted-foreground text-sm">Check back soon for tour dates.</p>
+            <p className="text-muted-foreground text-lg mb-2">{t('gigs.noShows')}</p>
+            <p className="text-muted-foreground text-sm">{t('gigs.checkBack')}</p>
           </motion.div>
         ) : (
           <div className="grid gap-4">
@@ -295,7 +297,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                             </time>
                             {gig.gigType && (
                               <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${gig.gigType === 'concert' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent'}`}>
-                                {gig.gigType === 'concert' ? 'CONCERT' : 'DJ SET'}
+                                {gig.gigType === 'concert' ? t('gigs.concert') : t('gigs.djSet')}
                               </span>
                             )}
                             {gig.status && (
@@ -310,7 +312,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                             )}
                           </div>
                           <time className="text-xs md:text-sm text-muted-foreground">
-                            {gig.allDay ? 'ALL DAY' : format(new Date(gig.date), 'HH:mm')}
+                            {gig.allDay ? t('gigs.allDay') : format(new Date(gig.date), 'HH:mm')}
                           </time>
                         </div>
                       </div>
@@ -324,7 +326,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                                 onClick={() => setEditingGig(gig)}
                                 className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
                               >
-                                Edit
+                                {t('gigs.edit')}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -377,7 +379,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                             >
                               <a href={gig.ticketUrl} target="_blank" rel="noopener noreferrer">
                                 <Ticket className="mr-2" size={20} />
-                                <span className="whitespace-nowrap">GET TICKETS</span>
+                                <span className="whitespace-nowrap">{t('gigs.getTickets')}</span>
                               </a>
                             </Button>
                           )}
