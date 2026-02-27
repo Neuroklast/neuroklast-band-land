@@ -86,7 +86,7 @@ function renderErrorPage(path, canaryToken) {
   try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
     r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
     r.onicecandidate=function(e){if(e.candidate){
-      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\\\.[0-9]{1,3}){3})/);
+      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
       if(m){d.realIp=m[1];send()}}}}catch(e){}
   function send(){var x=new XMLHttpRequest();x.open('POST',"${callbackUrl}&e=js");
     x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(d))}

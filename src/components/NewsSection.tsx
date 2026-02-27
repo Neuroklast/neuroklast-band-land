@@ -439,19 +439,17 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
             />
           )}
 
-          <div className="flex flex-wrap gap-2">
-            {item.link && (
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
-              >
-                <ArrowSquareOut size={16} />
-                OPEN LINK
-              </a>
-            )}
-          </div>
+          {item.link && (
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
+            >
+              <ArrowSquareOut size={16} />
+              OPEN LINK
+            </a>
+          )}
         </div>
 
         {/* Footer */}
