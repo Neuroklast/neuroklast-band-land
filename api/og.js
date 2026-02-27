@@ -36,8 +36,8 @@ function esc(str) {
 function plainText(str, maxLen = 200) {
   if (!str) return ''
   const plain = String(str)
-    .replace(/<[^>]*>/g, '')
-    .replace(/[#*_~`>\-[\]()!]/g, '')
+    .replace(/[<>]/g, '')
+    .replace(/[#*_~`\-[\]()!]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
   return plain.length > maxLen ? plain.slice(0, maxLen) + '…' : plain

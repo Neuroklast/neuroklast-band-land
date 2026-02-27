@@ -23,8 +23,8 @@ function esc(str: string | undefined | null): string {
 function plainText(str: string | undefined | null, maxLen = 200): string {
   if (!str) return ''
   const plain = String(str)
-    .replace(/<[^>]*>/g, '')
-    .replace(/[#*_~`>\-[\]()!]/g, '')
+    .replace(/[<>]/g, '')
+    .replace(/[#*_~`\-[\]()!]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
   return plain.length > maxLen ? plain.slice(0, maxLen) + '…' : plain
@@ -119,7 +119,17 @@ describe('OG meta tag helpers', () => {
     })
 
     it('strips HTML tags', () => {
-      expect(plainText('<p>Hello <b>World</b></p>')).toBe('Hello World')
+      // Angle brackets removed, tag names become plain text words
+      const result = plainText('<p>Hello <b>World</b></p>')
+      expect(result).not.toContain('<')
+      expect(result).not.toContain('>')
+      expect(result).toContain('Hello')
+      expect(result).toContain('World')
+    })
+
+    it('strips nested/malformed tags that could bypass single-pass sanitization', () => {
+      expect(plainText('<<script>script>alert("xss")<</script>/script>')).not.toContain('<script')
+      expect(plainText('<<script>script>alert("xss")<</script>/script>')).not.toContain('<')
     })
 
     it('truncates long text', () => {
