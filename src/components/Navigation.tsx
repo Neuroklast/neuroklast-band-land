@@ -12,6 +12,7 @@ import {
 import MusicPlayer from '@/components/MusicPlayer'
 import type { Track } from '@/components/MusicPlayer'
 import { useMorseCode } from '@/hooks/use-morse-code'
+import { useLocale } from '@/contexts/LocaleContext'
 
 /** Local tracks served from public/music/ */
 const LOCAL_TRACKS: Track[] = [
@@ -31,6 +32,8 @@ export default function Navigation({ sectionLabels, terminalMorseCode, onTermina
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
   const [playerOpen, setPlayerOpen] = useState(false)
+
+  const { t } = useLocale()
 
   const morseHandlers = useMorseCode({
     targetCode: terminalMorseCode || '',
@@ -58,14 +61,14 @@ export default function Navigation({ sectionLabels, terminalMorseCode, onTermina
   }
 
   const navItems = [
-    { label: 'HOME', id: 'hero' },
-    { label: sectionLabels?.news || 'NEWS', id: 'news' },
-    { label: sectionLabels?.biography || 'BIOGRAPHY', id: 'biography' },
-    { label: sectionLabels?.gallery || 'GALLERY', id: 'gallery' },
-    { label: sectionLabels?.gigs || 'GIGS', id: 'gigs' },
-    { label: sectionLabels?.releases || 'RELEASES', id: 'releases' },
-    { label: sectionLabels?.media || 'MEDIA', id: 'media' },
-    { label: sectionLabels?.connect || 'CONNECT', id: 'social' }
+    { label: t('nav.home'), id: 'hero' },
+    { label: sectionLabels?.news || t('nav.news'), id: 'news' },
+    { label: sectionLabels?.biography || t('nav.biography'), id: 'biography' },
+    { label: sectionLabels?.gallery || t('nav.gallery'), id: 'gallery' },
+    { label: sectionLabels?.gigs || t('nav.gigs'), id: 'gigs' },
+    { label: sectionLabels?.releases || t('nav.releases'), id: 'releases' },
+    { label: sectionLabels?.media || t('nav.media'), id: 'media' },
+    { label: sectionLabels?.connect || t('nav.connect'), id: 'social' }
   ]
 
   return (
@@ -103,7 +106,7 @@ export default function Navigation({ sectionLabels, terminalMorseCode, onTermina
               onClick={() => setPlayerOpen(o => !o)}
               data-track="nav::MUSIC_PLAYER"
               className={`p-1 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
-              title={playerOpen ? 'Close music player' : 'Open music player'}
+              title={playerOpen ? t('nav.closePlayer') : t('nav.openPlayer')}
             >
               <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
             </button>
@@ -114,7 +117,7 @@ export default function Navigation({ sectionLabels, terminalMorseCode, onTermina
               onClick={() => setPlayerOpen(o => !o)}
               data-track="nav::MUSIC_PLAYER"
               className={`p-2 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
-              title={playerOpen ? 'Close music player' : 'Open music player'}
+              title={playerOpen ? t('nav.closePlayer') : t('nav.openPlayer')}
             >
               <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
             </button>
