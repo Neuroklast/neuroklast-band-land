@@ -10,7 +10,7 @@ async function storeSubscriberLocally(email, source) {
     if (subscribers.some((s) => s.email === email)) return
     subscribers.push({ email, source: source || 'website', date: new Date().toISOString() })
     await kv.set(key, subscribers)
-  } catch { /* best-effort */ }
+  } catch (err) { console.error('storeSubscriberLocally failed:', err) }
 }
 
 export default async function handler(req, res) {

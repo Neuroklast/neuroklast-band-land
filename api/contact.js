@@ -63,6 +63,7 @@ async function sendEmailNotification({ name, email, subject, message }) {
       body: JSON.stringify({
         sender: { name: 'NEUROKLAST Contact Form', email: toEmail },
         to: [{ email: toEmail }],
+        replyTo: { name, email },
         subject: `Contact Form: ${subject}`,
         htmlContent: `<p><strong>From:</strong> ${name} &lt;${email}&gt;</p><p><strong>Subject:</strong> ${subject}</p><p>${message.replace(/\n/g, '<br>')}</p>`,
       }),
@@ -116,7 +117,6 @@ export default async function handler(req, res) {
 async function handlePost(req, res) {
   setCorsHeaders(res)
 
-  // Rate limit: 3 requests per 300 seconds
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
 
