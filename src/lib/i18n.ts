@@ -1,0 +1,241 @@
+/**
+ * Global i18n utility for the NEUROKLAST site.
+ * Supports English (en) and German (de).
+ */
+
+export type Locale = 'en' | 'de'
+
+const translations: Record<string, Record<Locale, string>> = {
+  // ── Footer ──────────────────────────────────────────────────────────
+  'footer.section':            { en: 'FOOTER_SECTION', de: 'FOOTER_BEREICH' },
+  'footer.protocol':           { en: 'PROTOCOL: HELLFIRE', de: 'PROTOKOLL: HELLFIRE' },
+  'footer.defaultGenres':      { en: 'HARD TECHNO · CYBERPUNK · DNB · DARK ELECTRO', de: 'HARD TECHNO · CYBERPUNK · DNB · DARK ELECTRO' },
+  'footer.label':              { en: 'LABEL: {0}', de: 'LABEL: {0}' },
+  'footer.copyright':          { en: '© {0} NEUROKLAST. All rights reserved.', de: '© {0} NEUROKLAST. Alle Rechte vorbehalten.' },
+  'footer.impressum':          { en: 'IMPRESSUM', de: 'IMPRESSUM' },
+  'footer.datenschutz':        { en: 'PRIVACY POLICY', de: 'DATENSCHUTZ' },
+  'footer.admin':              { en: 'ADMIN', de: 'ADMIN' },
+  'footer.adminLogin':         { en: 'Admin login', de: 'Admin-Login' },
+  'footer.backToTop':          { en: 'BACK TO TOP', de: 'NACH OBEN' },
+
+  // ── Navigation ──────────────────────────────────────────────────────
+  'nav.home':                  { en: 'HOME', de: 'STARTSEITE' },
+  'nav.news':                  { en: 'NEWS', de: 'NEUIGKEITEN' },
+  'nav.biography':             { en: 'BIOGRAPHY', de: 'BIOGRAFIE' },
+  'nav.gallery':               { en: 'GALLERY', de: 'GALERIE' },
+  'nav.gigs':                  { en: 'GIGS', de: 'AUFTRITTE' },
+  'nav.releases':              { en: 'RELEASES', de: 'VERÖFFENTLICHUNGEN' },
+  'nav.media':                 { en: 'MEDIA', de: 'MEDIEN' },
+  'nav.connect':               { en: 'CONNECT', de: 'VERBINDEN' },
+  'nav.closePlayer':           { en: 'Close music player', de: 'Musik-Player schließen' },
+  'nav.openPlayer':            { en: 'Open music player', de: 'Musik-Player öffnen' },
+
+  // ── CookieBanner ────────────────────────────────────────────────────
+  'cookie.notice':             { en: 'SYSTEM_NOTICE', de: 'SYSTEM_HINWEIS' },
+  'cookie.text':               { en: 'This website uses technically necessary local storage (Local Storage, IndexedDB) for settings and image caching. No tracking cookies are set. For more information, see our privacy policy.', de: 'Diese Website verwendet technisch notwendige lokale Speicherung (Local Storage, IndexedDB) für Einstellungen und Bildcaching. Es werden keine Tracking-Cookies gesetzt. Weitere Informationen finden Sie in unserer Datenschutzerklärung.' },
+  'cookie.decline':            { en: 'DECLINE', de: 'ABLEHNEN' },
+  'cookie.accept':             { en: 'ACCEPT', de: 'AKZEPTIEREN' },
+
+  // ── Hero ────────────────────────────────────────────────────────────
+  'hero.sysLabel':             { en: 'SYS: NK-MAIN', de: 'SYS: NK-MAIN' },
+  'hero.online':               { en: 'ONLINE', de: 'ONLINE' },
+  'hero.freq':                 { en: 'FREQ: 140-180', de: 'FREQ: 140-180' },
+  'hero.mode':                 { en: 'MODE: HARD', de: 'MODE: HARD' },
+  'hero.logoAlt':              { en: 'NEUROKLAST Logo', de: 'NEUROKLAST Logo' },
+  'hero.titleAlt':             { en: 'NEUROKLAST', de: 'NEUROKLAST' },
+  'hero.editInfo':             { en: 'Edit Info', de: 'Info bearbeiten' },
+  'hero.enter':                { en: 'ENTER', de: 'EINTRETEN' },
+
+  // ── NewsSection ─────────────────────────────────────────────────────
+  'news.defaultTitle':         { en: 'NEWS', de: 'NEUIGKEITEN' },
+  'news.link':                 { en: 'LINK', de: 'LINK' },
+  'news.readMore':             { en: 'CLICK TO READ MORE', de: 'KLICKEN UM MEHR ZU LESEN' },
+  'news.noNews':               { en: 'No news yet.', de: 'Noch keine Neuigkeiten.' },
+  'news.showLess':             { en: 'Show Less', de: 'Weniger anzeigen' },
+  'news.showMore':             { en: 'Show More ({0} more)', de: 'Mehr anzeigen ({0} weitere)' },
+  'news.share':                { en: 'SHARE', de: 'TEILEN' },
+  'news.copied':               { en: 'COPIED', de: 'KOPIERT' },
+  'news.openLink':             { en: 'OPEN LINK', de: 'LINK ÖFFNEN' },
+  'news.entry':                { en: 'NEWS ENTRY', de: 'NACHRICHTEN-EINTRAG' },
+  'news.version':              { en: 'NK-NEWS v1.0', de: 'NK-NEWS v1.0' },
+  'news.editTitle':            { en: 'EDIT NEWS', de: 'NEUIGKEITEN BEARBEITEN' },
+  'news.addTitle':             { en: 'ADD NEWS', de: 'NEUIGKEIT HINZUFÜGEN' },
+  'news.monthYear':            { en: 'MONTH/YEAR', de: 'MONAT/JAHR' },
+  'news.fullDate':             { en: 'FULL DATE', de: 'VOLLES DATUM' },
+  'news.month':                { en: 'Month', de: 'Monat' },
+  'news.date':                 { en: 'Date', de: 'Datum' },
+  'news.headlinePlaceholder':  { en: 'News headline...', de: 'Schlagzeile...' },
+  'news.detailsLabel':         { en: 'Details (optional, supports Markdown)', de: 'Details (optional, unterstützt Markdown)' },
+  'news.detailsPlaceholder':   { en: 'Additional details... (supports **bold**, *italic*, ## headings, [links](url), - lists)', de: 'Zusätzliche Details... (unterstützt **fett**, *kursiv*, ## Überschriften, [Links](url), - Listen)' },
+  'news.imageUrl':             { en: 'Image URL (optional)', de: 'Bild-URL (optional)' },
+  'news.imagePlaceholder':     { en: 'https://... or Google Drive link', de: 'https://... oder Google Drive Link' },
+  'news.linkOptional':         { en: 'Link (optional)', de: 'Link (optional)' },
+  'news.save':                 { en: 'Save', de: 'Speichern' },
+  'news.cancel':               { en: 'Cancel', de: 'Abbrechen' },
+
+  // ── BiographySection ────────────────────────────────────────────────
+  'bio.defaultTitle':          { en: 'BIOGRAPHY', de: 'BIOGRAFIE' },
+  'bio.edit':                  { en: 'Edit', de: 'Bearbeiten' },
+  'bio.members':               { en: 'Members', de: 'Mitglieder' },
+  'bio.collabs':               { en: 'Collabs', de: 'Zusammenarbeiten' },
+  'bio.achievements':          { en: 'Achievements', de: 'Erfolge' },
+  'bio.photoAlt':              { en: 'NEUROKLAST photo {0}', de: 'NEUROKLAST Foto {0}' },
+
+  // ── GigsSection ─────────────────────────────────────────────────────
+  'gigs.defaultTitle':         { en: 'UPCOMING GIGS', de: 'KOMMENDE AUFTRITTE' },
+  'gigs.showUpcoming':         { en: 'Show Upcoming', de: 'Kommende anzeigen' },
+  'gigs.showAll':              { en: 'Show All', de: 'Alle anzeigen' },
+  'gigs.loading':              { en: 'Loading...', de: 'Laden...' },
+  'gigs.refresh':              { en: 'Refresh', de: 'Aktualisieren' },
+  'gigs.addGig':               { en: 'Add Gig', de: 'Auftritt hinzufügen' },
+  'gigs.loadingShows':         { en: 'Loading upcoming shows...', de: 'Lade kommende Auftritte...' },
+  'gigs.noShows':              { en: 'No upcoming shows scheduled.', de: 'Keine kommenden Auftritte geplant.' },
+  'gigs.checkBack':            { en: 'Check back soon for tour dates.', de: 'Bald wieder vorbeischauen für Tourdaten.' },
+  'gigs.concert':              { en: 'CONCERT', de: 'KONZERT' },
+  'gigs.djSet':                { en: 'DJ SET', de: 'DJ SET' },
+  'gigs.allDay':               { en: 'ALL DAY', de: 'GANZTÄGIG' },
+  'gigs.edit':                 { en: 'Edit', de: 'Bearbeiten' },
+  'gigs.getTickets':           { en: 'GET TICKETS', de: 'TICKETS KAUFEN' },
+
+  // ── ReleasesSection ─────────────────────────────────────────────────
+  'releases.defaultTitle':     { en: 'RELEASES', de: 'VERÖFFENTLICHUNGEN' },
+  'releases.syncItunes':       { en: 'Sync iTunes', de: 'iTunes synchronisieren' },
+  'releases.fetching':         { en: 'Fetching...', de: 'Laden...' },
+  'releases.addRelease':       { en: 'Add Release', de: 'Release hinzufügen' },
+  'releases.noReleases':       { en: 'No releases yet.', de: 'Noch keine Veröffentlichungen.' },
+  'releases.upcoming':         { en: 'Upcoming', de: 'Demnächst' },
+  'releases.share':            { en: 'SHARE', de: 'TEILEN' },
+  'releases.upcomingRelease':  { en: 'Upcoming Release', de: 'Kommende Veröffentlichung' },
+  'releases.streamActive':     { en: 'STREAM ACTIVE', de: 'STREAM AKTIV' },
+  'releases.version':          { en: 'NK-SYS v1.3.37', de: 'NK-SYS v1.3.37' },
+  'releases.showLess':         { en: 'Show Less', de: 'Weniger anzeigen' },
+  'releases.showMore':         { en: 'Show More ({0} more)', de: 'Mehr anzeigen ({0} weitere)' },
+
+  // ── MediaSection ────────────────────────────────────────────────────
+  'media.initFS':              { en: '> INITIALIZING FILE SYSTEM...', de: '> DATEISYSTEM INITIALISIEREN...' },
+  'media.decrypt':             { en: '> DECRYPTING ARCHIVE...', de: '> ARCHIV ENTSCHLÜSSELN...' },
+  'media.accessGranted':       { en: '> ACCESS GRANTED', de: '> ZUGRIFF GEWÄHRT' },
+  'media.root':                { en: '/ROOT', de: '/ROOT' },
+  'media.noFiles':             { en: 'NO FILES AVAILABLE', de: 'KEINE DATEIEN VERFÜGBAR' },
+  'media.selectFile':          { en: 'SELECT A FILE TO VIEW DETAILS', de: 'DATEI AUSWÄHLEN FÜR DETAILS' },
+  'media.downloading':         { en: 'DOWNLOADING...', de: 'HERUNTERLADEN...' },
+  'media.downloaded':          { en: 'DOWNLOADED ✓', de: 'HERUNTERGELADEN ✓' },
+  'media.download':            { en: 'DOWNLOAD', de: 'HERUNTERLADEN' },
+  'media.downloadProgress':    { en: 'DOWNLOADING... {0}%', de: 'HERUNTERLADEN... {0}%' },
+  'media.downloadComplete':    { en: 'DOWNLOAD COMPLETE', de: 'DOWNLOAD ABGESCHLOSSEN' },
+  'media.error':               { en: 'ERROR: {0}', de: 'FEHLER: {0}' },
+  'media.fileReady':           { en: 'FILE READY', de: 'DATEI BEREIT' },
+  'media.version':             { en: 'NK-FS v1.0', de: 'NK-FS v1.0' },
+  'media.manageDesc':          { en: 'Manage press kits, logos, and other downloadable media files.', de: 'Pressemappen, Logos und andere Mediendateien verwalten.' },
+  'media.addFile':             { en: 'Add File', de: 'Datei hinzufügen' },
+  'media.saveFiles':           { en: 'Save Files', de: 'Dateien speichern' },
+  'media.editTitle':           { en: 'EDIT MEDIA FILES', de: 'MEDIENDATEIEN BEARBEITEN' },
+  'media.explorerTitle':       { en: 'FILE EXPLORER // MEDIA ARCHIVE', de: 'DATEI-EXPLORER // MEDIENARCHIV' },
+  'media.back':                { en: 'BACK', de: 'ZURÜCK' },
+  'media.close':               { en: 'CLOSE', de: 'SCHLIEßEN' },
+  'media.directory':           { en: 'DIRECTORY', de: 'VERZEICHNIS' },
+  'media.openArchive':         { en: 'OPEN MEDIA ARCHIVE', de: 'MEDIENARCHIV ÖFFNEN' },
+  'media.pressKits':           { en: 'PRESS KITS · LOGOS · ASSETS', de: 'PRESSEMAPPEN · LOGOS · ASSETS' },
+  'media.clickAccess':         { en: 'CLICK TO ACCESS', de: 'KLICKEN ZUM ÖFFNEN' },
+
+  // ── SocialSection ───────────────────────────────────────────────────
+  'social.defaultTitle':       { en: 'CONNECT', de: 'VERBINDEN' },
+  'social.editLinks':          { en: 'Edit Links', de: 'Links bearbeiten' },
+  'social.noLinks':            { en: 'No social links added yet.', de: 'Noch keine Social Links hinzugefügt.' },
+
+  // ── ContactSection ──────────────────────────────────────────────────
+  'contact.defaultTitle':      { en: 'CONTACT', de: 'KONTAKT' },
+  'contact.defaultSuccess':    { en: "Message sent! We'll get back to you soon.", de: 'Nachricht gesendet! Wir melden uns bald.' },
+  'contact.newMessage':        { en: 'New message', de: 'Neue Nachricht' },
+  'contact.nameLabel':         { en: 'Name *', de: 'Name *' },
+  'contact.namePlaceholder':   { en: 'Your name', de: 'Dein Name' },
+  'contact.emailLabel':        { en: 'Email *', de: 'Email *' },
+  'contact.emailPlaceholder':  { en: 'your@email.com', de: 'deine@email.de' },
+  'contact.subjectLabel':      { en: 'Subject *', de: 'Betreff *' },
+  'contact.subjectPlaceholder': { en: 'Subject', de: 'Betreff' },
+  'contact.messageLabel':      { en: 'Message *', de: 'Nachricht *' },
+  'contact.messagePlaceholder': { en: 'Your message...', de: 'Deine Nachricht...' },
+  'contact.sendError':         { en: 'Error sending. Please try again.', de: 'Fehler beim Senden. Bitte erneut versuchen.' },
+  'contact.sending':           { en: 'Sending...', de: 'Sende...' },
+  'contact.send':              { en: 'Send message', de: 'Nachricht senden' },
+  'contact.settings':          { en: 'Contact Settings', de: 'Kontakt-Einstellungen' },
+  'contact.titleLabel':        { en: 'Title', de: 'Titel' },
+  'contact.titlePlaceholder':  { en: 'Contact title', de: 'Kontakt-Titel' },
+  'contact.emailForward':      { en: 'Email Forward To', de: 'E-Mail weiterleiten an' },
+  'contact.emailForwardPlaceholder': { en: 'forward@email.com', de: 'weiterleitung@email.de' },
+  'contact.descriptionLabel':  { en: 'Description', de: 'Beschreibung' },
+  'contact.descriptionPlaceholder': { en: 'Section description', de: 'Abschnittsbeschreibung' },
+  'contact.successLabel':      { en: 'Success Message', de: 'Erfolgsmeldung' },
+  'contact.successPlaceholder': { en: "Message sent! We'll get back to you soon.", de: 'Nachricht gesendet! Wir melden uns bald.' },
+
+  // ── NewsletterWidget ────────────────────────────────────────────────
+  'newsletter.title':          { en: 'STAY IN THE LOOP', de: 'BLEIB AUF DEM LAUFENDEN' },
+  'newsletter.description':    { en: 'New releases, gigs & updates straight to your inbox', de: 'Neue Releases, Gigs & Updates direkt in deinen Posteingang' },
+  'newsletter.placeholder':    { en: 'your@email.com', de: 'deine@email.com' },
+  'newsletter.subscribe':      { en: 'SUBSCRIBE', de: 'ABONNIEREN' },
+  'newsletter.signupError':    { en: 'Error signing up', de: 'Fehler beim Anmelden' },
+  'newsletter.networkError':   { en: 'Network error. Please try again later.', de: 'Netzwerkfehler. Bitte versuche es später erneut.' },
+  'newsletter.success':        { en: "✓ You're in! Check your emails.", de: '✓ Du bist dabei! Check deine E-Mails.' },
+  'newsletter.unsubscribe':    { en: 'You can unsubscribe at any time.', de: 'Du kannst dich jederzeit abmelden.' },
+
+  // ── ErrorFallback ───────────────────────────────────────────────────
+  'error.title':               { en: 'Runtime Error', de: 'Laufzeitfehler' },
+  'error.description':         { en: 'Something unexpected happened while running the application. The error details are shown below.', de: 'Beim Ausführen der Anwendung ist ein unerwarteter Fehler aufgetreten. Die Fehlerdetails werden unten angezeigt.' },
+  'error.details':             { en: 'Error Details:', de: 'Fehlerdetails:' },
+  'error.tryAgain':            { en: 'Try Again', de: 'Erneut versuchen' },
+
+  // ── InstagramGallery ────────────────────────────────────────────────
+  'gallery.defaultTitle':      { en: 'GALLERY', de: 'GALERIE' },
+  'gallery.subtitle':          { en: 'Visual identity of NEUROKLAST', de: 'Visuelle Identität von NEUROKLAST' },
+  'gallery.addImageUrl':       { en: 'Add Image URL', de: 'Bild-URL hinzufügen' },
+  'gallery.driveFolder':       { en: 'Drive Folder', de: 'Drive-Ordner' },
+  'gallery.syncDrive':         { en: 'Sync Drive', de: 'Drive synchronisieren' },
+  'gallery.imagePlaceholder':  { en: 'https://example.com/image.jpg', de: 'https://example.com/image.jpg' },
+  'gallery.captionOptional':   { en: 'Caption (optional)', de: 'Beschriftung (optional)' },
+  'gallery.add':               { en: 'Add', de: 'Hinzufügen' },
+  'gallery.cancel':            { en: 'Cancel', de: 'Abbrechen' },
+  'gallery.drivePlaceholder':  { en: 'https://drive.google.com/drive/folders/...', de: 'https://drive.google.com/drive/folders/...' },
+  'gallery.import':            { en: 'Import', de: 'Importieren' },
+  'gallery.noImages':          { en: 'No images found in gallery', de: 'Keine Bilder in der Galerie gefunden' },
+  'gallery.addImagesHint':     { en: 'Images can be added via URL or Google Drive folder', de: 'Bilder können per URL oder Google Drive-Ordner hinzugefügt werden' },
+  'gallery.statusActive':      { en: 'STATUS: ACTIVE', de: 'STATUS: AKTIV' },
+  'gallery.zoomView':          { en: 'ZOOM_VIEW', de: 'ZOOM_ANSICHT' },
+
+  // ── PartnersAndFriends ──────────────────────────────────────────────
+  'partners.defaultTitle':     { en: 'PARTNERS & FRIENDS', de: 'PARTNER & FREUNDE' },
+
+  // ── EditControls ────────────────────────────────────────────────────
+  'edit.importUrl':            { en: 'Import from URL', de: 'Von URL importieren' },
+  'edit.importDesc':           { en: 'Enter a URL to a JSON file (e.g. Google Drive share link). The data will be auto-synced periodically if the URL is kept.', de: 'Geben Sie eine URL zu einer JSON-Datei ein (z.B. Google Drive Freigabelink). Die Daten werden automatisch regelmäßig synchronisiert.' },
+  'edit.urlPlaceholder':       { en: 'https://drive.google.com/file/d/.../view', de: 'https://drive.google.com/file/d/.../view' },
+  'edit.currentSync':          { en: 'Current sync URL:', de: 'Aktuelle Sync-URL:' },
+  'edit.importing':            { en: 'Importing...', de: 'Importiere...' },
+  'edit.importSync':           { en: 'Import & Sync', de: 'Importieren & Synchronisieren' },
+  'edit.stopSync':             { en: 'Stop Sync', de: 'Sync stoppen' },
+  'edit.cancel':               { en: 'Cancel', de: 'Abbrechen' },
+  'edit.export':               { en: 'EXPORT', de: 'EXPORT' },
+  'edit.import':               { en: 'IMPORT', de: 'IMPORT' },
+  'edit.syncUrl':              { en: 'SYNC URL', de: 'SYNC URL' },
+  'edit.sound':                { en: 'SOUND', de: 'SOUND' },
+  'edit.config':               { en: 'CONFIG', de: 'KONFIG' },
+  'edit.analytics':            { en: 'ANALYTICS', de: 'ANALYTIK' },
+  'edit.secLog':               { en: 'SEC. LOG', de: 'SIK. LOG' },
+  'edit.security':             { en: 'SECURITY', de: 'SICHERHEIT' },
+  'edit.blocklist':            { en: 'BLOCKLIST', de: 'SPERRLISTE' },
+  'edit.theme':                { en: 'THEME', de: 'DESIGN' },
+  'edit.terminal':             { en: 'TERMINAL', de: 'TERMINAL' },
+  'edit.openTerminal':         { en: 'OPEN TERMINAL', de: 'TERMINAL ÖFFNEN' },
+  'edit.inbox':                { en: 'INBOX', de: 'POSTFACH' },
+  'edit.subscribers':          { en: 'SUBSCRIBERS', de: 'ABONNENTEN' },
+  'edit.marketing':            { en: 'MARKETING', de: 'MARKETING' },
+  'edit.password':             { en: 'PASSWORD', de: 'PASSWORT' },
+  'edit.logout':               { en: 'LOGOUT', de: 'ABMELDEN' },
+
+  // ── CyberpunkLoader ─────────────────────────────────────────────────
+  'loader.bootSequence':       { en: 'NK-SYS [v2.0] // BOOT SEQUENCE', de: 'NK-SYS [v2.0] // STARTSEQUENZ' },
+}
+
+/** Get a translated string for a key and locale */
+export function t(key: string, locale: Locale): string {
+  return translations[key]?.[locale] ?? translations[key]?.en ?? key
+}
