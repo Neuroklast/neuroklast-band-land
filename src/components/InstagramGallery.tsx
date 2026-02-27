@@ -3,6 +3,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Images, X, CaretLeft, CaretRight, Plus, PencilSimple, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useLocale } from '@/contexts/LocaleContext'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
@@ -36,6 +37,7 @@ function extractDriveFolderId(url: string): string | null {
 }
 
 export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels, onLabelChange }: InstagramGalleryProps) {
+  const { t } = useLocale()
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
@@ -53,7 +55,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const driveAutoLoaded = useRef(false)
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
 
-  const titleText = sectionLabels?.gallery || 'GALLERY'
+  const titleText = sectionLabels?.gallery || t('gallery.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',
@@ -263,7 +265,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                         type="text"
                         value={sectionLabels?.gallery || ''}
                         onChange={(e) => onLabelChange('gallery', e.target.value)}
-                        placeholder="GALLERY"
+                        placeholder={t('gallery.defaultTitle')}
                         className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-32 focus:outline-none focus:border-primary"
                       />
                     </>
@@ -272,7 +274,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               )}
             </div>
             <p className="text-muted-foreground font-mono text-sm">
-              &gt; Visual identity of NEUROKLAST
+              &gt; {t('gallery.subtitle')}
             </p>
             {editMode && onUpdate && (
               <div className="mt-4 space-y-3">
@@ -285,7 +287,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                       className="border-primary/30 hover:bg-primary/10 gap-2"
                     >
                       <Plus size={16} />
-                      Add Image URL
+                      {t('gallery.addImageUrl')}
                     </Button>
                   )}
                   {!showDriveForm && (
@@ -296,7 +298,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                       className="border-primary/30 hover:bg-primary/10 gap-2"
                     >
                       <FolderOpen size={16} />
-                      Drive Folder
+                      {t('gallery.driveFolder')}
                     </Button>
                   )}
                   {driveFolderUrl && (
@@ -308,7 +310,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                       className="border-primary/30 hover:bg-primary/10 gap-2"
                     >
                       <ArrowsClockwise size={16} className={isDriveLoading ? 'animate-spin' : ''} />
-                      Sync Drive
+                      {t('gallery.syncDrive')}
                     </Button>
                   )}
                 </div>
@@ -319,19 +321,19 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                       <Input
                         value={newUrl}
                         onChange={(e) => setNewUrl(e.target.value)}
-                        placeholder="https://example.com/image.jpg"
+                        placeholder={t('gallery.imagePlaceholder')}
                         className="text-xs"
                       />
                       <Input
                         value={newCaption}
                         onChange={(e) => setNewCaption(e.target.value)}
-                        placeholder="Caption (optional)"
+                        placeholder={t('gallery.captionOptional')}
                         className="text-xs"
                       />
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={handleAddImage} disabled={!newUrl.trim()}>Add</Button>
-                      <Button size="sm" variant="outline" onClick={() => { setShowAddForm(false); setNewUrl(''); setNewCaption('') }}>Cancel</Button>
+                      <Button size="sm" onClick={handleAddImage} disabled={!newUrl.trim()}>{t('gallery.add')}</Button>
+                      <Button size="sm" variant="outline" onClick={() => { setShowAddForm(false); setNewUrl(''); setNewCaption('') }}>{t('gallery.cancel')}</Button>
                     </div>
                   </div>
                 )}
@@ -342,15 +344,15 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                       <Input
                         value={driveUrlInput}
                         onChange={(e) => setDriveUrlInput(e.target.value)}
-                        placeholder="https://drive.google.com/drive/folders/..."
+                        placeholder={t('gallery.drivePlaceholder')}
                         className="text-xs"
                       />
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={handleSaveDriveUrl} disabled={!driveUrlInput.trim() || isDriveLoading}>
-                        {isDriveLoading ? 'Loading...' : 'Import'}
+                        {isDriveLoading ? t('gigs.loading') : t('gallery.import')}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setShowDriveForm(false)}>Cancel</Button>
+                      <Button size="sm" variant="outline" onClick={() => setShowDriveForm(false)}>{t('gallery.cancel')}</Button>
                     </div>
                   </div>
                 )}
@@ -359,8 +361,8 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
           </motion.div>
           {photos.length === 0 && !editMode && (
             <div className="text-center text-muted-foreground py-12">
-              <p className="font-mono">&gt; No images found in gallery</p>
-              <p className="font-mono text-xs mt-2">&gt; Images can be added via URL or Google Drive folder</p>
+              <p className="font-mono">&gt; {t('gallery.noImages')}</p>
+              <p className="font-mono text-xs mt-2">&gt; {t('gallery.addImagesHint')}</p>
             </div>
           )}
 
@@ -414,7 +416,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                     <div className="mt-1 flex gap-2 text-[9px] text-primary/60">
                       <span>SECTOR: {String.fromCharCode(65 + (mobileIndex % 26))}</span>
                       <span>•</span>
-                      <span>STATUS: ACTIVE</span>
+                      <span>{t('gallery.statusActive')}</span>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono text-primary/50">{mobileIndex + 1}/{photos.length}</span>
@@ -499,7 +501,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                     <div className="mt-2 flex gap-2 text-[9px] text-primary/60">
                       <span>SECTOR: {String.fromCharCode(65 + (index % 26))}</span>
                       <span>•</span>
-                      <span>STATUS: ACTIVE</span>
+                      <span>{t('gallery.statusActive')}</span>
                     </div>
                   </div>
                 </div>
@@ -544,7 +546,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               <span className="corner-br"></span>
 
               <div className="absolute top-2 left-2 z-10 data-readout bg-black/50 px-2 py-1">
-                ZOOM_VIEW
+                {t('gallery.zoomView')}
               </div>
 
               <img
