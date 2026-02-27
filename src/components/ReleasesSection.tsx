@@ -401,6 +401,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                             onClick={() => handleShareRelease(release)}
                             className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors tracking-wider"
                             title="Share"
+                            aria-label={`Share ${release.title}`}
                           >
                             <ShareNetwork size={12} />
                             SHARE

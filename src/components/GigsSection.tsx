@@ -63,49 +63,32 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   }, [dataLoaded])
 
   // Deep-link: highlight and scroll to a specific gig when page loads with #gigs/{id}
+  const handleGigDeepLink = useCallback((hash: string) => {
+    const match = hash.match(/^#gigs\/(.+)$/)
+    if (!match) return
+    const targetId = match[1]
+    const target = (gigs || []).find(g => g.id === targetId)
+    if (!target) return
+    if (isPast(new Date(target.date))) setShowAllGigs(true)
+    setHighlightedGigId(targetId)
+    setTimeout(() => {
+      const el = document.getElementById(`gig-${targetId}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => setHighlightedGigId(null), 3000)
+    }, 300)
+  }, [gigs])
+
   useEffect(() => {
     if (!gigs || gigs.length === 0) return
-    const hash = window.location.hash
-    const match = hash.match(/^#gigs\/(.+)$/)
-    if (match) {
-      const targetId = match[1]
-      const target = gigs.find(g => g.id === targetId)
-      if (target) {
-        // Ensure past gigs are visible when deep-linking
-        if (isPast(new Date(target.date))) setShowAllGigs(true)
-        setHighlightedGigId(targetId)
-        setTimeout(() => {
-          const el = document.getElementById(`gig-${targetId}`)
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          // Clear highlight after a few seconds
-          setTimeout(() => setHighlightedGigId(null), 3000)
-        }, 300)
-      }
-    }
-  }, [gigs])
+    handleGigDeepLink(window.location.hash)
+  }, [gigs, handleGigDeepLink])
 
   // Listen for hash changes for gig deep-links
   useEffect(() => {
-    const onHashChange = () => {
-      const hash = window.location.hash
-      const match = hash.match(/^#gigs\/(.+)$/)
-      if (match) {
-        const targetId = match[1]
-        const target = (gigs || []).find(g => g.id === targetId)
-        if (target) {
-          if (isPast(new Date(target.date))) setShowAllGigs(true)
-          setHighlightedGigId(targetId)
-          setTimeout(() => {
-            const el = document.getElementById(`gig-${targetId}`)
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            setTimeout(() => setHighlightedGigId(null), 3000)
-          }, 300)
-        }
-      }
-    }
+    const onHashChange = () => handleGigDeepLink(window.location.hash)
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
-  }, [gigs])
+  }, [handleGigDeepLink])
 
   const loadGigsFromAPI = async (isAutoLoad = false) => {
     setIsLoading(true)
@@ -332,8 +315,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                         </div>
                       </div>
 
-                      {(editMode || gig.ticketUrl || gig.eventLinks || true) && (
-                        <div className="flex items-center gap-2 sm:flex-shrink-0 flex-wrap">
+                      <div className="flex items-center gap-2 sm:flex-shrink-0 flex-wrap">
                           {editMode && (
                             <>
                               <Button
@@ -383,6 +365,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                               onClick={(e) => { e.stopPropagation(); handleShareGig(gig) }}
                               className="text-muted-foreground hover:text-primary transition-colors"
                               title="Share"
+                              aria-label={`Share ${gig.venue} gig`}
                             >
                               <ShareNetwork size={22} />
                             </button>
@@ -399,7 +382,6 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                             </Button>
                           )}
                         </div>
-                      )}
                     </div>
                     
                     <div className="pl-0 sm:pl-9 md:pl-12">

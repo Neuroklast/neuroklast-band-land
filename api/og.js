@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { applyRateLimit } from './_ratelimit.js'
 
 /**
  * Open Graph meta-tag endpoint for social-media link previews.
@@ -14,6 +15,11 @@ import { kv } from '@vercel/kv'
 const FALLBACK_TITLE = 'NEUROKLAST'
 const FALLBACK_DESCRIPTION = 'NEUROKLAST – Hard Techno, Industrial, DNB & Dark Electro.'
 const FALLBACK_IMAGE = '/favicon.svg'
+
+/** Derive the site origin from a trusted source, not raw Host header. */
+function getOrigin() {
+  return process.env.SITE_URL || 'https://neuroklast.com'
+}
 
 /** Simple HTML entity escaping to prevent XSS in injected strings. */
 function esc(str) {
@@ -93,7 +99,7 @@ function resolveContent(data, type, id) {
   return null
 }
 
-/** Build a minimal HTML page with OG tags and a JS redirect. */
+/** Build a minimal HTML page with OG tags and a meta-refresh redirect. */
 function buildHTML(origin, meta) {
   const title = esc(meta.title)
   const description = esc(meta.description)
@@ -119,7 +125,6 @@ function buildHTML(origin, meta) {
 <meta name="twitter:description" content="${description}"/>
 <meta name="twitter:image" content="${esc(image)}"/>
 <meta http-equiv="refresh" content="0;url=${esc(redirect)}"/>
-<script>window.location.replace(${JSON.stringify(redirect)})</script>
 </head>
 <body></body>
 </html>`
@@ -130,10 +135,14 @@ export default async function handler(req, res) {
     return res.status(405).end()
   }
 
+  // Rate limiting — generous limit since crawlers must not be blocked
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
+
   const { type, id } = req.query || {}
+  const origin = getOrigin()
+
   if (!type || !id) {
-    // No content specified → redirect to homepage
-    const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
     res.setHeader('Location', origin)
     return res.status(302).end()
   }
@@ -141,14 +150,12 @@ export default async function handler(req, res) {
   // Validate type parameter against a whitelist
   const ALLOWED_TYPES = ['news', 'gig', 'release']
   if (!ALLOWED_TYPES.includes(type)) {
-    const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
     res.setHeader('Location', origin)
     return res.status(302).end()
   }
 
   // Validate id: only allow safe characters (alphanumeric, dash, underscore)
   if (!/^[\w-]+$/.test(id)) {
-    const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
     res.setHeader('Location', origin)
     return res.status(302).end()
   }
@@ -162,11 +169,9 @@ export default async function handler(req, res) {
     // KV unavailable — fall through to fallback
   }
 
-  const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
   const meta = resolveContent(data, type, id)
 
   if (!meta) {
-    // Item not found → fallback with generic OG tags and redirect to SPA
     const fallback = {
       title: FALLBACK_TITLE,
       description: FALLBACK_DESCRIPTION,
