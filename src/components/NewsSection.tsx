@@ -323,7 +323,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
     [item.details]
   )
 
-  const shareUrl = `${window.location.origin}${window.location.pathname}#news/${item.id}`
+  const shareUrl = `${window.location.origin}/share/news/${item.id}`
 
   const handleCopyLink = async () => {
     try {
