@@ -39,7 +39,7 @@ function fmtDate(iso: string | undefined | null): string {
 
 const FALLBACK_TITLE = 'NEUROKLAST'
 const FALLBACK_DESCRIPTION = 'NEUROKLAST – Hard Techno, Industrial, DNB & Dark Electro.'
-const FALLBACK_IMAGE = '/favicon.svg'
+const FALLBACK_IMAGE = '/og-image.png'
 
 interface ContentMeta {
   title: string
@@ -242,7 +242,7 @@ describe('OG meta tag helpers', () => {
     it('falls back to FALLBACK_IMAGE when no image and no logoUrl', () => {
       const dataNoLogo = { ...bandData, logoUrl: undefined, gigs: [{ id: 'g3', date: '2025-08-01', venue: 'Test', location: 'Test' }] }
       const meta = resolveContent(dataNoLogo, 'gig', 'g3')
-      expect(meta!.image).toBe('/favicon.svg')
+      expect(meta!.image).toBe('/og-image.png')
     })
   })
 })

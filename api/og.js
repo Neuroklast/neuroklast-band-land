@@ -14,7 +14,7 @@ import { applyRateLimit } from './_ratelimit.js'
 
 const FALLBACK_TITLE = 'NEUROKLAST'
 const FALLBACK_DESCRIPTION = 'NEUROKLAST – Hard Techno, Industrial, DNB & Dark Electro.'
-const FALLBACK_IMAGE = '/favicon.svg'
+const FALLBACK_IMAGE = '/og-image.png'
 
 /** Derive the site origin from a trusted source, not raw Host header. */
 function getOrigin() {
