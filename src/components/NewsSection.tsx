@@ -1,5 +1,5 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Plus, Trash, PencilSimple, ArrowSquareOut, TextB, TextItalic, TextHOne, LinkSimple, ListBullets } from '@phosphor-icons/react'
+import { Plus, Trash, PencilSimple, ArrowSquareOut, TextB, TextItalic, TextHOne, LinkSimple, ListBullets, ShareNetwork, Copy, Check } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import ProgressiveImage from '@/components/ProgressiveImage'
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { format } from 'date-fns'
 import { marked } from 'marked'
@@ -69,6 +69,46 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
     TITLE_TYPING_SPEED_MS,
     TITLE_TYPING_START_DELAY_MS
   )
+
+  // Update URL hash when a news item is selected/deselected
+  const selectNews = useCallback((item: NewsItem | null) => {
+    setSelectedNews(item)
+    if (item) {
+      window.history.replaceState(null, '', `#news/${item.id}`)
+    } else {
+      // Restore clean #news hash when closing the overlay
+      window.history.replaceState(null, '', '#news')
+    }
+  }, [])
+
+  // Deep-link: open a specific news item when the page loads with #news/{id}
+  useEffect(() => {
+    if (!news.length) return
+    const hash = window.location.hash
+    const match = hash.match(/^#news\/(.+)$/)
+    if (match) {
+      const target = news.find(n => n.id === match[1])
+      if (target) {
+        setSelectedNews(target)
+      }
+    }
+  }, [news])
+
+  // Listen for hash changes (e.g. browser back/forward navigation)
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash
+      const match = hash.match(/^#news\/(.+)$/)
+      if (match) {
+        const target = news.find(n => n.id === match[1])
+        if (target) setSelectedNews(target)
+      } else {
+        setSelectedNews(null)
+      }
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [news])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -157,7 +197,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
               className="border border-border hover:border-primary/50 bg-card/50 p-4 md:p-5 transition-all duration-300 hud-element hud-corner group cursor-pointer"
-              onClick={() => !editMode && setSelectedNews(item)}
+              onClick={() => !editMode && selectNews(item)}
             >
               <span className="corner-bl"></span>
               <span className="corner-br"></span>
@@ -255,7 +295,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
         {selectedNews && (
           <NewsDetailOverlay
             item={selectedNews}
-            onClose={() => setSelectedNews(null)}
+            onClose={() => selectNews(null)}
             sectionLabels={sectionLabels}
           />
         )}
@@ -270,6 +310,8 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
   onClose: () => void
   sectionLabels?: SectionLabels
 }) {
+  const [copied, setCopied] = useState(false)
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', handleKey)
@@ -280,6 +322,43 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
     () => item.details ? renderMarkdown(item.details) : '',
     [item.details]
   )
+
+  const shareUrl = `${window.location.origin}${window.location.pathname}#news/${item.id}`
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for older browsers
+      const input = document.createElement('input')
+      input.value = shareUrl
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.text,
+          text: item.details ? item.text + ' — ' + item.details.slice(0, 100) : item.text,
+          url: shareUrl,
+        })
+      } catch {
+        // User cancelled or share failed — fall back to copy
+        handleCopyLink()
+      }
+    } else {
+      handleCopyLink()
+    }
+  }
 
   return (
     <motion.div
@@ -313,20 +392,38 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
               NEWS // {formatNewsDate(item.date)}
             </span>
           </div>
-          <CyberCloseButton
-            onClick={onClose}
-            label={sectionLabels?.closeButtonText || 'CLOSE'}
-          />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors tracking-wider"
+              title="Share"
+            >
+              <ShareNetwork size={12} />
+              SHARE
+            </button>
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors tracking-wider"
+              title="Copy link"
+            >
+              {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+              {copied ? 'COPIED' : 'LINK'}
+            </button>
+            <CyberCloseButton
+              onClick={onClose}
+              label={sectionLabels?.closeButtonText || 'CLOSE'}
+            />
+          </div>
         </div>
 
         {/* Content */}
         <div className="overflow-y-auto p-6 space-y-4">
           {item.photo && (
-            <div className="w-full max-h-64 overflow-hidden rounded-sm border border-primary/20">
+            <div className="w-full rounded-sm border border-primary/20">
               <ProgressiveImage
                 src={item.photo}
                 alt={item.text}
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-contain"
               />
             </div>
           )}
@@ -342,17 +439,19 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
             />
           )}
 
-          {item.link && (
-            <a
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
-            >
-              <ArrowSquareOut size={16} />
-              OPEN LINK
-            </a>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {item.link && (
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)]"
+              >
+                <ArrowSquareOut size={16} />
+                OPEN LINK
+              </a>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
