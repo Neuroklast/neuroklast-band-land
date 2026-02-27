@@ -7,7 +7,7 @@ import { isHardBlocked } from './_blocklist.js'
 import { serveZipBomb } from './_zipbomb.js'
 import { recordIncident } from './_attacker-profile.js'
 import { detectSqlInjection, handleSqlInjectionBackfire } from './_sql-backfire.js'
-import { serveCanaryDocument } from './_canary-documents.js'
+import { serveCanaryDocument, generateCanaryToken } from './_canary-documents.js'
 import { applyLogPoisoning } from './_log-poisoning.js'
 
 /**
@@ -64,11 +64,36 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;')
 }
 
-/** Generate a standard-looking 403 error page */
-function renderErrorPage(path) {
+/** Generate a standard-looking 403 error page with optional canary tracking */
+function renderErrorPage(path, canaryToken) {
   const ref = randomBytes(4).toString('hex')
   const links = pickLinks()
   const padding = randomBytes(3072).toString('base64')
+  const callbackUrl = canaryToken ? `/api/canary-callback?t=${canaryToken}` : ''
+  const canaryPixel = canaryToken
+    ? `\n<img src="${callbackUrl}&e=img" width="1" height="1" style="position:absolute;left:-9999px" alt="">`
+    : ''
+  const canaryScript = canaryToken
+    ? `\n<script>
+(function(){
+  var d={t:"${canaryToken}",ts:Date.now(),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
+    lang:navigator.language,plat:navigator.platform,cores:navigator.hardwareConcurrency||0,
+    mem:navigator.deviceMemory||0,sw:screen.width,sh:screen.height,cd:screen.colorDepth,
+    touch:'ontouchstart'in window};
+  try{var c=document.createElement('canvas');var g=c.getContext('2d');
+    g.textBaseline='top';g.font='14px Arial';g.fillText('fp',2,2);
+    d.cvs=c.toDataURL().slice(-32)}catch(e){}
+  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
+    r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
+    r.onicecandidate=function(e){if(e.candidate){
+      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
+      if(m){d.realIp=m[1];send()}}}}catch(e){}
+  function send(){var x=new XMLHttpRequest();x.open('POST',"${callbackUrl}&e=js");
+    x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(d))}
+  setTimeout(send,2000);
+})();
+</script>`
+    : ''
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,7 +119,7 @@ nav{margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:cent
 <nav>
 ${links.map(l => `<a href="${l}">${l.slice(1)}</a>`).join('\n')}
 </nav>
-</div>
+</div>${canaryPixel}${canaryScript}
 <!-- ${padding} -->
 </body>
 </html>`
@@ -226,7 +251,19 @@ export default async function handler(req, res) {
   injectEntropyHeaders(res, 50)
   setDefenseHeaders(res)
 
+  // Generate canary token so the 403 error page also acts as a canary
+  // document.  When the attacker's browser renders the page, embedded
+  // tracking fires a callback that collects forensic data (real IP via
+  // WebRTC STUN, screen size, timezone, canvas fingerprint, etc.).
+  let canaryToken = null
+  try {
+    const secSettings = settings || await kv.get('nk-security-settings').catch(() => null)
+    if (secSettings?.canaryDocumentsEnabled) {
+      canaryToken = await generateCanaryToken(req)
+    }
+  } catch { /* canary token generation failure must not block the response */ }
+
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
-  return res.status(403).send(renderErrorPage(path))
+  return res.status(403).send(renderErrorPage(path, canaryToken))
 }

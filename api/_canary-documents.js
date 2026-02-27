@@ -1,7 +1,7 @@
 import { kv } from '@vercel/kv'
 import { randomBytes, createHash } from 'node:crypto'
 import { getClientIp, hashIp } from './_ratelimit.js'
-import { recordIncident } from './_attacker-profile.js'
+import { recordIncident, addForensicData } from './_attacker-profile.js'
 import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
 import { sendSecurityAlert } from './_alerting.js'
 
@@ -255,6 +255,21 @@ export async function handleCanaryCallback(req, res) {
       event: fingerprint.event,
       userAgent: fingerprint.userAgent,
       timestamp: fingerprint.timestamp,
+    })
+  } catch { /* ignore */ }
+
+  // Persist forensic data in attacker profile for dashboard display
+  try {
+    await addForensicData(hashedIp, {
+      token,
+      event: fingerprint.event,
+      timestamp: fingerprint.timestamp,
+      documentPath: fingerprint.documentPath,
+      userAgent: fingerprint.userAgent,
+      acceptLanguage: fingerprint.acceptLanguage,
+      openerIp: fingerprint.openerIp,
+      downloaderIp: fingerprint.downloaderIp,
+      jsFingerprint: fingerprint.jsFingerprint,
     })
   } catch { /* ignore */ }
 

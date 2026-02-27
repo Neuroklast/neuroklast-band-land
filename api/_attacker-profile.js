@@ -292,6 +292,57 @@ export function analyzeUserAgents(profile) {
 }
 
 /**
+ * Add forensic data collected from canary document callbacks to a profile.
+ *
+ * Forensic data includes browser fingerprints, real IPs discovered via
+ * WebRTC STUN, screen dimensions, timezone, language and canvas hashes.
+ * Stored under Art. 6(1)(f) GDPR — legitimate interest in defending
+ * against active intrusion attempts.
+ *
+ * @param {string} hashedIp - SHA-256 hashed IP of the attacker
+ * @param {object} forensicEntry - Forensic data from canary callback
+ */
+export async function addForensicData(hashedIp, forensicEntry) {
+  try {
+    const profileKey = `${PROFILE_PREFIX}${hashedIp}`
+    let profile = await kv.get(profileKey)
+
+    if (!profile) {
+      // No profile yet — create a minimal one so forensic data is not lost
+      profile = {
+        hashedIp,
+        firstSeen: forensicEntry.timestamp || new Date().toISOString(),
+        lastSeen: forensicEntry.timestamp || new Date().toISOString(),
+        totalIncidents: 0,
+        attackTypes: {},
+        userAgents: {},
+        threatScoreHistory: [],
+        incidents: [],
+        forensicData: []
+      }
+    }
+
+    // Ensure forensicData array exists (for profiles created before this feature)
+    profile.forensicData = profile.forensicData || []
+
+    profile.forensicData.push(forensicEntry)
+
+    // Keep last 50 forensic entries
+    if (profile.forensicData.length > 50) {
+      profile.forensicData = profile.forensicData.slice(-50)
+    }
+
+    await kv.set(profileKey, profile, { ex: PROFILE_TTL })
+    await kv.sadd(PROFILE_LIST_KEY, hashedIp)
+
+    return profile
+  } catch (error) {
+    console.error('[PROFILE] Failed to add forensic data:', error)
+    return null
+  }
+}
+
+/**
  * Delete an attacker profile.
  */
 export async function deleteProfile(hashedIp) {
