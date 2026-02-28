@@ -4,6 +4,7 @@ import { ProhibitInset, Trash, Clock, Warning, Plus, CheckCircle } from '@phosph
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { t, tip, type Locale, LOCALES } from '@/lib/i18n-security'
 
 interface BlockedEntry {
   hashedIp: string
@@ -22,7 +23,14 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [locale, setLocale] = useState<Locale>(() => {
+    if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
+    return 'en'
+  })
   
+  const L = (key: string) => t(key, locale)
+  const LT = (key: string) => tip(key, locale)
+
   // Add form state
   const [newHashedIp, setNewHashedIp] = useState('')
   const [newReason, setNewReason] = useState('')
@@ -59,7 +67,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
   }
 
   const handleUnblock = async (hashedIp: string) => {
-    if (!window.confirm(`Unblock IP hash ${hashedIp.slice(0, 12)}...? This cannot be undone.`)) return
+    if (!window.confirm(`${L('blocklist.unblockConfirm')} ${hashedIp.slice(0, 12)}...? ${L('blocklist.cannotBeUndone')}`)) return
     try {
       const res = await fetch('/api/blocklist', {
         method: 'DELETE',
@@ -71,16 +79,16 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || `HTTP ${res.status}`)
       }
-      toast.success('IP unblocked')
+      toast.success(L('blocklist.ipUnblocked'))
       loadBlocklist()
     } catch (err) {
-      toast.error(`Failed to unblock: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toast.error(`${L('blocklist.failedUnblock')}: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
   }
 
   const handleAddBlock = async () => {
     if (!newHashedIp.trim()) {
-      toast.error('IP hash is required')
+      toast.error(L('blocklist.ipHashRequired'))
       return
     }
     setAdding(true)
@@ -99,14 +107,14 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || `HTTP ${res.status}`)
       }
-      toast.success('IP blocked')
+      toast.success(L('blocklist.ipBlocked'))
       setNewHashedIp('')
       setNewReason('')
       setNewTtl(604800)
       setShowAddForm(false)
       loadBlocklist()
     } catch (err) {
-      toast.error(`Failed to block: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toast.error(`${L('blocklist.failedBlock')}: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setAdding(false)
     }
@@ -114,7 +122,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
 
   const formatTime = (ts: string) => {
     try {
-      return new Date(ts).toLocaleString('en-GB', {
+      return new Date(ts).toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB', {
         year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit', second: '2-digit',
       })
@@ -129,7 +137,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
       const expiry = new Date(blocked + ttl * 1000)
       const now = Date.now()
       const remaining = expiry.getTime() - now
-      if (remaining < 0) return 'Expired'
+      if (remaining < 0) return L('blocklist.expired')
       const hours = Math.floor(remaining / 3600000)
       const days = Math.floor(hours / 24)
       if (days > 0) return `${days}d ${hours % 24}h`
@@ -164,26 +172,42 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
               <div className="flex items-center gap-3">
                 <ProhibitInset size={16} className="text-primary/70" />
                 <span className="font-mono text-[11px] text-primary/70 tracking-wider uppercase">
-                  BLOCKLIST MANAGER // HARD BLOCKS
+                  {L('blocklist.title')}
                 </span>
               </div>
-              <CyberCloseButton onClick={onClose} label="CLOSE" />
+              <div className="flex items-center gap-2">
+                <div className="flex border border-primary/20">
+                  {LOCALES.map(loc => (
+                    <button
+                      key={loc.value}
+                      onClick={() => setLocale(loc.value)}
+                      className={`px-2 py-0.5 text-[9px] font-mono transition-colors ${
+                        locale === loc.value ? 'bg-primary/30 text-primary' : 'text-primary/40 hover:text-primary/70'
+                      }`}
+                      title={loc.value === 'en' ? 'English' : 'Deutsch'}
+                    >
+                      {loc.label}
+                    </button>
+                  ))}
+                </div>
+                <CyberCloseButton onClick={onClose} label={L('sec.close')} />
+              </div>
             </div>
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
               {/* Stats */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="border border-primary/20 bg-primary/5 p-3">
-                  <p className="font-mono text-[10px] text-primary/50 uppercase tracking-wider mb-1">Total Blocked</p>
+                <div className="border border-primary/20 bg-primary/5 p-3" title={LT('blocklist.totalBlocked')}>
+                  <p className="font-mono text-[10px] text-primary/50 uppercase tracking-wider mb-1">{L('blocklist.totalBlocked')}</p>
                   <p className="font-mono text-[20px] text-foreground/90 font-bold">{totalBlocked}</p>
                 </div>
-                <div className="border border-orange-500/20 bg-orange-500/5 p-3">
-                  <p className="font-mono text-[10px] text-orange-400/70 uppercase tracking-wider mb-1">Auto-Blocked</p>
+                <div className="border border-orange-500/20 bg-orange-500/5 p-3" title={LT('blocklist.autoBlocked')}>
+                  <p className="font-mono text-[10px] text-orange-400/70 uppercase tracking-wider mb-1">{L('blocklist.autoBlocked')}</p>
                   <p className="font-mono text-[20px] text-orange-400 font-bold">{autoBlocked}</p>
                 </div>
-                <div className="border border-blue-500/20 bg-blue-500/5 p-3">
-                  <p className="font-mono text-[10px] text-blue-400/70 uppercase tracking-wider mb-1">Manual-Blocked</p>
+                <div className="border border-blue-500/20 bg-blue-500/5 p-3" title={LT('blocklist.manualBlocked')}>
+                  <p className="font-mono text-[10px] text-blue-400/70 uppercase tracking-wider mb-1">{L('blocklist.manualBlocked')}</p>
                   <p className="font-mono text-[20px] text-blue-400 font-bold">{manualBlocked}</p>
                 </div>
               </div>
@@ -195,7 +219,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
               >
                 <Plus size={16} className="text-primary/70" />
                 <span className="font-mono text-[11px] text-primary/70 uppercase tracking-wider">
-                  {showAddForm ? 'CANCEL' : 'ADD BLOCK'}
+                  {showAddForm ? L('blocklist.cancel') : L('blocklist.addBlock')}
                 </span>
               </button>
 
@@ -210,42 +234,42 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                   >
                     <div>
                       <label className="block font-mono text-[11px] text-primary/60 uppercase tracking-wider mb-2">
-                        IP Hash (SHA-256)
+                        {L('blocklist.ipHashLabel')}
                       </label>
                       <input
                         type="text"
                         value={newHashedIp}
                         onChange={(e) => setNewHashedIp(e.target.value)}
-                        placeholder="e.g. a1b2c3d4e5f6..."
+                        placeholder={L('blocklist.ipHashPlaceholder')}
                         className="w-full bg-black/50 border border-primary/20 px-3 py-2 font-mono text-[12px] text-foreground/80 focus:border-primary/50 focus:outline-none"
                       />
                     </div>
                     <div>
                       <label className="block font-mono text-[11px] text-primary/60 uppercase tracking-wider mb-2">
-                        Reason
+                        {L('blocklist.reasonLabel')}
                       </label>
                       <input
                         type="text"
                         value={newReason}
                         onChange={(e) => setNewReason(e.target.value)}
-                        placeholder="e.g. manual block, persistent attacker, etc."
+                        placeholder={L('blocklist.reasonPlaceholder')}
                         className="w-full bg-black/50 border border-primary/20 px-3 py-2 font-mono text-[12px] text-foreground/80 focus:border-primary/50 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-mono text-[11px] text-primary/60 uppercase tracking-wider mb-2">
-                        Duration (TTL)
+                      <label className="block font-mono text-[11px] text-primary/60 uppercase tracking-wider mb-2" title={LT('blocklist.durationTip')}>
+                        {L('blocklist.durationLabel')}
                       </label>
                       <select
                         value={newTtl}
                         onChange={(e) => setNewTtl(Number(e.target.value))}
                         className="w-full bg-black/50 border border-primary/20 px-3 py-2 font-mono text-[12px] text-foreground/80 focus:border-primary/50 focus:outline-none"
                       >
-                        <option value={3600}>1 hour</option>
-                        <option value={86400}>24 hours</option>
-                        <option value={604800}>7 days</option>
-                        <option value={2592000}>30 days</option>
-                        <option value={31536000}>1 year</option>
+                        <option value={3600}>{L('blocklist.dur1h')}</option>
+                        <option value={86400}>{L('blocklist.dur24h')}</option>
+                        <option value={604800}>{L('blocklist.dur7d')}</option>
+                        <option value={2592000}>{L('blocklist.dur30d')}</option>
+                        <option value={31536000}>{L('blocklist.dur1y')}</option>
                       </select>
                     </div>
                     <button
@@ -255,7 +279,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                     >
                       <ProhibitInset size={16} className="text-red-400" />
                       <span className="font-mono text-[11px] text-red-400 uppercase tracking-wider">
-                        {adding ? 'BLOCKING...' : 'BLOCK IP'}
+                        {adding ? L('blocklist.blocking') : L('blocklist.blockIp')}
                       </span>
                     </button>
                   </motion.div>
@@ -265,21 +289,21 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
               {loading && (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-4 h-4 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
-                  <span className="ml-3 font-mono text-[11px] text-primary/50">LOADING BLOCKLIST...</span>
+                  <span className="ml-3 font-mono text-[11px] text-primary/50">{L('blocklist.loading')}</span>
                 </div>
               )}
 
               {error && (
                 <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-                  <p className="font-mono text-[12px] text-red-400">FAILED TO LOAD: {error}</p>
+                  <p className="font-mono text-[12px] text-red-400">{L('blocklist.failedToLoad')}: {error}</p>
                 </div>
               )}
 
               {!loading && !error && entries.length === 0 && (
                 <div className="border border-primary/15 bg-primary/5 p-8 text-center">
                   <CheckCircle size={32} className="text-green-400/50 mx-auto mb-2" />
-                  <p className="font-mono text-[12px] text-primary/50">No blocked IPs</p>
-                  <p className="font-mono text-[10px] text-primary/40 mt-1">All clear! No hard blocks active.</p>
+                  <p className="font-mono text-[12px] text-primary/50">{L('blocklist.noBlocked')}</p>
+                  <p className="font-mono text-[10px] text-primary/40 mt-1">{L('blocklist.allClear')}</p>
                 </div>
               )}
 
@@ -287,11 +311,11 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                 <div className="border border-primary/20 overflow-hidden">
                   {/* Table header */}
                   <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 grid grid-cols-[2fr,2fr,1.5fr,1fr,auto] gap-4">
-                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">IP Hash</span>
-                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">Reason</span>
-                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">Blocked At</span>
-                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">Expires</span>
-                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">Action</span>
+                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">{L('blocklist.colIpHash')}</span>
+                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">{L('blocklist.colReason')}</span>
+                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">{L('blocklist.colBlockedAt')}</span>
+                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">{L('blocklist.colExpires')}</span>
+                    <span className="font-mono text-[10px] text-primary/60 uppercase tracking-wider">{L('blocklist.colAction')}</span>
                   </div>
 
                   {/* Table rows */}
@@ -307,7 +331,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                           </p>
                           {entry.autoBlocked && (
                             <span className="inline-block mt-1 px-1.5 py-0.5 text-[8px] font-mono font-bold tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
-                              AUTO
+                              {L('blocklist.auto')}
                             </span>
                           )}
                         </div>
@@ -321,7 +345,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                           className="px-3 py-1.5 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-colors flex items-center gap-2"
                         >
                           <Trash size={12} className="text-red-400" />
-                          <span className="font-mono text-[9px] text-red-400 uppercase tracking-wider">Unblock</span>
+                          <span className="font-mono text-[9px] text-red-400 uppercase tracking-wider">{L('blocklist.unblock')}</span>
                         </button>
                       </div>
                     ))}

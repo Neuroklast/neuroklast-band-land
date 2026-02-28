@@ -4,6 +4,7 @@ import { X, Warning, Clock, Globe, User, ChartLine, List, Shield, Fingerprint } 
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { t, tip, type Locale, LOCALES } from '@/lib/i18n-security'
 
 interface AttackerProfileDialogProps {
   open: boolean
@@ -113,6 +114,12 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [locale, setLocale] = useState<Locale>(() => {
+    if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
+    return 'en'
+  })
+  const L = (key: string) => t(key, locale)
+  const LT = (key: string) => tip(key, locale)
 
   useEffect(() => {
     if (!open || !hashedIp) return
@@ -217,10 +224,26 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
               <div className="flex items-center gap-3">
                 <Shield size={16} className="text-primary/70" />
                 <span className="font-mono text-[11px] text-primary/70 tracking-wider uppercase">
-                  ATTACKER PROFILE // DETAILED ANALYSIS
+                  {L('profile.title')}
                 </span>
               </div>
-              <CyberCloseButton onClick={onClose} label="CLOSE" />
+              <div className="flex items-center gap-2">
+                <div className="flex border border-primary/20">
+                  {LOCALES.map(loc => (
+                    <button
+                      key={loc.value}
+                      onClick={() => setLocale(loc.value)}
+                      className={`px-2 py-0.5 text-[9px] font-mono transition-colors ${
+                        locale === loc.value ? 'bg-primary/30 text-primary' : 'text-primary/40 hover:text-primary/70'
+                      }`}
+                      title={loc.value === 'en' ? 'English' : 'Deutsch'}
+                    >
+                      {loc.label}
+                    </button>
+                  ))}
+                </div>
+                <CyberCloseButton onClick={onClose} label={L('sec.close')} />
+              </div>
             </div>
 
             {/* Content */}
@@ -228,13 +251,13 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
               {loading && (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-4 h-4 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
-                  <span className="ml-3 font-mono text-[11px] text-primary/50">LOADING PROFILE...</span>
+                  <span className="ml-3 font-mono text-[11px] text-primary/50">{L('profile.loading')}</span>
                 </div>
               )}
 
               {error && (
                 <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-                  <p className="font-mono text-[12px] text-red-400">FAILED TO LOAD: {error}</p>
+                  <p className="font-mono text-[12px] text-red-400">{L('profile.failedToLoad')}: {error}</p>
                 </div>
               )}
 
@@ -244,11 +267,11 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                   <div className="border border-primary/20 bg-primary/5 p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-mono text-[10px] text-primary/50 uppercase">IP Hash (SHA-256)</p>
+                        <p className="font-mono text-[10px] text-primary/50 uppercase" title={LT('profile.ipHash')}>{L('profile.ipHash')}</p>
                         <p className="font-mono text-[12px] text-foreground/90 mt-1">{hashedIp}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-mono text-[10px] text-primary/50 uppercase">Current Threat Score</p>
+                        <p className="font-mono text-[10px] text-primary/50 uppercase">{L('profile.currentScore')}</p>
                         {(() => {
                           const lastEntry = profile.threatScoreHistory[profile.threatScoreHistory.length - 1]
                           const threatColor = lastEntry?.level 
@@ -264,19 +287,19 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                     </div>
                     <div className="grid grid-cols-4 gap-4 pt-2 border-t border-primary/10">
                       <div>
-                        <p className="font-mono text-[10px] text-primary/50">Total Incidents</p>
+                        <p className="font-mono text-[10px] text-primary/50" title={LT('profile.totalIncidents')}>{L('profile.totalIncidents')}</p>
                         <p className="font-mono text-[16px] text-foreground/90 font-bold">{profile.totalIncidents}</p>
                       </div>
                       <div>
-                        <p className="font-mono text-[10px] text-primary/50">First Seen</p>
-                        <p className="font-mono text-[11px] text-foreground/80">{formatShortTime(profile.firstSeen)}</p>
+                        <p className="font-mono text-[10px] text-primary/50" title={LT('profile.firstSeen')}>{L('profile.firstSeen')}</p>
+                        <p className="font-mono text-[11px] text-foreground/80">{formatTime(profile.firstSeen)}</p>
                       </div>
                       <div>
-                        <p className="font-mono text-[10px] text-primary/50">Last Seen</p>
-                        <p className="font-mono text-[11px] text-foreground/80">{formatShortTime(profile.lastSeen)}</p>
+                        <p className="font-mono text-[10px] text-primary/50" title={LT('profile.lastSeen')}>{L('profile.lastSeen')}</p>
+                        <p className="font-mono text-[11px] text-foreground/80">{formatTime(profile.lastSeen)}</p>
                       </div>
                       <div>
-                        <p className="font-mono text-[10px] text-primary/50">UA Diversity</p>
+                        <p className="font-mono text-[10px] text-primary/50" title={LT('profile.uaDiversity')}>{L('profile.uaDiversity')}</p>
                         <p className="font-mono text-[11px] text-foreground/80">{profile.userAgentAnalysis.diversity}</p>
                       </div>
                     </div>
@@ -287,7 +310,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                     <div className="border border-primary/20 bg-card p-4">
                       <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <ChartLine size={14} />
-                        Behavioral Patterns Detected ({profile.behavioralPatterns.length})
+                        {L('profile.behavioralPatterns')} ({profile.behavioralPatterns.length})
                       </h3>
                       <div className="space-y-2">
                         {profile.behavioralPatterns.map((pattern, idx) => (
@@ -314,7 +337,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                     <div className="border border-primary/20 bg-card p-4">
                       <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <ChartLine size={14} />
-                        Threat Score Timeline
+                        {L('profile.threatTimeline')}
                       </h3>
                       <ResponsiveContainer width="100%" height={200}>
                         <LineChart data={threatScoreChartData}>
@@ -354,7 +377,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                     <div className="border border-primary/20 bg-card p-4">
                       <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Globe size={14} />
-                        Attack Type Distribution
+                        {L('profile.attackDistribution')}
                       </h3>
                       <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
@@ -389,7 +412,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                   <div className="border border-primary/20 bg-card p-4">
                     <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <User size={14} />
-                      User-Agent Analysis ({profile.userAgentAnalysis.unique} unique)
+                      {L('profile.uaAnalysis')} ({profile.userAgentAnalysis.unique} {L('profile.unique')})
                     </h3>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {/* Category breakdown chart */}
@@ -422,7 +445,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                       {/* Top User-Agents table */}
                       <div className="border border-primary/10 overflow-hidden">
                         <div className="bg-primary/10 px-3 py-2 font-mono text-[10px] text-primary/60 uppercase">
-                          Top User-Agents
+                          {L('profile.topUserAgents')}
                         </div>
                         <div className="divide-y divide-primary/10 max-h-[180px] overflow-y-auto">
                           {profile.userAgentAnalysis.userAgents.slice(0, 10).map((ua, idx) => (
@@ -452,15 +475,15 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                   <div className="border border-primary/20 bg-card p-4">
                     <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <List size={14} />
-                      Recent Incidents ({profile.incidents.length})
+                      {L('profile.recentIncidents')} ({profile.incidents.length})
                     </h3>
                     <div className="border border-primary/10 overflow-hidden">
                       <div className="bg-primary/10 px-3 py-2 grid grid-cols-[1fr,2fr,1fr,1fr,1fr] gap-2 font-mono text-[10px] text-primary/60 uppercase">
-                        <span>Time</span>
-                        <span>Type</span>
-                        <span>Method</span>
-                        <span>Score</span>
-                        <span>Level</span>
+                        <span>{L('profile.colTime')}</span>
+                        <span>{L('profile.colType')}</span>
+                        <span>{L('profile.colMethod')}</span>
+                        <span>{L('profile.colScore')}</span>
+                        <span>{L('profile.colLevel')}</span>
                       </div>
                       <div className="divide-y divide-primary/10 max-h-[250px] overflow-y-auto">
                         {profile.incidents.slice().reverse().map((incident, idx) => (
@@ -487,7 +510,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                   <div className="border border-primary/20 bg-card p-4">
                     <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <Shield size={14} />
-                      Automatische Reaktionen
+                      {L('profile.autoReactions')}
                     </h3>
                     {(() => {
                       const blocked = profile.incidents.filter(i => i.threatLevel === 'BLOCK' || i.key?.startsWith('blocked:'))
@@ -500,26 +523,26 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                         <div className="space-y-2 text-[11px] font-mono">
                           {firstAlert && (
                             <p className="text-foreground/60">
-                              <span className="text-primary/50">Erster Alert:</span>{' '}
-                              {new Date(firstAlert.timestamp).toLocaleString('de-DE')}
+                              <span className="text-primary/50">{L('profile.firstAlert')}</span>{' '}
+                              {new Date(firstAlert.timestamp).toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB')}
                             </p>
                           )}
                           <div className="grid grid-cols-3 gap-2 mt-2">
                             <div className="border border-red-500/20 bg-red-500/5 p-2 text-center">
                               <p className="text-red-400 text-lg font-bold">{blocked.length}</p>
-                              <p className="text-[9px] text-red-400/60 uppercase">BLOCKED</p>
+                              <p className="text-[9px] text-red-400/60 uppercase">{L('profile.blocked')}</p>
                             </div>
                             <div className="border border-orange-500/20 bg-orange-500/5 p-2 text-center">
                               <p className="text-orange-400 text-lg font-bold">{tarpitted.length}</p>
-                              <p className="text-[9px] text-orange-400/60 uppercase">TARPITTED</p>
+                              <p className="text-[9px] text-orange-400/60 uppercase">{L('profile.tarpitted')}</p>
                             </div>
                             <div className="border border-yellow-500/20 bg-yellow-500/5 p-2 text-center">
                               <p className="text-yellow-400 text-lg font-bold">{warned.length}</p>
-                              <p className="text-[9px] text-yellow-400/60 uppercase">GEWARNT</p>
+                              <p className="text-[9px] text-yellow-400/60 uppercase">{L('profile.warned')}</p>
                             </div>
                           </div>
                           <p className="text-[10px] text-foreground/40 mt-2">
-                            IP Status: {blocked.length > 0 ? '🔴 War geblockt' : tarpitted.length > 0 ? '🟠 War getarpit' : '🟡 Überwacht'}
+                            {L('profile.ipStatus')}: {blocked.length > 0 ? `🔴 ${L('profile.wasBlocked')}` : tarpitted.length > 0 ? `🟠 ${L('profile.wasTarpitted')}` : `🟡 ${L('profile.monitored')}`}
                           </p>
                         </div>
                       )
@@ -530,10 +553,10 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                     <div className="border border-primary/20 bg-card p-4">
                       <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Fingerprint size={14} />
-                        Forensische Daten ({profile.forensicData.length} Canary-Callbacks)
+                        {L('profile.forensicData')} ({profile.forensicData.length} {L('profile.canaryCallbacks')})
                       </h3>
                       <p className="text-[9px] text-primary/40 mb-3 font-mono">
-                        Art. 6(1)(f) DSGVO — Speicherung aus berechtigtem Interesse zur Abwehr aktiver Angriffe
+                        {L('profile.gdprNote')}
                       </p>
                       <div className="space-y-3 max-h-[400px] overflow-y-auto">
                         {profile.forensicData.slice().reverse().map((entry, idx) => (
@@ -549,23 +572,23 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
 
                             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                               <div>
-                                <p className="font-mono text-[9px] text-primary/40">Canary Token</p>
+                                <p className="font-mono text-[9px] text-primary/40">{L('profile.canaryToken')}</p>
                                 <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.token}>{entry.token}</p>
                               </div>
                               <div>
-                                <p className="font-mono text-[9px] text-primary/40">Dokument</p>
+                                <p className="font-mono text-[9px] text-primary/40">{L('profile.document')}</p>
                                 <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.documentPath}>{entry.documentPath}</p>
                               </div>
                               <div>
-                                <p className="font-mono text-[9px] text-primary/40">Opener IP (Hash)</p>
+                                <p className="font-mono text-[9px] text-primary/40">{L('profile.openerIp')}</p>
                                 <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.openerIp}>{entry.openerIp || '—'}</p>
                               </div>
                               <div>
-                                <p className="font-mono text-[9px] text-primary/40">Downloader IP (Hash)</p>
+                                <p className="font-mono text-[9px] text-primary/40">{L('profile.downloaderIp')}</p>
                                 <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.downloaderIp}>{entry.downloaderIp || '—'}</p>
                               </div>
                               <div className="col-span-2">
-                                <p className="font-mono text-[9px] text-primary/40">User-Agent</p>
+                                <p className="font-mono text-[9px] text-primary/40">{L('sec.userAgent')}</p>
                                 <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.userAgent}>{entry.userAgent || '—'}</p>
                               </div>
                               {entry.acceptLanguage && (
@@ -578,59 +601,59 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
 
                             {entry.jsFingerprint && (
                               <div className="border-t border-primary/10 pt-2 mt-2">
-                                <p className="font-mono text-[9px] text-red-400/70 uppercase mb-1">JS Fingerprint — Echte Gerätedaten</p>
+                                <p className="font-mono text-[9px] text-red-400/70 uppercase mb-1">{L('profile.jsFingerprint')}</p>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
                                   {entry.jsFingerprint.realIp && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">Echte IP (WebRTC, Hash)</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.realIp')}</p>
                                       <p className="font-mono text-[10px] text-red-400 font-bold truncate" title={entry.jsFingerprint.realIp}>{entry.jsFingerprint.realIp}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.timezone && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">Zeitzone</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.timezone')}</p>
                                       <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.timezone}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.language && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">Sprache</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.language')}</p>
                                       <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.language}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.platform && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">Plattform / OS</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.platform')}</p>
                                       <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.platform}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.screenWidth != null && entry.jsFingerprint.screenHeight != null && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">Bildschirm</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.screen')}</p>
                                       <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.screenWidth}×{entry.jsFingerprint.screenHeight} ({entry.jsFingerprint.colorDepth || '?'}bit)</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.cores != null && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">CPU Kerne</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.cpuCores')}</p>
                                       <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.cores}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.memory != null && entry.jsFingerprint.memory > 0 && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">RAM (GB)</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.ram')}</p>
                                       <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.memory}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.touchSupport != null && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">Touch</p>
-                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.touchSupport ? 'Ja' : 'Nein'}</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.touch')}</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.touchSupport ? L('profile.yes') : L('profile.no')}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.canvasHash && (
                                     <div>
-                                      <p className="font-mono text-[9px] text-primary/40">Canvas Hash</p>
+                                      <p className="font-mono text-[9px] text-primary/40">{L('profile.canvasHash')}</p>
                                       <p className="font-mono text-[10px] text-foreground/80 truncate" title={entry.jsFingerprint.canvasHash}>{entry.jsFingerprint.canvasHash}</p>
                                     </div>
                                   )}

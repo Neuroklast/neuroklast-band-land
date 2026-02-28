@@ -192,3 +192,123 @@ describe('SecurityIncidentsDashboard: classifyCountermeasure', () => {
     expect(classifyCountermeasure(baseIncident)).toBe('LOGGED')
   })
 })
+
+// ---------------------------------------------------------------------------
+describe('i18n-security: AttackerProfileDialog translations', () => {
+  it('has translations for profile title and loading', () => {
+    expect(t('profile.title', 'en')).toBe('ATTACKER PROFILE // DETAILED ANALYSIS')
+    expect(t('profile.title', 'de')).toBe('ANGREIFER-PROFIL // DETAILANALYSE')
+    expect(t('profile.loading', 'en')).toBe('LOADING PROFILE...')
+    expect(t('profile.loading', 'de')).toBe('LADE PROFIL...')
+  })
+
+  it('has translations for profile stat labels', () => {
+    expect(t('profile.totalIncidents', 'en')).toBe('Total Incidents')
+    expect(t('profile.totalIncidents', 'de')).toBe('Vorfälle gesamt')
+    expect(t('profile.firstSeen', 'en')).toBe('First Seen')
+    expect(t('profile.firstSeen', 'de')).toBe('Erstmals gesehen')
+    expect(t('profile.lastSeen', 'en')).toBe('Last Seen')
+    expect(t('profile.lastSeen', 'de')).toBe('Zuletzt gesehen')
+    expect(t('profile.uaDiversity', 'en')).toBe('UA Diversity')
+    expect(t('profile.uaDiversity', 'de')).toBe('UA-Diversität')
+  })
+
+  it('has translations for profile section headers', () => {
+    expect(t('profile.behavioralPatterns', 'en')).toBe('Behavioral Patterns Detected')
+    expect(t('profile.behavioralPatterns', 'de')).toBe('Erkannte Verhaltensmuster')
+    expect(t('profile.threatTimeline', 'en')).toBe('Threat Score Timeline')
+    expect(t('profile.autoReactions', 'en')).toBe('Automated Reactions')
+    expect(t('profile.autoReactions', 'de')).toBe('Automatische Reaktionen')
+    expect(t('profile.forensicData', 'en')).toBe('Forensic Data')
+    expect(t('profile.forensicData', 'de')).toBe('Forensische Daten')
+  })
+
+  it('has translations for profile countermeasure labels', () => {
+    expect(t('profile.blocked', 'en')).toBe('BLOCKED')
+    expect(t('profile.blocked', 'de')).toBe('GEBLOCKT')
+    expect(t('profile.tarpitted', 'en')).toBe('TARPITTED')
+    expect(t('profile.tarpitted', 'de')).toBe('VERLANGSAMT')
+    expect(t('profile.warned', 'en')).toBe('WARNED')
+    expect(t('profile.warned', 'de')).toBe('GEWARNT')
+  })
+
+  it('has tooltips for profile stat labels', () => {
+    expect(tip('profile.totalIncidents', 'en')).toContain('security incidents')
+    expect(tip('profile.firstSeen', 'de')).toContain('Zeitstempel')
+    expect(tip('profile.uaDiversity', 'en')).toContain('evasion')
+  })
+
+  it('has translations for forensic data fields', () => {
+    expect(t('profile.canaryToken', 'en')).toBe('Canary Token')
+    expect(t('profile.canaryToken', 'de')).toBe('Canary-Token')
+    expect(t('profile.jsFingerprint', 'en')).toContain('JS Fingerprint')
+    expect(t('profile.realIp', 'de')).toContain('Echte IP')
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('i18n-security: BlocklistManagerDialog translations', () => {
+  it('has translations for blocklist title and stats', () => {
+    expect(t('blocklist.title', 'en')).toBe('BLOCKLIST MANAGER // HARD BLOCKS')
+    expect(t('blocklist.title', 'de')).toBe('SPERRLISTEN-MANAGER // HARD BLOCKS')
+    expect(t('blocklist.totalBlocked', 'en')).toBe('Total Blocked')
+    expect(t('blocklist.totalBlocked', 'de')).toBe('Gesamt gesperrt')
+    expect(t('blocklist.autoBlocked', 'en')).toBe('Auto-Blocked')
+    expect(t('blocklist.manualBlocked', 'en')).toBe('Manual-Blocked')
+  })
+
+  it('has translations for blocklist form labels', () => {
+    expect(t('blocklist.ipHashLabel', 'en')).toBe('IP Hash (SHA-256)')
+    expect(t('blocklist.ipHashLabel', 'de')).toBe('IP-Hash (SHA-256)')
+    expect(t('blocklist.reasonLabel', 'en')).toBe('Reason')
+    expect(t('blocklist.reasonLabel', 'de')).toBe('Grund')
+    expect(t('blocklist.durationLabel', 'en')).toBe('Duration (TTL)')
+    expect(t('blocklist.durationLabel', 'de')).toBe('Dauer (TTL)')
+  })
+
+  it('has translations for blocklist actions', () => {
+    expect(t('blocklist.addBlock', 'en')).toBe('ADD BLOCK')
+    expect(t('blocklist.addBlock', 'de')).toBe('SPERRE HINZUFÜGEN')
+    expect(t('blocklist.blockIp', 'en')).toBe('BLOCK IP')
+    expect(t('blocklist.blockIp', 'de')).toBe('IP SPERREN')
+    expect(t('blocklist.unblock', 'en')).toBe('Unblock')
+    expect(t('blocklist.unblock', 'de')).toBe('Entsperren')
+  })
+
+  it('has translations for blocklist duration options', () => {
+    expect(t('blocklist.dur1h', 'en')).toBe('1 hour')
+    expect(t('blocklist.dur1h', 'de')).toBe('1 Stunde')
+    expect(t('blocklist.dur7d', 'en')).toBe('7 days')
+    expect(t('blocklist.dur7d', 'de')).toBe('7 Tage')
+    expect(t('blocklist.dur1y', 'en')).toBe('1 year')
+    expect(t('blocklist.dur1y', 'de')).toBe('1 Jahr')
+  })
+
+  it('has tooltips for blocklist stats', () => {
+    expect(tip('blocklist.totalBlocked', 'en')).toContain('hard blocklist')
+    expect(tip('blocklist.autoBlocked', 'de')).toContain('Bedrohungsbewertungssystem')
+    expect(tip('blocklist.manualBlocked', 'en')).toContain('administrator')
+  })
+
+  it('has translations for blocklist table headers', () => {
+    expect(t('blocklist.colIpHash', 'en')).toBe('IP Hash')
+    expect(t('blocklist.colReason', 'en')).toBe('Reason')
+    expect(t('blocklist.colBlockedAt', 'en')).toBe('Blocked At')
+    expect(t('blocklist.colBlockedAt', 'de')).toBe('Gesperrt am')
+    expect(t('blocklist.colExpires', 'en')).toBe('Expires')
+    expect(t('blocklist.colExpires', 'de')).toBe('Läuft ab')
+  })
+})
+
+// ---------------------------------------------------------------------------
+describe('i18n-security: tarpitOnRobotsViolation tooltip', () => {
+  it('has a tooltip for tarpitOnRobotsViolation rule', () => {
+    const tipText = tip('rules.tarpitOnRobotsViolation', 'en')
+    expect(tipText).toBeDefined()
+    expect(tipText).toContain('robots.txt')
+
+    const tipDe = tip('rules.tarpitOnRobotsViolation', 'de')
+    expect(tipDe).toBeDefined()
+    expect(tipDe).toContain('robots.txt')
+  })
+})

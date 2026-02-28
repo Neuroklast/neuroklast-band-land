@@ -825,6 +825,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                         <ToggleRow
                           label={L('rules.tarpitOnRobotsViolation')}
                           description={L('rules.tarpitOnRobotsViolationDesc')}
+                          tooltip={LT('rules.tarpitOnRobotsViolation')}
                           checked={settings.tarpitOnRobotsViolation}
                           onChange={(v) => update('tarpitOnRobotsViolation', v)}
                           statusActive={L('settings.active')}
