@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { get } from '@/lib/config'
 
 interface BlinkingCursorProps {
@@ -10,12 +9,7 @@ interface BlinkingCursorProps {
  * Can be appended to text elements for a retro terminal aesthetic
  */
 export function BlinkingCursor({ className = '' }: BlinkingCursorProps) {
-  const [enabled, setEnabled] = useState(true)
-
-  useEffect(() => {
-    const isEnabled = get('CURSOR_BLINK_ENABLED')
-    setEnabled(Boolean(isEnabled))
-  }, [])
+  const enabled = get('CURSOR_BLINK_ENABLED')
 
   if (!enabled) return null
 

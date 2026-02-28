@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,12 +25,14 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
   const [newGenre, setNewGenre] = useState('')
 
   useEffect(() => {
-    setBandName(name)
-    setBandGenres(genres)
-    setBandLabel(label || '')
-    setBandLogoUrl(logoUrl || '')
-    setBandTitleImageUrl(titleImageUrl || '')
-    setNewGenre('')
+    startTransition(() => {
+      setBandName(name)
+      setBandGenres(genres)
+      setBandLabel(label || '')
+      setBandLogoUrl(logoUrl || '')
+      setBandTitleImageUrl(titleImageUrl || '')
+      setNewGenre('')
+    })
   }, [name, genres, label, logoUrl, titleImageUrl])
 
   const addGenre = () => {

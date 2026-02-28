@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, startTransition } from 'react'
 import { get } from '@/lib/config'
 
 /**
@@ -11,19 +11,19 @@ export function MovingScanline() {
   useEffect(() => {
     const isEnabled = get('SCANLINE_MOVEMENT_ENABLED')
     if (!isEnabled) {
-      setEnabled(false)
+      startTransition(() => setEnabled(false))
       return
     }
     const scanlineEnabled = getComputedStyle(document.documentElement).getPropertyValue('--overlay-moving-scanline').trim()
     if (scanlineEnabled === '0') {
-      setEnabled(false)
+      startTransition(() => setEnabled(false))
       return
     }
-    setEnabled(true)
+    startTransition(() => setEnabled(true))
     // Watch for CSS variable changes
     const observer = new MutationObserver(() => {
       const val = getComputedStyle(document.documentElement).getPropertyValue('--overlay-moving-scanline').trim()
-      setEnabled(val !== '0')
+      startTransition(() => setEnabled(val !== '0'))
     })
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
     return () => observer.disconnect()

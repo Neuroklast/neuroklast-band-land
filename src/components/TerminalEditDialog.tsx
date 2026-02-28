@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,8 +20,10 @@ export default function TerminalEditDialog({ open, onOpenChange, commands, onSav
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
 
   useEffect(() => {
-    setCmds(commands)
-    setExpandedIdx(null)
+    startTransition(() => {
+      setCmds(commands)
+      setExpandedIdx(null)
+    })
   }, [commands])
 
   const addCommand = () => {

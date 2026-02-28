@@ -3,7 +3,7 @@ import { User } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import ConsoleLines from '@/components/ConsoleLines'
 import { toDirectImageUrl } from '@/lib/image-cache'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, startTransition } from 'react'
 import type { SectionLabels } from '@/lib/types'
 import {
   CONSOLE_TYPING_SPEED_MS,
@@ -41,11 +41,13 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
   useEffect(() => {
     if (!photoUrl) return
     const cached = resolvePhoto?.(photoUrl)
-    if (cached && cached !== photoUrl) {
-      setPhotoSrc(cached)
-    } else {
-      setPhotoSrc(toDirectImageUrl(photoUrl))
-    }
+    startTransition(() => {
+      if (cached && cached !== photoUrl) {
+        setPhotoSrc(cached)
+      } else {
+        setPhotoSrc(toDirectImageUrl(photoUrl))
+      }
+    })
   }, [photoUrl, resolvePhoto])
 
   useEffect(() => {

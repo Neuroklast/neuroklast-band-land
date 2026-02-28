@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, startTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -379,8 +379,10 @@ export default function ThemeCustomizerDialog({
   // Sync draft when dialog opens (not on every prop change while open)
   useEffect(() => {
     if (open && !prevOpenRef.current) {
-      setDraft(themeSettings || {})
-      setVisDraft(sectionVisibility || {})
+      startTransition(() => {
+        setDraft(themeSettings || {})
+        setVisDraft(sectionVisibility || {})
+      })
     }
     prevOpenRef.current = open
   }, [open])
