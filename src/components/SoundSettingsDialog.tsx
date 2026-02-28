@@ -33,7 +33,7 @@ export default function SoundSettingsDialog({ settings, onSave, onClose }: Sound
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-card border border-border rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto space-y-4 relative"
+        className="bg-card border border-border rounded-[var(--radius-lg)] p-6 w-full max-w-md max-h-[90vh] overflow-y-auto space-y-4 relative"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}

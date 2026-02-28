@@ -7,17 +7,17 @@ interface FontSizePickerProps {
 }
 
 const sizes = [
-  { label: 'XS', value: 'text-xs' },
-  { label: 'SM', value: 'text-sm' },
-  { label: 'BASE', value: 'text-base' },
-  { label: 'LG', value: 'text-lg' },
-  { label: 'XL', value: 'text-xl' },
-  { label: '2XL', value: 'text-2xl' },
+  { label: 'XS', value: '0.75em' },
+  { label: 'SM', value: '0.875em' },
+  { label: 'BASE', value: '1em' },
+  { label: 'LG', value: '1.125em' },
+  { label: 'XL', value: '1.25em' },
+  { label: '2XL', value: '1.5em' },
 ]
 
 export default function FontSizePicker({ value, onChange, label }: FontSizePickerProps) {
   // Normalize the value to match one of the options
-  const currentValue = sizes.find(s => s.value === value)?.value || 'text-base'
+  const currentValue = sizes.find(s => s.value === value)?.value || '1em'
 
   return (
     <div className="inline-flex items-center gap-1.5 bg-card/80 border border-primary/20 px-2 py-1 rounded-sm">

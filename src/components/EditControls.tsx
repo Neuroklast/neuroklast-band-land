@@ -162,7 +162,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-card border border-border rounded-lg p-6 w-full max-w-md space-y-4 relative"
+              className="bg-card border border-border rounded-[var(--radius-lg)] p-6 w-full max-w-md space-y-4 relative"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
@@ -228,7 +228,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
             >
               <Button
                 onClick={handleExportData}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title="Export data as JSON"
               >
                 <Export size={20} weight="bold" />
@@ -236,7 +236,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               </Button>
               <Button
                 onClick={() => importInputRef.current?.click()}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title="Import data from JSON file"
               >
                 <ArrowSquareIn size={20} weight="bold" />
@@ -244,7 +244,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               </Button>
               <Button
                 onClick={() => setShowUrlImport(true)}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title="Import data from URL (Google Drive)"
               >
                 <Globe size={20} weight="bold" />
@@ -253,7 +253,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenSoundSettings && (
                 <Button
                   onClick={onOpenSoundSettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Sound effects settings"
                 >
                   <SpeakerHigh size={20} weight="bold" />
@@ -263,7 +263,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenConfigEditor && (
                 <Button
                   onClick={onOpenConfigEditor}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Config variables editor"
                 >
                   <Sliders size={20} weight="bold" />
@@ -273,7 +273,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenAnalytics && (
                 <Button
                   onClick={onOpenAnalytics}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Site analytics"
                 >
                   <ChartBar size={20} weight="bold" />
@@ -283,7 +283,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenSecurityLog && (
                 <Button
                   onClick={onOpenSecurityLog}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Security incidents"
                 >
                   <ShieldWarning size={20} weight="bold" />
@@ -293,7 +293,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenSecuritySettings && (
                 <Button
                   onClick={onOpenSecuritySettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Security settings"
                 >
                   <ShieldCheck size={20} weight="bold" />
@@ -303,7 +303,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenBlocklist && (
                 <Button
                   onClick={onOpenBlocklist}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Blocklist manager"
                 >
                   <ProhibitInset size={20} weight="bold" />
@@ -313,7 +313,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenThemeCustomizer && (
                 <Button
                   onClick={onOpenThemeCustomizer}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Theme customizer (colors, fonts, visibility)"
                 >
                   <Palette size={20} weight="bold" />
@@ -323,7 +323,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenTerminalSettings && (
                 <Button
                   onClick={onOpenTerminalSettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Terminal settings (commands, key sequence, morse code)"
                 >
                   <Terminal size={20} weight="bold" />
@@ -333,7 +333,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenTerminal && (
                 <Button
                   onClick={onOpenTerminal}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Open secret terminal"
                 >
                   <Terminal size={20} weight="fill" />
@@ -343,7 +343,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenContactInbox && (
                 <Button
                   onClick={onOpenContactInbox}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Contact inbox"
                 >
                   <Envelope size={20} weight="bold" />
@@ -353,7 +353,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenSubscribers && (
                 <Button
                   onClick={onOpenSubscribers}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Newsletter subscribers"
                 >
                   <Users size={20} weight="bold" />
@@ -363,7 +363,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               {onOpenMarketingTools && (
                 <Button
                   onClick={onOpenMarketingTools}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Marketing tools"
                 >
                   <Megaphone size={20} weight="bold" />
@@ -379,7 +379,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
             >
               <Button
                 onClick={() => setShowPasswordDialog(true)}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                 title={hasPassword ? 'Change admin password' : 'Set admin password'}
               >
                 <Key size={20} weight="bold" />
@@ -396,7 +396,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               >
                 <Button
                   onClick={onLogout}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-lg shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
                   title="Logout"
                 >
                   <SignOut size={20} weight="bold" />
