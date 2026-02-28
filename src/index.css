@@ -63,6 +63,19 @@
   --overlay-noise: 0;
   --overlay-vignette: 0;
   --overlay-chromatic: 0;
+
+  /* Accent oklch components for use in calc() expressions */
+  --accent-l: 0.60;
+  --accent-c: 0.24;
+  --accent-h: 25;
+
+  /* Secondary accent – cyan complement used in chromatic/circuit effects */
+  --accent2-l: 0.70;
+  --accent2-c: 0.20;
+  --accent2-h: 195;
+
+  /* Hover accent color alias */
+  --hover-color: var(--accent);
 }
 
 @theme {
@@ -1085,4 +1098,412 @@ h1, h2, h3, h4, h5, h6 {
 .skip-to-main:focus {
   top: 0.5rem;
   left: 0.5rem;
+}
+
+/* ─── Cyberpunk Utility Classes (ported from zardonic-industrial) ─── */
+
+/* Hover glitch – subtle chromatic offset on hover */
+.hover-glitch {
+  position: relative;
+}
+
+/* Hover chromatic aberration */
+.hover-chromatic {
+  position: relative;
+}
+
+.hover-chromatic:hover {
+  text-shadow:
+    2px 0 0 rgba(255, 0, 100, 0.5),
+    -2px 0 0 rgba(0, 255, 255, 0.5);
+  transition: all 0.08s ease;
+  animation: chromatic-pulse 0.15s ease;
+}
+
+@keyframes chromatic-pulse {
+  0%, 100% {
+    text-shadow:
+      2px 0 0 rgba(255, 0, 100, 0.5),
+      -2px 0 0 rgba(0, 255, 255, 0.5);
+  }
+  50% {
+    text-shadow:
+      3px 0 0 rgba(255, 0, 100, 0.7),
+      -3px 0 0 rgba(0, 255, 255, 0.7);
+  }
+}
+
+.hover-chromatic-image {
+  position: relative;
+}
+
+.hover-chromatic-image:hover {
+  filter:
+    drop-shadow(2px 0 0 rgba(255, 0, 100, 0.4))
+    drop-shadow(-2px 0 0 rgba(0, 255, 255, 0.4));
+  transition: filter 0.08s ease;
+}
+
+/* Data label – HUD-style small monospace label */
+.data-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+/* Cyber border – glowing corner markers on hover */
+.cyber-border {
+  position: relative;
+  border: 1px solid oklch(0.15 0 0);
+  transition: all 0.3s ease;
+}
+
+.cyber-border::before,
+.cyber-border::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--hover-color, var(--accent));
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.cyber-border::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.cyber-border::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+.cyber-border:hover {
+  border-color: color-mix(in srgb, var(--hover-color, var(--accent)) 50%, transparent);
+  box-shadow:
+    0 0 20px color-mix(in srgb, var(--hover-color, var(--accent)) 20%, transparent),
+    inset 0 0 20px color-mix(in srgb, var(--hover-color, var(--accent)) 5%, transparent);
+}
+
+.cyber-border:hover::before,
+.cyber-border:hover::after {
+  opacity: 1;
+}
+
+/* Cyber card – card with corner accent markers on hover */
+.cyber-card {
+  position: relative;
+  background: oklch(0.05 0 0);
+  border: 1px solid oklch(0.15 0 0);
+  transition: all 0.3s ease;
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid var(--hover-color, var(--accent));
+  border-left: 2px solid var(--hover-color, var(--accent));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cyber-card::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 6px;
+  height: 6px;
+  border-bottom: 2px solid var(--hover-color, var(--accent));
+  border-right: 2px solid var(--hover-color, var(--accent));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cyber-card:hover::before,
+.cyber-card:hover::after {
+  opacity: 1;
+}
+
+.cyber-card:hover {
+  border-color: color-mix(in srgb, var(--hover-color, var(--accent)) 30%, transparent);
+  box-shadow:
+    0 0 15px color-mix(in srgb, var(--hover-color, var(--accent)) 10%, transparent),
+    inset 0 0 15px color-mix(in srgb, var(--hover-color, var(--accent)) 3%, transparent);
+}
+
+/* Cyber grid – shows accent-colored dot grid on hover */
+.cyber-grid {
+  position: relative;
+}
+
+.cyber-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.cyber-grid:hover::before {
+  opacity: 1;
+}
+
+/* Circuit board background */
+.circuit-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.25;
+  background-image:
+    linear-gradient(90deg, transparent 98%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.4) 98%),
+    linear-gradient(0deg, transparent 98%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.4) 98%),
+    radial-gradient(circle at 10% 20%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 80% 40%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 30% 70%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 90% 80%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 60% 30%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 20% 50%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 70% 90%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 50% 10%, oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3) 2px, transparent 2px);
+  background-size: 80px 80px, 80px 80px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  pointer-events: none;
+  animation: circuit-pulse 4s ease-in-out infinite;
+}
+
+@keyframes circuit-pulse {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.35; }
+}
+
+/* Circuit line – a thin accent-colored connector */
+.circuit-line {
+  position: absolute;
+  background: oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3);
+  pointer-events: none;
+  box-shadow: 0 0 4px oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.5);
+}
+
+/* Circuit node – glowing dot at circuit intersections */
+.circuit-node {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 0 6px oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.8), 0 0 12px oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.4);
+  animation: node-pulse 2s ease-in-out infinite;
+}
+
+.circuit-node::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border: 1px solid oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.4);
+  border-radius: 50%;
+}
+
+@keyframes node-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Circuit line data-stream pulse – travels along circuit lines */
+.circuit-line-pulse {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.circuit-line-pulse.horizontal {
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, transparent, oklch(var(--accent2-l) var(--accent2-c) var(--accent2-h) / 0.9), oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.7), transparent);
+  box-shadow: 0 0 8px oklch(var(--accent2-l) var(--accent2-c) var(--accent2-h) / 0.6), 0 0 16px oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3);
+  animation: data-pulse-h 1.2s ease-in-out forwards;
+}
+
+.circuit-line-pulse.vertical {
+  width: 2px;
+  height: 0;
+  background: linear-gradient(180deg, transparent, oklch(var(--accent2-l) var(--accent2-c) var(--accent2-h) / 0.9), oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.7), transparent);
+  box-shadow: 0 0 8px oklch(var(--accent2-l) var(--accent2-c) var(--accent2-h) / 0.6), 0 0 16px oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.3);
+  animation: data-pulse-v 1.2s ease-in-out forwards;
+}
+
+@keyframes data-pulse-h {
+  0%   { width: 0; opacity: 0; }
+  15%  { width: 30%; opacity: 1; }
+  85%  { width: 100%; opacity: 0.8; }
+  100% { width: 100%; opacity: 0; }
+}
+
+@keyframes data-pulse-v {
+  0%   { height: 0; opacity: 0; }
+  15%  { height: 30%; opacity: 1; }
+  85%  { height: 100%; opacity: 0.8; }
+  100% { height: 100%; opacity: 0; }
+}
+
+/* Swipe dot indicators for gallery */
+.swipe-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: oklch(0.5 0 0);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.swipe-dot.active {
+  background: oklch(0.9 0 0);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* Cyber 2077-style glitch animation */
+.cyber2077-glitch {
+  position: relative;
+  animation: cyber2077-glitch-anim 3s infinite;
+}
+
+@keyframes cyber2077-glitch-anim {
+  0%, 90%, 100% {
+    transform: translate(0);
+    filter: none;
+  }
+  91% {
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(90deg) saturate(1.5);
+  }
+  92% {
+    transform: translate(2px, -2px);
+    filter: hue-rotate(-90deg) saturate(1.5);
+  }
+  93% {
+    transform: translate(-2px, -2px);
+    filter: contrast(1.5);
+  }
+  94% {
+    transform: translate(0);
+    filter: none;
+  }
+}
+
+/* Cyber 2077 data-corruption glitch – fires ~once every 8s */
+.cyber2077-data-corrupt {
+  animation: cyber2077-data-corrupt-anim 8s ease-in-out infinite;
+}
+
+@keyframes cyber2077-data-corrupt-anim {
+  0%, 96%, 100% {
+    filter: none;
+    text-shadow:
+      0.5px 0 0 rgba(255, 100, 100, 0.2),
+      -0.5px 0 0 rgba(100, 255, 255, 0.2);
+  }
+  96.5% {
+    filter: brightness(1.4) saturate(1.3);
+    text-shadow:
+      2px 0 0 rgba(255, 0, 100, 0.6),
+      -2px 0 0 rgba(0, 255, 255, 0.6);
+  }
+  97% {
+    filter: brightness(0.8) contrast(1.3);
+    text-shadow:
+      -1px 0 0 rgba(255, 0, 100, 0.4),
+      1px 0 0 rgba(0, 255, 255, 0.4);
+  }
+  97.5% {
+    filter: brightness(1.6) saturate(1.5);
+    text-shadow:
+      3px 0 0 rgba(255, 0, 100, 0.7),
+      -3px 0 0 rgba(0, 255, 255, 0.7);
+  }
+  98% {
+    filter: none;
+    text-shadow:
+      0.5px 0 0 rgba(255, 100, 100, 0.2),
+      -0.5px 0 0 rgba(100, 255, 255, 0.2);
+  }
+}
+
+/* Cyberpunk 2077 pulse animation */
+.cyber2077-pulse {
+  animation: cyber2077-pulse-anim 2s ease-in-out infinite;
+}
+
+@keyframes cyber2077-pulse-anim {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(180, 50, 50, 0.3),
+      inset 0 0 10px rgba(180, 50, 50, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(180, 50, 50, 0.6),
+      inset 0 0 20px rgba(180, 50, 50, 0.2);
+  }
+}
+
+/* Cyberpunk border glow */
+.cyberpunk-border-glow {
+  box-shadow:
+    0 0 10px rgba(180, 50, 50, 0.15),
+    inset 0 0 10px rgba(180, 50, 50, 0.05);
+}
+
+/* Cyberpunk overlay background – scanlines + radial vignette */
+.cyberpunk-overlay-bg {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.01) 0px,
+      rgba(0, 0, 0, 0.2) 1px,
+      rgba(0, 0, 0, 0.2) 2px,
+      rgba(255, 255, 255, 0.01) 3px
+    ),
+    radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+}
+
+/* No-glitch mode: disable glitch animations */
+.no-glitch .hover-glitch:hover,
+.no-glitch .logo-glitch,
+.no-glitch .glitch-text::before,
+.no-glitch .glitch-text::after {
+  animation: none !important;
+  clip: unset !important;
+  opacity: 0 !important;
+}
+
+/* No-chromatic mode: disable chromatic animations */
+.no-chromatic .hover-chromatic,
+.no-chromatic .chromatic-aberration,
+.no-chromatic .hover-chromatic-image,
+.no-chromatic .text-chromatic {
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
 }
