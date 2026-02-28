@@ -36,7 +36,6 @@ vi.mock('../../api/_blocklist.js', () => ({
   isHardBlocked: vi.fn().mockResolvedValue(false),
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
 
 function mockRes(): Res {

@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import ProgressiveImage from '@/components/ProgressiveImage'
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback, startTransition } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { format } from 'date-fns'
 import { marked } from 'marked'
@@ -91,7 +91,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
     if (match) {
       const target = news.find(n => n.id === match[1])
       if (target) {
-        setSelectedNews(target)
+        startTransition(() => setSelectedNews(target))
       }
     }
   }, [news])
@@ -498,7 +498,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
 }) {
   const detailsRef = useRef<HTMLTextAreaElement>(null)
   const { t } = useLocale()
-  const [formData, setFormData] = useState<NewsItem>(
+  const [formData, setFormData] = useState<NewsItem>(() =>
     item || { id: `news-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, date: new Date().toISOString().slice(0, 7), text: '' }
   )
   const [dateType, setDateType] = useState<'month' | 'date'>(() => {

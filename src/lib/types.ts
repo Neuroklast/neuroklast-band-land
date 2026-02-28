@@ -198,6 +198,24 @@ export interface OverlayEffects {
   movingScanline?: OverlayEffect
 }
 
+export interface AnimationSettings {
+  glitchEnabled?: boolean
+  scanlineEnabled?: boolean
+  chromaticEnabled?: boolean
+  crtEnabled?: boolean
+  noiseEnabled?: boolean
+  circuitBackgroundEnabled?: boolean
+  crtOverlayOpacity?: number
+  crtVignetteOpacity?: number
+}
+
+export interface ProgressiveOverlayModes {
+  progressiveReveal?: boolean
+  dataStream?: boolean
+  sectorAssembly?: boolean
+  holographicMaterialization?: boolean
+}
+
 export interface NewsletterSettings {
   enabled?: boolean
   title?: string
@@ -289,6 +307,8 @@ export interface BandData {
   contactSettings?: ContactSettings
   /** Morse code sequence (dots and dashes) that opens the secret terminal */
   terminalMorseCode?: string
+  /** Animation/effect settings */
+  animations?: AnimationSettings
 }
 
 export interface SoundSettings {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, startTransition } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,13 +46,15 @@ export default function MarketingToolsDialog({
 
   useEffect(() => {
     if (open && !prevOpen.current) {
-      setNl({ ...DEFAULT_NEWSLETTER, ...newsletterSettings })
-      setCt({ ...DEFAULT_CONTACT, ...contactSettings })
-      setUtmBase(typeof window !== 'undefined' ? window.location.origin : '')
-      setUtmSource('')
-      setUtmMedium('')
-      setUtmCampaign('')
-      setCopied(false)
+      startTransition(() => {
+        setNl({ ...DEFAULT_NEWSLETTER, ...newsletterSettings })
+        setCt({ ...DEFAULT_CONTACT, ...contactSettings })
+        setUtmBase(typeof window !== 'undefined' ? window.location.origin : '')
+        setUtmSource('')
+        setUtmMedium('')
+        setUtmCampaign('')
+        setCopied(false)
+      })
     }
     prevOpen.current = open
   }, [open, newsletterSettings, contactSettings])

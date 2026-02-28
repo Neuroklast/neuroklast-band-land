@@ -25,19 +25,19 @@ export async function fetchITunesReleases(): Promise<Release[]> {
 
     const releasesMap = new Map<string, Release>()
     
-    data.results.forEach((track: any) => {
+    data.results.forEach((track: Record<string, unknown>) => {
       if (!track.collectionId || !track.collectionName) return
       
-      const collectionId = track.collectionId.toString()
+      const collectionId = String(track.collectionId)
       
       if (!releasesMap.has(collectionId)) {
         releasesMap.set(collectionId, {
           id: `itunes-${collectionId}`,
-          title: track.collectionName,
-          artwork: track.artworkUrl100?.replace('100x100bb', '600x600bb') || track.artworkUrl60?.replace('60x60bb', '600x600bb'),
-          releaseDate: track.releaseDate ? new Date(track.releaseDate).toISOString().split('T')[0] : undefined,
+          title: track.collectionName as string,
+          artwork: (track.artworkUrl100 as string | undefined)?.replace('100x100bb', '600x600bb') || (track.artworkUrl60 as string | undefined)?.replace('60x60bb', '600x600bb'),
+          releaseDate: track.releaseDate ? new Date(track.releaseDate as string).toISOString().split('T')[0] : undefined,
           streamingLinks: {
-            appleMusic: track.collectionViewUrl || track.trackViewUrl,
+            appleMusic: (track.collectionViewUrl || track.trackViewUrl) as string | undefined,
           },
         })
       }

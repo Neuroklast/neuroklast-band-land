@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, startTransition } from 'react'
 
 /** Number of glitch elements per pattern */
 const ELEMENT_COUNT = 8
@@ -117,7 +117,7 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
 
   useEffect(() => {
     if (show) {
-      setVisible(true)
+      startTransition(() => setVisible(true))
       const timeout = setTimeout(() => {
         setVisible(false)
         onComplete?.()

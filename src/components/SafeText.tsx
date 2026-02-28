@@ -6,8 +6,8 @@ import type { ReactNode } from 'react'
  * Phone: requires + prefix or common separators with at least 7 digits.
  * Email: standard user@domain pattern.
  */
-const PHONE_RE = /(\+\d[\d\s\-().]{6,}\d)/g
-const EMAIL_RE = /([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g
+const PHONE_RE = /(\+\d[\d\s-().]{6,}\d)/g
+const EMAIL_RE = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
 
 /** Combined regex that matches either a phone number or an email address */
 const SENSITIVE_RE = new RegExp(`${PHONE_RE.source}|${EMAIL_RE.source}`, 'g')

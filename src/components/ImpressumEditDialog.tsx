@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +27,9 @@ export default function ImpressumEditDialog({ open, onOpenChange, impressum, onS
   const [form, setForm] = useState<Impressum>(impressum || emptyImpressum)
 
   useEffect(() => {
-    setForm(impressum || emptyImpressum)
+    startTransition(() => {
+      setForm(impressum || emptyImpressum)
+    })
   }, [impressum])
 
   const update = (field: keyof Impressum, value: string) => {

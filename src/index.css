@@ -1507,3 +1507,68 @@ h1, h2, h3, h4, h5, h6 {
   filter: none !important;
   animation: none !important;
 }
+
+/* ─── Overlay Loader Indicators ─── */
+
+:root {
+  --crt-overlay-opacity: 0.6;
+  --crt-vignette-opacity: 0.4;
+}
+
+@keyframes crt-scan-down {
+  0% { top: -6px; }
+  100% { top: 100%; }
+}
+
+@keyframes crt-flicker {
+  0% { opacity: var(--crt-overlay-opacity, 0.6); }
+  50% { opacity: calc(var(--crt-overlay-opacity, 0.6) + 0.05); }
+  100% { opacity: calc(var(--crt-overlay-opacity, 0.6) - 0.02); }
+}
+
+.overlay-loader-circuit,
+.overlay-loader-boot,
+.overlay-loader-scan,
+.overlay-loader-blocks,
+.overlay-loader-pulse,
+.overlay-loader-holo,
+.overlay-loader-matrix,
+.overlay-loader-ring {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--primary);
+  letter-spacing: 0.1em;
+}
+
+.overlay-loader-circuit::before,
+.overlay-loader-boot::before,
+.overlay-loader-scan::before,
+.overlay-loader-blocks::before,
+.overlay-loader-pulse::before,
+.overlay-loader-holo::before,
+.overlay-loader-matrix::before,
+.overlay-loader-ring::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--primary);
+  animation: overlay-loader-blink 0.8s step-end infinite;
+}
+
+.overlay-loader-circuit::before  { border-radius: 0; transform: rotate(45deg); }
+.overlay-loader-boot::before     { border-radius: 0; }
+.overlay-loader-scan::before     { border-radius: 0; width: 12px; height: 4px; }
+.overlay-loader-blocks::before   { border-radius: 0; width: 6px; height: 10px; }
+.overlay-loader-pulse::before    { border-radius: 50%; background: var(--primary); }
+.overlay-loader-holo::before     { border-radius: 0; width: 10px; height: 10px; background: transparent; box-shadow: 0 0 4px var(--primary); }
+.overlay-loader-matrix::before   { border-radius: 0; border-color: var(--accent); }
+.overlay-loader-ring::before     { border-radius: 50%; width: 10px; height: 10px; }
+
+@keyframes overlay-loader-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}

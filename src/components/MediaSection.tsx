@@ -10,7 +10,7 @@ import { useOverlayTransition } from '@/components/OverlayTransition'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import MusicPlayer from '@/components/MusicPlayer'
 import YouTubeEmbed, { extractYouTubeId } from '@/components/YouTubeEmbed'
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, startTransition } from 'react'
 import type { MediaFile, SectionLabels } from '@/lib/types'
 import { downloadFile, type DownloadProgress } from '@/lib/download'
 import {
@@ -161,7 +161,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
 
   // Reset progress when file changes
   useEffect(() => {
-    setDlProgress({ state: 'idle', progress: 0 })
+    startTransition(() => setDlProgress({ state: 'idle', progress: 0 }))
   }, [file?.id])
 
   if (!file) {

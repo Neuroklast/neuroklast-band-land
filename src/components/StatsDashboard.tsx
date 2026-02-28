@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { Trash, Eye, CursorClick, Users, DeviceMobile, Desktop, ArrowSquareOut, Globe, Browser, Monitor, TrendUp, ChartBar, Target, MapPin, LinkSimple } from '@phosphor-icons/react'
 import { toast } from 'sonner'

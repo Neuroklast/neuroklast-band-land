@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { toDirectImageUrl } from '@/lib/image-cache'
 
 interface ProgressiveImageProps {
@@ -27,15 +27,17 @@ export default function ProgressiveImage({ src, alt, className, style, draggable
 
   useEffect(() => {
     const newSrc = resolveInitialSrc(src)
-    setEffectiveSrc(newSrc)
-    setLoaded(false)
-    setProxyAttempted(false)
+    startTransition(() => {
+      setEffectiveSrc(newSrc)
+      setLoaded(false)
+      setProxyAttempted(false)
+    })
 
     // Check if image is already cached by the browser
     const img = new Image()
     img.src = newSrc
     if (img.complete) {
-      setLoaded(true)
+      startTransition(() => setLoaded(true))
     }
     return () => { img.src = '' }
   }, [src])

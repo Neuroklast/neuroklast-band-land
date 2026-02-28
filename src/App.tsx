@@ -1,5 +1,5 @@
 import { useKV } from '@/hooks/use-kv'
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo, startTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -49,6 +49,8 @@ import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
+import { useOverlayState } from '@/hooks/use-overlay-state'
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
@@ -99,10 +101,8 @@ function collectImageUrls(data: BandData): string[] {
 
 function App() {
   const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
-  const [isOwner, setIsOwner] = useState(false)
-  const [needsSetup, setNeedsSetup] = useState(false)
-  const [totpEnabled, setTotpEnabled] = useState(false)
-  const [setupTokenRequired, setSetupTokenRequired] = useState(false)
+  const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
+  const { cyberpunkOverlay: _cyberpunkOverlay, setCyberpunkOverlay: _setCyberpunkOverlay, overlayPhase: _overlayPhase, loadingText: _loadingText, overlayAnimation: _overlayAnimation } = useOverlayState()
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [terminalOpen, setTerminalOpen] = useState(false)
@@ -153,83 +153,20 @@ function App() {
     }
     // Secret terminal access via URL
     if (params.has('access-secret-terminal-NK-666')) {
-      setTerminalOpen(true)
+      startTransition(() => setTerminalOpen(true))
       const url = new URL(window.location.href)
       url.searchParams.delete('access-secret-terminal-NK-666')
       window.history.replaceState({}, '', url.toString())
     }
   }, [])
 
-  // Check auth status on mount via cookie-based session
-  useEffect(() => {
-    fetch('/api/auth', { credentials: 'same-origin' })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data) {
-          if (data.authenticated) setIsOwner(true)
-          setNeedsSetup(data.needsSetup)
-          setTotpEnabled(data.totpEnabled || false)
-          setSetupTokenRequired(data.setupTokenRequired || false)
-        }
-      })
-      .catch(() => { /* ignore — local dev without API */ })
-  }, [])
-
-  // Periodically check session validity — if the admin session expired
-  // server-side, reload the entire page so that the next login starts
-  // with a clean state and avoids stale 503/403 errors.
-  useEffect(() => {
-    if (!isOwner) return
-    const SESSION_CHECK_INTERVAL = 60_000 // every 60 s
-    const intervalId = setInterval(async () => {
-      try {
-        const res = await fetch('/api/auth', { credentials: 'same-origin' })
-        if (!res.ok) {
-          // Server unreachable or error — don't logout, could be transient
-          return
-        }
-        const data = await res.json()
-        if (!data.authenticated) {
-          // Session expired server-side — full page reload for clean state
-          window.location.reload()
-        }
-      } catch {
-        // Network error — don't logout, could be transient
-      }
-    }, SESSION_CHECK_INTERVAL)
-    return () => clearInterval(intervalId)
-  }, [isOwner])
-
   // Open setup dialog once auth check confirms no password exists
   useEffect(() => {
     if (wantsSetup.current && needsSetup) {
       wantsSetup.current = false
-      setShowSetupDialog(true)
+      startTransition(() => setShowSetupDialog(true))
     }
   }, [needsSetup])
-
-  const handleAdminLogin = async (password: string, totpCode?: string): Promise<boolean | 'totp-required'> => {
-    try {
-      const body: Record<string, string> = { password }
-      if (totpCode) body.totpCode = totpCode
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify(body),
-      })
-      if (res.ok) {
-        setIsOwner(true)
-        setNeedsSetup(false)
-        return true
-      }
-      const data = await res.json().catch(() => ({}))
-      if (data.totpRequired) return 'totp-required'
-      return false
-    } catch {
-      return false
-    }
-  }
 
   const handleFontSizeChange = (key: keyof FontSizeSettings, value: string) => {
     setBandData((current) => ({
@@ -245,51 +182,6 @@ function App() {
     }))
   }
 
-  const handleSetAdminPassword = async (password: string, setupToken?: string): Promise<void> => {
-    const body: Record<string, string> = { password, action: 'setup' }
-    if (setupToken) body.setupToken = setupToken
-    const res = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify(body),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      throw new Error(data.error || 'Failed to set password')
-    }
-    setNeedsSetup(false)
-  }
-
-  const handleSetupAdminPassword = async (password: string, setupToken?: string): Promise<void> => {
-    await handleSetAdminPassword(password, setupToken)
-    setIsOwner(true)
-  }
-
-  const handleChangeAdminPassword = async (password: string): Promise<void> => {
-    const res = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ newPassword: password }),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      throw new Error(data.error || 'Failed to change password')
-    }
-  }
-
-  const handleAdminLogout = async (): Promise<void> => {
-    try {
-      await fetch('/api/auth', {
-        method: 'DELETE',
-        credentials: 'same-origin',
-      })
-    } catch { /* ignore */ }
-    setIsOwner(false)
-    setEditMode(false)
-  }
-
   const handleTerminalActivation = () => {
     setTerminalOpen(true)
     trackInteraction('terminal_activated')
@@ -301,7 +193,7 @@ function App() {
   const data = bandData ? { ...defaultBandData, ...bandData } : defaultBandData
   const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
   const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
-  const { play: playSound, muted: soundMuted, toggleMute: toggleSoundMute, hasSounds } = useSound(data.soundSettings, editMode)
+  const { play: playSound, muted: _soundMuted, toggleMute: _toggleSoundMute, hasSounds: _hasSounds } = useSound(data.soundSettings, editMode)
 
   // Apply config overrides whenever bandData changes
   useEffect(() => {
@@ -312,6 +204,22 @@ function App() {
   useEffect(() => {
     applyThemeToDOM(data.themeSettings)
   }, [data.themeSettings])
+
+  // Apply CRT overlay/vignette opacity from animation settings
+  useEffect(() => {
+    const a = data.animations
+    const root = document.documentElement
+    if (typeof a?.crtOverlayOpacity === 'number') {
+      root.style.setProperty('--crt-overlay-opacity', String(a.crtOverlayOpacity))
+    }
+    if (typeof a?.crtVignetteOpacity === 'number') {
+      root.style.setProperty('--crt-vignette-opacity', String(a.crtVignetteOpacity))
+    }
+    return () => {
+      root.style.removeProperty('--crt-overlay-opacity')
+      root.style.removeProperty('--crt-vignette-opacity')
+    }
+  }, [data.animations?.crtOverlayOpacity, data.animations?.crtVignetteOpacity])
 
   const vis = data.sectionVisibility || {}
 
@@ -631,7 +539,7 @@ function App() {
                 hasPassword={!needsSetup}
                 onChangePassword={handleChangeAdminPassword}
                 onSetPassword={handleSetAdminPassword}
-                onLogout={handleAdminLogout}
+                onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
                 bandData={data}
                 onImportData={(imported) => setBandData(imported)}
                 onOpenSoundSettings={() => setShowSoundSettings(true)}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, startTransition } from 'react'
 import { motion } from 'framer-motion'
 import { PencilSimple, Plus, Trash, CaretDown, CaretUp, Keyboard, Terminal } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -21,7 +21,7 @@ interface TerminalSettingsDialogProps {
 
 const RESERVED = TERMINAL_RESERVED_COMMANDS
 
-const MORSE_RE = /^[.\-]*$/
+const MORSE_RE = /^[.-]*$/
 
 export default function TerminalSettingsDialog({
   open,
@@ -51,13 +51,15 @@ export default function TerminalSettingsDialog({
 
   useEffect(() => {
     if (open && !prevOpenRef.current) {
-      setCmds(commands)
-      setCodeKeys(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
-      setMorseInput(morseCode)
-      setMorseError(null)
-      setActiveTab('commands')
-      setExpandedIdx(null)
-      setIsRecordingKey(false)
+      startTransition(() => {
+        setCmds(commands)
+        setCodeKeys(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
+        setMorseInput(morseCode)
+        setMorseError(null)
+        setActiveTab('commands')
+        setExpandedIdx(null)
+        setIsRecordingKey(false)
+      })
     }
     prevOpenRef.current = open
   }, [open])

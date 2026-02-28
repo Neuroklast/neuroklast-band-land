@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, startTransition } from 'react'
+import { motion } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -189,8 +189,10 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
 
   useEffect(() => {
     if (isOpen) {
-      setEditText(datenschutz?.customText || defaultTextDE)
-      setIsEditing(false)
+      startTransition(() => {
+        setEditText(datenschutz?.customText || defaultTextDE)
+        setIsEditing(false)
+      })
     }
   }, [isOpen, datenschutz])
 
@@ -206,11 +208,13 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
   // Update the edit text when switching language in edit mode
   useEffect(() => {
     if (isEditing) {
-      if (editLang === 'de') {
-        setEditText(datenschutz?.customText || defaultTextDE)
-      } else {
-        setEditText(datenschutz?.customTextEn || defaultTextEN)
-      }
+      startTransition(() => {
+        if (editLang === 'de') {
+          setEditText(datenschutz?.customText || defaultTextDE)
+        } else {
+          setEditText(datenschutz?.customTextEn || defaultTextEN)
+        }
+      })
     }
   }, [editLang, isEditing, datenschutz])
 

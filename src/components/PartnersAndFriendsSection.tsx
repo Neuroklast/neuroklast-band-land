@@ -8,7 +8,7 @@ import ProgressiveImage from '@/components/ProgressiveImage'
 import ProfileOverlay from '@/components/ProfileOverlay'
 import { useOverlayTransition } from '@/components/OverlayTransition'
 import SafeText from '@/components/SafeText'
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, type ComponentType } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend, SectionLabels } from '@/lib/types'
@@ -28,7 +28,7 @@ interface PartnersAndFriendsSectionProps {
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
-const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: any; label: string }[] = [
+const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: ComponentType<{ size?: number; weight?: string }>; label: string }[] = [
   { key: 'instagram', icon: InstagramLogo, label: 'Instagram' },
   { key: 'facebook', icon: FacebookLogo, label: 'Facebook' },
   { key: 'spotify', icon: SpotifyLogo, label: 'Spotify' },

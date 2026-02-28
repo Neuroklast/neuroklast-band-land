@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -70,23 +70,25 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
 
   useEffect(() => {
     if (gig) {
-      setFormData({
-        date: gig.date,
-        venue: gig.venue,
-        location: gig.location,
-        ticketUrl: gig.ticketUrl || '',
-        gigType: gig.gigType || '',
-        allDay: gig.allDay || false,
-        status: gig.status || '',
-        eventLinks: {
-          facebook: gig.eventLinks?.facebook || '',
-          instagram: gig.eventLinks?.instagram || '',
-          residentAdvisor: gig.eventLinks?.residentAdvisor || '',
-          other: gig.eventLinks?.other || ''
-        },
-        photo: gig.photo || ''
+      startTransition(() => {
+        setFormData({
+          date: gig.date,
+          venue: gig.venue,
+          location: gig.location,
+          ticketUrl: gig.ticketUrl || '',
+          gigType: gig.gigType || '',
+          allDay: gig.allDay || false,
+          status: gig.status || '',
+          eventLinks: {
+            facebook: gig.eventLinks?.facebook || '',
+            instagram: gig.eventLinks?.instagram || '',
+            residentAdvisor: gig.eventLinks?.residentAdvisor || '',
+            other: gig.eventLinks?.other || ''
+          },
+          photo: gig.photo || ''
+        })
+        setSupportingArtists(gig.supportingArtists || [])
       })
-      setSupportingArtists(gig.supportingArtists || [])
     }
   }, [gig])
 

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, startTransition } from 'react'
+import { motion } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -39,8 +39,10 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
 
   useEffect(() => {
     if (isOpen) {
-      setForm(impressum || emptyImpressum)
-      setIsEditing(false)
+      startTransition(() => {
+        setForm(impressum || emptyImpressum)
+        setIsEditing(false)
+      })
     }
   }, [isOpen, impressum])
 

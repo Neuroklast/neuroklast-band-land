@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, startTransition } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import logoImage from '@/assets/images/baphomet no text.svg'
 import {
@@ -58,16 +58,35 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
   const [hackingText, setHackingText] = useState(hackingTexts[0])
   const [cachingDone, setCachingDone] = useState(precacheUrls.length === 0)
   const onCompleteRef = useRef(onLoadComplete)
-  onCompleteRef.current = onLoadComplete
+  useEffect(() => {
+    onCompleteRef.current = onLoadComplete
+  })
   const { t } = useLocale()
+
+  const [codeRainParams] = useState(() =>
+    Array.from({ length: 50 }, () => ({
+      duration: Math.random() * 3 + 1,
+      delay: Math.random() * 2,
+      translateX: Math.random() * 20 - 10,
+    })))
+
+  const [hexParams] = useState(() =>
+    Array.from({ length: 8 }, () => ({
+      left: Math.random() * 90,
+      top: Math.random() * 90,
+      duration: Math.random() * 3 + 2,
+      delay: Math.random(),
+      hex: Math.random().toString(16).slice(2, 10).toUpperCase().padEnd(8, '0'),
+    }))
+  )
 
   // Background data caching during the loading screen
   useEffect(() => {
     if (precacheUrls.length === 0) {
-      setCachingDone(true)
+      startTransition(() => setCachingDone(true))
       return
     }
-    setCachingDone(false)
+    startTransition(() => setCachingDone(false))
     let cancelled = false
     Promise.allSettled(precacheUrls.map(url => loadCachedImage(url)))
       .then(() => { if (!cancelled) setCachingDone(true) })
@@ -111,14 +130,14 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
       {/* Code rain background */}
       <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
         <div className="text-primary font-mono text-[10px] leading-tight">
-          {Array.from({ length: 50 }).map((_, i) => (
+          {codeRainParams.map((params, i) => (
             <motion.div
               key={i}
               className="whitespace-nowrap"
               animate={{ opacity: [0.05, 0.4, 0.05] }}
-              transition={{ duration: Math.random() * 3 + 1, repeat: Infinity, delay: Math.random() * 2 }}
+              transition={{ duration: params.duration, repeat: Infinity, delay: params.delay }}
               style={{ 
-                transform: `translateX(${Math.random() * 20 - 10}px)`,
+                transform: `translateX(${params.translateX}px)`,
               }}
             >
               {codeFragments[i % codeFragments.length]}
@@ -134,25 +153,25 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
 
       {/* Floating hex addresses */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {Array.from({ length: 8 }).map((_, i) => (
+        {hexParams.map((params, i) => (
           <motion.div
             key={`hex-${i}`}
             className="absolute text-primary/10 font-mono text-[9px]"
             style={{
-              left: `${Math.random() * 90}%`,
-              top: `${Math.random() * 90}%`,
+              left: `${params.left}%`,
+              top: `${params.top}%`,
             }}
             animate={{ 
               opacity: [0, 0.2, 0],
               y: [0, -30],
             }}
             transition={{ 
-              duration: Math.random() * 3 + 2,
+              duration: params.duration,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: params.delay,
             }}
           >
-            0x{Math.random().toString(16).slice(2, 10).toUpperCase().padEnd(8, '0')}
+            0x{params.hex}
           </motion.div>
         ))}
       </div>

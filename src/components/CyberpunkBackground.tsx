@@ -13,6 +13,7 @@ interface CyberpunkBackgroundProps {
 export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundProps) {
   const [time, setTime] = useState(new Date())
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
+  const [defaultId] = useState(() => `ID: NK-${Date.now().toString().slice(-6)}`)
 
   useEffect(() => {
     const tick = () => setTime(new Date())
@@ -57,7 +58,7 @@ export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundPro
 
       <div className="absolute top-4 right-4 data-readout hidden md:block text-right">
         <div className="mb-1">{hudTexts?.topRight1 ?? 'NEUROKLAST v1.0'}</div>
-        <div>{hudTexts?.topRight2 ?? `ID: NK-${Date.now().toString().slice(-6)}`}</div>
+        <div>{hudTexts?.topRight2 ?? defaultId}</div>
       </div>
 
       <div className="absolute bottom-4 left-4 data-readout hidden md:block">

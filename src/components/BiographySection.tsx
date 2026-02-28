@@ -13,7 +13,7 @@ import { loadCachedImage } from '@/lib/image-cache'
 import { buildMemberDataLines } from '@/lib/profile-data'
 import { trackInteraction } from '@/lib/analytics'
 import { useTrackSection } from '@/hooks/use-track-section'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, startTransition } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Biography, Member, FontSizeSettings, SectionLabels } from '@/lib/types'
@@ -81,7 +81,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
   }, [])
 
   useEffect(() => {
-    setPhotos(biography.photos || [])
+    startTransition(() => setPhotos(biography.photos || []))
   }, [biography.photos])
 
   // Cache URL-based biography photos and member photos

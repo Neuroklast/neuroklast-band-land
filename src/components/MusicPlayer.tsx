@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, startTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Pause, SkipBack, SkipForward, SpeakerHigh, SpeakerSlash, SpeakerLow, MusicNote } from '@phosphor-icons/react'
 import { connectAudioElement, resumeAudioContext } from '@/lib/audio-context'
@@ -78,7 +78,7 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
         audioRef.current.play().catch(() => {})
       }
     }
-    setProgress(0)
+    startTransition(() => setProgress(0))
   }, [currentIndex, isPlaying])
   
   // Connect audio element to analyser for visualizer
