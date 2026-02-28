@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { Trash, ShieldWarning, Globe, Clock, User, Hash, Eye, ShieldCheck, CaretDown, CaretUp, X, MagnifyingGlass, Export, SortAscending, SortDescending, FunnelSimple, Info, ArrowsDownUp } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
-import { useState, useEffect, useMemo, Fragment } from 'react'
+import { useState, useEffect, useMemo, Fragment, startTransition } from 'react'
 import { t, type Locale, LOCALES } from '@/lib/i18n-security'
 
 export interface SecurityIncident {
@@ -117,6 +117,18 @@ function Tip({ text, children }: { text?: string; children: React.ReactNode }) {
   )
 }
 
+/** Sort icon that indicates current sort state */
+interface SortIconProps {
+  field: SortField
+  sortField: SortField
+  sortDir: 'asc' | 'desc'
+}
+
+function SortIcon({ field, sortField, sortDir }: SortIconProps) {
+  if (sortField !== field) return <ArrowsDownUp size={10} className="opacity-30" />
+  return sortDir === 'asc' ? <SortAscending size={10} /> : <SortDescending size={10} />
+}
+
 export default function SecurityIncidentsDashboard({ open, onClose, onViewProfile }: SecurityIncidentsDashboardProps) {
   const [incidents, setIncidents] = useState<SecurityIncident[]>([])
   const [loading, setLoading] = useState(false)
@@ -137,8 +149,10 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
 
   useEffect(() => {
     if (!open) return
-    setLoading(true)
-    setError(null)
+    startTransition(() => {
+      setLoading(true)
+      setError(null)
+    })
     fetch('/api/security-incidents', { credentials: 'same-origin' })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -248,11 +262,6 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
   const handleSort = (field: SortField) => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
     else { setSortField(field); setSortDir('desc') }
-  }
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowsDownUp size={10} className="opacity-30" />
-    return sortDir === 'asc' ? <SortAscending size={10} /> : <SortDescending size={10} />
   }
 
   const cmColors: Record<string, string> = {
@@ -656,18 +665,18 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                       <tr className="bg-primary/10 text-primary/70">
                         <th className="text-left px-3 py-2 tracking-wider w-8" />
                         <th className="text-left px-3 py-2 tracking-wider cursor-pointer select-none" onClick={() => handleSort('time')}>
-                          <span className="flex items-center gap-1">{L('sec.colTime')} <SortIcon field="time" /></span>
+                          <span className="flex items-center gap-1">{L('sec.colTime')} <SortIcon field="time" sortField={sortField} sortDir={sortDir} /></span>
                         </th>
                         <th className="text-left px-3 py-2 tracking-wider cursor-pointer select-none" onClick={() => handleSort('type')}>
-                          <span className="flex items-center gap-1">{L('sec.colType')} <SortIcon field="type" /></span>
+                          <span className="flex items-center gap-1">{L('sec.colType')} <SortIcon field="type" sortField={sortField} sortDir={sortDir} /></span>
                         </th>
                         <th className="text-left px-3 py-2 tracking-wider">{L('sec.colTarget')}</th>
                         <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell">{L('sec.colMethod')}</th>
                         <th className="text-left px-3 py-2 tracking-wider hidden md:table-cell cursor-pointer select-none" onClick={() => handleSort('ip')}>
-                          <span className="flex items-center gap-1">{L('sec.colIpHash')} <SortIcon field="ip" /></span>
+                          <span className="flex items-center gap-1">{L('sec.colIpHash')} <SortIcon field="ip" sortField={sortField} sortDir={sortDir} /></span>
                         </th>
                         <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell cursor-pointer select-none" onClick={() => handleSort('score')}>
-                          <span className="flex items-center gap-1">{L('sec.colScore')} <SortIcon field="score" /></span>
+                          <span className="flex items-center gap-1">{L('sec.colScore')} <SortIcon field="score" sortField={sortField} sortDir={sortDir} /></span>
                         </th>
                         <th className="text-left px-3 py-2 tracking-wider hidden lg:table-cell">{L('sec.countermeasure')}</th>
                         {onViewProfile && <th className="text-left px-3 py-2 tracking-wider">{L('sec.colAction')}</th>}

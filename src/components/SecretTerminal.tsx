@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PencilSimple, Plus, Trash, CaretDown, CaretUp, Keyboard } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -53,11 +53,13 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
 
   useEffect(() => {
     if (isOpen && !prevIsOpenRef.current) {
-      setCmds(customCommands)
-      setCodeKeys(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
-      setIsEditing(false)
-      setEditTab('commands')
-      setExpandedIdx(null)
+      startTransition(() => {
+        setCmds(customCommands)
+        setCodeKeys(secretCode && secretCode.length > 0 ? secretCode : DEFAULT_KONAMI_CODE)
+        setIsEditing(false)
+        setEditTab('commands')
+        setExpandedIdx(null)
+      })
     }
     if (isOpen && inputRef.current) {
       inputRef.current.focus()
@@ -103,7 +105,9 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
 
   useEffect(() => {
     if (!fileLoading) {
-      setPseudoProgress(0)
+      startTransition(() => {
+        setPseudoProgress(0)
+      })
       pseudoProgressRef.current = 0
       return
     }
@@ -137,23 +141,27 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
   useEffect(() => {
     if (currentTyping || typingQueue.length === 0) return
     const [next, ...rest] = typingQueue
-    setTypingQueue(rest)
-    // Empty lines appear instantly
-    if (!next.text) {
-      setHistory(prev => [...prev, next])
-      return
-    }
-    setCurrentTyping({ ...next, displayed: '' })
-    setIsTyping(true)
+    startTransition(() => {
+      setTypingQueue(rest)
+      // Empty lines appear instantly
+      if (!next.text) {
+        setHistory(prev => [...prev, next])
+        return
+      }
+      setCurrentTyping({ ...next, displayed: '' })
+      setIsTyping(true)
+    })
   }, [typingQueue, currentTyping])
 
   // Character-by-character typing
   useEffect(() => {
     if (!currentTyping) return
     if (currentTyping.displayed.length >= currentTyping.text.length) {
-      setHistory(prev => [...prev, { type: currentTyping.type, text: currentTyping.text }])
-      setCurrentTyping(null)
-      setIsTyping(false)
+      startTransition(() => {
+        setHistory(prev => [...prev, { type: currentTyping.type, text: currentTyping.text }])
+        setCurrentTyping(null)
+        setIsTyping(false)
+      })
       return
     }
     const timer = setTimeout(() => {
@@ -168,8 +176,10 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
     if (!pendingFileRef.current) return
     const { url, name } = pendingFileRef.current
     pendingFileRef.current = null
-    setFileLoading(true)
-    setFileDlProgress({ state: 'downloading', progress: 0 })
+    startTransition(() => {
+      setFileLoading(true)
+      setFileDlProgress({ state: 'downloading', progress: 0 })
+    })
 
     downloadFile(url, name, (progress) => {
       setFileDlProgress(progress)
