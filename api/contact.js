@@ -4,6 +4,7 @@ import { applyRateLimit } from './_ratelimit.js'
 import { validateSession } from './auth.js'
 
 const KV_KEY = 'contact-messages'
+const MAX_CONTACT_MESSAGES = 500 // Safety cap against storage exhaustion DoS
 
 const isKVConfigured = () => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
@@ -140,7 +141,8 @@ async function handlePost(req, res) {
 
   const existing = (await kv.get(KV_KEY)) || []
   existing.push(entry)
-  await kv.set(KV_KEY, existing)
+  const toStore = existing.length > MAX_CONTACT_MESSAGES ? existing.slice(-MAX_CONTACT_MESSAGES) : existing
+  await kv.set(KV_KEY, toStore)
 
   // Fire-and-forget email notification
   sendEmailNotification({ name, email, subject, message })

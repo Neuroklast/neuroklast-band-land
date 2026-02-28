@@ -26,11 +26,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  try {
-    await applyRateLimit(req, res, { maxRequests: 5, windowSeconds: 60 })
-  } catch {
-    return res.status(429).json({ error: 'Too many requests' })
-  }
+  const allowed = await applyRateLimit(req, res)
+  if (!allowed) return
 
   const { email, source } = req.body || {}
 
