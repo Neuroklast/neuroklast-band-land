@@ -8,6 +8,7 @@ import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import { useOverlayTransition } from '@/components/OverlayTransition'
+import { SwipeableGallery } from '@/components/SwipeableGallery'
 import { loadCachedImage } from '@/lib/image-cache'
 import type { GalleryImage, SectionLabels } from '@/lib/types'
 import { toast } from 'sonner'
@@ -42,6 +43,8 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
   const [selectedImage, setSelectedImage] = useState<{ imageUrl: string; caption: string } | null>(null)
+  const [swipeableOpen, setSwipeableOpen] = useState(false)
+  const [swipeableInitialIndex, setSwipeableInitialIndex] = useState(0)
   const [mobileIndex, setMobileIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState(0)
   const [touchEndX, setTouchEndX] = useState(0)
@@ -469,7 +472,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => { triggerTransition(); setSelectedImage(photo) }}
+                onClick={() => { triggerTransition(); setSwipeableInitialIndex(index); setSwipeableOpen(true) }}
               >
                 <span className="corner-bl"></span>
                 <span className="corner-br"></span>
@@ -597,6 +600,15 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
         )}
       </AnimatePresence>
       {transitionElement}
+      <AnimatePresence>
+        {swipeableOpen && photos.length > 0 && (
+          <SwipeableGallery
+            images={photos.map(p => p.imageUrl)}
+            initialIndex={swipeableInitialIndex}
+            onClose={() => { triggerTransition(); setSwipeableOpen(false) }}
+          />
+        )}
+      </AnimatePresence>
     </>
   )
 }
