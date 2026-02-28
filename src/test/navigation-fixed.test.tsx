@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import Navigation from '@/components/Navigation'
+import { LocaleProvider } from '@/contexts/LocaleContext'
 
 // Stub framer-motion to render plain elements so CSS classes are testable
 vi.mock('framer-motion', async () => {
@@ -36,35 +37,43 @@ vi.mock('framer-motion', async () => {
   }
 })
 
+function renderNavigation() {
+  return render(
+    <LocaleProvider>
+      <Navigation />
+    </LocaleProvider>
+  )
+}
+
 describe('Navigation fixed positioning', () => {
   it('renders the nav element with position:fixed classes', () => {
-    const { container } = render(<Navigation />)
+    const { container } = renderNavigation()
     const nav = container.querySelector('nav')
     expect(nav).not.toBeNull()
     expect(nav!.className).toContain('fixed')
   })
 
   it('renders the nav element pinned to the top edge (top-0)', () => {
-    const { container } = render(<Navigation />)
+    const { container } = renderNavigation()
     const nav = container.querySelector('nav')
     expect(nav!.className).toContain('top-0')
   })
 
   it('renders the nav element spanning the full width (left-0 right-0)', () => {
-    const { container } = render(<Navigation />)
+    const { container } = renderNavigation()
     const nav = container.querySelector('nav')
     expect(nav!.className).toContain('left-0')
     expect(nav!.className).toContain('right-0')
   })
 
   it('renders the nav element with a high z-index (z-50)', () => {
-    const { container } = render(<Navigation />)
+    const { container } = renderNavigation()
     const nav = container.querySelector('nav')
     expect(nav!.className).toContain('z-50')
   })
 
   it('does not use relative or absolute positioning on the nav', () => {
-    const { container } = render(<Navigation />)
+    const { container } = renderNavigation()
     const nav = container.querySelector('nav')
     const classes = nav!.className.split(/\s+/)
     expect(classes).not.toContain('relative')
@@ -73,7 +82,7 @@ describe('Navigation fixed positioning', () => {
   })
 
   it('contains all required fixed-positioning classes together', () => {
-    const { container } = render(<Navigation />)
+    const { container } = renderNavigation()
     const nav = container.querySelector('nav')
     const classes = nav!.className
     // All four classes must be present to guarantee the nav stays fixed at top
