@@ -60,12 +60,12 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.50_0.22_25/0.05)_0%,transparent_60%)]" />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, color-mix(in oklch, var(--primary) 5%, transparent) 0%, transparent 60%)' }} />
         
-        <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-8" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-8" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style={{ color: 'var(--primary)' }}>
           <motion.polygon
             points="600,250 750,450 600,550 450,450"
-            stroke="oklch(0.50 0.22 25)"
+            stroke="currentColor"
             strokeWidth="1"
             fill="none"
             initial={{ pathLength: 0, opacity: 0 }}
@@ -76,7 +76,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             cx="600"
             cy="400"
             r="200"
-            stroke="oklch(0.50 0.22 25)"
+            stroke="currentColor"
             strokeWidth="0.5"
             opacity="0.15"
             fill="none"
@@ -89,7 +89,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             y1="400"
             x2="1100"
             y2="400"
-            stroke="oklch(0.50 0.22 25)"
+            stroke="currentColor"
             strokeWidth="0.5"
             opacity="0.1"
             initial={{ pathLength: 0 }}
@@ -135,18 +135,18 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               repeat: Infinity,
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 20 20">
+            <svg width="20" height="20" viewBox="0 0 20 20" style={{ color: 'var(--primary)' }}>
               {i % 2 === 0 ? (
                 <path
                   d="M 0 0 L 10 0 L 0 10 Z"
-                  stroke="oklch(0.50 0.22 25)"
+                  stroke="currentColor"
                   strokeWidth="0.5"
                   fill="none"
                 />
               ) : (
                 <path
                   d="M 20 0 L 10 0 L 20 10 Z"
-                  stroke="oklch(0.50 0.22 25)"
+                  stroke="currentColor"
                   strokeWidth="0.5"
                   fill="none"
                 />
@@ -220,7 +220,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
                 alt={t('hero.titleAlt')} 
                 className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
                 style={{ 
-                  filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
+                  filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
                 }}
               />
               <div className="absolute inset-0 pointer-events-none z-20">

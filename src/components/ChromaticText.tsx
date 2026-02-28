@@ -16,7 +16,7 @@ export function ChromaticText({ children, className, intensity = 1 }: ChromaticT
 
   const textShadow = aberrationIntensity > 0.01
     ? `
-        ${offsetX}px ${offsetY}px 0 oklch(0.50 0.22 25 / ${aberrationIntensity * 0.8}),
+        ${offsetX}px ${offsetY}px 0 color-mix(in oklch, var(--primary) ${Math.round(aberrationIntensity * 0.8 * 100)}%, transparent),
         ${-offsetX}px ${-offsetY}px 0 oklch(0.60 0.24 200 / ${aberrationIntensity * 0.6}),
         ${offsetY}px ${-offsetX}px 0 oklch(0.50 0.22 120 / ${aberrationIntensity * 0.5})
       `

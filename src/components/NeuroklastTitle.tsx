@@ -16,9 +16,9 @@ export default function NeuroklastTitle({ className = '' }: { className?: string
           </feMerge>
         </filter>
         <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="oklch(0.55 0.22 25)" />
-          <stop offset="50%" stopColor="oklch(0.65 0.25 25)" />
-          <stop offset="100%" stopColor="oklch(0.55 0.22 25)" />
+          <stop offset="0%" stopColor="var(--primary)" />
+          <stop offset="50%" stopColor="oklch(from var(--primary) calc(l + 0.1) c h)" />
+          <stop offset="100%" stopColor="var(--primary)" />
         </linearGradient>
       </defs>
       

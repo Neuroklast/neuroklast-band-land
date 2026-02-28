@@ -237,7 +237,7 @@ describe('vercel.json sitemap-trap rewrite', () => {
 describe('vite.config.ts obfuscator plugin', () => {
   const viteConfig = readFileSync(resolve(__dirname, '../../vite.config.ts'), 'utf-8')
 
-  it('imports vite-plugin-obfuscator', () => {
-    expect(viteConfig).toContain("from 'vite-plugin-obfuscator'")
+  it('imports javascript-obfuscator', () => {
+    expect(viteConfig).toContain("from 'javascript-obfuscator'")
   })
 })

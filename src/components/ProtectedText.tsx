@@ -21,7 +21,8 @@ export default function ProtectedText({ text, className, fontSize = 14 }: Protec
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const font = `${fontSize}px 'JetBrains Mono', monospace`
+    const monoFont = getComputedStyle(document.documentElement).getPropertyValue('--font-mono').trim() || "'JetBrains Mono', monospace"
+    const font = `${fontSize}px ${monoFont}`
     ctx.font = font
     const metrics = ctx.measureText(text)
     const width = Math.ceil(metrics.width) + 4
