@@ -48,7 +48,8 @@ import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type { BandData, FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
-import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
+import { DEFAULT_LABEL, applyConfigOverrides, OVERLAY_LOADING_TEXT_INTERVAL_MS, OVERLAY_GLITCH_PHASE_DELAY_MS, OVERLAY_REVEAL_PHASE_DELAY_MS } from '@/lib/config'
+import { getRandomOverlayAnimation } from '@/lib/overlay-animations'
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
@@ -97,6 +98,14 @@ function collectImageUrls(data: BandData): string[] {
   return urls.slice(0, MAX_PRECACHE_IMAGES)
 }
 
+const OVERLAY_LOADING_TEXTS = [
+  'ACCESSING DATABASE...',
+  'DECRYPTING PAYLOAD...',
+  'VERIFYING CLEARANCE...',
+  'LOADING ASSETS...',
+  'SYNCHRONIZING...',
+]
+
 function App() {
   const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
   const [isOwner, setIsOwner] = useState(false)
@@ -124,6 +133,11 @@ function App() {
   const [showContactInbox, setShowContactInbox] = useState(false)
   const [showSubscribers, setShowSubscribers] = useState(false)
   const [showMarketingTools, setShowMarketingTools] = useState(false)
+
+  const [cyberpunkOverlay, setCyberpunkOverlay] = useState<{ type: string; data: unknown } | null>(null)
+  const [overlayPhase, setOverlayPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
+  const [loadingText, setLoadingText] = useState(OVERLAY_LOADING_TEXTS[0])
+  const [overlayAnimation] = useState(() => getRandomOverlayAnimation())
 
   // Apply CRT effects
   useCRTEffects()
@@ -312,6 +326,53 @@ function App() {
   useEffect(() => {
     applyThemeToDOM(data.themeSettings)
   }, [data.themeSettings])
+
+  // Cyberpunk overlay phase state machine: loading → glitch → revealed
+  useEffect(() => {
+    if (!cyberpunkOverlay) return
+
+    setOverlayPhase('loading')
+    setLoadingText(OVERLAY_LOADING_TEXTS[0])
+
+    let idx = 0
+    const txtInterval = setInterval(() => {
+      idx += 1
+      if (idx <= OVERLAY_LOADING_TEXTS.length - 1) {
+        setLoadingText(OVERLAY_LOADING_TEXTS[idx])
+      }
+    }, OVERLAY_LOADING_TEXT_INTERVAL_MS)
+
+    const glitchTimer = setTimeout(() => {
+      clearInterval(txtInterval)
+      setOverlayPhase('glitch')
+    }, OVERLAY_GLITCH_PHASE_DELAY_MS)
+
+    const revealTimer = setTimeout(() => {
+      setOverlayPhase('revealed')
+    }, OVERLAY_REVEAL_PHASE_DELAY_MS)
+
+    return () => {
+      clearInterval(txtInterval)
+      clearTimeout(glitchTimer)
+      clearTimeout(revealTimer)
+    }
+  }, [cyberpunkOverlay])
+
+  // Apply CRT overlay/vignette opacity from animation settings
+  useEffect(() => {
+    const a = data.animations
+    const root = document.documentElement
+    if (typeof a?.crtOverlayOpacity === 'number') {
+      root.style.setProperty('--crt-overlay-opacity', String(a.crtOverlayOpacity))
+    }
+    if (typeof a?.crtVignetteOpacity === 'number') {
+      root.style.setProperty('--crt-vignette-opacity', String(a.crtVignetteOpacity))
+    }
+    return () => {
+      root.style.removeProperty('--crt-overlay-opacity')
+      root.style.removeProperty('--crt-vignette-opacity')
+    }
+  }, [data.animations?.crtOverlayOpacity, data.animations?.crtVignetteOpacity])
 
   const vis = data.sectionVisibility || {}
 

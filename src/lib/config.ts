@@ -33,6 +33,11 @@ const DEFAULTS = {
   PROFILE_GLITCH_PHASE_DELAY_MS: 700,
   PROFILE_REVEAL_PHASE_DELAY_MS: 1000,
 
+  // Overlay Loading Sequence
+  OVERLAY_LOADING_TEXT_INTERVAL_MS: 250,
+  OVERLAY_GLITCH_PHASE_DELAY_MS: 500,
+  OVERLAY_REVEAL_PHASE_DELAY_MS: 700,
+
   // Glitch Effects
   SECTION_GLITCH_PROBABILITY: 0.8,
   SECTION_GLITCH_DURATION_MS: 300,
@@ -152,6 +157,10 @@ export const CONFIG_META: Record<ConfigKey, ConfigMeta> = {
   PROFILE_LOADING_TEXT_INTERVAL_MS: { label: 'Loading Text Interval',   description: 'Interval for cycling loading text in overlays (ms)',       group: 'Profile Overlay',  type: 'number' },
   PROFILE_GLITCH_PHASE_DELAY_MS:   { label: 'Glitch Phase Delay',       description: 'Time before overlay enters glitch phase (ms)',             group: 'Profile Overlay',  type: 'number' },
   PROFILE_REVEAL_PHASE_DELAY_MS:   { label: 'Reveal Phase Delay',       description: 'Time before overlay fully reveals (ms)',                   group: 'Profile Overlay',  type: 'number' },
+
+  OVERLAY_LOADING_TEXT_INTERVAL_MS: { label: 'Overlay Loading Text Interval (ms)', description: 'Interval between loading text changes in overlay sequence', group: 'Overlay Loading Sequence', type: 'number' },
+  OVERLAY_GLITCH_PHASE_DELAY_MS:   { label: 'Overlay Glitch Phase Delay (ms)', description: 'Delay before entering glitch phase in overlay sequence', group: 'Overlay Loading Sequence', type: 'number' },
+  OVERLAY_REVEAL_PHASE_DELAY_MS:   { label: 'Overlay Reveal Phase Delay (ms)', description: 'Delay before entering reveal phase in overlay sequence', group: 'Overlay Loading Sequence', type: 'number' },
 
   SECTION_GLITCH_PROBABILITY:      { label: 'Section Glitch Prob.',     description: 'Probability (0–1) glitch fires for section titles',       group: 'Glitch Effects',   type: 'number' },
   SECTION_GLITCH_DURATION_MS:      { label: 'Section Glitch Duration',  description: 'Duration of section title glitch (ms)',                   group: 'Glitch Effects',   type: 'number' },
@@ -283,6 +292,9 @@ export const TERMINAL_FILE_LOADING_DURATION_MS = DEFAULTS.TERMINAL_FILE_LOADING_
 export const PROFILE_LOADING_TEXT_INTERVAL_MS = DEFAULTS.PROFILE_LOADING_TEXT_INTERVAL_MS
 export const PROFILE_GLITCH_PHASE_DELAY_MS   = DEFAULTS.PROFILE_GLITCH_PHASE_DELAY_MS
 export const PROFILE_REVEAL_PHASE_DELAY_MS   = DEFAULTS.PROFILE_REVEAL_PHASE_DELAY_MS
+export const OVERLAY_LOADING_TEXT_INTERVAL_MS = DEFAULTS.OVERLAY_LOADING_TEXT_INTERVAL_MS
+export const OVERLAY_GLITCH_PHASE_DELAY_MS   = DEFAULTS.OVERLAY_GLITCH_PHASE_DELAY_MS
+export const OVERLAY_REVEAL_PHASE_DELAY_MS   = DEFAULTS.OVERLAY_REVEAL_PHASE_DELAY_MS
 export const SECTION_GLITCH_PROBABILITY      = DEFAULTS.SECTION_GLITCH_PROBABILITY
 export const SECTION_GLITCH_DURATION_MS      = DEFAULTS.SECTION_GLITCH_DURATION_MS
 export const SECTION_GLITCH_INTERVAL_MS      = DEFAULTS.SECTION_GLITCH_INTERVAL_MS
