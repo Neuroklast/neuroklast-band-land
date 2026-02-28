@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { ShieldCheck, ShieldWarning, Lock, Bug, Robot, Fingerprint, ChartLine, ProhibitInset, Package, BellRinging, Info, Lightning, FileText, Database, Detective } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'

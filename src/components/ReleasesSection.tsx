@@ -1,4 +1,4 @@
-import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { MusicNote, Plus, Trash, SpotifyLogo, SoundcloudLogo, YoutubeLogo, ArrowsClockwise, ShareNetwork } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'

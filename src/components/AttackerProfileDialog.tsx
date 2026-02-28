@@ -1,9 +1,9 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
-import { X, Warning, Clock, Globe, User, ChartLine, List, Shield, Fingerprint } from '@phosphor-icons/react'
+import { Warning, Globe, User, ChartLine, List, Shield, Fingerprint } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { t, tip, type Locale, LOCALES } from '@/lib/i18n-security'
 
 interface AttackerProfileDialogProps {

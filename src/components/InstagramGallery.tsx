@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Images, X, CaretLeft, CaretRight, Plus, PencilSimple, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
+import { Images, X, CaretLeft, CaretRight, Plus, FolderOpen, ArrowsClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useLocale } from '@/contexts/LocaleContext'

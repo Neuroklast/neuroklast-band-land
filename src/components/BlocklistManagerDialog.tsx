@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
-import { ProhibitInset, Trash, Clock, Warning, Plus, CheckCircle } from '@phosphor-icons/react'
+import { ProhibitInset, Trash, Plus, CheckCircle } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'

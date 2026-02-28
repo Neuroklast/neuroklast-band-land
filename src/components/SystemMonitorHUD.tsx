@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, startTransition } from 'react'
 import { get } from '@/lib/config'
 
 interface SystemMetrics {
@@ -23,13 +23,13 @@ export function SystemMonitorHUD() {
     scrollSpeed: 0,
   })
 
-  const [startTime] = useState(Date.now())
+  const [startTime] = useState(() => Date.now())
   const [lastScrollPos, setLastScrollPos] = useState(0)
-  const [lastScrollTime, setLastScrollTime] = useState(Date.now())
+  const [lastScrollTime, setLastScrollTime] = useState(() => Date.now())
 
   useEffect(() => {
     const isEnabled = get('HUD_METADATA_ENABLED')
-    setEnabled(Boolean(isEnabled))
+    startTransition(() => setEnabled(Boolean(isEnabled)))
   }, [])
 
   useEffect(() => {

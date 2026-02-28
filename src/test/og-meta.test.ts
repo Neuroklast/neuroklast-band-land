@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
 /**
  * Tests for the OG meta-tag API logic.
@@ -38,7 +38,6 @@ function fmtDate(iso: string | undefined | null): string {
 }
 
 const FALLBACK_TITLE = 'NEUROKLAST'
-const FALLBACK_DESCRIPTION = 'NEUROKLAST – Hard Techno, Industrial, DNB & Dark Electro.'
 const FALLBACK_IMAGE = '/og-image.png'
 
 interface ContentMeta {

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, startTransition } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import logoImage from '@/assets/images/baphomet no text.svg'
 import {
@@ -58,7 +58,9 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
   const [hackingText, setHackingText] = useState(hackingTexts[0])
   const [cachingDone, setCachingDone] = useState(precacheUrls.length === 0)
   const onCompleteRef = useRef(onLoadComplete)
-  onCompleteRef.current = onLoadComplete
+  useEffect(() => {
+    onCompleteRef.current = onLoadComplete
+  })
   const { t } = useLocale()
 
   const [codeRainParams] = useState(() =>
@@ -81,10 +83,10 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
   // Background data caching during the loading screen
   useEffect(() => {
     if (precacheUrls.length === 0) {
-      setCachingDone(true)
+      startTransition(() => setCachingDone(true))
       return
     }
-    setCachingDone(false)
+    startTransition(() => setCachingDone(false))
     let cancelled = false
     Promise.allSettled(precacheUrls.map(url => loadCachedImage(url)))
       .then(() => { if (!cancelled) setCachingDone(true) })

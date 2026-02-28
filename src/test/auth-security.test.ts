@@ -18,7 +18,6 @@ vi.mock('../../api/_ratelimit.js', () => ({
   getClientIp: vi.fn().mockReturnValue('1.2.3.4'),
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn> }
 
 function mockRes(): Res {
