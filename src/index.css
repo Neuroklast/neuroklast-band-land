@@ -15,6 +15,13 @@
   }
 }
 
+/* Ensure the bare 'rounded' Tailwind utility participates in the global
+   radius scale (Tailwind v4 hardcodes it to 0.25rem by default). This
+   unlayered rule wins over @layer utilities, so it always takes effect. */
+.rounded {
+  border-radius: var(--radius-md);
+}
+
 :root {
   --background: oklch(0 0 0);
   --foreground: oklch(1 0 0);
