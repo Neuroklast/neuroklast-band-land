@@ -15,6 +15,13 @@
   }
 }
 
+/* Ensure the bare 'rounded' Tailwind utility participates in the global
+   radius scale (Tailwind v4 hardcodes it to 0.25rem by default). This
+   unlayered rule wins over @layer utilities, so it always takes effect. */
+.rounded {
+  border-radius: var(--radius-md);
+}
+
 :root {
   --background: oklch(0 0 0);
   --foreground: oklch(1 0 0);
@@ -1471,8 +1478,33 @@ h1, h2, h3, h4, h5, h6 {
 /* Cyberpunk border glow */
 .cyberpunk-border-glow {
   box-shadow:
-    0 0 10px rgba(180, 50, 50, 0.15),
-    inset 0 0 10px rgba(180, 50, 50, 0.05);
+    0 0 10px color-mix(in oklch, var(--primary) 15%, transparent),
+    inset 0 0 10px color-mix(in oklch, var(--primary) 5%, transparent);
+}
+
+/* Loading phase text that flickers while the overlay is loading */
+.progressive-loading-label {
+  animation: progressive-loading-flicker 1.4s steps(2) infinite;
+}
+
+@keyframes progressive-loading-flicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Glitch-effect: horizontal chromatic shift used during overlay glitch phase */
+.glitch-effect {
+  position: relative;
+  animation: glitch-effect-anim 0.3s steps(3) forwards;
+}
+
+@keyframes glitch-effect-anim {
+  0%   { transform: translate(0); filter: none; }
+  20%  { transform: translate(-3px, 1px); filter: drop-shadow(3px 0 0 color-mix(in oklch, var(--primary) 70%, transparent)); }
+  40%  { transform: translate(3px, -1px); filter: drop-shadow(-3px 0 0 color-mix(in oklch, var(--primary) 40%, oklch(0.60 0.24 195))); }
+  60%  { transform: translate(-2px, 0); filter: drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)); }
+  80%  { transform: translate(1px, 1px); filter: none; }
+  100% { transform: translate(0); filter: none; }
 }
 
 /* Cyberpunk overlay background – scanlines + radial vignette */
