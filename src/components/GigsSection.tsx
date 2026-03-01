@@ -23,9 +23,11 @@ interface GigsSectionProps {
   dataLoaded?: boolean
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  /** When provided, clicking a gig card opens the cyberpunk overlay */
+  onGigClick?: (gig: Gig) => void
 }
 
-export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: GigsSectionProps) {
+export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onGigClick }: GigsSectionProps) {
   const { t } = useLocale()
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
@@ -265,7 +267,10 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className={`p-4 md:p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group relative overflow-hidden touch-manipulation active:scale-[0.99] hud-element hud-corner hud-scanline${highlightedGigId === gig.id ? ' ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}>
+                <Card
+                  className={`p-4 md:p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group relative overflow-hidden touch-manipulation active:scale-[0.99] hud-element hud-corner hud-scanline${highlightedGigId === gig.id ? ' ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}${onGigClick && !editMode ? ' cursor-pointer' : ''}`}
+                  onClick={onGigClick && !editMode ? () => onGigClick(gig) : undefined}
+                >
                   <span className="corner-bl"></span>
                   <span className="corner-br"></span>
                   

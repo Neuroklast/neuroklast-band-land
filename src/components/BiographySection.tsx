@@ -35,6 +35,8 @@ interface BiographySectionProps {
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  /** When provided, clicking a member card calls this instead of opening ProfileOverlay */
+  onMemberClick?: (member: Member) => void
 }
 
 const defaultBiography: Biography = {
@@ -46,7 +48,7 @@ const defaultBiography: Biography = {
 
 const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange, onMemberClick }: BiographySectionProps) {
   const { t } = useLocale()
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -288,7 +290,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                           <button
                             key={index}
                             className="w-full text-left border border-border/50 p-3 hover:border-primary/30 transition-colors duration-200 cursor-pointer"
-                            onClick={() => { triggerTransition(); trackInteraction('member_profile'); setSelectedMember(member) }}
+                            onClick={() => { triggerTransition(); trackInteraction('member_profile'); if (onMemberClick) { onMemberClick(member) } else { setSelectedMember(member) } }}
                             aria-label={`View profile of ${member.name}`}
                           >
                             <div className="flex items-center gap-3">
