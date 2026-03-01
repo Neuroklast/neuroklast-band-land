@@ -93,6 +93,7 @@ const defaultTheme = {
       "focus-ring": "var(--color-focus-ring)",
     },
     borderRadius: {
+      DEFAULT: "var(--radius-md)",
       sm: "var(--radius-sm)",
       md: "var(--radius-md)",
       lg: "var(--radius-lg)",

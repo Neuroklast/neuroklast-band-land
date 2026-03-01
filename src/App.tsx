@@ -51,6 +51,7 @@ import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
+import CyberpunkOverlayModal from '@/components/CyberpunkOverlayModal'
 
 const defaultBandData: BandData = {
   name: bandDataJson.band.name,
@@ -102,7 +103,7 @@ function collectImageUrls(data: BandData): string[] {
 function App() {
   const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
-  const { cyberpunkOverlay: _cyberpunkOverlay, setCyberpunkOverlay: _setCyberpunkOverlay, overlayPhase: _overlayPhase, loadingText: _loadingText, overlayAnimation: _overlayAnimation } = useOverlayState()
+  const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState()
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [terminalOpen, setTerminalOpen] = useState(false)
@@ -361,6 +362,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onMemberClick={(member) => setCyberpunkOverlay({ type: 'member', data: member })}
                 />
               </motion.div>
               )}
@@ -398,6 +400,7 @@ function App() {
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onGigClick={(gig) => setCyberpunkOverlay({ type: 'gig', data: gig })}
                 />
               </motion.div>
               )}
@@ -430,6 +433,7 @@ function App() {
                   dataLoaded={bandDataLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  onReleaseClick={(release) => setCyberpunkOverlay({ type: 'release', data: release })}
                 />
               </motion.div>
               )}
@@ -514,7 +518,15 @@ function App() {
                 genres={data.genres}
                 label={data.label}
                 onAdminLogin={!isOwner && !needsSetup ? () => setShowLoginDialog(true) : undefined}
-                onImpressum={() => setImpressumOpen(true)}
+                onImpressum={() => {
+                  if (editMode && isOwner) {
+                    setImpressumOpen(true)
+                  } else if (data.impressum) {
+                    setCyberpunkOverlay({ type: 'impressum', data: data.impressum })
+                  } else {
+                    setImpressumOpen(true)
+                  }
+                }}
                 onDatenschutz={() => setDatenschutzOpen(true)}
               />
             </motion.div>
@@ -652,6 +664,16 @@ function App() {
           </motion.div>
         </>
       )}
+
+      {/* Cyberpunk 3-phase overlay modal — member / release / gig / impressum */}
+      <CyberpunkOverlayModal
+        overlay={cyberpunkOverlay}
+        phase={overlayPhase}
+        loadingText={loadingText}
+        animation={overlayAnimation}
+        onClose={() => setCyberpunkOverlay(null)}
+        sectionLabels={data.sectionLabels}
+      />
     </>
   )
 }

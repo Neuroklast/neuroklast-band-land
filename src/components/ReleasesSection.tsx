@@ -31,9 +31,11 @@ interface ReleasesSectionProps {
   dataLoaded?: boolean
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  /** When provided, clicking a release calls this instead of the internal modal */
+  onReleaseClick?: (release: Release) => void
 }
 
-export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange }: ReleasesSectionProps) {
+export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onReleaseClick }: ReleasesSectionProps) {
   const { t } = useLocale()
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
@@ -340,7 +342,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                     >
                       <div
                         className="relative cursor-pointer touch-manipulation"
-                        onClick={() => { triggerTransition(); setExpandedReleaseId(isExpanded ? null : release.id) }}
+                        onClick={() => { triggerTransition(); if (onReleaseClick) { onReleaseClick(release) } else { setExpandedReleaseId(isExpanded ? null : release.id) } }}
                       >
                         <div className="aspect-square bg-secondary/30 relative overflow-hidden border border-border hover:border-primary/50 transition-colors">
                           {release.artwork ? (
@@ -490,7 +492,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                 >
                   <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 active:border-primary transition-all duration-300 group active:scale-[0.97] touch-manipulation cursor-pointer"
-                    onClick={() => { if (!editMode) { triggerTransition(); setExpandedReleaseId(expandedReleaseId === release.id ? null : release.id) } }}
+                    onClick={() => { if (!editMode) { triggerTransition(); if (onReleaseClick) { onReleaseClick(release) } else { setExpandedReleaseId(expandedReleaseId === release.id ? null : release.id) } } }}
                   >
                     <span className="corner-bl"></span>
                     <span className="corner-br"></span>
