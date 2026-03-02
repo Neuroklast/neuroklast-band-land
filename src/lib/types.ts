@@ -393,3 +393,23 @@ export interface HudTexts {
   /** Bottom-right line 2 (default: "MODE: HARD") */
   bottomRight2?: string
 }
+
+/**
+ * Identifies which admin dialog is currently open.
+ * Used as a single state value instead of 13+ individual booleans.
+ */
+export type AdminDialog =
+  | 'design'
+  | 'config'
+  | 'sound'
+  | 'terminal'
+  | 'secret-terminal'
+  | 'analytics'
+  | 'security-log'
+  | 'security-settings'
+  | 'blocklist'
+  | 'attacker-profiles'
+  | 'inbox'
+  | 'subscribers'
+  | 'marketing'
+  | null
