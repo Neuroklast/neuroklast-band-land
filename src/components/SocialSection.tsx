@@ -64,10 +64,10 @@ function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconS
         variant="outline"
         className="w-full h-44 md:h-52 flex flex-col items-center justify-center gap-3 rounded-none border-primary/30 hover:border-primary hover:bg-primary/10 active:border-primary active:bg-primary/20 active:scale-[0.92] transition-all group relative overflow-hidden touch-manipulation hud-element hud-corner hud-scanline social-cyber-card"
         style={{
-          textShadow: '0 0 6px oklch(1 0 0 / 0.3), 0 0 12px oklch(0.50 0.22 25 / 0.2)',
+          textShadow: '0 0 6px oklch(1 0 0 / 0.3), 0 0 12px color-mix(in oklch, var(--primary) 20%, transparent)',
           boxShadow: hovered
-            ? '0 0 20px oklch(0.50 0.22 25 / 0.4), inset 0 0 20px oklch(0.50 0.22 25 / 0.1)'
-            : '0 0 8px oklch(0.50 0.22 25 / 0.15), inset 0 0 8px oklch(0.50 0.22 25 / 0.03)',
+            ? '0 0 20px color-mix(in oklch, var(--primary) 40%, transparent), inset 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent)'
+            : '0 0 8px color-mix(in oklch, var(--primary) 15%, transparent), inset 0 0 8px color-mix(in oklch, var(--primary) 3%, transparent)',
         }}
       >
         <a href={url} target="_blank" rel="noopener noreferrer" onClick={onClick}>
@@ -82,7 +82,7 @@ function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconS
               className="w-16 h-16 md:w-20 md:h-20 object-contain group-hover:scale-110 group-active:scale-125 transition-transform duration-200 select-none"
               draggable={false}
               style={{
-                filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
+                filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
               }}
             />
           </div>
@@ -132,7 +132,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
             style={{
-              textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
+              textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 18px color-mix(in oklch, var(--primary) 20%, transparent)'
             }}
           >
             <ChromaticText intensity={1.5}>

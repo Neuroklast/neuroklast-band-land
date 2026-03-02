@@ -83,6 +83,15 @@
 
   /* Hover accent color alias */
   --hover-color: var(--accent);
+
+  /* Primary glow helpers – use these instead of hardcoded oklch values.
+     Opacity is fixed at percentages matching the default phosphor settings
+     (--phosphor-outer-opacity: 0.15, etc.). Dynamic phosphor opacity is not
+     supported in color-mix percentages; adjust these variables if you change
+     the phosphor CRT intensity. */
+  --primary-glow: color-mix(in oklch, var(--primary) 30%, transparent);
+  --primary-glow-dim: color-mix(in oklch, var(--primary) 15%, transparent);
+  --primary-glow-xs: color-mix(in oklch, var(--primary) 8%, transparent);
 }
 
 @theme {
@@ -127,9 +136,9 @@ body {
   overflow-x: hidden;
   text-shadow: 
     0 0 var(--phosphor-inner-blur) oklch(1 0 0 / var(--phosphor-inner-opacity)),
-    0 0 var(--phosphor-outer-blur) oklch(0.50 0.22 25 / var(--phosphor-outer-opacity)),
-    1px 0 0 oklch(0.50 0.22 25 / 0.1),
-    -1px 0 0 oklch(0.50 0.22 25 / 0.1);
+    0 0 var(--phosphor-outer-blur) var(--primary-glow-dim),
+    1px 0 0 var(--primary-glow-xs),
+    -1px 0 0 var(--primary-glow-xs);
 }
 
 @media (hover: hover) and (pointer: fine) {

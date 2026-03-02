@@ -244,7 +244,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
                 style={{
-                  textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
+                  textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 18px color-mix(in oklch, var(--primary) 20%, transparent)'
                 }}
               >
                 <ChromaticText intensity={1.5}>

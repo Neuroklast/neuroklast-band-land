@@ -262,7 +262,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.6 }}
             style={{
-              textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
+              textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 18px color-mix(in oklch, var(--primary) 20%, transparent)'
             }}
           >
             <ChromaticText intensity={1.5}>

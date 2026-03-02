@@ -232,7 +232,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
           <button
             onClick={handleDownload}
             disabled={dlProgress.state === 'downloading'}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_oklch(0.50_0.22_25/0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_var(--primary-glow)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <DownloadSimple size={16} />
             {dlProgress.state === 'downloading' ? t('media.downloading') : dlProgress.state === 'complete' ? t('media.downloaded') : t('media.download')}
@@ -510,7 +510,7 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-mono scanline-text dot-matrix-text"
               style={{
-                textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
+                textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 18px color-mix(in oklch, var(--primary) 20%, transparent)'
               }}
             >
               <ChromaticText intensity={1.5}>
