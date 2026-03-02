@@ -91,6 +91,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
     if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
     return 'en'
   })
+  const [now, setNow] = useState(() => Date.now())
 
   const L = (key: string) => t(key, locale)
 
@@ -108,6 +109,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
       .then(data => {
         setProfiles(data.profiles || [])
         setTotal(data.total || 0)
+        setNow(Date.now())
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
@@ -140,8 +142,6 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
     else { setSortField(field); setSortDir('desc') }
   }
-
-  const [now] = useState(() => Date.now())
 
   // Aggregate stats
   const { highThreatCount, active24h, totalIncidents } = useMemo(() => {
@@ -497,7 +497,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
             <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
             <span>{L('profiles.footer')}</span>
             <span className="ml-auto">
-              {total} {L('profiles.totalProfiles').toLowerCase()} &middot; {L('sec.gdprNote')}
+              {total} {locale === 'de' ? 'Profile' : 'profiles'} &middot; {L('sec.gdprNote')}
             </span>
           </div>
         </div>
