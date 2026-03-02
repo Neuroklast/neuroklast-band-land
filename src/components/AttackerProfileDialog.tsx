@@ -285,7 +285,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                         })()}
                       </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-4 pt-2 border-t border-primary/10">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2 border-t border-primary/10">
                       <div>
                         <p className="font-mono text-[10px] text-primary/50" title={LT('profile.totalIncidents')}>{L('profile.totalIncidents')}</p>
                         <p className="font-mono text-[16px] text-foreground/90 font-bold">{profile.totalIncidents}</p>
@@ -478,23 +478,23 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                       {L('profile.recentIncidents')} ({profile.incidents.length})
                     </h3>
                     <div className="border border-primary/10 overflow-hidden">
-                      <div className="bg-primary/10 px-3 py-2 grid grid-cols-[1fr,2fr,1fr,1fr,1fr] gap-2 font-mono text-[10px] text-primary/60 uppercase">
+                      <div className="bg-primary/10 px-3 py-2 grid grid-cols-[1fr,2fr,1fr] md:grid-cols-[1fr,2fr,1fr,1fr,1fr] gap-2 font-mono text-[10px] text-primary/60 uppercase">
                         <span>{L('profile.colTime')}</span>
                         <span>{L('profile.colType')}</span>
-                        <span>{L('profile.colMethod')}</span>
+                        <span className="hidden md:block">{L('profile.colMethod')}</span>
                         <span>{L('profile.colScore')}</span>
-                        <span>{L('profile.colLevel')}</span>
+                        <span className="hidden md:block">{L('profile.colLevel')}</span>
                       </div>
                       <div className="divide-y divide-primary/10 max-h-[250px] overflow-y-auto">
                         {profile.incidents.slice().reverse().map((incident, idx) => (
-                          <div key={idx} className="px-3 py-2 grid grid-cols-[1fr,2fr,1fr,1fr,1fr] gap-2 hover:bg-primary/5">
+                          <div key={idx} className="px-3 py-2 grid grid-cols-[1fr,2fr,1fr] md:grid-cols-[1fr,2fr,1fr,1fr,1fr] gap-2 hover:bg-primary/5">
                             <span className="font-mono text-[10px] text-primary/50">{formatShortTime(incident.timestamp)}</span>
                             <span className="font-mono text-[10px] text-foreground/80 truncate" title={incident.key}>
                               {incident.type.replace(/_/g, ' ')}
                             </span>
-                            <span className="font-mono text-[10px] text-primary/60">{incident.method}</span>
+                            <span className="hidden md:block font-mono text-[10px] text-primary/60">{incident.method}</span>
                             <span className="font-mono text-[10px] text-foreground/80">{incident.threatScore || '—'}</span>
-                            <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded w-fit`} style={{ 
+                            <span className={`hidden md:block font-mono text-[9px] px-1.5 py-0.5 rounded w-fit`} style={{ 
                               backgroundColor: incident.threatLevel ? THREAT_LEVEL_COLORS[incident.threatLevel as keyof typeof THREAT_LEVEL_COLORS] + '30' : '#33333330',
                               color: incident.threatLevel ? THREAT_LEVEL_COLORS[incident.threatLevel as keyof typeof THREAT_LEVEL_COLORS] : '#666'
                             }}>

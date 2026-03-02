@@ -222,6 +222,7 @@ const translations: Record<string, Record<Locale, string>> = {
   'edit.secLog':               { en: 'SEC. LOG', de: 'SIK. LOG' },
   'edit.security':             { en: 'SECURITY', de: 'SICHERHEIT' },
   'edit.blocklist':            { en: 'BLOCKLIST', de: 'SPERRLISTE' },
+  'edit.attackerProfiles':     { en: 'PROFILES', de: 'PROFILE' },
   'edit.theme':                { en: 'THEME', de: 'DESIGN' },
   'edit.terminal':             { en: 'TERMINAL', de: 'TERMINAL' },
   'edit.openTerminal':         { en: 'OPEN TERMINAL', de: 'TERMINAL ÖFFNEN' },

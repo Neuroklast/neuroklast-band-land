@@ -36,6 +36,7 @@ import SecurityIncidentsDashboard from '@/components/SecurityIncidentsDashboard'
 import SecuritySettingsDialog from '@/components/SecuritySettingsDialog'
 import BlocklistManagerDialog from '@/components/BlocklistManagerDialog'
 import AttackerProfileDialog from '@/components/AttackerProfileDialog'
+import AttackerProfilesOverview from '@/components/AttackerProfilesOverview'
 import { MovingScanline } from '@/components/MovingScanline'
 import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import NewsletterWidget from '@/components/NewsletterWidget'
@@ -119,6 +120,7 @@ function App() {
   const [showSecuritySettings, setShowSecuritySettings] = useState(false)
   const [showBlocklist, setShowBlocklist] = useState(false)
   const [showAttackerProfile, setShowAttackerProfile] = useState(false)
+  const [showAttackerProfiles, setShowAttackerProfiles] = useState(false)
   const [selectedAttackerIp, setSelectedAttackerIp] = useState<string>('')
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false)
   const [showTerminalSettings, setShowTerminalSettings] = useState(false)
@@ -560,6 +562,7 @@ function App() {
                 onOpenSecurityLog={() => setShowSecurityIncidents(true)}
                 onOpenSecuritySettings={() => setShowSecuritySettings(true)}
                 onOpenBlocklist={() => setShowBlocklist(true)}
+                onOpenAttackerProfiles={() => setShowAttackerProfiles(true)}
                 onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}
                 onOpenTerminalSettings={() => setShowTerminalSettings(true)}
                 onOpenTerminal={() => setTerminalOpen(true)}
@@ -584,6 +587,14 @@ function App() {
               open={showAttackerProfile} 
               onClose={() => setShowAttackerProfile(false)} 
               hashedIp={selectedAttackerIp}
+            />
+            <AttackerProfilesOverview
+              open={showAttackerProfiles}
+              onClose={() => setShowAttackerProfiles(false)}
+              onViewProfile={(hashedIp) => {
+                setSelectedAttackerIp(hashedIp)
+                setShowAttackerProfile(true)
+              }}
             />
             <ContactInboxDialog open={showContactInbox} onClose={() => setShowContactInbox(false)} />
             <SubscriberListDialog open={showSubscribers} onClose={() => setShowSubscribers(false)} />
