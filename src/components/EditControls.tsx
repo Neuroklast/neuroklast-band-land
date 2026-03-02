@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone, UsersFour } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -28,6 +28,7 @@ interface EditControlsProps {
   onOpenSecurityLog?: () => void
   onOpenSecuritySettings?: () => void
   onOpenBlocklist?: () => void
+  onOpenAttackerProfiles?: () => void
   onOpenThemeCustomizer?: () => void
   onOpenTerminalSettings?: () => void
   onOpenTerminal?: () => void
@@ -45,7 +46,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenThemeCustomizer, onOpenTerminalSettings, onOpenTerminal, onOpenContactInbox, onOpenSubscribers, onOpenMarketingTools }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenAttackerProfiles, onOpenThemeCustomizer, onOpenTerminalSettings, onOpenTerminal, onOpenContactInbox, onOpenSubscribers, onOpenMarketingTools }: EditControlsProps) {
   const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
@@ -308,6 +309,16 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 >
                   <ProhibitInset size={20} weight="bold" />
                   <span className="text-[9px] font-mono leading-none">{t('edit.blocklist')}</span>
+                </Button>
+              )}
+              {onOpenAttackerProfiles && (
+                <Button
+                  onClick={onOpenAttackerProfiles}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  title="Attacker profiles overview"
+                >
+                  <UsersFour size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">{t('edit.attackerProfiles')}</span>
                 </Button>
               )}
               {onOpenThemeCustomizer && (
