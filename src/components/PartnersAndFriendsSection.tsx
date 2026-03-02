@@ -142,7 +142,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
       <span className="corner-br"></span>
       <div className="flex flex-col items-center gap-3 p-5">
         {(friend.iconPhoto || friend.photo) ? (
-          <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] bg-black ${hovered ? 'red-glitch-element' : ''}`}>
+          <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_var(--primary-glow),0_0_30px_var(--primary-glow-dim)] bg-black ${hovered ? 'red-glitch-element' : ''}`}>
             <ProgressiveImage
               src={friend.iconPhoto || friend.photo || ''}
               alt={friend.name}
@@ -152,7 +152,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
             <div className="dot-matrix-photo" />
           </div>
         ) : (
-          <div className={`w-24 h-24 aspect-square flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center shadow-[0_0_15px_oklch(0.50_0.22_25/0.3),0_0_30px_oklch(0.50_0.22_25/0.15)] ${hovered ? 'red-glitch-element' : ''}`}>
+          <div className={`w-24 h-24 aspect-square flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center shadow-[0_0_15px_var(--primary-glow),0_0_30px_var(--primary-glow-dim)] ${hovered ? 'red-glitch-element' : ''}`}>
             <User size={32} className="text-muted-foreground/40" />
           </div>
         )}
@@ -199,7 +199,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
 export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels, onLabelChange }: PartnersAndFriendsSectionProps) {
   const { t } = useLocale()
   const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const isInView = useInView(sectionRef, { once: true, amount: 0.05 })
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
   const titleText = sectionLabels?.partnersAndFriends || t('partners.defaultTitle')
@@ -231,66 +231,79 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
   return (
     <section ref={sectionRef} className="py-20 px-4 relative" id="partners">
       <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
-              style={{
-                textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px oklch(0.50 0.22 25 / 0.3), 0 0 18px oklch(0.50 0.22 25 / 0.2)'
-              }}
-            >
-              <ChromaticText intensity={1.5}>
-                {headingPrefix} {displayedTitle}
-              </ChromaticText>
-              <span className="animate-pulse">_</span>
-            </h2>
-            <div className="flex gap-2 items-center">
-              {editMode && onLabelChange && (
-                <>
-                  <input
-                    type="text"
-                    value={sectionLabels?.headingPrefix ?? '>'}
-                    onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
-                    placeholder=">"
-                    className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
-                    title="Heading prefix"
-                  />
-                  <input
-                    type="text"
-                    value={sectionLabels?.partnersAndFriends || ''}
-                    onChange={(e) => onLabelChange('partnersAndFriends', e.target.value)}
-                    placeholder={t('partners.defaultTitle')}
-                    className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-40 focus:outline-none focus:border-primary"
-                  />
-                </>
-              )}
-              {editMode && onUpdate && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-primary/30 hover:bg-primary/10 gap-1"
-                  onClick={() => {
-                    const newFriend: Friend = {
-                      id: `friend-${Date.now()}`,
-                      name: 'New Friend',
-                    }
-                    onUpdate([...friends, newFriend])
-                  }}
-                >
-                  <Plus size={16} />
-                  <span className="hidden md:inline">Add</span>
-                </Button>
-              )}
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <motion.h2
+            className="text-4xl md:text-5xl lg:text-6xl font-mono scanline-text dot-matrix-text"
+            data-text={`${headingPrefix} ${displayedTitle}`}
+            initial={{ opacity: 0, x: -20 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              textShadow: '0 0 6px oklch(1 0 0 / 0.5), 0 0 12px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 18px color-mix(in oklch, var(--primary) 20%, transparent)'
+            }}
+          >
+            <ChromaticText intensity={1.5}>
+              {headingPrefix} {displayedTitle}
+            </ChromaticText>
+            <span className="animate-pulse">_</span>
+          </motion.h2>
+          <div className="flex gap-2 items-center">
+            {editMode && onLabelChange && (
+              <>
+                <input
+                  type="text"
+                  value={sectionLabels?.headingPrefix ?? '>'}
+                  onChange={(e) => onLabelChange('headingPrefix', e.target.value)}
+                  placeholder=">"
+                  className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-12 focus:outline-none focus:border-primary"
+                  title="Heading prefix"
+                />
+                <input
+                  type="text"
+                  value={sectionLabels?.partnersAndFriends || ''}
+                  onChange={(e) => onLabelChange('partnersAndFriends', e.target.value)}
+                  placeholder={t('partners.defaultTitle')}
+                  className="bg-transparent border border-primary/30 px-2 py-1 text-xs font-mono text-primary w-40 focus:outline-none focus:border-primary"
+                />
+              </>
+            )}
+            {editMode && onUpdate && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-primary/30 hover:bg-primary/10 gap-1"
+                onClick={() => {
+                  const newFriend: Friend = {
+                    id: `friend-${Date.now()}`,
+                    name: 'New Friend',
+                  }
+                  onUpdate([...friends, newFriend])
+                }}
+              >
+                <Plus size={16} />
+                <span className="hidden md:inline">Add</span>
+              </Button>
+            )}
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayFriends.map((friend) => (
+        <motion.div
+          className="bg-gradient-to-r from-primary via-primary/50 to-transparent mb-8 h-0.5"
+          initial={{ scaleX: 0, opacity: 0 }}
+          animate={isInView ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 }}
+          style={{ transformOrigin: 'left' }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {displayFriends.map((friend, index) => (
+            <motion.div
+              key={friend.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
+            >
               <FriendCard
-                key={friend.id}
                 friend={friend}
                 editMode={editMode}
                 onSelect={() => { triggerTransition(); setSelectedFriend(friend) }}
@@ -305,9 +318,9 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
                   }
                 }}
               />
-            ))}
-          </div>
-        </motion.div>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       <AnimatePresence>

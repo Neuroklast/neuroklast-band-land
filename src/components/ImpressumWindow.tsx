@@ -86,7 +86,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
     contact: 'Kontakt',
     phone: 'Telefon',
     email: 'E-Mail',
-    responsible: 'VERANTWORTLICH FÜR DEN INHALT NACH § 18 ABS. 2 MSTVV',
+    responsible: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
     noData: editMode
       ? 'Noch kein Impressum hinterlegt. Klicke auf den Stift oben rechts, um es zu bearbeiten.'
       : 'Impressum wird noch eingerichtet.',
@@ -100,7 +100,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
     contact: 'Contact',
     phone: 'Phone',
     email: 'Email',
-    responsible: 'RESPONSIBLE FOR CONTENT ACCORDING TO § 18 PARA. 2 MSTVV',
+    responsible: 'Responsible for Content according to § 18 Para. 2 MStV',
     noData: editMode
       ? 'No legal notice has been set up yet. Click the pencil icon above to edit.'
       : 'Legal notice is being set up.',

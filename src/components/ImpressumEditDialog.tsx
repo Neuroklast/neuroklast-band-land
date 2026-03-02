@@ -128,7 +128,7 @@ export default function ImpressumEditDialog({ open, onOpenChange, impressum, onS
 
           <div className="border-t border-border pt-4 mt-4">
             <p className="text-sm text-muted-foreground mb-4">
-              Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
+              Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
             </p>
           </div>
 
