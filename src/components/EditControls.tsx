@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import CyberCloseButton from '@/components/CyberCloseButton'
-import type { AdminDialog, BandData } from '@/lib/types'
+import type { AdminDialog, SiteConfig } from '@/lib/types'
 import { useLocale } from '@/contexts/LocaleContext'
 import { toast } from 'sonner'
 import {
@@ -20,8 +20,8 @@ interface EditControlsProps {
   onChangePassword: (password: string) => Promise<void>
   onSetPassword: (password: string) => Promise<void>
   onLogout?: () => Promise<void>
-  bandData?: BandData
-  onImportData?: (data: BandData) => void
+  siteConfig?: SiteConfig
+  onImportData?: (data: SiteConfig) => void
   onOpenDialog: (dialog: AdminDialog) => void
 }
 
@@ -34,7 +34,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenDialog }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, siteConfig, onImportData, onOpenDialog }: EditControlsProps) {
   const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
@@ -43,13 +43,13 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
   const importInputRef = useRef<HTMLInputElement>(null)
 
   const handleExportData = () => {
-    if (!bandData) return
-    const json = JSON.stringify(bandData, null, 2)
+    if (!siteConfig) return
+    const json = JSON.stringify(siteConfig, null, 2)
     const blob = new Blob([json], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `band-data-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `site-config-${new Date().toISOString().split('T')[0]}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -64,11 +64,13 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result as string)
-        if (!parsed.name || !parsed.socialLinks) {
-          toast.error('Invalid band data file')
+        if (!parsed.siteName && !parsed.name) {
+          toast.error('Invalid site config file')
           return
         }
-        onImportData(parsed as BandData)
+        // Support legacy band-data format: map name → siteName
+        const normalized = { ...parsed, siteName: parsed.siteName || parsed.name }
+        onImportData(normalized as SiteConfig)
         toast.success('Data imported successfully')
       } catch {
         toast.error('Failed to parse JSON file')
@@ -89,13 +91,13 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const text = await res.text()
       const parsed = JSON.parse(text)
-      if (!parsed.name || !parsed.socialLinks) {
-        if (!silent) toast.error('Invalid band data file at URL')
+      if (!parsed.siteName && !parsed.name) {
+        if (!silent) toast.error('Invalid site config file at URL')
         return
       }
-      // Preserve the syncUrl so periodic checking continues
-      parsed.syncUrl = url
-      onImportData(parsed as BandData)
+      // Support legacy band-data format: map name → siteName
+      const normalized = { ...parsed, siteName: parsed.siteName || parsed.name, syncUrl: url }
+      onImportData(normalized as SiteConfig)
       if (!silent) toast.success('Data imported from URL')
     } catch (err) {
       console.error('URL import error:', err)
@@ -113,9 +115,9 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     setImportUrl('')
   }
 
-  // Periodic sync: if bandData.syncUrl is set, check for updates every 5 minutes
+  // Periodic sync: if siteConfig.syncUrl is set, check for updates every 5 minutes
   useEffect(() => {
-    const syncUrl = bandData?.syncUrl
+    const syncUrl = siteConfig?.syncUrl
     if (!syncUrl) return
 
     const checkSync = () => {
@@ -129,7 +131,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
       clearTimeout(initialTimeout)
       clearInterval(interval)
     }
-  }, [bandData?.syncUrl, importDataFromUrl])
+  }, [siteConfig?.syncUrl, importDataFromUrl])
 
   return (
     <>
@@ -168,22 +170,22 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 placeholder={t('edit.urlPlaceholder')}
                 className="text-sm"
               />
-              {bandData?.syncUrl && (
+              {siteConfig?.syncUrl && (
                 <p className="text-xs text-muted-foreground">
-                  {t('edit.currentSync')} <span className="text-primary/60 break-all">{bandData.syncUrl}</span>
+                  {t('edit.currentSync')} <span className="text-primary/60 break-all">{siteConfig.syncUrl}</span>
                 </p>
               )}
               <div className="flex gap-2">
                 <Button onClick={handleImportUrl} disabled={!importUrl.trim() || isImporting} className="flex-1">
                   {isImporting ? t('edit.importing') : t('edit.importSync')}
                 </Button>
-                {bandData?.syncUrl && (
+                {siteConfig?.syncUrl && (
                   <Button
                     variant="outline"
                     onClick={() => {
-                      if (onImportData && bandData) {
-                        const { syncUrl: _, ...rest } = bandData
-                        onImportData(rest as BandData)
+                      if (onImportData && siteConfig) {
+                        const { syncUrl: _, ...rest } = siteConfig
+                        onImportData(rest as SiteConfig)
                         toast.success('Auto-sync disabled')
                       }
                       setShowUrlImport(false)

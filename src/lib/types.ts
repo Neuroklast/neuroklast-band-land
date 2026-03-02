@@ -264,51 +264,102 @@ export interface SectionVisibility {
   systemMonitor?: boolean
 }
 
-export interface BandData {
-  name: string
+export interface NavigationConfig {
+  showLanguageSwitcher?: boolean
+  showAudioPlayer?: boolean
+  customItems?: Array<{ label: string; href: string; external?: boolean }>
+}
+
+export interface FooterConfig {
+  copyrightText?: string
+  showAttribution?: boolean
+  links?: Array<{ label: string; href: string; external?: boolean }>
+}
+
+export interface SEOConfig {
+  ogImage?: string
+  twitterCard?: 'summary' | 'summary_large_image'
+  twitterHandle?: string
+  analyticsId?: string
+  customMeta?: Array<{ name: string; content: string }>
+}
+
+export interface FeatureFlags {
+  newsletter?: boolean
+  contactForm?: boolean
+  gallery?: boolean
+  terminal?: boolean
+  sounds?: boolean
+  crtEffects?: boolean
+  hudBackground?: boolean
+  cookieBanner?: boolean
+  security?: boolean
+}
+
+export interface SiteConfig {
+  // ─── META FIELDS ───
+  /** Unique site identifier (auto-generated UUID on first setup) */
+  siteId: string
+  /** Type of site – determines available sections and defaults */
+  siteType: 'band' | 'dj' | 'artist' | 'label' | 'portfolio' | 'custom'
+  /** Site name (replaces BandData.name) */
+  siteName: string
+  /** Short tagline / subtitle */
+  tagline?: string
+  /** Site description for SEO */
+  description?: string
+  /** Primary domain (for OG tags, sitemap, canonical) */
+  domain?: string
+  /** Whether initial setup wizard has been completed */
+  setupComplete: boolean
+  /** ISO date of first configuration */
+  createdAt?: string
+  /** ISO date of last change */
+  updatedAt?: string
+  /** Template version for future migrations */
+  templateVersion: string
+
+  // ─── EXISTING FIELDS FROM BandData (1:1 kept) ───
   genres: string[]
   socialLinks: SocialLinks
   gigs: Gig[]
   releases: Release[]
   biography?: Biography
   label?: string
-  logoUrl?: string       // URL or Data-URL for the Logo
-  titleImageUrl?: string // URL or Data-URL for the Title Image
+  logoUrl?: string
+  titleImageUrl?: string
   terminalCommands?: TerminalCommand[]
   impressum?: Impressum
   galleryImages?: GalleryImage[]
   datenschutz?: Datenschutz
   fontSizes?: FontSizeSettings
-  /** URL to a remote JSON file (e.g. Google Drive) that is periodically checked for updates */
   syncUrl?: string
-  /** Google Drive folder URL for gallery photos */
   galleryDriveFolderUrl?: string
-  /** Sound effect settings */
   soundSettings?: SoundSettings
-  /** Runtime overrides for config.ts constants (keys are ConfigKey names) */
   configOverrides?: Record<string, unknown>
-  /** Custom secret code key sequence (replaces the default Konami code) */
   secretCode?: string[]
-  /** Custom HUD background text labels */
   hudTexts?: HudTexts
-  /** Custom section headings and display labels */
   sectionLabels?: SectionLabels
-  /** News items for the band */
   news?: NewsItem[]
-  /** Media files for press kits, logos, etc. */
   mediaFiles?: MediaFile[]
-  /** Theme color/font customization */
   themeSettings?: ThemeSettings
-  /** Section visibility toggles */
   sectionVisibility?: SectionVisibility
-  /** Newsletter settings */
   newsletterSettings?: NewsletterSettings
-  /** Contact form settings */
   contactSettings?: ContactSettings
-  /** Morse code sequence (dots and dashes) that opens the secret terminal */
   terminalMorseCode?: string
-  /** Animation/effect settings */
   animations?: AnimationSettings
+
+  // ─── NEW CONFIG FIELDS ───
+  /** Section display order – array of section IDs */
+  sectionOrder: string[]
+  /** Navigation configuration */
+  navigation: NavigationConfig
+  /** Footer configuration */
+  footer: FooterConfig
+  /** SEO & meta tag configuration */
+  seo: SEOConfig
+  /** Feature flags */
+  features: FeatureFlags
 }
 
 export interface SoundSettings {

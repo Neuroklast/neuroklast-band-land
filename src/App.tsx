@@ -1,4 +1,4 @@
-import { useKV } from '@/hooks/use-kv'
+import { useSiteConfig } from '@/hooks/use-site-config'
 import { useEffect, useRef, useState, useMemo, startTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
@@ -47,15 +47,16 @@ import MarketingToolsDialog from '@/components/MarketingToolsDialog'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
-import type { BandData, FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility, AdminDialog } from '@/lib/types'
+import type { SiteConfig, FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility, AdminDialog } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
 import CyberpunkOverlayModal from '@/components/CyberpunkOverlayModal'
+import { createSiteConfig } from '@/lib/site-config'
 
-const defaultBandData: BandData = {
-  name: bandDataJson.band.name,
+const defaultSiteConfig: SiteConfig = createSiteConfig({
+  siteName: bandDataJson.band.name,
   genres: bandDataJson.band.genres,
   label: bandDataJson.band.label || DEFAULT_LABEL,
   socialLinks: {
@@ -80,7 +81,7 @@ const defaultBandData: BandData = {
     { name: 'info', description: 'Band information', output: ['NEUROKLAST - HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO', 'LABEL: DARKTUNES MUSIC GROUP', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
   ],
   terminalMorseCode: '...',
-}
+})
 
 /**
  * Collect a small set of critical image URLs for preloading during the
@@ -90,7 +91,7 @@ const defaultBandData: BandData = {
  */
 const MAX_PRECACHE_IMAGES = 6
 
-function collectImageUrls(data: BandData): string[] {
+function collectImageUrls(data: SiteConfig): string[] {
   const urls: string[] = []
   // Preload first few news images (visible above the fold)
   data.news?.slice(0, 3).forEach(item => { if (item.photo) urls.push(item.photo) })
@@ -102,7 +103,7 @@ function collectImageUrls(data: BandData): string[] {
 }
 
 function App() {
-  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
+  const { config, updateConfig, setConfig, isLoaded: siteConfigLoaded } = useSiteConfig()
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
   const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState()
   const [editMode, setEditMode] = useState(false)
@@ -160,17 +161,11 @@ function App() {
   }, [needsSetup])
 
   const handleFontSizeChange = (key: keyof FontSizeSettings, value: string) => {
-    setBandData((current) => ({
-      ...(current || defaultBandData),
-      fontSizes: { ...(current || defaultBandData).fontSizes, [key]: value }
-    }))
+    updateConfig({ fontSizes: { ...config.fontSizes, [key]: value } })
   }
 
   const handleLabelChange = (key: keyof SectionLabels, value: string) => {
-    setBandData((current) => ({
-      ...(current || defaultBandData),
-      sectionLabels: { ...(current || defaultBandData).sectionLabels, [key]: value }
-    }))
+    updateConfig({ sectionLabels: { ...config.sectionLabels, [key]: value } })
   }
 
   const handleTerminalActivation = () => {
@@ -181,9 +176,9 @@ function App() {
     })
   }
 
-  const data = bandData ? { ...defaultBandData, ...bandData } : defaultBandData
-  const safeSocialLinks = data.socialLinks || defaultBandData.socialLinks
-  const precacheUrls = useMemo(() => bandData ? collectImageUrls(bandData) : [], [bandData])
+  const data = { ...defaultSiteConfig, ...config }
+  const safeSocialLinks = data.socialLinks || defaultSiteConfig.socialLinks
+  const precacheUrls = useMemo(() => collectImageUrls(data), [config])
   const { play: playSound, muted: _soundMuted, toggleMute: _toggleSoundMute, hasSounds: _hasSounds } = useSound(data.soundSettings, editMode)
 
   // Apply config overrides whenever bandData changes
@@ -227,15 +222,15 @@ function App() {
         customCommands={data.terminalCommands || []}
         secretCode={data.secretCode}
         editMode={editMode && isOwner}
-        onSaveCommands={(terminalCommands) => setBandData((current) => ({ ...(current || defaultBandData), terminalCommands }))}
-        onSaveSecretCode={(secretCode) => setBandData((current) => ({ ...(current || defaultBandData), secretCode }))}
+        onSaveCommands={(terminalCommands) => updateConfig({ terminalCommands })}
+        onSaveSecretCode={(secretCode) => updateConfig({ secretCode })}
       />
       <ImpressumWindow
         isOpen={impressumOpen}
         onClose={() => setImpressumOpen(false)}
         impressum={data.impressum}
         editMode={editMode && isOwner}
-        onSave={(impressum) => setBandData((current) => ({ ...(current || defaultBandData), impressum }))}
+        onSave={(impressum) => updateConfig({ impressum })}
       />
       <DatenschutzWindow
         isOpen={datenschutzOpen}
@@ -243,7 +238,7 @@ function App() {
         datenschutz={data.datenschutz}
         impressumName={data.impressum?.name}
         editMode={editMode && isOwner}
-        onSave={(datenschutz) => setBandData((current) => ({ ...(current || defaultBandData), datenschutz }))}
+        onSave={(datenschutz) => updateConfig({ datenschutz })}
       />
       <CookieBanner />
       
@@ -313,7 +308,7 @@ function App() {
             </AnimatePresence>
 
             <Hero 
-              name={data.name} 
+              name={data.siteName} 
               genres={data.genres}
               editMode={editMode && isOwner}
               onEdit={() => setShowBandInfoEdit(true)}
@@ -331,7 +326,7 @@ function App() {
                 <NewsSection
                   news={data.news}
                   editMode={editMode && isOwner}
-                  onUpdate={(news) => setBandData((current) => ({ ...(current || defaultBandData), news }))}
+                  onUpdate={(news) => updateConfig({ news })}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
                 />
@@ -347,7 +342,7 @@ function App() {
                 <BiographySection
                   biography={data.biography}
                   editMode={editMode && isOwner}
-                  onUpdate={(biography) => setBandData((current) => ({ ...(current || defaultBandData), biography }))}
+                  onUpdate={(biography) => updateConfig({ biography })}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
@@ -366,9 +361,9 @@ function App() {
                 <InstagramGallery
                   galleryImages={data.galleryImages}
                   editMode={editMode && isOwner}
-                  onUpdate={(galleryImages) => setBandData((current) => ({ ...(current || defaultBandData), galleryImages }))}
+                  onUpdate={(galleryImages) => updateConfig({ galleryImages })}
                   driveFolderUrl={data.galleryDriveFolderUrl}
-                  onDriveFolderUrlChange={(url) => setBandData((current) => ({ ...(current || defaultBandData), galleryDriveFolderUrl: url }))}
+                  onDriveFolderUrlChange={(galleryDriveFolderUrl) => updateConfig({ galleryDriveFolderUrl })}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
                 />
@@ -384,10 +379,10 @@ function App() {
                 <GigsSection 
                   gigs={data.gigs}
                   editMode={editMode && isOwner}
-                  onUpdate={(gigs) => setBandData((current) => ({ ...(current || defaultBandData), gigs }))}
+                  onUpdate={(gigs) => updateConfig({ gigs })}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
-                  dataLoaded={bandDataLoaded}
+                  dataLoaded={siteConfigLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
                   onGigClick={(gig) => setCyberpunkOverlay({ type: 'gig', data: gig })}
@@ -417,10 +412,10 @@ function App() {
                 <ReleasesSection 
                   releases={data.releases}
                   editMode={editMode && isOwner}
-                  onUpdate={(releases) => setBandData((current) => ({ ...(current || defaultBandData), releases }))}
+                  onUpdate={(releases) => updateConfig({ releases })}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
-                  dataLoaded={bandDataLoaded}
+                  dataLoaded={siteConfigLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
                   onReleaseClick={(release) => setCyberpunkOverlay({ type: 'release', data: release })}
@@ -437,7 +432,7 @@ function App() {
                 <MediaSection
                   mediaFiles={data.mediaFiles}
                   editMode={editMode && isOwner}
-                  onUpdate={(mediaFiles) => setBandData((current) => ({ ...(current || defaultBandData), mediaFiles }))}
+                  onUpdate={(mediaFiles) => updateConfig({ mediaFiles })}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
                 />
@@ -453,7 +448,7 @@ function App() {
                 <SocialSection 
                   socialLinks={safeSocialLinks}
                   editMode={editMode && isOwner}
-                  onUpdate={(socialLinks) => setBandData((current) => ({ ...(current || defaultBandData), socialLinks }))}
+                  onUpdate={(socialLinks) => updateConfig({ socialLinks })}
                   fontSizes={data.fontSizes}
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
@@ -471,7 +466,7 @@ function App() {
                 <ContactSection
                   contactSettings={data.contactSettings}
                   editMode={editMode && isOwner}
-                  onUpdate={(contactSettings) => setBandData((current) => ({ ...(current || defaultBandData), contactSettings }))}
+                  onUpdate={(contactSettings) => updateConfig({ contactSettings })}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
                 />
@@ -487,10 +482,9 @@ function App() {
                 <PartnersAndFriendsSection
                   friends={data.biography?.friends}
                   editMode={editMode && isOwner}
-                  onUpdate={(friends) => setBandData((current) => ({
-                    ...(current || defaultBandData),
-                    biography: { ...(current || defaultBandData).biography!, friends }
-                  }))}
+                  onUpdate={(friends) => updateConfig({
+                    biography: { ...(data.biography || { story: '', members: [], achievements: [] }), friends }
+                  })}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
                 />
@@ -542,8 +536,8 @@ function App() {
                 onChangePassword={handleChangeAdminPassword}
                 onSetPassword={handleSetAdminPassword}
                 onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
-                bandData={data}
-                onImportData={(imported) => setBandData(imported)}
+                siteConfig={data}
+                onImportData={(imported) => setConfig(imported)}
                 onOpenDialog={setActiveDialog}
               />
             )}
@@ -579,15 +573,15 @@ function App() {
               onClose={() => setActiveDialog(null)}
               newsletterSettings={data.newsletterSettings}
               contactSettings={data.contactSettings}
-              onSaveNewsletter={(newsletterSettings) => setBandData((current) => ({ ...(current || defaultBandData), newsletterSettings }))}
-              onSaveContact={(contactSettings) => setBandData((current) => ({ ...(current || defaultBandData), contactSettings }))}
+              onSaveNewsletter={(newsletterSettings) => updateConfig({ newsletterSettings })}
+              onSaveContact={(contactSettings) => updateConfig({ contactSettings })}
             />
 
             <AnimatePresence>
               {activeDialog === 'sound' && (
                 <SoundSettingsDialog
                   settings={data.soundSettings}
-                  onSave={(soundSettings: SoundSettings) => setBandData((current) => ({ ...(current || defaultBandData), soundSettings }))}
+                  onSave={(soundSettings: SoundSettings) => updateConfig({ soundSettings })}
                   onClose={() => setActiveDialog(null)}
                 />
               )}
@@ -597,16 +591,16 @@ function App() {
               open={activeDialog === 'config'}
               onClose={() => setActiveDialog(null)}
               overrides={data.configOverrides || {}}
-              onSave={(configOverrides) => setBandData((current) => ({ ...(current || defaultBandData), configOverrides }))}
+              onSave={(configOverrides) => updateConfig({ configOverrides })}
             />
 
             <ThemeCustomizerDialog
               open={activeDialog === 'design'}
               onClose={() => setActiveDialog(null)}
               themeSettings={data.themeSettings}
-              onSaveTheme={(themeSettings: ThemeSettings) => setBandData((current) => ({ ...(current || defaultBandData), themeSettings }))}
+              onSaveTheme={(themeSettings: ThemeSettings) => updateConfig({ themeSettings })}
               sectionVisibility={data.sectionVisibility}
-              onSaveSectionVisibility={(sectionVisibility: SectionVisibility) => setBandData((current) => ({ ...(current || defaultBandData), sectionVisibility }))}
+              onSaveSectionVisibility={(sectionVisibility: SectionVisibility) => updateConfig({ sectionVisibility })}
             />
 
             <TerminalSettingsDialog
@@ -616,7 +610,7 @@ function App() {
               secretCode={data.secretCode || []}
               morseCode={data.terminalMorseCode || '...'}
               onSave={(terminalCommands, secretCode, terminalMorseCode) =>
-                setBandData((current) => ({ ...(current || defaultBandData), terminalCommands, secretCode, terminalMorseCode: terminalMorseCode?.trim() || defaultBandData.terminalMorseCode || '...' }))
+                updateConfig({ terminalCommands, secretCode, terminalMorseCode: terminalMorseCode?.trim() || defaultSiteConfig.terminalMorseCode || '...' })
               }
             />
 
@@ -640,12 +634,12 @@ function App() {
             <BandInfoEditDialog
               open={showBandInfoEdit}
               onOpenChange={setShowBandInfoEdit}
-              name={data.name}
+              name={data.siteName}
               genres={data.genres}
               label={data.label}
               logoUrl={data.logoUrl}
               titleImageUrl={data.titleImageUrl}
-              onSave={({ name, genres, label, logoUrl, titleImageUrl }) => setBandData((current) => ({ ...(current || defaultBandData), name, genres, label, logoUrl, titleImageUrl }))}
+              onSave={({ name, genres, label, logoUrl, titleImageUrl }) => updateConfig({ siteName: name, genres, label, logoUrl, titleImageUrl })}
             />
           </motion.div>
           </motion.div>
