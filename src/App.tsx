@@ -1,5 +1,5 @@
-import { useKV } from '@/hooks/use-kv'
 import { useEffect, useRef, useState, useMemo, startTransition } from 'react'
+import { useSiteConfig } from '@/hooks/use-site-config'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -102,7 +102,17 @@ function collectImageUrls(data: BandData): string[] {
 }
 
 function App() {
-  const [bandData, setBandData, bandDataLoaded] = useKV<BandData>('band-data', defaultBandData)
+  const { siteConfig, updateConfig, updateContent, loaded: bandDataLoaded } = useSiteConfig()
+  // Derive bandData and a compatible setter from siteConfig for backward compatibility
+  const bandData = siteConfig.content
+  const setBandData = (updater: BandData | ((current: BandData | undefined) => BandData)) => {
+    if (typeof updater === 'function') {
+      const next = (updater as (c: BandData | undefined) => BandData)(bandData)
+      updateConfig({ content: next })
+    } else {
+      updateConfig({ content: updater })
+    }
+  }
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
   const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState()
   const [editMode, setEditMode] = useState(false)

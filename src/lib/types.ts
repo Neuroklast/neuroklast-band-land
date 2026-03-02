@@ -394,6 +394,105 @@ export interface HudTexts {
   bottomRight2?: string
 }
 
+export interface NavigationConfig {
+  /** Show language switcher in nav */
+  showLanguageSwitcher?: boolean
+  /** Show audio player in nav */
+  showAudioPlayer?: boolean
+  /** Custom nav items beyond default sections */
+  customItems?: Array<{ label: string; href: string; external?: boolean }>
+}
+
+export interface FooterConfig {
+  /** Footer text / copyright line – supports {year} and {siteName} placeholders */
+  copyrightText?: string
+  /** Show "Powered by" attribution */
+  showAttribution?: boolean
+  /** Additional footer links */
+  links?: Array<{ label: string; href: string; external?: boolean }>
+}
+
+export interface SEOConfig {
+  /** OG image URL */
+  ogImage?: string
+  /** Twitter/X card type */
+  twitterCard?: 'summary' | 'summary_large_image'
+  /** Twitter/X handle */
+  twitterHandle?: string
+  /** Google Analytics / Tag Manager ID */
+  analyticsId?: string
+  /** Additional meta tags */
+  customMeta?: Array<{ name: string; content: string }>
+}
+
+export interface FeatureFlags {
+  /** Enable newsletter subscription widget */
+  newsletter?: boolean
+  /** Enable contact form */
+  contactForm?: boolean
+  /** Enable gallery section */
+  gallery?: boolean
+  /** Enable terminal easter egg */
+  terminal?: boolean
+  /** Enable sound effects */
+  sounds?: boolean
+  /** Enable CRT/cyberpunk visual effects */
+  crtEffects?: boolean
+  /** Enable HUD background */
+  hudBackground?: boolean
+  /** Enable cookie banner */
+  cookieBanner?: boolean
+  /** Enable security features (honeypot, rate limiting) */
+  security?: boolean
+}
+
+export interface SiteConfig {
+  /** Unique site identifier (auto-generated on first setup) */
+  siteId: string
+  /** Type of site – determines available sections and defaults */
+  siteType: 'band' | 'dj' | 'artist' | 'label' | 'portfolio' | 'custom'
+  /** Site name (used in meta tags, header, etc.) */
+  siteName: string
+  /** Short tagline / subtitle */
+  tagline?: string
+  /** Site description for SEO and meta tags */
+  description?: string
+  /** Primary domain (used for OG tags, sitemap, canonical URL) */
+  domain?: string
+  /** Whether initial setup wizard has been completed */
+  setupComplete: boolean
+  /** ISO date of when the site was first configured */
+  createdAt?: string
+  /** ISO date of last configuration change */
+  updatedAt?: string
+  /** Template version (for future migration support) */
+  templateVersion: string
+
+  /** All content data (formerly the standalone BandData) */
+  content: BandData
+
+  /** Theme and visual settings – reference existing ThemeSettings */
+  theme: ThemeSettings
+
+  /** Section ordering – array of section IDs in display order */
+  sectionOrder: string[]
+
+  /** Section visibility – reference existing SectionVisibility */
+  sectionVisibility: SectionVisibility
+
+  /** Navigation configuration */
+  navigation: NavigationConfig
+
+  /** Footer configuration */
+  footer: FooterConfig
+
+  /** SEO & meta tag configuration */
+  seo: SEOConfig
+
+  /** Feature flags – which optional features are enabled */
+  features: FeatureFlags
+}
+
 /**
  * Identifies which admin dialog is currently open.
  * Used as a single state value instead of 13+ individual booleans.
