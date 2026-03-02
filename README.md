@@ -1,167 +1,386 @@
-# NEUROKLAST - Official Band Website
+# Band Land — Universal Artist Website Template
 
-A dark, industrial single-page application for the hard techno/industrial band **NEUROKLAST** featuring automatic iTunes integration, music player, upcoming gigs, releases, and social media presence. Label: **Darktunes Music Group**.
+![TypeScript](https://img.shields.io/badge/TypeScript-83%25-3178c6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?logo=tailwindcss&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646cff?logo=vite&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-## 🎵 Features
+**Band Land** is a production-ready, fully configurable single-page website template for musicians, DJs, bands, artists, and labels. Everything — content, design, sections, fonts, and SEO — is driven by a single `SiteConfig` object. No hardcoded brand names, no design assumptions.
 
-- **Built-in Music Player**: Play NEUROKLAST tracks directly on the website with volume control, track navigation, and progress bar
-- **Automatic iTunes Integration**: Latest releases are automatically fetched from iTunes with cover art and enriched with streaming links via Odesli
-- **Biography Section**: Band story, members with expandable profile overlays, achievements, and collaborations
-- **Photo Gallery**: Swipeable image gallery with lightbox zoom and HUD-style overlays
-- **Instagram Gallery**: Image gallery loaded from Google Drive or direct URLs with glitch effects
-- **Upcoming Gigs**: Event listings with venue, location, date, ticket links, and supporting artist info
-- **Releases Gallery**: Grid of releases with artwork (dot-matrix/scanline effect), streaming links (Spotify, SoundCloud, YouTube, Bandcamp)
-- **Media Archive**: File explorer overlay for press kits, logos, and downloadable assets
-- **Social Media Hub (Connect)**: Links to Instagram, Facebook, Spotify, SoundCloud, YouTube, Bandcamp, TikTok, and more
-- **Partners & Friends**: Grid of collaborators with individual profile overlays and social links
-- **News Section**: Latest updates with expandable details and photos
-- **Content Management**: Owner-only edit mode for updating all content without code changes
-- **Admin Analytics Dashboard**: Track page visits, section views, user interactions, traffic sources, and device types
-- **Impressum & Datenschutz**: Legal pages with multi-language support (DE/EN)
-- **Secret Terminal**: Hidden Konami code easter egg with a cyberpunk terminal
-- **Cookie Banner**: GDPR-compliant cookie consent
-- **Fixed Navigation**: Sticky navigation bar that stays visible while scrolling
+---
 
-## 🖼️ Gallery Setup
+## ✨ Features
 
-To add images to the gallery:
+- **Design Presets** — Five bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro) with one-line activation
+- **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
+- **Flexible Sections** — Enable/disable and reorder any section without touching code
+- **SEO & Open Graph** — Title, description, OG tags, Twitter cards, JSON-LD, and canonical URLs generated automatically from config
+- **Music Player** — Built-in audio player with track navigation and progress bar
+- **iTunes / Streaming Integration** — Latest releases fetched from iTunes, enriched via Odesli
+- **Biography & Members** — Expandable profile overlays with photos
+- **Photo Gallery** — Swipeable lightbox gallery (local files or Google Drive)
+- **Upcoming Gigs** — Event listings with venue, date, ticket links, and status
+- **Releases Grid** — Release artwork with streaming links (Spotify, SoundCloud, YouTube, Bandcamp, Apple Music, Beatport)
+- **Media Archive** — File-explorer overlay for press kits and downloads
+- **Social Links Hub** — All major platforms in one section
+- **News Feed** — Expandable news items with photos
+- **Partners & Friends** — Collaborator cards with profile overlays
+- **Contact Form** — With optional email forwarding
+- **Newsletter Widget** — Mailchimp / Brevo integration
+- **Admin Mode** — Full in-browser content management, no CMS needed
+- **Analytics Dashboard** — Page views, section engagement, device breakdown
+- **Security** — Rate limiting, TOTP 2FA, attacker profiling, blocklist
+- **i18n** — Bilingual (DE/EN) support for legal pages
+- **GDPR** — Cookie consent banner, Impressum, Datenschutz
+- **Hidden Terminal** — Konami-code Easter egg with a cyberpunk terminal
 
-1. Add your images (.jpg, .jpeg, .png, .gif, or .webp) to `src/assets/images/gallery/`
-2. Or configure a Google Drive folder URL in admin mode
-3. Images will automatically load and display in the gallery grid
-4. Click any image to open it in a full-screen lightbox
+---
 
-## 🚀 Tech Stack
-
-- **React 19** with TypeScript
-- **Tailwind CSS v4** with oklch color system
-- **Framer Motion** for animations and transitions
-- **shadcn/ui** components (button, card, dialog, input, label, separator, slider, switch, textarea, badge, tooltip)
-- **Phosphor Icons** for iconography
-- **Recharts** for data visualization
-- **iTunes Search API** + **Odesli** (song.link) for streaming link resolution
-- **Upstash Redis** (via Vercel KV) for data persistence
-- **Vite 7** for development and building
-- **Vitest** for testing
-
-## 🎨 Design
-
-Dark industrial / cyberpunk HUD aesthetic with:
-- Pure black background
-- Crimson red accents (oklch-based color system)
-- JetBrains Mono (headings) + Space Grotesk (body) typography
-- Dot-matrix and scanline effects on headings and images
-- Chromatic aberration, glitch animations, and CRT-style overlays
-- HUD corner markers, data readouts, and grid overlays
-- Profile overlays with loading → glitch → reveal phase animations
-- Responsive layout for mobile and desktop
-
-## 📦 Google Drive Integration
-
-The site supports direct file downloads from Google Drive with automatic handling of:
-- **User-Agent headers** to prevent server-side 403 errors
-- **Virus-scan confirmation pages** for large files (>25 MB)
-- **Automatic fallback** to open Drive links in new tab if download fails
-- **Link auto-conversion** in edit mode (Drive share links → direct download URLs)
-
-When users download files via the Media Archive, the system automatically:
-1. Attempts to download through the API proxy for files <10 MB
-2. Redirects to Google Drive for files >10 MB
-3. Falls back to opening Drive in a new tab if the download fails
-
-## 🔧 Development
+## 🚀 Quick Start
 
 ```bash
+# 1. Clone or use this template
+git clone https://github.com/your-org/band-land.git my-site
+cd my-site
+
+# 2. Install dependencies
 npm install
+
+# 3. Copy and fill in your site configuration
+cp src/lib/site-config.ts src/lib/my-site-config.ts
+# Edit siteName, domain, genres, etc.
+
+# 4. Start the dev server
 npm run dev
 ```
 
-### Available Scripts
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | TypeScript check + production build |
-| `npm run test` | Run test suite |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run lint` | Run ESLint |
-| `npm run preview` | Preview production build |
+---
 
-### Admin Mode
+## 🔧 Configuration Reference — `SiteConfig`
 
-The site supports full content management through admin mode:
+All site customization is done through the `SiteConfig` type in `src/lib/types.ts`. The default values live in `src/lib/site-config.ts`.
 
-1. Set `ADMIN_SETUP_TOKEN` environment variable, then navigate to `?admin-setup` to create an admin password (first-time setup requires the token)
-2. Click the edit button (bottom-right) to toggle edit mode
-3. All sections support inline editing of content, images, and settings
-4. Changes persist automatically via Vercel KV storage
-5. Export/import data as JSON for backup
-6. Optional auto-sync from a Google Drive JSON file
-7. Enable TOTP two-factor authentication via admin settings for stronger security
+### Minimal example
 
-### Analytics Dashboard
+```ts
+import { createSiteConfig } from '@/lib/site-config'
 
-Admin users can access the built-in analytics dashboard to view:
-- **Page views** and **unique sessions** over time
-- **Section engagement** (which sections visitors scroll to)
-- **User interactions** (profile clicks, release views, etc.)
-- **Traffic sources** (referrer domains)
-- **Device breakdown** (desktop/mobile/tablet)
+const config = createSiteConfig({
+  siteName: 'My Band',
+  siteType: 'band',
+  tagline: 'Industrial Techno from Berlin',
+  description: 'Official website of My Band.',
+  domain: 'myband.de',
+  genres: ['Techno', 'Industrial'],
+  socialLinks: {
+    instagram: 'https://instagram.com/myband',
+    spotify:   'https://open.spotify.com/artist/...',
+  },
+})
+```
 
-Data is stored in persistent server storage with local browser fallback.
+### Key fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `siteId` | `string` | Auto-generated UUID |
+| `siteType` | `'band' \| 'dj' \| 'artist' \| 'label' \| 'portfolio' \| 'custom'` | Drives section defaults |
+| `siteName` | `string` | Display name used across the site |
+| `tagline` | `string?` | Short subtitle / tagline |
+| `description` | `string?` | SEO meta description |
+| `domain` | `string?` | Primary domain for canonical/OG URLs |
+| `genres` | `string[]` | Music genres (used in JSON-LD) |
+| `themeSettings` | `ThemeSettings?` | Colors, fonts, border-radius |
+| `sectionOrder` | `string[]` | Legacy section order array |
+| `sections` | `SectionConfig[]?` | Rich section enable/order config |
+| `fontConfig` | `FontConfig?` | Google Fonts / local font loading |
+| `seo` | `SEOConfig` | OG image, Twitter card, analytics ID |
+| `features` | `FeatureFlags` | Toggle newsletter, contact form, etc. |
+
+---
+
+## 🎨 Design Presets
+
+Five bundled presets are available in `src/lib/design-presets.ts`:
+
+| ID | Name | Aesthetic |
+|----|------|-----------|
+| `cyberpunk` | Cyberpunk | Dark industrial, crimson red neon |
+| `minimal` | Minimal | Light, clean, content-first |
+| `elegant` | Elegant | Dark canvas, warm gold, serif fonts |
+| `neon` | Neon | Electric blue/cyan synthwave |
+| `retro` | Retro | Amber phosphor-glow, vintage terminal |
+
+### Using a preset
+
+```ts
+import { getPreset, presetToThemeSettings } from '@/lib/design-presets'
+
+const preset = getPreset('neon')!
+const config = createSiteConfig({
+  siteName: 'DJ Neon',
+  themeSettings: presetToThemeSettings(preset),
+})
+```
+
+### Overriding individual values after a preset
+
+```ts
+const config = createSiteConfig({
+  themeSettings: {
+    ...presetToThemeSettings(getPreset('minimal')!),
+    primary: 'oklch(0.60 0.18 200)', // custom override
+  },
+})
+```
+
+### Creating a custom preset
+
+```ts
+import type { DesignPreset } from '@/lib/types'
+
+const myPreset: DesignPreset = {
+  id: 'custom',
+  name: 'My Custom Theme',
+  description: 'A one-off theme for my site',
+  colors: {
+    primary:        'oklch(0.55 0.20 340)',
+    accent:         'oklch(0.65 0.22 340)',
+    background:     'oklch(0.03 0 0)',
+    card:           'oklch(0.07 0 0)',
+    foreground:     'oklch(0.97 0 0)',
+    mutedForeground:'oklch(0.55 0 0)',
+    border:         'oklch(0.16 0 0)',
+    secondary:      'oklch(0.11 0 0)',
+  },
+  fonts: { heading: "'Orbitron', sans-serif", body: "'Rajdhani', sans-serif", mono: "'Share Tech Mono', monospace" },
+  borderRadius: 0,
+  animationsEnabled: true,
+}
+```
+
+---
+
+## 🔤 Font Configuration
+
+Fonts are configured via `SiteConfig.fontConfig` (type `FontConfig`) and loaded by `src/lib/font-loader.ts`.
+
+Three slots are available: `heading`, `body`, and `mono`.
+
+### Google Fonts
+
+```ts
+import type { FontConfig } from '@/lib/types'
+
+const fontConfig: FontConfig = {
+  heading: { family: 'Orbitron',  source: 'google', weights: ['400', '700'] },
+  body:    { family: 'Rajdhani',  source: 'google', weights: ['400', '500', '700'] },
+  mono:    { family: 'Share Tech Mono', source: 'google' },
+}
+```
+
+### Local / Self-hosted fonts
+
+```ts
+const fontConfig: FontConfig = {
+  heading: {
+    family: 'MyCustomFont',
+    source: 'local',
+    localUrls: ['/fonts/MyCustomFont-Regular.woff2'],
+  },
+}
+```
+
+### Applying fonts
+
+```ts
+import { applyFontConfig } from '@/lib/font-loader'
+
+// In a React effect, or directly at app startup:
+applyFontConfig(fontConfig)
+```
+
+This injects a `<link>` tag for Google Fonts (or a `@font-face` block for local fonts) and sets `--font-heading`, `--font-body`, `--font-mono` CSS custom properties on `:root`.
+
+Each design preset already includes a recommended font pairing — when you apply a preset via `presetToThemeSettings()` the corresponding `fontHeading`, `fontBody`, and `fontMono` values are set on `ThemeSettings` automatically.
+
+---
+
+## 📐 Section System
+
+Sections are managed via `SiteConfig.sections` (`SectionConfig[]`) and the utilities in `src/lib/sections.ts`.
+
+### `SectionConfig` fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Section identifier (e.g. `'news'`, `'gigs'`) |
+| `enabled` | `boolean` | Whether the section is rendered |
+| `order` | `number` | Display order (lower = earlier) |
+| `settings` | `Record<string, unknown>?` | Optional section-specific settings |
+
+### Known section IDs
+
+`news` · `biography` · `gallery` · `gigs` · `releases` · `media` · `social` · `partners` · `contact`
+
+### Utility functions
+
+```ts
+import {
+  buildDefaultSections,
+  getEnabledSections,
+  getEnabledSectionIds,
+  toggleSection,
+  reorderSections,
+} from '@/lib/sections'
+
+// Start from defaults (all enabled, default order)
+let sections = buildDefaultSections()
+
+// Disable the gigs section
+sections = toggleSection(sections, 'gigs')
+
+// Move 'contact' to position 1
+sections = reorderSections(sections, 'contact', 1)
+
+// Get ordered list of enabled section IDs
+const orderedIds = getEnabledSectionIds(sections)
+// → ['news', 'contact', 'biography', …]
+```
+
+---
+
+## 🔍 SEO & Open Graph
+
+`src/lib/meta-tags.ts` generates a `MetaTagSet` from `SiteConfig` and optionally applies it to the document.
+
+```ts
+import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
+
+const tags = generateMetaTags(siteConfig)
+// tags.title, tags.og.image, tags.twitter.card, tags.jsonLd, …
+
+// Apply to the DOM at runtime
+applyMetaTags(tags)
+```
+
+Generated tags include:
+
+- `<title>` — `{siteName} – {tagline}` (or just `{siteName}`)
+- `<meta name="description">` — from `config.description`
+- `<link rel="canonical">` — from `config.domain`
+- `<meta name="theme-color">` — from `themeSettings.background`
+- Full `og:*` Open Graph set
+- `twitter:card` / `twitter:site` / `twitter:image`
+- `application/ld+json` MusicGroup structured data
+
+For a custom OG image, Twitter handle, or `twitter:card` type:
+
+```ts
+const config = createSiteConfig({
+  seo: {
+    ogImage: 'https://myband.de/og-image.jpg',
+    twitterCard: 'summary_large_image',
+    twitterHandle: '@myband',
+  },
+})
+```
+
+---
+
+## 🛠 Development
+
+```bash
+npm run dev        # Start dev server (port 5173)
+npm run build      # TypeScript check + production build
+npm run test       # Run Vitest test suite
+npm run test:watch # Tests in watch mode
+npm run lint       # ESLint 10
+npm run preview    # Preview production build
+```
+
+### Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `ADMIN_SETUP_TOKEN` | One-time token to create the first admin password |
+| `KV_REST_API_URL` | Upstash Redis KV URL |
+| `KV_REST_API_TOKEN` | Upstash Redis KV token |
+| `RESEND_API_KEY` | Resend API key for contact-form email forwarding |
+
+---
+
+## 🧱 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 19 + TypeScript |
+| Build | Vite 7 |
+| Styling | Tailwind CSS v4 + oklch color system |
+| Animation | Framer Motion |
+| Components | shadcn/ui (Radix UI primitives) |
+| Icons | Phosphor Icons |
+| Charts | Recharts |
+| Forms | React Hook Form + Zod |
+| Data | Upstash Redis via Vercel KV |
+| Music | iTunes Search API + Odesli |
+| Testing | Vitest + Testing Library |
+| Linting | ESLint 10 + typescript-eslint |
+| Deploy | Vercel (zero-config) |
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── lib/
+│   ├── types.ts            # All TypeScript types (SiteConfig, DesignPreset, …)
+│   ├── site-config.ts      # Defaults, createSiteConfig(), migrations
+│   ├── design-presets.ts   # Bundled design presets (#157)
+│   ├── font-loader.ts      # Google Fonts / local font loading (#158)
+│   ├── sections.ts         # Section registry and utilities (#159)
+│   └── meta-tags.ts        # OG / SEO tag generation (#160)
+├── components/             # React components
+├── hooks/                  # Custom React hooks
+├── contexts/               # React context providers
+├── styles/                 # Global CSS (theme variables, animations)
+├── test/                   # Vitest test files
+└── main.tsx                # App entry point
+api/                        # Vercel serverless functions
+public/                     # Static assets
+```
+
+---
+
+## 📦 Admin Mode
+
+1. Set the `ADMIN_SETUP_TOKEN` environment variable.
+2. Navigate to `?admin-setup` to create your admin password.
+3. Click the **edit button** (bottom-right corner) to enter edit mode.
+4. All sections support inline editing: content, images, order, visibility.
+5. Changes persist automatically via Vercel KV.
+6. Export/import the full config as JSON for backup or migration.
+7. Enable TOTP two-factor authentication in admin settings.
+
+---
 
 ## 🔒 Security
 
-For security considerations and reporting vulnerabilities, please see [SECURITY.md](SECURITY.md).
+- HTTP rate limiting on all API routes (Upstash)
+- TOTP 2FA for admin login
+- Attacker profiling and IP blocklist
+- GDPR-compliant cookie consent
+- Content Security Policy headers (via Vercel)
+- Input sanitisation with DOMPurify
 
-### Security Features
+See [SECURITY.md](SECURITY.md) for responsible disclosure.
 
-- Password-protected admin mode with scrypt password hashing (with legacy SHA-256 migration)
-- Zod input validation and sanitization on all API endpoints
-- XSS prevention through proper escaping
-- CSRF protection
-- HTTPS enforcement in production
-- Rate limiting with GDPR-compliant IP hashing
-- Honeytoken intrusion detection with configurable counter-measures
-- SSRF protection on image proxy
-- robots.txt access control with violation detection
-- Behavioral threat scoring (IDS) with automatic escalation
-- Hard blocklist with configurable TTL
-- Regular dependency updates
-
-### Security Center (Admin)
-
-The admin dashboard includes a state-of-the-art **Security Center** with:
-
-- **Incident Log**: Real-time feed of all security events (honeytoken triggers, robots.txt violations, threat escalations, hard blocks)
-- **Sorting & Grouping**: Sort by time, type, score, or IP; group by type, IP hash, threat level, or countermeasure
-- **Full-text Search**: Filter incidents by IP hash, user agent, target path, or incident type
-- **Data Export**: Download incident data as JSON or CSV for external analysis
-- **Attacker Profiling**: Per-IP behavioral analysis with threat score timeline, attack type distribution, UA analysis, and pattern detection
-- **Request Content**: View captured request bodies, headers, and paths from suspicious actors
-- **Tarpit & Zip Bomb Rules**: Configurable rules for when/who/how gets tarpitted or receives a zip bomb payload
-- **Localization**: Full EN/DE language support with toggle in the dashboard
-- **Tooltips**: Detailed explanations for every module, parameter, and rule on hover
-- **Defense Modules**: 10 configurable modules (honeytoken, rate limit, robots trap, threat scoring, hard block, entropy injection, zip bomb, alerting, suspicious UA blocking, session binding)
-- **Real-time Alerting**: Discord webhook + email alerts with deduplication
-
-## 🌐 Deployment
-
-This site is designed to be deployed on **Vercel** with:
-- Automatic HTTPS
-- Edge functions for API routes
-- KV storage integration (or Upstash Redis)
-- Automatic builds from Git
-
-### Environment Variables
-
-For production deployment, configure:
-- `KV_REST_API_URL` - Redis/KV storage URL
-- `KV_REST_API_TOKEN` - Redis/KV storage token
-- `GOOGLE_DRIVE_API_KEY` - Google Drive API key for file metadata (optional)
+---
 
 ## 📄 License
 
-This project is licensed under the terms of the MIT license. See [LICENSE](LICENSE) for details.
-
-The template was originally derived from GitHub resources and has been extensively modified for the NEUROKLAST band website.
+[MIT](LICENSE) — free to use, modify, and deploy for any purpose.

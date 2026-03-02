@@ -1,4 +1,4 @@
-import type { SiteConfig, SocialLinks, Gig, Release, Biography, TerminalCommand, Impressum, GalleryImage, Datenschutz, FontSizeSettings, SoundSettings, HudTexts, SectionLabels, NewsItem, MediaFile, ThemeSettings, SectionVisibility, NewsletterSettings, ContactSettings, AnimationSettings } from './types'
+import type { SiteConfig, SocialLinks, Gig, Release, Biography, TerminalCommand, Impressum, GalleryImage, Datenschutz, FontSizeSettings, SoundSettings, HudTexts, SectionLabels, NewsItem, MediaFile, ThemeSettings, SectionVisibility, NewsletterSettings, ContactSettings, AnimationSettings, SectionConfig, FontConfig } from './types'
 
 export const TEMPLATE_VERSION = '2.0.0'
 
@@ -51,6 +51,8 @@ export function createSiteConfig(partial: Partial<SiteConfig>): SiteConfig {
     footer: { ...DEFAULT_SITE_CONFIG.footer, ...partial.footer },
     seo: { ...DEFAULT_SITE_CONFIG.seo, ...partial.seo },
     features: { ...DEFAULT_SITE_CONFIG.features, ...partial.features },
+    ...(partial.sections !== undefined ? { sections: partial.sections } : {}),
+    ...(partial.fontConfig !== undefined ? { fontConfig: partial.fontConfig } : {}),
   }
 }
 
@@ -87,5 +89,7 @@ export function migrateFromLegacyBandData(legacy: Record<string, unknown>): Site
     contactSettings: legacy.contactSettings as ContactSettings | undefined,
     terminalMorseCode: legacy.terminalMorseCode as string | undefined,
     animations: legacy.animations as AnimationSettings | undefined,
+    sections: legacy.sections as SectionConfig[] | undefined,
+    fontConfig: legacy.fontConfig as FontConfig | undefined,
   })
 }

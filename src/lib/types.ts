@@ -360,6 +360,10 @@ export interface SiteConfig {
   seo: SEOConfig
   /** Feature flags */
   features: FeatureFlags
+  /** Per-section enable/disable and ordering configuration */
+  sections?: SectionConfig[]
+  /** Font loading configuration (Google Fonts + custom fonts) */
+  fontConfig?: FontConfig
 }
 
 export interface SoundSettings {
@@ -464,3 +468,114 @@ export type AdminDialog =
   | 'subscribers'
   | 'marketing'
   | null
+
+// ─── DESIGN PRESETS (#157) ───────────────────────────────────────────────────
+
+/** A complete design preset defining colors, fonts, and visual style */
+export interface DesignPreset {
+  /** Unique preset identifier (e.g. "cyberpunk", "minimal") */
+  id: string
+  /** Human-readable display name */
+  name: string
+  /** Short description of the preset's aesthetic */
+  description: string
+  /** Color palette (all in oklch or any valid CSS color) */
+  colors: {
+    primary: string
+    accent: string
+    background: string
+    card: string
+    foreground: string
+    mutedForeground: string
+    border: string
+    secondary: string
+  }
+  /** Recommended font pairings */
+  fonts: {
+    heading: string
+    body: string
+    mono: string
+  }
+  /** Border radius in rem */
+  borderRadius: number
+  /** Whether this preset uses heavy animations by default */
+  animationsEnabled: boolean
+}
+
+// ─── FONT CONFIG (#158) ──────────────────────────────────────────────────────
+
+/** Source type for a font entry */
+export type FontSource = 'google' | 'local' | 'system'
+
+/** A single font definition */
+export interface FontEntry {
+  /** Font family name as used in CSS */
+  family: string
+  /** Where the font comes from */
+  source: FontSource
+  /** For Google Fonts: weights to load (e.g. ["400","700"]) */
+  weights?: string[]
+  /** For Google Fonts: italic support */
+  italic?: boolean
+  /** For local fonts: URL to the font file(s) */
+  localUrls?: string[]
+}
+
+/** Font configuration for the site */
+export interface FontConfig {
+  /** Font used for headings (h1–h6) */
+  heading?: FontEntry
+  /** Font used for body text */
+  body?: FontEntry
+  /** Font used for code/mono elements */
+  mono?: FontEntry
+}
+
+// ─── SECTION CONFIG (#159) ───────────────────────────────────────────────────
+
+/** Configuration for a single section */
+export interface SectionConfig {
+  /** Section identifier matching the keys in SectionVisibility / sectionOrder */
+  id: string
+  /** Whether this section is displayed */
+  enabled: boolean
+  /** Display order index (lower = earlier) */
+  order: number
+  /** Optional section-specific settings */
+  settings?: Record<string, unknown>
+}
+
+// ─── META TAGS (#160) ────────────────────────────────────────────────────────
+
+/** A full set of generated HTML meta tags for a page */
+export interface MetaTagSet {
+  /** Page title */
+  title: string
+  /** Meta description */
+  description: string
+  /** Canonical URL */
+  canonical?: string
+  /** Favicon href */
+  favicon?: string
+  /** theme-color value */
+  themeColor?: string
+  /** Open Graph tags */
+  og: {
+    title: string
+    description: string
+    type: string
+    url?: string
+    image?: string
+    siteName: string
+  }
+  /** Twitter card tags */
+  twitter: {
+    card: 'summary' | 'summary_large_image'
+    title: string
+    description: string
+    image?: string
+    site?: string
+  }
+  /** JSON-LD structured data (serialized) */
+  jsonLd?: string
+}
