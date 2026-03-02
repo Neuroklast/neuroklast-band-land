@@ -466,7 +466,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
             {photos.map((photo, index) => (
               <motion.div
                 key={photo.id}
-                className={`relative group overflow-hidden bg-card aspect-square cursor-pointer touch-manipulation hud-element hud-corner hud-scanline ${glitchIndex === index ? 'red-glitch-element' : ''}`}
+                className={`relative group overflow-hidden bg-card aspect-square cursor-pointer touch-manipulation hud-element hud-corner`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -538,7 +538,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
             </motion.button>
 
             <motion.div
-              className="relative max-w-7xl max-h-full hud-corner hud-element glitch-overlay-enter"
+              className="relative max-w-7xl max-h-full hud-corner hud-element"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}

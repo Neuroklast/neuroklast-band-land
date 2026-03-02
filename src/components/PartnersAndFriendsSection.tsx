@@ -142,17 +142,16 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
       <span className="corner-br"></span>
       <div className="flex flex-col items-center gap-3 p-5">
         {(friend.iconPhoto || friend.photo) ? (
-          <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_var(--primary-glow),0_0_30px_var(--primary-glow-dim)] bg-black ${hovered ? 'red-glitch-element' : ''}`}>
+          <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_var(--primary-glow),0_0_30px_var(--primary-glow-dim)] bg-black`}>
             <ProgressiveImage
               src={friend.iconPhoto || friend.photo || ''}
               alt={friend.name}
               className="w-full h-full object-contain"
             />
-            <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
             <div className="dot-matrix-photo" />
           </div>
         ) : (
-          <div className={`w-24 h-24 aspect-square flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center shadow-[0_0_15px_var(--primary-glow),0_0_30px_var(--primary-glow-dim)] ${hovered ? 'red-glitch-element' : ''}`}>
+          <div className={`w-24 h-24 aspect-square flex-shrink-0 bg-secondary/30 border border-border flex items-center justify-center shadow-[0_0_15px_var(--primary-glow),0_0_30px_var(--primary-glow-dim)]`}>
             <User size={32} className="text-muted-foreground/40" />
           </div>
         )}

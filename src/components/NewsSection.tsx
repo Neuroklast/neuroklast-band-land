@@ -371,8 +371,6 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
-      <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
-
       <motion.div
         className="w-full max-w-2xl bg-card border border-primary/30 relative overflow-hidden flex flex-col max-h-[90dvh]"
         initial={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -461,9 +459,6 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
           <span>{t('news.entry')}</span>
           <span className="ml-auto">{t('news.version')}</span>
         </div>
-
-        {/* Scanline overlay */}
-        <div className="absolute inset-0 hud-scanline pointer-events-none opacity-10" />
       </motion.div>
     </motion.div>
   )

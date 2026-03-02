@@ -42,7 +42,6 @@ function MemberContent({ member, sectionLabels }: { member: Member; sectionLabel
               style={{ boxShadow: '0 0 20px color-mix(in oklch, var(--primary) 30%, transparent)' }}
             >
               <ProgressiveImage src={member.photo} alt={member.name} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
             </div>
           ) : (
             <div className="w-full h-full bg-muted border border-primary/40 flex items-center justify-center">
@@ -374,19 +373,6 @@ export default function CyberpunkOverlayModal({
                   <div className={animation.loaderClass} />
                   <p className="progressive-loading-label text-primary/70 font-mono text-xs tracking-wider">{loadingText}</p>
                   <p className="text-primary/40 font-mono text-[9px] tracking-widest uppercase">{animation.loaderLabel}</p>
-                </div>
-              )}
-
-              {/* Glitch phase */}
-              {phase === 'glitch' && (
-                <div className="flex items-center justify-center py-16 px-8">
-                  <motion.p
-                    className="glitch-effect font-mono text-sm text-primary tracking-widest uppercase"
-                    animate={{ opacity: [0, 1, 0, 1, 0, 1] }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    DECRYPTING...
-                  </motion.p>
                 </div>
               )}
 

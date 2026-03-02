@@ -383,7 +383,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                 return (
                   <motion.div
                     key="release-links"
-                    className="w-full max-w-2xl bg-card border border-primary/30 relative glitch-overlay-enter"
+                    className="w-full max-w-2xl bg-card border border-primary/30 relative"
                       initial={{ scale: 0.85, y: 30, opacity: 0 }}
                       animate={{ scale: 1, y: 0, opacity: 1 }}
                       exit={{ scale: 0.85, y: 30, opacity: 0 }}

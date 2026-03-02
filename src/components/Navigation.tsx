@@ -74,7 +74,7 @@ export default function Navigation({ sectionLabels, terminalMorseCode, onTermina
   return (
     <>
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent backdrop-blur-sm border-b border-primary/10 ${glitch ? 'red-glitch-element' : ''}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent backdrop-blur-sm border-b border-primary/10`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}

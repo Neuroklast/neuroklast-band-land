@@ -410,13 +410,11 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
-
       {phase === 'loading' && <MediaLoadingScreen />}
 
       {phase === 'ready' && (
         <motion.div
-          className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border border-primary/30 relative overflow-hidden glitch-overlay-enter flex flex-col"
+          className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border border-primary/30 relative overflow-hidden flex flex-col"
           initial={{ scale: 0.85, y: 30, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -476,9 +474,6 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
               </div>
             </div>
           )}
-
-          {/* Scanline overlay */}
-          <div className="absolute inset-0 hud-scanline pointer-events-none opacity-10" />
         </motion.div>
       )}
     </motion.div>

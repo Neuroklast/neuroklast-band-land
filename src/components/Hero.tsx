@@ -174,7 +174,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               <img 
                 src={logoUrl ?? logoPng} 
                 alt={t('hero.logoAlt')} 
-                className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
+                className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
               />
               <div className="absolute inset-0 pointer-events-none z-20">
                 <div 
@@ -218,7 +218,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               <img 
                 src={titleImageUrl ?? titlePng} 
                 alt={t('hero.titleAlt')} 
-                className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
+                className={`w-full h-auto relative z-10`}
                 style={{ 
                   filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
                 }}

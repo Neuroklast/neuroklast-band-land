@@ -9,7 +9,6 @@ import {
   CONSOLE_TYPING_SPEED_MS,
   CONSOLE_LINE_DELAY_MS,
   PROFILE_LOADING_TEXT_INTERVAL_MS,
-  PROFILE_GLITCH_PHASE_DELAY_MS,
   PROFILE_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
 
@@ -30,9 +29,9 @@ export interface ProfileOverlayProps {
   children?: React.ReactNode
 }
 
-/** Shared cyberpunk profile overlay with loading→glitch→reveal phases */
+/** Shared cyberpunk profile overlay with loading→reveal phases */
 export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines, onClose, sectionLabels, children }: ProfileOverlayProps) {
-  const [phase, setPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
+  const [phase, setPhase] = useState<'loading' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(LOADING_TEXTS[0])
   const [photoLoaded, setPhotoLoaded] = useState(false)
   const [photoSrc, setPhotoSrc] = useState('')
@@ -59,16 +58,10 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
       }
     }, PROFILE_LOADING_TEXT_INTERVAL_MS)
 
-    const glitchTimer = setTimeout(() => {
-      clearInterval(txtInterval)
-      setPhase('glitch')
-    }, PROFILE_GLITCH_PHASE_DELAY_MS)
-
     const revealTimer = setTimeout(() => setPhase('revealed'), PROFILE_REVEAL_PHASE_DELAY_MS)
 
     return () => {
       clearInterval(txtInterval)
-      clearTimeout(glitchTimer)
       clearTimeout(revealTimer)
     }
   }, [])
@@ -89,8 +82,6 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 hud-scanline opacity-20 pointer-events-none" />
-
       {phase === 'loading' && (
         <motion.div
           className="flex flex-col items-center gap-4"
@@ -111,9 +102,7 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
 
       {phase !== 'loading' && (
         <motion.div
-          className={`w-full max-w-3xl bg-card border relative overflow-hidden glitch-overlay-enter ${
-            phase === 'glitch' ? 'border-primary red-glitch-element' : 'border-primary/30'
-          }`}
+          className="w-full max-w-3xl bg-card border border-primary/30 relative overflow-hidden"
           initial={{ scale: 0.85, y: 30, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.85, y: 30, opacity: 0 }}
@@ -171,7 +160,6 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
                         }
                       }}
                     />
-                    <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
                     <div className="dot-matrix-photo" />
                   </div>
                 ) : (
