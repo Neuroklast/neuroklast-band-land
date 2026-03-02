@@ -62,7 +62,7 @@ async function sendEmailNotification({ name, email, subject, message }) {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        sender: { name: 'NEUROKLAST Contact Form', email: toEmail },
+        sender: { name: process.env.SITE_NAME ? `${process.env.SITE_NAME} Contact Form` : 'Contact Form', email: toEmail },
         to: [{ email: toEmail }],
         replyTo: { name, email },
         subject: `Contact Form: ${subject}`,

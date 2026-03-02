@@ -59,15 +59,7 @@ const defaultSiteConfig: SiteConfig = createSiteConfig({
   siteName: bandDataJson.band.name,
   genres: bandDataJson.band.genres,
   label: bandDataJson.band.label || DEFAULT_LABEL,
-  socialLinks: {
-    instagram: 'https://instagram.com/neuroklast_music',
-    facebook: 'https://www.facebook.com/Neuroklast/',
-    spotify: 'https://open.spotify.com/intl-de/artist/5xfQSijbVetvH1QAS58n30',
-    soundcloud: 'https://soundcloud.com/neuroklast',
-    youtube: 'https://youtube.com/@neuroklast',
-    bandcamp: 'https://neuroklast.bandcamp.com',
-    linktr: 'https://linktr.ee/neuroklast'
-  },
+  socialLinks: {},
   gigs: [],
   releases: [],
   biography: {
@@ -78,7 +70,7 @@ const defaultSiteConfig: SiteConfig = createSiteConfig({
   },
   terminalCommands: [
     { name: 'status', description: 'System status', output: ['SYSTEM STATUS:', '  AUDIO ENGINE: ACTIVE', '  HUD SYSTEMS: OPERATIONAL', '  THREAT LEVEL: CLASSIFIED'] },
-    { name: 'info', description: 'Band information', output: ['NEUROKLAST - HARD TECHNO · INDUSTRIAL · DNB · DARK ELECTRO', 'LABEL: DARKTUNES MUSIC GROUP', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
+    { name: 'info', description: 'Band information', output: ['SYSTEM INFO', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
   ],
   terminalMorseCode: '...',
 })
@@ -221,6 +213,7 @@ function App() {
         onClose={() => setActiveDialog(null)}
         customCommands={data.terminalCommands || []}
         secretCode={data.secretCode}
+        siteName={data.siteName}
         editMode={editMode && isOwner}
         onSaveCommands={(terminalCommands) => updateConfig({ terminalCommands })}
         onSaveSecretCode={(secretCode) => updateConfig({ secretCode })}
@@ -251,6 +244,7 @@ function App() {
         {loading && (
           <CyberpunkLoader 
             precacheUrls={precacheUrls}
+            siteName={data.siteName}
             onLoadComplete={() => {
               playSound('loadingFinished')
               setLoading(false)
@@ -262,8 +256,9 @@ function App() {
       {!loading && (
         <>
           <Navigation
+            siteName={data.siteName}
             sectionLabels={data.sectionLabels}
-            terminalMorseCode={data.terminalMorseCode || defaultBandData.terminalMorseCode}
+            terminalMorseCode={data.terminalMorseCode || defaultSiteConfig.terminalMorseCode}
             onTerminalActivation={handleTerminalActivation}
           />
           
@@ -279,7 +274,7 @@ function App() {
               <div className="absolute inset-0 hud-scanline opacity-30" />
             </div>
             
-            {vis.hudBackground !== false && <CyberpunkBackground hudTexts={data.hudTexts} />}
+            {vis.hudBackground !== false && <CyberpunkBackground hudTexts={data.hudTexts} siteName={data.siteName} />}
             <Toaster position="top-right" />
           
           <motion.div
@@ -347,6 +342,7 @@ function App() {
                   onFontSizeChange={handleFontSizeChange}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  siteName={data.siteName}
                   onMemberClick={(member) => setCyberpunkOverlay({ type: 'member', data: member })}
                 />
               </motion.div>
@@ -366,6 +362,7 @@ function App() {
                   onDriveFolderUrlChange={(galleryDriveFolderUrl) => updateConfig({ galleryDriveFolderUrl })}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  siteName={data.siteName}
                 />
               </motion.div>
               )}
@@ -418,6 +415,7 @@ function App() {
                   dataLoaded={siteConfigLoaded}
                   sectionLabels={data.sectionLabels}
                   onLabelChange={handleLabelChange}
+                  siteName={data.siteName}
                   onReleaseClick={(release) => setCyberpunkOverlay({ type: 'release', data: release })}
                 />
               </motion.div>
@@ -501,6 +499,7 @@ function App() {
                 socialLinks={safeSocialLinks} 
                 genres={data.genres}
                 label={data.label}
+                siteName={data.siteName}
                 onAdminLogin={!isOwner && !needsSetup ? () => setShowLoginDialog(true) : undefined}
                 onImpressum={() => {
                   if (editMode && isOwner) {
@@ -542,7 +541,7 @@ function App() {
               />
             )}
 
-            <StatsDashboard open={activeDialog === 'analytics'} onClose={() => setActiveDialog(null)} />
+            <StatsDashboard open={activeDialog === 'analytics'} onClose={() => setActiveDialog(null)} domain={data.domain} />
             <SecurityIncidentsDashboard 
               open={activeDialog === 'security-log'} 
               onClose={() => setActiveDialog(null)} 

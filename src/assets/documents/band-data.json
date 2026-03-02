@@ -1,30 +1,28 @@
 {
   "biography": {
-    "story": "Neuroklast is hard techno, cyberpunk, DnB, dark electro, whatever breaks the surface. It's noisy, heavy, emotional, sometimes a bit fucked up; just like life. We started this in 2020. Not to fit into a scene, but to build something that feels real. There's a story behind it. A visual world. A lot of weird lore. It's not just for show, but it's part of how we deal with things. Mental health is a big one. Inner shit. No masks. No fake shit. Operating under the darkTunes banner and the mastering of Zardonic we continue to develop our sound, we're not stuck to genres. A Neuroklast show is loud, physical and dark, but there's space in it. It's not about being brutal all the time. It's about honesty. If it leaves a mark, good. If not, that's fine too. This isn't for everyone. And it's not trying to be.",
+    "story": "Your band story goes here. Describe your music, your journey, and what makes you unique. You can add as much or as little detail as you like.",
     "founded": "2020",
     "members": [
-      "Kay (Production)",
-      "Markus (Production / Live)",
-      "Rage (Vocals)"
+      "Member 1 (Role)",
+      "Member 2 (Role)",
+      "Member 3 (Role)"
     ],
     "achievements": [
-      "Performed at WGT, RESISTANZ, SSM",
-      "SKIO Zardonic Remix Contest 3rd",
-      "Running own events (NEURORAVE/BLACKWALL)",
-      "Collabs with ESA, iVardensphere, Zardonic, Mechanical Vein and many more"
+      "Add your achievements here",
+      "Performances, releases, collaborations",
+      "Awards and milestones"
     ]
   },
   "terminalMorseCode": "..--.",
   "band": {
-    "name": "NEUROKLAST",
+    "name": "YOUR BAND NAME",
     "genres": [
-      "HARD TECHNO",
-      "CYBERPUNK",
-      "DNB",
-      "DARK ELECTRO"
+      "GENRE 1",
+      "GENRE 2",
+      "GENRE 3"
     ],
-    "location": "Germany",
-    "description": "An uncompromising force in the underground electronic music scene, pushing the boundaries of hard techno and industrial sound design.",
-    "label": "Darktunes Music Group"
+    "location": "Your City, Country",
+    "description": "A brief description of your band for SEO and metadata.",
+    "label": "Your Label"
   }
 }

@@ -9,7 +9,7 @@ const scryptAsync = promisify(scrypt)
 
 const SESSION_TTL = 14400 // 4 hours (reduced from 24h to limit session hijacking window)
 const COOKIE_NAME = 'nk-session'
-const TOTP_ISSUER = 'NEUROKLAST Admin'
+const TOTP_ISSUER = process.env.SITE_NAME ? `${process.env.SITE_NAME} Admin` : 'Site Admin'
 const TOTP_KEY = 'admin-totp-secret'
 
 const isKVConfigured = () => {

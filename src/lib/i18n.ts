@@ -1,5 +1,5 @@
 /**
- * Global i18n utility for the NEUROKLAST site.
+ * Global i18n utility for the site.
  * Supports English (en) and German (de).
  */
 
@@ -11,7 +11,7 @@ const translations: Record<string, Record<Locale, string>> = {
   'footer.protocol':           { en: 'PROTOCOL: HELLFIRE', de: 'PROTOKOLL: HELLFIRE' },
   'footer.defaultGenres':      { en: 'HARD TECHNO · CYBERPUNK · DNB · DARK ELECTRO', de: 'HARD TECHNO · CYBERPUNK · DNB · DARK ELECTRO' },
   'footer.label':              { en: 'LABEL: {0}', de: 'LABEL: {0}' },
-  'footer.copyright':          { en: '© {0} NEUROKLAST. All rights reserved.', de: '© {0} NEUROKLAST. Alle Rechte vorbehalten.' },
+  'footer.copyright':          { en: '© {0} {1}. All rights reserved.', de: '© {0} {1}. Alle Rechte vorbehalten.' },
   'footer.impressum':          { en: 'IMPRESSUM', de: 'IMPRESSUM' },
   'footer.datenschutz':        { en: 'PRIVACY POLICY', de: 'DATENSCHUTZ' },
   'footer.admin':              { en: 'ADMIN', de: 'ADMIN' },
@@ -41,8 +41,8 @@ const translations: Record<string, Record<Locale, string>> = {
   'hero.online':               { en: 'ONLINE', de: 'ONLINE' },
   'hero.freq':                 { en: 'FREQ: 140-180', de: 'FREQ: 140-180' },
   'hero.mode':                 { en: 'MODE: HARD', de: 'MODE: HARD' },
-  'hero.logoAlt':              { en: 'NEUROKLAST Logo', de: 'NEUROKLAST Logo' },
-  'hero.titleAlt':             { en: 'NEUROKLAST', de: 'NEUROKLAST' },
+  'hero.logoAlt':              { en: '{0} Logo', de: '{0} Logo' },
+  'hero.titleAlt':             { en: '{0}', de: '{0}' },
   'hero.editInfo':             { en: 'Edit Info', de: 'Info bearbeiten' },
   'hero.enter':                { en: 'ENTER', de: 'EINTRETEN' },
 
@@ -79,7 +79,7 @@ const translations: Record<string, Record<Locale, string>> = {
   'bio.members':               { en: 'Members', de: 'Mitglieder' },
   'bio.collabs':               { en: 'Collabs', de: 'Zusammenarbeiten' },
   'bio.achievements':          { en: 'Achievements', de: 'Erfolge' },
-  'bio.photoAlt':              { en: 'NEUROKLAST photo {0}', de: 'NEUROKLAST Foto {0}' },
+  'bio.photoAlt':              { en: '{1} photo {0}', de: '{1} Foto {0}' },
 
   // ── GigsSection ─────────────────────────────────────────────────────
   'gigs.defaultTitle':         { en: 'UPCOMING GIGS', de: 'KOMMENDE AUFTRITTE' },
@@ -186,7 +186,7 @@ const translations: Record<string, Record<Locale, string>> = {
 
   // ── InstagramGallery ────────────────────────────────────────────────
   'gallery.defaultTitle':      { en: 'GALLERY', de: 'GALERIE' },
-  'gallery.subtitle':          { en: 'Visual identity of NEUROKLAST', de: 'Visuelle Identität von NEUROKLAST' },
+  'gallery.subtitle':          { en: 'Visual identity of {0}', de: 'Visuelle Identität von {0}' },
   'gallery.addImageUrl':       { en: 'Add Image URL', de: 'Bild-URL hinzufügen' },
   'gallery.driveFolder':       { en: 'Drive Folder', de: 'Drive-Ordner' },
   'gallery.syncDrive':         { en: 'Sync Drive', de: 'Drive synchronisieren' },

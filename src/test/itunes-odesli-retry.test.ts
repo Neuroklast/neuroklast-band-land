@@ -56,7 +56,7 @@ describe('iTunes handler – 429 retry via fetchWithRetry', () => {
     mockFetchWithRetry.mockResolvedValue(okResponse(itunesData))
 
     const res = mockRes()
-    await itunesHandler({ query: { term: 'NEUROKLAST', entity: 'album' }, headers: {} }, res)
+    await itunesHandler({ query: { term: 'Test Band', entity: 'album' }, headers: {} }, res)
 
     expect(mockFetchWithRetry).toHaveBeenCalledTimes(1)
     expect(res.status).toHaveBeenCalledWith(200)
@@ -67,7 +67,7 @@ describe('iTunes handler – 429 retry via fetchWithRetry', () => {
     mockFetchWithRetry.mockResolvedValue(okResponse({ resultCount: 0, results: [] }))
 
     const res = mockRes()
-    await itunesHandler({ query: { term: 'NEUROKLAST', entity: 'song' }, headers: {} }, res)
+    await itunesHandler({ query: { term: 'Test Band', entity: 'song' }, headers: {} }, res)
 
     expect(mockFetchWithRetry).toHaveBeenCalledTimes(1)
     expect(mockFetchWithRetry.mock.calls[0][0]).toContain('itunes.apple.com')
@@ -81,7 +81,7 @@ describe('iTunes handler – 429 retry via fetchWithRetry', () => {
       .mockResolvedValueOnce(okResponse(albumData))
 
     const res = mockRes()
-    await itunesHandler({ query: { term: 'NEUROKLAST', entity: 'all' }, headers: {} }, res)
+    await itunesHandler({ query: { term: 'Test Band', entity: 'all' }, headers: {} }, res)
 
     expect(mockFetchWithRetry).toHaveBeenCalledTimes(2)
     expect(res.status).toHaveBeenCalledWith(200)
@@ -94,7 +94,7 @@ describe('iTunes handler – 429 retry via fetchWithRetry', () => {
     mockFetchWithRetry.mockResolvedValue({ ok: false, status: 429, headers: { get: vi.fn() } })
 
     const res = mockRes()
-    await itunesHandler({ query: { term: 'NEUROKLAST', entity: 'album' }, headers: {} }, res)
+    await itunesHandler({ query: { term: 'Test Band', entity: 'album' }, headers: {} }, res)
 
     expect(res.status).toHaveBeenCalledWith(500)
   })

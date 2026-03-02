@@ -431,7 +431,7 @@ export interface HudTexts {
   topLeft2?: string
   /** Top-left status text (default: "ACTIVE") */
   topLeftStatus?: string
-  /** Top-right line 1 (default: "NEUROKLAST v1.0") */
+  /** Top-right line 1 (default: "{siteName} v1.0") */
   topRight1?: string
   /** Top-right line 2 (default: "ID: NK-<random>") */
   topRight2?: string

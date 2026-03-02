@@ -3,6 +3,7 @@ import type { HudTexts } from '@/lib/types'
 
 interface CyberpunkBackgroundProps {
   hudTexts?: HudTexts
+  siteName?: string
 }
 
 /**
@@ -10,7 +11,7 @@ interface CyberpunkBackgroundProps {
  * Cyberpunk 2077-style animations: hexagonal grid, glitch blocks,
  * circuit traces, and particle effects.
  */
-export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundProps) {
+export default function CyberpunkBackground({ hudTexts, siteName = '' }: CyberpunkBackgroundProps) {
   const [time, setTime] = useState(new Date())
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
   const [defaultId] = useState(() => `ID: NK-${Date.now().toString().slice(-6)}`)
@@ -57,7 +58,7 @@ export default function CyberpunkBackground({ hudTexts }: CyberpunkBackgroundPro
       </div>
 
       <div className="absolute top-4 right-4 data-readout hidden md:block text-right">
-        <div className="mb-1">{hudTexts?.topRight1 ?? 'NEUROKLAST v1.0'}</div>
+        <div className="mb-1">{hudTexts?.topRight1 ?? `${siteName ? siteName + ' ' : ''}v1.0`}</div>
         <div>{hudTexts?.topRight2 ?? defaultId}</div>
       </div>
 

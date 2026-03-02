@@ -7,12 +7,13 @@ interface FooterProps {
   socialLinks: SocialLinks
   genres?: string[]
   label?: string
+  siteName?: string
   onAdminLogin?: () => void
   onImpressum?: () => void
   onDatenschutz?: () => void
 }
 
-export default function Footer({ socialLinks: _socialLinks, genres, label, onAdminLogin, onImpressum, onDatenschutz }: FooterProps) {
+export default function Footer({ socialLinks: _socialLinks, genres, label, siteName = '', onAdminLogin, onImpressum, onDatenschutz }: FooterProps) {
   const { t } = useLocale()
 
   const scrollToTop = () => {
@@ -51,7 +52,7 @@ export default function Footer({ socialLinks: _socialLinks, genres, label, onAdm
             {label && (
               <p className="text-[10px] md:text-xs">{t('footer.label').replace('{0}', label)}</p>
             )}
-            <p className="text-[10px] md:text-xs">{t('footer.copyright').replace('{0}', String(new Date().getFullYear()))}</p>
+            <p className="text-[10px] md:text-xs">{t('footer.copyright').replace('{0}', String(new Date().getFullYear())).replace('{1}', siteName)}</p>
             <div className="flex flex-col items-center gap-2 pt-2">
               <div className="flex items-center gap-3">
                 {onImpressum && (

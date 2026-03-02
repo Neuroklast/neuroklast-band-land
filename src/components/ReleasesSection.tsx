@@ -33,9 +33,11 @@ interface ReleasesSectionProps {
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
   /** When provided, clicking a release calls this instead of the internal modal */
   onReleaseClick?: (release: Release) => void
+  /** Site/artist name used for iTunes lookup */
+  siteName?: string
 }
 
-export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onReleaseClick }: ReleasesSectionProps) {
+export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onReleaseClick, siteName = '' }: ReleasesSectionProps) {
   const { t } = useLocale()
   const [editingRelease, setEditingRelease] = useState<Release | null>(null)
   const [isAdding, setIsAdding] = useState(false)
@@ -176,7 +178,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   const handleFetchITunesReleases = async (isAutoLoad = false) => {
     setIsFetching(true)
     try {
-      const iTunesReleases = await fetchITunesReleases()
+      const iTunesReleases = await fetchITunesReleases(siteName)
       
       if (iTunesReleases.length === 0) {
         if (!isAutoLoad) {

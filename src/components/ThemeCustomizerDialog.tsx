@@ -17,7 +17,7 @@ export interface ThemePreset {
 export const THEME_PRESETS: ThemePreset[] = [
   {
     name: 'Neon Red (Default)',
-    description: 'Default Neuroklast red cyberpunk theme',
+    description: 'Default red cyberpunk theme',
     theme: {
       primary: 'oklch(0.50 0.22 25)',
       accent: 'oklch(0.60 0.24 25)',
@@ -653,7 +653,7 @@ export default function ThemeCustomizerDialog({
                         style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}
                       >
                         <p className="text-sm text-foreground/80">
-                          NEUROKLAST — The quick brown fox jumps over the lazy dog
+                          SITE — The quick brown fox jumps over the lazy dog
                         </p>
                         <p className="text-xs text-foreground/50 mt-1">
                           0123456789 !@#$%^&amp;*() ABCDEFGHIJKLMNOPQRSTUVWXYZ

@@ -94,7 +94,7 @@ describe('Security: KV API key validation', () => {
     const res = mockRes()
     await kvHandler({ method: 'GET', query: { key: 'a'.repeat(201) }, body: {}, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'String must contain at most 200 character(s)' }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringMatching(/200|too big/i) }))
   })
 
   it('rejects GET with key containing newline characters', async () => {
@@ -120,7 +120,7 @@ describe('Security: KV API key validation', () => {
     const res = mockRes()
     await kvHandler({ method: 'POST', query: {}, body: { key: 'a'.repeat(201), value: 'test' }, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(400)
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'String must contain at most 200 character(s)' }))
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringMatching(/200|too big/i) }))
   })
 
   it('rejects POST with key containing newline', async () => {

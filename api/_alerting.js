@@ -43,8 +43,8 @@ export async function sendSecurityAlert(event) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            username: 'NEUROKLAST IDS',
-            avatar_url: 'https://neuroklast.com/favicon.ico',
+            username: process.env.SITE_NAME ? `${process.env.SITE_NAME} IDS` : 'Site IDS',
+            avatar_url: process.env.SITE_URL ? `${process.env.SITE_URL}/favicon.ico` : '/favicon.ico',
             embeds: [{
               title: `🚨 SECURITY ALERT — ${event.type || 'THREAT DETECTED'}`,
               color: event.severity === 'critical' ? 0xff0000 : event.severity === 'high' ? 0xff6600 : 0xffcc00,
@@ -54,10 +54,10 @@ export async function sendSecurityAlert(event) {
                 { name: 'IP Hash', value: event.hashedIp ? `\`${event.hashedIp.slice(0, 12)}…\`` : '—', inline: true },
                 { name: 'User Agent', value: event.userAgent ? `\`${event.userAgent.slice(0, 100)}\`` : '—', inline: false },
                 { name: 'Threat Score', value: event.threatScore ? `${event.threatScore} (${event.threatLevel || '?'})` : '—', inline: true },
-                { name: 'Site', value: process.env.SITE_URL || 'neuroklast.com', inline: true },
+                { name: 'Site', value: process.env.SITE_URL || '—', inline: true },
               ],
               timestamp: event.timestamp || new Date().toISOString(),
-              footer: { text: 'NEUROKLAST IDS • Active Defense System' },
+              footer: { text: `${process.env.SITE_NAME || 'Site'} IDS • Active Defense System` },
             }],
           }),
         }).catch(err => console.error('[ALERT] Discord webhook failed:', err.message))
@@ -70,11 +70,11 @@ export async function sendSecurityAlert(event) {
       const resend = new Resend(resendApiKey)
       promises.push(
         resend.emails.send({
-          from: process.env.EMAIL_FROM || 'noreply@neuroklast.com',
+          from: process.env.EMAIL_FROM || `noreply@${process.env.SITE_URL ? new URL(process.env.SITE_URL).hostname : 'example.com'}`,
           to: alertEmail,
-          subject: `🚨 [NEUROKLAST IDS] ${event.type || 'Security Alert'} — ${event.key}`,
+          subject: `🚨 [${process.env.SITE_NAME || 'Site'} IDS] ${event.type || 'Security Alert'} — ${event.key}`,
           html: `
-            <h2 style="color:#ff0000">🚨 NEUROKLAST IDS ALERT</h2>
+            <h2 style="color:#ff0000">🚨 ${process.env.SITE_NAME || 'SITE'} IDS ALERT</h2>
             <table border="1" cellpadding="6" style="border-collapse:collapse;font-family:monospace">
               <tr><td><b>Event</b></td><td>${event.key || '—'}</td></tr>
               <tr><td><b>Method</b></td><td>${event.method || '—'}</td></tr>
@@ -82,9 +82,9 @@ export async function sendSecurityAlert(event) {
               <tr><td><b>User Agent</b></td><td>${event.userAgent || '—'}</td></tr>
               <tr><td><b>Threat Score</b></td><td>${event.threatScore || '—'} (${event.threatLevel || '—'})</td></tr>
               <tr><td><b>Timestamp</b></td><td>${event.timestamp || new Date().toISOString()}</td></tr>
-              <tr><td><b>Site</b></td><td>${process.env.SITE_URL || 'neuroklast.com'}</td></tr>
+              <tr><td><b>Site</b></td><td>${process.env.SITE_URL || '—'}</td></tr>
             </table>
-            <p style="color:#666;font-size:12px">NEUROKLAST IDS • Active Defense System</p>
+            <p style="color:#666;font-size:12px">${process.env.SITE_NAME || 'Site'} IDS • Active Defense System</p>
           `,
         }).catch(err => console.error('[ALERT] Resend email failed:', err.message))
       )
