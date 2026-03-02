@@ -512,7 +512,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                                 contentStyle={{ 
                                   backgroundColor: 'oklch(0 0 0 / 0.95)', 
                                   border: '1px solid oklch(0.50 0.22 25 / 0.5)',
-                                  borderRadius: '2px',
+                                  borderRadius: 'var(--radius-sm)',
                                   fontSize: '10px',
                                   fontFamily: 'var(--font-mono)'
                                 }}
@@ -620,7 +620,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                                 contentStyle={{ 
                                   backgroundColor: 'oklch(0 0 0 / 0.95)', 
                                   border: '1px solid oklch(0.50 0.22 25 / 0.5)',
-                                  borderRadius: '2px',
+                                  borderRadius: 'var(--radius-sm)',
                                   fontSize: '10px',
                                   fontFamily: 'var(--font-mono)'
                                 }}
@@ -681,7 +681,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                                     <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
                                     <XAxis dataKey="hour" tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 8 }} stroke="oklch(0.50 0.22 25 / 0.3)" />
                                     <YAxis tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 8 }} stroke="oklch(0.50 0.22 25 / 0.3)" />
-                                    <Tooltip contentStyle={{ backgroundColor: 'oklch(0 0 0 / 0.95)', border: '1px solid oklch(0.50 0.22 25 / 0.5)', borderRadius: '2px', fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
+                                    <Tooltip contentStyle={{ backgroundColor: 'oklch(0 0 0 / 0.95)', border: '1px solid oklch(0.50 0.22 25 / 0.5)', borderRadius: 'var(--radius-sm)', fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
                                     <Bar dataKey="visits" fill="oklch(0.50 0.22 25 / 0.6)">
                                       {hourlyData.map((entry) => (
                                         <Cell key={entry.hour} fill={top3.has(entry.hour) ? 'oklch(0.60 0.24 25)' : 'oklch(0.50 0.22 25 / 0.4)'} />
@@ -748,7 +748,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                                 contentStyle={{ 
                                   backgroundColor: 'oklch(0 0 0 / 0.95)', 
                                   border: '1px solid oklch(0.50 0.22 25 / 0.5)',
-                                  borderRadius: '2px',
+                                  borderRadius: 'var(--radius-sm)',
                                   fontSize: '10px',
                                   fontFamily: 'var(--font-mono)'
                                 }}

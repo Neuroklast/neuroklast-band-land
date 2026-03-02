@@ -357,7 +357,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                             contentStyle={{ 
                               backgroundColor: '#000', 
                               border: '1px solid #333',
-                              borderRadius: 0,
+                              borderRadius: 'var(--radius-sm)',
                               fontSize: '11px',
                               fontFamily: 'monospace'
                             }}
@@ -399,6 +399,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                             contentStyle={{ 
                               backgroundColor: '#000', 
                               border: '1px solid #333',
+                              borderRadius: 'var(--radius-sm)',
                               fontSize: '11px',
                               fontFamily: 'monospace'
                             }}
@@ -434,6 +435,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                             contentStyle={{ 
                               backgroundColor: '#000', 
                               border: '1px solid #333',
+                              borderRadius: 'var(--radius-sm)',
                               fontSize: '11px',
                               fontFamily: 'monospace'
                             }}
