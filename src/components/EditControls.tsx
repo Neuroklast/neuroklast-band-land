@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import CyberCloseButton from '@/components/CyberCloseButton'
-import type { BandData } from '@/lib/types'
+import type { AdminDialog, BandData } from '@/lib/types'
 import { useLocale } from '@/contexts/LocaleContext'
 import { toast } from 'sonner'
 import {
@@ -22,19 +22,7 @@ interface EditControlsProps {
   onLogout?: () => Promise<void>
   bandData?: BandData
   onImportData?: (data: BandData) => void
-  onOpenSoundSettings?: () => void
-  onOpenConfigEditor?: () => void
-  onOpenAnalytics?: () => void
-  onOpenSecurityLog?: () => void
-  onOpenSecuritySettings?: () => void
-  onOpenBlocklist?: () => void
-  onOpenAttackerProfiles?: () => void
-  onOpenThemeCustomizer?: () => void
-  onOpenTerminalSettings?: () => void
-  onOpenTerminal?: () => void
-  onOpenContactInbox?: () => void
-  onOpenSubscribers?: () => void
-  onOpenMarketingTools?: () => void
+  onOpenDialog: (dialog: AdminDialog) => void
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -46,7 +34,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenSoundSettings, onOpenConfigEditor, onOpenAnalytics, onOpenSecurityLog, onOpenSecuritySettings, onOpenBlocklist, onOpenAttackerProfiles, onOpenThemeCustomizer, onOpenTerminalSettings, onOpenTerminal, onOpenContactInbox, onOpenSubscribers, onOpenMarketingTools }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, bandData, onImportData, onOpenDialog }: EditControlsProps) {
   const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
@@ -251,136 +239,110 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 <Globe size={20} weight="bold" />
                 <span className="text-[9px] font-mono leading-none">{t('edit.syncUrl')}</span>
               </Button>
-              {onOpenSoundSettings && (
-                <Button
-                  onClick={onOpenSoundSettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Sound effects settings"
-                >
-                  <SpeakerHigh size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.sound')}</span>
-                </Button>
-              )}
-              {onOpenConfigEditor && (
-                <Button
-                  onClick={onOpenConfigEditor}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Config variables editor"
-                >
-                  <Sliders size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.config')}</span>
-                </Button>
-              )}
-              {onOpenAnalytics && (
-                <Button
-                  onClick={onOpenAnalytics}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Site analytics"
-                >
-                  <ChartBar size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.analytics')}</span>
-                </Button>
-              )}
-              {onOpenSecurityLog && (
-                <Button
-                  onClick={onOpenSecurityLog}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Security incidents"
-                >
-                  <ShieldWarning size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.secLog')}</span>
-                </Button>
-              )}
-              {onOpenSecuritySettings && (
-                <Button
-                  onClick={onOpenSecuritySettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Security settings"
-                >
-                  <ShieldCheck size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.security')}</span>
-                </Button>
-              )}
-              {onOpenBlocklist && (
-                <Button
-                  onClick={onOpenBlocklist}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Blocklist manager"
-                >
-                  <ProhibitInset size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.blocklist')}</span>
-                </Button>
-              )}
-              {onOpenAttackerProfiles && (
-                <Button
-                  onClick={onOpenAttackerProfiles}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Attacker profiles overview"
-                >
-                  <UsersFour size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.attackerProfiles')}</span>
-                </Button>
-              )}
-              {onOpenThemeCustomizer && (
-                <Button
-                  onClick={onOpenThemeCustomizer}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Theme customizer (colors, fonts, visibility)"
-                >
-                  <Palette size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.theme')}</span>
-                </Button>
-              )}
-              {onOpenTerminalSettings && (
-                <Button
-                  onClick={onOpenTerminalSettings}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Terminal settings (commands, key sequence, morse code)"
-                >
-                  <Terminal size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.terminal')}</span>
-                </Button>
-              )}
-              {onOpenTerminal && (
-                <Button
-                  onClick={onOpenTerminal}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Open secret terminal"
-                >
-                  <Terminal size={20} weight="fill" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.openTerminal')}</span>
-                </Button>
-              )}
-              {onOpenContactInbox && (
-                <Button
-                  onClick={onOpenContactInbox}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Contact inbox"
-                >
-                  <Envelope size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.inbox')}</span>
-                </Button>
-              )}
-              {onOpenSubscribers && (
-                <Button
-                  onClick={onOpenSubscribers}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Newsletter subscribers"
-                >
-                  <Users size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.subscribers')}</span>
-                </Button>
-              )}
-              {onOpenMarketingTools && (
-                <Button
-                  onClick={onOpenMarketingTools}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Marketing tools"
-                >
-                  <Megaphone size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.marketing')}</span>
-                </Button>
-              )}
+              <Button
+                onClick={() => onOpenDialog('sound')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Sound effects settings"
+              >
+                <SpeakerHigh size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.sound')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('config')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Config variables editor"
+              >
+                <Sliders size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.config')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('analytics')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Site analytics"
+              >
+                <ChartBar size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.analytics')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('security-log')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Security incidents"
+              >
+                <ShieldWarning size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.secLog')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('security-settings')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Security settings"
+              >
+                <ShieldCheck size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.security')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('blocklist')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Blocklist manager"
+              >
+                <ProhibitInset size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.blocklist')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('attacker-profiles')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Attacker profiles overview"
+              >
+                <UsersFour size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.attackerProfiles')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('design')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Theme customizer (colors, fonts, visibility)"
+              >
+                <Palette size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.theme')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('terminal')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Terminal settings (commands, key sequence, morse code)"
+              >
+                <Terminal size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.terminal')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('secret-terminal')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Open secret terminal"
+              >
+                <Terminal size={20} weight="fill" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.openTerminal')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('inbox')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Contact inbox"
+              >
+                <Envelope size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.inbox')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('subscribers')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Newsletter subscribers"
+              >
+                <Users size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.subscribers')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('marketing')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Marketing tools"
+              >
+                <Megaphone size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.marketing')}</span>
+              </Button>
             </motion.div>
             <motion.div
               initial={{ scale: 0, opacity: 0 }}

@@ -47,7 +47,7 @@ import MarketingToolsDialog from '@/components/MarketingToolsDialog'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
-import type { BandData, FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility } from '@/lib/types'
+import type { BandData, FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility, AdminDialog } from '@/lib/types'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
@@ -107,26 +107,14 @@ function App() {
   const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState()
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [terminalOpen, setTerminalOpen] = useState(false)
+  const [activeDialog, setActiveDialog] = useState<AdminDialog>(null)
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showSetupDialog, setShowSetupDialog] = useState(false)
   const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
   const [impressumOpen, setImpressumOpen] = useState(false)
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
-  const [showSoundSettings, setShowSoundSettings] = useState(false)
-  const [showConfigEditor, setShowConfigEditor] = useState(false)
-  const [showStats, setShowStats] = useState(false)
-  const [showSecurityIncidents, setShowSecurityIncidents] = useState(false)
-  const [showSecuritySettings, setShowSecuritySettings] = useState(false)
-  const [showBlocklist, setShowBlocklist] = useState(false)
   const [showAttackerProfile, setShowAttackerProfile] = useState(false)
-  const [showAttackerProfiles, setShowAttackerProfiles] = useState(false)
   const [selectedAttackerIp, setSelectedAttackerIp] = useState<string>('')
-  const [showThemeCustomizer, setShowThemeCustomizer] = useState(false)
-  const [showTerminalSettings, setShowTerminalSettings] = useState(false)
-  const [showContactInbox, setShowContactInbox] = useState(false)
-  const [showSubscribers, setShowSubscribers] = useState(false)
-  const [showMarketingTools, setShowMarketingTools] = useState(false)
 
   // Apply CRT effects
   useCRTEffects()
@@ -156,7 +144,7 @@ function App() {
     }
     // Secret terminal access via URL
     if (params.has('access-secret-terminal-NK-666')) {
-      startTransition(() => setTerminalOpen(true))
+      startTransition(() => setActiveDialog('secret-terminal'))
       const url = new URL(window.location.href)
       url.searchParams.delete('access-secret-terminal-NK-666')
       window.history.replaceState({}, '', url.toString())
@@ -186,7 +174,7 @@ function App() {
   }
 
   const handleTerminalActivation = () => {
-    setTerminalOpen(true)
+    setActiveDialog('secret-terminal')
     trackInteraction('terminal_activated')
     toast.success('TERMINAL ACCESS GRANTED', {
       description: 'Secret code activated'
@@ -234,8 +222,8 @@ function App() {
       </a>
       <KonamiListener onCodeActivated={handleTerminalActivation} customCode={data.secretCode} />
       <SecretTerminal
-        isOpen={terminalOpen}
-        onClose={() => setTerminalOpen(false)}
+        isOpen={activeDialog === 'secret-terminal'}
+        onClose={() => setActiveDialog(null)}
         customCommands={data.terminalCommands || []}
         secretCode={data.secretCode}
         editMode={editMode && isOwner}
@@ -556,51 +544,39 @@ function App() {
                 onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
                 bandData={data}
                 onImportData={(imported) => setBandData(imported)}
-                onOpenSoundSettings={() => setShowSoundSettings(true)}
-                onOpenConfigEditor={() => setShowConfigEditor(true)}
-                onOpenAnalytics={() => setShowStats(true)}
-                onOpenSecurityLog={() => setShowSecurityIncidents(true)}
-                onOpenSecuritySettings={() => setShowSecuritySettings(true)}
-                onOpenBlocklist={() => setShowBlocklist(true)}
-                onOpenAttackerProfiles={() => setShowAttackerProfiles(true)}
-                onOpenThemeCustomizer={() => setShowThemeCustomizer(true)}
-                onOpenTerminalSettings={() => setShowTerminalSettings(true)}
-                onOpenTerminal={() => setTerminalOpen(true)}
-                onOpenContactInbox={() => setShowContactInbox(true)}
-                onOpenSubscribers={() => setShowSubscribers(true)}
-                onOpenMarketingTools={() => setShowMarketingTools(true)}
+                onOpenDialog={setActiveDialog}
               />
             )}
 
-            <StatsDashboard open={showStats} onClose={() => setShowStats(false)} />
+            <StatsDashboard open={activeDialog === 'analytics'} onClose={() => setActiveDialog(null)} />
             <SecurityIncidentsDashboard 
-              open={showSecurityIncidents} 
-              onClose={() => setShowSecurityIncidents(false)} 
+              open={activeDialog === 'security-log'} 
+              onClose={() => setActiveDialog(null)} 
               onViewProfile={(hashedIp) => {
                 setSelectedAttackerIp(hashedIp)
                 setShowAttackerProfile(true)
               }}
             />
-            <SecuritySettingsDialog open={showSecuritySettings} onClose={() => setShowSecuritySettings(false)} />
-            <BlocklistManagerDialog open={showBlocklist} onClose={() => setShowBlocklist(false)} />
+            <SecuritySettingsDialog open={activeDialog === 'security-settings'} onClose={() => setActiveDialog(null)} />
+            <BlocklistManagerDialog open={activeDialog === 'blocklist'} onClose={() => setActiveDialog(null)} />
             <AttackerProfileDialog 
               open={showAttackerProfile} 
               onClose={() => setShowAttackerProfile(false)} 
               hashedIp={selectedAttackerIp}
             />
             <AttackerProfilesOverview
-              open={showAttackerProfiles}
-              onClose={() => setShowAttackerProfiles(false)}
+              open={activeDialog === 'attacker-profiles'}
+              onClose={() => setActiveDialog(null)}
               onViewProfile={(hashedIp) => {
                 setSelectedAttackerIp(hashedIp)
                 setShowAttackerProfile(true)
               }}
             />
-            <ContactInboxDialog open={showContactInbox} onClose={() => setShowContactInbox(false)} />
-            <SubscriberListDialog open={showSubscribers} onClose={() => setShowSubscribers(false)} />
+            <ContactInboxDialog open={activeDialog === 'inbox'} onClose={() => setActiveDialog(null)} />
+            <SubscriberListDialog open={activeDialog === 'subscribers'} onClose={() => setActiveDialog(null)} />
             <MarketingToolsDialog
-              open={showMarketingTools}
-              onClose={() => setShowMarketingTools(false)}
+              open={activeDialog === 'marketing'}
+              onClose={() => setActiveDialog(null)}
               newsletterSettings={data.newsletterSettings}
               contactSettings={data.contactSettings}
               onSaveNewsletter={(newsletterSettings) => setBandData((current) => ({ ...(current || defaultBandData), newsletterSettings }))}
@@ -608,25 +584,25 @@ function App() {
             />
 
             <AnimatePresence>
-              {showSoundSettings && (
+              {activeDialog === 'sound' && (
                 <SoundSettingsDialog
                   settings={data.soundSettings}
                   onSave={(soundSettings: SoundSettings) => setBandData((current) => ({ ...(current || defaultBandData), soundSettings }))}
-                  onClose={() => setShowSoundSettings(false)}
+                  onClose={() => setActiveDialog(null)}
                 />
               )}
             </AnimatePresence>
 
             <ConfigEditorDialog
-              open={showConfigEditor}
-              onClose={() => setShowConfigEditor(false)}
+              open={activeDialog === 'config'}
+              onClose={() => setActiveDialog(null)}
               overrides={data.configOverrides || {}}
               onSave={(configOverrides) => setBandData((current) => ({ ...(current || defaultBandData), configOverrides }))}
             />
 
             <ThemeCustomizerDialog
-              open={showThemeCustomizer}
-              onClose={() => setShowThemeCustomizer(false)}
+              open={activeDialog === 'design'}
+              onClose={() => setActiveDialog(null)}
               themeSettings={data.themeSettings}
               onSaveTheme={(themeSettings: ThemeSettings) => setBandData((current) => ({ ...(current || defaultBandData), themeSettings }))}
               sectionVisibility={data.sectionVisibility}
@@ -634,8 +610,8 @@ function App() {
             />
 
             <TerminalSettingsDialog
-              open={showTerminalSettings}
-              onClose={() => setShowTerminalSettings(false)}
+              open={activeDialog === 'terminal'}
+              onClose={() => setActiveDialog(null)}
               commands={data.terminalCommands || []}
               secretCode={data.secretCode || []}
               morseCode={data.terminalMorseCode || '...'}

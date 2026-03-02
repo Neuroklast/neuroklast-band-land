@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { ThemeSettings, OverlayEffects, OverlayEffect } from '@/lib/types'
+import type { ThemeSettings, OverlayEffects, OverlayEffect, AdminDialog } from '@/lib/types'
 
 describe('ThemeSettings overlay effects types', () => {
   it('supports borderRadius in ThemeSettings', () => {
@@ -49,5 +49,38 @@ describe('ThemeSettings overlay effects types', () => {
     const effect: OverlayEffect = { enabled: true, intensity: 0.75 }
     expect(effect.enabled).toBe(true)
     expect(effect.intensity).toBe(0.75)
+  })
+})
+
+describe('AdminDialog type', () => {
+  it('accepts all valid dialog names', () => {
+    const dialogs: AdminDialog[] = [
+      'design',
+      'config',
+      'sound',
+      'terminal',
+      'secret-terminal',
+      'analytics',
+      'security-log',
+      'security-settings',
+      'blocklist',
+      'attacker-profiles',
+      'inbox',
+      'subscribers',
+      'marketing',
+      null,
+    ]
+    expect(dialogs).toHaveLength(14)
+  })
+
+  it('null represents no open dialog', () => {
+    const activeDialog: AdminDialog = null
+    expect(activeDialog).toBeNull()
+  })
+
+  it('can be used to check which dialog is open', () => {
+    const activeDialog: AdminDialog = 'design'
+    expect(activeDialog === 'design').toBe(true)
+    expect(activeDialog === 'config').toBe(false)
   })
 })
