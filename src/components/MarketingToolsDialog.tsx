@@ -101,10 +101,8 @@ export default function MarketingToolsDialog({
     <CyberModalBackdrop open={open} zIndex="z-[10001]" bgClass="bg-background/95 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-        className="w-full max-w-2xl mt-8 bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter flex flex-col font-mono"
+        className="w-full max-w-2xl mt-8 bg-card border-2 border-primary/30 relative overflow-hidden flex flex-col font-mono"
       >
-        {/* Scanline overlay */}
-        <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-primary/30">

@@ -75,7 +75,7 @@ function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconS
           <span className="corner-br"></span>
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
-          <div className={`relative z-10 transition-all ${hovered ? 'red-glitch-element chromatic-aberration-hover' : ''}`}>
+          <div className="relative z-10 transition-all">
             <img
               src={iconSrc}
               alt={label}

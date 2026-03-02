@@ -114,6 +114,12 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --radius-sm: calc(2px * var(--radius-factor, 1) * var(--size-scale, 1));
+  --radius-md: calc(6px * var(--radius-factor, 1) * var(--size-scale, 1));
+  --radius-lg: calc(8px * var(--radius-factor, 1) * var(--size-scale, 1));
+  --radius-xl: calc(12px * var(--radius-factor, 1) * var(--size-scale, 1));
+  --radius-2xl: calc(16px * var(--radius-factor, 1) * var(--size-scale, 1));
+  --radius-full: 9999px;
 
 }
 

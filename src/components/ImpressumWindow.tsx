@@ -116,7 +116,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 20, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative flex flex-col glitch-overlay-enter"
+            className="w-full max-w-3xl bg-card border-2 border-primary/30 relative flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

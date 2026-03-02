@@ -356,9 +356,8 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 20, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border-2 border-primary/30 relative overflow-hidden glitch-overlay-enter flex-shrink-0"
+            className="w-full max-w-4xl h-[min(600px,80dvh)] bg-card border-2 border-primary/30 relative overflow-hidden flex-shrink-0"
           >
-            <div className="absolute inset-0 hud-scanline pointer-events-none opacity-20" />
             
             <div className="absolute top-0 left-0 right-0 h-12 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
               <div className="flex items-center gap-4">

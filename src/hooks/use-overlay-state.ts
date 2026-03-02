@@ -2,7 +2,6 @@ import { useState, useEffect, startTransition } from 'react'
 import { getRandomOverlayAnimation, type OverlayAnimation } from '@/lib/overlay-animations'
 import {
   OVERLAY_LOADING_TEXT_INTERVAL_MS,
-  OVERLAY_GLITCH_PHASE_DELAY_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
 
@@ -14,7 +13,7 @@ const OVERLAY_LOADING_TEXTS = [
   'SYNCHRONIZING...',
 ]
 
-export type OverlayPhase = 'loading' | 'glitch' | 'revealed'
+export type OverlayPhase = 'loading' | 'revealed'
 
 export interface OverlayStateResult {
   cyberpunkOverlay: { type: string; data: unknown } | null
@@ -46,18 +45,12 @@ export function useOverlayState(): OverlayStateResult {
       }
     }, OVERLAY_LOADING_TEXT_INTERVAL_MS)
 
-    const glitchTimer = setTimeout(() => {
-      clearInterval(txtInterval)
-      startTransition(() => setOverlayPhase('glitch'))
-    }, OVERLAY_GLITCH_PHASE_DELAY_MS)
-
     const revealTimer = setTimeout(() => {
       startTransition(() => setOverlayPhase('revealed'))
     }, OVERLAY_REVEAL_PHASE_DELAY_MS)
 
     return () => {
       clearInterval(txtInterval)
-      clearTimeout(glitchTimer)
       clearTimeout(revealTimer)
     }
   }, [cyberpunkOverlay])
