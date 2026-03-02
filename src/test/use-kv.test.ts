@@ -41,7 +41,7 @@ describe('useKV', () => {
   })
 
   it('returns value from API when available', async () => {
-    const apiData = { name: 'NEUROKLAST', genres: ['Techno'] }
+    const apiData = { name: 'Test Band', genres: ['Techno'] }
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ value: apiData }), { status: 200 })
     )

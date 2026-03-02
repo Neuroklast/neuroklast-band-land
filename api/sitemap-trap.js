@@ -12,17 +12,19 @@
  * GET /sitemap-extended.xml  (rewritten by vercel.json)
  */
 
-const TRAP_URLS = [
-  'https://neuroklast.com/admin/backup',
-  'https://neuroklast.com/admin/export',
-  'https://neuroklast.com/data/export',
-  'https://neuroklast.com/config/env',
-  'https://neuroklast.com/config/database',
-  'https://neuroklast.com/backup/latest',
-  'https://neuroklast.com/debug/logs',
-  'https://neuroklast.com/internal/api',
-  'https://neuroklast.com/private/keys',
-  'https://neuroklast.com/logs/access',
+const BASE_URL = process.env.SITE_URL || ''
+
+const TRAP_PATHS = [
+  '/admin/backup',
+  '/admin/export',
+  '/data/export',
+  '/config/env',
+  '/config/database',
+  '/backup/latest',
+  '/debug/logs',
+  '/internal/api',
+  '/private/keys',
+  '/logs/access',
 ]
 
 // Generated once at module initialisation so the XML stays consistent
@@ -30,7 +32,7 @@ const TRAP_URLS = [
 const LASTMOD = new Date().toISOString().slice(0, 10)
 
 export default async function handler(req, res) {
-  const urlEntries = TRAP_URLS.map(loc => `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${LASTMOD}</lastmod>\n  </url>`).join('\n')
+  const urlEntries = TRAP_PATHS.map(path => `  <url>\n    <loc>${BASE_URL}${path}</loc>\n    <lastmod>${LASTMOD}</lastmod>\n  </url>`).join('\n')
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

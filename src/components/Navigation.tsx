@@ -15,20 +15,16 @@ import { useMorseCode } from '@/hooks/use-morse-code'
 import { useLocale } from '@/contexts/LocaleContext'
 
 /** Local tracks served from public/music/ */
-const LOCAL_TRACKS: Track[] = [
-  { title: 'IGNITE', src: '/music/Neuroklast - IGNITE.mp3' },
-  { title: 'LILITH', src: '/music/Neuroklast - LILITH.mp3' },
-  { title: 'SUCCUBUS (DFG Edit)', src: '/music/Neuroklast - SUCCUBUS (DFG Edit).mp3' },
-  { title: 'DETHRONE', src: '/music/Neuroklast ft Mechanical Vein - DETHRONE.mp3' },
-]
+const LOCAL_TRACKS: Track[] = []
 
 interface NavigationProps {
+  siteName?: string
   sectionLabels?: SectionLabels
   terminalMorseCode?: string
   onTerminalActivation?: () => void
 }
 
-export default function Navigation({ sectionLabels, terminalMorseCode, onTerminalActivation }: NavigationProps) {
+export default function Navigation({ siteName = '', sectionLabels, terminalMorseCode, onTerminalActivation }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
   const [playerOpen, setPlayerOpen] = useState(false)
@@ -87,7 +83,7 @@ export default function Navigation({ sectionLabels, terminalMorseCode, onTermina
             style={{ touchAction: 'none' }}
             className={`text-base md:text-lg font-mono tracking-[0.08em] hover:text-primary/80 active:text-primary transition-colors touch-manipulation hud-text ${glitch ? 'red-glitch-text' : ''}`}
           >
-            <span className="text-primary/60">&gt;</span> NEUROKLAST
+            <span className="text-primary/60">&gt;</span> {siteName || t('nav.home')}
           </button>
 
           <div className="hidden md:flex items-center gap-6">

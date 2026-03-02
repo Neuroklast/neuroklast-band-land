@@ -25,6 +25,7 @@ import {
 interface StatsDashboardProps {
   open: boolean
   onClose: () => void
+  domain?: string
 }
 
 type TabId = 'overview' | 'traffic' | 'engagement' | 'heatmap' | 'utm'
@@ -259,13 +260,13 @@ function ClickTable({ points }: { points: HeatmapPoint[] }) {
   )
 }
 
-export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
+export default function StatsDashboard({ open, onClose, domain = '' }: StatsDashboardProps) {
   const [analytics, setAnalytics] = useState<SiteAnalytics | null>(null)
   const [heatmapPoints, setHeatmapPoints] = useState<HeatmapPoint[]>([])
   const [dataSource, setDataSource] = useState<'server' | 'local'>('server')
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   // UTM Builder state
-  const [utmBase, setUtmBase] = useState('https://neuroklast.com')
+  const [utmBase, setUtmBase] = useState(domain ? `https://${domain}` : '')
   const [utmSource, setUtmSource] = useState('')
   const [utmMedium, setUtmMedium] = useState('')
   const [utmCampaign, setUtmCampaign] = useState('')
@@ -817,7 +818,7 @@ export default function StatsDashboard({ open, onClose }: StatsDashboardProps) {
                               value={utmBase}
                               onChange={e => setUtmBase(e.target.value)}
                               className="w-full bg-transparent border border-primary/30 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
-                              placeholder="https://neuroklast.com"
+                              placeholder={domain ? `https://${domain}` : 'https://yourdomain.com'}
                             />
                           </div>
                           <div className="space-y-1">

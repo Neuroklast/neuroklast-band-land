@@ -12,6 +12,7 @@ import { loadCachedImage } from '@/lib/image-cache'
 interface CyberpunkLoaderProps {
   onLoadComplete: () => void
   precacheUrls?: string[]
+  siteName?: string
 }
 
 const hackingTexts = [
@@ -40,7 +41,7 @@ const codeFragments = [
   'jmp 0xDEADBEEF',
   'syscall.exec("init")',
   '  decrypt(stream, key);',
-  'class Neuroklast extends Core {',
+  'class SiteCore extends Core {',
   '  this.bpm = 150;',
   '  this.mode = "DARK";',
   '00110101 01001110 01001011',
@@ -49,11 +50,11 @@ const codeFragments = [
   'NODE: freq_matrix v2.0.1',
   'HASH: 0xA3F7B2C1D8E9',
   '██████░░░░ 60%',
-  '> chmod +x neuroklast',
+  '> chmod +x site',
   'export NK_MODE=ACTIVATED',
 ]
 
-export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: CyberpunkLoaderProps) {
+export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], siteName = '' }: CyberpunkLoaderProps) {
   const [progress, setProgress] = useState(0)
   const [hackingText, setHackingText] = useState(hackingTexts[0])
   const [cachingDone, setCachingDone] = useState(precacheUrls.length === 0)
@@ -179,7 +180,7 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [] }: C
       <div className="flex flex-col items-center gap-8 relative z-10">
         <motion.img
           src={logoImage}
-          alt="NEUROKLAST"
+          alt={siteName || 'Site Logo'}
           className="w-40 h-40 object-contain"
           style={{ 
             filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',

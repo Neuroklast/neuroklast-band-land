@@ -12,13 +12,13 @@ import { applyRateLimit } from './_ratelimit.js'
  * real browsers to the SPA with the matching hash fragment.
  */
 
-const FALLBACK_TITLE = 'NEUROKLAST'
-const FALLBACK_DESCRIPTION = 'NEUROKLAST – Hard Techno, Industrial, DNB & Dark Electro.'
+const FALLBACK_TITLE = process.env.SITE_NAME || 'Band Site'
+const FALLBACK_DESCRIPTION = process.env.SITE_DESCRIPTION || ''
 const FALLBACK_IMAGE = '/og-image.png'
 
 /** Derive the site origin from a trusted source, not raw Host header. */
 function getOrigin() {
-  return process.env.SITE_URL || 'https://neuroklast.com'
+  return process.env.SITE_URL || ''
 }
 
 /** Simple HTML entity escaping to prevent XSS in injected strings. */
@@ -100,7 +100,7 @@ function resolveContent(data, type, id) {
 }
 
 /** Build a minimal HTML page with OG tags and a meta-refresh redirect. */
-function buildHTML(origin, meta) {
+function buildHTML(origin, meta, siteName) {
   const title = esc(meta.title)
   const description = esc(meta.description)
   // Resolve image to absolute URL if it starts with /
@@ -119,7 +119,7 @@ function buildHTML(origin, meta) {
 <meta property="og:image" content="${esc(image)}"/>
 <meta property="og:url" content="${canonical}"/>
 <meta property="og:type" content="website"/>
-<meta property="og:site_name" content="NEUROKLAST"/>
+<meta property="og:site_name" content="${esc(siteName || FALLBACK_TITLE)}"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="${title}"/>
 <meta name="twitter:description" content="${description}"/>
@@ -169,6 +169,7 @@ export default async function handler(req, res) {
     // KV unavailable — fall through to fallback
   }
 
+  const siteName = (data && (data.siteName || data.name)) || FALLBACK_TITLE
   const meta = resolveContent(data, type, id)
 
   if (!meta) {
@@ -180,10 +181,10 @@ export default async function handler(req, res) {
     }
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
-    return res.status(200).send(buildHTML(origin, fallback))
+    return res.status(200).send(buildHTML(origin, fallback, siteName))
   }
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600')
-  return res.status(200).send(buildHTML(origin, meta))
+  return res.status(200).send(buildHTML(origin, meta, siteName))
 }

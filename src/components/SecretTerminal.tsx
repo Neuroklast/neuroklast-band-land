@@ -25,15 +25,16 @@ interface SecretTerminalProps {
   onEdit?: () => void
   onSaveCommands?: (commands: TerminalCommand[]) => void
   onSaveSecretCode?: (code: string[]) => void
+  siteName?: string
 }
 
 const RESERVED = TERMINAL_RESERVED_COMMANDS
 const TYPING_SPEED_MS = TERMINAL_TYPING_SPEED_MS
 
-export default function SecretTerminal({ isOpen, onClose, customCommands = [], secretCode, editMode, onSaveCommands, onSaveSecretCode }: SecretTerminalProps) {
+export default function SecretTerminal({ isOpen, onClose, customCommands = [], secretCode, editMode, onSaveCommands, onSaveSecretCode, siteName = '' }: SecretTerminalProps) {
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([
-    { type: 'output', text: '> NEUROKLAST TERMINAL v1.3.37' },
+    { type: 'output', text: `> ${siteName ? siteName + ' ' : ''}TERMINAL v1.3.37` },
     { type: 'output', text: '> SYSTEM INITIALIZED' },
     { type: 'output', text: '> TYPE "help" FOR AVAILABLE COMMANDS' },
     { type: 'output', text: '' }

@@ -37,6 +37,7 @@ interface BiographySectionProps {
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
   /** When provided, clicking a member card calls this instead of opening ProfileOverlay */
   onMemberClick?: (member: Member) => void
+  siteName?: string
 }
 
 const defaultBiography: Biography = {
@@ -48,7 +49,7 @@ const defaultBiography: Biography = {
 
 const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
 
-export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange, onMemberClick }: BiographySectionProps) {
+export default function BiographySection({ biography = defaultBiography, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange, onMemberClick, siteName = '' }: BiographySectionProps) {
   const { t } = useLocale()
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -210,7 +211,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                 >
                   <ProgressiveImage
                     src={resolvePhoto(photos[currentPhotoIndex])}
-                    alt={t('bio.photoAlt').replace('{0}', String(currentPhotoIndex + 1))}
+                    alt={t('bio.photoAlt').replace('{0}', String(currentPhotoIndex + 1)).replace('{1}', siteName)}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300 cyber-border" />

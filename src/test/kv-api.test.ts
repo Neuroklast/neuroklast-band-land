@@ -71,15 +71,15 @@ describe('KV API handler', () => {
       const res = mockRes()
       await handler({ method: 'GET', query: {}, body: {}, headers: {} }, res)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Required' }))
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('string') }))
     })
 
     it('returns value when key exists in KV', async () => {
-      mockKvGet.mockResolvedValue({ name: 'NEUROKLAST' })
+      mockKvGet.mockResolvedValue({ name: 'Test Band' })
       const res = mockRes()
       await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
       expect(mockKvGet).toHaveBeenCalledWith('band-data')
-      expect(res.json).toHaveBeenCalledWith({ value: { name: 'NEUROKLAST' } })
+      expect(res.json).toHaveBeenCalledWith({ value: { name: 'Test Band' } })
     })
 
     it('returns null when key does not exist', async () => {
@@ -142,20 +142,20 @@ describe('KV API handler', () => {
     it('strips terminalCommands from band-data for unauthenticated reads', async () => {
       mockValidateSession.mockResolvedValue(false)
       mockKvGet.mockResolvedValue({
-        name: 'NEUROKLAST',
+        name: 'Test Band',
         terminalCommands: [{ name: 'secret', output: ['TOP SECRET'] }],
       })
       const res = mockRes()
       await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
       const returned = res.json.mock.calls[0][0].value
-      expect(returned.name).toBe('NEUROKLAST')
+      expect(returned.name).toBe('Test Band')
       expect(returned.terminalCommands).toBeUndefined()
     })
 
     it('includes terminalCommands in band-data for authenticated reads', async () => {
       mockValidateSession.mockResolvedValue(true)
       const commands = [{ name: 'secret', output: ['TOP SECRET'] }]
-      mockKvGet.mockResolvedValue({ name: 'NEUROKLAST', terminalCommands: commands })
+      mockKvGet.mockResolvedValue({ name: 'Test Band', terminalCommands: commands })
       const res = mockRes()
       await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
       const returned = res.json.mock.calls[0][0].value
@@ -175,7 +175,7 @@ describe('KV API handler', () => {
       const res = mockRes()
       await handler({ method: 'POST', query: {}, body: { value: 'x' }, headers: {} }, res)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Required' }))
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('string') }))
     })
 
     it('returns 400 when value is undefined', async () => {

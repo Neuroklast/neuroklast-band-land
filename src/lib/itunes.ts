@@ -1,13 +1,11 @@
 import type { Release } from './types'
 import { fetchWithRetry } from './fetch-retry'
 
-const ARTIST_NAME = 'NEUROKLAST'
-
-export async function fetchITunesReleases(): Promise<Release[]> {
+export async function fetchITunesReleases(artistName: string): Promise<Release[]> {
   try {
     // Fetch both songs and albums to capture every release (singles, EPs, albums)
     const response = await fetchWithRetry(
-      `/api/itunes?term=${encodeURIComponent(ARTIST_NAME)}&entity=all`
+      `/api/itunes?term=${encodeURIComponent(artistName)}&entity=all`
     )
     
     if (!response.ok) {

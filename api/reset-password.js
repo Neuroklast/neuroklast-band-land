@@ -93,7 +93,7 @@ export default async function handler(req, res) {
 
     // Send password reset email if Resend is configured
     const resendApiKey = process.env.RESEND_API_KEY
-    const siteUrl = process.env.SITE_URL || 'https://neuroklast.com'
+    const siteUrl = process.env.SITE_URL || ''
     
     if (resendApiKey) {
       try {
@@ -101,9 +101,9 @@ export default async function handler(req, res) {
         const resetUrl = `${siteUrl}/admin?resetToken=${token}`
         
         await resend.emails.send({
-          from: process.env.EMAIL_FROM || 'noreply@neuroklast.com',
+          from: process.env.EMAIL_FROM || `noreply@${siteUrl ? new URL(siteUrl).hostname : 'example.com'}`,
           to: resetEmail,
-          subject: 'Password Reset Request - NEUROKLAST Admin',
+          subject: `Password Reset Request - ${process.env.SITE_NAME || 'Site'} Admin`,
           html: `
             <h2>Password Reset Request</h2>
             <p>You have requested to reset your admin password.</p>

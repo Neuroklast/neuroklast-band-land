@@ -308,7 +308,7 @@ export default function TerminalSettingsDialog({
           {activeTab === 'morse' && (
             <>
               <p className="text-sm text-muted-foreground">
-                Set the Morse code pattern that activates the secret terminal via the NEUROKLAST logo button.
+                Set the Morse code pattern that activates the secret terminal via the site name button.
               </p>
               <div className="space-y-2">
                 <Label className="text-xs font-mono text-primary">MORSE CODE PATTERN</Label>
@@ -329,7 +329,7 @@ export default function TerminalSettingsDialog({
               <div className="mt-4 p-3 border border-primary/20 bg-primary/5 space-y-1">
                 <p className="text-xs font-mono text-primary/60">HINT</p>
                 <p className="text-xs text-muted-foreground">
-                  Hold the NEUROKLAST button <span className="text-primary font-mono">briefly</span> for <span className="font-mono text-primary">·</span> (Dot) and <span className="text-primary font-mono">longer</span> for <span className="font-mono text-primary">–</span> (Dash).
+                  Hold the site name button <span className="text-primary font-mono">briefly</span> for <span className="font-mono text-primary">·</span> (Dot) and <span className="text-primary font-mono">longer</span> for <span className="font-mono text-primary">–</span> (Dash).
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Short = under 300 ms · Long = 300 ms or longer · Pause = 1.5 s resets

@@ -1,4 +1,4 @@
-const DB_NAME = 'neuroklast-image-cache'
+const DB_NAME = 'site-image-cache'
 const STORE_NAME = 'images'
 const DB_VERSION = 1
 const MAX_DIMENSION = 1200

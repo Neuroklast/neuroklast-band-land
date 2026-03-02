@@ -86,7 +86,7 @@ describe('Drive folder API (Google Drive v3)', () => {
     expect(calledUrl).toContain('fields=files')
     // Must NOT contain old scraping patterns
     expect(calledUrl).not.toContain('embeddedfolderview')
-    expect(calledUrl).not.toContain('NeuroklastBot')
+    expect(calledUrl).not.toContain('SiteBot')
   })
 
   it('maps API files to correct image structure', async () => {

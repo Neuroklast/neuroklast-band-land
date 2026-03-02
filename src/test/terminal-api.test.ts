@@ -31,7 +31,7 @@ function mockRes(): Res {
 const { default: handler } = await import('../../api/terminal.js')
 
 const BAND_DATA_WITH_COMMANDS = {
-  name: 'NEUROKLAST',
+  name: 'Test Band',
   terminalCommands: [
     { name: 'status', description: 'System status', output: ['STATUS: ACTIVE', 'LEVEL: CLASSIFIED'] },
     { name: 'secret', description: 'Secret file', output: ['DECRYPTING...'], fileUrl: 'https://example.com/secret.zip', fileName: 'secret.zip' },
@@ -123,7 +123,7 @@ describe('Terminal API handler', () => {
   })
 
   it('returns found: false when band-data has no terminalCommands', async () => {
-    mockKvGet.mockResolvedValue({ name: 'NEUROKLAST' })
+    mockKvGet.mockResolvedValue({ name: 'Test Band' })
     const res = mockRes()
     await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res)
     expect(res.json).toHaveBeenCalledWith({ found: false })

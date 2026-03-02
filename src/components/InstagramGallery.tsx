@@ -22,6 +22,7 @@ interface InstagramGalleryProps {
   onDriveFolderUrlChange?: (url: string) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  siteName?: string
 }
 
 /** Extract a Google Drive folder ID from various URL formats */
@@ -37,7 +38,7 @@ function extractDriveFolderId(url: string): string | null {
   return null
 }
 
-export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels, onLabelChange }: InstagramGalleryProps) {
+export default function InstagramGallery({ galleryImages = [], editMode, onUpdate, driveFolderUrl, onDriveFolderUrlChange, sectionLabels, onLabelChange, siteName = '' }: InstagramGalleryProps) {
   const { t } = useLocale()
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
@@ -277,7 +278,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
               )}
             </div>
             <p className="text-muted-foreground font-mono text-sm">
-              &gt; {t('gallery.subtitle')}
+              &gt; {t('gallery.subtitle').replace('{0}', siteName)}
             </p>
             {editMode && onUpdate && (
               <div className="mt-4 space-y-3">

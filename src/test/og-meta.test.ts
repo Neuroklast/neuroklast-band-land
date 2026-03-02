@@ -37,7 +37,7 @@ function fmtDate(iso: string | undefined | null): string {
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-const FALLBACK_TITLE = 'NEUROKLAST'
+const FALLBACK_TITLE = 'Band Site'
 const FALLBACK_IMAGE = '/og-image.png'
 
 interface ContentMeta {
@@ -163,7 +163,7 @@ describe('OG meta tag helpers', () => {
 
   describe('resolveContent', () => {
     const bandData = {
-      name: 'NEUROKLAST',
+      name: 'Test Band',
       logoUrl: 'https://example.com/logo.png',
       news: [
         { id: 'n1', text: 'New album **out now**!', details: 'Full details about the release.', photo: 'https://example.com/news.jpg', date: '2025-01-15' },
@@ -197,7 +197,7 @@ describe('OG meta tag helpers', () => {
     it('resolves gig with photo', () => {
       const meta = resolveContent(bandData, 'gig', 'g1')
       expect(meta).not.toBeNull()
-      expect(meta!.title).toBe('NEUROKLAST @ Berghain')
+      expect(meta!.title).toBe('Test Band @ Berghain')
       expect(meta!.description).toContain('Berghain')
       expect(meta!.description).toContain('Berlin, Germany')
       expect(meta!.image).toBe('https://example.com/gig.jpg')
@@ -212,7 +212,7 @@ describe('OG meta tag helpers', () => {
     it('resolves release with type label', () => {
       const meta = resolveContent(bandData, 'release', 'r1')
       expect(meta).not.toBeNull()
-      expect(meta!.title).toBe('Dark Signal (EP) – NEUROKLAST')
+      expect(meta!.title).toBe('Dark Signal (EP) – Test Band')
       expect(meta!.description).toBe('A dark techno EP.')
       expect(meta!.image).toBe('https://example.com/art.jpg')
       expect(meta!.hash).toBe('#releases/r1')
@@ -220,8 +220,8 @@ describe('OG meta tag helpers', () => {
 
     it('resolves release without type', () => {
       const meta = resolveContent(bandData, 'release', 'r2')
-      expect(meta!.title).toBe('Neon Pulse – NEUROKLAST')
-      expect(meta!.description).toBe('Neon Pulse by NEUROKLAST')
+      expect(meta!.title).toBe('Neon Pulse – Test Band')
+      expect(meta!.description).toBe('Neon Pulse by Test Band')
     })
 
     it('returns null for unknown item id', () => {
