@@ -68,9 +68,11 @@ describe('AdminDialog type', () => {
       'inbox',
       'subscribers',
       'marketing',
+      'oauth',
+      'store',
       null,
     ]
-    expect(dialogs).toHaveLength(14)
+    expect(dialogs).toHaveLength(16)
   })
 
   it('null represents no open dialog', () => {
