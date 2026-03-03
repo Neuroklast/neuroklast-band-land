@@ -19,6 +19,8 @@ import {
   ArrowDown,
   Eye,
   EyeSlash,
+  Warning,
+  CheckCircle,
   type Icon,
 } from '@phosphor-icons/react'
 import { DESIGN_PRESETS, PRESET_IDS, presetToThemeSettings } from '@/lib/design-presets'
@@ -26,6 +28,7 @@ import { applyThemeToDOM } from '@/components/ThemeCustomizerDialog'
 import { buildDefaultSections, toggleSection, reorderSections } from '@/lib/sections'
 import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { createSiteConfig } from '@/lib/site-config'
+import { getContrastRatio, meetsWcagAA } from '@/lib/contrast'
 import type { SiteConfig, SectionConfig } from '@/lib/types'
 
 // ─── Font options (same as ThemeCustomizerDialog) ─────────────────────────────
@@ -68,6 +71,53 @@ function loadAllGoogleFonts() {
   FONT_OPTIONS.filter((f) => f.google).forEach((f) => loadGoogleFont(f.label))
 }
 
+// ─── oklch ↔ hex helpers (lightweight, same pattern as ThemeCustomizerDialog) ─
+
+function oklchToHex(oklch: string): string {
+  try {
+    const el = document.createElement('div')
+    el.style.color = oklch
+    document.body.appendChild(el)
+    const computed = getComputedStyle(el).color
+    document.body.removeChild(el)
+    const m = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    if (m) {
+      const [, r, g, b] = m
+      return `#${Number(r).toString(16).padStart(2, '0')}${Number(g).toString(16).padStart(2, '0')}${Number(b).toString(16).padStart(2, '0')}`
+    }
+  } catch { /* fallback */ }
+  return '#ff3333'
+}
+
+function hexToOklch(hex: string): string {
+  try {
+    const el = document.createElement('div')
+    el.style.color = hex
+    document.body.appendChild(el)
+    const computed = getComputedStyle(el).color
+    document.body.removeChild(el)
+    const m = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    if (m) {
+      const [, rs, gs, bs] = m
+      const r = Number(rs) / 255
+      const g = Number(gs) / 255
+      const b = Number(bs) / 255
+      const l = 0.2126 * r + 0.7152 * g + 0.0722 * b
+      const max = Math.max(r, g, b)
+      const min = Math.min(r, g, b)
+      const c = max - min
+      let h = 0
+      if (c > 0) {
+        if (max === r) h = ((g - b) / c + 6) % 6 * 60
+        else if (max === g) h = ((b - r) / c + 2) * 60
+        else h = ((r - g) / c + 4) * 60
+      }
+      return `oklch(${l.toFixed(2)} ${(c * 0.4).toFixed(2)} ${Math.round(h)})`
+    }
+  } catch { /* fallback */ }
+  return 'oklch(0.50 0.22 25)'
+}
+
 // ─── Site type definitions ────────────────────────────────────────────────────
 
 const SITE_TYPES: Array<{
@@ -91,6 +141,7 @@ const STEPS = [
   'Site Type',
   'Basic Info',
   'Design Preset',
+  'Colors',
   'Fonts',
   'Logo & Assets',
   'Sections',
@@ -167,12 +218,27 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
   const [fontMono, setFontMono] = useState(
     initialConfig?.themeSettings?.fontMono ?? FONT_OPTIONS[0].value,
   )
+  // Color state
+  const [colorPrimary, setColorPrimary] = useState(initialConfig?.themeSettings?.primary ?? 'oklch(0.50 0.22 25)')
+  const [colorAccent, setColorAccent] = useState(initialConfig?.themeSettings?.accent ?? 'oklch(0.60 0.24 25)')
+  const [colorBackground, setColorBackground] = useState(initialConfig?.themeSettings?.background ?? 'oklch(0 0 0)')
+  const [colorForeground, setColorForeground] = useState(initialConfig?.themeSettings?.foreground ?? 'oklch(0.95 0 0)')
   const [logoUrl, setLogoUrl] = useState(initialConfig?.logoUrl ?? '')
   const [ogImage, setOgImage] = useState(initialConfig?.seo?.ogImage ?? '')
   const [favicon, setFavicon] = useState('')
   const [sections, setSections] = useState<SectionConfig[]>(
     initialConfig?.sections ?? buildDefaultSections(),
   )
+  // Section labels
+  const [sectionLabels, setSectionLabels] = useState<Record<string, string>>(() => {
+    const labels = initialConfig?.sectionLabels ?? {}
+    const result: Record<string, string> = {}
+    const defaultSecs = initialConfig?.sections ?? buildDefaultSections()
+    for (const sec of defaultSecs) {
+      result[sec.id] = (labels as Record<string, string>)[sec.id] ?? ''
+    }
+    return result
+  })
   const [socialLinks, setSocialLinks] = useState({
     instagram: initialConfig?.socialLinks?.instagram ?? '',
     spotify: initialConfig?.socialLinks?.spotify ?? '',
@@ -187,6 +253,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
   const [impressumStreet, setImpressumStreet] = useState(initialConfig?.impressum?.street ?? '')
   const [impressumZipCity, setImpressumZipCity] = useState(initialConfig?.impressum?.zipCity ?? '')
   const [impressumEmail, setImpressumEmail] = useState(initialConfig?.impressum?.email ?? '')
+  const [datenschutzText, setDatenschutzText] = useState(initialConfig?.datenschutz?.customText ?? '')
   const [adminPassword, setAdminPassword] = useState('')
   const [adminPasswordConfirm, setAdminPasswordConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -218,6 +285,10 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
         setFontHeading(theme.fontHeading ?? fontHeading)
         setFontBody(theme.fontBody ?? fontBody)
         setFontMono(theme.fontMono ?? fontMono)
+        if (theme.primary) setColorPrimary(theme.primary)
+        if (theme.accent) setColorAccent(theme.accent)
+        if (theme.background) setColorBackground(theme.background)
+        if (theme.foreground) setColorForeground(theme.foreground)
       }
     },
     [fontHeading, fontBody, fontMono],
@@ -254,13 +325,22 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           fontHeading,
           fontBody,
           fontMono,
+          primary: colorPrimary,
+          accent: colorAccent,
+          background: colorBackground,
+          foreground: colorForeground,
         }
-      : { fontHeading, fontBody, fontMono }
+      : { fontHeading, fontBody, fontMono, primary: colorPrimary, accent: colorAccent, background: colorBackground, foreground: colorForeground }
 
     const genres = genresInput
       .split(',')
       .map((g) => g.trim())
       .filter(Boolean)
+
+    // Build section labels (only include non-empty values)
+    const cleanLabels = Object.fromEntries(
+      Object.entries(sectionLabels).filter(([, v]) => v),
+    )
 
     const finalConfig = createSiteConfig({
       ...initialConfig,
@@ -276,6 +356,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
         ogImage: ogImage || undefined,
       },
       sections,
+      sectionLabels: Object.keys(cleanLabels).length > 0 ? cleanLabels as SiteConfig['sectionLabels'] : undefined,
       socialLinks: Object.fromEntries(
         Object.entries(socialLinks).filter(([, v]) => v),
       ),
@@ -287,6 +368,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             email: impressumEmail || undefined,
           }
         : undefined,
+      datenschutz: datenschutzText ? { customText: datenschutzText } : undefined,
       setupComplete: true,
     })
 
@@ -300,6 +382,10 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
     fontHeading,
     fontBody,
     fontMono,
+    colorPrimary,
+    colorAccent,
+    colorBackground,
+    colorForeground,
     genresInput,
     initialConfig,
     siteType,
@@ -309,12 +395,15 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
     domain,
     logoUrl,
     ogImage,
+    favicon,
     sections,
+    sectionLabels,
     socialLinks,
     impressumName,
     impressumStreet,
     impressumZipCity,
     impressumEmail,
+    datenschutzText,
     onComplete,
     goNext,
   ])
@@ -533,8 +622,46 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           </div>
         )
 
-      // ── 4. Fonts ─────────────────────────────────────────────────────────────
+      // ── 4. Colors ───────────────────────────────────────────────────────────
       case 4: {
+        const ratio = getContrastRatio(colorForeground, colorBackground)
+        const passesAA = ratio != null && meetsWcagAA(ratio)
+        return (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-xl font-mono font-bold text-primary tracking-tight">COLORS</h2>
+              <p className="font-mono text-xs text-muted-foreground">
+                Fine-tune your color palette. Contrast is checked automatically.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <WizardColorInput label="Primary" value={colorPrimary} onChange={(v) => { setColorPrimary(v); applyThemeToDOM({ primary: v }) }} />
+              <WizardColorInput label="Accent" value={colorAccent} onChange={(v) => { setColorAccent(v); applyThemeToDOM({ accent: v }) }} />
+              <WizardColorInput label="Background" value={colorBackground} onChange={(v) => { setColorBackground(v); applyThemeToDOM({ background: v }) }} />
+              <WizardColorInput label="Foreground" value={colorForeground} onChange={(v) => { setColorForeground(v); applyThemeToDOM({ foreground: v }) }} />
+            </div>
+            {ratio != null && (
+              <div
+                className={`flex items-center gap-2 border rounded px-3 py-2 font-mono text-xs ${
+                  passesAA
+                    ? 'border-green-500/30 bg-green-500/5 text-green-400'
+                    : 'border-yellow-500/30 bg-yellow-500/5 text-yellow-400'
+                }`}
+              >
+                {passesAA ? <CheckCircle size={16} /> : <Warning size={16} />}
+                <span>
+                  Contrast ratio: {ratio.toFixed(1)}:1
+                  {passesAA ? ' — WCAG AA ✓' : ' — Below WCAG AA (4.5:1 recommended)'}
+                </span>
+              </div>
+            )}
+            <NavigationButtons onBack={goBack} onNext={goNext} />
+          </div>
+        )
+      }
+
+      // ── 5. Fonts ─────────────────────────────────────────────────────────────
+      case 5: {
         const FontSelect = ({
           label,
           value,
@@ -606,8 +733,8 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
         )
       }
 
-      // ── 5. Logo & Assets ─────────────────────────────────────────────────────
-      case 5:
+      // ── 6. Logo & Assets ─────────────────────────────────────────────────────
+      case 6:
         return (
           <div className="space-y-4">
             <div className="space-y-1">
@@ -675,15 +802,15 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           </div>
         )
 
-      // ── 6. Sections ──────────────────────────────────────────────────────────
-      case 6: {
+      // ── 7. Sections ──────────────────────────────────────────────────────────
+      case 7: {
         const sorted = [...sections].sort((a, b) => a.order - b.order)
         return (
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">SECTIONS</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Choose which sections to show and their order.
+                Choose which sections to show, their order, and custom labels.
               </p>
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
@@ -701,10 +828,18 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                   />
                   <label
                     htmlFor={`section-${sec.id}`}
-                    className="font-mono text-xs text-foreground flex-1 capitalize cursor-pointer select-none"
+                    className="font-mono text-xs text-foreground min-w-20 capitalize cursor-pointer select-none flex-shrink-0"
                   >
                     {sec.id}
                   </label>
+                  <Input
+                    value={sectionLabels[sec.id] ?? ''}
+                    onChange={(e) =>
+                      setSectionLabels((prev) => ({ ...prev, [sec.id]: e.target.value }))
+                    }
+                    placeholder="Custom label"
+                    className="font-mono text-[10px] h-7 flex-1"
+                  />
                   <button
                     onClick={() =>
                       idx > 0 && setSections((prev) => reorderSections(prev, sec.id, idx - 1))
@@ -734,8 +869,8 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
         )
       }
 
-      // ── 7. Social Links ──────────────────────────────────────────────────────
-      case 7: {
+      // ── 8. Social Links ──────────────────────────────────────────────────────
+      case 8: {
         const socialFields: Array<{ key: keyof typeof socialLinks; label: string; placeholder: string }> = [
           { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/...' },
           { key: 'spotify', label: 'Spotify', placeholder: 'https://open.spotify.com/...' },
@@ -775,17 +910,17 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
         )
       }
 
-      // ── 8. Legal ─────────────────────────────────────────────────────────────
-      case 8:
+      // ── 9. Legal ─────────────────────────────────────────────────────────────
+      case 9:
         return (
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">LEGAL</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Impressum / legal notice (required in Germany/Austria/Switzerland).
+                Impressum / legal notice &amp; privacy policy.
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
               <Field label="Name / Organisation">
                 <Input
                   value={impressumName}
@@ -819,6 +954,15 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                   className="font-mono text-sm"
                 />
               </Field>
+              <Field label="Privacy Policy (Datenschutz) — custom text">
+                <textarea
+                  value={datenschutzText}
+                  onChange={(e) => setDatenschutzText(e.target.value)}
+                  placeholder="Optional: Paste your custom privacy policy text here…"
+                  rows={3}
+                  className="w-full bg-background border border-primary/30 rounded px-3 py-2 font-mono text-sm text-foreground focus:outline-none focus:border-primary resize-y"
+                />
+              </Field>
             </div>
             <div className="border border-primary/10 rounded p-3 bg-primary/5">
               <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
@@ -830,8 +974,8 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           </div>
         )
 
-      // ── 9. Admin Password ────────────────────────────────────────────────────
-      case 9:
+      // ── 10. Admin Password ────────────────────────────────────────────────────
+      case 10:
         return (
           <div className="space-y-4">
             <div className="space-y-1">
@@ -900,8 +1044,8 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           </div>
         )
 
-      // ── 10. Done ─────────────────────────────────────────────────────────────
-      case 10:
+      // ── 11. Done ─────────────────────────────────────────────────────────────
+      case 11:
         return (
           <div className="space-y-6 text-center">
             <div className="space-y-2">
@@ -1019,6 +1163,30 @@ function NavigationButtons({
         {nextLabel}
         <ArrowRight size={14} />
       </Button>
+    </div>
+  )
+}
+
+function WizardColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <Label className="font-mono text-[10px] text-muted-foreground w-24 flex-shrink-0 uppercase tracking-wider">
+        {label}
+      </Label>
+      <div className="flex items-center gap-2 flex-1">
+        <input
+          type="color"
+          value={oklchToHex(value)}
+          onChange={(e) => onChange(hexToOklch(e.target.value))}
+          className="w-8 h-8 rounded cursor-pointer border border-primary/20 bg-transparent"
+        />
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="font-mono text-xs h-8 flex-1"
+          placeholder="oklch(0.50 0.22 25)"
+        />
+      </div>
     </div>
   )
 }

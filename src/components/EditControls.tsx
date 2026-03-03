@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone, UsersFour } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone, UsersFour, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,6 +20,7 @@ interface EditControlsProps {
   onChangePassword: (password: string) => Promise<void>
   onSetPassword: (password: string) => Promise<void>
   onLogout?: () => Promise<void>
+  onResetSetup?: () => void
   siteConfig?: SiteConfig
   onImportData?: (data: SiteConfig) => void
   onOpenDialog: (dialog: AdminDialog) => void
@@ -34,7 +35,7 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, siteConfig, onImportData, onOpenDialog }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, onResetSetup, siteConfig, onImportData, onOpenDialog }: EditControlsProps) {
   const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
@@ -345,6 +346,16 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
                 <Megaphone size={20} weight="bold" />
                 <span className="text-[9px] font-mono leading-none">{t('edit.marketing')}</span>
               </Button>
+              {onResetSetup && (
+                <Button
+                  onClick={onResetSetup}
+                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                  title="Re-run setup wizard"
+                >
+                  <ArrowCounterClockwise size={20} weight="bold" />
+                  <span className="text-[9px] font-mono leading-none">{t('edit.resetSetup')}</span>
+                </Button>
+              )}
             </motion.div>
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
