@@ -229,6 +229,7 @@ const translations: Record<string, Record<Locale, string>> = {
   'edit.inbox':                { en: 'INBOX', de: 'POSTFACH' },
   'edit.subscribers':          { en: 'SUBSCRIBERS', de: 'ABONNENTEN' },
   'edit.marketing':            { en: 'MARKETING', de: 'MARKETING' },
+  'edit.resetSetup':           { en: 'RE-SETUP', de: 'NEU-SETUP' },
   'edit.password':             { en: 'PASSWORD', de: 'PASSWORT' },
   'edit.logout':               { en: 'LOGOUT', de: 'ABMELDEN' },
 

@@ -545,6 +545,7 @@ function App() {
                 onChangePassword={handleChangeAdminPassword}
                 onSetPassword={handleSetAdminPassword}
                 onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
+                onResetSetup={() => { setEditMode(false); updateConfig({ setupComplete: false }) }}
                 siteConfig={data}
                 onImportData={(imported) => setConfig(imported)}
                 onOpenDialog={setActiveDialog}
