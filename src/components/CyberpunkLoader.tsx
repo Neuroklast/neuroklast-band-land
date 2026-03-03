@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState, useRef, startTransition } from 'react'
+import { useEffect, useState, useRef, startTransition, lazy, Suspense } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import logoImage from '@/assets/images/baphomet no text.svg'
 import {
@@ -8,11 +8,16 @@ import {
   LOADER_PROGRESS_INTERVAL_MS,
 } from '@/lib/config'
 import { loadCachedImage } from '@/lib/image-cache'
+import type { ThemeSettings } from '@/lib/types'
+
+// Lazy-load Logo3D — only pulled in when loadingScreenType === '3d-model'
+const Logo3D = lazy(() => import('@/components/Logo3D'))
 
 interface CyberpunkLoaderProps {
   onLoadComplete: () => void
   precacheUrls?: string[]
   siteName?: string
+  loadingScreenType?: ThemeSettings['loadingScreenType']
 }
 
 const hackingTexts = [
@@ -54,7 +59,7 @@ const codeFragments = [
   'export NK_MODE=ACTIVATED',
 ]
 
-export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], siteName = '' }: CyberpunkLoaderProps) {
+export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], siteName = '', loadingScreenType }: CyberpunkLoaderProps) {
   const [progress, setProgress] = useState(0)
   const [hackingText, setHackingText] = useState(hackingTexts[0])
   const [cachingDone, setCachingDone] = useState(precacheUrls.length === 0)
@@ -122,13 +127,48 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
     }
   }, [progress, cachingDone])
 
+  // Minimal loader: simple spinner + progress (no code-rain, no 3D)
+  if (loadingScreenType === 'minimal') {
+    return (
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-background"
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.8 }}
+        data-testid="loader-minimal"
+      >
+        <div className="flex flex-col items-center gap-6">
+          <motion.div
+            className="w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+          <div className="relative w-64 h-1.5 bg-secondary/30 overflow-hidden border border-primary/20">
+            <motion.div
+              className="absolute inset-0 bg-primary"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.1 }}
+            />
+          </div>
+          <motion.div
+            className="text-primary/60 font-mono text-xs"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            {Math.floor(progress)}%
+          </motion.div>
+        </div>
+      </motion.div>
+    )
+  }
+
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-background overflow-hidden"
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Code rain background */}
+      {/* Code rain background — shown for code-rain / cyberpunk / default modes */}
       <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
         <div className="text-primary font-mono text-[10px] leading-tight">
           {codeRainParams.map((params, i) => (
@@ -178,23 +218,45 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
       </div>
 
       <div className="flex flex-col items-center gap-8 relative z-10">
-        <motion.img
-          src={logoImage}
-          alt={siteName || 'Site Logo'}
-          className="w-40 h-40 object-contain"
-          style={{ 
-            filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',
-          }}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ 
-            opacity: [0.7, 1, 0.7],
-            scale: 1,
-          }}
-          transition={{
-            opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-            scale: { duration: 0.8 },
-          }}
-        />
+        {/* Logo area: 3D model or 2D image depending on loadingScreenType */}
+        {loadingScreenType === '3d-model' ? (
+          <Suspense fallback={
+            <motion.img
+              src={logoImage}
+              alt={siteName || 'Site Logo'}
+              className="w-40 h-40 object-contain"
+              style={{ filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4))' }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+            />
+          }>
+            <motion.div
+              animate={{ rotateY: 360 }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+              data-testid="loader-3d-model"
+            >
+              <Logo3D className="w-40 h-40" />
+            </motion.div>
+          </Suspense>
+        ) : (
+          <motion.img
+            src={logoImage}
+            alt={siteName || 'Site Logo'}
+            className="w-40 h-40 object-contain"
+            style={{ 
+              filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',
+            }}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: [0.7, 1, 0.7],
+              scale: 1,
+            }}
+            transition={{
+              opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+              scale: { duration: 0.8 },
+            }}
+          />
+        )}
         
         <div className="relative w-80 h-2 bg-secondary/30 overflow-hidden border border-primary/20">
           <motion.div

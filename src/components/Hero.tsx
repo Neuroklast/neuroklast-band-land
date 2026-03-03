@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaretDown, PencilSimple } from '@phosphor-icons/react'
@@ -14,6 +14,10 @@ import {
   HERO_TITLE_GLITCH_DURATION_MS,
   HERO_TITLE_GLITCH_INTERVAL_MS,
 } from '@/lib/config'
+import type { ThemeSettings } from '@/lib/types'
+
+// Lazy-load Logo3D so that Three.js is only bundled when needed
+const Logo3D = lazy(() => import('@/components/Logo3D'))
 
 interface HeroProps {
   name: string
@@ -22,9 +26,10 @@ interface HeroProps {
   onEdit?: () => void
   logoUrl?: string       // if set, display this logo
   titleImageUrl?: string // if set, display this title image
+  heroStyle?: ThemeSettings['heroStyle']
 }
 
-export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleImageUrl }: HeroProps) {
+export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleImageUrl, heroStyle }: HeroProps) {
   const [glitchLogo, setGlitchLogo] = useState(false)
   const [glitchTitle, setGlitchTitle] = useState(false)
   const { t } = useLocale()
@@ -163,42 +168,63 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
         >
-          <div 
-            className="relative cursor-pointer touch-manipulation"
-            onClick={() => {
-              setGlitchLogo(true)
-              setTimeout(() => setGlitchLogo(false), 300)
-            }}
-          >
-            <div className="relative">
-              <img 
-                src={logoUrl ?? logoPng} 
-                alt={t('hero.logoAlt').replace('{0}', name)} 
-                className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
+          {heroStyle === 'glitch-parallax' ? (
+            /* 3D parallax logo — used by the zardonic-industrial preset */
+            <Suspense fallback={
+              <img
+                src={logoUrl ?? logoPng}
+                alt={t('hero.logoAlt').replace('{0}', name)}
+                className="w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]"
               />
-              <div className="absolute inset-0 pointer-events-none z-20">
-                <div 
-                  className="absolute inset-0 bg-repeat opacity-15"
-                  style={{
-                    backgroundImage: `repeating-linear-gradient(
-                      0deg,
-                      transparent,
-                      transparent 2px,
-                      oklch(0 0 0 / 0.8) 2px,
-                      oklch(0 0 0 / 0.8) 3px
-                    )`
-                  }}
+            }>
+              <Logo3D className="w-[20rem] sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]" />
+            </Suspense>
+          ) : heroStyle === 'minimal' ? (
+            /* Minimal — plain logo without effects */
+            <img
+              src={logoUrl ?? logoPng}
+              alt={t('hero.logoAlt').replace('{0}', name)}
+              className="w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]"
+            />
+          ) : (
+            /* Default / chromatic-hover — original glitch + scanline overlay */
+            <div 
+              className="relative cursor-pointer touch-manipulation"
+              onClick={() => {
+                setGlitchLogo(true)
+                setTimeout(() => setGlitchLogo(false), 300)
+              }}
+            >
+              <div className="relative">
+                <img 
+                  src={logoUrl ?? logoPng} 
+                  alt={t('hero.logoAlt').replace('{0}', name)} 
+                  className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
                 />
-                <div 
-                  className="absolute inset-0 opacity-12"
-                  style={{
-                    backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.5) 1px, transparent 1px)`,
-                    backgroundSize: '4px 4px'
-                  }}
-                />
+                <div className="absolute inset-0 pointer-events-none z-20">
+                  <div 
+                    className="absolute inset-0 bg-repeat opacity-15"
+                    style={{
+                      backgroundImage: `repeating-linear-gradient(
+                        0deg,
+                        transparent,
+                        transparent 2px,
+                        oklch(0 0 0 / 0.8) 2px,
+                        oklch(0 0 0 / 0.8) 3px
+                      )`
+                    }}
+                  />
+                  <div 
+                    className="absolute inset-0 opacity-12"
+                    style={{
+                      backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.5) 1px, transparent 1px)`,
+                      backgroundSize: '4px 4px'
+                    }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </motion.div>
 
         <motion.div

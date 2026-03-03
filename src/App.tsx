@@ -257,6 +257,7 @@ function App() {
           <CyberpunkLoader 
             precacheUrls={precacheUrls}
             siteName={data.siteName}
+            loadingScreenType={data.themeSettings?.loadingScreenType}
             onLoadComplete={() => {
               playSound('loadingFinished')
               setLoading(false)
@@ -321,6 +322,7 @@ function App() {
               onEdit={() => setShowBandInfoEdit(true)}
               logoUrl={data.logoUrl}
               titleImageUrl={data.titleImageUrl}
+              heroStyle={data.themeSettings?.heroStyle}
             />
 
             <main id="main-content" className="relative">
