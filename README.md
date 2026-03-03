@@ -6,7 +6,7 @@
 ![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?logo=tailwindcss&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7-646cff?logo=vite&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
+![License](https://img.shields.io/badge/License-BSL_1.1-orange)
 
 **Band Land** is a production-ready, fully configurable single-page website template for musicians, DJs, bands, artists, and labels. Everything — content, design, sections, fonts, and SEO — is driven by a single `SiteConfig` object. No hardcoded brand names, no design assumptions.
 
@@ -328,6 +328,7 @@ Copy `.env.example` to `.env` and fill in the values (for local development), or
 | `ADMIN_SETUP_TOKEN` | ✅ | One-time token to create the first admin password |
 | `KV_REST_API_URL` | ✅ | Upstash Redis KV URL |
 | `KV_REST_API_TOKEN` | ✅ | Upstash Redis KV token |
+| `VITE_ACTIVATION_KEY` | ✅ | Activation key issued by Neuroklast (required to run the app) |
 | `RESEND_API_KEY` | — | Resend API key for contact-form email forwarding |
 
 The Setup Wizard checks for missing variables on first launch and shows which ones still need to be configured.
@@ -404,4 +405,40 @@ See [SECURITY.md](SECURITY.md) for responsible disclosure.
 
 ## 📄 License
 
-[MIT](LICENSE) — free to use, modify, and deploy for any purpose.
+**Source Available — not Open Source.**
+
+This project is licensed under the [Business Source License 1.1](LICENSE).
+
+- The source code is publicly readable for learning purposes and AI assistants.
+- **Deployment requires an activation key.** Contact Neuroklast for access.
+- The license converts to MIT on **2030-03-03**.
+
+See the [🔑 Activation & Licensing](#-activation--licensing) section below for details.
+
+---
+
+## 🔑 Activation & Licensing
+
+### How to get a key
+
+Contact Neuroklast to request an activation key:
+- Open an issue or discussion on this repository
+- Or reach out via the contact links on [neuroklast.com](https://neuroklast.com)
+
+### How to configure the key
+
+1. **Vercel (recommended):** Add `VITE_ACTIVATION_KEY=your-key` in your project's **Settings → Environment Variables**.
+2. **Local development:** Add the line to your `.env` file.
+
+The app validates the key against the central Neuroklast API on startup. Without a valid key the app shows a lock screen and no content is displayed.
+
+### License tiers
+
+| Tier | Features |
+|------|----------|
+| **Free** | Base feature set |
+| **Pro** | Premium themes, widgets, analytics |
+| **Agency** | Everything in Pro + multi-site management |
+| **SaaS** | Everything in Agency + hosted/white-label deployments |
+
+The current tier is displayed in the admin toolbar when you are logged in.

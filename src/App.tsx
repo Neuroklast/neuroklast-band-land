@@ -57,6 +57,10 @@ import { useOverlayState } from '@/hooks/use-overlay-state'
 import CyberpunkOverlayModal from '@/components/CyberpunkOverlayModal'
 import { createSiteConfig } from '@/lib/site-config'
 import SetupWizard from '@/components/SetupWizard'
+import ActivationLockScreen from '@/components/ActivationLockScreen'
+import LicenseStatusBadge from '@/components/LicenseStatusBadge'
+import { validateActivationKey } from '@/lib/activation'
+import type { ActivationResult } from '@/lib/activation'
 
 const defaultSiteConfig: SiteConfig = createSiteConfig({
   siteName: bandDataJson.band.name,
@@ -103,6 +107,7 @@ function App() {
   const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState()
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)
   const [activeDialog, setActiveDialog] = useState<AdminDialog>(null)
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showSetupDialog, setShowSetupDialog] = useState(false)
@@ -114,6 +119,11 @@ function App() {
 
   // Apply CRT effects
   useCRTEffects()
+
+  // Validate activation key on mount
+  useEffect(() => {
+    validateActivationKey().then(setActivationResult)
+  }, [])
 
   // Track page view on mount
   useEffect(() => {
@@ -203,6 +213,11 @@ function App() {
   }, [data.animations?.crtOverlayOpacity, data.animations?.crtVignetteOpacity])
 
   const vis = data.sectionVisibility || {}
+
+  // Show lock screen while key is being validated (null) or if invalid
+  if (!activationResult?.valid) {
+    return <ActivationLockScreen pending={activationResult === null} />
+  }
 
   return (
     <>
@@ -542,18 +557,26 @@ function App() {
             )}
 
             {isOwner && (
-              <EditControls 
-                editMode={editMode}
-                onToggleEdit={() => setEditMode(!editMode)}
-                hasPassword={!needsSetup}
-                onChangePassword={handleChangeAdminPassword}
-                onSetPassword={handleSetAdminPassword}
-                onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
-                onResetSetup={() => { setEditMode(false); updateConfig({ setupComplete: false }) }}
-                siteConfig={data}
-                onImportData={(imported) => setConfig(imported)}
-                onOpenDialog={setActiveDialog}
-              />
+              <div className="flex items-center gap-2">
+                {activationResult && (
+                  <LicenseStatusBadge
+                    valid={activationResult.valid}
+                    tier={activationResult.tier}
+                  />
+                )}
+                <EditControls 
+                  editMode={editMode}
+                  onToggleEdit={() => setEditMode(!editMode)}
+                  hasPassword={!needsSetup}
+                  onChangePassword={handleChangeAdminPassword}
+                  onSetPassword={handleSetAdminPassword}
+                  onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
+                  onResetSetup={() => { setEditMode(false); updateConfig({ setupComplete: false }) }}
+                  siteConfig={data}
+                  onImportData={(imported) => setConfig(imported)}
+                  onOpenDialog={setActiveDialog}
+                />
+              </div>
             )}
 
             <StatsDashboard open={activeDialog === 'analytics'} onClose={() => setActiveDialog(null)} domain={data.domain} />
