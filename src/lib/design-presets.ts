@@ -128,6 +128,92 @@ export const retroPreset: DesignPreset = {
   animationsEnabled: true,
 }
 
+export const zardonicIndustrialPreset: DesignPreset = {
+  id: 'zardonic-industrial',
+  name: 'Zardonic Industrial',
+  description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
+  colors: {
+    primary: 'oklch(0.55 0.24 30)',
+    accent: 'oklch(0.65 0.26 35)',
+    background: 'oklch(0.02 0 0)',
+    card: 'oklch(0.06 0.01 30)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.50 0.04 30)',
+    border: 'oklch(0.16 0.06 30)',
+    secondary: 'oklch(0.09 0.03 25)',
+  },
+  fonts: {
+    heading: "'Rajdhani', sans-serif",
+    body: "'Share Tech Mono', monospace",
+    mono: "'JetBrains Mono', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: true, intensity: 0.6 },
+    crt: { enabled: true, intensity: 0.7 },
+    noise: { enabled: true, intensity: 0.3 },
+    vignette: { enabled: true, intensity: 0.8 },
+    chromatic: { enabled: true, intensity: 0.4 },
+    dotMatrix: { enabled: false, intensity: 0 },
+  },
+  animationSettings: {
+    glitchEnabled: true,
+    scanlineEnabled: true,
+    chromaticEnabled: true,
+    crtEnabled: true,
+    noiseEnabled: true,
+    circuitBackgroundEnabled: true,
+    crtOverlayOpacity: 0.7,
+    crtVignetteOpacity: 0.8,
+  },
+  loadingScreenType: '3d-model',
+  heroStyle: 'glitch-parallax',
+}
+
+export const neuroklastClassicPreset: DesignPreset = {
+  id: 'neuroklast-classic',
+  name: 'Neuroklast Classic',
+  description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents and code-rain loading',
+  colors: {
+    primary: 'oklch(0.50 0.22 25)',
+    accent: 'oklch(0.60 0.24 25)',
+    background: 'oklch(0 0 0)',
+    card: 'oklch(0.05 0 0)',
+    foreground: 'oklch(1 0 0)',
+    mutedForeground: 'oklch(0.55 0 0)',
+    border: 'oklch(0.15 0 0)',
+    secondary: 'oklch(0.10 0 0)',
+  },
+  fonts: {
+    heading: "'JetBrains Mono', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  borderRadius: 0.125,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: true, intensity: 0.3 },
+    crt: { enabled: true, intensity: 0.4 },
+    noise: { enabled: true, intensity: 0.15 },
+    vignette: { enabled: true, intensity: 0.5 },
+    chromatic: { enabled: false, intensity: 0 },
+    dotMatrix: { enabled: false, intensity: 0 },
+  },
+  animationSettings: {
+    glitchEnabled: true,
+    scanlineEnabled: true,
+    chromaticEnabled: false,
+    crtEnabled: true,
+    noiseEnabled: true,
+    circuitBackgroundEnabled: true,
+    crtOverlayOpacity: 0.4,
+    crtVignetteOpacity: 0.5,
+  },
+  loadingScreenType: 'code-rain',
+  heroStyle: 'chromatic-hover',
+}
+
 /** All bundled presets indexed by their ID */
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   cyberpunk: cyberpunkPreset,
@@ -135,6 +221,8 @@ export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   elegant: elegantPreset,
   neon: neonPreset,
   retro: retroPreset,
+  'zardonic-industrial': zardonicIndustrialPreset,
+  'neuroklast-classic': neuroklastClassicPreset,
 }
 
 /** Ordered list of all bundled preset IDs */
@@ -170,5 +258,6 @@ export function presetToThemeSettings(preset: DesignPreset): ThemeSettings {
     fontMono: preset.fonts.mono,
     borderRadius: preset.borderRadius,
     activePreset: preset.id,
+    ...(preset.overlayEffects ? { overlayEffects: preset.overlayEffects } : {}),
   }
 }

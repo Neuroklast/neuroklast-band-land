@@ -9,12 +9,14 @@ import {
   elegantPreset,
   neonPreset,
   retroPreset,
+  zardonicIndustrialPreset,
+  neuroklastClassicPreset,
 } from '@/lib/design-presets'
 
 describe('DESIGN_PRESETS', () => {
-  it('exports exactly 5 presets', () => {
-    expect(PRESET_IDS).toHaveLength(5)
-    expect(PRESET_IDS).toEqual(['cyberpunk', 'minimal', 'elegant', 'neon', 'retro'])
+  it('exports exactly 7 presets', () => {
+    expect(PRESET_IDS).toHaveLength(7)
+    expect(PRESET_IDS).toEqual(['cyberpunk', 'minimal', 'elegant', 'neon', 'retro', 'zardonic-industrial', 'neuroklast-classic'])
   })
 
   it('each preset has required fields', () => {
@@ -41,6 +43,8 @@ describe('getPreset', () => {
     expect(getPreset('elegant')).toBe(elegantPreset)
     expect(getPreset('neon')).toBe(neonPreset)
     expect(getPreset('retro')).toBe(retroPreset)
+    expect(getPreset('zardonic-industrial')).toBe(zardonicIndustrialPreset)
+    expect(getPreset('neuroklast-classic')).toBe(neuroklastClassicPreset)
   })
 
   it('returns undefined for an unknown ID', () => {
@@ -80,5 +84,71 @@ describe('presetToThemeSettings', () => {
     const merged = { ...existing, ...patch }
     expect(merged.primary).toBe(neonPreset.colors.primary)
     expect(merged.fontSize).toBe(1.2) // individual override preserved
+  })
+
+  it('maps overlayEffects when preset defines them', () => {
+    const theme = presetToThemeSettings(zardonicIndustrialPreset)
+    expect(theme.overlayEffects).toBeDefined()
+    expect(theme.overlayEffects?.scanlines?.enabled).toBe(true)
+    expect(theme.overlayEffects?.scanlines?.intensity).toBe(0.6)
+    expect(theme.overlayEffects?.crt?.enabled).toBe(true)
+    expect(theme.overlayEffects?.crt?.intensity).toBe(0.7)
+    expect(theme.overlayEffects?.noise?.enabled).toBe(true)
+    expect(theme.overlayEffects?.chromatic?.enabled).toBe(true)
+  })
+
+  it('maps overlayEffects for neuroklast-classic', () => {
+    const theme = presetToThemeSettings(neuroklastClassicPreset)
+    expect(theme.overlayEffects).toBeDefined()
+    expect(theme.overlayEffects?.scanlines?.enabled).toBe(true)
+    expect(theme.overlayEffects?.scanlines?.intensity).toBe(0.3)
+    expect(theme.overlayEffects?.chromatic?.enabled).toBe(false)
+  })
+
+  it('does not include overlayEffects when preset has none', () => {
+    const theme = presetToThemeSettings(cyberpunkPreset)
+    expect(theme.overlayEffects).toBeUndefined()
+  })
+})
+
+describe('Zardonic Industrial preset', () => {
+  it('has overlay effects configured', () => {
+    expect(zardonicIndustrialPreset.overlayEffects).toBeDefined()
+    expect(zardonicIndustrialPreset.overlayEffects?.scanlines?.enabled).toBe(true)
+    expect(zardonicIndustrialPreset.overlayEffects?.crt?.enabled).toBe(true)
+    expect(zardonicIndustrialPreset.overlayEffects?.noise?.enabled).toBe(true)
+    expect(zardonicIndustrialPreset.overlayEffects?.vignette?.enabled).toBe(true)
+    expect(zardonicIndustrialPreset.overlayEffects?.chromatic?.enabled).toBe(true)
+  })
+
+  it('has animation settings configured', () => {
+    expect(zardonicIndustrialPreset.animationSettings).toBeDefined()
+    expect(zardonicIndustrialPreset.animationSettings?.glitchEnabled).toBe(true)
+    expect(zardonicIndustrialPreset.animationSettings?.crtEnabled).toBe(true)
+  })
+
+  it('has loading screen and hero style', () => {
+    expect(zardonicIndustrialPreset.loadingScreenType).toBe('3d-model')
+    expect(zardonicIndustrialPreset.heroStyle).toBe('glitch-parallax')
+  })
+})
+
+describe('Neuroklast Classic preset', () => {
+  it('has overlay effects configured', () => {
+    expect(neuroklastClassicPreset.overlayEffects).toBeDefined()
+    expect(neuroklastClassicPreset.overlayEffects?.scanlines?.enabled).toBe(true)
+    expect(neuroklastClassicPreset.overlayEffects?.crt?.enabled).toBe(true)
+    expect(neuroklastClassicPreset.overlayEffects?.chromatic?.enabled).toBe(false)
+  })
+
+  it('has animation settings configured', () => {
+    expect(neuroklastClassicPreset.animationSettings).toBeDefined()
+    expect(neuroklastClassicPreset.animationSettings?.glitchEnabled).toBe(true)
+    expect(neuroklastClassicPreset.animationSettings?.chromaticEnabled).toBe(false)
+  })
+
+  it('has loading screen and hero style', () => {
+    expect(neuroklastClassicPreset.loadingScreenType).toBe('code-rain')
+    expect(neuroklastClassicPreset.heroStyle).toBe('chromatic-hover')
   })
 })

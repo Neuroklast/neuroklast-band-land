@@ -500,6 +500,14 @@ export interface DesignPreset {
   borderRadius: number
   /** Whether this preset uses heavy animations by default */
   animationsEnabled: boolean
+  /** Overlay effects bundled with the preset (CRT, scanlines, noise, etc.) */
+  overlayEffects?: OverlayEffects
+  /** Animation settings bundled with the preset */
+  animationSettings?: AnimationSettings
+  /** Loading screen style identifier */
+  loadingScreenType?: 'cyberpunk' | 'code-rain' | '3d-model' | 'minimal'
+  /** Hero section visual style */
+  heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
 }
 
 // ─── FONT CONFIG (#158) ──────────────────────────────────────────────────────
