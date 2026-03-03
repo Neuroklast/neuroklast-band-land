@@ -54,6 +54,7 @@ import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
 import CyberpunkOverlayModal from '@/components/CyberpunkOverlayModal'
 import { createSiteConfig } from '@/lib/site-config'
+import SetupWizard from '@/components/SetupWizard'
 
 const defaultSiteConfig: SiteConfig = createSiteConfig({
   siteName: bandDataJson.band.name,
@@ -203,6 +204,15 @@ function App() {
 
   return (
     <>
+      {/* Setup Wizard — shown when config is loaded but setupComplete is false */}
+      {siteConfigLoaded && !config.setupComplete && (
+        <SetupWizard
+          onComplete={(result) => setConfig({ ...config, ...result, setupComplete: true })}
+          onSetAdminPassword={handleSetupAdminPassword}
+          initialConfig={config}
+        />
+      )}
+
       {/* Skip navigation link for keyboard/screen-reader users */}
       <a href="#main-content" className="skip-to-main">
         Zum Hauptinhalt springen
