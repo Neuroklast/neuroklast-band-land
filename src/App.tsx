@@ -45,6 +45,7 @@ import ContactInboxDialog from '@/components/ContactInboxDialog'
 import SubscriberListDialog from '@/components/SubscriberListDialog'
 import MarketingToolsDialog from '@/components/MarketingToolsDialog'
 import OAuthConnectionsDialog from '@/components/OAuthConnectionsDialog'
+import StoreDialog from '@/components/StoreDialog'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -590,6 +591,14 @@ function App() {
             <OAuthConnectionsDialog
               open={activeDialog === 'oauth'}
               onClose={() => setActiveDialog(null)}
+            />
+            <StoreDialog
+              open={activeDialog === 'store'}
+              onClose={() => setActiveDialog(null)}
+              widgetPlugins={data.widgetPlugins ?? []}
+              onUpdatePlugins={(widgetPlugins) => updateConfig({ widgetPlugins })}
+              activePresetId={data.themeSettings?.activePreset}
+              onApplyTheme={(themeSettings: ThemeSettings) => updateConfig({ themeSettings })}
             />
 
             <AnimatePresence>

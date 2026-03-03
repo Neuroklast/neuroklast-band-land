@@ -1,4 +1,4 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone, UsersFour, ArrowCounterClockwise, LinkSimple } from '@phosphor-icons/react'
+import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone, UsersFour, ArrowCounterClockwise, LinkSimple, Storefront } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -305,6 +305,14 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               >
                 <Palette size={20} weight="bold" />
                 <span className="text-[9px] font-mono leading-none">{t('edit.theme')}</span>
+              </Button>
+              <Button
+                onClick={() => onOpenDialog('store')}
+                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
+                title="Theme & Widget Store"
+              >
+                <Storefront size={20} weight="bold" />
+                <span className="text-[9px] font-mono leading-none">{t('edit.store')}</span>
               </Button>
               <Button
                 onClick={() => onOpenDialog('terminal')}

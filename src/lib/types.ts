@@ -476,6 +476,7 @@ export type AdminDialog =
   | 'subscribers'
   | 'marketing'
   | 'oauth'
+  | 'store'
   | null
 
 // ─── DESIGN PRESETS (#157) ───────────────────────────────────────────────────
@@ -592,6 +593,25 @@ export interface WidgetPlugin {
   /** Optional theme overrides applied when this widget renders */
   themeOverrides?: Partial<ThemeSettings>
 }
+
+// ─── STORE (#199) ────────────────────────────────────────────────────────────
+
+/** License tier for a store item */
+export type StoreItemLicense = 'free' | 'premium'
+
+/** A user rating for a store item */
+export interface StoreItemRating {
+  /** Average score from 1–5 */
+  average: number
+  /** Total number of ratings */
+  count: number
+}
+
+/** Combined store item type: either a widget or a theme */
+export type StoreItemType = 'widget' | 'theme'
+
+/** Tab filter for the store UI */
+export type StoreTab = 'all' | 'widgets' | 'themes'
 
 // ─── META TAGS (#160) ────────────────────────────────────────────────────────
 

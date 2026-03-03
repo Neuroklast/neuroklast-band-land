@@ -16,7 +16,8 @@
  * leaving the page.
  */
 
-import type { WidgetPlugin, WidgetCategory } from './types'
+import type { WidgetPlugin, WidgetCategory, StoreItemLicense, StoreItemRating, StoreItemType, StoreTab } from './types'
+import type { DesignPreset } from './types'
 
 // ─── Widget catalog (the "store") ────────────────────────────────────────────
 
@@ -34,6 +35,14 @@ export interface WidgetCatalogEntry {
   author?: string
   /** Default widget-specific configuration */
   defaultConfig?: Record<string, unknown>
+  /** License tier (free or premium) */
+  license?: StoreItemLicense
+  /** Community rating */
+  rating?: StoreItemRating
+  /** Searchable tags */
+  tags?: readonly string[]
+  /** Preview image URL (or data URI placeholder) */
+  previewUrl?: string
 }
 
 /** Built-in catalog of available widget plugins. */
@@ -47,6 +56,9 @@ export const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
     version: '1.0.0',
     author: 'Neuroklast',
     defaultConfig: { artist: '', appId: '' },
+    license: 'free',
+    rating: { average: 4.5, count: 28 },
+    tags: ['events', 'concerts', 'live', 'bandsintown'],
   },
   {
     id: 'spotify-player',
@@ -57,6 +69,9 @@ export const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
     version: '1.0.0',
     author: 'Neuroklast',
     defaultConfig: { uri: '', type: 'playlist' },
+    license: 'free',
+    rating: { average: 4.8, count: 45 },
+    tags: ['music', 'spotify', 'player', 'embed'],
   },
   {
     id: 'youtube-embed',
@@ -67,6 +82,9 @@ export const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
     version: '1.0.0',
     author: 'Neuroklast',
     defaultConfig: { videoId: '', playlistId: '' },
+    license: 'free',
+    rating: { average: 4.2, count: 19 },
+    tags: ['video', 'youtube', 'embed', 'playlist'],
   },
   {
     id: 'merch-store',
@@ -77,6 +95,9 @@ export const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
     version: '1.0.0',
     author: 'Neuroklast',
     defaultConfig: { shopUrl: '', items: [] },
+    license: 'premium',
+    rating: { average: 4.0, count: 12 },
+    tags: ['merch', 'shop', 'ecommerce', 'products'],
   },
   {
     id: 'analytics-dashboard',
@@ -87,6 +108,9 @@ export const WIDGET_CATALOG: readonly WidgetCatalogEntry[] = [
     version: '1.0.0',
     author: 'Neuroklast',
     defaultConfig: {},
+    license: 'premium',
+    rating: { average: 4.3, count: 8 },
+    tags: ['analytics', 'stats', 'dashboard', 'visitors'],
   },
 ] as const
 
@@ -236,4 +260,189 @@ export function normalizeWidgetPlugins(plugins: WidgetPlugin[]): WidgetPlugin[] 
       author: entry.author,
     }
   })
+}
+
+// ─── Store helpers ───────────────────────────────────────────────────────────
+
+/**
+ * A unified store item that can represent either a widget or a theme.
+ * Used by the StoreDialog to present a single, filterable list.
+ */
+export interface StoreItem {
+  id: string
+  name: string
+  description: string
+  type: StoreItemType
+  version: string
+  author?: string
+  license: StoreItemLicense
+  rating: StoreItemRating
+  tags: readonly string[]
+  /** True when the item is already installed/applied */
+  installed: boolean
+  /** True when the item is currently active/enabled */
+  enabled: boolean
+  /** Widget category (only for type === 'widget') */
+  category?: WidgetCategory
+  previewUrl?: string
+}
+
+/**
+ * Build a unified list of store items from the widget catalog and design
+ * presets.  The `plugins` array tells us which widgets are installed /
+ * enabled; `activePresetId` tells us which theme preset is active.
+ */
+export function buildStoreItems(
+  plugins: WidgetPlugin[],
+  presets: Record<string, DesignPreset>,
+  activePresetId?: string,
+): StoreItem[] {
+  const installedMap = new Map(plugins.map((p) => [p.id, p]))
+
+  const widgetItems: StoreItem[] = WIDGET_CATALOG.map((entry) => {
+    const installed = installedMap.get(entry.id)
+    return {
+      id: entry.id,
+      name: entry.name,
+      description: entry.description,
+      type: 'widget' as const,
+      version: entry.version,
+      author: entry.author,
+      license: entry.license ?? 'free',
+      rating: entry.rating ?? { average: 0, count: 0 },
+      tags: entry.tags ?? [],
+      installed: !!installed,
+      enabled: installed?.enabled ?? false,
+      category: entry.category,
+      previewUrl: entry.previewUrl,
+    }
+  })
+
+  const themeItems: StoreItem[] = Object.values(presets).map((preset) => ({
+    id: preset.id,
+    name: preset.name,
+    description: preset.description,
+    type: 'theme' as const,
+    version: '1.0.0',
+    author: 'Neuroklast',
+    license: 'free' as const,
+    rating: { average: 4.5, count: 20 },
+    tags: ['theme', 'preset', preset.id],
+    installed: true, // themes are always "installed"
+    enabled: activePresetId === preset.id,
+    previewUrl: undefined,
+  }))
+
+  return [...widgetItems, ...themeItems]
+}
+
+/**
+ * Filter store items by tab, search query, and optional license tier.
+ */
+export function filterStoreItems(
+  items: StoreItem[],
+  tab: StoreTab,
+  search: string,
+  license?: StoreItemLicense,
+): StoreItem[] {
+  let filtered = items
+
+  // Tab filter
+  if (tab === 'widgets') filtered = filtered.filter((i) => i.type === 'widget')
+  if (tab === 'themes') filtered = filtered.filter((i) => i.type === 'theme')
+
+  // License filter
+  if (license) filtered = filtered.filter((i) => i.license === license)
+
+  // Text search (name, description, tags)
+  if (search.trim()) {
+    const q = search.trim().toLowerCase()
+    filtered = filtered.filter(
+      (i) =>
+        i.name.toLowerCase().includes(q) ||
+        i.description.toLowerCase().includes(q) ||
+        i.tags.some((t) => t.toLowerCase().includes(q)),
+    )
+  }
+
+  return filtered
+}
+
+// ─── Mix-and-Match ───────────────────────────────────────────────────────────
+
+import type { ThemeSettings } from './types'
+
+/**
+ * Compose a custom `ThemeSettings` by merging selected parts from multiple
+ * design presets.  Each entry in `parts` identifies a preset and which
+ * aspect(s) to take from it.
+ *
+ * Aspects:
+ * - `colors` — apply the preset's color palette
+ * - `fonts`  — apply the preset's font pairings
+ * - `effects` — apply overlay effects & animation settings
+ *
+ * Later entries override earlier ones when aspects overlap.
+ */
+export type MixAspect = 'colors' | 'fonts' | 'effects'
+
+export interface MixPart {
+  presetId: string
+  aspects: MixAspect[]
+}
+
+export function mixThemeSettings(
+  parts: MixPart[],
+  presets: Record<string, DesignPreset>,
+  base?: Partial<ThemeSettings>,
+): ThemeSettings {
+  // Start from a safe default
+  let result: ThemeSettings = {
+    primary: 'oklch(0.50 0.22 25)',
+    accent: 'oklch(0.60 0.24 25)',
+    background: 'oklch(0 0 0)',
+    ...base,
+  }
+
+  for (const part of parts) {
+    const preset = presets[part.presetId]
+    if (!preset) continue
+
+    for (const aspect of part.aspects) {
+      if (aspect === 'colors') {
+        result = {
+          ...result,
+          primary: preset.colors.primary,
+          accent: preset.colors.accent,
+          background: preset.colors.background,
+          card: preset.colors.card,
+          foreground: preset.colors.foreground,
+          mutedForeground: preset.colors.mutedForeground,
+          border: preset.colors.border,
+          secondary: preset.colors.secondary,
+          borderRadius: preset.borderRadius,
+        }
+      }
+      if (aspect === 'fonts') {
+        result = {
+          ...result,
+          fontHeading: preset.fonts.heading,
+          fontBody: preset.fonts.body,
+          fontMono: preset.fonts.mono,
+        }
+      }
+      if (aspect === 'effects') {
+        result = {
+          ...result,
+          ...(preset.overlayEffects ? { overlayEffects: preset.overlayEffects } : {}),
+          ...(preset.animationSettings ? { animationSettings: preset.animationSettings } : {}),
+          ...(preset.loadingScreenType ? { loadingScreenType: preset.loadingScreenType } : {}),
+          ...(preset.heroStyle ? { heroStyle: preset.heroStyle } : {}),
+        }
+      }
+    }
+  }
+
+  result.activePreset = 'custom-mix'
+  return result
 }
