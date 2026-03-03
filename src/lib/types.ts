@@ -469,6 +469,7 @@ export type AdminDialog =
   | 'inbox'
   | 'subscribers'
   | 'marketing'
+  | 'oauth'
   | null
 
 // ─── DESIGN PRESETS (#157) ───────────────────────────────────────────────────

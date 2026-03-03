@@ -44,6 +44,7 @@ import ContactSection from '@/components/ContactSection'
 import ContactInboxDialog from '@/components/ContactInboxDialog'
 import SubscriberListDialog from '@/components/SubscriberListDialog'
 import MarketingToolsDialog from '@/components/MarketingToolsDialog'
+import OAuthConnectionsDialog from '@/components/OAuthConnectionsDialog'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -585,6 +586,10 @@ function App() {
               contactSettings={data.contactSettings}
               onSaveNewsletter={(newsletterSettings) => updateConfig({ newsletterSettings })}
               onSaveContact={(contactSettings) => updateConfig({ contactSettings })}
+            />
+            <OAuthConnectionsDialog
+              open={activeDialog === 'oauth'}
+              onClose={() => setActiveDialog(null)}
             />
 
             <AnimatePresence>

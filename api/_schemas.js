@@ -166,6 +166,15 @@ export const terminalCommandSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// OAuth API — POST body (disconnect)
+// ---------------------------------------------------------------------------
+
+export const oauthDisconnectSchema = z.object({
+  action: z.literal('disconnect'),
+  provider: z.enum(['spotify', 'google-drive']),
+})
+
+// ---------------------------------------------------------------------------
 // Drive download API — GET query
 // ---------------------------------------------------------------------------
 
