@@ -12,6 +12,7 @@ import {
   getWidgetsByCategory,
   normalizeWidgetPlugins,
 } from '@/lib/widget-plugins'
+import { createSiteConfig } from '@/lib/site-config'
 import type { WidgetPlugin } from '@/lib/types'
 
 // ─── Catalog ─────────────────────────────────────────────────────────────────
@@ -290,16 +291,14 @@ describe('normalizeWidgetPlugins', () => {
 // ─── SiteConfig integration ──────────────────────────────────────────────────
 
 describe('SiteConfig widgetPlugins field', () => {
-  it('createSiteConfig includes widgetPlugins when provided', async () => {
-    const { createSiteConfig } = await import('@/lib/site-config')
+  it('createSiteConfig includes widgetPlugins when provided', () => {
     const plugins = installWidget([], 'bandsintown')
     const config = createSiteConfig({ siteName: 'Test', widgetPlugins: plugins })
     expect(config.widgetPlugins).toHaveLength(1)
     expect(config.widgetPlugins?.[0].id).toBe('bandsintown')
   })
 
-  it('createSiteConfig omits widgetPlugins when not provided', async () => {
-    const { createSiteConfig } = await import('@/lib/site-config')
+  it('createSiteConfig omits widgetPlugins when not provided', () => {
     const config = createSiteConfig({ siteName: 'Test' })
     expect(config.widgetPlugins).toBeUndefined()
   })

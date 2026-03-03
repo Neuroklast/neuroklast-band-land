@@ -221,7 +221,15 @@ export function normalizeWidgetPlugins(plugins: WidgetPlugin[]): WidgetPlugin[] 
     const entry = getCatalogEntry(p.id)
     if (!entry) return p
     return {
-      ...p,
+      // Preserve user state
+      id: p.id,
+      installed: p.installed,
+      enabled: p.enabled,
+      order: p.order,
+      category: p.category,
+      config: p.config,
+      themeOverrides: p.themeOverrides,
+      // Update metadata from catalog
       name: entry.name,
       description: entry.description,
       version: entry.version,
