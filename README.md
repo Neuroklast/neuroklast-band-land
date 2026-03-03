@@ -1,5 +1,7 @@
 # Band Land — Universal Artist Website Template
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land&env=ADMIN_SETUP_TOKEN,KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Required%20environment%20variables%20for%20Band%20Land.%20See%20the%20link%20for%20details.&envLink=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land%23-environment-variables&project-name=band-land&repository-name=band-land)
+
 ![TypeScript](https://img.shields.io/badge/TypeScript-83%25-3178c6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?logo=tailwindcss&logoColor=white)
@@ -39,17 +41,30 @@
 
 ## 🚀 Quick Start
 
+### One-Click Deploy (recommended)
+
+Click the button below to deploy your own copy to Vercel — no CLI, no Git, no code required:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land&env=ADMIN_SETUP_TOKEN,KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Required%20environment%20variables%20for%20Band%20Land.%20See%20the%20link%20for%20details.&envLink=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land%23-environment-variables&project-name=band-land&repository-name=band-land)
+
+Vercel will fork the repo into your GitHub account, prompt you for the required environment variables, and deploy automatically. Once deployed the **Setup Wizard** guides you through all remaining configuration in-browser.
+
+### Use this template
+
+If you prefer to start from your own GitHub repo first, click **"Use this template"** on the repository page to create a fresh copy, then deploy it to Vercel from there.
+
+### Manual setup
+
 ```bash
 # 1. Clone or use this template
-git clone https://github.com/your-org/band-land.git my-site
+git clone https://github.com/Neuroklast/neuroklast-band-land.git my-site
 cd my-site
 
 # 2. Install dependencies
 npm install
 
-# 3. Copy and fill in your site configuration
-cp src/lib/site-config.ts src/lib/my-site-config.ts
-# Edit siteName, domain, genres, etc.
+# 3. Copy the env example and fill in your values
+cp .env.example .env
 
 # 4. Start the dev server
 npm run dev
@@ -306,12 +321,16 @@ npm run preview    # Preview production build
 
 ### Environment variables
 
-| Variable | Description |
-|----------|-------------|
-| `ADMIN_SETUP_TOKEN` | One-time token to create the first admin password |
-| `KV_REST_API_URL` | Upstash Redis KV URL |
-| `KV_REST_API_TOKEN` | Upstash Redis KV token |
-| `RESEND_API_KEY` | Resend API key for contact-form email forwarding |
+Copy `.env.example` to `.env` and fill in the values (for local development), or set them in your Vercel project dashboard (for production).
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ADMIN_SETUP_TOKEN` | ✅ | One-time token to create the first admin password |
+| `KV_REST_API_URL` | ✅ | Upstash Redis KV URL |
+| `KV_REST_API_TOKEN` | ✅ | Upstash Redis KV token |
+| `RESEND_API_KEY` | — | Resend API key for contact-form email forwarding |
+
+The Setup Wizard checks for missing variables on first launch and shows which ones still need to be configured.
 
 ---
 

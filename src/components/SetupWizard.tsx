@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,7 @@ import { buildDefaultSections, toggleSection, reorderSections } from '@/lib/sect
 import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { createSiteConfig } from '@/lib/site-config'
 import { getContrastRatio, meetsWcagAA } from '@/lib/contrast'
+import { fetchEnvStatus, REQUIRED_ENV_VARS, allRequiredSet, type EnvStatus } from '@/lib/env-check'
 import type { SiteConfig, SectionConfig } from '@/lib/types'
 
 // ─── Font options (same as ThemeCustomizerDialog) ─────────────────────────────
@@ -135,6 +136,9 @@ const SITE_TYPES: Array<{
 ]
 
 // ─── Step labels ──────────────────────────────────────────────────────────────
+
+const ENV_WARNING_COLOR = 'oklch(0.7 0.15 60)'
+const ENV_WARNING_BG = 'oklch(0.7 0.15 60 / 0.08)'
 
 const STEPS = [
   'Welcome',
@@ -258,6 +262,17 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
   const [adminPasswordConfirm, setAdminPasswordConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [passwordError, setPasswordError] = useState('')
+
+  // ENV variable status (fetched once on mount)
+  const [envStatus, setEnvStatus] = useState<EnvStatus | null>(null)
+  const [envLoading, setEnvLoading] = useState(true)
+
+  useEffect(() => {
+    fetchEnvStatus().then((status) => {
+      setEnvStatus(status)
+      setEnvLoading(false)
+    })
+  }, [])
 
   const logoInputRef = useRef<HTMLInputElement>(null)
 
@@ -464,6 +479,40 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                 </div>
               ))}
             </div>
+
+            {/* ENV variable status */}
+            {!envLoading && envStatus && (
+              <div className="border rounded p-4 text-left space-y-2"
+                style={{
+                  borderColor: allRequiredSet(envStatus) ? 'var(--primary)' : ENV_WARNING_COLOR,
+                  backgroundColor: allRequiredSet(envStatus) ? 'hsl(var(--primary) / 0.05)' : ENV_WARNING_BG,
+                }}
+              >
+                <p className="font-mono text-xs font-bold" style={{ color: allRequiredSet(envStatus) ? 'var(--primary)' : ENV_WARNING_COLOR }}>
+                  {allRequiredSet(envStatus) ? '✓ ENVIRONMENT CONFIGURED' : '⚠ ENVIRONMENT VARIABLES'}
+                </p>
+                {!allRequiredSet(envStatus) && (
+                  <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+                    Some required variables are missing. Set them in your Vercel project settings or <code className="text-primary">.env</code> file for full functionality.
+                  </p>
+                )}
+                <div className="space-y-1">
+                  {REQUIRED_ENV_VARS.map((v) => (
+                    <div key={v.key} className="flex items-center gap-2 font-mono text-[11px]">
+                      {envStatus[v.key]
+                        ? <CheckCircle size={14} weight="fill" className="text-green-500 shrink-0" />
+                        : <Warning size={14} weight="fill" className="shrink-0" style={{ color: v.required ? ENV_WARNING_COLOR : 'var(--muted-foreground)' }} />
+                      }
+                      <span className={envStatus[v.key] ? 'text-muted-foreground' : v.required ? 'text-foreground' : 'text-muted-foreground'}>
+                        {v.label}
+                        {!v.required && <span className="text-muted-foreground/60 ml-1">(optional)</span>}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Button onClick={goNext} className="font-mono tracking-wider gap-2 w-full">
               START SETUP
               <ArrowRight size={16} />
