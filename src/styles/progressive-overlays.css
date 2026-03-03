@@ -1,0 +1,123 @@
+/**
+ * Progressive Overlay Mode CSS
+ *
+ * Animation classes for the four content-loading modes defined in
+ * `src/lib/progressive-overlay-modes.ts`.  These complement the Framer Motion
+ * containerVariants with pure-CSS keyframes for browsers or contexts where
+ * JS animations are reduced or unavailable.
+ */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   1. Progressive Reveal — clip-path scan top → bottom
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes progressive-reveal-scan {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+  }
+  to {
+    clip-path: inset(0 0 0% 0);
+    opacity: 1;
+  }
+}
+
+.progressive-reveal {
+  animation: progressive-reveal-scan 0.8s ease-out both;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   2. Data Stream — blur-to-sharp (Matrix download effect)
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes data-stream-in {
+  0% {
+    filter: blur(20px);
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  60% {
+    filter: blur(4px);
+    opacity: 0.7;
+  }
+  100% {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.data-stream {
+  animation: data-stream-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   3. Sector Assembly — block snap-in
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes sector-assemble {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  60% {
+    opacity: 0.9;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sector-assembly {
+  animation: sector-assemble 0.6s cubic-bezier(0.36, 0, 0.66, -0.56) both;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   4. Holographic Materialization — RGB-split flicker → stabilise
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes holographic-materialize {
+  0% {
+    opacity: 0;
+    filter: hue-rotate(90deg) saturate(3);
+    transform: translateX(4px);
+  }
+  20% {
+    opacity: 0.4;
+    filter: hue-rotate(-45deg) saturate(2.5);
+    transform: translateX(-3px);
+  }
+  40% {
+    opacity: 0.7;
+    filter: hue-rotate(20deg) saturate(1.8);
+    transform: translateX(2px);
+  }
+  70% {
+    opacity: 0.9;
+    filter: hue-rotate(-5deg) saturate(1.2);
+    transform: translateX(-1px);
+  }
+  100% {
+    opacity: 1;
+    filter: hue-rotate(0deg) saturate(1);
+    transform: translateX(0);
+  }
+}
+
+.holographic-materialization {
+  animation: holographic-materialize 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Respect reduced-motion preference
+   ────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .progressive-reveal,
+  .data-stream,
+  .sector-assembly,
+  .holographic-materialization {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    clip-path: none;
+    transform: none;
+  }
+}
