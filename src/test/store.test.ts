@@ -4,12 +4,10 @@ import {
   buildStoreItems,
   filterStoreItems,
   mixThemeSettings,
-  type StoreItem,
   type MixPart,
 } from '@/lib/widget-plugins'
 import { DESIGN_PRESETS, cyberpunkPreset, neonPreset, elegantPreset } from '@/lib/design-presets'
 import { installWidget, toggleWidget } from '@/lib/widget-plugins'
-import type { WidgetPlugin, StoreTab } from '@/lib/types'
 
 // ─── Catalog store fields ────────────────────────────────────────────────────
 

@@ -190,7 +190,7 @@ function MixPanel({ onApplyMix }: MixPanelProps) {
     const theme = mixThemeSettings(parts, DESIGN_PRESETS)
     onApplyMix(theme)
     toast.success(t('store.mixApplied'))
-  }, [colorPreset, fontPreset, effectPreset, onApplyMix])
+  }, [colorPreset, fontPreset, effectPreset, onApplyMix, t])
 
   const previewMix = useCallback(() => {
     const parts: MixPart[] = []
