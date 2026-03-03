@@ -137,6 +137,9 @@ const SITE_TYPES: Array<{
 
 // ─── Step labels ──────────────────────────────────────────────────────────────
 
+const ENV_WARNING_COLOR = 'oklch(0.7 0.15 60)'
+const ENV_WARNING_BG = 'oklch(0.7 0.15 60 / 0.08)'
+
 const STEPS = [
   'Welcome',
   'Site Type',
@@ -480,9 +483,12 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             {/* ENV variable status */}
             {!envLoading && envStatus && (
               <div className="border rounded p-4 text-left space-y-2"
-                style={{ borderColor: allRequiredSet(envStatus) ? 'var(--primary)' : 'oklch(0.7 0.15 60)', backgroundColor: allRequiredSet(envStatus) ? 'hsl(var(--primary) / 0.05)' : 'oklch(0.7 0.15 60 / 0.08)' }}
+                style={{
+                  borderColor: allRequiredSet(envStatus) ? 'var(--primary)' : ENV_WARNING_COLOR,
+                  backgroundColor: allRequiredSet(envStatus) ? 'hsl(var(--primary) / 0.05)' : ENV_WARNING_BG,
+                }}
               >
-                <p className="font-mono text-xs font-bold" style={{ color: allRequiredSet(envStatus) ? 'var(--primary)' : 'oklch(0.7 0.15 60)' }}>
+                <p className="font-mono text-xs font-bold" style={{ color: allRequiredSet(envStatus) ? 'var(--primary)' : ENV_WARNING_COLOR }}>
                   {allRequiredSet(envStatus) ? '✓ ENVIRONMENT CONFIGURED' : '⚠ ENVIRONMENT VARIABLES'}
                 </p>
                 {!allRequiredSet(envStatus) && (
@@ -495,7 +501,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                     <div key={v.key} className="flex items-center gap-2 font-mono text-[11px]">
                       {envStatus[v.key]
                         ? <CheckCircle size={14} weight="fill" className="text-green-500 shrink-0" />
-                        : <Warning size={14} weight="fill" className="shrink-0" style={{ color: v.required ? 'oklch(0.7 0.15 60)' : 'var(--muted-foreground)' }} />
+                        : <Warning size={14} weight="fill" className="shrink-0" style={{ color: v.required ? ENV_WARNING_COLOR : 'var(--muted-foreground)' }} />
                       }
                       <span className={envStatus[v.key] ? 'text-muted-foreground' : v.required ? 'text-foreground' : 'text-muted-foreground'}>
                         {v.label}
