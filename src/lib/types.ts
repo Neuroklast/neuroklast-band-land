@@ -364,6 +364,8 @@ export interface SiteConfig {
   sections?: SectionConfig[]
   /** Font loading configuration (Google Fonts + custom fonts) */
   fontConfig?: FontConfig
+  /** Installed/configured widget plugins (#163) */
+  widgetPlugins?: WidgetPlugin[]
 }
 
 export interface SoundSettings {
@@ -551,6 +553,37 @@ export interface SectionConfig {
   order: number
   /** Optional section-specific settings */
   settings?: Record<string, unknown>
+}
+
+// ─── WIDGET PLUGINS (#163) ───────────────────────────────────────────────────
+
+/** Category of a widget plugin */
+export type WidgetCategory = 'events' | 'music' | 'video' | 'social' | 'analytics' | 'merch' | 'other'
+
+/** Configuration for a single widget plugin */
+export interface WidgetPlugin {
+  /** Unique widget identifier (slug) */
+  id: string
+  /** Human-readable display name */
+  name: string
+  /** Short description of the widget */
+  description: string
+  /** Widget category for filtering in the store */
+  category: WidgetCategory
+  /** Semantic version string */
+  version: string
+  /** Author name or organisation */
+  author?: string
+  /** Whether the widget has been installed from the store */
+  installed: boolean
+  /** Whether the widget is currently active/enabled */
+  enabled: boolean
+  /** Display order index (lower = earlier) */
+  order: number
+  /** Widget-specific configuration (e.g. artist name, playlist URI) */
+  config?: Record<string, unknown>
+  /** Optional theme overrides applied when this widget renders */
+  themeOverrides?: Partial<ThemeSettings>
 }
 
 // ─── META TAGS (#160) ────────────────────────────────────────────────────────
