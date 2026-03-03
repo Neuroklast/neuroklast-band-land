@@ -12,7 +12,7 @@
 
 ## ✨ Features
 
-- **Design Presets** — Five bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro) with one-line activation
+- **Design Presets** — Seven bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro, Zardonic Industrial, Neuroklast Classic) with one-line activation
 - **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
 - **Flexible Sections** — Enable/disable and reorder any section without touching code
 - **SEO & Open Graph** — Title, description, OG tags, Twitter cards, JSON-LD, and canonical URLs generated automatically from config
@@ -104,7 +104,7 @@ const config = createSiteConfig({
 
 ## 🎨 Design Presets
 
-Five bundled presets are available in `src/lib/design-presets.ts`:
+Seven bundled presets are available in `src/lib/design-presets.ts`:
 
 | ID | Name | Aesthetic |
 |----|------|-----------|
@@ -113,6 +113,8 @@ Five bundled presets are available in `src/lib/design-presets.ts`:
 | `elegant` | Elegant | Dark canvas, warm gold, serif fonts |
 | `neon` | Neon | Electric blue/cyan synthwave |
 | `retro` | Retro | Amber phosphor-glow, vintage terminal |
+| `zardonic-industrial` | Zardonic Industrial | Industrial/synthwave with CRT effects |
+| `neuroklast-classic` | Neuroklast Classic | Dark cyberpunk with code-rain |
 
 ### Using a preset
 

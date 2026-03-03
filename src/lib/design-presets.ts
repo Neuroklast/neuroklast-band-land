@@ -259,5 +259,8 @@ export function presetToThemeSettings(preset: DesignPreset): ThemeSettings {
     borderRadius: preset.borderRadius,
     activePreset: preset.id,
     ...(preset.overlayEffects ? { overlayEffects: preset.overlayEffects } : {}),
+    ...(preset.animationSettings ? { animationSettings: preset.animationSettings } : {}),
+    ...(preset.loadingScreenType ? { loadingScreenType: preset.loadingScreenType } : {}),
+    ...(preset.heroStyle ? { heroStyle: preset.heroStyle } : {}),
   }
 }

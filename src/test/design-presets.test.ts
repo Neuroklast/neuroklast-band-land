@@ -109,6 +109,42 @@ describe('presetToThemeSettings', () => {
     const theme = presetToThemeSettings(cyberpunkPreset)
     expect(theme.overlayEffects).toBeUndefined()
   })
+
+  it('maps animationSettings for zardonic-industrial', () => {
+    const theme = presetToThemeSettings(zardonicIndustrialPreset)
+    expect(theme.animationSettings).toBeDefined()
+    expect(theme.animationSettings?.glitchEnabled).toBe(true)
+    expect(theme.animationSettings?.crtEnabled).toBe(true)
+    expect(theme.animationSettings?.circuitBackgroundEnabled).toBe(true)
+    expect(theme.animationSettings?.crtOverlayOpacity).toBe(0.7)
+  })
+
+  it('maps loadingScreenType and heroStyle for zardonic-industrial', () => {
+    const theme = presetToThemeSettings(zardonicIndustrialPreset)
+    expect(theme.loadingScreenType).toBe('3d-model')
+    expect(theme.heroStyle).toBe('glitch-parallax')
+  })
+
+  it('maps animationSettings for neuroklast-classic', () => {
+    const theme = presetToThemeSettings(neuroklastClassicPreset)
+    expect(theme.animationSettings).toBeDefined()
+    expect(theme.animationSettings?.glitchEnabled).toBe(true)
+    expect(theme.animationSettings?.chromaticEnabled).toBe(false)
+    expect(theme.animationSettings?.crtOverlayOpacity).toBe(0.4)
+  })
+
+  it('maps loadingScreenType and heroStyle for neuroklast-classic', () => {
+    const theme = presetToThemeSettings(neuroklastClassicPreset)
+    expect(theme.loadingScreenType).toBe('code-rain')
+    expect(theme.heroStyle).toBe('chromatic-hover')
+  })
+
+  it('does not include animationSettings/loadingScreenType/heroStyle when preset has none', () => {
+    const theme = presetToThemeSettings(cyberpunkPreset)
+    expect(theme.animationSettings).toBeUndefined()
+    expect(theme.loadingScreenType).toBeUndefined()
+    expect(theme.heroStyle).toBeUndefined()
+  })
 })
 
 describe('Zardonic Industrial preset', () => {

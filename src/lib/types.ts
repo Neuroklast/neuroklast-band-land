@@ -179,6 +179,12 @@ export interface ThemeSettings {
   fontSize?: number
   /** Overlay effects configuration */
   overlayEffects?: OverlayEffects
+  /** Animation settings (glitch, scanline, CRT, circuit-background, etc.) */
+  animationSettings?: AnimationSettings
+  /** Loading screen style identifier */
+  loadingScreenType?: 'cyberpunk' | 'code-rain' | '3d-model' | 'minimal'
+  /** Hero section visual style */
+  heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
 }
 
 /** Individual overlay effect configuration */
