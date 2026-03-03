@@ -218,15 +218,15 @@ describe('mixThemeSettings', () => {
       { presetId: 'cyberpunk', aspects: ['fonts'] },
     ]
     const result = mixThemeSettings(parts, DESIGN_PRESETS)
-    // Colors should be from defaults (not overwritten)
-    expect(result.primary).toBe('oklch(0.50 0.22 25)')
+    // Colors should be from cyberpunk defaults (not overwritten by nonexistent)
+    expect(result.primary).toBe(cyberpunkPreset.colors.primary)
     // Fonts from cyberpunk
     expect(result.fontHeading).toBe(cyberpunkPreset.fonts.heading)
   })
 
   it('returns defaults when no parts are provided', () => {
     const result = mixThemeSettings([], DESIGN_PRESETS)
-    expect(result.primary).toBe('oklch(0.50 0.22 25)')
+    expect(result.primary).toBe(cyberpunkPreset.colors.primary)
     expect(result.activePreset).toBe('custom-mix')
   })
 

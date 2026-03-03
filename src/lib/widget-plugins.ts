@@ -16,8 +16,9 @@
  * leaving the page.
  */
 
-import type { WidgetPlugin, WidgetCategory, StoreItemLicense, StoreItemRating, StoreItemType, StoreTab } from './types'
+import type { WidgetPlugin, WidgetCategory, StoreItemLicense, StoreItemRating, StoreItemType, StoreTab, ThemeSettings } from './types'
 import type { DesignPreset } from './types'
+import { cyberpunkPreset, presetToThemeSettings as _presetToTheme } from './design-presets'
 
 // ─── Widget catalog (the "store") ────────────────────────────────────────────
 
@@ -370,8 +371,6 @@ export function filterStoreItems(
 
 // ─── Mix-and-Match ───────────────────────────────────────────────────────────
 
-import type { ThemeSettings } from './types'
-
 /**
  * Compose a custom `ThemeSettings` by merging selected parts from multiple
  * design presets.  Each entry in `parts` identifies a preset and which
@@ -396,11 +395,9 @@ export function mixThemeSettings(
   presets: Record<string, DesignPreset>,
   base?: Partial<ThemeSettings>,
 ): ThemeSettings {
-  // Start from a safe default
+  // Start from the cyberpunk default palette to avoid hardcoded values
   let result: ThemeSettings = {
-    primary: 'oklch(0.50 0.22 25)',
-    accent: 'oklch(0.60 0.24 25)',
-    background: 'oklch(0 0 0)',
+    ..._presetToTheme(cyberpunkPreset),
     ...base,
   }
 

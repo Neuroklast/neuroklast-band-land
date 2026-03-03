@@ -183,13 +183,13 @@ function MixPanel({ onApplyMix }: MixPanelProps) {
     if (effectPreset) parts.push({ presetId: effectPreset, aspects: ['effects'] })
 
     if (parts.length === 0) {
-      toast.error('Select at least one aspect')
+      toast.error(t('store.mixSelectOne'))
       return
     }
 
     const theme = mixThemeSettings(parts, DESIGN_PRESETS)
     onApplyMix(theme)
-    toast.success('Custom mix applied!')
+    toast.success(t('store.mixApplied'))
   }, [colorPreset, fontPreset, effectPreset, onApplyMix])
 
   const previewMix = useCallback(() => {
@@ -264,7 +264,7 @@ function MixPanel({ onApplyMix }: MixPanelProps) {
 
       <div className="flex gap-2 pt-1">
         <Button size="sm" variant="outline" onClick={previewMix} className="text-xs gap-1 h-7 border-primary/30">
-          Preview
+          {t('store.mixPreview')}
         </Button>
         <Button size="sm" onClick={handleApply} className="text-xs gap-1 h-7">
           {t('store.mixApply')}
@@ -311,17 +311,17 @@ export default function StoreDialog({
   const handleInstall = useCallback(
     (id: string) => {
       onUpdatePlugins(installWidget(widgetPlugins, id))
-      toast.success('Widget installed')
+      toast.success(t('store.widgetInstalled'))
     },
-    [widgetPlugins, onUpdatePlugins],
+    [widgetPlugins, onUpdatePlugins, t],
   )
 
   const handleUninstall = useCallback(
     (id: string) => {
       onUpdatePlugins(uninstallWidget(widgetPlugins, id))
-      toast.success('Widget uninstalled')
+      toast.success(t('store.widgetUninstalled'))
     },
-    [widgetPlugins, onUpdatePlugins],
+    [widgetPlugins, onUpdatePlugins, t],
   )
 
   const handleToggle = useCallback(
@@ -338,9 +338,9 @@ export default function StoreDialog({
       const theme = presetToThemeSettings(preset)
       onApplyTheme(theme)
       applyThemeToDOM(theme)
-      toast.success(`Theme "${preset.name}" applied`)
+      toast.success(t('store.themeApplied').replace('{0}', preset.name))
     },
-    [onApplyTheme],
+    [onApplyTheme, t],
   )
 
   const handleApplyMix = useCallback(

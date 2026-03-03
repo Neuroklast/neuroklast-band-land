@@ -260,6 +260,12 @@ const translations: Record<string, Record<Locale, string>> = {
   'store.mixEffects':          { en: 'Effects from', de: 'Effekte von' },
   'store.mixApply':            { en: 'Apply Mix', de: 'Mix anwenden' },
   'store.mixNone':             { en: '(none)', de: '(keine)' },
+  'store.mixPreview':          { en: 'Preview', de: 'Vorschau' },
+  'store.mixSelectOne':        { en: 'Select at least one aspect', de: 'Mindestens einen Aspekt auswählen' },
+  'store.mixApplied':          { en: 'Custom mix applied!', de: 'Eigener Mix angewendet!' },
+  'store.widgetInstalled':     { en: 'Widget installed', de: 'Widget installiert' },
+  'store.widgetUninstalled':   { en: 'Widget uninstalled', de: 'Widget deinstalliert' },
+  'store.themeApplied':        { en: 'Theme "{0}" applied', de: 'Theme „{0}" angewendet' },
 
   // ── CyberpunkLoader ─────────────────────────────────────────────────
   'loader.bootSequence':       { en: 'NK-SYS [v2.0] // BOOT SEQUENCE', de: 'NK-SYS [v2.0] // STARTSEQUENZ' },
