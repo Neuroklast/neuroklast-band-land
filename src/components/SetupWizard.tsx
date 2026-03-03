@@ -233,9 +233,9 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
   const [sectionLabels, setSectionLabels] = useState<Record<string, string>>(() => {
     const labels = initialConfig?.sectionLabels ?? {}
     const result: Record<string, string> = {}
-    const keys = ['news', 'biography', 'gallery', 'gigs', 'releases', 'media', 'connect', 'contact', 'partnersAndFriends'] as const
-    for (const k of keys) {
-      result[k] = labels[k] ?? ''
+    const defaultSecs = initialConfig?.sections ?? buildDefaultSections()
+    for (const sec of defaultSecs) {
+      result[sec.id] = (labels as Record<string, string>)[sec.id] ?? ''
     }
     return result
   })
@@ -828,7 +828,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                   />
                   <label
                     htmlFor={`section-${sec.id}`}
-                    className="font-mono text-xs text-foreground w-20 capitalize cursor-pointer select-none flex-shrink-0"
+                    className="font-mono text-xs text-foreground min-w-20 capitalize cursor-pointer select-none flex-shrink-0"
                   >
                     {sec.id}
                   </label>

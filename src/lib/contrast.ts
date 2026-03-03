@@ -39,7 +39,7 @@ export function contrastRatio(l1: number, l2: number): number {
 
 /**
  * Calculate the WCAG contrast ratio between two CSS color values.
- * Returns `null` when running outside a browser (SSR) or when colours
+ * Returns `null` when running outside a browser (SSR) or when colors
  * cannot be parsed.
  */
 export function getContrastRatio(color1: string, color2: string): number | null {
