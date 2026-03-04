@@ -5,7 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import ConfigExportDialog from '@/components/ConfigExportDialog'
+import ConfigImportDialog from '@/components/ConfigImportDialog'
 import type { AdminDialog, SiteConfig } from '@/lib/types'
+import type { ImportValidationResult } from '@/lib/config-export'
+import { validateImport } from '@/lib/config-export'
 import { useLocale } from '@/contexts/LocaleContext'
 import { toast } from 'sonner'
 import {
@@ -41,21 +45,30 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
   const [showUrlImport, setShowUrlImport] = useState(false)
   const [importUrl, setImportUrl] = useState('')
   const [isImporting, setIsImporting] = useState(false)
+  const [showExportDialog, setShowExportDialog] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [pendingImportData, setPendingImportData] = useState<Partial<SiteConfig> | null>(null)
+  const [pendingValidation, setPendingValidation] = useState<ImportValidationResult | null>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
 
   const handleExportData = () => {
     if (!siteConfig) return
-    const json = JSON.stringify(siteConfig, null, 2)
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `site-config-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    toast.success('Data exported successfully')
+    setShowExportDialog(true)
+  }
+
+  const openImportDialog = (raw: unknown, preserveSyncUrl?: string) => {
+    const result = validateImport(raw)
+    if (!result.valid) {
+      toast.error(result.errors[0] || 'Invalid config file')
+      return
+    }
+    // For URL imports: preserve syncUrl in the imported data
+    const data = preserveSyncUrl && result.data
+      ? { ...result.data, syncUrl: preserveSyncUrl }
+      : result.data
+    setPendingImportData(data)
+    setPendingValidation(result)
+    setShowImportDialog(true)
   }
 
   const handleImportDataFromFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,14 +78,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result as string)
-        if (!parsed.siteName && !parsed.name) {
-          toast.error('Invalid site config file')
-          return
-        }
-        // Support legacy band-data format: map name → siteName
-        const normalized = { ...parsed, siteName: parsed.siteName || parsed.name }
-        onImportData(normalized as SiteConfig)
-        toast.success('Data imported successfully')
+        openImportDialog(parsed)
       } catch {
         toast.error('Failed to parse JSON file')
       }
@@ -92,20 +98,23 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const text = await res.text()
       const parsed = JSON.parse(text)
-      if (!parsed.siteName && !parsed.name) {
-        if (!silent) toast.error('Invalid site config file at URL')
-        return
+      if (silent) {
+        // Auto-sync: direct import without dialog
+        const result = validateImport(parsed)
+        if (result.valid && result.data) {
+          onImportData({ ...result.data, syncUrl: url } as SiteConfig)
+        }
+      } else {
+        // Manual URL import: open dialog with validation
+        openImportDialog(parsed, url)
       }
-      // Support legacy band-data format: map name → siteName
-      const normalized = { ...parsed, siteName: parsed.siteName || parsed.name, syncUrl: url }
-      onImportData(normalized as SiteConfig)
-      if (!silent) toast.success('Data imported from URL')
     } catch (err) {
       console.error('URL import error:', err)
       if (!silent) toast.error('Failed to import data from URL')
     } finally {
       setIsImporting(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onImportData])
 
   const handleImportUrl = () => {
@@ -456,6 +465,25 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
           onOpenChange={setShowPasswordDialog}
           mode="setup"
           onSetPassword={hasPassword ? onChangePassword : onSetPassword}
+        />
+      )}
+
+      {siteConfig && (
+        <ConfigExportDialog
+          open={showExportDialog}
+          onClose={() => setShowExportDialog(false)}
+          config={siteConfig}
+        />
+      )}
+
+      {siteConfig && onImportData && (
+        <ConfigImportDialog
+          open={showImportDialog}
+          onClose={() => { setShowImportDialog(false); setPendingImportData(null); setPendingValidation(null) }}
+          importData={pendingImportData}
+          validationResult={pendingValidation}
+          currentConfig={siteConfig}
+          onConfirm={onImportData}
         />
       )}
     </>
