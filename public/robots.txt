@@ -1,4 +1,4 @@
-# https://neuroklast.com
+# https://neuroklast.net
 # Crawlers: Please respect these access rules.
 
 User-agent: *
@@ -70,5 +70,5 @@ User-agent: DotBot
 Disallow: /
 
 # Sitemap — enthält Honeypot-Link für Bot-Erkennung
-Sitemap: https://neuroklast.com/sitemap.xml
-Sitemap: https://neuroklast.com/sitemap-extended.xml
+Sitemap: https://neuroklast.net/sitemap.xml
+Sitemap: https://neuroklast.net/sitemap-extended.xml

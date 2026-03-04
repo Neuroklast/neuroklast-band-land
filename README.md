@@ -423,7 +423,7 @@ See the [🔑 Activation & Licensing](#-activation--licensing) section below for
 
 Contact Neuroklast to request an activation key:
 - Open an issue or discussion on this repository
-- Or reach out via the contact links on [neuroklast.com](https://neuroklast.com)
+- Or reach out via the contact links on [neuroklast.net](https://neuroklast.net)
 
 ### How to configure the key
 

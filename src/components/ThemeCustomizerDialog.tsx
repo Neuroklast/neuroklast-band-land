@@ -253,6 +253,19 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
     root.style.setProperty('--muted', theme.mutedForeground)
   }
 
+  // Extended color overrides — applied after the derived values so they take precedence
+  if (theme.primaryForeground) root.style.setProperty('--primary-foreground', theme.primaryForeground)
+  if (theme.cardForeground) root.style.setProperty('--card-foreground', theme.cardForeground)
+  if (theme.popoverColor) root.style.setProperty('--popover', theme.popoverColor)
+  if (theme.popoverForeground) root.style.setProperty('--popover-foreground', theme.popoverForeground)
+  if (theme.secondaryForeground) root.style.setProperty('--secondary-foreground', theme.secondaryForeground)
+  if (theme.accentForeground) root.style.setProperty('--accent-foreground', theme.accentForeground)
+  if (theme.destructiveColor) root.style.setProperty('--destructive', theme.destructiveColor)
+  if (theme.destructiveForeground) root.style.setProperty('--destructive-foreground', theme.destructiveForeground)
+  if (theme.inputColor) root.style.setProperty('--input', theme.inputColor)
+  if (theme.ringColor) root.style.setProperty('--ring', theme.ringColor)
+  if (theme.hoverColor) root.style.setProperty('--hover-color', theme.hoverColor)
+
   // Load Google Fonts if selected
   for (const key of ['fontHeading', 'fontBody', 'fontMono'] as const) {
     const val = theme[key]
@@ -287,7 +300,7 @@ export function resetThemeDOM() {
     '--radius', '--radius-factor', '--font-size-factor',
     '--overlay-dot-matrix', '--overlay-scanlines', '--overlay-crt',
     '--overlay-noise', '--overlay-vignette', '--overlay-chromatic',
-    '--overlay-moving-scanline',
+    '--overlay-moving-scanline', '--input', '--hover-color',
   ]
   props.forEach(p => root.style.removeProperty(p))
 }

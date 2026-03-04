@@ -194,11 +194,11 @@ A state-of-the-art admin security center provides full visibility and control:
 | `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting) | Recommended |
 | `ADMIN_SETUP_TOKEN` | One-time token required for initial admin password setup. Prevents unauthorized setup via URL guessing. | Recommended |
 | `ADMIN_RESET_EMAIL` | Email for password reset verification & security alerts | For reset & alerting |
-| `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.com`) | Recommended |
+| `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.net`) | Recommended |
 | `DISCORD_WEBHOOK_URL` | Discord webhook URL for security alerts | Optional (for alerting) |
 | `RESEND_API_KEY` | Resend API key for email alerts & password reset | Optional (for alerting & reset) |
-| `EMAIL_FROM` | Sender address for email alerts & reset (default: noreply@neuroklast.com) | Optional |
-| `SITE_URL` | Site URL included in alert messages & reset links (default: neuroklast.com) | Optional |
+| `EMAIL_FROM` | Sender address for email alerts & reset (default: noreply@neuroklast.net) | Optional |
+| `SITE_URL` | Site URL included in alert messages & reset links (default: neuroklast.net) | Optional |
 | `GOOGLE_DRIVE_API_KEY` | Google Drive API key for file metadata | Optional |
 
 ## Best Practices for Deployment

@@ -90,9 +90,9 @@ describe('presetToThemeSettings', () => {
     const theme = presetToThemeSettings(zardonicIndustrialPreset)
     expect(theme.overlayEffects).toBeDefined()
     expect(theme.overlayEffects?.scanlines?.enabled).toBe(true)
-    expect(theme.overlayEffects?.scanlines?.intensity).toBe(0.6)
+    expect(theme.overlayEffects?.scanlines?.intensity).toBe(0.4)
     expect(theme.overlayEffects?.crt?.enabled).toBe(true)
-    expect(theme.overlayEffects?.crt?.intensity).toBe(0.7)
+    expect(theme.overlayEffects?.crt?.intensity).toBe(0.6)
     expect(theme.overlayEffects?.noise?.enabled).toBe(true)
     expect(theme.overlayEffects?.chromatic?.enabled).toBe(true)
   })
@@ -116,7 +116,7 @@ describe('presetToThemeSettings', () => {
     expect(theme.animationSettings?.glitchEnabled).toBe(true)
     expect(theme.animationSettings?.crtEnabled).toBe(true)
     expect(theme.animationSettings?.circuitBackgroundEnabled).toBe(true)
-    expect(theme.animationSettings?.crtOverlayOpacity).toBe(0.7)
+    expect(theme.animationSettings?.crtOverlayOpacity).toBe(0.6)
   })
 
   it('maps loadingScreenType and heroStyle for zardonic-industrial', () => {
