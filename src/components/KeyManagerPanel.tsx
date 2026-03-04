@@ -4,9 +4,9 @@
  * Only visible when VITE_IS_PRIMARY === 'true'.
  * Shows a list of keys (name, tier, created-at) and allows:
  * - Generating new keys with name + tier
- * - Revoking existing keys
+ * - Revoking existing keys (by revokeId — never exposes the key value)
  * - Copying the newly generated key
- * - Showing a simple QR code for the generated key
+ * - Showing a client-side QR code for the generated key (no external services)
  */
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,6 +24,7 @@ import {
   X,
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import QRCode from 'qrcode'
 
 const IS_PRIMARY = import.meta.env.VITE_IS_PRIMARY === 'true'
 
@@ -31,30 +32,43 @@ interface KeyEntry {
   name: string
   tier: string
   createdAt: string | null
-  keySuffix: string
+  revokeId: string | null
 }
 
 interface GeneratedKey {
   key: string
+  revokeId: string
   name: string
   tier: string
   createdAt: string
 }
 
-// ─── Minimal QR code via Google Charts (no library needed) ───────────────────
+// ─── Client-side QR code display ─────────────────────────────────────────────
 
 function QrCodeDisplay({ value }: { value: string }) {
-  const encoded = encodeURIComponent(value)
-  const url = `https://api.qrserver.com/v1/create-qr-code/?data=${encoded}&size=160x160&bgcolor=000000&color=ff3333&qzone=1`
+  const [dataUrl, setDataUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    QRCode.toDataURL(value, {
+      width: 160,
+      margin: 1,
+      color: { dark: '#ff3333', light: '#000000' },
+    })
+      .then(setDataUrl)
+      .catch(() => setDataUrl(null))
+  }, [value])
+
+  if (!dataUrl) {
+    return (
+      <div className="w-[160px] h-[160px] border border-primary/20 rounded flex items-center justify-center text-xs text-muted-foreground">
+        Generating QR…
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col items-center gap-2 p-3 bg-black rounded border border-primary/20">
-      <img
-        src={url}
-        alt="QR Code"
-        width={160}
-        height={160}
-        className="rounded"
-      />
+      <img src={dataUrl} alt="QR Code" width={160} height={160} className="rounded" />
       <p className="text-[10px] font-mono text-muted-foreground text-center break-all max-w-[160px]">{value}</p>
     </div>
   )
@@ -63,7 +77,6 @@ function QrCodeDisplay({ value }: { value: string }) {
 // ─── Admin auth helper ────────────────────────────────────────────────────────
 
 function getAdminToken(): string {
-  // Read from cookie or sessionStorage (set by AdminLoginDialog)
   try {
     return sessionStorage.getItem('nk-admin-token') || ''
   } catch {
@@ -139,12 +152,8 @@ export default function KeyManagerPanel() {
     }
   }, [newName, newTier, fetchKeys])
 
-  const handleRevoke = useCallback(async (keySuffix: string) => {
-    // The API needs the full key, but we only store the suffix for display
-    // The user must confirm; actual revocation sends the suffix as a pseudo-key
-    // In production you'd send the full key, but we don't store it for security
-    // This panel revoking by suffix is intentionally limited — see API docs
-    setRevokeTarget(keySuffix)
+  const handleRevoke = useCallback((revokeId: string) => {
+    setRevokeTarget(revokeId)
   }, [])
 
   const confirmRevoke = useCallback(async () => {
@@ -156,7 +165,7 @@ export default function KeyManagerPanel() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAdminToken()}`,
         },
-        body: JSON.stringify({ key: revokeTarget }),
+        body: JSON.stringify({ revokeId: revokeTarget }),
       })
       if (!res.ok) {
         toast.error('Failed to revoke key')
@@ -284,17 +293,18 @@ export default function KeyManagerPanel() {
               <p className="text-[10px] text-muted-foreground">
                 Tier: <span className="text-primary">{entry.tier}</span>
                 {entry.createdAt && ` · ${new Date(entry.createdAt).toLocaleDateString()}`}
-                {' · '}…{entry.keySuffix}
               </p>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleRevoke(entry.keySuffix)}
-              className="text-xs gap-1 h-6 border-destructive/40 text-destructive flex-shrink-0"
-            >
-              <Trash size={11} /> Revoke
-            </Button>
+            {entry.revokeId && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleRevoke(entry.revokeId!)}
+                className="text-xs gap-1 h-6 border-destructive/40 text-destructive flex-shrink-0"
+              >
+                <Trash size={11} /> Revoke
+              </Button>
+            )}
           </div>
         ))}
       </div>
@@ -319,7 +329,7 @@ export default function KeyManagerPanel() {
                 <p className="font-semibold text-sm">Revoke Key?</p>
               </div>
               <p className="text-xs text-muted-foreground">
-                This will permanently revoke the key ending in <code>…{revokeTarget}</code>. 
+                This will permanently revoke this activation key.
                 Any deployment using this key will be locked out.
               </p>
               <div className="flex gap-2 justify-end">

@@ -19,6 +19,8 @@ const mockKv = {
   hgetall: vi.fn(),
   hset: vi.fn(),
   del: vi.fn(),
+  set: vi.fn(),
+  get: vi.fn(),
 }
 
 vi.mock('@vercel/kv', () => ({ kv: mockKv }))
@@ -150,20 +152,19 @@ describe('GET /api/admin/keys', () => {
     expect((res._data as { keys: unknown[] }).keys).toHaveLength(0)
   })
 
-  it('returns list with masked key values (only suffix)', async () => {
+  it('returns list with revokeId (not the key value)', async () => {
     mockKv.smembers.mockResolvedValue(['abcdef1234567890'])
-    mockKv.hgetall.mockResolvedValue({ name: 'Test Key', tier: 'pro', createdAt: '2025-01-01' })
+    mockKv.hgetall.mockResolvedValue({ name: 'Test Key', tier: 'pro', createdAt: '2025-01-01', revokeId: 'revoke-uuid-abc' })
     const { default: handler } = await import('../../api/admin/keys')
     const req = makeReq('GET', {}, 'secret-admin-token')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(200)
-    const keys = (res._data as { keys: Array<{ name: string; tier: string; keySuffix: string }> }).keys
+    const keys = (res._data as { keys: Array<{ name: string; tier: string; revokeId: string }> }).keys
     expect(keys).toHaveLength(1)
     expect(keys[0].name).toBe('Test Key')
     expect(keys[0].tier).toBe('pro')
-    // key suffix = last 4 chars of 'abcdef1234567890'
-    expect(keys[0].keySuffix).toBe('7890')
+    expect(keys[0].revokeId).toBe('revoke-uuid-abc')
     // Full key value must not be returned
     expect(JSON.stringify(keys)).not.toContain('abcdef1234567890')
   })
@@ -178,20 +179,22 @@ describe('POST /api/admin/keys', () => {
     vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
     mockKv.sadd.mockResolvedValue(1)
     mockKv.hset.mockResolvedValue(1)
+    mockKv.set.mockResolvedValue('OK')
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('generates a key and returns it in the response', async () => {
+  it('generates a key and returns it in the response (with revokeId)', async () => {
     const { default: handler } = await import('../../api/admin/keys')
     const req = makeReq('POST', { name: 'My Key', tier: 'pro' }, 'secret-admin-token')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(201)
-    const data = res._data as { key: string; name: string; tier: string }
+    const data = res._data as { key: string; revokeId: string; name: string; tier: string }
     expect(data.key).toBeTruthy()
+    expect(data.revokeId).toBeTruthy()
     expect(data.name).toBe('My Key')
     expect(data.tier).toBe('pro')
   })
@@ -203,6 +206,8 @@ describe('POST /api/admin/keys', () => {
     await handler(req as never, res as never)
     expect(mockKv.sadd).toHaveBeenCalledWith('activation-keys', expect.any(String))
     expect(mockKv.hset).toHaveBeenCalled()
+    // Also stores revokeId → key mapping
+    expect(mockKv.set).toHaveBeenCalled()
   })
 
   it('returns 400 when name is empty', async () => {
@@ -231,36 +236,48 @@ describe('DELETE /api/admin/keys', () => {
     vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
     mockKv.srem.mockResolvedValue(1)
     mockKv.del.mockResolvedValue(1)
+    mockKv.get.mockResolvedValue('actual-key-value')
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('removes the key from KV', async () => {
+  it('removes the key from KV using revokeId', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('DELETE', { key: 'some-key-value' }, 'secret-admin-token')
+    const req = makeReq('DELETE', { revokeId: 'some-revoke-id' }, 'secret-admin-token')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(200)
-    expect(mockKv.srem).toHaveBeenCalledWith('activation-keys', 'some-key-value')
-    expect(mockKv.del).toHaveBeenCalledWith('activation-key-meta:some-key-value')
+    // Uses the revokeId to look up the key, then removes it
+    expect(mockKv.get).toHaveBeenCalledWith('activation-revoke:some-revoke-id')
+    expect(mockKv.srem).toHaveBeenCalledWith('activation-keys', 'actual-key-value')
+    expect(mockKv.del).toHaveBeenCalledWith('activation-key-meta:actual-key-value')
   })
 
-  it('returns 400 when key is empty', async () => {
+  it('returns 400 when revokeId is empty', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('DELETE', { key: '' }, 'secret-admin-token')
+    const req = makeReq('DELETE', { revokeId: '' }, 'secret-admin-token')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(400)
   })
 
-  it('returns 400 when key is missing', async () => {
+  it('returns 400 when revokeId is missing', async () => {
     const { default: handler } = await import('../../api/admin/keys')
     const req = makeReq('DELETE', {}, 'secret-admin-token')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(400)
+  })
+
+  it('returns 404 when revokeId not found in KV', async () => {
+    mockKv.get.mockResolvedValue(null)
+    const { default: handler } = await import('../../api/admin/keys')
+    const req = makeReq('DELETE', { revokeId: 'unknown-id' }, 'secret-admin-token')
+    const res = makeRes()
+    await handler(req as never, res as never)
+    expect(res._status).toBe(404)
   })
 })
 

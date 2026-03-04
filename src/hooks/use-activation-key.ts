@@ -69,6 +69,27 @@ export function clearLocalActivationKey(): void {
   }
 }
 
+/** Extract and persist an activation key from the URL hash (#activate=KEY). */
+function processUrlHashKey(): void {
+  try {
+    if (typeof window === 'undefined') return
+    const hash = window.location.hash
+    const match = hash.match(/[#&]?activate=([^&]+)/)
+    if (!match?.[1]) return
+
+    const urlKey = decodeURIComponent(match[1]).trim()
+    if (!urlKey) return
+
+    saveLocalActivationKey(urlKey)
+    // Remove the activate param from the URL to avoid re-processing on reload
+    const withoutActivate = hash.replace(/[#&]?activate=[^&]+/, '').replace(/^#$/, '')
+    const newUrl = withoutActivate ? `#${withoutActivate.replace(/^#/, '')}` : window.location.pathname
+    window.history.replaceState(null, '', newUrl)
+  } catch {
+    // URL manipulation not available in this environment
+  }
+}
+
 export function useActivationKey() {
   const [status, setStatus] = useState<ActivationStatus>('loading')
 
@@ -80,21 +101,7 @@ export function useActivationKey() {
     }
 
     // Check URL hash for #activate=KEY parameter (save to localStorage)
-    try {
-      const hash = typeof window !== 'undefined' ? window.location.hash : ''
-      const match = hash.match(/[#&]?activate=([^&]+)/)
-      if (match?.[1]) {
-        const urlKey = decodeURIComponent(match[1]).trim()
-        if (urlKey) {
-          saveLocalActivationKey(urlKey)
-          // Remove from URL to avoid re-processing
-          const cleanHash = hash.replace(/[#&]?activate=[^&]+/, '').replace(/^#$/, '')
-          window.history.replaceState(null, '', cleanHash ? `#${cleanHash.replace(/^#/, '')}` : window.location.pathname)
-        }
-      }
-    } catch {
-      // URL manipulation not available
-    }
+    processUrlHashKey()
 
     // Resolve the key to validate: ENV > localStorage
     const key = ACTIVATION_KEY?.trim() || getLocalActivationKey()?.trim() || ''

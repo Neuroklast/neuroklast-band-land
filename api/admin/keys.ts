@@ -28,12 +28,17 @@ function checkAdminAuth(req: VercelRequest): boolean {
 // ─── Key Manager API ──────────────────────────────────────────────────────────
 
 /**
- * GET  → List all activation keys (name + tier + created-at, NOT the key value)
- * POST → Generate a new activation key and return the key value once
- * DELETE → Revoke an existing key by value
+ * GET  → List all activation keys (name + tier + created-at + revokeId, NOT the key value!)
+ * POST → Generate a new activation key (returns the key value once, plus a revokeId)
+ * DELETE → Revoke a key by its revokeId (a separate identifier, never the key itself)
  *
  * Only available on the primary deployment (VITE_IS_PRIMARY=true).
  * Requires Authorization: Bearer <ADMIN_TOKEN> header.
+ *
+ * Key security: The actual activation key value is ONLY returned on creation.
+ * All subsequent operations use the `revokeId` (a random token stored alongside
+ * the key metadata) to avoid exposing key values in list responses or DELETE
+ * requests.  A mapping from revokeId → key is stored in KV.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only available on primary instance
@@ -47,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    // List all keys (metadata only, not the key values)
+    // List all keys (metadata only, never the key values)
     try {
       const keys = await kv.smembers('activation-keys') as string[]
       const keyList = await Promise.all(
@@ -58,11 +63,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               name: (meta?.name as string) || '(unnamed)',
               tier: (meta?.tier as string) || 'free',
               createdAt: (meta?.createdAt as string) || null,
-              // Mask the key value: show only last 4 chars
-              keySuffix: key.slice(-4),
+              // Use revokeId for revocation — never expose the key value
+              revokeId: (meta?.revokeId as string) || null,
             }
           } catch {
-            return { name: '(unnamed)', tier: 'free', createdAt: null, keySuffix: key.slice(-4) }
+            return { name: '(unnamed)', tier: 'free', createdAt: null, revokeId: null }
           }
         })
       )
@@ -85,7 +90,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+      // 24 bytes = 48 hex chars of cryptographic entropy
       const key = randomBytes(24).toString('hex')
+      const revokeId = randomBytes(16).toString('hex')
       const createdAt = new Date().toISOString()
 
       await kv.sadd('activation-keys', key)
@@ -93,10 +100,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         name: name.trim(),
         tier: String(tier),
         createdAt,
+        revokeId,
         features: JSON.stringify([]),
       })
+      // Store reverse mapping revokeId → key for safe revocation
+      await kv.set(`activation-revoke:${revokeId}`, key)
 
-      return res.status(201).json({ key, name: name.trim(), tier, createdAt })
+      // Return the key value ONCE — after this it is never returned again
+      return res.status(201).json({ key, revokeId, name: name.trim(), tier, createdAt })
     } catch (error) {
       console.error('[admin/keys POST] KV error:', error)
       return res.status(500).json({ error: 'Failed to create key' })
@@ -104,15 +115,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'DELETE') {
-    const { key } = req.body || {}
+    const { revokeId } = req.body || {}
 
-    if (!key || typeof key !== 'string' || !key.trim()) {
-      return res.status(400).json({ error: 'key is required' })
+    if (!revokeId || typeof revokeId !== 'string' || !revokeId.trim()) {
+      return res.status(400).json({ error: 'revokeId is required' })
     }
 
     try {
-      await kv.srem('activation-keys', key.trim())
-      await kv.del(`activation-key-meta:${key.trim()}`)
+      // Look up the actual key value via the revokeId mapping
+      const key = await kv.get(`activation-revoke:${revokeId.trim()}`) as string | null
+      if (!key) {
+        return res.status(404).json({ error: 'Key not found or already revoked' })
+      }
+
+      await kv.srem('activation-keys', key)
+      await kv.del(`activation-key-meta:${key}`)
+      await kv.del(`activation-revoke:${revokeId.trim()}`)
       return res.status(200).json({ success: true })
     } catch (error) {
       console.error('[admin/keys DELETE] KV error:', error)
