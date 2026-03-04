@@ -25,6 +25,20 @@ function checkAdminAuth(req: VercelRequest): boolean {
   return token === adminToken
 }
 
+// ─── Default key entry for error fallbacks ────────────────────────────────────
+
+const FALLBACK_KEY_ENTRY = {
+  name: '(unnamed)',
+  tier: 'free',
+  createdAt: null,
+  revokeId: null,
+  holderName: null,
+  holderEmail: null,
+  holderWebsite: null,
+  notes: null,
+  assignedThemes: [] as string[],
+}
+
 // ─── Key Manager API ──────────────────────────────────────────────────────────
 
 /**
@@ -75,7 +89,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 : [],
             }
           } catch {
-            return { name: '(unnamed)', tier: 'free', createdAt: null, revokeId: null, holderName: null, holderEmail: null, holderWebsite: null, notes: null, assignedThemes: [] }
+            return { ...FALLBACK_KEY_ENTRY }
           }
         })
       )

@@ -178,7 +178,7 @@ export default function AdminHubDialog({
           {
             icon: '🔄',
             label: t('hub.resetSetup'),
-            action: () => { onClose(); onResetSetup!() },
+            action: () => { onClose(); onResetSetup?.() },
           },
         ]
       : []),
@@ -187,7 +187,7 @@ export default function AdminHubDialog({
           {
             icon: '🚪',
             label: t('hub.logout'),
-            action: () => { onClose(); onLogout!() },
+            action: () => { onClose(); onLogout?.() },
           },
         ]
       : []),
