@@ -83,9 +83,13 @@ export const PROVIDERS = {
 }
 
 export function getCallbackUrl(req, provider) {
-  const appUrl =
-    process.env.OAUTH_APP_URL ||
-    (req.headers.host ? `https://${req.headers.host}` : 'http://localhost:5173')
+  const appUrl = process.env.OAUTH_APP_URL || process.env.SITE_URL
+  if (!appUrl) {
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      return `http://localhost:5173/api/oauth?action=callback&provider=${provider}`
+    }
+    throw new Error('OAUTH_APP_URL or SITE_URL must be configured for OAuth')
+  }
   return `${appUrl}/api/oauth?action=callback&provider=${provider}`
 }
 
@@ -205,6 +209,7 @@ export default async function handler(req, res) {
   // --- GET: callback ---
   if (req.method === 'GET' && action === 'callback') {
     const { code, state, error: oauthError } = query
+    const postMessageOrigin = process.env.OAUTH_APP_URL || process.env.SITE_URL || '*'
 
     if (oauthError) {
       await appendOAuthLog({
@@ -215,7 +220,7 @@ export default async function handler(req, res) {
         reason: oauthError,
       })
       return res.status(400).send(
-        `<html><body><script>window.opener?.postMessage({type:'oauth-callback',success:false,error:${JSON.stringify(oauthError)}},'*');window.close()</script><p>Connection failed: ${oauthError}. You can close this window.</p></body></html>`,
+        `<html><body><script>window.opener?.postMessage({type:'oauth-callback',success:false,error:${JSON.stringify(oauthError)}},${JSON.stringify(postMessageOrigin)});window.close()</script><p>Connection failed: ${oauthError}. You can close this window.</p></body></html>`,
       )
     }
 
@@ -266,7 +271,7 @@ export default async function handler(req, res) {
       const cfg = PROVIDERS[provider]
       const displayName = tokenRecord.displayName || tokenRecord.email || cfg.name
       return res.status(200).send(
-        `<html><body><script>window.opener?.postMessage({type:'oauth-callback',success:true,provider:${JSON.stringify(provider)},displayName:${JSON.stringify(displayName)}},'*');window.close()</script><p>Connected to ${cfg.name} as ${displayName}. You can close this window.</p></body></html>`,
+        `<html><body><script>window.opener?.postMessage({type:'oauth-callback',success:true,provider:${JSON.stringify(provider)},displayName:${JSON.stringify(displayName)}},${JSON.stringify(postMessageOrigin)});window.close()</script><p>Connected to ${cfg.name} as ${displayName}. You can close this window.</p></body></html>`,
       )
     } catch (err) {
       console.error('OAuth callback error:', err)
@@ -278,7 +283,7 @@ export default async function handler(req, res) {
         reason: err.message,
       })
       return res.status(500).send(
-        `<html><body><script>window.opener?.postMessage({type:'oauth-callback',success:false,error:'connection_failed'},'*');window.close()</script><p>OAuth connection failed. Please try again.</p></body></html>`,
+        `<html><body><script>window.opener?.postMessage({type:'oauth-callback',success:false,error:'connection_failed'},${JSON.stringify(postMessageOrigin)});window.close()</script><p>OAuth connection failed. Please try again.</p></body></html>`,
       )
     }
   }
