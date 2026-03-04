@@ -16,17 +16,24 @@ import {
   PuzzlePiece,
   Sliders,
   X,
+  Lock,
+  GearSix,
 } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useLocale } from '@/contexts/LocaleContext'
 import { toast } from 'sonner'
 import type { WidgetPlugin, ThemeSettings, StoreTab, StoreItemLicense } from '@/lib/types'
+import type { LicenseTier } from '@/lib/license'
+import { hasFeature } from '@/lib/license'
+import ThemePreviewCard from '@/components/ThemePreviewCard'
+import WidgetConfigDialog from '@/components/WidgetConfigDialog'
 import {
   buildStoreItems,
   filterStoreItems,
   installWidget,
   uninstallWidget,
   toggleWidget,
+  updateWidgetConfig,
   mixThemeSettings,
   type StoreItem,
   type MixPart,
@@ -57,16 +64,21 @@ function StarRating({ average, count }: { average: number; count: number }) {
 
 interface StoreItemCardProps {
   item: StoreItem
+  licenseTier?: LicenseTier
   onInstall: () => void
   onUninstall: () => void
   onToggle: () => void
   onApplyTheme: () => void
+  onConfigure?: () => void
 }
 
-function StoreItemCard({ item, onInstall, onUninstall, onToggle, onApplyTheme }: StoreItemCardProps) {
+function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure }: StoreItemCardProps) {
   const { t } = useLocale()
   const isWidget = item.type === 'widget'
   const isTheme = item.type === 'theme'
+
+  const tier = licenseTier ?? 'free'
+  const isPremiumLocked = item.license === 'premium' && !hasFeature(tier, 'premium-themes')
 
   return (
     <motion.div
@@ -121,11 +133,31 @@ function StoreItemCard({ item, onInstall, onUninstall, onToggle, onApplyTheme }:
         </div>
       )}
 
+      {/* Theme preview for theme items */}
+      {isTheme && (
+        <ThemePreviewCard
+          preset={Object.values(DESIGN_PRESETS).find((p) => p.id === item.id) ?? Object.values(DESIGN_PRESETS)[0]}
+          active={item.enabled}
+          className="mt-1"
+        />
+      )}
+
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-1 border-t border-primary/10">
+      <div className="flex items-center gap-2 pt-1 border-t border-primary/10 flex-wrap">
         {isWidget && !item.installed && (
-          <Button size="sm" variant="outline" onClick={onInstall} className="text-xs gap-1 h-7 border-primary/30">
-            <DownloadSimple size={14} /> {t('store.install')}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={isPremiumLocked ? undefined : onInstall}
+            disabled={isPremiumLocked}
+            title={isPremiumLocked ? 'Upgrade to Pro to install premium widgets' : undefined}
+            className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
+          >
+            {isPremiumLocked ? (
+              <><Lock size={12} /> 🔒 PRO REQUIRED</>
+            ) : (
+              <><DownloadSimple size={14} /> {t('store.install')}</>
+            )}
           </Button>
         )}
         {isWidget && item.installed && (
@@ -142,11 +174,27 @@ function StoreItemCard({ item, onInstall, onUninstall, onToggle, onApplyTheme }:
             <Button size="sm" variant="outline" onClick={onUninstall} className="text-xs gap-1 h-7 border-destructive/40 text-destructive">
               <Trash size={14} /> {t('store.uninstall')}
             </Button>
+            {onConfigure && (
+              <Button size="sm" variant="outline" onClick={onConfigure} className="text-xs gap-1 h-7 border-primary/20 text-muted-foreground hover:text-foreground">
+                <GearSix size={14} />
+              </Button>
+            )}
           </>
         )}
         {isTheme && !item.enabled && (
-          <Button size="sm" variant="outline" onClick={onApplyTheme} className="text-xs gap-1 h-7 border-primary/30">
-            <Palette size={14} /> {t('store.apply')}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={isPremiumLocked ? undefined : onApplyTheme}
+            disabled={isPremiumLocked}
+            title={isPremiumLocked ? 'Upgrade to Pro to use premium themes' : undefined}
+            className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
+          >
+            {isPremiumLocked ? (
+              <><Lock size={12} /> 🔒 PRO REQUIRED</>
+            ) : (
+              <><Palette size={14} /> {t('store.apply')}</>
+            )}
           </Button>
         )}
         {isTheme && item.enabled && (
@@ -283,6 +331,7 @@ interface StoreDialogProps {
   onUpdatePlugins: (plugins: WidgetPlugin[]) => void
   activePresetId?: string
   onApplyTheme: (theme: ThemeSettings) => void
+  licenseTier?: LicenseTier
 }
 
 export default function StoreDialog({
@@ -292,11 +341,13 @@ export default function StoreDialog({
   onUpdatePlugins,
   activePresetId,
   onApplyTheme,
+  licenseTier,
 }: StoreDialogProps) {
   const { t } = useLocale()
   const [tab, setTab] = useState<StoreTab>('all')
   const [search, setSearch] = useState('')
   const [licenseFilter, setLicenseFilter] = useState<StoreItemLicense | undefined>()
+  const [configWidget, setConfigWidget] = useState<WidgetPlugin | null>(null)
 
   const allItems = useMemo(
     () => buildStoreItems(widgetPlugins, DESIGN_PRESETS, activePresetId),
@@ -351,6 +402,23 @@ export default function StoreDialog({
     [onApplyTheme],
   )
 
+  const handleConfigure = useCallback(
+    (id: string) => {
+      const plugin = widgetPlugins.find((p) => p.id === id) ?? null
+      setConfigWidget(plugin)
+    },
+    [widgetPlugins],
+  )
+
+  const handleSaveConfig = useCallback(
+    (config: Record<string, unknown>) => {
+      if (!configWidget) return
+      onUpdatePlugins(updateWidgetConfig(widgetPlugins, configWidget.id, config))
+      setConfigWidget(null)
+    },
+    [configWidget, widgetPlugins, onUpdatePlugins],
+  )
+
   if (!open) return null
 
   const tabs: { key: StoreTab; label: string }[] = [
@@ -360,6 +428,7 @@ export default function StoreDialog({
   ]
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -459,10 +528,12 @@ export default function StoreDialog({
                       <StoreItemCard
                         key={item.id}
                         item={item}
+                        licenseTier={licenseTier}
                         onInstall={() => handleInstall(item.id)}
                         onUninstall={() => handleUninstall(item.id)}
                         onToggle={() => handleToggle(item.id)}
                         onApplyTheme={() => handleApplyThemePreset(item.id)}
+                        onConfigure={item.type === 'widget' && item.installed ? () => handleConfigure(item.id) : undefined}
                       />
                     ))}
                   </AnimatePresence>
@@ -477,5 +548,15 @@ export default function StoreDialog({
         </motion.div>
       )}
     </AnimatePresence>
+
+    {/* Widget config dialog */}
+    {configWidget && (
+      <WidgetConfigDialog
+        widget={configWidget}
+        onSave={handleSaveConfig}
+        onClose={() => setConfigWidget(null)}
+      />
+    )}
+  </>
   )
 }
