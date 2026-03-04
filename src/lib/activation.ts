@@ -57,12 +57,20 @@ function setCachedResult(result: ActivationResult): void {
 /**
  * Validate the deployment's activation key against the central Neuroklast API.
  *
+ * - If `VITE_IS_PRIMARY` is `"true"`, the deployment is the official Neuroklast
+ *   instance and validation is bypassed (always valid).
  * - If no key is configured (`VITE_ACTIVATION_KEY` is empty), returns invalid.
  * - Caches the result in sessionStorage for the current browser session.
  * - If the remote API is unreachable, fails closed (returns invalid) to prevent
  *   unactivated deployments from running silently.
  */
 export async function validateActivationKey(): Promise<ActivationResult> {
+  // Primary instance (own deployment) — always valid, no key required
+  if (import.meta.env.VITE_IS_PRIMARY === 'true') {
+    const result: ActivationResult = { valid: true, tier: 'saas', features: [] }
+    return result
+  }
+
   // Return cached result for the current session
   const cached = getCachedResult()
   if (cached !== null) return cached

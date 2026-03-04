@@ -21,6 +21,7 @@ const isKVConfigured = () => {
  */
 const ALLOWED_PUBLIC_READ_KEYS = new Set([
   'band-data',
+  'site-config',
 ])
 
 // Constant-time string comparison to prevent timing attacks on hash comparison.
@@ -119,6 +120,30 @@ export default async function handler(req, res) {
       if (key === 'band-data' && isPublicRead && !isAuthenticated && value && typeof value === 'object') {
         const { terminalCommands: _stripped, ...safeValue } = /** @type {Record<string, unknown>} */ (value)
         return res.json({ value: safeValue })
+      }
+
+      // Strip sensitive fields from public site-config reads.
+      // syncUrl, secretCode, and configOverrides may contain secrets;
+      // widget plugin configs are sanitized to mask API keys/tokens.
+      if (key === 'site-config' && isPublicRead && !isAuthenticated && value && typeof value === 'object') {
+        const { syncUrl: _su, secretCode: _sc, configOverrides: _co, ...safeConfig } = /** @type {Record<string, unknown>} */ (value)
+        // Sanitize widget plugin configs to mask sensitive values
+        if (Array.isArray(safeConfig.widgetPlugins)) {
+          safeConfig.widgetPlugins = safeConfig.widgetPlugins.map(/** @param {Record<string, unknown>} plugin */ (plugin) => {
+            if (!plugin.config || typeof plugin.config !== 'object') return plugin
+            const sanitized = {}
+            for (const [k, v] of Object.entries(plugin.config)) {
+              const lower = k.toLowerCase()
+              if (lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('password')) {
+                sanitized[k] = '***'
+              } else {
+                sanitized[k] = v
+              }
+            }
+            return { ...plugin, config: sanitized }
+          })
+        }
+        return res.json({ value: safeConfig })
       }
 
       return res.json({ value: value ?? null })

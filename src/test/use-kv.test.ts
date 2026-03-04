@@ -272,4 +272,52 @@ describe('useKV', () => {
     act(() => { result.current[1](null) })
     expect(result.current[0]).toBeNull()
   })
+
+  it('cancels previous in-flight POST when a newer update arrives', async () => {
+    const abortedSignals: AbortSignal[] = []
+    let callCount = 0
+    vi.spyOn(globalThis, 'fetch').mockImplementation((_url, init) => {
+      callCount++
+      if (callCount === 1) {
+        // Initial GET
+        return Promise.resolve(new Response(JSON.stringify({ value: 'initial' }), { status: 200 }))
+      }
+      // Track abort signals on POSTs
+      if (init && (init as RequestInit).signal) {
+        abortedSignals.push((init as RequestInit).signal as AbortSignal)
+      }
+      return Promise.resolve(new Response(JSON.stringify({ success: true }), { status: 200 }))
+    })
+
+    const { result } = renderHook(() => useKV('cancel-key', 'default'))
+    await waitFor(() => expect(result.current[2]).toBe(true))
+
+    // Rapid updates — first should be cancelled by second
+    act(() => { result.current[1]('first') })
+    act(() => { result.current[1]('second') })
+
+    // The first request's signal should have been aborted
+    expect(abortedSignals.length).toBeGreaterThanOrEqual(1)
+    expect(abortedSignals[0].aborted).toBe(true)
+    // Final state should reflect the last update
+    expect(result.current[0]).toBe('second')
+  })
+
+  it('uses valueRef to give function updaters the latest value across rapid calls', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ value: 0 }), { status: 200 })
+    )
+
+    const { result } = renderHook(() => useKV<number>('rapid-counter', 0))
+    await waitFor(() => expect(result.current[2]).toBe(true))
+
+    // Three rapid increments — each should see the result of the previous
+    act(() => {
+      result.current[1]((prev) => (prev ?? 0) + 1)
+      result.current[1]((prev) => (prev ?? 0) + 1)
+      result.current[1]((prev) => (prev ?? 0) + 1)
+    })
+
+    expect(result.current[0]).toBe(3)
+  })
 })
