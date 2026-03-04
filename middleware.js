@@ -21,6 +21,11 @@ import { kv } from '@vercel/kv'
 
 const SALT = process.env.RATE_LIMIT_SALT || 'nk-default-rate-limit-salt-change-me'
 
+if (!process.env.RATE_LIMIT_SALT) {
+  console.error('[SECURITY] RATE_LIMIT_SALT is not set. Using insecure default. Set this environment variable immediately.')
+}
+
+
 /**
  * Hash an IP with SHA-256 + salt using the Web Crypto API (Edge-compatible).
  * Produces the same hex digest as the Node.js createHash in _ratelimit.js.
@@ -51,6 +56,11 @@ export default async function middleware(req) {
   // Skip when KV is not configured (local development)
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
     return
+  }
+
+  // Warn on every request in production if the default salt is still in use
+  if (!process.env.RATE_LIMIT_SALT && process.env.VERCEL) {
+    console.error('[SECURITY] RATE_LIMIT_SALT is not configured in production. IP hashes are predictable.')
   }
 
   try {

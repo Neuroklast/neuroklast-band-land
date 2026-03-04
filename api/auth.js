@@ -112,7 +112,7 @@ async function createSession(req, res) {
  * Invalidate all existing sessions by scanning and deleting session:* keys.
  * Called after a password change to force re-authentication.
  */
-async function invalidateAllSessions() {
+export async function invalidateAllSessions() {
   try {
     let cursor = 0
     do {

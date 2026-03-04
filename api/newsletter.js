@@ -4,22 +4,64 @@ import { applyRateLimit } from './_ratelimit.js'
 /** Store subscriber locally in KV for the admin mailing list view. */
 async function storeSubscriberLocally(email, source) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return
-  try {
-    const key = 'newsletter-subscribers'
-    const subscribers = (await kv.get(key)) || []
-    if (subscribers.some((s) => s.email === email)) return
-    subscribers.push({ email, source: source || 'website', date: new Date().toISOString() })
-    await kv.set(key, subscribers)
-  } catch (err) { console.error('storeSubscriberLocally failed:', err) }
+  const MAX_RETRIES = 3
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const key = 'newsletter-subscribers'
+      const subscribers = (await kv.get(key)) || []
+      if (subscribers.some((s) => s.email === email)) return // already subscribed
+      subscribers.push({ email, source: source || 'website', date: new Date().toISOString() })
+      await kv.set(key, subscribers)
+      return // success
+    } catch (err) {
+      if (attempt === MAX_RETRIES - 1) {
+        console.error('storeSubscriberLocally failed after retries:', err)
+      }
+    }
+  }
 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, DELETE, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
+  }
+
+  if (req.method === 'DELETE') {
+    const allowed = await applyRateLimit(req, res)
+    if (!allowed) return
+
+    const { email } = req.body || {}
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({ error: 'Valid email required' })
+    }
+
+    const sanitizedEmail = email.toLowerCase().trim().slice(0, 254)
+
+    // Remove from local KV store
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      const MAX_RETRIES = 3
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const key = 'newsletter-subscribers'
+          const subscribers = (await kv.get(key)) || []
+          const filtered = subscribers.filter((s) => s.email !== sanitizedEmail)
+          await kv.set(key, filtered)
+          break
+        } catch (err) {
+          if (attempt === MAX_RETRIES - 1) {
+            console.error('Unsubscribe from local KV failed:', err)
+          }
+        }
+      }
+    }
+
+    // TODO: Also unsubscribe from Mailchimp/Brevo if configured
+
+    return res.status(200).json({ success: true, message: 'Unsubscribed successfully' })
   }
 
   if (req.method !== 'POST') {

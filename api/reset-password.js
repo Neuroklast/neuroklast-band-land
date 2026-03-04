@@ -1,7 +1,7 @@
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { timingSafeEqual } from './kv.js'
-import { hashPassword } from './auth.js'
+import { hashPassword, invalidateAllSessions } from './auth.js'
 import { applyRateLimit } from './_ratelimit.js'
 import { resetPasswordSchema, confirmResetPasswordSchema, validate } from './_schemas.js'
 import { Resend } from 'resend'
@@ -59,6 +59,9 @@ export default async function handler(req, res) {
       pipe.set('admin-password-hash', hashedPassword)
       pipe.del(RESET_TOKEN_KEY)
       await pipe.exec()
+
+      // Invalidate all existing sessions so stolen sessions can't be reused
+      await invalidateAllSessions()
 
       return res.json({ success: true, message: 'Password has been reset successfully.' })
     } catch (error) {

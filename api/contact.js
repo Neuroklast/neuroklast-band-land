@@ -139,10 +139,18 @@ async function handlePost(req, res) {
     read: false,
   }
 
-  const existing = (await kv.get(KV_KEY)) || []
-  existing.push(entry)
-  const toStore = existing.length > MAX_CONTACT_MESSAGES ? existing.slice(-MAX_CONTACT_MESSAGES) : existing
-  await kv.set(KV_KEY, toStore)
+  const MAX_RETRIES = 3
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const existing = (await kv.get(KV_KEY)) || []
+      existing.push(entry)
+      const toStore = existing.length > MAX_CONTACT_MESSAGES ? existing.slice(-MAX_CONTACT_MESSAGES) : existing
+      await kv.set(KV_KEY, toStore)
+      break
+    } catch (err) {
+      if (attempt === MAX_RETRIES - 1) throw err
+    }
+  }
 
   // Fire-and-forget email notification
   sendEmailNotification({ name, email, subject, message })
