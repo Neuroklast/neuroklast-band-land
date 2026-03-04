@@ -185,6 +185,29 @@ export interface ThemeSettings {
   loadingScreenType?: 'cyberpunk' | 'code-rain' | '3d-model' | 'minimal'
   /** Hero section visual style */
   heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
+  // Extended optional color overrides (mirrors DesignPreset extended colors)
+  /** Primary foreground color (default: derived from foreground) */
+  primaryForeground?: string
+  /** Card foreground color (default: derived from foreground) */
+  cardForeground?: string
+  /** Popover background color (default: derived from background) */
+  popoverColor?: string
+  /** Popover foreground color (default: derived from foreground) */
+  popoverForeground?: string
+  /** Secondary foreground color (default: derived from foreground) */
+  secondaryForeground?: string
+  /** Accent foreground color (default: derived from foreground) */
+  accentForeground?: string
+  /** Destructive color (default: derived from primary) */
+  destructiveColor?: string
+  /** Destructive foreground color (default: derived from foreground) */
+  destructiveForeground?: string
+  /** Input color (default: derived from border) */
+  inputColor?: string
+  /** Ring color (default: derived from primary) */
+  ringColor?: string
+  /** Hover accent color (default: derived from accent) */
+  hoverColor?: string
 }
 
 /** Individual overlay effect configuration */
@@ -499,6 +522,18 @@ export interface DesignPreset {
     mutedForeground: string
     border: string
     secondary: string
+    // Extended optional colors matching the zardonic-industrial ThemeCustomization interface
+    primaryForeground?: string
+    cardForeground?: string
+    popoverColor?: string
+    popoverForeground?: string
+    secondaryForeground?: string
+    accentForeground?: string
+    destructiveColor?: string
+    destructiveForeground?: string
+    inputColor?: string
+    ringColor?: string
+    hoverColor?: string
   }
   /** Recommended font pairings */
   fonts: {

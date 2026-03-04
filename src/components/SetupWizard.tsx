@@ -734,7 +734,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                 <Input
                   value={domain}
                   onChange={(e) => setDomain(e.target.value)}
-                  placeholder="e.g. neuroklast.com"
+                  placeholder="e.g. neuroklast.net"
                   className="font-mono text-sm"
                 />
               </Field>

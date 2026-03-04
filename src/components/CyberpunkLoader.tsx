@@ -86,6 +86,14 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
     }))
   )
 
+  const [lightRainParams] = useState(() =>
+    Array.from({ length: 20 }, () => ({
+      left: Math.random() * 100,
+      duration: 2 + Math.random() * 3,
+      delay: Math.random() * 5,
+    }))
+  )
+
   // Background data caching during the loading screen
   useEffect(() => {
     if (precacheUrls.length === 0) {
@@ -168,29 +176,55 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
+      {/* Gradient background overlay for 3d-model type (matches zardonic loading screen) */}
+      {loadingScreenType === '3d-model' && (
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      )}
+
       {/* Code rain background — shown for code-rain / cyberpunk / default modes */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-        <div className="text-primary font-mono text-[10px] leading-tight">
-          {codeRainParams.map((params, i) => (
-            <motion.div
-              key={i}
-              className="whitespace-nowrap"
-              animate={{ opacity: [0.05, 0.4, 0.05] }}
-              transition={{ duration: params.duration, repeat: Infinity, delay: params.delay }}
-              style={{ 
-                transform: `translateX(${params.translateX}px)`,
-              }}
-            >
-              {codeFragments[i % codeFragments.length]}
-            </motion.div>
-          ))}
+      {loadingScreenType !== '3d-model' && (
+        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+          <div className="text-primary font-mono text-[10px] leading-tight">
+            {codeRainParams.map((params, i) => (
+              <motion.div
+                key={i}
+                className="whitespace-nowrap"
+                animate={{ opacity: [0.05, 0.4, 0.05] }}
+                transition={{ duration: params.duration, repeat: Infinity, delay: params.delay }}
+                style={{ 
+                  transform: `translateX(${params.translateX}px)`,
+                }}
+              >
+                {codeFragments[i % codeFragments.length]}
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Vertical light-rain particles for 3d-model type (matches zardonic loading screen) */}
+      {loadingScreenType === '3d-model' && lightRainParams.map((params, i) => (
+        <motion.div
+          key={`rain-${i}`}
+          className="absolute w-0.5 h-32 bg-gradient-to-b from-transparent via-primary/30 to-transparent"
+          style={{ left: `${params.left}%`, top: -128 }}
+          animate={{ top: ['0vh', '100vh'], opacity: [0, 0.6, 0] }}
+          transition={{ duration: params.duration, repeat: Infinity, delay: params.delay, ease: 'linear' }}
+        />
+      ))}
 
       {/* Scanline overlay on loader */}
       <div className="absolute inset-0 pointer-events-none z-20">
-        <div className="absolute inset-0 hud-scanline opacity-40" />
+        <div className={`absolute inset-0 opacity-40 ${loadingScreenType === '3d-model' ? 'scanline-effect' : 'hud-scanline'}`} />
       </div>
+
+      {/* CRT overlay and vignette for 3d-model type */}
+      {loadingScreenType === '3d-model' && (
+        <>
+          <div className="crt-overlay" />
+          <div className="crt-vignette" />
+        </>
+      )}
 
       {/* Floating hex addresses */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

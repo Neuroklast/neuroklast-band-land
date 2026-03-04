@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { PencilSimple } from '@phosphor-icons/react'
 import Navigation from '@/components/Navigation'
 import Hero from '@/components/Hero'
+import HeroZardonic from '@/components/HeroZardonic'
 import BandInfoEditDialog from '@/components/BandInfoEditDialog'
 import NewsSection from '@/components/NewsSection'
 import BiographySection from '@/components/BiographySection'
@@ -363,15 +364,31 @@ function App() {
               )}
             </AnimatePresence>
 
-            <Hero 
-              name={data.siteName} 
-              genres={data.genres}
-              editMode={editMode && isOwner}
-              onEdit={() => setShowBandInfoEdit(true)}
-              logoUrl={data.logoUrl}
-              titleImageUrl={data.titleImageUrl}
-              heroStyle={data.themeSettings?.heroStyle}
-            />
+            {data.themeSettings?.activePreset === 'zardonic-industrial' && data.themeSettings?.heroStyle === 'glitch-parallax' ? (
+              <HeroZardonic
+                name={data.siteName}
+                genres={data.genres}
+                editMode={editMode && isOwner}
+                onEdit={() => setShowBandInfoEdit(true)}
+                logoUrl={data.logoUrl}
+                titleImageUrl={data.titleImageUrl}
+                themeSettings={data.themeSettings}
+                hudTopLeft1={data.hudTexts?.topLeft1}
+                hudTopLeft2={data.hudTexts?.topLeftStatus}
+                hudBottomRight1={data.hudTexts?.bottomRight1}
+                hudBottomRight2={data.hudTexts?.bottomRight2}
+              />
+            ) : (
+              <Hero
+                name={data.siteName}
+                genres={data.genres}
+                editMode={editMode && isOwner}
+                onEdit={() => setShowBandInfoEdit(true)}
+                logoUrl={data.logoUrl}
+                titleImageUrl={data.titleImageUrl}
+                heroStyle={data.themeSettings?.heroStyle}
+              />
+            )}
 
             <main id="main-content" className="relative">
               {vis.news !== false && (
