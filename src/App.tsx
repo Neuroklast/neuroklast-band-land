@@ -61,6 +61,7 @@ import ActivationLockScreen from '@/components/ActivationLockScreen'
 import LicenseStatusBadge from '@/components/LicenseStatusBadge'
 import { validateActivationKey } from '@/lib/activation'
 import type { ActivationResult } from '@/lib/activation'
+import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
 
 const defaultSiteConfig: SiteConfig = createSiteConfig({
   siteName: bandDataJson.band.name,
@@ -128,6 +129,34 @@ function App() {
   // Track page view on mount
   useEffect(() => {
     trackPageView()
+  }, [])
+
+  // Check for #theme=... URL hash on load – offer to apply the shared theme.
+  // Runs only once on mount; we capture the initial config in a ref so the
+  // toast action always merges into the config that was current at page load.
+  const configAtMountRef = useRef(config)
+  useEffect(() => {
+    const themeExport = getThemeFromUrlHash()
+    if (!themeExport || !themeExport.data) return
+    // Clear hash from URL without reload
+    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    const themeData = themeExport.data
+    const baseConfig = configAtMountRef.current
+    toast('Theme aus Link erkannt – möchtest du es anwenden?', {
+      duration: 10000,
+      action: {
+        label: 'Anwenden',
+        onClick: () => {
+          setConfig(mergeImportedConfig(baseConfig, themeData, 'theme'))
+          toast.success('Theme angewendet')
+        },
+      },
+      cancel: {
+        label: 'Ignorieren',
+        onClick: () => {},
+      },
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Track all clicks for heatmap
