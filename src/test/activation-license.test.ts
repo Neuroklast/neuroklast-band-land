@@ -75,6 +75,24 @@ describe('validateActivationKey', () => {
     expect(result.error).toMatch(/no activation key/i)
   })
 
+  it('bypasses validation when VITE_IS_PRIMARY is true', async () => {
+    vi.stubEnv('VITE_IS_PRIMARY', 'true')
+    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const { validateActivationKey } = await import('@/lib/activation')
+    const result = await validateActivationKey()
+    expect(result.valid).toBe(true)
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not bypass validation when VITE_IS_PRIMARY is not true', async () => {
+    vi.stubEnv('VITE_IS_PRIMARY', 'false')
+    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    const { validateActivationKey } = await import('@/lib/activation')
+    const result = await validateActivationKey()
+    expect(result.valid).toBe(false)
+  })
+
   it('caches an invalid result in sessionStorage', async () => {
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
