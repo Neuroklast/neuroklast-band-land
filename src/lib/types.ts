@@ -1,3 +1,5 @@
+import type React from 'react'
+
 export interface Gig {
   id: string
   date: string // ISO 8601: "2025-03-15" or "2025-03-15T19:00"
@@ -500,7 +502,142 @@ export type AdminDialog =
   | 'marketing'
   | 'oauth'
   | 'store'
+  | 'keys'
+  | 'admin-hub'
   | null
+
+// ─── THEME PLUGIN ARCHITECTURE ───────────────────────────────────────────────
+
+/** Access level for a theme */
+export type ThemeAccess = 'free' | 'exclusive' | 'preview-only'
+
+/** What can the user customize within a theme? */
+export interface ThemeCustomizability {
+  /** Can create custom color presets? */
+  customColors: boolean
+  /** Can change fonts? */
+  customFonts: boolean
+  /** Can adjust overlay effect intensities? */
+  adjustEffects: boolean
+}
+
+/** A color preset: only colors, within a theme */
+export interface ColorPreset {
+  id: string
+  name: string
+  description: string
+  colors: {
+    primary: string
+    accent: string
+    background: string
+    card: string
+    foreground: string
+    mutedForeground: string
+    border: string
+    secondary: string
+  }
+}
+
+/** Props for theme slot components */
+export interface HeroSlotProps {
+  name: string
+  genres: string[]
+  editMode?: boolean
+  onEdit?: () => void
+  logoUrl?: string
+  titleImageUrl?: string
+}
+
+export interface NavigationSlotProps {
+  items: Array<{ label: string; id: string }>
+  siteName: string
+  editMode?: boolean
+  onNavigate?: (id: string) => void
+}
+
+export interface LoadingScreenSlotProps {
+  onComplete: () => void
+  primaryColor?: string
+}
+
+export interface SectionDividerSlotProps {
+  className?: string
+}
+
+export interface CardSlotProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export interface BackgroundEffectsSlotProps {
+  className?: string
+}
+
+export interface FooterSlotProps {
+  socialLinks?: Record<string, string>
+  siteName?: string
+}
+
+/** All visual slots a theme can override */
+export interface ThemeSlots {
+  Hero: React.ComponentType<HeroSlotProps>
+  Navigation: React.ComponentType<NavigationSlotProps>
+  LoadingScreen: React.ComponentType<LoadingScreenSlotProps>
+  SectionDivider: React.ComponentType<SectionDividerSlotProps>
+  Card: React.ComponentType<CardSlotProps>
+  BackgroundEffects: React.ComponentType<BackgroundEffectsSlotProps>
+  Footer: React.ComponentType<FooterSlotProps>
+}
+
+/** A complete theme package */
+export interface ThemePackage {
+  id: string
+  name: string
+  description: string
+  author: string
+  version: string
+  previewImages?: string[]
+
+  // Access control
+  access: ThemeAccess
+  exclusiveFor?: string
+  requiresActivation?: boolean
+  lockedMessage?: string
+
+  // Layout behavior
+  layout: {
+    heroVariant: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
+    loadingScreen: '3d-model' | 'code-rain' | 'cyberpunk' | 'minimal'
+    navigationStyle?: 'cyberpunk-hud' | 'clean' | 'minimal'
+  }
+
+  // Typography (fixed per theme)
+  typography: {
+    heading: string
+    body: string
+    mono: string
+  }
+
+  // Effects
+  effects: {
+    overlayEffects?: OverlayEffects
+    animationSettings?: AnimationSettings
+  }
+
+  // Geometry
+  borderRadius: number
+  animationsEnabled: boolean
+
+  // Color presets within this theme
+  colorPresets: ColorPreset[]
+  defaultPresetId: string
+
+  // Customizability
+  customizability: ThemeCustomizability
+
+  // Slot components (the actual React components)
+  slots: Partial<ThemeSlots>
+}
 
 // ─── DESIGN PRESETS (#157) ───────────────────────────────────────────────────
 

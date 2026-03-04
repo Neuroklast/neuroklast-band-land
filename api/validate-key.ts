@@ -49,9 +49,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Look up optional license tier metadata stored as a hash
-    // Key format: activation-key-meta:<key>  →  { tier, features[] }
+    // Key format: activation-key-meta:<key>  →  { tier, features[], assignedThemes[] }
     let tier = 'free'
     let features: string[] = []
+    let assignedThemes: string[] = []
     try {
       const meta = await kv.hgetall(`activation-key-meta:${trimmedKey}`) as Record<string, unknown> | null
       if (meta) {
@@ -61,12 +62,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? JSON.parse(meta.features)
             : meta.features as string[]
         }
+        if (meta.assignedThemes) {
+          assignedThemes = typeof meta.assignedThemes === 'string'
+            ? JSON.parse(meta.assignedThemes)
+            : meta.assignedThemes as string[]
+        }
       }
     } catch {
       // Meta lookup is best-effort — a valid key without metadata gets free tier
     }
 
-    return res.status(200).json({ valid: true, tier, features })
+    return res.status(200).json({ valid: true, tier, features, assignedThemes })
   } catch (error) {
     console.error('[validate-key] KV error:', error)
     // Bei KV-Fehler: fail open für eigene Instanz (VITE_IS_PRIMARY=true), fail closed für alle anderen
