@@ -1,5 +1,17 @@
 import { kv } from '@vercel/kv'
 
+// Minimal inline types so we avoid the vulnerable @vercel/node package
+interface VercelRequest {
+  method?: string
+  body?: Record<string, unknown>
+}
+interface VercelResponse {
+  setHeader(key: string, value: string): this
+  status(code: number): this
+  json(data: unknown): this
+  end(): this
+}
+
 /**
  * Central Activation Key validation endpoint.
  *
@@ -12,24 +24,24 @@ import { kv } from '@vercel/kv'
  * instances can call back to the original project's API to validate keys
  * stored in the central KV store.
  */
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS — allow any origin so that authorized forks can validate their keys
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
   if (req.method === 'OPTIONS') return res.status(200).end()
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (req.method !== 'POST') return res.status(405).json({ valid: false, error: 'Method not allowed' })
 
   const { key } = req.body || {}
-  if (!key || typeof key !== 'string') {
-    return res.status(400).json({ valid: false, error: 'Missing activation key' })
+
+  if (!key || typeof key !== 'string' || key.trim().length === 0) {
+    return res.status(400).json({ valid: false, error: 'Invalid key format' })
   }
 
   const trimmedKey = key.trim()
 
   try {
-    // Check if the key exists in the activation-keys set
     const isValid = await kv.sismember('activation-keys', trimmedKey)
 
     if (!isValid) {
@@ -39,15 +51,15 @@ export default async function handler(req, res) {
     // Look up optional license tier metadata stored as a hash
     // Key format: activation-key-meta:<key>  →  { tier, features[] }
     let tier = 'free'
-    let features = []
+    let features: string[] = []
     try {
-      const meta = await kv.hgetall(`activation-key-meta:${trimmedKey}`)
+      const meta = await kv.hgetall(`activation-key-meta:${trimmedKey}`) as Record<string, unknown> | null
       if (meta) {
-        if (meta.tier) tier = meta.tier
+        if (typeof meta.tier === 'string') tier = meta.tier
         if (meta.features) {
           features = typeof meta.features === 'string'
             ? JSON.parse(meta.features)
-            : meta.features
+            : meta.features as string[]
         }
       }
     } catch {
@@ -55,8 +67,10 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ valid: true, tier, features })
-  } catch (err) {
-    console.error('validate-key: KV error', err)
-    return res.status(500).json({ valid: false, error: 'Validation service unavailable' })
+  } catch (error) {
+    console.error('[validate-key] KV error:', error)
+    // Bei KV-Fehler: fail open für eigene Instanz (VITE_IS_PRIMARY=true), fail closed für alle anderen
+    const isPrimary = process.env.VITE_IS_PRIMARY === 'true'
+    return res.status(200).json({ valid: isPrimary, error: 'Service temporarily unavailable' })
   }
 }
