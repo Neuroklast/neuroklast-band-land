@@ -46,6 +46,9 @@ import SubscriberListDialog from '@/components/SubscriberListDialog'
 import MarketingToolsDialog from '@/components/MarketingToolsDialog'
 import OAuthConnectionsDialog from '@/components/OAuthConnectionsDialog'
 import StoreDialog from '@/components/StoreDialog'
+import { WidgetRenderer } from '@/components/widgets'
+import { getActiveWidgets } from '@/lib/widget-plugins'
+import KeyManagerPanel from '@/components/KeyManagerPanel'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -117,6 +120,7 @@ function App() {
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
   const [showAttackerProfile, setShowAttackerProfile] = useState(false)
   const [selectedAttackerIp, setSelectedAttackerIp] = useState<string>('')
+  const isPrimary = import.meta.env.VITE_IS_PRIMARY === 'true'
 
   // Apply CRT effects
   useCRTEffects()
@@ -546,6 +550,23 @@ function App() {
                 />
               </motion.div>
               )}
+
+              {/* Active widget sections */}
+              {getActiveWidgets(data.widgetPlugins ?? []).map((widget, i) => (
+                <motion.section
+                  key={widget.id}
+                  id={`widget-${widget.id}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.55 + i * 0.05 }}
+                  className="py-16 px-4 max-w-5xl mx-auto w-full"
+                >
+                  <h2 className="font-mono text-xs uppercase tracking-widest text-primary/60 mb-6 border-b border-primary/10 pb-2">
+                    {widget.name}
+                  </h2>
+                  <WidgetRenderer widget={widget} themeSettings={data.themeSettings} />
+                </motion.section>
+              ))}
             </main>
 
             <motion.div
@@ -608,6 +629,22 @@ function App() {
               </div>
             )}
 
+            {/* Key Manager — visible only on primary deployment */}
+            {isPrimary && isOwner && activeDialog === 'keys' && (
+              <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto flex items-start justify-center p-4 pt-10">
+                <div className="bg-card border border-border rounded-lg w-full max-w-xl p-6 relative">
+                  <button
+                    onClick={() => setActiveDialog(null)}
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                  <KeyManagerPanel />
+                </div>
+              </div>
+            )}
+
             <StatsDashboard open={activeDialog === 'analytics'} onClose={() => setActiveDialog(null)} domain={data.domain} />
             <SecurityIncidentsDashboard 
               open={activeDialog === 'security-log'} 
@@ -653,6 +690,7 @@ function App() {
               onUpdatePlugins={(widgetPlugins) => updateConfig({ widgetPlugins })}
               activePresetId={data.themeSettings?.activePreset}
               onApplyTheme={(themeSettings: ThemeSettings) => updateConfig({ themeSettings })}
+              licenseTier={activationResult?.tier}
             />
 
             <AnimatePresence>

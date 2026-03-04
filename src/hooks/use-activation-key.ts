@@ -10,6 +10,9 @@ const VALIDATE_URL =
 const CACHE_KEY = 'activation_status_cache'
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24 // 24h Cache
 
+/** localStorage key for a user-supplied activation key (from wizard or URL hash). */
+export const LOCAL_ACTIVATION_KEY = 'nk-local-activation-key'
+
 interface CacheEntry {
   valid: boolean
   timestamp: number
@@ -39,6 +42,33 @@ function setCachedStatus(valid: boolean) {
   }
 }
 
+/** Read the locally stored activation key (set by wizard or #activate= URL). */
+export function getLocalActivationKey(): string | null {
+  try {
+    return localStorage.getItem(LOCAL_ACTIVATION_KEY) || null
+  } catch {
+    return null
+  }
+}
+
+/** Persist a user-supplied activation key to localStorage. */
+export function saveLocalActivationKey(key: string): void {
+  try {
+    localStorage.setItem(LOCAL_ACTIVATION_KEY, key)
+  } catch {
+    // localStorage not available
+  }
+}
+
+/** Remove the locally stored activation key. */
+export function clearLocalActivationKey(): void {
+  try {
+    localStorage.removeItem(LOCAL_ACTIVATION_KEY)
+  } catch {
+    // localStorage not available
+  }
+}
+
 export function useActivationKey() {
   const [status, setStatus] = useState<ActivationStatus>('loading')
 
@@ -49,8 +79,28 @@ export function useActivationKey() {
       return
     }
 
+    // Check URL hash for #activate=KEY parameter (save to localStorage)
+    try {
+      const hash = typeof window !== 'undefined' ? window.location.hash : ''
+      const match = hash.match(/[#&]?activate=([^&]+)/)
+      if (match?.[1]) {
+        const urlKey = decodeURIComponent(match[1]).trim()
+        if (urlKey) {
+          saveLocalActivationKey(urlKey)
+          // Remove from URL to avoid re-processing
+          const cleanHash = hash.replace(/[#&]?activate=[^&]+/, '').replace(/^#$/, '')
+          window.history.replaceState(null, '', cleanHash ? `#${cleanHash.replace(/^#/, '')}` : window.location.pathname)
+        }
+      }
+    } catch {
+      // URL manipulation not available
+    }
+
+    // Resolve the key to validate: ENV > localStorage
+    const key = ACTIVATION_KEY?.trim() || getLocalActivationKey()?.trim() || ''
+
     // Kein Key konfiguriert → ungültig
-    if (!ACTIVATION_KEY) {
+    if (!key) {
       setStatus('invalid')
       return
     }
@@ -69,7 +119,7 @@ export function useActivationKey() {
         const res = await fetch(VALIDATE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: ACTIVATION_KEY }),
+          body: JSON.stringify({ key }),
           signal: AbortSignal.timeout(8000),
         })
         if (cancelled) return

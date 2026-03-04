@@ -21,6 +21,7 @@ import {
   EyeSlash,
   Warning,
   CheckCircle,
+  Key,
   type Icon,
 } from '@phosphor-icons/react'
 import { DESIGN_PRESETS, PRESET_IDS, presetToThemeSettings } from '@/lib/design-presets'
@@ -30,7 +31,22 @@ import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { createSiteConfig } from '@/lib/site-config'
 import { getContrastRatio, meetsWcagAA } from '@/lib/contrast'
 import { fetchEnvStatus, REQUIRED_ENV_VARS, allRequiredSet, type EnvStatus } from '@/lib/env-check'
+import { saveLocalActivationKey, getLocalActivationKey } from '@/hooks/use-activation-key'
 import type { SiteConfig, SectionConfig } from '@/lib/types'
+
+const VITE_ACTIVATION_KEY = import.meta.env.VITE_ACTIVATION_KEY as string | undefined
+const IS_PRIMARY = import.meta.env.VITE_IS_PRIMARY === 'true'
+const VALIDATE_URL =
+  (import.meta.env.VITE_ACTIVATION_API_URL as string | undefined) ||
+  'https://neuroklast-band-land.vercel.app/api/validate-key'
+
+/** Returns true when the wizard should show the activation key step. */
+function needsActivationStep(): boolean {
+  if (IS_PRIMARY) return false
+  if (VITE_ACTIVATION_KEY?.trim()) return false
+  if (getLocalActivationKey()?.trim()) return false
+  return true
+}
 
 // ─── Font options (same as ThemeCustomizerDialog) ─────────────────────────────
 
@@ -140,7 +156,8 @@ const SITE_TYPES: Array<{
 const ENV_WARNING_COLOR = 'oklch(0.7 0.15 60)'
 const ENV_WARNING_BG = 'oklch(0.7 0.15 60 / 0.08)'
 
-const STEPS = [
+/** Step names (the activation step is injected at index 0 when needed). */
+const STEPS_BASE = [
   'Welcome',
   'Site Type',
   'Basic Info',
@@ -154,6 +171,12 @@ const STEPS = [
   'Admin Password',
   'Done',
 ]
+
+const ACTIVATION_STEP = 'Activation Key'
+
+function getSteps(withActivation: boolean): string[] {
+  return withActivation ? [ACTIVATION_STEP, ...STEPS_BASE] : STEPS_BASE
+}
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -200,8 +223,17 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function SetupWizard({ onComplete, onSetAdminPassword, initialConfig }: SetupWizardProps) {
+  const [showActivation] = useState(() => needsActivationStep())
+  const STEPS = getSteps(showActivation)
+
   const [step, setStep] = useState(0)
   const [direction, setDirection] = useState(1)
+
+  // Activation key state (step 0 when needed)
+  const [activationKeyInput, setActivationKeyInput] = useState('')
+  const [activationValidating, setActivationValidating] = useState(false)
+  const [activationError, setActivationError] = useState('')
+  const [activationValid, setActivationValid] = useState(false)
 
   // Wizard data
   const [siteType, setSiteType] = useState<SiteConfig['siteType']>(initialConfig?.siteType ?? 'band')
@@ -281,12 +313,45 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
   const goNext = useCallback(() => {
     setDirection(1)
     setStep((s) => Math.min(s + 1, STEPS.length - 1))
-  }, [])
+  }, [STEPS.length])
 
   const goBack = useCallback(() => {
     setDirection(-1)
     setStep((s) => Math.max(s - 1, 0))
   }, [])
+
+  // ── Activation key validation ────────────────────────────────────────────────
+
+  const handleActivationSubmit = useCallback(async () => {
+    const key = activationKeyInput.trim()
+    if (!key) {
+      setActivationError('Please enter your activation key')
+      return
+    }
+    setActivationValidating(true)
+    setActivationError('')
+    try {
+      const res = await fetch(VALIDATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key }),
+        signal: AbortSignal.timeout(10000),
+      })
+      const data = await res.json()
+      if (data?.valid) {
+        saveLocalActivationKey(key)
+        setActivationValid(true)
+        toast.success('Key activated successfully!')
+        goNext()
+      } else {
+        setActivationError('Key invalid, please check and try again')
+      }
+    } catch {
+      setActivationError('Could not reach validation server. Please try again.')
+    } finally {
+      setActivationValidating(false)
+    }
+  }, [activationKeyInput, goNext])
 
   // ── Preset application ──────────────────────────────────────────────────────
 
@@ -453,7 +518,72 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
   // ── Step content ────────────────────────────────────────────────────────────
 
   const renderStep = () => {
-    switch (step) {
+    // When the activation step is shown, it is step 0.
+    // All other steps are offset by +1.
+    const baseStep = showActivation ? step - 1 : step
+
+    if (showActivation && step === 0) {
+      // ── Activation Key step ───────────────────────────────────────────────
+      return (
+        <div className="space-y-6 text-center">
+          <div className="space-y-2">
+            <div className="text-4xl mb-2">🔑</div>
+            <h1 className="text-2xl font-mono font-bold text-primary tracking-tight">
+              ACTIVATION KEY
+            </h1>
+            <p className="text-muted-foreground font-mono text-sm leading-relaxed">
+              Enter your activation key to get started.
+            </p>
+          </div>
+
+          {activationValid ? (
+            <div className="flex items-center justify-center gap-2 text-green-400 font-mono text-sm">
+              <Check size={16} weight="bold" /> Key activated!
+            </div>
+          ) : (
+            <div className="space-y-3 text-left">
+              <div className="space-y-1.5">
+                <Label className="font-mono text-xs">Activation Key</Label>
+                <Input
+                  value={activationKeyInput}
+                  onChange={(e) => { setActivationKeyInput(e.target.value); setActivationError('') }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleActivationSubmit()}
+                  placeholder="nk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  className="bg-secondary border-input font-mono text-sm"
+                  autoFocus
+                />
+                {activationError && (
+                  <p className="text-xs text-destructive font-mono">{activationError}</p>
+                )}
+              </div>
+
+              <Button
+                onClick={handleActivationSubmit}
+                disabled={activationValidating || !activationKeyInput.trim()}
+                className="w-full font-mono tracking-wider gap-2"
+              >
+                <Key size={16} />
+                {activationValidating ? 'Validating…' : 'Activate'}
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground font-mono">
+                No key yet?{' '}
+                <a
+                  href="https://neuroklast.net/contact"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Contact Neuroklast →
+                </a>
+              </p>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    switch (baseStep) {
       // ── 0. Welcome ──────────────────────────────────────────────────────────
       case 0:
         return (
@@ -472,7 +602,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
               </p>
             </div>
             <div className="border border-primary/20 rounded p-4 bg-primary/5 text-left space-y-2">
-              {STEPS.slice(1, -1).map((s, i) => (
+              {STEPS_BASE.slice(1, -1).map((s, i) => (
                 <div key={s} className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
                   <span className="text-primary/60 w-4">{String(i + 1).padStart(2, '0')}</span>
                   <span>{s}</span>
