@@ -151,19 +151,24 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
   )
 }
 
-/** Hook that provides a trigger function and the transition element */
-export function useOverlayTransition() {
+/** Hook that provides a trigger function and the transition element.
+ *  When `enabled` is false (the default) the trigger is a no-op and no
+ *  transition element is rendered.  Pass `true` to restore the full-screen
+ *  glitch transition on overlay open/close. */
+export function useOverlayTransition(enabled = false) {
   const [active, setActive] = useState(false)
 
   const trigger = useCallback(() => {
-    setActive(true)
-  }, [])
+    if (enabled) setActive(true)
+  }, [enabled])
 
   const handleComplete = useCallback(() => {
     setActive(false)
   }, [])
 
-  const element = <OverlayTransition show={active} onComplete={handleComplete} />
+  const element = enabled ? (
+    <OverlayTransition show={active} onComplete={handleComplete} />
+  ) : null
 
   return { trigger, element }
 }

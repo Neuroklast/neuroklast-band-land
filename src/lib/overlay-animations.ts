@@ -184,6 +184,32 @@ export function getRandomOverlayAnimation(): OverlayAnimation {
   return overlayAnimations[Math.floor(Math.random() * overlayAnimations.length)]
 }
 
+/** Get a specific overlay animation by name, or a random one if the name is not found */
+export function getOverlayAnimationByName(name: string | undefined): OverlayAnimation {
+  if (!name) return getRandomOverlayAnimation()
+  const found = overlayAnimations.find((a) => a.name === name)
+  return found ?? getRandomOverlayAnimation()
+}
+
+/** No-op overlay animation — instant show/hide with no visual effect */
+export const NONE_OVERLAY_ANIMATION: OverlayAnimation = {
+  name: 'none',
+  loaderClass: '',
+  loaderLabel: '',
+  backdrop: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.1 },
+  },
+  modal: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.1 },
+  },
+}
+
 /** Get all available animations (for testing/preview) */
 export function getAllOverlayAnimations(): OverlayAnimation[] {
   return overlayAnimations

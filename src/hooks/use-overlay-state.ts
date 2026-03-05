@@ -1,5 +1,5 @@
 import { useState, useEffect, startTransition } from 'react'
-import { getRandomOverlayAnimation, type OverlayAnimation } from '@/lib/overlay-animations'
+import { getRandomOverlayAnimation, getOverlayAnimationByName, NONE_OVERLAY_ANIMATION, type OverlayAnimation } from '@/lib/overlay-animations'
 import {
   OVERLAY_LOADING_TEXT_INTERVAL_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
@@ -23,11 +23,14 @@ export interface OverlayStateResult {
   overlayAnimation: OverlayAnimation
 }
 
-export function useOverlayState(): OverlayStateResult {
+export function useOverlayState(overlayAnimationStyle?: string): OverlayStateResult {
   const [cyberpunkOverlay, setCyberpunkOverlay] = useState<{ type: string; data: unknown } | null>(null)
   const [overlayPhase, setOverlayPhase] = useState<OverlayPhase>('loading')
   const [loadingText, setLoadingText] = useState(OVERLAY_LOADING_TEXTS[0])
-  const [overlayAnimation] = useState(() => getRandomOverlayAnimation())
+  const [overlayAnimation] = useState<OverlayAnimation>(() => {
+    if (overlayAnimationStyle === 'none') return NONE_OVERLAY_ANIMATION
+    return getOverlayAnimationByName(overlayAnimationStyle)
+  })
 
   useEffect(() => {
     if (!cyberpunkOverlay) return
