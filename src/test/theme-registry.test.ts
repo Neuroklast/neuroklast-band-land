@@ -74,10 +74,8 @@ describe('Access levels', () => {
     expect(retroTheme.access).toBe('free')
   })
 
-  it('zardonic-industrial is exclusive', () => {
-    expect(zardonicIndustrialTheme.access).toBe('exclusive')
-    expect(zardonicIndustrialTheme.requiresActivation).toBe(true)
-    expect(zardonicIndustrialTheme.exclusiveFor).toBe('zardonic')
+  it('zardonic-industrial is free', () => {
+    expect(zardonicIndustrialTheme.access).toBe('free')
   })
 
   it('neuroklast-classic is preview-only', () => {
