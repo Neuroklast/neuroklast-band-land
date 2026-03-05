@@ -236,6 +236,122 @@ export function getWidgetsByCategory(
 
 // ─── Normalisation ───────────────────────────────────────────────────────────
 
+// ─── Version helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Parse a semver string into its numeric parts.
+ * Returns `[0, 0, 0]` for malformed input so comparisons stay safe.
+ */
+function parseSemver(version: string): [number, number, number] {
+  const parts = version.split('.').map(Number)
+  const [major = 0, minor = 0, patch = 0] = parts
+  return [major, minor, patch]
+}
+
+/**
+ * Compare two semver strings.
+ *
+ * Returns:
+ *  - `'none'`   — `next` is the same as or older than `current`
+ *  - `'patch'`  — only the patch segment is higher
+ *  - `'minor'`  — minor (or minor+patch) is higher
+ *  - `'major'`  — major is higher (potentially breaking)
+ */
+export type VersionBump = 'none' | 'patch' | 'minor' | 'major'
+
+export function compareVersions(current: string, next: string): VersionBump {
+  const [curMaj, curMin, curPat] = parseSemver(current)
+  const [nxtMaj, nxtMin, nxtPat] = parseSemver(next)
+
+  if (nxtMaj > curMaj) return 'major'
+  if (nxtMaj < curMaj) return 'none'
+  if (nxtMin > curMin) return 'minor'
+  if (nxtMin < curMin) return 'none'
+  if (nxtPat > curPat) return 'patch'
+  return 'none'
+}
+
+// ─── Update check ─────────────────────────────────────────────────────────────
+
+export interface WidgetUpdateInfo {
+  /** Widget ID */
+  id: string
+  /** Currently installed version */
+  installedVersion: string
+  /** Latest version available in the catalog */
+  catalogVersion: string
+  /** Semver bump type */
+  bump: VersionBump
+  /** True when the major version changed (potential breaking change) */
+  isBreaking: boolean
+}
+
+/**
+ * Compare every installed widget's version against the catalog and return
+ * update-info objects for any widget that has a newer version available.
+ */
+export function checkWidgetUpdates(plugins: WidgetPlugin[]): WidgetUpdateInfo[] {
+  const updates: WidgetUpdateInfo[] = []
+
+  for (const plugin of plugins) {
+    const entry = getCatalogEntry(plugin.id)
+    if (!entry) continue
+
+    const bump = compareVersions(plugin.version, entry.version)
+    if (bump === 'none') continue
+
+    updates.push({
+      id: plugin.id,
+      installedVersion: plugin.version,
+      catalogVersion: entry.version,
+      bump,
+      isBreaking: bump === 'major',
+    })
+  }
+
+  return updates
+}
+
+// ─── Apply update ─────────────────────────────────────────────────────────────
+
+/**
+ * Apply the catalog's latest metadata to an installed widget, preserving the
+ * user's config, enabled state, and order.
+ *
+ * For major-version (potentially breaking) updates the caller should warn the
+ * user first; this function performs the update regardless.
+ *
+ * Returns a new array – does not mutate the input.
+ */
+export function updateWidget(
+  plugins: WidgetPlugin[],
+  id: string,
+): WidgetPlugin[] {
+  const entry = getCatalogEntry(id)
+  if (!entry) return plugins
+
+  return plugins.map((p) => {
+    if (p.id !== id) return p
+    return {
+      // Preserve user state
+      installed: p.installed,
+      enabled: p.enabled,
+      order: p.order,
+      category: p.category,
+      config: p.config,
+      themeOverrides: p.themeOverrides,
+      // Refresh metadata from catalog
+      id: entry.id,
+      name: entry.name,
+      description: entry.description,
+      version: entry.version,
+      author: entry.author,
+    }
+  })
+}
+
+// ─── Normalisation ───────────────────────────────────────────────────────────
+
 /**
  * Ensure every installed widget has the latest metadata from the catalog
  * (name, description, version).  Unknown widgets are kept as-is so that
@@ -286,6 +402,12 @@ export interface StoreItem {
   /** Widget category (only for type === 'widget') */
   category?: WidgetCategory
   previewUrl?: string
+  /** True when a newer catalog version is available for this installed widget */
+  hasUpdate?: boolean
+  /** The newer version string available in the catalog */
+  updateVersion?: string
+  /** Whether the available update is a potentially breaking major-version bump */
+  updateIsBreaking?: boolean
 }
 
 /**
@@ -299,15 +421,17 @@ export function buildStoreItems(
   activePresetId?: string,
 ): StoreItem[] {
   const installedMap = new Map(plugins.map((p) => [p.id, p]))
+  const updateInfoMap = new Map(checkWidgetUpdates(plugins).map((u) => [u.id, u]))
 
   const widgetItems: StoreItem[] = WIDGET_CATALOG.map((entry) => {
     const installed = installedMap.get(entry.id)
+    const updateInfo = installed ? updateInfoMap.get(entry.id) : undefined
     return {
       id: entry.id,
       name: entry.name,
       description: entry.description,
       type: 'widget' as const,
-      version: entry.version,
+      version: installed?.version ?? entry.version,
       author: entry.author,
       license: entry.license ?? 'free',
       rating: entry.rating ?? { average: 0, count: 0 },
@@ -316,6 +440,9 @@ export function buildStoreItems(
       enabled: installed?.enabled ?? false,
       category: entry.category,
       previewUrl: entry.previewUrl,
+      hasUpdate: !!updateInfo,
+      updateVersion: updateInfo?.catalogVersion,
+      updateIsBreaking: updateInfo?.isBreaking,
     }
   })
 
