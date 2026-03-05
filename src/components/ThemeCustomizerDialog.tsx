@@ -132,7 +132,7 @@ const OVERLAY_LABELS: Record<string, { name: string; description: string }> = {
   noise: { name: 'Static Noise', description: 'Subtle random noise grain' },
   vignette: { name: 'Vignette', description: 'Dark edges / spotlight center' },
   chromatic: { name: 'Chromatic Aberration', description: 'RGB color fringe shift' },
-  movingScanline: { name: 'Moving Scanline', description: 'CRT-Auffrischungslinie die sich bewegt' },
+  movingScanline: { name: 'Moving Scanline', description: 'Animated CRT refresh line sweep' },
 }
 
 const SECTION_LABELS: Record<keyof SectionVisibility, string> = {

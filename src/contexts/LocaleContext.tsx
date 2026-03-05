@@ -22,8 +22,8 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const t = useCallback(
-    (key: string) => translate(key, locale),
-    [locale],
+    (key: string) => translate(key),
+    [],
   )
 
   return (

@@ -8,7 +8,7 @@ export const neuroklastClassicTheme: ThemePackage = {
   version: '1.0.0',
   access: 'preview-only',
   exclusiveFor: 'neuroklast',
-  lockedMessage: 'Exklusiv für NEUROKLAST',
+  lockedMessage: 'Exclusive to NEUROKLAST',
   layout: {
     heroVariant: 'chromatic-hover',
     loadingScreen: 'code-rain',

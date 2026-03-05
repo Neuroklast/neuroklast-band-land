@@ -33,7 +33,7 @@
 - **Admin Mode** — Full in-browser content management, no CMS needed
 - **Analytics Dashboard** — Page views, section engagement, device breakdown
 - **Security** — Rate limiting, TOTP 2FA, attacker profiling, blocklist
-- **i18n** — Bilingual (DE/EN) support for legal pages
+- **i18n** — Localization-ready with English translations; German legal pages (Impressum, Datenschutz) for GDPR compliance
 - **GDPR** — Cookie consent banner, Impressum, Datenschutz
 - **Hidden Terminal** — Konami-code Easter egg with a cyberpunk terminal
 
