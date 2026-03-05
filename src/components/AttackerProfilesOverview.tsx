@@ -370,7 +370,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
                               <td className="px-3 py-2.5">
                                 <div className="flex items-center gap-1">
                                   <button
-                                    onClick={() => onViewProfile(profile.hashedIp)}
+                                    onClick={() => { onClose(); onViewProfile(profile.hashedIp) }}
                                     className="px-2 py-1 border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
                                     title={L('profiles.viewDetail')}
                                   >
@@ -465,7 +465,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
                             </span>
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => onViewProfile(profile.hashedIp)}
+                                onClick={() => { onClose(); onViewProfile(profile.hashedIp) }}
                                 className="px-2 py-1 border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
                               >
                                 <Eye size={11} />

@@ -17,6 +17,7 @@ export interface Gig {
   }
   supportingArtists?: string[]
   photo?: string
+  description?: string
 }
 
 export interface Release {

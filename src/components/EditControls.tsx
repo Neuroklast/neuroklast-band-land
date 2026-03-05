@@ -1,4 +1,4 @@
-import { PencilSimple, X } from '@phosphor-icons/react'
+import { PencilSimple, X, Lightning } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -240,16 +240,29 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
           {editMode ? (
             <motion.div
               key="exit"
+              className="flex flex-col items-center gap-2"
               initial={{ scale: 0, rotate: -90 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, rotate: 90 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
+              {/* Small hub button — opens Admin Hub without exiting edit mode */}
               <Button
                 onClick={() => setShowAdminHub(true)}
-                className="bg-destructive hover:bg-destructive/90 active:bg-destructive/80 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-destructive/40 hover:shadow-destructive/60 active:shadow-destructive/80 transition-all touch-manipulation relative overflow-hidden group"
+                className="bg-primary/20 hover:bg-primary/40 active:bg-primary/50 active:scale-90 w-8 h-8 md:w-9 md:h-9 rounded-full shadow-md shadow-primary/20 transition-all touch-manipulation relative overflow-hidden group border border-primary/40"
                 size="icon"
                 title="Open Admin Hub"
+              >
+                <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
+                <Lightning size={14} className="md:hidden relative z-10 text-primary" weight="bold" />
+                <Lightning size={16} className="hidden md:block relative z-10 text-primary" weight="bold" />
+              </Button>
+              {/* Main X button — exits edit mode */}
+              <Button
+                onClick={() => onToggleEdit()}
+                className="bg-destructive hover:bg-destructive/90 active:bg-destructive/80 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-destructive/40 hover:shadow-destructive/60 active:shadow-destructive/80 transition-all touch-manipulation relative overflow-hidden group"
+                size="icon"
+                title="Exit Edit Mode"
               >
                 <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
                 <X size={24} className="md:hidden relative z-10" weight="bold" />
@@ -265,7 +278,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
               <Button
-                onClick={() => { onToggleEdit(); setShowAdminHub(true) }}
+                onClick={() => onToggleEdit()}
                 className="bg-primary hover:bg-accent active:bg-accent/90 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-primary/40 hover:shadow-primary/60 active:shadow-primary/80 transition-all touch-manipulation relative overflow-hidden group"
                 size="icon"
               >
