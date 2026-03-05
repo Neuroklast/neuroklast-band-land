@@ -25,6 +25,20 @@ function checkAdminAuth(req: VercelRequest): boolean {
   return token === adminToken
 }
 
+// ─── Default key entry for error fallbacks ────────────────────────────────────
+
+const FALLBACK_KEY_ENTRY = {
+  name: '(unnamed)',
+  tier: 'free',
+  createdAt: null,
+  revokeId: null,
+  holderName: null,
+  holderEmail: null,
+  holderWebsite: null,
+  notes: null,
+  assignedThemes: [] as string[],
+}
+
 // ─── Key Manager API ──────────────────────────────────────────────────────────
 
 /**
@@ -65,9 +79,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               createdAt: (meta?.createdAt as string) || null,
               // Use revokeId for revocation — never expose the key value
               revokeId: (meta?.revokeId as string) || null,
+              // Extended metadata
+              holderName: (meta?.holderName as string) || null,
+              holderEmail: (meta?.holderEmail as string) || null,
+              holderWebsite: (meta?.holderWebsite as string) || null,
+              notes: (meta?.notes as string) || null,
+              assignedThemes: meta?.assignedThemes
+                ? JSON.parse(meta.assignedThemes as string)
+                : [],
             }
           } catch {
-            return { name: '(unnamed)', tier: 'free', createdAt: null, revokeId: null }
+            return { ...FALLBACK_KEY_ENTRY }
           }
         })
       )
@@ -80,7 +102,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     // Generate a new activation key
-    const { name = 'Unnamed Key', tier = 'free' } = req.body || {}
+    const { name = 'Unnamed Key', tier = 'free', holderName, holderEmail, holderWebsite, notes } = req.body || {}
 
     if (typeof name !== 'string' || !name.trim()) {
       return res.status(400).json({ error: 'name is required' })
@@ -95,14 +117,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const revokeId = randomBytes(16).toString('hex')
       const createdAt = new Date().toISOString()
 
-      await kv.sadd('activation-keys', key)
-      await kv.hset(`activation-key-meta:${key}`, {
+      const metaFields: Record<string, string> = {
         name: name.trim(),
         tier: String(tier),
         createdAt,
         revokeId,
         features: JSON.stringify([]),
-      })
+      }
+      if (holderName && typeof holderName === 'string') metaFields.holderName = holderName.trim()
+      if (holderEmail && typeof holderEmail === 'string') metaFields.holderEmail = holderEmail.trim()
+      if (holderWebsite && typeof holderWebsite === 'string') metaFields.holderWebsite = holderWebsite.trim()
+      if (notes && typeof notes === 'string') metaFields.notes = notes.trim()
+
+      await kv.sadd('activation-keys', key)
+      await kv.hset(`activation-key-meta:${key}`, metaFields)
       // Store reverse mapping revokeId → key for safe revocation
       await kv.set(`activation-revoke:${revokeId}`, key)
 
@@ -111,6 +139,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (error) {
       console.error('[admin/keys POST] KV error:', error)
       return res.status(500).json({ error: 'Failed to create key' })
+    }
+  }
+
+  if (req.method === 'PATCH') {
+    // Update key metadata fields
+    const { revokeId, holderName, holderEmail, holderWebsite, notes, assignedThemes } = req.body || {}
+
+    if (!revokeId || typeof revokeId !== 'string' || !revokeId.trim()) {
+      return res.status(400).json({ error: 'revokeId is required' })
+    }
+
+    try {
+      const key = await kv.get(`activation-revoke:${revokeId.trim()}`) as string | null
+      if (!key) {
+        return res.status(404).json({ error: 'Key not found' })
+      }
+
+      const updateFields: Record<string, string> = {}
+      if (holderName !== undefined) updateFields.holderName = String(holderName ?? '').trim()
+      if (holderEmail !== undefined) updateFields.holderEmail = String(holderEmail ?? '').trim()
+      if (holderWebsite !== undefined) updateFields.holderWebsite = String(holderWebsite ?? '').trim()
+      if (notes !== undefined) updateFields.notes = String(notes ?? '').trim()
+      if (assignedThemes !== undefined) {
+        updateFields.assignedThemes = JSON.stringify(
+          Array.isArray(assignedThemes) ? assignedThemes : []
+        )
+      }
+
+      if (Object.keys(updateFields).length > 0) {
+        await kv.hset(`activation-key-meta:${key}`, updateFields)
+      }
+
+      return res.status(200).json({ success: true })
+    } catch (error) {
+      console.error('[admin/keys PATCH] KV error:', error)
+      return res.status(500).json({ error: 'Failed to update key metadata' })
     }
   }
 

@@ -296,7 +296,7 @@ describe('api/admin/keys method guard', () => {
 
   it('returns 405 for unsupported methods', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('PATCH', {}, 'secret-admin-token')
+    const req = makeReq('PUT', {}, 'secret-admin-token')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(405)

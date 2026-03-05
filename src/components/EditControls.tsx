@@ -1,9 +1,10 @@
-import { PencilSimple, X, Key, Export, ArrowSquareIn, Globe, SpeakerHigh, Sliders, ChartBar, SignOut, ShieldWarning, ShieldCheck, ProhibitInset, Palette, Terminal, Envelope, Users, Megaphone, UsersFour, ArrowCounterClockwise, LinkSimple, Storefront } from '@phosphor-icons/react'
+import { PencilSimple, X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
+import AdminHubDialog from '@/components/AdminHubDialog'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import ConfigExportDialog from '@/components/ConfigExportDialog'
 import ConfigImportDialog from '@/components/ConfigImportDialog'
@@ -28,6 +29,7 @@ interface EditControlsProps {
   siteConfig?: SiteConfig
   onImportData?: (data: SiteConfig) => void
   onOpenDialog: (dialog: AdminDialog) => void
+  isPrimary?: boolean
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -39,10 +41,11 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, onResetSetup, siteConfig, onImportData, onOpenDialog }: EditControlsProps) {
+export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, onResetSetup, siteConfig, onImportData, onOpenDialog, isPrimary = false }: EditControlsProps) {
   const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
+  const [showAdminHub, setShowAdminHub] = useState(false)
   const [importUrl, setImportUrl] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
@@ -219,203 +222,18 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
       >
         {editMode && (
-          <>
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="flex flex-wrap gap-2 justify-end max-w-md"
-            >
-              <Button
-                onClick={handleExportData}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Export data as JSON"
-              >
-                <Export size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.export')}</span>
-              </Button>
-              <Button
-                onClick={() => importInputRef.current?.click()}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Import data from JSON file"
-              >
-                <ArrowSquareIn size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.import')}</span>
-              </Button>
-              <Button
-                onClick={() => setShowUrlImport(true)}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Import data from URL (Google Drive)"
-              >
-                <Globe size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.syncUrl')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('sound')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Sound effects settings"
-              >
-                <SpeakerHigh size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.sound')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('config')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Config variables editor"
-              >
-                <Sliders size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.config')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('analytics')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Site analytics"
-              >
-                <ChartBar size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.analytics')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('security-log')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Security incidents"
-              >
-                <ShieldWarning size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.secLog')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('security-settings')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Security settings"
-              >
-                <ShieldCheck size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.security')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('blocklist')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Blocklist manager"
-              >
-                <ProhibitInset size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.blocklist')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('attacker-profiles')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Attacker profiles overview"
-              >
-                <UsersFour size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.attackerProfiles')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('design')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Theme customizer (colors, fonts, visibility)"
-              >
-                <Palette size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.theme')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('store')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Theme & Widget Store"
-              >
-                <Storefront size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.store')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('terminal')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Terminal settings (commands, key sequence, morse code)"
-              >
-                <Terminal size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.terminal')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('secret-terminal')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Open secret terminal"
-              >
-                <Terminal size={20} weight="fill" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.openTerminal')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('inbox')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Contact inbox"
-              >
-                <Envelope size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.inbox')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('subscribers')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Newsletter subscribers"
-              >
-                <Users size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.subscribers')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('marketing')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="Marketing tools"
-              >
-                <Megaphone size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.marketing')}</span>
-              </Button>
-              <Button
-                onClick={() => onOpenDialog('oauth')}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title="OAuth connections (Spotify, Google Drive)"
-              >
-                <LinkSimple size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">OAuth</span>
-              </Button>
-              {onResetSetup && (
-                <Button
-                  onClick={onResetSetup}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Re-run setup wizard"
-                >
-                  <ArrowCounterClockwise size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.resetSetup')}</span>
-                </Button>
-              )}
-            </motion.div>
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            >
-              <Button
-                onClick={() => setShowPasswordDialog(true)}
-                className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                title={hasPassword ? 'Change admin password' : 'Set admin password'}
-              >
-                <Key size={20} weight="bold" />
-                <span className="text-[9px] font-mono leading-none">{t('edit.password')}</span>
-              </Button>
-            </motion.div>
-
-            {onLogout && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              >
-                <Button
-                  onClick={onLogout}
-                  className="bg-secondary hover:bg-secondary/80 active:scale-90 rounded-[var(--radius-lg)] shadow-lg transition-all touch-manipulation flex flex-col items-center justify-center gap-1 h-auto py-2 px-3"
-                  title="Logout"
-                >
-                  <SignOut size={20} weight="bold" />
-                  <span className="text-[9px] font-mono leading-none">{t('edit.logout')}</span>
-                </Button>
-              </motion.div>
-            )}
-          </>
+          <AdminHubDialog
+            open={showAdminHub}
+            onClose={() => setShowAdminHub(false)}
+            onOpenDialog={onOpenDialog}
+            onExportData={handleExportData}
+            onImportFile={() => importInputRef.current?.click()}
+            onImportUrl={() => setShowUrlImport(true)}
+            onChangePassword={() => setShowPasswordDialog(true)}
+            onLogout={onLogout}
+            onResetSetup={onResetSetup}
+            isPrimary={isPrimary}
+          />
         )}
 
         <AnimatePresence mode="wait">
@@ -428,9 +246,10 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
               <Button
-                onClick={onToggleEdit}
+                onClick={() => setShowAdminHub(true)}
                 className="bg-destructive hover:bg-destructive/90 active:bg-destructive/80 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-destructive/40 hover:shadow-destructive/60 active:shadow-destructive/80 transition-all touch-manipulation relative overflow-hidden group"
                 size="icon"
+                title="Open Admin Hub"
               >
                 <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
                 <X size={24} className="md:hidden relative z-10" weight="bold" />

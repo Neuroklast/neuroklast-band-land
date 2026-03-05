@@ -642,6 +642,7 @@ function App() {
                   siteConfig={data}
                   onImportData={(imported) => setConfig(imported)}
                   onOpenDialog={setActiveDialog}
+                  isPrimary={isPrimary}
                 />
               </div>
             )}
