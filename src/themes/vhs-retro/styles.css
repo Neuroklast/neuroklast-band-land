@@ -13,6 +13,10 @@
   0%, 100% { text-shadow: 2px 0 rgba(255,0,0,0.4), -2px 0 rgba(0,255,255,0.4); }
   50% { text-shadow: -3px 0 rgba(255,0,0,0.5), 3px 0 rgba(0,255,255,0.5); }
 }
+@keyframes vhs-tape-sweep {
+  0% { left: -20%; }
+  100% { left: 120%; }
+}
 @keyframes vhs-rec-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -54,7 +58,7 @@
   height: 100%;
   background: var(--primary);
   filter: blur(1px);
-  animation: vhs-color-bleed 2s ease infinite, neon-spark-move 3s linear infinite;
+  animation: vhs-color-bleed 2s ease infinite, vhs-tape-sweep 3s linear infinite;
 }
 [data-theme="vhs-retro"] .theme-bg {
   position: fixed;
