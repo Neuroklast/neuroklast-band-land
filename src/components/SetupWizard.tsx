@@ -25,7 +25,7 @@ import {
   type Icon,
 } from '@phosphor-icons/react'
 import { DESIGN_PRESETS, PRESET_IDS, presetToThemeSettings } from '@/lib/design-presets'
-import { applyThemeToDOM } from '@/components/ThemeCustomizerDialog'
+import { applyThemeToDOM } from '@/lib/theme-application'
 import { buildDefaultSections, toggleSection, reorderSections } from '@/lib/sections'
 import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { createSiteConfig } from '@/lib/site-config'

@@ -1,0 +1,65 @@
+import type { ThemePackage } from '@/lib/types'
+
+export const neuroklastClassicTheme: ThemePackage = {
+  id: 'neuroklast-classic',
+  name: 'Neuroklast Classic',
+  description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents and code-rain loading',
+  author: 'Neuroklast',
+  version: '1.0.0',
+  access: 'preview-only',
+  exclusiveFor: 'neuroklast',
+  lockedMessage: 'Exclusive to NEUROKLAST',
+  layout: {
+    heroVariant: 'chromatic-hover',
+    loadingScreen: 'code-rain',
+    navigationStyle: 'cyberpunk-hud',
+  },
+  typography: {
+    heading: "'JetBrains Mono', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  effects: {
+    overlayEffects: {
+      scanlines: { enabled: true, intensity: 0.3 },
+      crt: { enabled: true, intensity: 0.4 },
+      noise: { enabled: true, intensity: 0.15 },
+      vignette: { enabled: true, intensity: 0.5 },
+      chromatic: { enabled: false, intensity: 0 },
+      dotMatrix: { enabled: false, intensity: 0 },
+    },
+    animationSettings: {
+      glitchEnabled: true,
+      scanlineEnabled: true,
+      chromaticEnabled: false,
+      crtEnabled: true,
+      noiseEnabled: true,
+      circuitBackgroundEnabled: true,
+      crtOverlayOpacity: 0.4,
+      crtVignetteOpacity: 0.5,
+      overlayTransitionEnabled: false,
+    },
+  },
+  borderRadius: 0.125,
+  animationsEnabled: true,
+  colorPresets: [
+    {
+      id: 'crimson',
+      name: 'Crimson',
+      description: 'Neuroklast signature crimson',
+      colors: {
+        primary: 'oklch(0.50 0.22 25)',
+        accent: 'oklch(0.60 0.24 25)',
+        background: 'oklch(0 0 0)',
+        card: 'oklch(0.05 0 0)',
+        foreground: 'oklch(1 0 0)',
+        mutedForeground: 'oklch(0.55 0 0)',
+        border: 'oklch(0.15 0 0)',
+        secondary: 'oklch(0.10 0 0)',
+      },
+    },
+  ],
+  defaultPresetId: 'crimson',
+  customizability: { customColors: false, customFonts: false, adjustEffects: false },
+  slots: {},
+}
