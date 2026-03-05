@@ -1,6 +1,9 @@
 # Band Land — Universal Artist Website Template
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land&env=ADMIN_SETUP_TOKEN,KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Required%20environment%20variables%20for%20Band%20Land.%20See%20the%20link%20for%20details.&envLink=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land%23-environment-variables&project-name=band-land&repository-name=band-land)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Neuroklast/neuroklast-band-land)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template?referralCode=neuroklast&template=https://github.com/Neuroklast/neuroklast-band-land)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Neuroklast/neuroklast-band-land)
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-83%25-3178c6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
@@ -43,15 +46,39 @@
 
 ### One-Click Deploy (recommended)
 
-Click the button below to deploy your own copy to Vercel — no CLI, no Git, no code required:
+Pick your preferred platform and click the button — no CLI, no Git required:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land&env=ADMIN_SETUP_TOKEN,KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Required%20environment%20variables%20for%20Band%20Land.%20See%20the%20link%20for%20details.&envLink=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land%23-environment-variables&project-name=band-land&repository-name=band-land)
+| Platform | Button | API support | Notes |
+|----------|--------|-------------|-------|
+| **Vercel** | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land&env=ADMIN_SETUP_TOKEN,KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Required%20environment%20variables%20for%20Band%20Land.%20See%20the%20link%20for%20details.&envLink=https%3A%2F%2Fgithub.com%2FNeuroklast%2Fneuroklast-band-land%23-environment-variables&project-name=band-land&repository-name=band-land) | ✅ Full (serverless functions) | **Recommended** — zero config |
+| **Netlify** | [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Neuroklast/neuroklast-band-land) | ⚠️ Frontend only | API requires separate backend |
+| **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template?referralCode=neuroklast&template=https://github.com/Neuroklast/neuroklast-band-land) | ⚠️ Frontend only | Serves static build via `serve` |
+| **Render** | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Neuroklast/neuroklast-band-land) | ⚠️ Frontend only | Static site with SPA routing |
 
-Vercel will fork the repo into your GitHub account, prompt you for the required environment variables, and deploy automatically. Once deployed the **Setup Wizard** guides you through all remaining configuration in-browser.
+> **Vercel** is the recommended platform because the serverless API functions (admin, analytics, security) run natively. Other platforms deploy the frontend SPA but require a separate backend or Vercel project for the API layer.
+
+#### After deploying
+
+1. Set the required environment variables (see [Environment Variables](#environment-variables) below).
+2. Open your deployed site — the **Setup Wizard** will guide you through all remaining configuration in-browser.
+
+### Docker
+
+Build and run with Docker for self-hosted deployments:
+
+```bash
+# Build the image (pass your activation key as a build arg)
+docker build --build-arg VITE_ACTIVATION_KEY=your-key -t band-land .
+
+# Run the container
+docker run -p 8080:80 band-land
+```
+
+Open [http://localhost:8080](http://localhost:8080) in your browser. For API support, pair with a Vercel project or adapt the `api/` functions for your backend.
 
 ### Use this template
 
-If you prefer to start from your own GitHub repo first, click **"Use this template"** on the repository page to create a fresh copy, then deploy it to Vercel from there.
+Click **"Use this template"** on the GitHub repository page to create a fresh copy in your own account, then deploy it to any platform from there.
 
 ### Manual setup
 
@@ -178,6 +205,116 @@ const myPreset: DesignPreset = {
   animationsEnabled: true,
 }
 ```
+
+---
+
+## Theme Architecture
+
+Themes are organized as self-contained modules under `src/themes/`. Each theme is its own file (or directory) exporting a `ThemePackage` object. This modular architecture makes it easy to add, update, or remove themes without touching the core registry.
+
+### How it works
+
+```
+src/themes/
+  index.ts              ← barrel export + builtInThemes array
+  default-slots.ts      ← fallback slot components (Hero, Nav, Footer, …)
+  cyberpunk.ts          ← ThemePackage definition
+  minimal.ts
+  elegant.ts
+  neon.ts
+  retro.ts
+  neuroklast-classic.ts
+  zardonic-industrial/
+    index.ts            ← ThemePackage definition
+    LoadingScreen.tsx   ← custom slot component
+
+src/lib/
+  theme-registry.ts     ← registry logic (auto-registers all builtInThemes)
+  theme-application.ts  ← applyThemeToDOM(), resetThemeDOM()
+  design-presets.ts     ← DesignPreset definitions (color/font combos)
+```
+
+### Adding a new theme
+
+1. Create a new file, e.g. `src/themes/my-theme.ts`:
+
+```ts
+import type { ThemePackage } from '@/lib/types'
+
+export const myTheme: ThemePackage = {
+  id: 'my-theme',
+  name: 'My Theme',
+  description: 'A custom theme with unique aesthetics',
+  author: 'Your Name',
+  version: '1.0.0',
+  access: 'free',
+  layout: {
+    heroVariant: 'default',
+    loadingScreen: 'minimal',
+    navigationStyle: 'clean',
+  },
+  typography: {
+    heading: "'Inter', sans-serif",
+    body: "'Inter', sans-serif",
+    mono: "'Fira Code', monospace",
+  },
+  effects: {},
+  borderRadius: 0.5,
+  animationsEnabled: false,
+  colorPresets: [
+    {
+      id: 'default',
+      name: 'Default',
+      description: 'Default color scheme',
+      colors: {
+        primary: 'oklch(0.55 0.20 250)',
+        accent: 'oklch(0.65 0.22 250)',
+        background: 'oklch(0.02 0 0)',
+        card: 'oklch(0.07 0 0)',
+        foreground: 'oklch(0.97 0 0)',
+        mutedForeground: 'oklch(0.55 0 0)',
+        border: 'oklch(0.16 0 0)',
+        secondary: 'oklch(0.11 0 0)',
+      },
+    },
+  ],
+  defaultPresetId: 'default',
+  customizability: { customColors: true, customFonts: true, adjustEffects: true },
+  slots: {},
+}
+```
+
+2. Register it in `src/themes/index.ts`:
+
+```ts
+export { myTheme } from './my-theme'
+
+// Add to builtInThemes array:
+import { myTheme } from './my-theme'
+// ...
+export const builtInThemes: ThemePackage[] = [
+  // ...existing themes,
+  myTheme,
+]
+```
+
+3. Optionally add a `DesignPreset` in `src/lib/design-presets.ts` and a `ThemeDefinition` entry in the `THEME_CATALOG` array in `src/lib/theme-registry.ts`.
+
+### Theme slots
+
+Themes can override any of these UI slots with custom React components:
+
+| Slot | Props | Purpose |
+|------|-------|---------|
+| `Hero` | `HeroSlotProps` | Hero section layout |
+| `Navigation` | `NavigationSlotProps` | Top navigation bar |
+| `LoadingScreen` | `LoadingScreenSlotProps` | Initial loading animation |
+| `SectionDivider` | `SectionDividerSlotProps` | Divider between sections |
+| `Card` | `CardSlotProps` | Card wrapper component |
+| `BackgroundEffects` | `BackgroundEffectsSlotProps` | Full-page background effects |
+| `Footer` | `FooterSlotProps` | Footer layout |
+
+If a theme doesn't provide a slot, the default stub from `default-slots.ts` is used.
 
 ---
 
@@ -321,7 +458,7 @@ npm run preview    # Preview production build
 
 ### Environment variables
 
-Copy `.env.example` to `.env` and fill in the values (for local development), or set them in your Vercel project dashboard (for production).
+Copy `.env.example` to `.env` and fill in the values for local development. For production, set these in your platform's environment variables UI (Vercel → Settings → Environment Variables, Netlify → Site settings → Environment variables, Railway → Variables, Render → Environment).
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -351,7 +488,7 @@ The Setup Wizard checks for missing variables on first launch and shows which on
 | Music | iTunes Search API + Odesli |
 | Testing | Vitest + Testing Library |
 | Linting | ESLint 10 + typescript-eslint |
-| Deploy | Vercel (zero-config) |
+| Deploy | Vercel (recommended), Netlify, Railway, Render, Docker |
 
 ---
 
@@ -360,20 +497,36 @@ The Setup Wizard checks for missing variables on first launch and shows which on
 ```
 src/
  lib/
-    types.ts            # All TypeScript types (SiteConfig, DesignPreset, …)
-    site-config.ts      # Defaults, createSiteConfig(), migrations
-    design-presets.ts   # Bundled design presets (#157)
-    font-loader.ts      # Google Fonts / local font loading (#158)
-    sections.ts         # Section registry and utilities (#159)
-    meta-tags.ts        # OG / SEO tag generation (#160)
- components/             # React components
- hooks/                  # Custom React hooks
- contexts/               # React context providers
- styles/                 # Global CSS (theme variables, animations)
- test/                   # Vitest test files
- main.tsx                # App entry point
-api/                        # Vercel serverless functions
-public/                     # Static assets
+    types.ts              # All TypeScript types (SiteConfig, ThemePackage, …)
+    site-config.ts        # Defaults, createSiteConfig(), migrations
+    design-presets.ts     # Bundled design presets (color/font combos)
+    theme-registry.ts     # Theme registry (lookup, registration, slots)
+    theme-application.ts  # applyThemeToDOM(), resetThemeDOM()
+    font-loader.ts        # Google Fonts / local font loading
+    sections.ts           # Section registry and utilities
+    widget-registry.ts    # Widget plugin system
+    meta-tags.ts          # OG / SEO tag generation
+    i18n.ts               # English translations
+ themes/                    # Modular theme packages
+    index.ts              # Barrel export + builtInThemes array
+    default-slots.ts      # Default slot stubs (Hero, Nav, Footer, …)
+    cyberpunk.ts          # Cyberpunk theme
+    minimal.ts            # Minimal theme
+    elegant.ts            # Elegant theme
+    neon.ts               # Neon theme
+    retro.ts              # Retro theme
+    neuroklast-classic.ts # Neuroklast Classic theme
+    zardonic-industrial/  # Zardonic Industrial theme + custom LoadingScreen
+ components/                # React components
+    widgets/              # Pluggable widget components
+    ui/                   # shadcn/ui base components
+ hooks/                     # Custom React hooks
+ contexts/                  # React context providers
+ styles/                    # Global CSS (theme variables, animations)
+ test/                      # Vitest test files
+ main.tsx                   # App entry point
+api/                          # Vercel serverless functions
+public/                       # Static assets
 ```
 
 ---
@@ -428,7 +581,11 @@ Contact Neuroklast to request an activation key:
 ### How to configure the key
 
 1. **Vercel (recommended):** Add `VITE_ACTIVATION_KEY=your-key` in your project's **Settings → Environment Variables**.
-2. **Local development:** Add the line to your `.env` file.
+2. **Netlify:** Add `VITE_ACTIVATION_KEY=your-key` in **Site settings → Environment variables**.
+3. **Railway:** Add `VITE_ACTIVATION_KEY=your-key` in the **Variables** tab of your service.
+4. **Render:** Add `VITE_ACTIVATION_KEY=your-key` in the **Environment** tab of your service.
+5. **Docker:** Pass `--build-arg VITE_ACTIVATION_KEY=your-key` when building the image.
+6. **Local development:** Add the line to your `.env` file.
 
 The app validates the key against the central Neuroklast API on startup. Without a valid key the app shows a lock screen and no content is displayed.
 
