@@ -109,7 +109,7 @@ function collectImageUrls(data: SiteConfig): string[] {
 function App() {
   const { config, updateConfig, setConfig, isLoaded: siteConfigLoaded } = useSiteConfig()
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
-  const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState()
+  const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)

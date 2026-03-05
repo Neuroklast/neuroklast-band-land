@@ -187,6 +187,8 @@ export interface ThemeSettings {
   loadingScreenType?: 'cyberpunk' | 'code-rain' | '3d-model' | 'minimal'
   /** Hero section visual style */
   heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
+  /** Overlay open/close animation variant (random if omitted) */
+  overlayAnimationStyle?: 'circuitBreak' | 'systemBoot' | 'glitchScan' | 'dataStream' | 'neuralJackIn' | 'hologramMaterialize' | 'matrixDecode' | 'ringLink' | 'none'
   // Extended optional color overrides (mirrors DesignPreset extended colors)
   /** Primary foreground color (default: derived from foreground) */
   primaryForeground?: string
@@ -238,6 +240,8 @@ export interface AnimationSettings {
   circuitBackgroundEnabled?: boolean
   crtOverlayOpacity?: number
   crtVignetteOpacity?: number
+  /** Whether the full-screen glitch transition plays when overlays open (default: false) */
+  overlayTransitionEnabled?: boolean
 }
 
 export interface ProgressiveOverlayModes {

@@ -60,14 +60,25 @@ describe('OverlayTransition', () => {
 })
 
 describe('useOverlayTransition', () => {
-  it('returns trigger function and element', () => {
+  it('returns trigger function and null element when disabled (default)', () => {
     const { result } = renderHook(() => useOverlayTransition())
     expect(typeof result.current.trigger).toBe('function')
-    expect(result.current.element).not.toBeUndefined()
+    expect(result.current.element).toBeNull()
   })
 
-  it('trigger function can be called without error', () => {
+  it('returns trigger function and element when enabled', () => {
+    const { result } = renderHook(() => useOverlayTransition(true))
+    expect(typeof result.current.trigger).toBe('function')
+    expect(result.current.element).not.toBeNull()
+  })
+
+  it('trigger function can be called without error when disabled', () => {
     const { result } = renderHook(() => useOverlayTransition())
+    expect(() => result.current.trigger()).not.toThrow()
+  })
+
+  it('trigger function can be called without error when enabled', () => {
+    const { result } = renderHook(() => useOverlayTransition(true))
     expect(() => result.current.trigger()).not.toThrow()
   })
 })
