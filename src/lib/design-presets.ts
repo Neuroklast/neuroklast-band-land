@@ -216,6 +216,174 @@ export const neuroklastClassicPreset: DesignPreset = {
   heroStyle: 'chromatic-hover',
 }
 
+export const artDecoCyberpunkPreset: DesignPreset = {
+  id: 'art-deco-cyberpunk',
+  name: 'Art Deco Cyberpunk',
+  description: '1920s Art Deco meets future tech – geometric gold leaf patterns on black',
+  colors: {
+    primary: 'oklch(0.75 0.12 85)',
+    accent: 'oklch(0.85 0.14 90)',
+    background: 'oklch(0.02 0 0)',
+    card: 'oklch(0.06 0.01 60)',
+    foreground: 'oklch(0.95 0.03 80)',
+    mutedForeground: 'oklch(0.60 0.05 80)',
+    border: 'oklch(0.25 0.06 75)',
+    secondary: 'oklch(0.10 0.01 65)',
+  },
+  fonts: {
+    heading: "'Poiret One', sans-serif",
+    body: "'Raleway', sans-serif",
+    mono: "'Courier Prime', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: false, intensity: 0 },
+    crt: { enabled: false, intensity: 0 },
+    noise: { enabled: true, intensity: 0.05 },
+    vignette: { enabled: true, intensity: 0.5 },
+    chromatic: { enabled: false, intensity: 0 },
+    dotMatrix: { enabled: true, intensity: 0.15 },
+  },
+  animationSettings: {
+    glitchEnabled: false,
+    scanlineEnabled: false,
+    chromaticEnabled: false,
+    crtEnabled: false,
+    noiseEnabled: false,
+    circuitBackgroundEnabled: false,
+    crtOverlayOpacity: 0,
+    crtVignetteOpacity: 0,
+    overlayTransitionEnabled: true,
+  },
+}
+
+export const vhsRetroPreset: DesignPreset = {
+  id: 'vhs-retro',
+  name: 'VHS Retro',
+  description: 'Analog VHS tape aesthetic – tracking lines, color bleeding, tape distortion',
+  colors: {
+    primary: 'oklch(0.72 0.10 75)',
+    accent: 'oklch(0.80 0.08 80)',
+    background: 'oklch(0.06 0.02 60)',
+    card: 'oklch(0.10 0.02 60)',
+    foreground: 'oklch(0.90 0.04 80)',
+    mutedForeground: 'oklch(0.58 0.05 70)',
+    border: 'oklch(0.22 0.03 65)',
+    secondary: 'oklch(0.14 0.02 62)',
+  },
+  fonts: {
+    heading: "'Press Start 2P', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'VT323', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: true, intensity: 0.5 },
+    crt: { enabled: true, intensity: 0.5 },
+    noise: { enabled: true, intensity: 0.4 },
+    vignette: { enabled: false, intensity: 0 },
+    chromatic: { enabled: true, intensity: 0.4 },
+    dotMatrix: { enabled: false, intensity: 0 },
+  },
+  animationSettings: {
+    glitchEnabled: false,
+    scanlineEnabled: true,
+    chromaticEnabled: true,
+    crtEnabled: true,
+    noiseEnabled: true,
+    circuitBackgroundEnabled: false,
+    crtOverlayOpacity: 0.5,
+    crtVignetteOpacity: 0,
+    overlayTransitionEnabled: false,
+  },
+}
+
+export const steampunkPreset: DesignPreset = {
+  id: 'steampunk',
+  name: 'Steampunk',
+  description: 'Victorian industrial meets brass machinery – copper tones and ornate details',
+  colors: {
+    primary: 'oklch(0.62 0.12 50)',
+    accent: 'oklch(0.72 0.14 55)',
+    background: 'oklch(0.10 0.03 40)',
+    card: 'oklch(0.15 0.03 40)',
+    foreground: 'oklch(0.92 0.04 60)',
+    mutedForeground: 'oklch(0.58 0.06 50)',
+    border: 'oklch(0.25 0.05 48)',
+    secondary: 'oklch(0.18 0.03 42)',
+  },
+  fonts: {
+    heading: "'Cinzel', serif",
+    body: "'Lora', serif",
+    mono: "'Courier Prime', monospace",
+  },
+  borderRadius: 0.25,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: false, intensity: 0 },
+    crt: { enabled: false, intensity: 0 },
+    noise: { enabled: true, intensity: 0.2 },
+    vignette: { enabled: true, intensity: 0.6 },
+    chromatic: { enabled: false, intensity: 0 },
+    dotMatrix: { enabled: true, intensity: 0.1 },
+  },
+  animationSettings: {
+    glitchEnabled: false,
+    scanlineEnabled: false,
+    chromaticEnabled: false,
+    crtEnabled: false,
+    noiseEnabled: false,
+    circuitBackgroundEnabled: false,
+    crtOverlayOpacity: 0,
+    crtVignetteOpacity: 0,
+    overlayTransitionEnabled: false,
+  },
+}
+
+export const analogDarkMetalPreset: DesignPreset = {
+  id: 'analog-dark-metal',
+  name: 'Analog Dark Metal',
+  description: 'Dark, heavy, brutal – analog grain, blackletter type, raw texture',
+  colors: {
+    primary: 'oklch(0.75 0 0)',
+    accent: 'oklch(0.88 0 0)',
+    background: 'oklch(0.03 0 0)',
+    card: 'oklch(0.07 0 0)',
+    foreground: 'oklch(0.85 0 0)',
+    mutedForeground: 'oklch(0.45 0 0)',
+    border: 'oklch(0.15 0 0)',
+    secondary: 'oklch(0.10 0 0)',
+  },
+  fonts: {
+    heading: "'UnifrakturMaguntia', cursive",
+    body: "'Bitter', serif",
+    mono: "'IBM Plex Mono', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: true, intensity: 0.1 },
+    crt: { enabled: false, intensity: 0 },
+    noise: { enabled: true, intensity: 0.5 },
+    vignette: { enabled: true, intensity: 0.7 },
+    chromatic: { enabled: false, intensity: 0 },
+    dotMatrix: { enabled: false, intensity: 0 },
+  },
+  animationSettings: {
+    glitchEnabled: false,
+    scanlineEnabled: false,
+    chromaticEnabled: false,
+    crtEnabled: false,
+    noiseEnabled: true,
+    circuitBackgroundEnabled: false,
+    crtOverlayOpacity: 0,
+    crtVignetteOpacity: 0,
+    overlayTransitionEnabled: false,
+  },
+}
+
 /** All bundled presets indexed by their ID */
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   cyberpunk: cyberpunkPreset,
@@ -225,6 +393,10 @@ export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   retro: retroPreset,
   'zardonic-industrial': zardonicIndustrialPreset,
   'neuroklast-classic': neuroklastClassicPreset,
+  'art-deco-cyberpunk': artDecoCyberpunkPreset,
+  'vhs-retro': vhsRetroPreset,
+  steampunk: steampunkPreset,
+  'analog-dark-metal': analogDarkMetalPreset,
 }
 
 /** Ordered list of all bundled preset IDs */

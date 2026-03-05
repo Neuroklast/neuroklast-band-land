@@ -17,17 +17,21 @@ vi.mock('../../api/_ratelimit.js', () => ({
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn> }
+interface Res {
+  status: ReturnType<typeof vi.fn> & ((code: number) => Res)
+  json: ReturnType<typeof vi.fn> & ((data: unknown) => Res)
+  setHeader: ReturnType<typeof vi.fn> & ((k: string, v: string) => Res)
+}
 
 function mockRes(): Res {
-  const res: Res = {
+  const res = {
     status: vi.fn(),
     json: vi.fn(),
     setHeader: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
-  return res
+  return res as unknown as Res
 }
 
 const { default: handler } = await import('../../api/drive-folder.js')

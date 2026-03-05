@@ -1,5 +1,6 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { PencilSimple, User, Plus, Trash, InstagramLogo, FacebookLogo, SpotifyLogo, SoundcloudLogo, YoutubeLogo, MusicNote, Globe } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,7 +9,7 @@ import ProgressiveImage from '@/components/ProgressiveImage'
 import ProfileOverlay from '@/components/ProfileOverlay'
 import { useOverlayTransition } from '@/components/OverlayTransition'
 import SafeText from '@/components/SafeText'
-import { useState, useRef, useMemo, type ComponentType } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend, SectionLabels } from '@/lib/types'
@@ -28,7 +29,7 @@ interface PartnersAndFriendsSectionProps {
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
 }
 
-const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: ComponentType<{ size?: number; weight?: string }>; label: string }[] = [
+const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: Icon; label: string }[] = [
   { key: 'instagram', icon: InstagramLogo, label: 'Instagram' },
   { key: 'facebook', icon: FacebookLogo, label: 'Facebook' },
   { key: 'spotify', icon: SpotifyLogo, label: 'Spotify' },

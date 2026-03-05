@@ -6,7 +6,7 @@ export const neuroklastClassicTheme: ThemePackage = {
   description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents and code-rain loading',
   author: 'Neuroklast',
   version: '1.0.0',
-  access: 'preview-only',
+  access: 'exclusive',
   exclusiveFor: 'neuroklast',
   lockedMessage: 'Exclusive to NEUROKLAST',
   layout: {

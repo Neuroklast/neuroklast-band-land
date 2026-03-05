@@ -8,10 +8,9 @@ interface LicenseStatusBadgeProps {
 }
 
 const TIER_COLORS: Record<LicenseTier, string> = {
-  free:   'rgba(255,255,255,0.5)',
-  pro:    '#00cfff',
-  agency: '#a855f7',
-  saas:   '#ff2222',
+  free:    'rgba(255,255,255,0.5)',
+  premium: '#00cfff',
+  agency:  '#a855f7',
 }
 
 /**

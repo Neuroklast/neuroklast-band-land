@@ -15,6 +15,10 @@ import {
   retroTheme,
   zardonicIndustrialTheme,
   neuroklastClassicTheme,
+  artDecoCyberpunkTheme,
+  vhsRetroTheme,
+  steampunkTheme,
+  analogDarkMetalTheme,
   DefaultHero,
   DefaultNavigation,
   DefaultLoadingScreen,
@@ -49,7 +53,7 @@ export function getActiveTheme(themeId?: string): ThemePackage {
     const found = _registry.get(themeId)
     if (found) return found
   }
-  const fallback = _registry.get('cyberpunk') ?? Array.from(_registry.values()).at(0)
+  const fallback = _registry.get('cyberpunk') ?? Array.from(_registry.values())[0]
   if (!fallback) throw new Error('Theme registry is empty — no themes have been registered')
   return fallback
 }
@@ -86,33 +90,17 @@ for (const theme of builtInThemes) {
 
 // ─── Re-export theme objects for backward compatibility ───────────────────────
 
-export { cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme, zardonicIndustrialTheme, neuroklastClassicTheme }
+export { cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme, zardonicIndustrialTheme, neuroklastClassicTheme, artDecoCyberpunkTheme, vhsRetroTheme, steampunkTheme, analogDarkMetalTheme }
 
 // ─── ThemeDefinition-based registry (license-aware) ──────────────────────────
 
 import type { ThemeDefinition, ThemeLicenseStatus } from './types'
+import type { LicenseTier } from './activation'
 import { DESIGN_PRESETS, presetToThemeSettings } from './design-presets'
+import { hasFeature } from './license'
 
 /** Catalog of all built-in themes with license metadata */
 export const THEME_CATALOG: ThemeDefinition[] = [
-  {
-    id: 'neuroklast-classic',
-    name: 'Neuroklast Classic',
-    description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents',
-    licenseStatus: 'free',
-    theme: presetToThemeSettings(DESIGN_PRESETS['neuroklast-classic']),
-    author: 'Neuroklast',
-    tags: ['dark', 'cyber', 'industrial'],
-  },
-  {
-    id: 'cyberpunk',
-    name: 'Cyberpunk',
-    description: 'Dark industrial aesthetic with crimson red neon accents',
-    licenseStatus: 'free',
-    theme: presetToThemeSettings(DESIGN_PRESETS['cyberpunk']),
-    author: 'Neuroklast',
-    tags: ['dark', 'neon', 'cyberpunk'],
-  },
   {
     id: 'minimal',
     name: 'Minimal',
@@ -150,10 +138,64 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     tags: ['dark', 'amber', 'retro', 'terminal'],
   },
   {
+    id: 'cyberpunk',
+    name: 'Cyberpunk',
+    description: 'Dark industrial aesthetic with crimson red neon accents',
+    licenseStatus: 'preview',
+    theme: presetToThemeSettings(DESIGN_PRESETS['cyberpunk']),
+    author: 'Neuroklast',
+    tags: ['dark', 'neon', 'cyberpunk'],
+  },
+  {
+    id: 'art-deco-cyberpunk',
+    name: 'Art Deco Cyberpunk',
+    description: '1920s Art Deco meets future tech – geometric gold patterns on black',
+    licenseStatus: 'preview',
+    theme: presetToThemeSettings(DESIGN_PRESETS['art-deco-cyberpunk']),
+    author: 'Neuroklast',
+    tags: ['dark', 'gold', 'art-deco', 'premium'],
+  },
+  {
+    id: 'vhs-retro',
+    name: 'VHS Retro',
+    description: 'Analog VHS tape aesthetic – tracking lines, color bleeding, tape distortion',
+    licenseStatus: 'preview',
+    theme: presetToThemeSettings(DESIGN_PRESETS['vhs-retro']),
+    author: 'Neuroklast',
+    tags: ['dark', 'retro', 'analog', 'premium'],
+  },
+  {
+    id: 'steampunk',
+    name: 'Steampunk',
+    description: 'Victorian industrial meets brass machinery – copper tones and ornate details',
+    licenseStatus: 'preview',
+    theme: presetToThemeSettings(DESIGN_PRESETS['steampunk']),
+    author: 'Neuroklast',
+    tags: ['dark', 'copper', 'victorian', 'premium'],
+  },
+  {
+    id: 'analog-dark-metal',
+    name: 'Analog Dark Metal',
+    description: 'Dark, heavy, brutal – analog grain, blackletter type, raw texture',
+    licenseStatus: 'preview',
+    theme: presetToThemeSettings(DESIGN_PRESETS['analog-dark-metal']),
+    author: 'Neuroklast',
+    tags: ['dark', 'metal', 'analog', 'premium'],
+  },
+  {
+    id: 'neuroklast-classic',
+    name: 'Neuroklast Classic',
+    description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents',
+    licenseStatus: 'locked',
+    theme: presetToThemeSettings(DESIGN_PRESETS['neuroklast-classic']),
+    author: 'Neuroklast',
+    tags: ['dark', 'cyber', 'industrial'],
+  },
+  {
     id: 'zardonic-industrial',
     name: 'Zardonic Industrial',
     description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, aggressive red/orange tones',
-    licenseStatus: 'free',
+    licenseStatus: 'locked',
     theme: presetToThemeSettings(DESIGN_PRESETS['zardonic-industrial']),
     author: 'Zardonic',
     tags: ['dark', 'industrial', 'glitch', 'premium'],
@@ -171,13 +213,23 @@ export interface ThemeCatalogRegistry {
  * Create a license-aware ThemeCatalogRegistry.
  *
  * @param unlockedThemeIds IDs of themes whose license has been validated.
+ * @param assignedThemeIds IDs of themes explicitly assigned via activation key metadata.
+ * @param tier             The current license tier.
  */
-export function createThemeRegistry(unlockedThemeIds: string[] = []): ThemeCatalogRegistry {
+export function createThemeRegistry(
+  unlockedThemeIds: string[] = [],
+  assignedThemeIds: string[] = [],
+  tier: LicenseTier = 'free',
+): ThemeCatalogRegistry {
   const unlockedSet = new Set(unlockedThemeIds)
+  const assignedSet = new Set(assignedThemeIds)
 
   function getEffectiveStatus(def: ThemeDefinition): ThemeLicenseStatus {
     if (def.licenseStatus === 'free') return 'free'
-    if (unlockedSet.has(def.id)) return 'licensed'
+    if (unlockedSet.has(def.id) || assignedSet.has(def.id)) return 'licensed'
+    // Look up the ThemePackage to check its access level
+    const pkg = _registry.get(def.id)
+    if (pkg?.access === 'premium' && hasFeature(tier, 'premium-themes')) return 'licensed'
     return def.licenseStatus
   }
 

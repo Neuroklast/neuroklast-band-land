@@ -11,7 +11,7 @@ import { AnimatePresence } from 'framer-motion'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import CyberSpinner from '@/components/CyberSpinner'
 import KeyManagerPanel from '@/components/KeyManagerPanel'
-import type { AdminDialog, SoundSettings, ThemeSettings, SectionVisibility } from '@/lib/types'
+import type { AdminDialog, SoundSettings, ThemeSettings, SectionVisibility, NewsletterSettings, ContactSettings } from '@/lib/types'
 import type { ActivationResult } from '@/lib/activation'
 import type { WidgetPlugin } from '@/lib/types'
 
@@ -62,10 +62,10 @@ export interface AdminDialogManagerProps {
   onUpdatePlugins: (widgetPlugins: WidgetPlugin[]) => void
   activePresetId?: string
   activationResult: ActivationResult | null
-  newsletterSettings?: Record<string, unknown>
-  contactSettings?: Record<string, unknown>
-  onSaveNewsletter: (settings: Record<string, unknown>) => void
-  onSaveContact: (settings: Record<string, unknown>) => void
+  newsletterSettings?: NewsletterSettings
+  contactSettings?: ContactSettings
+  onSaveNewsletter: (settings: NewsletterSettings) => void
+  onSaveContact: (settings: ContactSettings) => void
 }
 
 // ─── Suspense wrapper helper ──────────────────────────────────────────────────

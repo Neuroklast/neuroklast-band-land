@@ -235,7 +235,7 @@ describe('Canary Documents: CANARY_DOCUMENTS config', () => {
 
   it('all paths start with /', () => {
     for (const [, doc] of Object.entries(CANARY_DOCUMENTS)) {
-      expect(doc.path).toMatch(/^\//)
+      expect((doc as { path: string }).path).toMatch(/^\//)
     }
   })
 })
@@ -412,7 +412,7 @@ describe('Log Poisoning: injectLogPoisonHeaders', () => {
     injectLogPoisonHeaders(res)
     const debugRouteCall = res.setHeader.mock.calls.find((c: string[]) => c[0] === 'X-Debug-Route')
     expect(debugRouteCall).toBeDefined()
-    expect(debugRouteCall[1]).toMatch(/^\//)
+    expect(debugRouteCall![1]).toMatch(/^\//)
   })
 
   it('includes fake auth token in X-Trace-Auth', () => {
@@ -420,7 +420,7 @@ describe('Log Poisoning: injectLogPoisonHeaders', () => {
     injectLogPoisonHeaders(res)
     const authCall = res.setHeader.mock.calls.find((c: string[]) => c[0] === 'X-Trace-Auth')
     expect(authCall).toBeDefined()
-    expect(authCall[1]).toContain('Bearer ')
+    expect(authCall![1]).toContain('Bearer ')
   })
 })
 

@@ -43,7 +43,7 @@ describe('Logo3D', () => {
   beforeEach(() => {
     // Simulate WebGL being available so we get the Canvas path
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
-      {} as unknown as RenderingContext
+      {} as never
     )
   })
 

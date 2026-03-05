@@ -11,14 +11,18 @@ import {
   retroTheme,
   zardonicIndustrialTheme,
   neuroklastClassicTheme,
+  artDecoCyberpunkTheme,
+  vhsRetroTheme,
+  steampunkTheme,
+  analogDarkMetalTheme,
 } from '@/lib/theme-registry'
 
 // Ensure registry is populated (side effects run on import)
 
 describe('Theme Registry — all themes registered', () => {
-  it('has 7 built-in themes', () => {
+  it('has 11 built-in themes', () => {
     const themes = getAllThemes()
-    expect(themes).toHaveLength(7)
+    expect(themes).toHaveLength(11)
   })
 
   it('has expected IDs', () => {
@@ -30,6 +34,10 @@ describe('Theme Registry — all themes registered', () => {
     expect(ids).toContain('retro')
     expect(ids).toContain('zardonic-industrial')
     expect(ids).toContain('neuroklast-classic')
+    expect(ids).toContain('art-deco-cyberpunk')
+    expect(ids).toContain('vhs-retro')
+    expect(ids).toContain('steampunk')
+    expect(ids).toContain('analog-dark-metal')
   })
 })
 
@@ -42,6 +50,10 @@ describe('getTheme', () => {
     expect(getTheme('retro')).toBe(retroTheme)
     expect(getTheme('zardonic-industrial')).toBe(zardonicIndustrialTheme)
     expect(getTheme('neuroklast-classic')).toBe(neuroklastClassicTheme)
+    expect(getTheme('art-deco-cyberpunk')).toBe(artDecoCyberpunkTheme)
+    expect(getTheme('vhs-retro')).toBe(vhsRetroTheme)
+    expect(getTheme('steampunk')).toBe(steampunkTheme)
+    expect(getTheme('analog-dark-metal')).toBe(analogDarkMetalTheme)
   })
 
   it('returns undefined for unknown ID', () => {
@@ -66,21 +78,31 @@ describe('getActiveTheme', () => {
 })
 
 describe('Access levels', () => {
-  it('cyberpunk, minimal, elegant, neon, retro are free', () => {
-    expect(cyberpunkTheme.access).toBe('free')
+  it('minimal, elegant, neon, retro are free', () => {
     expect(minimalTheme.access).toBe('free')
     expect(elegantTheme.access).toBe('free')
     expect(neonTheme.access).toBe('free')
     expect(retroTheme.access).toBe('free')
   })
 
-  it('zardonic-industrial is free', () => {
-    expect(zardonicIndustrialTheme.access).toBe('free')
+  it('cyberpunk, art-deco-cyberpunk, vhs-retro, steampunk, analog-dark-metal are premium', () => {
+    expect(cyberpunkTheme.access).toBe('premium')
+    expect(artDecoCyberpunkTheme.access).toBe('premium')
+    expect(vhsRetroTheme.access).toBe('premium')
+    expect(steampunkTheme.access).toBe('premium')
+    expect(analogDarkMetalTheme.access).toBe('premium')
   })
 
-  it('neuroklast-classic is preview-only', () => {
-    expect(neuroklastClassicTheme.access).toBe('preview-only')
+  it('zardonic-industrial is exclusive', () => {
+    expect(zardonicIndustrialTheme.access).toBe('exclusive')
+    expect(zardonicIndustrialTheme.exclusiveFor).toBe('zardonic')
+    expect(zardonicIndustrialTheme.lockedMessage).toBe('Exclusive to ZARDONIC')
+  })
+
+  it('neuroklast-classic is exclusive', () => {
+    expect(neuroklastClassicTheme.access).toBe('exclusive')
     expect(neuroklastClassicTheme.exclusiveFor).toBe('neuroklast')
+    expect(neuroklastClassicTheme.lockedMessage).toBe('Exclusive to NEUROKLAST')
   })
 })
 
@@ -124,7 +146,15 @@ describe('Color presets', () => {
 
 describe('Customizability', () => {
   it('free themes allow full customization', () => {
-    for (const theme of [cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme]) {
+    for (const theme of [minimalTheme, elegantTheme, neonTheme, retroTheme]) {
+      expect(theme.customizability.customColors, `${theme.id}.customColors`).toBe(true)
+      expect(theme.customizability.customFonts, `${theme.id}.customFonts`).toBe(true)
+      expect(theme.customizability.adjustEffects, `${theme.id}.adjustEffects`).toBe(true)
+    }
+  })
+
+  it('premium themes allow full customization', () => {
+    for (const theme of [cyberpunkTheme, artDecoCyberpunkTheme, vhsRetroTheme, steampunkTheme, analogDarkMetalTheme]) {
       expect(theme.customizability.customColors, `${theme.id}.customColors`).toBe(true)
       expect(theme.customizability.customFonts, `${theme.id}.customFonts`).toBe(true)
       expect(theme.customizability.adjustEffects, `${theme.id}.adjustEffects`).toBe(true)

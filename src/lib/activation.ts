@@ -7,12 +7,13 @@
  * to avoid repeated network calls on every page refresh.
  */
 
-export type LicenseTier = 'free' | 'pro' | 'agency' | 'saas'
+export type LicenseTier = 'free' | 'premium' | 'agency'
 
 export interface ActivationResult {
   valid: boolean
   tier?: LicenseTier
   features?: string[]
+  assignedThemes?: string[]
   error?: string
 }
 
@@ -67,7 +68,7 @@ function setCachedResult(result: ActivationResult): void {
 export async function validateActivationKey(): Promise<ActivationResult> {
   // Primary instance (own deployment) — always valid, no key required
   if (import.meta.env.VITE_IS_PRIMARY === 'true') {
-    const result: ActivationResult = { valid: true, tier: 'saas', features: [] }
+    const result: ActivationResult = { valid: true, tier: 'agency', features: [] }
     return result
   }
 

@@ -164,7 +164,7 @@ describe('GET /api/admin/keys', () => {
 
   it('returns list with revokeId (not the key value)', async () => {
     mockKv.smembers.mockResolvedValue(['abcdef1234567890'])
-    mockKv.hgetall.mockResolvedValue({ name: 'Test Key', tier: 'pro', createdAt: '2025-01-01', revokeId: 'revoke-uuid-abc' })
+    mockKv.hgetall.mockResolvedValue({ name: 'Test Key', tier: 'premium', createdAt: '2025-01-01', revokeId: 'revoke-uuid-abc' })
     const { default: handler } = await import('../../api/admin/keys')
     const req = makeReq('GET', {}, true)
     const res = makeRes()
@@ -173,7 +173,7 @@ describe('GET /api/admin/keys', () => {
     const keys = (res._data as { keys: Array<{ name: string; tier: string; revokeId: string }> }).keys
     expect(keys).toHaveLength(1)
     expect(keys[0].name).toBe('Test Key')
-    expect(keys[0].tier).toBe('pro')
+    expect(keys[0].tier).toBe('premium')
     expect(keys[0].revokeId).toBe('revoke-uuid-abc')
     // Full key value must not be returned
     expect(JSON.stringify(keys)).not.toContain('abcdef1234567890')
@@ -198,7 +198,7 @@ describe('POST /api/admin/keys', () => {
 
   it('generates a key and returns it in the response (with revokeId)', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('POST', { name: 'My Key', tier: 'pro' }, true)
+    const req = makeReq('POST', { name: 'My Key', tier: 'premium' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(201)
@@ -206,7 +206,7 @@ describe('POST /api/admin/keys', () => {
     expect(data.key).toBeTruthy()
     expect(data.revokeId).toBeTruthy()
     expect(data.name).toBe('My Key')
-    expect(data.tier).toBe('pro')
+    expect(data.tier).toBe('premium')
   })
 
   it('stores the key in KV', async () => {

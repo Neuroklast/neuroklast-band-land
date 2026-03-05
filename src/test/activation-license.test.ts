@@ -9,39 +9,33 @@ import { tierAtLeast, hasFeature, TIER_LABELS, TIER_ORDER } from '@/lib/license'
 
 describe('tierAtLeast', () => {
   it('free meets free', () => expect(tierAtLeast('free', 'free')).toBe(true))
-  it('free does not meet pro', () => expect(tierAtLeast('free', 'pro')).toBe(false))
-  it('pro meets free', () => expect(tierAtLeast('pro', 'free')).toBe(true))
-  it('pro meets pro', () => expect(tierAtLeast('pro', 'pro')).toBe(true))
-  it('pro does not meet agency', () => expect(tierAtLeast('pro', 'agency')).toBe(false))
-  it('agency meets pro', () => expect(tierAtLeast('agency', 'pro')).toBe(true))
-  it('saas meets agency', () => expect(tierAtLeast('saas', 'agency')).toBe(true))
-  it('saas meets saas', () => expect(tierAtLeast('saas', 'saas')).toBe(true))
+  it('free does not meet premium', () => expect(tierAtLeast('free', 'premium')).toBe(false))
+  it('premium meets free', () => expect(tierAtLeast('premium', 'free')).toBe(true))
+  it('premium meets premium', () => expect(tierAtLeast('premium', 'premium')).toBe(true))
+  it('premium does not meet agency', () => expect(tierAtLeast('premium', 'agency')).toBe(false))
+  it('agency meets premium', () => expect(tierAtLeast('agency', 'premium')).toBe(true))
+  it('agency meets agency', () => expect(tierAtLeast('agency', 'agency')).toBe(true))
 })
 
 describe('hasFeature', () => {
   it('free has no premium features', () => {
     expect(hasFeature('free', 'premium-themes')).toBe(false)
-    expect(hasFeature('free', 'widgets')).toBe(false)
+    expect(hasFeature('free', 'premium-widgets')).toBe(false)
     expect(hasFeature('free', 'analytics')).toBe(false)
   })
 
-  it('pro has premium-themes, widgets, analytics', () => {
-    expect(hasFeature('pro', 'premium-themes')).toBe(true)
-    expect(hasFeature('pro', 'widgets')).toBe(true)
-    expect(hasFeature('pro', 'analytics')).toBe(true)
+  it('premium has premium-themes, premium-widgets, analytics', () => {
+    expect(hasFeature('premium', 'premium-themes')).toBe(true)
+    expect(hasFeature('premium', 'premium-widgets')).toBe(true)
+    expect(hasFeature('premium', 'analytics')).toBe(true)
   })
 
-  it('pro does not have multi-site', () => {
-    expect(hasFeature('pro', 'multi-site')).toBe(false)
+  it('premium does not have multi-site', () => {
+    expect(hasFeature('premium', 'multi-site')).toBe(false)
   })
 
   it('agency has multi-site', () => {
     expect(hasFeature('agency', 'multi-site')).toBe(true)
-  })
-
-  it('saas has hosted and white-label', () => {
-    expect(hasFeature('saas', 'hosted')).toBe(true)
-    expect(hasFeature('saas', 'white-label')).toBe(true)
   })
 })
 
@@ -104,7 +98,7 @@ describe('validateActivationKey', () => {
   })
 
   it('returns cached result without making a network call', async () => {
-    const cached = { valid: true, tier: 'pro', features: ['premium-themes'] }
+    const cached = { valid: true, tier: 'premium', features: ['premium-themes'] }
     sessionStorage.setItem('nk-activation-result', JSON.stringify(cached))
 
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
@@ -112,7 +106,7 @@ describe('validateActivationKey', () => {
     const result = await validateActivationKey()
 
     expect(result.valid).toBe(true)
-    expect(result.tier).toBe('pro')
+    expect(result.tier).toBe('premium')
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
@@ -142,7 +136,7 @@ describe('validateActivationKey', () => {
   it('returns valid result from successful API call', async () => {
     vi.stubEnv('VITE_ACTIVATION_KEY', 'valid-key-abc')
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ valid: true, tier: 'pro', features: ['premium-themes', 'widgets'] }), {
+      new Response(JSON.stringify({ valid: true, tier: 'premium', features: ['premium-themes', 'premium-widgets'] }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       })
@@ -152,7 +146,7 @@ describe('validateActivationKey', () => {
     const result = await validateActivationKey()
 
     expect(result.valid).toBe(true)
-    expect(result.tier).toBe('pro')
+    expect(result.tier).toBe('premium')
     expect(result.features).toContain('premium-themes')
   })
 

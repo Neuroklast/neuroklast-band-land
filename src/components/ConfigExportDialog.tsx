@@ -8,7 +8,7 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import type { SiteConfig } from '@/lib/types'
 import type { ExportScope } from '@/lib/config-export'
 import { exportSiteConfig, downloadConfigExport, copyThemeShareUrl } from '@/lib/config-export'
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 
 interface ConfigExportDialogProps {
   open: boolean
@@ -18,7 +18,7 @@ interface ConfigExportDialogProps {
 
 interface ExportOption {
   scope: ExportScope
-  icon: typeof PhosphorIcon
+  icon: Icon
   title: string
   description: string
 }

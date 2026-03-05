@@ -36,10 +36,10 @@ vi.mock('../../api/_blocklist.js', () => ({
   isHardBlocked: vi.fn().mockResolvedValue(false),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
+interface Res { status: (code: number) => Res; json: (data: unknown) => Res; end: () => void }
 
 function mockRes(): Res {
-  const res: Res = {
+  const res = {
     status: vi.fn(),
     json: vi.fn(),
     end: vi.fn(),
@@ -47,7 +47,7 @@ function mockRes(): Res {
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   res.end.mockReturnValue(res)
-  return res
+  return res as unknown as Res
 }
 
 const { default: kvHandler } = await import('../../api/kv.js')
@@ -197,7 +197,7 @@ describe('Rate limit utility: getClientIp logic', () => {
   })
 
   it('falls back to 127.0.0.1 when no forwarded header', () => {
-    const forwarded = undefined
+    const forwarded = undefined as string | undefined
     const ip = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '127.0.0.1'
     expect(ip).toBe('127.0.0.1')
   })

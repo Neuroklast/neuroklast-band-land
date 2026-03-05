@@ -1,7 +1,7 @@
 /**
  * Tests for the license gate in the Store:
  * - Premium items should be blocked (disabled) for Free tier
- * - Premium items should be allowed for Pro+
+ * - Premium items should be allowed for Premium+
  * - Free items should always be allowed
  */
 import { describe, it, expect } from 'vitest'
@@ -18,7 +18,7 @@ function isPremiumLocked(itemLicense: 'free' | 'premium', tier: LicenseTier): bo
 // ─── Free items — never locked ────────────────────────────────────────────────
 
 describe('License gate — free items', () => {
-  const tiers: LicenseTier[] = ['free', 'pro', 'agency', 'saas']
+  const tiers: LicenseTier[] = ['free', 'premium', 'agency']
 
   for (const tier of tiers) {
     it(`free item is NOT locked for ${tier} tier`, () => {
@@ -27,23 +27,19 @@ describe('License gate — free items', () => {
   }
 })
 
-// ─── Premium items — locked for free, unlocked for pro+ ─────────────────────
+// ─── Premium items — locked for free, unlocked for premium+ ─────────────────
 
 describe('License gate — premium items', () => {
   it('premium item IS locked for free tier', () => {
     expect(isPremiumLocked('premium', 'free')).toBe(true)
   })
 
-  it('premium item is NOT locked for pro tier', () => {
-    expect(isPremiumLocked('premium', 'pro')).toBe(false)
+  it('premium item is NOT locked for premium tier', () => {
+    expect(isPremiumLocked('premium', 'premium')).toBe(false)
   })
 
   it('premium item is NOT locked for agency tier', () => {
     expect(isPremiumLocked('premium', 'agency')).toBe(false)
-  })
-
-  it('premium item is NOT locked for saas tier', () => {
-    expect(isPremiumLocked('premium', 'saas')).toBe(false)
   })
 })
 
@@ -67,9 +63,9 @@ describe('Widget catalog premium gate', () => {
     }
   })
 
-  it('all premium widgets are unlocked for pro tier', () => {
+  it('all premium widgets are unlocked for premium tier', () => {
     for (const widget of premiumWidgets) {
-      expect(isPremiumLocked(widget.license!, 'pro')).toBe(false)
+      expect(isPremiumLocked(widget.license!, 'premium')).toBe(false)
     }
   })
 
@@ -94,7 +90,7 @@ describe('Widget catalog premium gate', () => {
   it('bandsintown is free and not locked for any tier', () => {
     const bt = WIDGET_CATALOG.find((w) => w.id === 'bandsintown')
     expect(bt?.license).toBe('free')
-    for (const tier of ['free', 'pro', 'agency', 'saas'] as LicenseTier[]) {
+    for (const tier of ['free', 'premium', 'agency'] as LicenseTier[]) {
       expect(isPremiumLocked('free', tier)).toBe(false)
     }
   })
@@ -103,24 +99,20 @@ describe('Widget catalog premium gate', () => {
 // ─── Tier ordering ────────────────────────────────────────────────────────────
 
 describe('Tier ordering for premium gate', () => {
-  it('pro meets or exceeds pro', () => {
-    expect(tierAtLeast('pro', 'pro')).toBe(true)
+  it('premium meets or exceeds premium', () => {
+    expect(tierAtLeast('premium', 'premium')).toBe(true)
   })
 
-  it('agency meets or exceeds pro', () => {
-    expect(tierAtLeast('agency', 'pro')).toBe(true)
+  it('agency meets or exceeds premium', () => {
+    expect(tierAtLeast('agency', 'premium')).toBe(true)
   })
 
-  it('saas meets or exceeds pro', () => {
-    expect(tierAtLeast('saas', 'pro')).toBe(true)
+  it('free does not meet premium', () => {
+    expect(tierAtLeast('free', 'premium')).toBe(false)
   })
 
-  it('free does not meet pro', () => {
-    expect(tierAtLeast('free', 'pro')).toBe(false)
-  })
-
-  it('hasFeature pro includes premium-themes', () => {
-    expect(hasFeature('pro', 'premium-themes')).toBe(true)
+  it('hasFeature premium includes premium-themes', () => {
+    expect(hasFeature('premium', 'premium-themes')).toBe(true)
   })
 
   it('hasFeature free excludes premium-themes', () => {

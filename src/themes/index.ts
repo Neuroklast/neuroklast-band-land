@@ -9,6 +9,10 @@ export { neonTheme } from './neon'
 export { retroTheme } from './retro'
 export { zardonicIndustrialTheme } from './zardonic-industrial'
 export { neuroklastClassicTheme } from './neuroklast-classic'
+export { artDecoCyberpunkTheme } from './art-deco-cyberpunk'
+export { vhsRetroTheme } from './vhs-retro'
+export { steampunkTheme } from './steampunk'
+export { analogDarkMetalTheme } from './analog-dark-metal'
 
 export * from './default-slots'
 
@@ -20,6 +24,10 @@ import { neonTheme } from './neon'
 import { retroTheme } from './retro'
 import { zardonicIndustrialTheme } from './zardonic-industrial'
 import { neuroklastClassicTheme } from './neuroklast-classic'
+import { artDecoCyberpunkTheme } from './art-deco-cyberpunk'
+import { vhsRetroTheme } from './vhs-retro'
+import { steampunkTheme } from './steampunk'
+import { analogDarkMetalTheme } from './analog-dark-metal'
 
 export const builtInThemes: ThemePackage[] = [
   cyberpunkTheme,
@@ -29,4 +37,8 @@ export const builtInThemes: ThemePackage[] = [
   retroTheme,
   zardonicIndustrialTheme,
   neuroklastClassicTheme,
+  artDecoCyberpunkTheme,
+  vhsRetroTheme,
+  steampunkTheme,
+  analogDarkMetalTheme,
 ]

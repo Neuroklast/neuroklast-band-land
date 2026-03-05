@@ -513,7 +513,7 @@ export type AdminDialog =
 // ─── THEME PLUGIN ARCHITECTURE ───────────────────────────────────────────────
 
 /** Access level for a theme */
-export type ThemeAccess = 'free' | 'exclusive' | 'preview-only'
+export type ThemeAccess = 'free' | 'premium' | 'exclusive'
 
 /** What can the user customize within a theme? */
 export interface ThemeCustomizability {

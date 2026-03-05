@@ -81,7 +81,7 @@ describe('AdminDialog type', () => {
   })
 
   it('can be used to check which dialog is open', () => {
-    const activeDialog: AdminDialog = 'design'
+    const activeDialog = 'design' as AdminDialog
     expect(activeDialog === 'design').toBe(true)
     expect(activeDialog === 'config').toBe(false)
   })
