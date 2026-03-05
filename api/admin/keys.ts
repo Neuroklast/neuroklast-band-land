@@ -37,7 +37,7 @@ const FALLBACK_KEY_ENTRY = {
  * DELETE → Revoke a key by its revokeId (a separate identifier, never the key itself)
  *
  * Only available on the primary deployment (VITE_IS_PRIMARY=true).
- * Requires Authorization: Bearer <ADMIN_TOKEN> header.
+ * Requires a valid admin session (cookie-based).
  *
  * Key security: The actual activation key value is ONLY returned on creation.
  * All subsequent operations use the `revokeId` (a random token stored alongside
