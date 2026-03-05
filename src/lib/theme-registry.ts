@@ -7,6 +7,7 @@
 
 import type React from 'react'
 import type { ThemePackage, ThemeSlots } from './types'
+import ZardonicLoadingScreen from '@/themes/zardonic-industrial/LoadingScreen'
 
 // ─── Registry ────────────────────────────────────────────────────────────────
 
@@ -521,10 +522,7 @@ const zardonicIndustrialTheme: ThemePackage = {
   description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
   author: 'Zardonic / Neuroklast',
   version: '1.0.0',
-  access: 'exclusive',
-  exclusiveFor: 'zardonic',
-  requiresActivation: true,
-  lockedMessage: 'Exklusiv für ZARDONIC',
+  access: 'free',
   layout: {
     heroVariant: 'glitch-parallax',
     loadingScreen: '3d-model',
@@ -539,9 +537,9 @@ const zardonicIndustrialTheme: ThemePackage = {
     overlayEffects: {
       scanlines: { enabled: true, intensity: 0.4 },
       crt: { enabled: true, intensity: 0.6 },
-      noise: { enabled: true, intensity: 0.15 },
+      noise: { enabled: true, intensity: 0.3 },
       vignette: { enabled: true, intensity: 0.3 },
-      chromatic: { enabled: true, intensity: 0.3 },
+      chromatic: { enabled: true, intensity: 0.5 },
       dotMatrix: { enabled: false, intensity: 0 },
     },
     animationSettings: {
@@ -550,7 +548,7 @@ const zardonicIndustrialTheme: ThemePackage = {
       chromaticEnabled: true,
       crtEnabled: true,
       noiseEnabled: true,
-      circuitBackgroundEnabled: true,
+      circuitBackgroundEnabled: false,
       crtOverlayOpacity: 0.6,
       crtVignetteOpacity: 0.3,
       overlayTransitionEnabled: false,
@@ -564,14 +562,14 @@ const zardonicIndustrialTheme: ThemePackage = {
       name: 'Default Crimson',
       description: 'Signature Zardonic crimson',
       colors: {
-        primary: 'oklch(0.50 0.22 25)',
-        accent: 'oklch(0.60 0.24 25)',
-        background: 'oklch(0 0 0)',
-        card: 'oklch(0.05 0 0)',
-        foreground: 'oklch(1 0 0)',
-        mutedForeground: 'oklch(0.55 0 0)',
-        border: 'oklch(0.15 0 0)',
-        secondary: 'oklch(0.10 0 0)',
+        primary: 'oklch(0.45 0.22 25)',
+        accent: 'oklch(0.55 0.25 25)',
+        background: 'oklch(0.1 0 0)',
+        card: 'oklch(0.15 0 0)',
+        foreground: 'oklch(0.95 0 0)',
+        mutedForeground: 'oklch(0.6 0 0)',
+        border: 'oklch(0.25 0 0)',
+        secondary: 'oklch(0.2 0 0)',
       },
     },
     {
@@ -652,7 +650,9 @@ const zardonicIndustrialTheme: ThemePackage = {
   ],
   defaultPresetId: 'default-crimson',
   customizability: { customColors: true, customFonts: false, adjustEffects: true },
-  slots: {},
+  slots: {
+    LoadingScreen: ZardonicLoadingScreen,
+  },
 }
 
 const neuroklastClassicTheme: ThemePackage = {
@@ -798,8 +798,7 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     id: 'zardonic-industrial',
     name: 'Zardonic Industrial',
     description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, aggressive red/orange tones',
-    licenseStatus: 'locked',
-    licenseKeyPrefix: 'ZARDONIC-',
+    licenseStatus: 'free',
     theme: presetToThemeSettings(DESIGN_PRESETS['zardonic-industrial']),
     author: 'Zardonic',
     tags: ['dark', 'industrial', 'glitch', 'premium'],
