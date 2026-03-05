@@ -1,4 +1,8 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import ElegantBackgroundEffects from './BackgroundEffects'
+import ElegantCard from './Card'
+import ElegantSectionDivider from './SectionDivider'
 
 export const elegantTheme: ThemePackage = {
   id: 'elegant',
@@ -69,5 +73,9 @@ export const elegantTheme: ThemePackage = {
   ],
   defaultPresetId: 'gold',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  slots: {},
+  slots: {
+    BackgroundEffects: ElegantBackgroundEffects,
+    Card: ElegantCard,
+    SectionDivider: ElegantSectionDivider,
+  },
 }

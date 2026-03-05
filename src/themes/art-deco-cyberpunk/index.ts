@@ -1,4 +1,8 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import ArtDecoCyberpunkBackgroundEffects from './BackgroundEffects'
+import ArtDecoCyberpunkCard from './Card'
+import ArtDecoCyberpunkSectionDivider from './SectionDivider'
 
 export const artDecoCyberpunkTheme: ThemePackage = {
   id: 'art-deco-cyberpunk',
@@ -119,5 +123,9 @@ export const artDecoCyberpunkTheme: ThemePackage = {
   ],
   defaultPresetId: 'gold-leaf',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  slots: {},
+  slots: {
+    BackgroundEffects: ArtDecoCyberpunkBackgroundEffects,
+    Card: ArtDecoCyberpunkCard,
+    SectionDivider: ArtDecoCyberpunkSectionDivider,
+  },
 }

@@ -1,4 +1,8 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import CyberpunkBackgroundEffects from './BackgroundEffects'
+import CyberpunkCard from './Card'
+import CyberpunkSectionDivider from './SectionDivider'
 
 export const cyberpunkTheme: ThemePackage = {
   id: 'cyberpunk',
@@ -134,5 +138,9 @@ export const cyberpunkTheme: ThemePackage = {
   ],
   defaultPresetId: 'neon-red',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  slots: {},
+  slots: {
+    BackgroundEffects: CyberpunkBackgroundEffects,
+    Card: CyberpunkCard,
+    SectionDivider: CyberpunkSectionDivider,
+  },
 }

@@ -1,0 +1,125 @@
+/* Neuroklast Classic theme styles */
+@keyframes nk-code-rain {
+  0% { transform: translateY(-100%); opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+@keyframes nk-decode-text {
+  0% { opacity: 0; filter: blur(4px); }
+  50% { opacity: 1; filter: blur(1px); }
+  100% { opacity: 1; filter: none; }
+}
+@keyframes nk-hud-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+[data-theme="neuroklast-classic"] .theme-card {
+  border: 1px solid var(--border);
+  border-radius: 0.125rem;
+  background: var(--card);
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="neuroklast-classic"] .theme-card::before,
+[data-theme="neuroklast-classic"] .theme-card::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--primary);
+  border-style: solid;
+  opacity: 0.9;
+}
+[data-theme="neuroklast-classic"] .theme-card::before {
+  top: 0;
+  left: 0;
+  border-width: 2px 0 0 2px;
+}
+[data-theme="neuroklast-classic"] .theme-card::after {
+  bottom: 0;
+  right: 0;
+  border-width: 0 2px 2px 0;
+}
+[data-theme="neuroklast-classic"] .theme-card-code-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+[data-theme="neuroklast-classic"] .theme-card:hover .theme-card-code-overlay {
+  opacity: 1;
+}
+[data-theme="neuroklast-classic"] .theme-card-code-col {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--primary);
+  opacity: 0.15;
+  overflow: hidden;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  animation: nk-code-rain 3s linear infinite;
+}
+[data-theme="neuroklast-classic"] .theme-divider {
+  position: relative;
+  height: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+  overflow: hidden;
+}
+[data-theme="neuroklast-classic"] .theme-divider-data {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--primary);
+  background: var(--background);
+  padding: 0 0.75rem;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  animation: nk-hud-pulse 2s ease infinite;
+}
+[data-theme="neuroklast-classic"] .theme-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background: var(--background);
+  overflow: hidden;
+}
+[data-theme="neuroklast-classic"] .theme-bg-code-rain {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+[data-theme="neuroklast-classic"] .theme-bg-code-col {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--primary);
+  opacity: 0.04;
+  overflow: hidden;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  animation: nk-code-rain linear infinite;
+}
+[data-theme="neuroklast-classic"] .theme-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.06) 2px,
+    rgba(0,0,0,0.06) 4px
+  );
+  pointer-events: none;
+}

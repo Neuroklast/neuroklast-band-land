@@ -1,0 +1,124 @@
+/* Zardonic Industrial theme styles */
+@keyframes zardonic-scanline-move {
+  0% { top: -100%; }
+  100% { top: 200%; }
+}
+@keyframes zardonic-glitch-card {
+  0%, 88%, 100% { transform: translateX(0); clip-path: none; }
+  89% { transform: translateX(-4px); clip-path: inset(10% 0 70% 0); filter: hue-rotate(90deg); }
+  90% { transform: translateX(4px); clip-path: inset(70% 0 10% 0); filter: hue-rotate(-90deg); }
+  91% { transform: translateX(0); clip-path: none; filter: none; }
+}
+@keyframes zardonic-hud-blink {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+@keyframes zardonic-corrupt {
+  0%, 92%, 100% { transform: none; filter: none; }
+  93% { transform: translateX(-2px); filter: hue-rotate(90deg); }
+  94% { transform: translateX(2px); filter: hue-rotate(-90deg); }
+  95% { transform: none; filter: none; }
+}
+[data-theme="zardonic-industrial"] .theme-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 0.125rem;
+  background: var(--card);
+  overflow: hidden;
+}
+[data-theme="zardonic-industrial"] .theme-card::before,
+[data-theme="zardonic-industrial"] .theme-card::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--primary);
+  border-style: solid;
+  opacity: 0.9;
+}
+[data-theme="zardonic-industrial"] .theme-card::before {
+  top: 0;
+  left: 0;
+  border-width: 2px 0 0 2px;
+}
+[data-theme="zardonic-industrial"] .theme-card::after {
+  bottom: 0;
+  right: 0;
+  border-width: 0 2px 2px 0;
+}
+[data-theme="zardonic-industrial"] .theme-card:hover {
+  animation: zardonic-glitch-card 0.4s step-end;
+  border-color: var(--primary);
+}
+[data-theme="zardonic-industrial"] .theme-card-scanline {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, transparent, rgba(var(--primary-rgb,220,30,30), 0.06), transparent);
+  pointer-events: none;
+  animation: zardonic-scanline-move 5s linear infinite;
+}
+[data-theme="zardonic-industrial"] .theme-divider {
+  position: relative;
+  height: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+  animation: zardonic-corrupt 7s ease infinite;
+}
+[data-theme="zardonic-industrial"] .theme-divider::before {
+  content: '// ZARDONIC.DATA';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--primary);
+  background: var(--background);
+  padding: 0 0.75rem;
+  letter-spacing: 0.15em;
+  animation: zardonic-hud-blink 3s ease infinite;
+}
+[data-theme="zardonic-industrial"] .theme-divider::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 15%;
+  height: 1px;
+  background: var(--primary);
+  box-shadow: 0 0 4px var(--primary);
+}
+[data-theme="zardonic-industrial"] .theme-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background: var(--background);
+}
+[data-theme="zardonic-industrial"] .theme-bg-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+[data-theme="zardonic-industrial"] .theme-bg-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.07) 2px,
+    rgba(0,0,0,0.07) 4px
+  );
+  pointer-events: none;
+}
+[data-theme="zardonic-industrial"] .theme-bg-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none;
+}

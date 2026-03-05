@@ -1,4 +1,8 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import VhsRetroBackgroundEffects from './BackgroundEffects'
+import VhsRetroCard from './Card'
+import VhsRetroSectionDivider from './SectionDivider'
 
 export const vhsRetroTheme: ThemePackage = {
   id: 'vhs-retro',
@@ -104,5 +108,9 @@ export const vhsRetroTheme: ThemePackage = {
   ],
   defaultPresetId: 'vhs-classic',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  slots: {},
+  slots: {
+    BackgroundEffects: VhsRetroBackgroundEffects,
+    Card: VhsRetroCard,
+    SectionDivider: VhsRetroSectionDivider,
+  },
 }
