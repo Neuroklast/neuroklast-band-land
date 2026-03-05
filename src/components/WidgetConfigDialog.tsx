@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Sliders, X } from '@phosphor-icons/react'
+import { Sliders, X, ChartBar } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import type { WidgetPlugin } from '@/lib/types'
 
@@ -157,7 +157,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       case 'analytics-dashboard':
         return (
           <div className="text-sm text-muted-foreground font-mono py-4 text-center">
-            <p className="text-lg mb-2">📊</p>
+            <ChartBar size={24} className="text-primary/60 mx-auto mb-2" />
             <p className="font-semibold mb-1">Analytics Dashboard</p>
             <p className="text-xs opacity-70">No configuration required — demo data is shown automatically.</p>
           </div>

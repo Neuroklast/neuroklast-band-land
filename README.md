@@ -12,7 +12,7 @@
 
 ---
 
-## ✨ Features
+## Features
 
 - **Design Presets** — Seven bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro, Zardonic Industrial, Neuroklast Classic) with one-line activation
 - **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
@@ -39,7 +39,7 @@
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### One-Click Deploy (recommended)
 
@@ -74,7 +74,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## 🔧 Configuration Reference — `SiteConfig`
+## Configuration Reference — `SiteConfig`
 
 All site customization is done through the `SiteConfig` type in `src/lib/types.ts`. The default values live in `src/lib/site-config.ts`.
 
@@ -117,7 +117,7 @@ const config = createSiteConfig({
 
 ---
 
-## 🎨 Design Presets
+## Design Presets
 
 Seven bundled presets are available in `src/lib/design-presets.ts`:
 
@@ -181,7 +181,7 @@ const myPreset: DesignPreset = {
 
 ---
 
-## 🔤 Font Configuration
+## Font Configuration
 
 Fonts are configured via `SiteConfig.fontConfig` (type `FontConfig`) and loaded by `src/lib/font-loader.ts`.
 
@@ -226,7 +226,7 @@ Each design preset already includes a recommended font pairing — when you appl
 
 ---
 
-## 📐 Section System
+## Section System
 
 Sections are managed via `SiteConfig.sections` (`SectionConfig[]`) and the utilities in `src/lib/sections.ts`.
 
@@ -270,7 +270,7 @@ const orderedIds = getEnabledSectionIds(sections)
 
 ---
 
-## 🔍 SEO & Open Graph
+## SEO & Open Graph
 
 `src/lib/meta-tags.ts` generates a `MetaTagSet` from `SiteConfig` and optionally applies it to the document.
 
@@ -308,7 +308,7 @@ const config = createSiteConfig({
 
 ---
 
-## 🛠 Development
+## Development
 
 ```bash
 npm run dev        # Start dev server (port 5173)
@@ -325,17 +325,17 @@ Copy `.env.example` to `.env` and fill in the values (for local development), or
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ADMIN_SETUP_TOKEN` | ✅ | One-time token to create the first admin password |
-| `KV_REST_API_URL` | ✅ | Upstash Redis KV URL |
-| `KV_REST_API_TOKEN` | ✅ | Upstash Redis KV token |
-| `VITE_ACTIVATION_KEY` | ✅ | Activation key issued by Neuroklast (required to run the app) |
+| `ADMIN_SETUP_TOKEN` |  | One-time token to create the first admin password |
+| `KV_REST_API_URL` |  | Upstash Redis KV URL |
+| `KV_REST_API_TOKEN` |  | Upstash Redis KV token |
+| `VITE_ACTIVATION_KEY` |  | Activation key issued by Neuroklast (required to run the app) |
 | `RESEND_API_KEY` | — | Resend API key for contact-form email forwarding |
 
 The Setup Wizard checks for missing variables on first launch and shows which ones still need to be configured.
 
 ---
 
-## 🧱 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -355,30 +355,30 @@ The Setup Wizard checks for missing variables on first launch and shows which on
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
-├── lib/
-│   ├── types.ts            # All TypeScript types (SiteConfig, DesignPreset, …)
-│   ├── site-config.ts      # Defaults, createSiteConfig(), migrations
-│   ├── design-presets.ts   # Bundled design presets (#157)
-│   ├── font-loader.ts      # Google Fonts / local font loading (#158)
-│   ├── sections.ts         # Section registry and utilities (#159)
-│   └── meta-tags.ts        # OG / SEO tag generation (#160)
-├── components/             # React components
-├── hooks/                  # Custom React hooks
-├── contexts/               # React context providers
-├── styles/                 # Global CSS (theme variables, animations)
-├── test/                   # Vitest test files
-└── main.tsx                # App entry point
+ lib/
+    types.ts            # All TypeScript types (SiteConfig, DesignPreset, …)
+    site-config.ts      # Defaults, createSiteConfig(), migrations
+    design-presets.ts   # Bundled design presets (#157)
+    font-loader.ts      # Google Fonts / local font loading (#158)
+    sections.ts         # Section registry and utilities (#159)
+    meta-tags.ts        # OG / SEO tag generation (#160)
+ components/             # React components
+ hooks/                  # Custom React hooks
+ contexts/               # React context providers
+ styles/                 # Global CSS (theme variables, animations)
+ test/                   # Vitest test files
+ main.tsx                # App entry point
 api/                        # Vercel serverless functions
 public/                     # Static assets
 ```
 
 ---
 
-## 📦 Admin Mode
+## Admin Mode
 
 1. Set the `ADMIN_SETUP_TOKEN` environment variable.
 2. Navigate to `?admin-setup` to create your admin password.
@@ -390,7 +390,7 @@ public/                     # Static assets
 
 ---
 
-## 🔒 Security
+## Security
 
 - HTTP rate limiting on all API routes (Upstash)
 - TOTP 2FA for admin login
@@ -403,7 +403,7 @@ See [SECURITY.md](SECURITY.md) for responsible disclosure.
 
 ---
 
-## 📄 License
+## License
 
 **Source Available — not Open Source.**
 
@@ -413,11 +413,11 @@ This project is licensed under the [Business Source License 1.1](LICENSE).
 - **Deployment requires an activation key.** Contact Neuroklast for access.
 - The license converts to MIT on **2030-03-03**.
 
-See the [🔑 Activation & Licensing](#-activation--licensing) section below for details.
+See the [Activation & Licensing](#activation--licensing) section below for details.
 
 ---
 
-## 🔑 Activation & Licensing
+## Activation & Licensing
 
 ### How to get a key
 

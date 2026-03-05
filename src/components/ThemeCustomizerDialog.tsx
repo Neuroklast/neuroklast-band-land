@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback, useRef, startTransition } from 'react
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { X, ArrowCounterClockwise, Export, ArrowSquareIn, FloppyDisk, Eye, EyeSlash } from '@phosphor-icons/react'
+import { X, ArrowCounterClockwise, Export, ArrowSquareIn, FloppyDisk, Eye, EyeSlash, Lock } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import type { ThemeSettings, SectionVisibility, OverlayEffect } from '@/lib/types'
+import { THEME_CATALOG } from '@/lib/theme-registry'
+import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
 
 /* ─── Theme presets ─── */
 export interface ThemePreset {
@@ -386,6 +388,10 @@ export default function ThemeCustomizerDialog({
   const [draft, setDraft] = useState<ThemeSettings>(themeSettings || {})
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
   const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'presets' | 'visibility' | 'effects'>('presets')
+  const [licenseDialog, setLicenseDialog] = useState<{ themeId: string; themeName: string; licenseKeyPrefix?: string } | null>(null)
+  const [unlockedThemeIds, setUnlockedThemeIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('nk-unlocked-themes') || '[]') } catch { return [] }
+  })
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const prevOpenRef = useRef(false)
 
@@ -494,6 +500,7 @@ export default function ThemeCustomizerDialog({
   ]
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -556,36 +563,73 @@ export default function ThemeCustomizerDialog({
               {activeTab === 'presets' && (
                 <div className="space-y-3">
                   <p className="font-mono text-[10px] text-muted-foreground/60 mb-4">
-                    Select a cyberpunk design preset. You can further customize colors and fonts in the other tabs.
+                    Select a design preset. Locked themes require a license key to activate.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {THEME_PRESETS.map(preset => (
-                      <button
-                        key={preset.name}
-                        onClick={() => handlePreset(preset)}
-                        className={`border rounded p-3 text-left transition-all hover:border-primary/50 ${
-                          draft.activePreset === preset.name ? 'border-primary bg-primary/10' : 'border-primary/15'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <div
-                            className="w-4 h-4 rounded-full border border-white/20"
-                            style={{ background: preset.theme.primary }}
-                          />
-                          <div
-                            className="w-4 h-4 rounded-full border border-white/20"
-                            style={{ background: preset.theme.accent }}
-                          />
-                          <div
-                            className="w-4 h-4 rounded-full border border-white/20"
-                            style={{ background: preset.theme.background }}
-                          />
+                    {THEME_CATALOG.map(themeDefn => {
+                      const isUnlocked = themeDefn.licenseStatus === 'free' || unlockedThemeIds.includes(themeDefn.id)
+                      const isLocked = !isUnlocked
+                      const isActive = draft.activePreset === themeDefn.id
+                      return (
+                        <div
+                          key={themeDefn.id}
+                          className={`border rounded p-3 relative transition-all ${
+                            isActive ? 'border-primary bg-primary/10' : isLocked ? 'border-primary/10 opacity-70' : 'border-primary/15 hover:border-primary/50'
+                          }`}
+                        >
+                          <div className={isLocked ? 'blur-[2px] pointer-events-none select-none' : ''}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: themeDefn.theme.primary }} />
+                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: themeDefn.theme.accent }} />
+                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: themeDefn.theme.background }} />
+                            </div>
+                            <div className="font-mono text-xs text-primary/90">{themeDefn.name}</div>
+                            <div className="font-mono text-[9px] text-muted-foreground/60">{themeDefn.description}</div>
+                          </div>
+                          {isLocked ? (
+                            <button
+                              onClick={() => setLicenseDialog({ themeId: themeDefn.id, themeName: themeDefn.name, licenseKeyPrefix: themeDefn.licenseKeyPrefix })}
+                              className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded bg-background/60 backdrop-blur-[2px] hover:bg-background/70 transition-colors"
+                            >
+                              <Lock size={14} className="text-primary/70" />
+                              <span className="font-mono text-[9px] text-primary/70 uppercase tracking-wider">Unlock Theme</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setDraft({ ...themeDefn.theme, activePreset: themeDefn.id })
+                              }}
+                              className="absolute inset-0 rounded"
+                              aria-label={`Apply ${themeDefn.name}`}
+                            />
+                          )}
                         </div>
-                        <div className="font-mono text-xs text-primary/90">{preset.name}</div>
-                        <div className="font-mono text-[9px] text-muted-foreground/60">{preset.description}</div>
-                      </button>
-                    ))}
+                      )
+                    })}
                   </div>
+                  {/* Legacy quick-presets still available for custom colors */}
+                  <details className="mt-4">
+                    <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">Quick Color Presets</summary>
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {THEME_PRESETS.map(preset => (
+                        <button
+                          key={preset.name}
+                          onClick={() => handlePreset(preset)}
+                          className={`border rounded p-3 text-left transition-all hover:border-primary/50 ${
+                            draft.activePreset === preset.name ? 'border-primary bg-primary/10' : 'border-primary/15'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.primary }} />
+                            <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.accent }} />
+                            <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.background }} />
+                          </div>
+                          <div className="font-mono text-xs text-primary/90">{preset.name}</div>
+                          <div className="font-mono text-[9px] text-muted-foreground/60">{preset.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </details>
                 </div>
               )}
 
@@ -807,5 +851,22 @@ export default function ThemeCustomizerDialog({
         </motion.div>
       )}
     </AnimatePresence>
+    {licenseDialog && (
+      <ThemeLicenseDialog
+        open={!!licenseDialog}
+        onClose={() => setLicenseDialog(null)}
+        themeId={licenseDialog.themeId}
+        themeName={licenseDialog.themeName}
+        licenseKeyPrefix={licenseDialog.licenseKeyPrefix}
+        onUnlocked={(themeId) => {
+          const updated = [...unlockedThemeIds, themeId]
+          setUnlockedThemeIds(updated)
+          try { localStorage.setItem('nk-unlocked-themes', JSON.stringify(updated)) } catch { /* ignore */ }
+          const def = THEME_CATALOG.find(t => t.id === themeId)
+          if (def) { setDraft({ ...def.theme, activePreset: def.id }) }
+        }}
+      />
+    )}
+    </>
   )
 }

@@ -265,6 +265,9 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
   const [heatmapPoints, setHeatmapPoints] = useState<HeatmapPoint[]>([])
   const [dataSource, setDataSource] = useState<'server' | 'local'>('server')
   const [activeTab, setActiveTab] = useState<TabId>('overview')
+
+  // Resolve CSS theme variables for Recharts (SVG supports CSS vars but we resolve
+  // them once per open so charts always match the active theme).
   // UTM Builder state
   const [utmBase, setUtmBase] = useState(domain ? `https://${domain}` : '')
   const [utmSource, setUtmSource] = useState('')
@@ -498,31 +501,31 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                           <p className="text-[10px] font-mono text-primary/60 uppercase">Activity Trends (Last 30 Days)</p>
                           <ResponsiveContainer width="100%" height={220}>
                             <LineChart data={stats.last30Days}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
+                              <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--primary) 10%, transparent)" />
                               <XAxis 
                                 dataKey="date" 
-                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                                tick={{ fill: 'color-mix(in srgb, var(--primary) 60%, transparent)', fontSize: 9 }}
                                 tickFormatter={(value) => value.slice(-5)}
-                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                                stroke="color-mix(in srgb, var(--primary) 30%, transparent)"
                               />
                               <YAxis 
-                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
-                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                                tick={{ fill: 'color-mix(in srgb, var(--primary) 60%, transparent)', fontSize: 9 }}
+                                stroke="color-mix(in srgb, var(--primary) 30%, transparent)"
                               />
                               <Tooltip 
                                 contentStyle={{ 
-                                  backgroundColor: 'oklch(0 0 0 / 0.95)', 
-                                  border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                  backgroundColor: 'var(--background)', 
+                                  border: '1px solid color-mix(in srgb, var(--primary) 50%, transparent)',
                                   borderRadius: 'var(--radius-sm)',
                                   fontSize: '10px',
                                   fontFamily: 'var(--font-mono)'
                                 }}
-                                labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
+                                labelStyle={{ color: 'var(--primary)' }}
                               />
                               <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
-                              <Line type="monotone" dataKey="pageViews" stroke="oklch(0.50 0.22 25)" strokeWidth={2} dot={{ fill: 'oklch(0.50 0.22 25)', r: 3 }} activeDot={{ r: 5 }} name="Page Views" />
-                              <Line type="monotone" dataKey="sectionViews" stroke="oklch(0.60 0.24 25)" strokeWidth={2} dot={{ fill: 'oklch(0.60 0.24 25)', r: 3 }} activeDot={{ r: 5 }} name="Section Views" />
-                              <Line type="monotone" dataKey="interactions" stroke="oklch(0.70 0.20 25)" strokeWidth={2} dot={{ fill: 'oklch(0.70 0.20 25)', r: 3 }} activeDot={{ r: 5 }} name="Interactions" />
+                              <Line type="monotone" dataKey="pageViews" stroke="var(--primary)" strokeWidth={2} dot={{ fill: 'var(--primary)', r: 3 }} activeDot={{ r: 5 }} name="Page Views" />
+                              <Line type="monotone" dataKey="sectionViews" stroke="var(--accent)" strokeWidth={2} dot={{ fill: 'var(--accent)', r: 3 }} activeDot={{ r: 5 }} name="Section Views" />
+                              <Line type="monotone" dataKey="interactions" stroke="var(--muted-foreground)" strokeWidth={2} dot={{ fill: 'var(--muted-foreground)', r: 3 }} activeDot={{ r: 5 }} name="Interactions" />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
@@ -607,20 +610,20 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                                 labelLine={false}
                                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                 outerRadius={70}
-                                fill="oklch(0.50 0.22 25)"
+                                fill="var(--primary)"
                                 dataKey="value"
                               >
                                 {Object.entries(analytics.devices).map((_, index) => (
                                   <Cell 
                                     key={`cell-${index}`} 
-                                    fill={['oklch(0.50 0.22 25)', 'oklch(0.60 0.24 25)', 'oklch(0.45 0.18 25)'][index % 3]} 
+                                    fill={['var(--primary)', 'var(--accent)', 'var(--secondary)'][index % 3]} 
                                   />
                                 ))}
                               </Pie>
                               <Tooltip 
                                 contentStyle={{ 
-                                  backgroundColor: 'oklch(0 0 0 / 0.95)', 
-                                  border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                  backgroundColor: 'var(--background)', 
+                                  border: '1px solid color-mix(in srgb, var(--primary) 50%, transparent)',
                                   borderRadius: 'var(--radius-sm)',
                                   fontSize: '10px',
                                   fontFamily: 'var(--font-mono)'
@@ -679,20 +682,20 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                               <>
                                 <ResponsiveContainer width="100%" height={160}>
                                   <BarChart data={hourlyData} barSize={8}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
-                                    <XAxis dataKey="hour" tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 8 }} stroke="oklch(0.50 0.22 25 / 0.3)" />
-                                    <YAxis tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 8 }} stroke="oklch(0.50 0.22 25 / 0.3)" />
-                                    <Tooltip contentStyle={{ backgroundColor: 'oklch(0 0 0 / 0.95)', border: '1px solid oklch(0.50 0.22 25 / 0.5)', borderRadius: 'var(--radius-sm)', fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
-                                    <Bar dataKey="visits" fill="oklch(0.50 0.22 25 / 0.6)">
+                                    <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--primary) 10%, transparent)" />
+                                    <XAxis dataKey="hour" tick={{ fill: 'color-mix(in srgb, var(--primary) 60%, transparent)', fontSize: 8 }} stroke="color-mix(in srgb, var(--primary) 30%, transparent)" />
+                                    <YAxis tick={{ fill: 'color-mix(in srgb, var(--primary) 60%, transparent)', fontSize: 8 }} stroke="color-mix(in srgb, var(--primary) 30%, transparent)" />
+                                    <Tooltip contentStyle={{ backgroundColor: 'var(--background)', border: '1px solid color-mix(in srgb, var(--primary) 50%, transparent)', borderRadius: 'var(--radius-sm)', fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
+                                    <Bar dataKey="visits" fill="color-mix(in srgb, var(--primary) 60%, transparent)">
                                       {hourlyData.map((entry) => (
-                                        <Cell key={entry.hour} fill={top3.has(entry.hour) ? 'oklch(0.60 0.24 25)' : 'oklch(0.50 0.22 25 / 0.4)'} />
+                                        <Cell key={entry.hour} fill={top3.has(entry.hour) ? 'var(--accent)' : 'color-mix(in srgb, var(--primary) 40%, transparent)'} />
                                       ))}
                                     </Bar>
                                   </BarChart>
                                 </ResponsiveContainer>
                                 {bestTimes.length > 0 && (
                                   <div className="space-y-1 text-[10px] font-mono text-foreground/60">
-                                    <p>🕐 Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr (UTC)</p>
+                                    <p>Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr (UTC)</p>
                                     <p className="text-primary/50">→ Poste auf Instagram/Facebook ca. 30 Minuten vor dem Peak für maximale Reichweite</p>
                                   </div>
                                 )}
@@ -734,31 +737,31 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                           <p className="text-[10px] font-mono text-primary/60 uppercase">Weekly Comparison (Last 7 Days)</p>
                           <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={stats.last7Days}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.50 0.22 25 / 0.1)" />
+                              <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--primary) 10%, transparent)" />
                               <XAxis 
                                 dataKey="date" 
-                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
+                                tick={{ fill: 'color-mix(in srgb, var(--primary) 60%, transparent)', fontSize: 9 }}
                                 tickFormatter={(value) => value.slice(-5)}
-                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                                stroke="color-mix(in srgb, var(--primary) 30%, transparent)"
                               />
                               <YAxis 
-                                tick={{ fill: 'oklch(0.50 0.22 25 / 0.6)', fontSize: 9 }}
-                                stroke="oklch(0.50 0.22 25 / 0.3)"
+                                tick={{ fill: 'color-mix(in srgb, var(--primary) 60%, transparent)', fontSize: 9 }}
+                                stroke="color-mix(in srgb, var(--primary) 30%, transparent)"
                               />
                               <Tooltip 
                                 contentStyle={{ 
-                                  backgroundColor: 'oklch(0 0 0 / 0.95)', 
-                                  border: '1px solid oklch(0.50 0.22 25 / 0.5)',
+                                  backgroundColor: 'var(--background)', 
+                                  border: '1px solid color-mix(in srgb, var(--primary) 50%, transparent)',
                                   borderRadius: 'var(--radius-sm)',
                                   fontSize: '10px',
                                   fontFamily: 'var(--font-mono)'
                                 }}
-                                labelStyle={{ color: 'oklch(0.50 0.22 25)' }}
+                                labelStyle={{ color: 'var(--primary)' }}
                               />
                               <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }} />
-                              <Bar dataKey="pageViews" fill="oklch(0.50 0.22 25 / 0.8)" name="Page Views" />
-                              <Bar dataKey="sectionViews" fill="oklch(0.60 0.24 25 / 0.8)" name="Section Views" />
-                              <Bar dataKey="interactions" fill="oklch(0.70 0.20 25 / 0.8)" name="Interactions" />
+                              <Bar dataKey="pageViews" fill="color-mix(in srgb, var(--primary) 80%, transparent)" name="Page Views" />
+                              <Bar dataKey="sectionViews" fill="color-mix(in srgb, var(--accent) 80%, transparent)" name="Section Views" />
+                              <Bar dataKey="interactions" fill="color-mix(in srgb, var(--muted-foreground) 80%, transparent)" name="Interactions" />
                             </BarChart>
                           </ResponsiveContainer>
                         </div>

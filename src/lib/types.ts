@@ -770,6 +770,25 @@ export interface WidgetPlugin {
   themeOverrides?: Partial<ThemeSettings>
 }
 
+// ─── THEME LICENSE SYSTEM ────────────────────────────────────────────────────
+
+/** License status for a theme */
+export type ThemeLicenseStatus = 'free' | 'preview' | 'locked' | 'licensed'
+
+/** A theme with license metadata */
+export interface ThemeDefinition {
+  id: string
+  name: string
+  description?: string
+  previewImageUrl?: string
+  licenseStatus: ThemeLicenseStatus
+  /** Key prefix used to validate theme-specific license keys, e.g. 'ZARDONIC-' */
+  licenseKeyPrefix?: string
+  theme: ThemeSettings
+  author?: string
+  tags?: string[]
+}
+
 // ─── STORE (#199) ────────────────────────────────────────────────────────────
 
 /** License tier for a store item */

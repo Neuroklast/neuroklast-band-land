@@ -1,0 +1,134 @@
+/**
+ * Widget Registry – license-aware catalog of all available widgets.
+ *
+ * Mirrors the ThemeCatalogRegistry pattern so both themes and widgets can be
+ * managed uniformly from the StoreDialog.
+ */
+import type { ThemeLicenseStatus, WidgetPlugin } from './types'
+
+// ─── Widget definition ───────────────────────────────────────────────────────
+
+export interface WidgetDefinition {
+  /** Unique widget identifier (slug) */
+  id: string
+  /** Human-readable display name */
+  name: string
+  /** Short description */
+  description?: string
+  /** Preview image URL */
+  previewImageUrl?: string
+  /** License status – free widgets are always available */
+  licenseStatus: ThemeLicenseStatus
+  /** Key prefix used to validate widget-specific license keys */
+  licenseKeyPrefix?: string
+  /** Widget category */
+  category: WidgetPlugin['category']
+  /** Author name */
+  author?: string
+  /** Tags for filtering */
+  tags?: string[]
+  /** Semantic version */
+  version: string
+}
+
+// ─── Built-in widget catalog ─────────────────────────────────────────────────
+
+export const WIDGET_CATALOG: WidgetDefinition[] = [
+  {
+    id: 'bandsintown',
+    name: 'Bandsintown Events',
+    description: 'Show upcoming gigs from Bandsintown',
+    licenseStatus: 'free',
+    category: 'events',
+    author: 'Neuroklast',
+    version: '1.0.0',
+    tags: ['events', 'gigs', 'live'],
+  },
+  {
+    id: 'youtube',
+    name: 'YouTube Player',
+    description: 'Embed a YouTube playlist or video',
+    licenseStatus: 'free',
+    category: 'video',
+    author: 'Neuroklast',
+    version: '1.0.0',
+    tags: ['video', 'youtube'],
+  },
+  {
+    id: 'spotify-player',
+    name: 'Spotify Player',
+    description: 'Embed a Spotify playlist or album',
+    licenseStatus: 'free',
+    category: 'music',
+    author: 'Neuroklast',
+    version: '1.0.0',
+    tags: ['music', 'spotify'],
+  },
+  {
+    id: 'merch-store',
+    name: 'Merch Store',
+    description: 'Showcase merchandise links',
+    licenseStatus: 'free',
+    category: 'merch',
+    author: 'Neuroklast',
+    version: '1.0.0',
+    tags: ['merch', 'shop'],
+  },
+  {
+    id: 'analytics',
+    name: 'Analytics Widget',
+    description: 'Quick stats summary for your site',
+    licenseStatus: 'free',
+    category: 'analytics',
+    author: 'Neuroklast',
+    version: '1.0.0',
+    tags: ['analytics', 'stats'],
+  },
+]
+
+// ─── Registry interface ──────────────────────────────────────────────────────
+
+export interface WidgetRegistry {
+  widgets: WidgetDefinition[]
+  getWidget(id: string): WidgetDefinition | undefined
+  getLicenseStatus(id: string): ThemeLicenseStatus
+  isUnlocked(id: string): boolean
+}
+
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+/**
+ * Create a license-aware WidgetRegistry.
+ *
+ * @param unlockedWidgetIds IDs of widgets whose license has been validated.
+ */
+export function createWidgetRegistry(unlockedWidgetIds: string[] = []): WidgetRegistry {
+  const unlockedSet = new Set(unlockedWidgetIds)
+
+  function getEffectiveStatus(def: WidgetDefinition): ThemeLicenseStatus {
+    if (def.licenseStatus === 'free') return 'free'
+    if (unlockedSet.has(def.id)) return 'licensed'
+    return def.licenseStatus
+  }
+
+  return {
+    widgets: WIDGET_CATALOG,
+
+    getWidget(id: string) {
+      return WIDGET_CATALOG.find((w) => w.id === id)
+    },
+
+    getLicenseStatus(id: string) {
+      const def = WIDGET_CATALOG.find((w) => w.id === id)
+      if (!def) return 'locked'
+      return getEffectiveStatus(def)
+    },
+
+    isUnlocked(id: string) {
+      const def = WIDGET_CATALOG.find((w) => w.id === id)
+      if (!def) return false
+      const status = getEffectiveStatus(def)
+      return status === 'free' || status === 'licensed'
+    },
+  }
+}

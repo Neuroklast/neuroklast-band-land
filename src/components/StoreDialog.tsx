@@ -154,7 +154,7 @@ function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, on
             className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
           >
             {isPremiumLocked ? (
-              <><Lock size={12} /> 🔒 PRO REQUIRED</>
+              <><Lock size={12} /> PRO REQUIRED</>
             ) : (
               <><DownloadSimple size={14} /> {t('store.install')}</>
             )}
@@ -191,7 +191,7 @@ function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, on
             className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
           >
             {isPremiumLocked ? (
-              <><Lock size={12} /> 🔒 PRO REQUIRED</>
+              <><Lock size={12} /> PRO REQUIRED</>
             ) : (
               <><Palette size={14} /> {t('store.apply')}</>
             )}

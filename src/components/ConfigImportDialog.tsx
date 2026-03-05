@@ -19,10 +19,10 @@ interface ConfigImportDialogProps {
 }
 
 const SCOPE_LABELS: Record<ExportScope, string> = {
-  full: '🗂️ Alles',
-  theme: '🎨 Nur Theme',
-  content: '📝 Nur Content',
-  settings: '⚙️ Nur Einstellungen',
+  full: 'Alles',
+  theme: 'Nur Theme',
+  content: 'Nur Content',
+  settings: 'Nur Einstellungen',
 }
 
 const SCOPE_OVERWRITES: Record<ExportScope, string[]> = {
