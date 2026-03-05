@@ -92,13 +92,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     // Generate a new activation key
-    const { name = 'Unnamed Key', tier = 'free', holderName, holderEmail, holderWebsite, notes } = req.body || {}
+    const { name = 'Unnamed Key', tier = 'free', holderName, holderEmail, holderWebsite, notes, assignedThemes: postAssignedThemes } = req.body || {}
 
     if (typeof name !== 'string' || !name.trim()) {
       return res.status(400).json({ error: 'name is required' })
     }
-    if (!['free', 'pro', 'agency', 'saas'].includes(String(tier))) {
-      return res.status(400).json({ error: 'Invalid tier. Must be one of: free, pro, agency, saas' })
+    if (!['free', 'premium', 'agency'].includes(String(tier))) {
+      return res.status(400).json({ error: 'Invalid tier. Must be one of: free, premium, agency' })
     }
 
     try {
@@ -118,6 +118,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (holderEmail && typeof holderEmail === 'string') metaFields.holderEmail = holderEmail.trim()
       if (holderWebsite && typeof holderWebsite === 'string') metaFields.holderWebsite = holderWebsite.trim()
       if (notes && typeof notes === 'string') metaFields.notes = notes.trim()
+      if (postAssignedThemes && Array.isArray(postAssignedThemes)) {
+        metaFields.assignedThemes = JSON.stringify(postAssignedThemes)
+      }
 
       await kv.sadd('activation-keys', key)
       await kv.hset(`activation-key-meta:${key}`, metaFields)

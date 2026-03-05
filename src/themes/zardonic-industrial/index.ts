@@ -7,7 +7,9 @@ export const zardonicIndustrialTheme: ThemePackage = {
   description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
   author: 'Zardonic / Neuroklast',
   version: '1.0.0',
-  access: 'free',
+  access: 'exclusive',
+  exclusiveFor: 'zardonic',
+  lockedMessage: 'Exclusive to ZARDONIC',
   layout: {
     heroVariant: 'glitch-parallax',
     loadingScreen: '3d-model',

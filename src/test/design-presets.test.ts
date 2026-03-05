@@ -11,12 +11,20 @@ import {
   retroPreset,
   zardonicIndustrialPreset,
   neuroklastClassicPreset,
+  artDecoCyberpunkPreset,
+  vhsRetroPreset,
+  steampunkPreset,
+  analogDarkMetalPreset,
 } from '@/lib/design-presets'
 
 describe('DESIGN_PRESETS', () => {
-  it('exports exactly 7 presets', () => {
-    expect(PRESET_IDS).toHaveLength(7)
-    expect(PRESET_IDS).toEqual(['cyberpunk', 'minimal', 'elegant', 'neon', 'retro', 'zardonic-industrial', 'neuroklast-classic'])
+  it('exports exactly 11 presets', () => {
+    expect(PRESET_IDS).toHaveLength(11)
+    expect(PRESET_IDS).toEqual([
+      'cyberpunk', 'minimal', 'elegant', 'neon', 'retro',
+      'zardonic-industrial', 'neuroklast-classic',
+      'art-deco-cyberpunk', 'vhs-retro', 'steampunk', 'analog-dark-metal',
+    ])
   })
 
   it('each preset has required fields', () => {
@@ -45,6 +53,10 @@ describe('getPreset', () => {
     expect(getPreset('retro')).toBe(retroPreset)
     expect(getPreset('zardonic-industrial')).toBe(zardonicIndustrialPreset)
     expect(getPreset('neuroklast-classic')).toBe(neuroklastClassicPreset)
+    expect(getPreset('art-deco-cyberpunk')).toBe(artDecoCyberpunkPreset)
+    expect(getPreset('vhs-retro')).toBe(vhsRetroPreset)
+    expect(getPreset('steampunk')).toBe(steampunkPreset)
+    expect(getPreset('analog-dark-metal')).toBe(analogDarkMetalPreset)
   })
 
   it('returns undefined for an unknown ID', () => {

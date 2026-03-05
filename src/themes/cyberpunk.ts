@@ -6,7 +6,7 @@ export const cyberpunkTheme: ThemePackage = {
   description: 'Dark industrial aesthetic with crimson red neon accents',
   author: 'Neuroklast',
   version: '1.0.0',
-  access: 'free',
+  access: 'premium',
   layout: {
     heroVariant: 'glitch-parallax',
     loadingScreen: 'cyberpunk',

@@ -3,9 +3,8 @@
  *
  * Tiers (ascending capability):
  *   free     — Base feature set; no premium themes or widgets
- *   pro      — All themes, widgets, and analytics
+ *   premium  — All themes, widgets, and analytics
  *   agency   — Multi-site management
- *   saas     — Hosted / white-label deployments
  */
 
 import type { LicenseTier } from './activation'
@@ -15,26 +14,24 @@ export type { LicenseTier }
 /**
  * Ordered list of tiers from lowest to highest capability.
  */
-export const TIER_ORDER: LicenseTier[] = ['free', 'pro', 'agency', 'saas']
+export const TIER_ORDER: LicenseTier[] = ['free', 'premium', 'agency']
 
 /**
  * Human-readable display names for each tier.
  */
 export const TIER_LABELS: Record<LicenseTier, string> = {
-  free:   'Free',
-  pro:    'Pro',
-  agency: 'Agency',
-  saas:   'SaaS',
+  free:    'Free',
+  premium: 'Premium',
+  agency:  'Agency',
 }
 
 /**
  * Features unlocked by each tier (cumulative — higher tiers include lower-tier features).
  */
 export const TIER_FEATURES: Record<LicenseTier, string[]> = {
-  free:   [],
-  pro:    ['premium-themes', 'widgets', 'analytics'],
-  agency: ['premium-themes', 'widgets', 'analytics', 'multi-site'],
-  saas:   ['premium-themes', 'widgets', 'analytics', 'multi-site', 'hosted', 'white-label'],
+  free:    [],
+  premium: ['premium-themes', 'premium-widgets', 'analytics'],
+  agency:  ['premium-themes', 'premium-widgets', 'analytics', 'multi-site'],
 }
 
 /**
