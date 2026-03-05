@@ -18,6 +18,8 @@ import {
   X,
   Lock,
   GearSix,
+  ArrowsClockwise,
+  Warning,
 } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -34,6 +36,7 @@ import {
   uninstallWidget,
   toggleWidget,
   updateWidgetConfig,
+  updateWidget,
   mixThemeSettings,
   type StoreItem,
   type MixPart,
@@ -70,9 +73,10 @@ interface StoreItemCardProps {
   onToggle: () => void
   onApplyTheme: () => void
   onConfigure?: () => void
+  onUpdate?: () => void
 }
 
-function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure }: StoreItemCardProps) {
+function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure, onUpdate }: StoreItemCardProps) {
   const { t } = useLocale()
   const isWidget = item.type === 'widget'
   const isTheme = item.type === 'theme'
@@ -86,7 +90,11 @@ function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, on
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="border border-primary/15 rounded bg-card/50 p-3 flex flex-col gap-2 hover:border-primary/30 transition-colors"
+      className={`border rounded bg-card/50 p-3 flex flex-col gap-2 transition-colors ${
+        item.hasUpdate
+          ? 'border-blue-500/30 hover:border-blue-500/50'
+          : 'border-primary/15 hover:border-primary/30'
+      }`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
@@ -103,15 +111,24 @@ function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, on
             </span>
           </div>
         </div>
-        <span
-          className={`text-[9px] font-mono px-1.5 py-0.5 rounded flex-shrink-0 ${
-            item.license === 'premium'
-              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-              : 'bg-green-500/20 text-green-400 border border-green-500/30'
-          }`}
-        >
-          {item.license === 'premium' ? t('store.premium') : t('store.free')}
-        </span>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {item.hasUpdate && (
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
+              {item.updateIsBreaking && <Warning size={9} weight="fill" />}
+              <ArrowsClockwise size={9} />
+              {t('store.updateAvailable').replace('{0}', item.updateVersion ?? '')}
+            </span>
+          )}
+          <span
+            className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+              item.license === 'premium'
+                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                : 'bg-green-500/20 text-green-400 border border-green-500/30'
+            }`}
+          >
+            {item.license === 'premium' ? t('store.premium') : t('store.free')}
+          </span>
+        </div>
       </div>
 
       {/* Description */}
@@ -177,6 +194,20 @@ function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, on
             {onConfigure && (
               <Button size="sm" variant="outline" onClick={onConfigure} className="text-xs gap-1 h-7 border-primary/20 text-muted-foreground hover:text-foreground">
                 <GearSix size={14} />
+              </Button>
+            )}
+            {item.hasUpdate && onUpdate && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onUpdate}
+                title={item.updateIsBreaking ? t('store.updateBreaking') : undefined}
+                className="text-xs gap-1 h-7 border-blue-500/40 text-blue-400 hover:bg-blue-500/10"
+              >
+                {item.updateIsBreaking
+                  ? <><Warning size={14} weight="fill" /> {t('store.update')}</>
+                  : <><ArrowsClockwise size={14} /> {t('store.update')}</>
+                }
               </Button>
             )}
           </>
@@ -410,6 +441,15 @@ export default function StoreDialog({
     [widgetPlugins],
   )
 
+  const handleUpdate = useCallback(
+    (id: string, isBreaking: boolean, updateVersion: string) => {
+      if (isBreaking && !window.confirm(t('store.updateBreaking'))) return
+      onUpdatePlugins(updateWidget(widgetPlugins, id))
+      toast.success(t('store.widgetUpdated').replace('{0}', updateVersion))
+    },
+    [widgetPlugins, onUpdatePlugins, t],
+  )
+
   const handleSaveConfig = useCallback(
     (config: Record<string, unknown>) => {
       if (!configWidget) return
@@ -534,6 +574,7 @@ export default function StoreDialog({
                         onToggle={() => handleToggle(item.id)}
                         onApplyTheme={() => handleApplyThemePreset(item.id)}
                         onConfigure={item.type === 'widget' && item.installed ? () => handleConfigure(item.id) : undefined}
+                        onUpdate={item.type === 'widget' && item.installed && item.hasUpdate ? () => handleUpdate(item.id, item.updateIsBreaking ?? false, item.updateVersion ?? '') : undefined}
                       />
                     ))}
                   </AnimatePresence>

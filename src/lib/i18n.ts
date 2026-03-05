@@ -296,6 +296,10 @@ const translations: Record<string, Record<Locale, string>> = {
   'store.widgetInstalled':     { en: 'Widget installed', de: 'Widget installiert' },
   'store.widgetUninstalled':   { en: 'Widget uninstalled', de: 'Widget deinstalliert' },
   'store.themeApplied':        { en: 'Theme "{0}" applied', de: 'Theme „{0}" angewendet' },
+  'store.update':              { en: 'Update', de: 'Aktualisieren' },
+  'store.updateAvailable':     { en: 'Update available: v{0}', de: 'Update verfügbar: v{0}' },
+  'store.widgetUpdated':       { en: 'Widget updated to v{0}', de: 'Widget auf v{0} aktualisiert' },
+  'store.updateBreaking':      { en: 'This is a major update and may include breaking changes. Update anyway?', de: 'Dies ist ein Major-Update und kann Breaking Changes enthalten. Trotzdem aktualisieren?' },
 
   // ── CyberpunkLoader ─────────────────────────────────────────────────
   'loader.bootSequence':       { en: 'NK-SYS [v2.0] // BOOT SEQUENCE', de: 'NK-SYS [v2.0] // STARTSEQUENZ' },
