@@ -613,7 +613,7 @@ export interface ThemePackage {
   layout: {
     heroVariant: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
     loadingScreen: '3d-model' | 'code-rain' | 'cyberpunk' | 'minimal'
-    navigationStyle?: 'cyberpunk-hud' | 'clean' | 'minimal'
+    navigationStyle?: 'cyberpunk-hud' | 'clean' | 'minimal' | 'default'
   }
 
   // Typography (fixed per theme)
