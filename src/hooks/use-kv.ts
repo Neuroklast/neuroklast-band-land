@@ -26,9 +26,10 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
     if (initializedRef.current) return
     initializedRef.current = true
 
-    fetch(`/api/kv?key=${encodeURIComponent(key)}`, {
-      signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 8000); return c.signal })(),
-    })
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+
+    fetch(`/api/kv?key=${encodeURIComponent(key)}`, { signal: controller.signal })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.value !== null && data.value !== undefined) {
@@ -69,6 +70,7 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
         }
       })
       .finally(() => {
+        clearTimeout(timeoutId)
         loadedRef.current = true
         setLoaded(true)
       })

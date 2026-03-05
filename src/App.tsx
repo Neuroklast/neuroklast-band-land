@@ -181,16 +181,87 @@ function App() {
                 )}
               </AnimatePresence>
 
-              <SiteContentRenderer data={data} defaultData={defaultSiteConfig} editMode={editMode} isOwner={isOwner} siteConfigLoaded={siteConfigLoaded} vis={vis} onUpdate={(key, value) => updateConfig({ [key]: value })} onFontSizeChange={handleFontSizeChange} onLabelChange={handleLabelChange} onShowBandInfoEdit={() => setShowBandInfoEdit(true)} onSetCyberpunkOverlay={setCyberpunkOverlay} onShowLogin={() => setShowLoginDialog(true)} onShowImpressum={() => { if (editMode && isOwner) { setImpressumOpen(true) } else if (data.impressum) { setCyberpunkOverlay({ type: 'impressum', data: data.impressum }) } else { setImpressumOpen(true) } }} onShowDatenschutz={() => setDatenschutzOpen(true)} />
+              <SiteContentRenderer
+                data={data}
+                defaultData={defaultSiteConfig}
+                editMode={editMode}
+                isOwner={isOwner}
+                siteConfigLoaded={siteConfigLoaded}
+                vis={vis}
+                onUpdate={(key, value) => updateConfig({ [key]: value })}
+                onFontSizeChange={handleFontSizeChange}
+                onLabelChange={handleLabelChange}
+                onShowBandInfoEdit={() => setShowBandInfoEdit(true)}
+                onSetCyberpunkOverlay={setCyberpunkOverlay}
+                onShowLogin={() => setShowLoginDialog(true)}
+                onShowImpressum={() => {
+                  if (editMode && isOwner) {
+                    setImpressumOpen(true)
+                  } else if (data.impressum) {
+                    setCyberpunkOverlay({ type: 'impressum', data: data.impressum })
+                  } else {
+                    setImpressumOpen(true)
+                  }
+                }}
+                onShowDatenschutz={() => setDatenschutzOpen(true)}
+              />
 
               {isOwner && (
                 <div className="flex items-center gap-2">
-                  {activationResult && <LicenseStatusBadge valid={activationResult.valid} tier={activationResult.tier} />}
-                  <EditControls editMode={editMode} onToggleEdit={() => setEditMode(!editMode)} hasPassword={!needsSetup} onChangePassword={handleChangeAdminPassword} onSetPassword={handleSetAdminPassword} onLogout={async () => { await handleAdminLogout(); setEditMode(false) }} onResetSetup={() => { setEditMode(false); updateConfig({ setupComplete: false }) }} siteConfig={data} onImportData={(imported) => setConfig(imported)} onOpenDialog={setActiveDialog} isPrimary={isPrimary} />
+                  {activationResult && (
+                    <LicenseStatusBadge valid={activationResult.valid} tier={activationResult.tier} />
+                  )}
+                  <EditControls
+                    editMode={editMode}
+                    onToggleEdit={() => setEditMode(!editMode)}
+                    hasPassword={!needsSetup}
+                    onChangePassword={handleChangeAdminPassword}
+                    onSetPassword={handleSetAdminPassword}
+                    onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
+                    onResetSetup={() => { setEditMode(false); updateConfig({ setupComplete: false }) }}
+                    siteConfig={data}
+                    onImportData={(imported) => setConfig(imported)}
+                    onOpenDialog={setActiveDialog}
+                    isPrimary={isPrimary}
+                  />
                 </div>
               )}
 
-              <AdminDialogManager activeDialog={activeDialog} setActiveDialog={setActiveDialog} showAttackerProfile={showAttackerProfile} setShowAttackerProfile={setShowAttackerProfile} selectedAttackerIp={selectedAttackerIp} setSelectedAttackerIp={setSelectedAttackerIp} isPrimary={isPrimary} domain={data.domain} configOverrides={data.configOverrides || {}} onSaveConfigOverrides={(co) => updateConfig({ configOverrides: co })} themeSettings={data.themeSettings} onSaveTheme={(ts: ThemeSettings) => updateConfig({ themeSettings: ts })} sectionVisibility={data.sectionVisibility} onSaveSectionVisibility={(sv: SectionVisibility) => updateConfig({ sectionVisibility: sv })} terminalCommands={data.terminalCommands || []} secretCode={data.secretCode} terminalMorseCode={data.terminalMorseCode} defaultMorseCode={defaultSiteConfig.terminalMorseCode || '...'} onSaveTerminal={(tc, sc, mc) => updateConfig({ terminalCommands: tc, secretCode: sc, terminalMorseCode: mc?.trim() || defaultSiteConfig.terminalMorseCode || '...' })} soundSettings={data.soundSettings} onSaveSoundSettings={(ss: SoundSettings) => updateConfig({ soundSettings: ss })} widgetPlugins={data.widgetPlugins ?? []} onUpdatePlugins={(wp) => updateConfig({ widgetPlugins: wp })} activePresetId={data.themeSettings?.activePreset} activationResult={activationResult} newsletterSettings={data.newsletterSettings} contactSettings={data.contactSettings} onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })} onSaveContact={(cs) => updateConfig({ contactSettings: cs })} />
+              <AdminDialogManager
+                activeDialog={activeDialog}
+                setActiveDialog={setActiveDialog}
+                showAttackerProfile={showAttackerProfile}
+                setShowAttackerProfile={setShowAttackerProfile}
+                selectedAttackerIp={selectedAttackerIp}
+                setSelectedAttackerIp={setSelectedAttackerIp}
+                isPrimary={isPrimary}
+                domain={data.domain}
+                configOverrides={data.configOverrides || {}}
+                onSaveConfigOverrides={(co) => updateConfig({ configOverrides: co })}
+                themeSettings={data.themeSettings}
+                onSaveTheme={(ts: ThemeSettings) => updateConfig({ themeSettings: ts })}
+                sectionVisibility={data.sectionVisibility}
+                onSaveSectionVisibility={(sv: SectionVisibility) => updateConfig({ sectionVisibility: sv })}
+                terminalCommands={data.terminalCommands || []}
+                secretCode={data.secretCode}
+                terminalMorseCode={data.terminalMorseCode}
+                defaultMorseCode={defaultSiteConfig.terminalMorseCode || '...'}
+                onSaveTerminal={(tc, sc, mc) => updateConfig({
+                  terminalCommands: tc,
+                  secretCode: sc,
+                  terminalMorseCode: mc?.trim() || defaultSiteConfig.terminalMorseCode || '...',
+                })}
+                soundSettings={data.soundSettings}
+                onSaveSoundSettings={(ss: SoundSettings) => updateConfig({ soundSettings: ss })}
+                widgetPlugins={data.widgetPlugins ?? []}
+                onUpdatePlugins={(wp) => updateConfig({ widgetPlugins: wp })}
+                activePresetId={data.themeSettings?.activePreset}
+                activationResult={activationResult}
+                newsletterSettings={data.newsletterSettings}
+                contactSettings={data.contactSettings}
+                onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })}
+                onSaveContact={(cs) => updateConfig({ contactSettings: cs })}
+              />
             </motion.div>
           </motion.div>
         </>

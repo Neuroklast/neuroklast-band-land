@@ -340,10 +340,10 @@ export default function KeyManagerPanel() {
             </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={handleCopy} className="text-xs gap-1.5 h-7 border-green-500/30 text-green-400 hover:text-green-300">
-                {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : '📋 Copy'}
+                {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : 'Copy'}
               </Button>
               <Button size="sm" variant="outline" onClick={() => setShowQr(!showQr)} className="text-xs gap-1.5 h-7 border-primary/30">
-                <QrCode size={12} /> 📱 QR Code
+                <QrCode size={12} /> QR Code
               </Button>
             </div>
             {showQr && <QrCodeDisplay value={generatedKey.key} />}

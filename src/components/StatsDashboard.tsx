@@ -268,17 +268,6 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
 
   // Resolve CSS theme variables for Recharts (SVG supports CSS vars but we resolve
   // them once per open so charts always match the active theme).
-  const chartColors = useMemo(() => {
-    const style = getComputedStyle(document.documentElement)
-    const primary = style.getPropertyValue('--primary').trim() || 'var(--primary)'
-    const accent = style.getPropertyValue('--accent').trim() || 'var(--accent)'
-    const muted = style.getPropertyValue('--muted-foreground').trim() || 'oklch(0.55 0 0)'
-    const bg = style.getPropertyValue('--background').trim() || 'oklch(0 0 0)'
-    const mono = style.getPropertyValue('--font-mono') || 'monospace'
-    return { primary, accent, muted, bg, mono }
-  // Re-derive when the dialog opens so a theme change is picked up immediately
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
   // UTM Builder state
   const [utmBase, setUtmBase] = useState(domain ? `https://${domain}` : '')
   const [utmSource, setUtmSource] = useState('')
@@ -706,7 +695,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                                 </ResponsiveContainer>
                                 {bestTimes.length > 0 && (
                                   <div className="space-y-1 text-[10px] font-mono text-foreground/60">
-                                    <p>🕐 Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr (UTC)</p>
+                                    <p>Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr (UTC)</p>
                                     <p className="text-primary/50">→ Poste auf Instagram/Facebook ca. 30 Minuten vor dem Peak für maximale Reichweite</p>
                                   </div>
                                 )}

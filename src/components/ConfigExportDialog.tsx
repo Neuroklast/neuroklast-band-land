@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { X, DownloadSimple, Link } from '@phosphor-icons/react'
+import { X, DownloadSimple, Link, Folders, Palette, Article, GearSix } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import type { SiteConfig } from '@/lib/types'
 import type { ExportScope } from '@/lib/config-export'
 import { exportSiteConfig, downloadConfigExport, copyThemeShareUrl } from '@/lib/config-export'
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
 
 interface ConfigExportDialogProps {
   open: boolean
@@ -17,7 +18,7 @@ interface ConfigExportDialogProps {
 
 interface ExportOption {
   scope: ExportScope
-  icon: string
+  icon: typeof PhosphorIcon
   title: string
   description: string
 }
@@ -25,25 +26,25 @@ interface ExportOption {
 const EXPORT_OPTIONS: ExportOption[] = [
   {
     scope: 'full',
-    icon: '🗂️',
+    icon: Folders,
     title: 'Alles',
     description: 'Vollständige SiteConfig (ohne syncUrl & secretCode)',
   },
   {
     scope: 'theme',
-    icon: '🎨',
+    icon: Palette,
     title: 'Nur Theme',
     description: 'Farben, Fonts, Presets, Effekte, Animationen',
   },
   {
     scope: 'content',
-    icon: '📝',
+    icon: Article,
     title: 'Nur Content',
     description: 'Gigs, Releases, Bio, News, Fotos, Social Links, Impressum',
   },
   {
     scope: 'settings',
-    icon: '⚙️',
+    icon: GearSix,
     title: 'Nur Einstellungen',
     description: 'Navigation, Footer, SEO, Features, Sections, Widgets',
   },
@@ -104,7 +105,7 @@ export default function ConfigExportDialog({ open, onClose, config }: ConfigExpo
                 className="border border-primary/20 bg-background/40 p-4 flex flex-col gap-3 hover:border-primary/50 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-xl" role="img" aria-label={opt.title}>{opt.icon}</span>
+                  <opt.icon size={16} className="text-primary/70" />
                   <span className="text-primary font-bold text-sm tracking-wider uppercase">{opt.title}</span>
                 </div>
                 <p className="text-muted-foreground text-xs leading-relaxed flex-1">{opt.description}</p>
@@ -136,7 +137,7 @@ export default function ConfigExportDialog({ open, onClose, config }: ConfigExpo
               className="border-primary/40 text-primary hover:bg-primary/10 text-xs font-mono mt-1"
               onClick={handleShareTheme}
             >
-              {shareLinkCopied ? '✓ Link kopiert! 🔗' : 'Link kopieren'}
+              {shareLinkCopied ? '✓ Link kopiert!' : 'Link kopieren'}
             </Button>
           </div>
 
