@@ -1,0 +1,73 @@
+import type { ThemePackage } from '@/lib/types'
+
+export const retroTheme: ThemePackage = {
+  id: 'retro',
+  name: 'Retro',
+  description: 'Warm amber phosphor-glow on near-black – vintage terminal look',
+  author: 'Neuroklast',
+  version: '1.0.0',
+  access: 'free',
+  layout: {
+    heroVariant: 'default',
+    loadingScreen: 'minimal',
+    navigationStyle: 'minimal',
+  },
+  typography: {
+    heading: "'VT323', monospace",
+    body: "'Share Tech Mono', monospace",
+    mono: "'Share Tech Mono', monospace",
+  },
+  effects: {},
+  borderRadius: 0,
+  animationsEnabled: true,
+  colorPresets: [
+    {
+      id: 'amber',
+      name: 'Amber',
+      description: 'Classic amber phosphor',
+      colors: {
+        primary: 'oklch(0.70 0.15 70)',
+        accent: 'oklch(0.80 0.18 75)',
+        background: 'oklch(0.05 0.02 60)',
+        card: 'oklch(0.09 0.02 60)',
+        foreground: 'oklch(0.88 0.10 80)',
+        mutedForeground: 'oklch(0.55 0.07 70)',
+        border: 'oklch(0.18 0.05 65)',
+        secondary: 'oklch(0.12 0.03 62)',
+      },
+    },
+    {
+      id: 'green',
+      name: 'Green',
+      description: 'Classic green phosphor',
+      colors: {
+        primary: 'oklch(0.65 0.18 145)',
+        accent: 'oklch(0.75 0.20 150)',
+        background: 'oklch(0.05 0.01 145)',
+        card: 'oklch(0.09 0.02 145)',
+        foreground: 'oklch(0.88 0.08 145)',
+        mutedForeground: 'oklch(0.55 0.06 145)',
+        border: 'oklch(0.18 0.05 145)',
+        secondary: 'oklch(0.12 0.02 145)',
+      },
+    },
+    {
+      id: 'white',
+      name: 'White',
+      description: 'Classic white phosphor',
+      colors: {
+        primary: 'oklch(0.80 0 0)',
+        accent: 'oklch(0.90 0 0)',
+        background: 'oklch(0.05 0 0)',
+        card: 'oklch(0.09 0 0)',
+        foreground: 'oklch(0.88 0 0)',
+        mutedForeground: 'oklch(0.55 0 0)',
+        border: 'oklch(0.18 0 0)',
+        secondary: 'oklch(0.12 0 0)',
+      },
+    },
+  ],
+  defaultPresetId: 'amber',
+  customizability: { customColors: true, customFonts: true, adjustEffects: true },
+  slots: {},
+}

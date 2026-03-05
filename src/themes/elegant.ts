@@ -1,0 +1,73 @@
+import type { ThemePackage } from '@/lib/types'
+
+export const elegantTheme: ThemePackage = {
+  id: 'elegant',
+  name: 'Elegant',
+  description: 'Refined serif typography with warm gold accents on dark canvas',
+  author: 'Neuroklast',
+  version: '1.0.0',
+  access: 'free',
+  layout: {
+    heroVariant: 'default',
+    loadingScreen: 'minimal',
+    navigationStyle: 'clean',
+  },
+  typography: {
+    heading: "'Playfair Display', serif",
+    body: "'Lora', serif",
+    mono: "'Source Code Pro', monospace",
+  },
+  effects: {},
+  borderRadius: 0.25,
+  animationsEnabled: false,
+  colorPresets: [
+    {
+      id: 'gold',
+      name: 'Gold',
+      description: 'Warm gold on dark canvas',
+      colors: {
+        primary: 'oklch(0.72 0.12 85)',
+        accent: 'oklch(0.80 0.14 90)',
+        background: 'oklch(0.07 0.01 60)',
+        card: 'oklch(0.11 0.01 60)',
+        foreground: 'oklch(0.95 0.02 80)',
+        mutedForeground: 'oklch(0.60 0.04 80)',
+        border: 'oklch(0.20 0.03 70)',
+        secondary: 'oklch(0.14 0.02 65)',
+      },
+    },
+    {
+      id: 'silver',
+      name: 'Silver',
+      description: 'Cool silver tones',
+      colors: {
+        primary: 'oklch(0.65 0.02 220)',
+        accent: 'oklch(0.75 0.03 220)',
+        background: 'oklch(0.07 0 0)',
+        card: 'oklch(0.11 0 0)',
+        foreground: 'oklch(0.95 0.01 220)',
+        mutedForeground: 'oklch(0.60 0.01 220)',
+        border: 'oklch(0.20 0.01 220)',
+        secondary: 'oklch(0.14 0 0)',
+      },
+    },
+    {
+      id: 'rose',
+      name: 'Rose',
+      description: 'Delicate rose tones',
+      colors: {
+        primary: 'oklch(0.65 0.12 0)',
+        accent: 'oklch(0.75 0.13 5)',
+        background: 'oklch(0.07 0.01 0)',
+        card: 'oklch(0.11 0.01 0)',
+        foreground: 'oklch(0.95 0.01 0)',
+        mutedForeground: 'oklch(0.60 0.03 0)',
+        border: 'oklch(0.20 0.03 0)',
+        secondary: 'oklch(0.14 0.01 0)',
+      },
+    },
+  ],
+  defaultPresetId: 'gold',
+  customizability: { customColors: true, customFonts: true, adjustEffects: true },
+  slots: {},
+}

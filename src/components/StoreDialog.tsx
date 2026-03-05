@@ -42,7 +42,7 @@ import {
   type MixPart,
 } from '@/lib/widget-plugins'
 import { DESIGN_PRESETS, PRESET_IDS, presetToThemeSettings } from '@/lib/design-presets'
-import { applyThemeToDOM } from '@/components/ThemeCustomizerDialog'
+import { applyThemeToDOM } from '@/lib/theme-application'
 
 // ─── Star rating display ─────────────────────────────────────────────────────
 
