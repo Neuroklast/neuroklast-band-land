@@ -3,7 +3,6 @@ import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { Warning, Globe, User, ChartLine, List, Shield, Fingerprint } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { t, tip, type Locale, LOCALES } from '@/lib/i18n-security'
 
 interface AttackerProfileDialogProps {
@@ -108,6 +107,13 @@ const THREAT_LEVEL_COLORS = {
   TARPIT: '#f97316',
   WARN: '#eab308',
   CLEAN: '#22c55e',
+}
+
+const UA_CATEGORY_COLORS: Record<string, string> = {
+  ATTACK_TOOL: '#ef4444',
+  BOT: '#f97316',
+  SCRIPT: '#eab308',
+  OTHER: '#8b5cf6',
 }
 
 export default function AttackerProfileDialog({ open, onClose, hashedIp }: AttackerProfileDialogProps) {
@@ -330,79 +336,69 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
 
                   {/* Charts Row */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Threat Score Timeline */}
+                    {/* Threat Score Timeline — CSS dot histogram */}
                     <div className="border border-primary/20 bg-card p-4">
                       <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <ChartLine size={14} />
                         {L('profile.threatTimeline')}
                       </h3>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={threatScoreChartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                          <XAxis 
-                            dataKey="time" 
-                            stroke="#666" 
-                            style={{ fontSize: '10px' }}
-                            tick={{ fill: '#999' }}
-                          />
-                          <YAxis 
-                            stroke="#666" 
-                            style={{ fontSize: '10px' }}
-                            tick={{ fill: '#999' }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: '#000', 
-                              border: '1px solid #333',
-                              borderRadius: 'var(--radius-sm)',
-                              fontSize: '11px',
-                              fontFamily: 'monospace'
-                            }}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="score" 
-                            stroke="#ef4444" 
-                            strokeWidth={2}
-                            dot={{ r: 3, fill: '#ef4444' }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
+                      {threatScoreChartData.length === 0 ? (
+                        <p className="font-mono text-[10px] text-primary/30 text-center py-8">—</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {(() => {
+                            const maxScore = Math.max(...threatScoreChartData.map(d => d.score), 1)
+                            return threatScoreChartData.slice(-20).map((entry, idx) => {
+                              const threatColor = THREAT_LEVEL_COLORS[entry.level as keyof typeof THREAT_LEVEL_COLORS] || '#22c55e'
+                              const pct = Math.round((entry.score / maxScore) * 100)
+                              return (
+                                <div key={idx} className="flex items-center gap-2 group" title={`${entry.time} — ${entry.reason || entry.level}`}>
+                                  <span className="font-mono text-[9px] text-primary/40 w-10 flex-shrink-0 text-right">{entry.time}</span>
+                                  <div className="flex-1 bg-primary/10 h-4 relative overflow-hidden">
+                                    <div
+                                      className="h-full transition-all duration-300"
+                                      style={{ width: `${pct}%`, backgroundColor: threatColor + 'cc' }}
+                                    />
+                                  </div>
+                                  <span className="font-mono text-[9px] w-8 flex-shrink-0" style={{ color: threatColor }}>{entry.score}</span>
+                                </div>
+                              )
+                            })
+                          })()}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Attack Type Distribution */}
+                    {/* Attack Type Distribution — horizontal CSS bars */}
                     <div className="border border-primary/20 bg-card p-4">
                       <h3 className="font-mono text-[12px] text-primary/70 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Globe size={14} />
                         {L('profile.attackDistribution')}
                       </h3>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                          <Pie
-                            data={attackTypeChartData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={(entry) => `${entry.name}: ${entry.value}`}
-                            outerRadius={70}
-                            fill="#8884d8"
-                            dataKey="value"
-                          >
-                            {attackTypeChartData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={ATTACK_TYPE_COLORS[index % ATTACK_TYPE_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: '#000', 
-                              border: '1px solid #333',
-                              borderRadius: 'var(--radius-sm)',
-                              fontSize: '11px',
-                              fontFamily: 'monospace'
-                            }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
+                      {attackTypeChartData.length === 0 ? (
+                        <p className="font-mono text-[10px] text-primary/30 text-center py-8">—</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {(() => {
+                            const maxVal = Math.max(...attackTypeChartData.map(d => d.value), 1)
+                            return attackTypeChartData.slice(0, 8).map((entry, idx) => {
+                              const color = ATTACK_TYPE_COLORS[idx % ATTACK_TYPE_COLORS.length]
+                              const pct = Math.round((entry.value / maxVal) * 100)
+                              return (
+                                <div key={idx} className="space-y-0.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-mono text-[9px] text-foreground/70 truncate pr-2">{entry.name}</span>
+                                    <span className="font-mono text-[9px] flex-shrink-0" style={{ color }}>{entry.value}×</span>
+                                  </div>
+                                  <div className="w-full bg-primary/10 h-2">
+                                    <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color + 'cc' }} />
+                                  </div>
+                                </div>
+                              )
+                            })
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -413,33 +409,33 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                       {L('profile.uaAnalysis')} ({profile.userAgentAnalysis.unique} {L('profile.unique')})
                     </h3>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {/* Category breakdown chart */}
-                      <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={uaCategoryData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                          <XAxis 
-                            dataKey="name" 
-                            stroke="#666" 
-                            style={{ fontSize: '10px' }}
-                            tick={{ fill: '#999' }}
-                          />
-                          <YAxis 
-                            stroke="#666" 
-                            style={{ fontSize: '10px' }}
-                            tick={{ fill: '#999' }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: '#000', 
-                              border: '1px solid #333',
-                              borderRadius: 'var(--radius-sm)',
-                              fontSize: '11px',
-                              fontFamily: 'monospace'
-                            }}
-                          />
-                          <Bar dataKey="value" fill="#8b5cf6" />
-                        </BarChart>
-                      </ResponsiveContainer>
+                      {/* Category breakdown — horizontal CSS bars */}
+                      <div className="space-y-2">
+                        <p className="font-mono text-[10px] text-primary/50 uppercase mb-2">{L('profile.topUserAgents')} by category</p>
+                        {uaCategoryData.length === 0 ? (
+                          <p className="font-mono text-[10px] text-primary/30 text-center py-4">—</p>
+                        ) : (
+                          (() => {
+                            const maxVal = Math.max(...uaCategoryData.map(d => d.value), 1)
+                            return uaCategoryData.map((entry, idx) => {
+                              const pct = Math.round((entry.value / maxVal) * 100)
+                              const colorKey = Object.keys(UA_CATEGORY_COLORS).find(k => entry.name.includes(k)) || 'OTHER'
+                              const color = UA_CATEGORY_COLORS[colorKey]
+                              return (
+                                <div key={idx} className="space-y-0.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-mono text-[9px] text-foreground/70">{entry.name}</span>
+                                    <span className="font-mono text-[9px]" style={{ color }}>{entry.value}×</span>
+                                  </div>
+                                  <div className="w-full bg-primary/10 h-2">
+                                    <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color + 'cc' }} />
+                                  </div>
+                                </div>
+                              )
+                            })
+                          })()
+                        )}
+                      </div>
 
                       {/* Top User-Agents table */}
                       <div className="border border-primary/10 overflow-hidden">
