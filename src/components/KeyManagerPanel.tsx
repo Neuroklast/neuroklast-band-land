@@ -86,16 +86,6 @@ function QrCodeDisplay({ value }: { value: string }) {
   )
 }
 
-// ─── Admin auth helper ────────────────────────────────────────────────────────
-
-function getAdminToken(): string {
-  try {
-    return sessionStorage.getItem('nk-admin-token') || ''
-  } catch {
-    return ''
-  }
-}
-
 // ─── KeyManagerPanel ─────────────────────────────────────────────────────────
 
 export default function KeyManagerPanel() {
@@ -117,7 +107,7 @@ export default function KeyManagerPanel() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/keys', {
-        headers: { Authorization: `Bearer ${getAdminToken()}` },
+        credentials: 'same-origin',
       })
       if (!res.ok) {
         toast.error('Failed to load keys')
@@ -147,8 +137,8 @@ export default function KeyManagerPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAdminToken()}`,
         },
+        credentials: 'same-origin',
         body: JSON.stringify({ name: newName.trim(), tier: newTier }),
       })
       if (!res.ok) {
@@ -179,8 +169,8 @@ export default function KeyManagerPanel() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAdminToken()}`,
         },
+        credentials: 'same-origin',
         body: JSON.stringify({ revokeId: revokeTarget }),
       })
       if (!res.ok) {
@@ -215,8 +205,8 @@ export default function KeyManagerPanel() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAdminToken()}`,
         },
+        credentials: 'same-origin',
         body: JSON.stringify({ revokeId, ...editingMeta }),
       })
       if (!res.ok) {

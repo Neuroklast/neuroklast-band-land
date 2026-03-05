@@ -265,7 +265,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
               <Button
-                onClick={onToggleEdit}
+                onClick={() => { onToggleEdit(); setShowAdminHub(true) }}
                 className="bg-primary hover:bg-accent active:bg-accent/90 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-primary/40 hover:shadow-primary/60 active:shadow-primary/80 transition-all touch-manipulation relative overflow-hidden group"
                 size="icon"
               >

@@ -87,10 +87,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
   const [search, setSearch] = useState('')
   const [sortField, setSortField] = useState<SortField>('score')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
-  const [locale, setLocale] = useState<Locale>(() => {
-    if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
-    return 'en'
-  })
+  const [locale, setLocale] = useState<Locale>('en')
   const [now, setNow] = useState(() => Date.now())
 
   const L = (key: string) => t(key, locale)
