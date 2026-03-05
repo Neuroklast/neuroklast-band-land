@@ -73,12 +73,9 @@ describe('Security: timingSafeEqual constant-time comparison', () => {
   })
 
   it('returns false for non-string inputs', () => {
-    // @ts-expect-error testing runtime guard
-    expect(timingSafeEqual(null, 'abc')).toBe(false)
-    // @ts-expect-error testing runtime guard
-    expect(timingSafeEqual('abc', undefined)).toBe(false)
-    // @ts-expect-error testing runtime guard
-    expect(timingSafeEqual(123, 456)).toBe(false)
+    expect(timingSafeEqual(null as unknown as string, 'abc')).toBe(false)
+    expect(timingSafeEqual('abc', undefined as unknown as string)).toBe(false)
+    expect(timingSafeEqual(123 as unknown as string, 456 as unknown as string)).toBe(false)
   })
 })
 

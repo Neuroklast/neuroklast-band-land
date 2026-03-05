@@ -32,10 +32,10 @@ import {
 } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
 import type { AdminDialog } from '@/lib/types'
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 
 interface AdminHubItem {
-  icon: typeof PhosphorIcon
+  icon: Icon
   label: string
   description?: string
   action: () => void

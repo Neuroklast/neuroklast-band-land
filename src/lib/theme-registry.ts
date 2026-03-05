@@ -53,7 +53,7 @@ export function getActiveTheme(themeId?: string): ThemePackage {
     const found = _registry.get(themeId)
     if (found) return found
   }
-  const fallback = _registry.get('cyberpunk') ?? Array.from(_registry.values()).at(0)
+  const fallback = _registry.get('cyberpunk') ?? Array.from(_registry.values())[0]
   if (!fallback) throw new Error('Theme registry is empty — no themes have been registered')
   return fallback
 }

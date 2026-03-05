@@ -4,6 +4,7 @@
  * Displays the preset's colors, fonts, and border-radius as a small
  * visual card without requiring any static images.
  */
+import type React from 'react'
 import type { DesignPreset } from '@/lib/types'
 
 interface ThemePreviewCardProps {
@@ -25,7 +26,7 @@ export default function ThemePreviewCard({ preset, active, className = '' }: The
         background: colors.background,
         borderColor: active ? colors.primary : `color-mix(in oklch, ${colors.primary} 30%, transparent)`,
         borderRadius: `${radiusPx}px`,
-        ringColor: colors.primary,
+        ...({ '--tw-ring-color': colors.primary } as React.CSSProperties),
       }}
       aria-label={`Theme preview: ${preset.name}`}
     >
