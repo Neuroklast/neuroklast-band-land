@@ -113,8 +113,8 @@ describe('Color presets', () => {
     }
   })
 
-  it('cyberpunk has 6 color presets', () => {
-    expect(cyberpunkTheme.colorPresets).toHaveLength(6)
+  it('cyberpunk has 5 color presets', () => {
+    expect(cyberpunkTheme.colorPresets).toHaveLength(5)
   })
 
   it('minimal has 2 color presets', () => {
