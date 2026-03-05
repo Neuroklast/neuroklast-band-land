@@ -5,12 +5,37 @@
  * Organizes all admin actions into logical category sections.
  */
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from '@phosphor-icons/react'
+import {
+  X,
+  Lightning,
+  UploadSimple,
+  DownloadSimple,
+  Globe,
+  GearSix,
+  Palette,
+  Sliders,
+  Terminal,
+  SpeakerHigh,
+  ChartBar,
+  ShieldWarning,
+  ShieldCheck,
+  Prohibit,
+  UserCircle,
+  EnvelopeSimple,
+  UsersThree,
+  MegaphoneSimple,
+  LinkSimple,
+  Key,
+  Lock,
+  ArrowCounterClockwise,
+  SignOut,
+} from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
 import type { AdminDialog } from '@/lib/types'
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
 
 interface AdminHubItem {
-  icon: string
+  icon: typeof PhosphorIcon
   label: string
   description?: string
   action: () => void
@@ -54,22 +79,22 @@ export default function AdminHubDialog({
       title: t('hub.content'),
       items: [
         {
-          icon: '📤',
+          icon: UploadSimple,
           label: t('hub.exportData'),
           action: () => { onClose(); onExportData() },
         },
         {
-          icon: '📥',
+          icon: DownloadSimple,
           label: t('hub.importFile'),
           action: () => { onClose(); onImportFile() },
         },
         {
-          icon: '🌐',
+          icon: Globe,
           label: t('hub.syncUrl'),
           action: () => { onClose(); onImportUrl() },
         },
         {
-          icon: '⚙️',
+          icon: GearSix,
           label: t('hub.configEditor'),
           action: () => { onClose(); onOpenDialog('config') },
         },
@@ -79,22 +104,22 @@ export default function AdminHubDialog({
       title: t('hub.appearance'),
       items: [
         {
-          icon: '🎨',
+          icon: Palette,
           label: t('hub.themeStore'),
           action: () => { onClose(); onOpenDialog('store') },
         },
         {
-          icon: '🎛️',
+          icon: Sliders,
           label: t('hub.customizer'),
           action: () => { onClose(); onOpenDialog('design') },
         },
         {
-          icon: '🖥️',
+          icon: Terminal,
           label: t('hub.terminal'),
           action: () => { onClose(); onOpenDialog('terminal') },
         },
         {
-          icon: '🔊',
+          icon: SpeakerHigh,
           label: t('hub.sound'),
           action: () => { onClose(); onOpenDialog('sound') },
         },
@@ -104,27 +129,27 @@ export default function AdminHubDialog({
       title: t('hub.analytics'),
       items: [
         {
-          icon: '📈',
+          icon: ChartBar,
           label: t('hub.analyticsDashboard'),
           action: () => { onClose(); onOpenDialog('analytics') },
         },
         {
-          icon: '🛡️',
+          icon: ShieldWarning,
           label: t('hub.securityLog'),
           action: () => { onClose(); onOpenDialog('security-log') },
         },
         {
-          icon: '⚙️',
+          icon: ShieldCheck,
           label: t('hub.securitySettings'),
           action: () => { onClose(); onOpenDialog('security-settings') },
         },
         {
-          icon: '🚫',
+          icon: Prohibit,
           label: t('hub.blocklist'),
           action: () => { onClose(); onOpenDialog('blocklist') },
         },
         {
-          icon: '👤',
+          icon: UserCircle,
           label: t('hub.attackerProfiles'),
           action: () => { onClose(); onOpenDialog('attacker-profiles') },
         },
@@ -134,22 +159,22 @@ export default function AdminHubDialog({
       title: t('hub.communication'),
       items: [
         {
-          icon: '📨',
+          icon: EnvelopeSimple,
           label: t('hub.inbox'),
           action: () => { onClose(); onOpenDialog('inbox') },
         },
         {
-          icon: '👥',
+          icon: UsersThree,
           label: t('hub.subscribers'),
           action: () => { onClose(); onOpenDialog('subscribers') },
         },
         {
-          icon: '📣',
+          icon: MegaphoneSimple,
           label: t('hub.marketing'),
           action: () => { onClose(); onOpenDialog('marketing') },
         },
         {
-          icon: '🔗',
+          icon: LinkSimple,
           label: t('hub.oauth'),
           action: () => { onClose(); onOpenDialog('oauth') },
         },
@@ -161,7 +186,7 @@ export default function AdminHubDialog({
     ...(isPrimary
       ? [
           {
-            icon: '🔑',
+            icon: Key,
             label: t('hub.keyManager'),
             description: 'Manage activation keys',
             action: () => { onClose(); onOpenDialog('keys') },
@@ -169,14 +194,14 @@ export default function AdminHubDialog({
         ]
       : []),
     {
-      icon: '🔒',
+      icon: Lock,
       label: t('hub.changePassword'),
       action: () => { onClose(); onChangePassword() },
     },
     ...(onResetSetup
       ? [
           {
-            icon: '🔄',
+            icon: ArrowCounterClockwise,
             label: t('hub.resetSetup'),
             action: () => { onClose(); onResetSetup?.() },
           },
@@ -185,7 +210,7 @@ export default function AdminHubDialog({
     ...(onLogout
       ? [
           {
-            icon: '🚪',
+            icon: SignOut,
             label: t('hub.logout'),
             action: () => { onClose(); onLogout?.() },
           },
@@ -214,7 +239,7 @@ export default function AdminHubDialog({
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <span className="text-primary text-xl">⚡</span>
+                  <Lightning size={18} weight="fill" className="text-primary" />
                   <h2 className="text-sm font-mono font-bold tracking-widest text-foreground">
                     {t('hub.title')}
                   </h2>
@@ -264,13 +289,14 @@ export default function AdminHubDialog({
 }
 
 function HubItem({ item }: { item: AdminHubItem }) {
+  const IconComponent = item.icon
   return (
     <button
       onClick={item.disabled ? undefined : item.action}
       disabled={item.disabled}
       className="w-full flex items-center gap-3 px-3 py-2 rounded text-left hover:bg-primary/10 active:bg-primary/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed group"
     >
-      <span className="text-base flex-shrink-0 w-6 text-center">{item.icon}</span>
+      <IconComponent size={16} className="flex-shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
       <div className="min-w-0">
         <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
           {item.label}

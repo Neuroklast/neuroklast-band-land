@@ -26,7 +26,9 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
     if (initializedRef.current) return
     initializedRef.current = true
 
-    fetch(`/api/kv?key=${encodeURIComponent(key)}`)
+    fetch(`/api/kv?key=${encodeURIComponent(key)}`, {
+      signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 8000); return c.signal })(),
+    })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.value !== null && data.value !== undefined) {
@@ -50,7 +52,7 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
         }
       })
       .catch(() => {
-        // API not available (local dev), try localStorage as last resort
+        // API not available (local dev / timeout), try localStorage as last resort
         try {
           const stored = localStorage.getItem(`kv:${key}`)
           if (stored !== null) {
