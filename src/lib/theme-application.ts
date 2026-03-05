@@ -4,7 +4,7 @@
  * Extracted from ThemeCustomizerDialog for reuse across the application.
  */
 
-import type { ThemeSettings, OverlayEffect } from '@/lib/types'
+import type { ThemeSettings } from '@/lib/types'
 
 export const FONT_OPTIONS = [
   { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace", google: false },
