@@ -1,6 +1,6 @@
 /**
  * Global i18n utility for the site.
- * Supports English (en) and German (de).
+ * English only — German translations retained for data compatibility.
  */
 
 export type Locale = 'en' | 'de'

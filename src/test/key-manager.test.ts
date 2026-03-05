@@ -2,7 +2,7 @@
  * Tests for the admin key manager API (api/admin/keys.ts).
  *
  * Tests use mocked KV and verify:
- * - Auth guard (401 without valid token)
+ * - Auth guard (401 without valid session)
  * - Primary-only guard (403 on non-primary instances)
  * - GET returns key list with masked values
  * - POST generates a key and stores metadata
@@ -25,16 +25,24 @@ const mockKv = {
 
 vi.mock('@vercel/kv', () => ({ kv: mockKv }))
 
+// ─── Mock session validation ──────────────────────────────────────────────────
+
+const mockValidateSession = vi.fn()
+
+vi.mock('../../api/auth.js', () => ({
+  validateSession: (...args: unknown[]) => mockValidateSession(...args),
+}))
+
 // ─── Mock crypto ──────────────────────────────────────────────────────────────
 // Don't mock crypto - let it work normally. We only need to verify the key is generated.
 
 // ─── Request / Response helpers ───────────────────────────────────────────────
 
-function makeReq(method: string, body?: Record<string, unknown>, authToken?: string) {
+function makeReq(method: string, body?: Record<string, unknown>, authenticated = false) {
   return {
     method,
     body: body ?? {},
-    headers: authToken ? { authorization: `Bearer ${authToken}` } : {},
+    headers: authenticated ? { cookie: 'nk-session=valid-session-token' } : {},
   }
 }
 
@@ -65,7 +73,6 @@ describe('api/admin/keys auth guard', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.stubEnv('VITE_IS_PRIMARY', 'true')
-    vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
     mockKv.smembers.mockResolvedValue([])
   })
 
@@ -73,7 +80,8 @@ describe('api/admin/keys auth guard', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns 401 when no Authorization header is provided', async () => {
+  it('returns 401 when session is not valid', async () => {
+    mockValidateSession.mockResolvedValue(false)
     const { default: handler } = await import('../../api/admin/keys')
     const req = makeReq('GET')
     const res = makeRes()
@@ -81,17 +89,19 @@ describe('api/admin/keys auth guard', () => {
     expect(res._status).toBe(401)
   })
 
-  it('returns 401 when token is wrong', async () => {
+  it('returns 401 when session cookie is missing', async () => {
+    mockValidateSession.mockResolvedValue(false)
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, 'wrong-token')
+    const req = makeReq('GET')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(401)
   })
 
-  it('allows access with correct token', async () => {
+  it('allows access with valid session', async () => {
+    mockValidateSession.mockResolvedValue(true)
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, 'secret-admin-token')
+    const req = makeReq('GET', {}, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(200)
@@ -103,7 +113,7 @@ describe('api/admin/keys auth guard', () => {
 describe('api/admin/keys primary-only guard', () => {
   beforeEach(() => {
     vi.resetModules()
-    vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
+    mockValidateSession.mockResolvedValue(true)
   })
 
   afterEach(() => {
@@ -113,7 +123,7 @@ describe('api/admin/keys primary-only guard', () => {
   it('returns 403 when VITE_IS_PRIMARY is not true', async () => {
     vi.stubEnv('VITE_IS_PRIMARY', 'false')
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, 'secret-admin-token')
+    const req = makeReq('GET', {}, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(403)
@@ -122,7 +132,7 @@ describe('api/admin/keys primary-only guard', () => {
   it('returns 403 when VITE_IS_PRIMARY is not set', async () => {
     vi.stubEnv('VITE_IS_PRIMARY', '')
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, 'secret-admin-token')
+    const req = makeReq('GET', {}, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(403)
@@ -135,7 +145,7 @@ describe('GET /api/admin/keys', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.stubEnv('VITE_IS_PRIMARY', 'true')
-    vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
+    mockValidateSession.mockResolvedValue(true)
   })
 
   afterEach(() => {
@@ -145,7 +155,7 @@ describe('GET /api/admin/keys', () => {
   it('returns empty list when no keys exist', async () => {
     mockKv.smembers.mockResolvedValue([])
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, 'secret-admin-token')
+    const req = makeReq('GET', {}, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(200)
@@ -156,7 +166,7 @@ describe('GET /api/admin/keys', () => {
     mockKv.smembers.mockResolvedValue(['abcdef1234567890'])
     mockKv.hgetall.mockResolvedValue({ name: 'Test Key', tier: 'pro', createdAt: '2025-01-01', revokeId: 'revoke-uuid-abc' })
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, 'secret-admin-token')
+    const req = makeReq('GET', {}, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(200)
@@ -176,7 +186,7 @@ describe('POST /api/admin/keys', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.stubEnv('VITE_IS_PRIMARY', 'true')
-    vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
+    mockValidateSession.mockResolvedValue(true)
     mockKv.sadd.mockResolvedValue(1)
     mockKv.hset.mockResolvedValue(1)
     mockKv.set.mockResolvedValue('OK')
@@ -188,7 +198,7 @@ describe('POST /api/admin/keys', () => {
 
   it('generates a key and returns it in the response (with revokeId)', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('POST', { name: 'My Key', tier: 'pro' }, 'secret-admin-token')
+    const req = makeReq('POST', { name: 'My Key', tier: 'pro' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(201)
@@ -201,7 +211,7 @@ describe('POST /api/admin/keys', () => {
 
   it('stores the key in KV', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('POST', { name: 'KV Test', tier: 'free' }, 'secret-admin-token')
+    const req = makeReq('POST', { name: 'KV Test', tier: 'free' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(mockKv.sadd).toHaveBeenCalledWith('activation-keys', expect.any(String))
@@ -212,7 +222,7 @@ describe('POST /api/admin/keys', () => {
 
   it('returns 400 when name is empty', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('POST', { name: '', tier: 'free' }, 'secret-admin-token')
+    const req = makeReq('POST', { name: '', tier: 'free' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(400)
@@ -220,7 +230,7 @@ describe('POST /api/admin/keys', () => {
 
   it('returns 400 for invalid tier', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('POST', { name: 'Test', tier: 'ultra' }, 'secret-admin-token')
+    const req = makeReq('POST', { name: 'Test', tier: 'ultra' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(400)
@@ -233,7 +243,7 @@ describe('DELETE /api/admin/keys', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.stubEnv('VITE_IS_PRIMARY', 'true')
-    vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
+    mockValidateSession.mockResolvedValue(true)
     mockKv.srem.mockResolvedValue(1)
     mockKv.del.mockResolvedValue(1)
     mockKv.get.mockResolvedValue('actual-key-value')
@@ -245,7 +255,7 @@ describe('DELETE /api/admin/keys', () => {
 
   it('removes the key from KV using revokeId', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('DELETE', { revokeId: 'some-revoke-id' }, 'secret-admin-token')
+    const req = makeReq('DELETE', { revokeId: 'some-revoke-id' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(200)
@@ -257,7 +267,7 @@ describe('DELETE /api/admin/keys', () => {
 
   it('returns 400 when revokeId is empty', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('DELETE', { revokeId: '' }, 'secret-admin-token')
+    const req = makeReq('DELETE', { revokeId: '' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(400)
@@ -265,7 +275,7 @@ describe('DELETE /api/admin/keys', () => {
 
   it('returns 400 when revokeId is missing', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('DELETE', {}, 'secret-admin-token')
+    const req = makeReq('DELETE', {}, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(400)
@@ -274,7 +284,7 @@ describe('DELETE /api/admin/keys', () => {
   it('returns 404 when revokeId not found in KV', async () => {
     mockKv.get.mockResolvedValue(null)
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('DELETE', { revokeId: 'unknown-id' }, 'secret-admin-token')
+    const req = makeReq('DELETE', { revokeId: 'unknown-id' }, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(404)
@@ -287,7 +297,7 @@ describe('api/admin/keys method guard', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.stubEnv('VITE_IS_PRIMARY', 'true')
-    vi.stubEnv('ADMIN_TOKEN', 'secret-admin-token')
+    mockValidateSession.mockResolvedValue(true)
   })
 
   afterEach(() => {
@@ -296,7 +306,7 @@ describe('api/admin/keys method guard', () => {
 
   it('returns 405 for unsupported methods', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('PUT', {}, 'secret-admin-token')
+    const req = makeReq('PUT', {}, true)
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(405)

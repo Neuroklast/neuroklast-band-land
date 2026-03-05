@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto'
 import { kv } from '@vercel/kv'
+import { validateSession } from '../auth.js'
 
 // Minimal inline types so we avoid the vulnerable @vercel/node package
 interface VercelRequest {
@@ -12,17 +13,6 @@ interface VercelResponse {
   status(code: number): this
   json(data: unknown): this
   end(): this
-}
-
-// ─── Auth helper ──────────────────────────────────────────────────────────────
-
-function checkAdminAuth(req: VercelRequest): boolean {
-  const adminToken = process.env.ADMIN_TOKEN || process.env.VITE_ADMIN_TOKEN
-  if (!adminToken) return false
-
-  const authHeader = (req.headers?.['authorization'] as string | undefined) ?? ''
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-  return token === adminToken
 }
 
 // ─── Default key entry for error fallbacks ────────────────────────────────────
@@ -47,7 +37,7 @@ const FALLBACK_KEY_ENTRY = {
  * DELETE → Revoke a key by its revokeId (a separate identifier, never the key itself)
  *
  * Only available on the primary deployment (VITE_IS_PRIMARY=true).
- * Requires Authorization: Bearer <ADMIN_TOKEN> header.
+ * Requires a valid admin session (cookie-based).
  *
  * Key security: The actual activation key value is ONLY returned on creation.
  * All subsequent operations use the `revokeId` (a random token stored alongside
@@ -60,8 +50,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(403).json({ error: 'Key manager only available on primary deployment' })
   }
 
-  // Admin auth required
-  if (!checkAdminAuth(req)) {
+  // Admin auth required (cookie-based session)
+  if (!(await validateSession(req))) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 

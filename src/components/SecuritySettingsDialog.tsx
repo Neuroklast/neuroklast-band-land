@@ -296,10 +296,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [locale, setLocale] = useState<Locale>(() => {
-    if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
-    return 'en'
-  })
+  const [locale, setLocale] = useState<Locale>('en')
 
   const L = (key: string) => t(key, locale)
   const LT = (key: string) => tip(key, locale)

@@ -139,10 +139,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
   const [sortField, setSortField] = useState<SortField>('time')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [groupBy, setGroupBy] = useState<GroupField>('none')
-  const [locale, setLocale] = useState<Locale>(() => {
-    if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
-    return 'en'
-  })
+  const [locale, setLocale] = useState<Locale>('en')
   const [showExportMenu, setShowExportMenu] = useState(false)
 
   const L = (key: string) => t(key, locale)

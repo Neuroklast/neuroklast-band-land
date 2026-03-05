@@ -1,6 +1,6 @@
 /**
  * Lightweight i18n utility for the Security Center.
- * Supports English (en) and German (de) with tooltip descriptions.
+ * English only — German translations retained for data compatibility.
  */
 
 export type Locale = 'en' | 'de'

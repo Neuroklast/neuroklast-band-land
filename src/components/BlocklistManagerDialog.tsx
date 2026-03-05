@@ -23,10 +23,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [locale, setLocale] = useState<Locale>(() => {
-    if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) return 'de'
-    return 'en'
-  })
+  const [locale, setLocale] = useState<Locale>('en')
   
   const L = (key: string) => t(key, locale)
   const LT = (key: string) => tip(key, locale)
