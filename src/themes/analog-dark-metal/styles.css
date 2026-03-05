@@ -99,7 +99,8 @@
   animation: metal-pulse 0.3s ease-in-out;
 }
 
-/* Card bolts (corner accents) */
+/* Card bolts — small metallic rivets in each corner.
+   Radial gradient at 35% creates a highlight for a 3D bolt look. */
 [data-theme="analog-dark-metal"] .theme-card-bolt {
   position: absolute;
   width: 6px;
@@ -181,7 +182,8 @@
   pointer-events: none;
 }
 
-/* Cool neon spotlight drift */
+/* Cool neon spotlight drift — two soft ellipses (primary + accent)
+   that slowly drift across the viewport for ambient lighting. */
 [data-theme="analog-dark-metal"] .theme-bg-spotlight {
   position: absolute;
   inset: -50%;
