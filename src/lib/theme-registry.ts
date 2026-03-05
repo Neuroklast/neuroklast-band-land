@@ -176,7 +176,7 @@ export const THEME_CATALOG: ThemeDefinition[] = [
   {
     id: 'analog-dark-metal',
     name: 'Analog Dark Metal',
-    description: 'Dark, heavy, brutal – analog grain, blackletter type, raw texture',
+    description: 'Heavy metallic aesthetic meets analog warmth – brushed metal, cool neon accents, oscilloscope effects',
     licenseStatus: 'preview',
     theme: presetToThemeSettings(DESIGN_PRESETS['analog-dark-metal']),
     author: 'Neuroklast',
