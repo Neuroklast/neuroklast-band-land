@@ -1,4 +1,8 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import MinimalBackgroundEffects from './BackgroundEffects'
+import MinimalCard from './Card'
+import MinimalSectionDivider from './SectionDivider'
 
 export const minimalTheme: ThemePackage = {
   id: 'minimal',
@@ -54,5 +58,9 @@ export const minimalTheme: ThemePackage = {
   ],
   defaultPresetId: 'light',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  slots: {},
+  slots: {
+    BackgroundEffects: MinimalBackgroundEffects,
+    Card: MinimalCard,
+    SectionDivider: MinimalSectionDivider,
+  },
 }

@@ -1,4 +1,8 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import NeonBackgroundEffects from './BackgroundEffects'
+import NeonCard from './Card'
+import NeonSectionDivider from './SectionDivider'
 
 export const neonTheme: ThemePackage = {
   id: 'neon',
@@ -69,5 +73,9 @@ export const neonTheme: ThemePackage = {
   ],
   defaultPresetId: 'blue',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  slots: {},
+  slots: {
+    BackgroundEffects: NeonBackgroundEffects,
+    Card: NeonCard,
+    SectionDivider: NeonSectionDivider,
+  },
 }

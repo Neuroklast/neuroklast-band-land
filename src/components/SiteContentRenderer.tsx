@@ -5,6 +5,7 @@
  * never takes down the whole page.
  */
 import { motion } from 'framer-motion'
+import { useThemeSlots } from '@/lib/theme-registry'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import Hero from '@/components/Hero'
 import HeroZardonic from '@/components/HeroZardonic'
@@ -75,9 +76,11 @@ export default function SiteContentRenderer({
   onShowDatenschutz,
 }: SiteContentRendererProps) {
   const safeSocialLinks = data.socialLinks || defaultData.socialLinks
+  const { BackgroundEffects: ThemeBackgroundEffects } = useThemeSlots(data.themeSettings?.activePreset)
 
   return (
     <>
+      <ThemeBackgroundEffects />
       {/* Hero */}
       <SectionErrorBoundary sectionName="Hero">
         {data.themeSettings?.activePreset === 'zardonic-industrial' && data.themeSettings?.heroStyle === 'glitch-parallax' ? (

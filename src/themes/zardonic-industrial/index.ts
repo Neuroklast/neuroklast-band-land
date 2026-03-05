@@ -1,5 +1,9 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import ZardonicLoadingScreen from './LoadingScreen'
+import ZardonicBackgroundEffects from './BackgroundEffects'
+import ZardonicCard from './Card'
+import ZardonicSectionDivider from './SectionDivider'
 
 export const zardonicIndustrialTheme: ThemePackage = {
   id: 'zardonic-industrial',
@@ -139,5 +143,8 @@ export const zardonicIndustrialTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: false, adjustEffects: true },
   slots: {
     LoadingScreen: ZardonicLoadingScreen,
+    BackgroundEffects: ZardonicBackgroundEffects,
+    Card: ZardonicCard,
+    SectionDivider: ZardonicSectionDivider,
   },
 }

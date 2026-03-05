@@ -1,4 +1,8 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import RetroBackgroundEffects from './BackgroundEffects'
+import RetroCard from './Card'
+import RetroSectionDivider from './SectionDivider'
 
 export const retroTheme: ThemePackage = {
   id: 'retro',
@@ -69,5 +73,9 @@ export const retroTheme: ThemePackage = {
   ],
   defaultPresetId: 'amber',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  slots: {},
+  slots: {
+    BackgroundEffects: RetroBackgroundEffects,
+    Card: RetroCard,
+    SectionDivider: RetroSectionDivider,
+  },
 }

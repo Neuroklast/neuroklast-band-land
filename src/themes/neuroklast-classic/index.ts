@@ -1,4 +1,9 @@
+import './styles.css'
 import type { ThemePackage } from '@/lib/types'
+import NeuroklastClassicBackgroundEffects from './BackgroundEffects'
+import NeuroklastClassicCard from './Card'
+import NeuroklastClassicSectionDivider from './SectionDivider'
+import NeuroklastClassicLoadingScreen from './LoadingScreen'
 
 export const neuroklastClassicTheme: ThemePackage = {
   id: 'neuroklast-classic',
@@ -61,5 +66,10 @@ export const neuroklastClassicTheme: ThemePackage = {
   ],
   defaultPresetId: 'crimson',
   customizability: { customColors: false, customFonts: false, adjustEffects: false },
-  slots: {},
+  slots: {
+    BackgroundEffects: NeuroklastClassicBackgroundEffects,
+    Card: NeuroklastClassicCard,
+    SectionDivider: NeuroklastClassicSectionDivider,
+    LoadingScreen: NeuroklastClassicLoadingScreen,
+  },
 }
