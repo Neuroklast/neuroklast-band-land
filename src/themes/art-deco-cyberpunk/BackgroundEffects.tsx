@@ -4,6 +4,7 @@ export default function ArtDecoCyberpunkBackgroundEffects({ className }: Backgro
   return (
     <div className={`theme-bg ${className ?? ''}`} aria-hidden="true">
       <div className="theme-bg-pattern" />
+      <div className="theme-bg-neon-glow" />
       <div className="theme-bg-vignette" />
     </div>
   )

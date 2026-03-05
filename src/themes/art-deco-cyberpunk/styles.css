@@ -7,12 +7,24 @@
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
+@keyframes artdeco-neon-glow {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.35; }
+}
+@keyframes artdeco-ornament-drift {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(0.5deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* ─── Cards ────────────────────────────────────────────────────────────────── */
 [data-theme="art-deco-cyberpunk"] .theme-card {
   border: 1px solid var(--border);
   border-radius: 0;
   background: var(--card);
   position: relative;
   padding: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 [data-theme="art-deco-cyberpunk"] .theme-card::before {
   content: '';
@@ -21,6 +33,23 @@
   border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
   pointer-events: none;
 }
+[data-theme="art-deco-cyberpunk"] .theme-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 6%, transparent) 0%,
+    transparent 50%,
+    color-mix(in srgb, var(--accent) 4%, transparent) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+[data-theme="art-deco-cyberpunk"] .theme-card:hover::after {
+  opacity: 1;
+}
 [data-theme="art-deco-cyberpunk"] .theme-card-corner {
   position: absolute;
   width: 16px;
@@ -28,6 +57,10 @@
   border-color: var(--primary);
   border-style: solid;
   opacity: 0.8;
+  transition: opacity 0.3s;
+}
+[data-theme="art-deco-cyberpunk"] .theme-card:hover .theme-card-corner {
+  opacity: 1;
 }
 [data-theme="art-deco-cyberpunk"] .theme-card-corner-tl {
   top: 0;
@@ -51,8 +84,22 @@
 }
 [data-theme="art-deco-cyberpunk"] .theme-card:hover {
   border-color: var(--primary);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 20%, transparent);
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--primary) 20%, transparent),
+    0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
 }
+
+/* ─── Buttons ──────────────────────────────────────────────────────────────── */
+[data-theme="art-deco-cyberpunk"] button,
+[data-theme="art-deco-cyberpunk"] [role="button"] {
+  border-radius: 0;
+}
+[data-theme="art-deco-cyberpunk"] button:hover,
+[data-theme="art-deco-cyberpunk"] [role="button"]:hover {
+  box-shadow: 0 0 10px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* ─── Section Divider ──────────────────────────────────────────────────────── */
 [data-theme="art-deco-cyberpunk"] .theme-divider {
   display: flex;
   align-items: center;
@@ -69,7 +116,10 @@
 [data-theme="art-deco-cyberpunk"] .theme-divider-ornament {
   font-size: 1rem;
   opacity: 0.8;
+  animation: artdeco-ornament-drift 6s ease-in-out infinite;
 }
+
+/* ─── Background ───────────────────────────────────────────────────────────── */
 [data-theme="art-deco-cyberpunk"] .theme-bg {
   position: fixed;
   inset: 0;
@@ -80,13 +130,21 @@
   position: absolute;
   inset: 0;
   opacity: 0.04;
-  background-image: repeating-linear-gradient(
-    45deg,
-    var(--primary) 0px,
-    var(--primary) 1px,
-    transparent 1px,
-    transparent 10px
-  );
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--primary) 0px,
+      var(--primary) 1px,
+      transparent 1px,
+      transparent 10px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--primary) 0px,
+      var(--primary) 1px,
+      transparent 1px,
+      transparent 10px
+    );
   pointer-events: none;
 }
 [data-theme="art-deco-cyberpunk"] .theme-bg-vignette {
@@ -94,4 +152,13 @@
   inset: 0;
   background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 100%);
   pointer-events: none;
+}
+[data-theme="art-deco-cyberpunk"] .theme-bg-neon-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 50%),
+    radial-gradient(ellipse at 80% 20%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 50%);
+  pointer-events: none;
+  animation: artdeco-neon-glow 8s ease-in-out infinite;
 }

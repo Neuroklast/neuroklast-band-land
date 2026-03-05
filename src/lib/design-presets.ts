@@ -231,7 +231,7 @@ export const artDecoCyberpunkPreset: DesignPreset = {
     secondary: 'oklch(0.10 0.01 65)',
   },
   fonts: {
-    heading: "'Poiret One', sans-serif",
+    heading: "'Orbitron', sans-serif",
     body: "'Raleway', sans-serif",
     mono: "'Courier Prime', monospace",
   },
