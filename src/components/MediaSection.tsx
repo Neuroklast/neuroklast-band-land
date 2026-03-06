@@ -58,6 +58,7 @@ function MediaLoadingScreen() {
       if (idx < texts.length) setLoadingText(texts[idx])
     }, 500)
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

@@ -7,7 +7,7 @@ import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import type { SiteConfig } from '@/lib/types'
 import type { ExportScope, ImportValidationResult } from '@/lib/config-export'
-import { exportSiteConfig, downloadConfigExport, mergeImportedConfig } from '@/lib/config-export'
+import { exportSiteConfig, mergeImportedConfig } from '@/lib/config-export'
 
 interface ConfigImportDialogProps {
   open: boolean

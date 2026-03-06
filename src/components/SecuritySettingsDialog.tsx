@@ -65,6 +65,7 @@ export interface SecuritySettings {
   alertEmail: string
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_SETTINGS: SecuritySettings = {
   honeytokensEnabled: true,
   rateLimitEnabled: true,

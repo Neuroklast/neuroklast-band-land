@@ -8,7 +8,7 @@
  * Primary colour is read from the `--primary` CSS variable so it automatically
  * adapts to the active theme preset.
  */
-import { useRef, useEffect, useState, Suspense } from 'react'
+import { useRef, useEffect, useState, Suspense, startTransition } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, Text } from '@react-three/drei'
 import * as THREE from 'three'
@@ -136,23 +136,19 @@ export interface Logo3DProps {
 
 export default function Logo3D({ className }: Logo3DProps) {
   const [scrollY, setScrollY] = useState(0)
-  const [webGLSupported, setWebGLSupported] = useState(true)
+  const [webGLSupported] = useState(() => {
+    try {
+      const testCanvas = document.createElement('canvas')
+      return !!(testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'))
+    } catch {
+      return false
+    }
+  })
   const [primaryColor, setPrimaryColor] = useState('#ff2222')
 
   useEffect(() => {
-    // Detect WebGL support
-    try {
-      const testCanvas = document.createElement('canvas')
-      const gl =
-        testCanvas.getContext('webgl') ||
-        testCanvas.getContext('experimental-webgl')
-      if (!gl) setWebGLSupported(false)
-    } catch {
-      setWebGLSupported(false)
-    }
-
     // Read primary colour after mount so CSS vars are resolved
-    setPrimaryColor(resolvePrimaryColor())
+    startTransition(() => setPrimaryColor(resolvePrimaryColor()))
 
     const handleScroll = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', handleScroll, { passive: true })

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, startTransition } from 'react'
 
 /** Number of glitch elements per pattern */
 const ELEMENT_COUNT = 8
@@ -117,7 +117,7 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
 
   useEffect(() => {
     if (show) {
-      setVisible(true)
+      startTransition(() => setVisible(true))
       const timeout = setTimeout(() => {
         setVisible(false)
         onComplete?.()
@@ -155,6 +155,7 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
  *  When `enabled` is false (the default) the trigger is a no-op and no
  *  transition element is rendered.  Pass `true` to restore the full-screen
  *  glitch transition on overlay open/close. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useOverlayTransition(enabled = false) {
   const [active, setActive] = useState(false)
 

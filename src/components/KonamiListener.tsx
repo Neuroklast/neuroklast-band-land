@@ -6,6 +6,7 @@ interface KonamiListenerProps {
   customCode?: string[]
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_KONAMI_CODE = [
   'ArrowUp',
   'ArrowUp',

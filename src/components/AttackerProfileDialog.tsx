@@ -127,6 +127,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
   useEffect(() => {
     if (!open || !hashedIp) return
     loadProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, hashedIp])
 
   useEffect(() => {

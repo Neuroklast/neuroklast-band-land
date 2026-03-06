@@ -117,7 +117,6 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     } finally {
       setIsImporting(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onImportData])
 
   const handleImportUrl = () => {

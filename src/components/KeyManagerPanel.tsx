@@ -134,7 +134,7 @@ export default function KeyManagerPanel() {
     }
     setGenerating(true)
     try {
-      const payload: any = { name: newName.trim(), tier: newTier }
+      const payload: Record<string, unknown> = { name: newName.trim(), tier: newTier }
       if (newExclusiveTheme) {
         payload.assignedThemes = [newExclusiveTheme]
       }
@@ -163,6 +163,7 @@ export default function KeyManagerPanel() {
     } finally {
       setGenerating(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newName, newTier, fetchKeys])
 
   const handleRevoke = useCallback((revokeId: string) => {

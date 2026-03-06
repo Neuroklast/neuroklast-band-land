@@ -42,7 +42,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
   const { t } = useLocale()
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
-  const [glitchIndex, setGlitchIndex] = useState<number | null>(null)
+  const [_glitchIndex, setGlitchIndex] = useState<number | null>(null)
   const [selectedImage, setSelectedImage] = useState<{ imageUrl: string; caption: string } | null>(null)
   const [swipeableOpen, setSwipeableOpen] = useState(false)
   const [swipeableInitialIndex, setSwipeableInitialIndex] = useState(0)
@@ -77,6 +77,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
         })
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [galleryImages])
 
   // Auto-load from Drive folder on first render if URL is set
@@ -85,6 +86,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
       driveAutoLoaded.current = true
       loadDriveFolder(driveFolderUrl, true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [driveFolderUrl])
 
   useEffect(() => {
@@ -97,6 +99,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
     }, 3000)
 
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

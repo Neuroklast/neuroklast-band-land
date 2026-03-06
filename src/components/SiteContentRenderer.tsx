@@ -7,8 +7,6 @@
 import { motion } from 'framer-motion'
 import { useThemeSlots } from '@/lib/theme-registry'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
-import Hero from '@/components/Hero'
-import HeroZardonic from '@/components/HeroZardonic'
 import NewsSection from '@/components/NewsSection'
 import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
@@ -18,11 +16,10 @@ import SocialSection from '@/components/SocialSection'
 import PartnersAndFriendsSection from '@/components/PartnersAndFriendsSection'
 import InstagramGallery from '@/components/InstagramGallery'
 import ContactSection from '@/components/ContactSection'
-import Footer from '@/components/Footer'
 import NewsletterWidget from '@/components/NewsletterWidget'
 import { WidgetRenderer } from '@/components/widgets'
 import { getActiveWidgets } from '@/lib/widget-plugins'
-import type { SiteConfig, FontSizeSettings, SectionLabels, ThemeSettings, SectionVisibility } from '@/lib/types'
+import type { SiteConfig, FontSizeSettings, SectionLabels, SectionVisibility } from '@/lib/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

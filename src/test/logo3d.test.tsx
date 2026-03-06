@@ -8,10 +8,9 @@ import Logo3D from '@/components/Logo3D'
 // reconciler is not loaded outside a real Canvas context.
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ 'data-testid': _t, ...rest }: Record<string, unknown>) => {
-    const React = require('react')
     // We only render the wrapper, not the children, to avoid R3F JSX rendering
     const { children: _c, ...divProps } = rest
-    return React.createElement('div', { 'data-testid': 'r3f-canvas', ...divProps })
+    return <div data-testid="r3f-canvas" {...(divProps as Record<string, unknown>)} />
   },
   useFrame: vi.fn(),
 }))
@@ -19,8 +18,7 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('@react-three/drei', () => ({
   useGLTF: vi.fn(() => ({ scene: { traverse: vi.fn() } })),
   Text: ({ children }: { children: React.ReactNode }) => {
-    const React = require('react')
-    return React.createElement('span', {}, children)
+    return <span>{children}</span>
   },
 }))
 

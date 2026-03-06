@@ -64,6 +64,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
       loadGigsFromAPI(true)
       setHasLoadedOnce(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataLoaded])
 
   // Deep-link: highlight and scroll to a specific gig when page loads with #gigs/{id}

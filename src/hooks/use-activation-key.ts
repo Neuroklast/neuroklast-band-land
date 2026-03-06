@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 
 type ActivationStatus = 'loading' | 'valid' | 'invalid' | 'bypassed'
 
@@ -91,14 +91,11 @@ function processUrlHashKey(): void {
 }
 
 export function useActivationKey() {
-  const [status, setStatus] = useState<ActivationStatus>('loading')
+  const [status, setStatus] = useState<ActivationStatus>(() => IS_PRIMARY ? 'bypassed' : 'loading')
 
   useEffect(() => {
     // Primäre Instanz (eigenes Deployment): immer gültig
-    if (IS_PRIMARY) {
-      setStatus('bypassed')
-      return
-    }
+    if (IS_PRIMARY) return
 
     // Check URL hash for #activate=KEY parameter (save to localStorage)
     processUrlHashKey()
@@ -108,14 +105,14 @@ export function useActivationKey() {
 
     // Kein Key konfiguriert → ungültig
     if (!key) {
-      setStatus('invalid')
+      startTransition(() => setStatus('invalid'))
       return
     }
 
     // Cache prüfen
     const cached = getCachedStatus()
     if (cached !== null) {
-      setStatus(cached ? 'valid' : 'invalid')
+      startTransition(() => setStatus(cached ? 'valid' : 'invalid'))
       return
     }
 

@@ -77,6 +77,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
       setHasAutoLoaded(true)
       handleFetchITunesReleases(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasAutoLoaded, releases, dataLoaded])
 
   // Deep-link: open a specific release when the page loads with #releases/{id}

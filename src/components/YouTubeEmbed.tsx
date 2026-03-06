@@ -7,6 +7,7 @@ interface YouTubeEmbedProps {
 }
 
 /** Extract a YouTube video ID from various URL formats or a plain ID */
+// eslint-disable-next-line react-refresh/only-export-components
 export function extractYouTubeId(input: string): string | null {
   // Already a plain ID
   if (/^[A-Za-z0-9_-]{11}$/.test(input.trim())) return input.trim()

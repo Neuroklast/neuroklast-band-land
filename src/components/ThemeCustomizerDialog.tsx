@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import type { ThemeSettings, SectionVisibility, OverlayEffect } from '@/lib/types'
 import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
 import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
-import { applyThemeToDOM, applyOverlayEffectsToDOM, resetThemeDOM, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
+import { applyThemeToDOM, resetThemeDOM, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
 
 /* ─── Theme presets ─── */
 export interface ThemePreset {
@@ -17,6 +17,7 @@ export interface ThemePreset {
   theme: ThemeSettings
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const THEME_PRESETS: ThemePreset[] = [
   {
     name: 'Neon Red (Default)',
@@ -164,6 +165,7 @@ interface ThemeCustomizerDialogProps {
 }
 
 // Re-export for backward compatibility
+// eslint-disable-next-line react-refresh/only-export-components
 export { applyThemeToDOM, resetThemeDOM }
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -266,6 +268,7 @@ export default function ThemeCustomizerDialog({
       })
     }
     prevOpenRef.current = open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // Load all Google Fonts when fonts tab is opened

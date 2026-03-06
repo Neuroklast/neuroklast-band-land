@@ -41,6 +41,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
       clearInterval(progressInterval)
       clearInterval(phaseInterval)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

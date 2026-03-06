@@ -5,8 +5,8 @@ import type { HeroSlotProps } from '@/lib/types'
 export default function Hero({
   name,
   genres,
-  editMode,
-  onEdit,
+  editMode: _editMode,
+  onEdit: _onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -27,6 +27,7 @@ export default function Hero({
     }, 3500)
     
     return () => clearInterval(textInterval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

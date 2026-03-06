@@ -41,11 +41,7 @@ vi.mock('framer-motion', async () => {
 // Stub Logo3D to avoid Three.js / WebGL in unit tests
 vi.mock('@/components/Logo3D', () => ({
   default: ({ className }: { className?: string }) => {
-    const React = require('react')
-    return React.createElement('div', {
-      'data-testid': 'logo3d-component',
-      className,
-    })
+    return <div data-testid="logo3d-component" className={className} />
   },
 }))
 

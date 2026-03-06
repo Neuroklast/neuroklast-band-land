@@ -97,16 +97,10 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
       }
 
       await new Promise<void>((resolve, reject) => {
-        let checkClosed: ReturnType<typeof setInterval>
-
-        const cleanup = () => {
-          clearInterval(checkClosed)
-          window.removeEventListener('message', handler)
-        }
-
         const handler = (event: MessageEvent) => {
           if (event.data?.type !== 'oauth-callback') return
-          cleanup()
+          clearInterval(checkClosed)
+          window.removeEventListener('message', handler)
           if (event.data.success) {
             resolve()
           } else {
@@ -116,9 +110,10 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
         window.addEventListener('message', handler)
 
         // Fallback: if popup closes without message, resolve and refresh
-        checkClosed = setInterval(() => {
+        const checkClosed = setInterval(() => {
           if (popup.closed) {
-            cleanup()
+            clearInterval(checkClosed)
+            window.removeEventListener('message', handler)
             resolve()
           }
         }, 500)

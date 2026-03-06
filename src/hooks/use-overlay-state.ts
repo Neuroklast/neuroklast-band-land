@@ -1,5 +1,5 @@
 import { useState, useEffect, startTransition } from 'react'
-import { getRandomOverlayAnimation, getOverlayAnimationByName, NONE_OVERLAY_ANIMATION, type OverlayAnimation } from '@/lib/overlay-animations'
+import { getOverlayAnimationByName, NONE_OVERLAY_ANIMATION, type OverlayAnimation } from '@/lib/overlay-animations'
 import {
   OVERLAY_LOADING_TEXT_INTERVAL_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,

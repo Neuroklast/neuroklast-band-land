@@ -62,6 +62,7 @@ export default function TerminalSettingsDialog({
       })
     }
     prevOpenRef.current = open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const hasNameConflict = (name: string, index: number) => {

@@ -34,6 +34,7 @@ type SortDir = 'asc' | 'desc'
 type GroupField = 'none' | 'type' | 'ip' | 'level' | 'countermeasure'
 
 /** Classify incident type from the key field */
+// eslint-disable-next-line react-refresh/only-export-components
 export function classifyIncident(key: string): { type: string; label: string; color: string } {
   if (key.startsWith('robots:')) return { type: 'robots', label: 'ROBOTS.TXT VIOLATION', color: 'text-orange-400' }
   if (key.startsWith('threat:')) return { type: 'threat', label: 'THREAT ESCALATION', color: 'text-purple-400' }
@@ -49,6 +50,7 @@ function shortHash(hash: string): string {
   return `${hash.slice(0, 8)}…${hash.slice(-4)}`
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function classifyCountermeasure(incident: SecurityIncident): string {
   if (incident.autoBlocked) return 'BLOCKED'
   if (incident.countermeasure) return incident.countermeasure

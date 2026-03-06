@@ -30,8 +30,8 @@ interface HeroProps {
 }
 
 export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleImageUrl, heroStyle }: HeroProps) {
-  const [glitchLogo, setGlitchLogo] = useState(false)
-  const [glitchTitle, setGlitchTitle] = useState(false)
+  const [_glitchLogo, setGlitchLogo] = useState(false)
+  const [_glitchTitle, setGlitchTitle] = useState(false)
   const { t } = useLocale()
 
   useEffect(() => {
