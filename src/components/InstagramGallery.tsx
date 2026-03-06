@@ -470,7 +470,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
             {photos.map((photo, index) => (
               <motion.div
                 key={photo.id}
-                className={`relative group overflow-hidden bg-card aspect-square cursor-pointer touch-manipulation hud-element hud-corner`}
+                className={`relative group overflow-hidden bg-card aspect-square cursor-pointer touch-manipulation hud-element hud-corner theme-gallery-item`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
