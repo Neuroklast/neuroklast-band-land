@@ -176,7 +176,7 @@ function App() {
       {vis.systemMonitor !== false && <SystemMonitorHUD />}
       <OverlayEffectsLayer effects={data.themeSettings?.overlayEffects} />
       <AnimatePresence>
-        {loading && <ThemeLoadingScreen precacheUrls={precacheUrls} siteName={data.siteName} loadingScreenType={data.themeSettings?.loadingScreenType} onLoadComplete={() => { playSound('loadingFinished'); setLoading(false) }} />}
+        {loading && <ThemeLoadingScreen onComplete={() => { playSound('loadingFinished'); setLoading(false) }} />}
       </AnimatePresence>
 
       {!loading && (
