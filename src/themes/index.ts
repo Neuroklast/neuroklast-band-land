@@ -1,6 +1,4 @@
-/**
- * Barrel file for all built-in themes and default slot stubs.
- */
+import { Separator } from '@/components/ui/separator'
 
 export { cyberpunkTheme } from './cyberpunk'
 export { minimalTheme } from './minimal'
