@@ -6,7 +6,7 @@ import CyberpunkSectionDivider from './SectionDivider'
 
 export const cyberpunkTheme: ThemePackage = {
   id: 'cyberpunk',
-  name: 'Cyberpunk 2077',
+  name: 'Cyberpunk',
   description: 'Neon-lit Night City aesthetic — holographic UI, glowing borders, perspective grids',
   author: 'Neuroklast',
   version: '2.0.0',

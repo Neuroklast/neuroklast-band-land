@@ -4,6 +4,7 @@ import {
   getAllThemes,
   getActiveTheme,
   useThemeSlots,
+  THEME_CATALOG,
   cyberpunkTheme,
   minimalTheme,
   elegantTheme,
@@ -18,6 +19,7 @@ import {
   glitchNoirTheme,
   signalStaticTheme,
 } from '@/lib/theme-registry'
+import { DESIGN_PRESETS } from '@/lib/design-presets'
 
 // Ensure registry is populated (side effects run on import)
 
@@ -205,5 +207,104 @@ describe('useThemeSlots — slot fallbacks', () => {
     const slots = useThemeSlots('minimal')
     expect(typeof slots.Hero).toBe('function')
     expect(typeof slots.Footer).toBe('function')
+  })
+})
+
+// ─── Cross-layer consistency ──────────────────────────────────────────────────
+
+describe('Cross-layer consistency — ThemePackage ↔ THEME_CATALOG ↔ DesignPreset', () => {
+  it('every ThemePackage has a matching THEME_CATALOG entry', () => {
+    for (const pkg of getAllThemes()) {
+      const catalogEntry = THEME_CATALOG.find((t) => t.id === pkg.id)
+      expect(catalogEntry, `${pkg.id} missing from THEME_CATALOG`).toBeDefined()
+    }
+  })
+
+  it('every ThemePackage has a matching DesignPreset', () => {
+    for (const pkg of getAllThemes()) {
+      expect(DESIGN_PRESETS[pkg.id], `${pkg.id} missing from DESIGN_PRESETS`).toBeDefined()
+    }
+  })
+
+  it('names match between ThemePackage and THEME_CATALOG', () => {
+    for (const pkg of getAllThemes()) {
+      const catalogEntry = THEME_CATALOG.find((t) => t.id === pkg.id)!
+      expect(catalogEntry.name, `${pkg.id} name`).toBe(pkg.name)
+    }
+  })
+
+  it('descriptions match between ThemePackage and THEME_CATALOG', () => {
+    for (const pkg of getAllThemes()) {
+      const catalogEntry = THEME_CATALOG.find((t) => t.id === pkg.id)!
+      expect(catalogEntry.description, `${pkg.id} description`).toBe(pkg.description)
+    }
+  })
+
+  it('authors match between ThemePackage and THEME_CATALOG', () => {
+    for (const pkg of getAllThemes()) {
+      const catalogEntry = THEME_CATALOG.find((t) => t.id === pkg.id)!
+      expect(catalogEntry.author, `${pkg.id} author`).toBe(pkg.author)
+    }
+  })
+
+  it('overlay effect values in ThemePackage match DesignPreset', () => {
+    for (const pkg of getAllThemes()) {
+      const preset = DESIGN_PRESETS[pkg.id]
+      const pkgOverlay = pkg.effects.overlayEffects
+      const presetOverlay = preset.overlayEffects
+      // Only compare when both define overlay effects
+      if (pkgOverlay && presetOverlay) {
+        for (const key of Object.keys(pkgOverlay) as (keyof typeof pkgOverlay)[]) {
+          expect(
+            pkgOverlay[key].intensity,
+            `${pkg.id}.overlayEffects.${key}.intensity`,
+          ).toBe(presetOverlay[key].intensity)
+          expect(
+            pkgOverlay[key].enabled,
+            `${pkg.id}.overlayEffects.${key}.enabled`,
+          ).toBe(presetOverlay[key].enabled)
+        }
+      }
+    }
+  })
+})
+
+// ─── Theme type classification ────────────────────────────────────────────────
+
+describe('Theme type classification (themeType)', () => {
+  it('every THEME_CATALOG entry has a themeType', () => {
+    for (const entry of THEME_CATALOG) {
+      expect(entry.themeType, `${entry.id} should have themeType`).toBeDefined()
+    }
+  })
+
+  it('preset themes are: minimal, elegant, neon, retro', () => {
+    const presets = THEME_CATALOG.filter((t) => t.themeType === 'preset').map((t) => t.id)
+    expect(presets).toEqual(expect.arrayContaining(['minimal', 'elegant', 'neon', 'retro']))
+    expect(presets).toHaveLength(4)
+  })
+
+  it('full themes have overlay effects defined in their ThemePackage', () => {
+    const fullThemes = THEME_CATALOG.filter((t) => t.themeType === 'full')
+    for (const def of fullThemes) {
+      const pkg = getTheme(def.id)
+      expect(pkg, `${def.id} should exist as ThemePackage`).toBeDefined()
+      const hasEffects =
+        pkg!.effects.overlayEffects !== undefined ||
+        pkg!.effects.animationSettings !== undefined
+      expect(hasEffects, `${def.id} should have overlay or animation effects`).toBe(true)
+    }
+  })
+
+  it('preset themes have empty effects in their ThemePackage', () => {
+    const presetThemes = THEME_CATALOG.filter((t) => t.themeType === 'preset')
+    for (const def of presetThemes) {
+      const pkg = getTheme(def.id)
+      expect(pkg, `${def.id} should exist as ThemePackage`).toBeDefined()
+      expect(
+        pkg!.effects.overlayEffects,
+        `${def.id} should have no overlayEffects`,
+      ).toBeUndefined()
+    }
   })
 })
