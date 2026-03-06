@@ -1,0 +1,422 @@
+@keyframes signal-static-noise-animation {
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.15; }
+}
+
+@keyframes signal-static-scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes signal-static-glitch {
+  0%, 90%, 100% { transform: translate(0); opacity: 0; }
+  91%, 94% { transform: translate(-2px, 2px); opacity: 0.7; }
+  92%, 96% { transform: translate(2px, -2px); opacity: 0.7; }
+  93%, 95% { transform: translate(-2px, -2px); opacity: 0.7; }
+}
+
+@keyframes signal-static-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes signal-static-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes signal-static-slide-in {
+  from { 
+    transform: translateX(-20px); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes signal-static-terminal-blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.signal-static-bg-noise {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+  opacity: 0.6;
+  pointer-events: none;
+  animation: signal-static-noise-animation 0.3s infinite;
+}
+
+.signal-static-bg-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  animation: signal-static-scanline 8s linear infinite;
+}
+
+.signal-static-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+}
+
+.signal-static-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+.signal-static-signal-interference {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    transparent 100%
+  );
+  animation: signal-static-scanline 12s linear infinite;
+  pointer-events: none;
+}
+
+.signal-static-chromatic-aberration {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0.05;
+}
+
+.signal-static-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  animation: signal-static-scanline 6s linear infinite;
+}
+
+.signal-static-noise {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.02) 2px,
+      rgba(255, 255, 255, 0.02) 4px
+    );
+  opacity: 0.8;
+  pointer-events: none;
+  animation: signal-static-noise-animation 0.2s infinite;
+}
+
+.signal-static-text-glitch {
+  position: relative;
+  animation: signal-static-flicker 3s infinite;
+}
+
+.signal-static-text-glitch::before,
+.signal-static-text-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.signal-static-glitch-wrapper {
+  position: relative;
+  animation: signal-static-glitch 5s infinite;
+}
+
+.signal-static-signal-indicator {
+  animation: signal-static-pulse 2s infinite;
+}
+
+.signal-static-transmission-box {
+  position: relative;
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+}
+
+.signal-static-transmission-box::before,
+.signal-static-transmission-box::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--color-accent);
+}
+
+.signal-static-transmission-box::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.signal-static-transmission-box::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+.signal-static-status-bar {
+  animation: signal-static-pulse 1.5s infinite;
+}
+
+.signal-static-separator {
+  opacity: 0.3;
+}
+
+.signal-static-timestamp {
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-static-nav-link {
+  position: relative;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-static-nav-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.signal-static-nav-link:hover::before {
+  opacity: 0.1;
+}
+
+.signal-static-nav-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent),
+    transparent
+  );
+  animation: signal-static-scanline 3s linear infinite;
+}
+
+.signal-static-logo-glitch {
+  position: relative;
+  animation: signal-static-glitch 8s infinite;
+}
+
+.signal-static-nav-item {
+  transition: all 0.2s;
+}
+
+.signal-static-nav-prefix {
+  margin-right: 0.25rem;
+}
+
+.signal-static-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.signal-static-card-noise {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.01) 2px,
+      rgba(255, 255, 255, 0.01) 4px
+    );
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.signal-static-card:hover .signal-static-card-noise {
+  opacity: 1;
+  animation: signal-static-noise-animation 0.2s infinite;
+}
+
+.signal-static-card-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--color-border);
+  transition: border-color 0.3s;
+}
+
+.signal-static-card:hover .signal-static-card-corner {
+  border-color: var(--color-accent);
+}
+
+.signal-static-card-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.signal-static-card-corner-tr {
+  top: -1px;
+  right: -1px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.signal-static-card-corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-right: none;
+  border-top: none;
+}
+
+.signal-static-card-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+.signal-static-card-glitch {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  animation: signal-static-glitch 6s infinite;
+}
+
+.signal-static-divider-container {
+  position: relative;
+}
+
+.signal-static-divider-line {
+  opacity: 0.3;
+}
+
+.signal-static-divider-dot {
+  animation: signal-static-pulse 2s infinite;
+}
+
+.signal-static-divider-arrow {
+  opacity: 0.5;
+}
+
+.signal-static-divider-label {
+  position: relative;
+  z-index: 10;
+}
+
+.signal-static-loading-noise {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0.05) 4px
+    );
+  opacity: 0.8;
+  pointer-events: none;
+  animation: signal-static-noise-animation 0.15s infinite;
+}
+
+.signal-static-loading-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.2) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  animation: signal-static-scanline 4s linear infinite;
+}
+
+.signal-static-loading-logo {
+  position: relative;
+  animation: signal-static-glitch 4s infinite;
+}
+
+.signal-static-loading-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.signal-static-loading-bar-shine {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: signal-static-scanline 1s linear infinite;
+}
+
+.signal-static-terminal-output {
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-static-terminal-line {
+  animation: signal-static-slide-in 0.3s ease-out;
+}
+
+.signal-static-loading-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  animation: signal-static-pulse 1s infinite;
+}
