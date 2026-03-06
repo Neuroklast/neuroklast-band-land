@@ -16,7 +16,7 @@ import type { DesignPreset, ThemeSettings } from './types'
 export const cyberpunkPreset: DesignPreset = {
   id: 'cyberpunk',
   name: 'Cyberpunk',
-  description: 'Dark industrial aesthetic with crimson red neon accents',
+  description: 'Neon-lit Night City aesthetic — holographic UI, glowing borders, perspective grids',
   colors: {
     primary: 'oklch(0.50 0.22 25)',
     accent: 'oklch(0.60 0.24 25)',
@@ -152,9 +152,9 @@ export const zardonicIndustrialPreset: DesignPreset = {
   overlayEffects: {
     scanlines: { enabled: true, intensity: 0.4 },
     crt: { enabled: true, intensity: 0.6 },
-    noise: { enabled: true, intensity: 0.15 },
+    noise: { enabled: true, intensity: 0.3 },
     vignette: { enabled: true, intensity: 0.3 },
-    chromatic: { enabled: true, intensity: 0.3 },
+    chromatic: { enabled: true, intensity: 0.5 },
     dotMatrix: { enabled: false, intensity: 0 },
   },
   animationSettings: {
@@ -163,7 +163,7 @@ export const zardonicIndustrialPreset: DesignPreset = {
     chromaticEnabled: true,
     crtEnabled: true,
     noiseEnabled: true,
-    circuitBackgroundEnabled: true,
+    circuitBackgroundEnabled: false,
     crtOverlayOpacity: 0.6,
     crtVignetteOpacity: 0.3,
     overlayTransitionEnabled: false,
@@ -219,7 +219,7 @@ export const neuroklastClassicPreset: DesignPreset = {
 export const artDecoCyberpunkPreset: DesignPreset = {
   id: 'art-deco-cyberpunk',
   name: 'Art Deco Cyberpunk',
-  description: '1920s Art Deco meets future tech – geometric gold leaf patterns on black',
+  description: '1920s Art Deco meets future tech – geometric gold leaf patterns on black, angular symmetry',
   colors: {
     primary: 'oklch(0.75 0.12 85)',
     accent: 'oklch(0.85 0.14 90)',
@@ -303,7 +303,7 @@ export const vhsRetroPreset: DesignPreset = {
 export const steampunkPreset: DesignPreset = {
   id: 'steampunk',
   name: 'Steampunk',
-  description: 'Victorian industrial meets brass machinery – copper tones and ornate details',
+  description: 'Victorian industrial meets brass machinery – copper tones, mechanical aesthetics, ornate details',
   colors: {
     primary: 'oklch(0.62 0.12 50)',
     accent: 'oklch(0.72 0.14 55)',

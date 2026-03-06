@@ -132,7 +132,7 @@ describe('presetToThemeSettings', () => {
     expect(theme.animationSettings).toBeDefined()
     expect(theme.animationSettings?.glitchEnabled).toBe(true)
     expect(theme.animationSettings?.crtEnabled).toBe(true)
-    expect(theme.animationSettings?.circuitBackgroundEnabled).toBe(true)
+    expect(theme.animationSettings?.circuitBackgroundEnabled).toBe(false)
     expect(theme.animationSettings?.crtOverlayOpacity).toBe(0.6)
   })
 

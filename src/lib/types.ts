@@ -788,6 +788,17 @@ export interface WidgetPlugin {
 /** License status for a theme */
 export type ThemeLicenseStatus = 'free' | 'preview' | 'locked' | 'licensed'
 
+/**
+ * Classification of theme complexity.
+ *
+ * - `'full'`   — Complete visual overhaul with custom overlay effects and/or
+ *                custom layout slot components (Hero, Navigation, etc.).
+ * - `'preset'` — Primarily a color / font / typography preset with basic
+ *                cosmetic slot components (BackgroundEffects, Card,
+ *                SectionDivider) but no custom overlay effects.
+ */
+export type ThemeType = 'full' | 'preset'
+
 /** A theme with license metadata */
 export interface ThemeDefinition {
   id: string
@@ -800,6 +811,11 @@ export interface ThemeDefinition {
   theme: ThemeSettings
   author?: string
   tags?: string[]
+  /**
+   * Whether this theme is a full visual overhaul (`'full'`) or primarily a
+   * color/font preset (`'preset'`).  Defaults to `'preset'` when omitted.
+   */
+  themeType?: ThemeType
 }
 
 // ─── STORE (#199) ────────────────────────────────────────────────────────────
