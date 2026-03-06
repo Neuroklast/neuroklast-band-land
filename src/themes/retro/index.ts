@@ -3,6 +3,10 @@ import type { ThemePackage } from '@/lib/types'
 import RetroBackgroundEffects from './BackgroundEffects'
 import RetroCard from './Card'
 import RetroSectionDivider from './SectionDivider'
+import RetroHero from './Hero'
+import RetroNavigation from './Navigation'
+import RetroFooter from './Footer'
+import RetroLoadingScreen from './LoadingScreen'
 
 export const retroTheme: ThemePackage = {
   id: 'retro',
@@ -74,6 +78,10 @@ export const retroTheme: ThemePackage = {
   defaultPresetId: 'amber',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
+    Hero: RetroHero,
+    Navigation: RetroNavigation,
+    Footer: RetroFooter,
+    LoadingScreen: RetroLoadingScreen,
     BackgroundEffects: RetroBackgroundEffects,
     Card: RetroCard,
     SectionDivider: RetroSectionDivider,
