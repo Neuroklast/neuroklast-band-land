@@ -1,22 +1,19 @@
 import { useSiteConfig } from '@/hooks/use-site-config'
-import { useEffect, useRef, useState, useMemo, startTransition } from 'react'
+import { useEffect, useRef, useState, useMemo, startTransition, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { PencilSimple } from '@phosphor-icons/react'
-import BandInfoEditDialog from '@/components/BandInfoEditDialog'
 import EditControls from '@/components/EditControls'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
-import SecretTerminal from '@/components/SecretTerminal'
-import ImpressumWindow from '@/components/ImpressumWindow'
-import DatenschutzWindow from '@/components/DatenschutzWindow'
 import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
 import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
 import { MovingScanline } from '@/components/MovingScanline'
 import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
+import CyberSpinner from '@/components/CyberSpinner'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -24,7 +21,6 @@ import type { FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, Sec
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
-import SetupWizard from '@/components/SetupWizard'
 import ActivationLockScreen from '@/components/ActivationLockScreen'
 import LicenseStatusBadge from '@/components/LicenseStatusBadge'
 import { validateActivationKey } from '@/lib/activation'
@@ -32,11 +28,20 @@ import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
 import { applyThemeToDOM } from '@/lib/theme-application'
 import { useThemeSlots } from '@/lib/theme-registry'
-import AdminDialogManager from '@/components/AdminDialogManager'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
 import type { OverlayModalSlotProps } from '@/lib/types'
+import { t } from '@/lib/i18n'
+
+// ─── Lazy-loaded heavy components ─────────────────────────────────────────────
+
+const SetupWizard = lazy(() => import('@/components/SetupWizard'))
+const SecretTerminal = lazy(() => import('@/components/SecretTerminal'))
+const AdminDialogManager = lazy(() => import('@/components/AdminDialogManager'))
+const ImpressumWindow = lazy(() => import('@/components/ImpressumWindow'))
+const DatenschutzWindow = lazy(() => import('@/components/DatenschutzWindow'))
+const BandInfoEditDialog = lazy(() => import('@/components/BandInfoEditDialog'))
 
 // ─── Default config + image precache helper ────────────────────────────────
 
@@ -107,10 +112,10 @@ function App() {
     if (!te?.data) return
     window.history.replaceState(null, '', window.location.pathname + window.location.search)
     const base = configAtMountRef.current
-    toast('Theme aus Link erkannt – möchtest du es anwenden?', {
+    toast(t('app.themeDetected'), {
       duration: 10000,
-      action: { label: 'Anwenden', onClick: () => { setConfig(mergeImportedConfig(base, te.data, 'theme')); toast.success('Theme angewendet') } },
-      cancel: { label: 'Ignorieren', onClick: () => {} },
+      action: { label: t('app.themeApply'), onClick: () => { setConfig(mergeImportedConfig(base, te.data, 'theme')); toast.success(t('app.themeApplied')) } },
+      cancel: { label: t('app.themeIgnore'), onClick: () => {} },
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -165,13 +170,21 @@ function App() {
   return (
     <>
       {(siteConfigLoaded && !data.setupComplete && !isDevTestMode) && (
-        <SetupWizard onComplete={(r) => setConfig({ ...config, ...r, setupComplete: true })} onSetAdminPassword={handleSetupAdminPassword} initialConfig={config} />
+        <Suspense fallback={<CyberSpinner />}>
+          <SetupWizard onComplete={(r) => setConfig({ ...config, ...r, setupComplete: true })} onSetAdminPassword={handleSetupAdminPassword} initialConfig={config} />
+        </Suspense>
       )}
-      <a href="#main-content" className="skip-to-main">Zum Hauptinhalt springen</a>
+      <a href="#main-content" className="skip-to-main">{t('app.skipToMain')}</a>
       <KonamiListener onCodeActivated={handleTerminalActivation} customCode={data.secretCode} />
-      <SecretTerminal isOpen={activeDialog === 'secret-terminal'} onClose={() => setActiveDialog(null)} customCommands={data.terminalCommands || []} secretCode={data.secretCode} siteName={data.siteName} editMode={editMode && isOwner} onSaveCommands={(tc) => updateConfig({ terminalCommands: tc })} onSaveSecretCode={(sc) => updateConfig({ secretCode: sc })} />
-      <ImpressumWindow isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={editMode && isOwner} onSave={(impressum) => updateConfig({ impressum })} />
-      <DatenschutzWindow isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={editMode && isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
+      <Suspense fallback={null}>
+        <SecretTerminal isOpen={activeDialog === 'secret-terminal'} onClose={() => setActiveDialog(null)} customCommands={data.terminalCommands || []} secretCode={data.secretCode} siteName={data.siteName} editMode={editMode && isOwner} onSaveCommands={(tc) => updateConfig({ terminalCommands: tc })} onSaveSecretCode={(sc) => updateConfig({ secretCode: sc })} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ImpressumWindow isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={editMode && isOwner} onSave={(impressum) => updateConfig({ impressum })} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <DatenschutzWindow isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={editMode && isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
+      </Suspense>
       <CookieBanner />
       {vis.scanline !== false && <MovingScanline />}
       {vis.systemMonitor !== false && <SystemMonitorHUD />}
@@ -258,43 +271,45 @@ function App() {
                 </div>
               )}
 
-              <AdminDialogManager
-                activeDialog={activeDialog}
-                setActiveDialog={setActiveDialog}
-                showAttackerProfile={showAttackerProfile}
-                setShowAttackerProfile={setShowAttackerProfile}
-                selectedAttackerIp={selectedAttackerIp}
-                setSelectedAttackerIp={setSelectedAttackerIp}
-                isPrimary={isPrimary}
-                domain={data.domain}
-                configOverrides={data.configOverrides || {}}
-                onSaveConfigOverrides={(co) => updateConfig({ configOverrides: co })}
-                themeSettings={data.themeSettings}
-                onSaveTheme={(ts: ThemeSettings) => updateConfig({ themeSettings: ts })}
-                sectionVisibility={data.sectionVisibility}
-                onSaveSectionVisibility={(sv: SectionVisibility) => updateConfig({ sectionVisibility: sv })}
-                terminalCommands={data.terminalCommands || []}
-                secretCode={data.secretCode}
-                terminalMorseCode={data.terminalMorseCode}
-                defaultMorseCode={defaultSiteConfig.terminalMorseCode || '...'}
-                onSaveTerminal={(tc, sc, mc) => updateConfig({
-                  terminalCommands: tc,
-                  secretCode: sc,
-                  terminalMorseCode: mc?.trim() || defaultSiteConfig.terminalMorseCode || '...',
-                })}
-                soundSettings={data.soundSettings}
-                onSaveSoundSettings={(ss: SoundSettings) => updateConfig({ soundSettings: ss })}
-                widgetPlugins={data.widgetPlugins ?? []}
-                onUpdatePlugins={(wp) => updateConfig({ widgetPlugins: wp })}
-                activePresetId={data.themeSettings?.activePreset}
-                activationResult={activationResult}
-                newsletterSettings={data.newsletterSettings}
-                contactSettings={data.contactSettings}
-                onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })}
-                onSaveContact={(cs) => updateConfig({ contactSettings: cs })}
-                themeAccessOverrides={data.themeAccessOverrides}
-                onSaveThemeAccessOverrides={(tao) => updateConfig({ themeAccessOverrides: tao })}
-              />
+              <Suspense fallback={<CyberSpinner />}>
+                <AdminDialogManager
+                  activeDialog={activeDialog}
+                  setActiveDialog={setActiveDialog}
+                  showAttackerProfile={showAttackerProfile}
+                  setShowAttackerProfile={setShowAttackerProfile}
+                  selectedAttackerIp={selectedAttackerIp}
+                  setSelectedAttackerIp={setSelectedAttackerIp}
+                  isPrimary={isPrimary}
+                  domain={data.domain}
+                  configOverrides={data.configOverrides || {}}
+                  onSaveConfigOverrides={(co) => updateConfig({ configOverrides: co })}
+                  themeSettings={data.themeSettings}
+                  onSaveTheme={(ts: ThemeSettings) => updateConfig({ themeSettings: ts })}
+                  sectionVisibility={data.sectionVisibility}
+                  onSaveSectionVisibility={(sv: SectionVisibility) => updateConfig({ sectionVisibility: sv })}
+                  terminalCommands={data.terminalCommands || []}
+                  secretCode={data.secretCode}
+                  terminalMorseCode={data.terminalMorseCode}
+                  defaultMorseCode={defaultSiteConfig.terminalMorseCode || '...'}
+                  onSaveTerminal={(tc, sc, mc) => updateConfig({
+                    terminalCommands: tc,
+                    secretCode: sc,
+                    terminalMorseCode: mc?.trim() || defaultSiteConfig.terminalMorseCode || '...',
+                  })}
+                  soundSettings={data.soundSettings}
+                  onSaveSoundSettings={(ss: SoundSettings) => updateConfig({ soundSettings: ss })}
+                  widgetPlugins={data.widgetPlugins ?? []}
+                  onUpdatePlugins={(wp) => updateConfig({ widgetPlugins: wp })}
+                  activePresetId={data.themeSettings?.activePreset}
+                  activationResult={activationResult}
+                  newsletterSettings={data.newsletterSettings}
+                  contactSettings={data.contactSettings}
+                  onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })}
+                  onSaveContact={(cs) => updateConfig({ contactSettings: cs })}
+                  themeAccessOverrides={data.themeAccessOverrides}
+                  onSaveThemeAccessOverrides={(tao) => updateConfig({ themeAccessOverrides: tao })}
+                />
+              </Suspense>
             </motion.div>
           </motion.div>
         </>
@@ -302,7 +317,9 @@ function App() {
 
       <AdminLoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} mode="login" totpEnabled={totpEnabled} onLogin={handleAdminLogin} onSetPassword={handleSetAdminPassword} />
       <AdminLoginDialog open={showSetupDialog} onOpenChange={setShowSetupDialog} mode="setup" setupTokenRequired={setupTokenRequired} onSetPassword={handleSetupAdminPassword} />
-      <BandInfoEditDialog open={showBandInfoEdit} onOpenChange={setShowBandInfoEdit} name={data.siteName} genres={data.genres} label={data.label} logoUrl={data.logoUrl} titleImageUrl={data.titleImageUrl} onSave={({ name, genres, label, logoUrl, titleImageUrl }) => updateConfig({ siteName: name, genres, label, logoUrl, titleImageUrl })} />
+      <Suspense fallback={null}>
+        <BandInfoEditDialog open={showBandInfoEdit} onOpenChange={setShowBandInfoEdit} name={data.siteName} genres={data.genres} label={data.label} logoUrl={data.logoUrl} titleImageUrl={data.titleImageUrl} onSave={({ name, genres, label, logoUrl, titleImageUrl }) => updateConfig({ siteName: name, genres, label, logoUrl, titleImageUrl })} />
+      </Suspense>
       <ThemeOverlayModal
         overlay={cyberpunkOverlay as OverlayModalSlotProps['overlay']}
         onClose={() => {

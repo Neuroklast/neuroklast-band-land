@@ -190,7 +190,10 @@ export const driveDownloadQuerySchema = z.object({
  * Validate input against a Zod schema.
  * Returns `{ success: true, data }` or `{ success: false, error: string }`.
  */
-export function validate(schema, input) {
+export function validate<T>(
+  schema: z.ZodSchema<T>,
+  input: unknown,
+): { success: true; data: T } | { success: false; error: string } {
   const result = schema.safeParse(input)
   if (result.success) {
     return { success: true, data: result.data }

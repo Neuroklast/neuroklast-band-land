@@ -16,7 +16,7 @@ vi.mock('@vercel/kv', () => ({
 }))
 
 // Mock rate limiter — always allow requests in tests
-vi.mock('../../api/_ratelimit.js', () => ({
+vi.mock('../../api/_ratelimit.ts', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(true),
   getClientIp: vi.fn().mockReturnValue('1.2.3.4'),
 }))

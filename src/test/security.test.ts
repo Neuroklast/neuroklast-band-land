@@ -11,7 +11,7 @@ vi.mock('@vercel/kv', () => ({
 }))
 
 // Mock rate limiter — always allow requests in tests
-vi.mock('../../api/_ratelimit.js', () => ({
+vi.mock('../../api/_ratelimit.ts', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(true),
 }))
 
@@ -49,7 +49,7 @@ function mockRes(): Res {
 }
 
 const { default: kvHandler, timingSafeEqual } = await import('../../api/kv.js')
-const { validate, kvKeySchema, resetPasswordSchema, analyticsPostSchema } = await import('../../api/_schemas.js')
+const { validate, kvKeySchema, resetPasswordSchema, analyticsPostSchema } = await import('../../api/_schemas.ts')
 
 // ---------------------------------------------------------------------------
 describe('Security: timingSafeEqual constant-time comparison', () => {
@@ -489,13 +489,17 @@ describe('Security: Zod input validation schemas', () => {
     it('returns { success: true, data } for valid input', () => {
       const result = validate(kvKeySchema, 'band-data')
       expect(result.success).toBe(true)
-      expect(result.data).toBe('band-data')
+      if (result.success) {
+        expect(result.data).toBe('band-data')
+      }
     })
 
     it('returns { success: false, error } for invalid input', () => {
       const result = validate(kvKeySchema, '')
       expect(result.success).toBe(false)
-      expect(typeof result.error).toBe('string')
+      if (!result.success) {
+        expect(typeof result.error).toBe('string')
+      }
     })
   })
 })

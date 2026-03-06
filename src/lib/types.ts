@@ -388,7 +388,12 @@ export interface SiteConfig {
   animations?: AnimationSettings
 
   // ─── NEW CONFIG FIELDS ───
-  /** Section display order – array of section IDs */
+  /**
+   * Section display order – array of section IDs.
+   * @deprecated Use `sections` instead for full per-section control (enable/disable + ordering).
+   * Will be removed in a future version. Use `migrateSectionOrder()` from `src/lib/sections.ts`
+   * to convert this value to the new `SectionConfig[]` format.
+   */
   sectionOrder: string[]
   /** Navigation configuration */
   navigation: NavigationConfig

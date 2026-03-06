@@ -19,10 +19,25 @@ import { kv } from '@vercel/kv'
  * KV round-trip costs almost nothing compared to a Serverless Function.
  */
 
-const SALT = process.env.RATE_LIMIT_SALT || 'nk-default-rate-limit-salt-change-me'
+// Generate a cryptographically random salt per cold start if the environment
+// variable is not configured.  This is far safer than a publicly-known
+// fallback string because the generated salt cannot be pre-computed, though
+// it will change on every cold start — meaning the blocklist hashes won't
+// persist across restarts.  Set RATE_LIMIT_SALT to a stable secret value for
+// consistent, long-lived IP blocking across deployments.
+let SALT
 
-if (!process.env.RATE_LIMIT_SALT) {
-  console.error('[SECURITY] RATE_LIMIT_SALT is not set. Using insecure default. Set this environment variable immediately.')
+if (process.env.RATE_LIMIT_SALT) {
+  SALT = process.env.RATE_LIMIT_SALT
+} else {
+  const randomBytes = new Uint8Array(32)
+  crypto.getRandomValues(randomBytes)
+  SALT = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('')
+  console.error(
+    '[SECURITY] RATE_LIMIT_SALT is not configured. ' +
+    'A random salt has been generated for this cold start, but it will change on every restart. ' +
+    'Set RATE_LIMIT_SALT in your environment variables for stable, consistent IP hashing.'
+  )
 }
 
 
@@ -58,9 +73,9 @@ export default async function middleware(req) {
     return
   }
 
-  // Warn on every request in production if the default salt is still in use
+  // Warn on every request in production if no stable salt is set
   if (!process.env.RATE_LIMIT_SALT && process.env.VERCEL) {
-    console.error('[SECURITY] RATE_LIMIT_SALT is not configured in production. IP hashes are predictable.')
+    console.error('[SECURITY] RATE_LIMIT_SALT is not configured in production. IP hashes use a per-cold-start random salt and will not persist across restarts.')
   }
 
   try {

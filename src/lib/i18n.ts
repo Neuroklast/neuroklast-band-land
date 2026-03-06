@@ -323,6 +323,13 @@ const translations: Record<string, string> = {
 
   // ── CyberpunkLoader ─────────────────────────────────────────────────
   'loader.bootSequence':       'NK-SYS [v2.0] // BOOT SEQUENCE',
+
+  // ── App ──────────────────────────────────────────────────────────────
+  'app.skipToMain':            'Skip to main content',
+  'app.themeDetected':         'Theme detected from link – apply it?',
+  'app.themeApply':            'Apply',
+  'app.themeIgnore':           'Ignore',
+  'app.themeApplied':          'Theme applied',
 }
 
 /** Get a translated string for a key */

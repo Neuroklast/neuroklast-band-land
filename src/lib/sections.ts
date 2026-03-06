@@ -26,6 +26,49 @@ export function buildDefaultSections(): SectionConfig[] {
   }))
 }
 
+// ─── Migration helpers ────────────────────────────────────────────────────────
+
+/**
+ * Convert a legacy `sectionOrder` string array to the new `SectionConfig[]`
+ * format.  Each section is enabled by default and ordered according to its
+ * position in the array.
+ *
+ * Use this when migrating persisted configs that still have `sectionOrder`
+ * but not the newer `sections` field.
+ *
+ * @example
+ * const sections = migrateSectionOrder(config.sectionOrder)
+ * updateConfig({ sections, sectionOrder: sections.map(s => s.id) })
+ */
+export function migrateSectionOrder(sectionOrder: string[]): SectionConfig[] {
+  return sectionOrder.map((id, index) => ({
+    id,
+    enabled: true,
+    order: index,
+  }))
+}
+
+/**
+ * Resolve the active section configuration from a partial SiteConfig.
+ *
+ * Resolution priority:
+ * 1. Use `sections` if present and non-empty (new format).
+ * 2. Fall back to converting `sectionOrder` via `migrateSectionOrder` (legacy).
+ * 3. If neither is present, return `buildDefaultSections()`.
+ */
+export function resolveSections(config: {
+  sections?: SectionConfig[]
+  sectionOrder?: string[]
+}): SectionConfig[] {
+  if (config.sections && config.sections.length > 0) {
+    return normalizeSections(config.sections)
+  }
+  if (config.sectionOrder && config.sectionOrder.length > 0) {
+    return migrateSectionOrder(config.sectionOrder)
+  }
+  return buildDefaultSections()
+}
+
 // ─── Normalisation helper ─────────────────────────────────────────────────────
 
 /**

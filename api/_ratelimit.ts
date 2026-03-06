@@ -23,11 +23,25 @@ if (!process.env.RATE_LIMIT_SALT && process.env.NODE_ENV === 'production') {
   throw new Error('[SECURITY] RATE_LIMIT_SALT environment variable is not set. A unique random salt is required in production to protect IP hashes.')
 }
 
+// ─── Minimal request/response types for Vercel serverless functions ──────────
+
+interface VercelLikeRequest {
+  headers: Record<string, string | string[] | undefined>
+}
+
+interface VercelLikeResponse {
+  setHeader(name: string, value: string): this
+  status(code: number): this
+  json(data: unknown): this
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
 /**
  * Hash an IP address with SHA-256 + salt so it can be used as a rate-limit
  * key without storing PII.
  */
-export function hashIp(ip) {
+export function hashIp(ip: string): string {
   return createHash('sha256').update(SALT + ip).digest('hex')
 }
 
@@ -35,7 +49,7 @@ export function hashIp(ip) {
  * Extract the client IP from a Vercel serverless request.
  * Vercel sets `x-forwarded-for`; we take the first address in the chain.
  */
-export function getClientIp(req) {
+export function getClientIp(req: VercelLikeRequest): string {
   const forwarded = req.headers['x-forwarded-for']
   if (typeof forwarded === 'string') {
     return forwarded.split(',')[0].trim()
@@ -44,7 +58,7 @@ export function getClientIp(req) {
 }
 
 // Check if KV is properly configured (needed for rate limiter)
-const isKVConfigured = () => {
+const isKVConfigured = (): boolean => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
 
@@ -55,9 +69,9 @@ const isKVConfigured = () => {
  * Only created when KV is configured; otherwise applyRateLimit() is a no-op
  * so local development without KV still works.
  */
-let ratelimit = null
+let ratelimit: Ratelimit | null = null
 
-function getRatelimit() {
+function getRatelimit(): Ratelimit | null {
   if (ratelimit) return ratelimit
   if (!isKVConfigured()) return null
   ratelimit = new Ratelimit({
@@ -80,7 +94,7 @@ function getRatelimit() {
  *   if (!allowed) return   // 429 already sent
  *   // … handle request normally
  */
-export async function applyRateLimit(req, res) {
+export async function applyRateLimit(req: VercelLikeRequest, res: VercelLikeResponse): Promise<boolean> {
   const rl = getRatelimit()
   if (!rl) return true // KV not configured — allow (dev mode)
 

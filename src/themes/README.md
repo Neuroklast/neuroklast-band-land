@@ -1,132 +1,148 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { List, X, Pencil } from '@phosphor-icons/react'
-import { useState } from 'react'
+# Themes System
 
-interface NavigationProps {
-  artistName: string
+This directory contains all theme packages for the Neuroklast Band Land site template. Each theme is a self-contained directory that can override default UI slots, provide background effects, custom card styles, section dividers, and scoped CSS.
+
+---
+
+## Directory Structure
+
+```
+src/themes/
+├── index.ts                  # Barrel – exports all registered themes
+├── cyberpunk/                # Example full theme
+│   ├── index.ts              # Theme definition + preset
+│   ├── BackgroundEffects.tsx # Optional custom background
+│   ├── Card.tsx              # Optional custom card component
+│   ├── Hero.tsx              # Optional custom hero section
+│   ├── SectionDivider.tsx    # Optional section divider
+│   └── styles.css            # Scoped CSS ([data-theme="cyberpunk"] selectors)
+├── minimal/
+│   └── ...
+└── README.md                 # This file
+```
+
+---
+
+## Theme Types
+
+| Type     | Description                                                               |
+| -------- | ------------------------------------------------------------------------- |
+| `full`   | Provides custom slot components (Navigation, Hero, etc.) + effects/CSS    |
+| `preset` | Color/font-only override – no custom components, relies on CSS variables  |
+
+---
+
+## Slot System
+
+Themes can override three named UI slots used in `App.tsx`:
+
+| Slot             | Props interface          | Description                                |
+| ---------------- | ------------------------ | ------------------------------------------ |
+| `Navigation`     | `NavigationSlotProps`    | Top navigation bar                         |
+| `LoadingScreen`  | `LoadingScreenSlotProps` | Full-screen intro / boot animation         |
+| `OverlayModal`   | `OverlayModalSlotProps`  | Full-screen modal for news/impressum, etc. |
+
+If a theme does not export a slot, the default slot component from `src/components/` is used.
+
+---
+
+## Creating a Custom Theme
+
+### 1. Create the directory
+
+```
+src/themes/my-theme/
+```
+
+### 2. Create `index.ts`
+
+```ts
+import type { ThemePackage } from '@/lib/types'
+import { DesignPreset } from '@/lib/design-presets'
+
+export const myTheme: ThemePackage = {
+  id: 'my-theme',
+  name: 'My Theme',
+  description: 'A brief description.',
+  version: '1.0.0',
+
+  // Optional: override CSS preset (colors, fonts, radius)
+  preset: DesignPreset.Cyberpunk, // or define a custom one
+
+  // Optional: override UI slots
+  slots: {
+    // Navigation: MyNavigation,
+    // LoadingScreen: MyLoadingScreen,
+    // OverlayModal: MyOverlayModal,
+  },
+
+  // Optional: custom background component
+  // BackgroundEffects: MyBackgroundEffects,
+}
+```
+
+### 3. Add scoped CSS
+
+In `styles.css`, scope all rules with the theme's `data-theme` attribute:
+
+```css
+[data-theme="my-theme"] .hero-title {
+  font-size: 4rem;
+  letter-spacing: 0.3em;
+}
+```
+
+The attribute is applied to `document.documentElement` by `applyThemeToDOM()` in `src/lib/theme-application.ts`.
+
+### 4. Register the theme
+
+Add your theme to `src/themes/index.ts`:
+
+```ts
+export { myTheme } from './my-theme'
+```
+
+And register it in `src/lib/theme-registry.ts` by adding an entry to `THEME_CATALOG`.
+
+---
+
+## Theme Registry
+
+`src/lib/theme-registry.ts` is the source of truth for:
+
+- **License status** (`free`, `premium`, `locked`) per theme
+- **License key prefix** for locked themes (e.g., `ZARDONIC-`)
+- **`useThemeSlots()`** hook – returns resolved slot components for the active preset
+
+---
+
+## CSS Variable Convention
+
+Themes override CSS custom properties defined in `src/index.css`. Key variables:
+
+| Variable           | Purpose                         |
+| ------------------ | ------------------------------- |
+| `--color-primary`  | Primary accent colour           |
+| `--color-bg`       | Page background                 |
+| `--color-fg`       | Foreground / text               |
+| `--font-display`   | Display / heading font family   |
+| `--font-body`      | Body text font family           |
+| `--font-mono`      | Monospace font family           |
+| `--radius-md`      | Default border-radius           |
+
+---
+
+## Hero Slot Props
+
+All theme Hero components must accept `HeroSlotProps`:
+
+```ts
+interface HeroSlotProps {
+  name: string
+  genres: string[]
+  editMode: boolean
+  onEdit: () => void
   logoUrl?: string
-  editMode?: boolean
-  isOwner?: boolean
-  showLoginButton?: boolean
-  onNavigate: (section: string) => void
-  onEditClick?: () => void
-  onLoginClick?: () => void
-  onArtistNameChange?: (name: string) => void
+  titleImageUrl?: string
 }
-
-export default function Navigation({
-  artistName,
-  logoUrl,
-  editMode = false,
-  isOwner = false,
-  showLoginButton = false,
-  onNavigate,
-  onEditClick,
-  onLoginClick,
-  onArtistNameChange
-}: NavigationProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  
-  const sections = ['bio', 'music', 'gigs', 'releases', 'gallery', 'connect']
-
-  const handleNavigate = (section: string) => {
-    setMobileMenuOpen(false)
-    setTimeout(() => onNavigate(section), 100)
-  }
-
-  return (
-    <motion.nav
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-sm border-b border-border zardonic-theme-scanline-effect"
-      style={{ position: 'fixed', top: 0 }}
-    >
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <motion.div
-          className="text-2xl md:text-3xl font-bold tracking-tighter text-foreground uppercase"
-          whileHover={{ filter: 'drop-shadow(2px 0 0 rgba(255,0,100,0.3)) drop-shadow(-2px 0 0 rgba(0,255,255,0.3))' }}
-        >
-          {editMode ? (
-            <Input
-              value={artistName}
-              onChange={(e) => onArtistNameChange?.(e.target.value)}
-              className="w-48 bg-transparent border-border text-foreground"
-            />
-          ) : (
-            <img 
-              src={logoUrl}
-              alt={artistName}
-              className="h-10 md:h-12 w-auto object-contain zardonic-theme-logo-glitch brightness-110 zardonic-theme-hover-chromatic-image"
-            />
-          )}
-        </motion.div>
-
-        <div className="hidden md:flex items-center gap-6">
-          {sections.map((section) => (
-            <button
-              key={section}
-              onClick={() => onNavigate(section)}
-              className="text-sm uppercase tracking-wide hover:text-primary transition-colors font-mono zardonic-theme-hover-chromatic zardonic-theme-hover-glitch"
-            >
-              {section}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4">
-          {isOwner && onEditClick && (
-            <Button
-              size="sm"
-              variant={editMode ? 'default' : 'outline'}
-              onClick={onEditClick}
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-          )}
-          {showLoginButton && onLoginClick && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onLoginClick}
-            >
-              Login
-            </Button>
-          )}
-          
-          <button
-            className="md:hidden text-foreground"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <List className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden bg-card/95 border-t border-border overflow-hidden"
-          >
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-              {sections.map((section) => (
-                <button
-                  key={section}
-                  onClick={() => handleNavigate(section)}
-                  className="text-left text-sm uppercase tracking-wide hover:text-primary transition-colors font-mono"
-                >
-                  {section}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
-  )
-}
+```

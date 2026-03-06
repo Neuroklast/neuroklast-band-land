@@ -184,9 +184,9 @@ describe('index.html CSP compliance', () => {
 // ---------------------------------------------------------------------------
 
 describe('Rate limit salt production guard', () => {
-  it('production guard exists in _ratelimit.js source code', () => {
+  it('production guard exists in _ratelimit.ts source code', () => {
     const source = readFileSync(
-      resolve(__dirname, '../../api/_ratelimit.js'),
+      resolve(__dirname, '../../api/_ratelimit.ts'),
       'utf-8'
     )
     // Must throw when RATE_LIMIT_SALT is missing in production
