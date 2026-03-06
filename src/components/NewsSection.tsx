@@ -37,7 +37,20 @@ const DETAILS_TRUNCATE_THRESHOLD = 100
 /** Safely render markdown to sanitized HTML */
 function renderMarkdown(text: string): string {
   const raw = marked.parse(text, { async: false }) as string
-  return DOMPurify.sanitize(raw)
+  return DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'span', 'img'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'title', 'class', 'src', 'alt'],
+  })
+}
+
+/** Sanitize an external URL to prevent javascript: and other dangerous protocols */
+function sanitizeUrl(url?: string): string | undefined {
+  if (!url) return undefined
+  // Strip dangerous protocols like javascript:
+  if (/^(javascript|data|vbscript):/i.test(url.trim())) {
+    return '#'
+  }
+  return url
 }
 
 /** Format a news date for display */
@@ -224,7 +237,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                     )}
                     {item.link && (
                       <a
-                        href={item.link}
+                        href={sanitizeUrl(item.link)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-2 font-mono tracking-wider transition-colors"
@@ -442,7 +455,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
 
           {item.link && (
             <a
-              href={item.link}
+              href={sanitizeUrl(item.link)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-mono text-xs tracking-wider transition-all hover:shadow-[0_0_15px_var(--primary-glow)]"
