@@ -243,7 +243,7 @@ export default function ThemeCustomizerDialog({
 }: ThemeCustomizerDialogProps) {
   const [draft, setDraft] = useState<ThemeSettings>(themeSettings || {})
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
-  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'presets' | 'visibility' | 'effects'>('presets')
+  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'presets' | 'visibility' | 'effects' | 'theme_config'>('presets')
   const [licenseDialog, setLicenseDialog] = useState<{ themeId: string; themeName: string; licenseKeyPrefix?: string } | null>(null)
   const [unlockedThemeIds, setUnlockedThemeIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('nk-unlocked-themes') || '[]') } catch { return [] }
@@ -347,13 +347,21 @@ export default function ThemeCustomizerDialog({
     }))
   }
 
-  const tabs = [
-    { key: 'presets' as const, label: 'PRESETS' },
-    { key: 'colors' as const, label: 'COLORS' },
-    { key: 'fonts' as const, label: 'FONTS' },
-    { key: 'effects' as const, label: 'EFFECTS' },
-    { key: 'visibility' as const, label: 'VISIBILITY' },
+  // Determine if the currently selected theme has a customConfigSchema
+  const activeThemeDef = draft.activePreset ? THEME_CATALOG.find(t => t.id === draft.activePreset) : undefined
+  const hasCustomConfig = !!activeThemeDef?.customConfigSchema
+
+  const tabs: { key: 'presets' | 'colors' | 'fonts' | 'effects' | 'visibility' | 'theme_config'; label: string }[] = [
+    { key: 'presets', label: 'PRESETS' },
+    { key: 'colors', label: 'COLORS' },
+    { key: 'fonts', label: 'FONTS' },
+    { key: 'effects', label: 'EFFECTS' },
+    { key: 'visibility', label: 'VISIBILITY' },
   ]
+
+  if (hasCustomConfig) {
+    tabs.push({ key: 'theme_config', label: 'THEME CONFIG' })
+  }
 
   return (
     <>
@@ -467,23 +475,89 @@ export default function ThemeCustomizerDialog({
                   <details className="mt-4">
                     <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">Quick Color Presets</summary>
                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {THEME_PRESETS.map(preset => (
-                        <button
-                          key={preset.name}
-                          onClick={() => handlePreset(preset)}
-                          className={`border rounded p-3 text-left transition-all hover:border-primary/50 ${
-                            draft.activePreset === preset.name ? 'border-primary bg-primary/10' : 'border-primary/15'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.primary }} />
-                            <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.accent }} />
-                            <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.background }} />
-                          </div>
-                          <div className="font-mono text-xs text-primary/90">{preset.name}</div>
-                          <div className="font-mono text-[9px] text-muted-foreground/60">{preset.description}</div>
-                        </button>
+                      {[...THEME_PRESETS, ...(draft.customConfig?.savedPresets as ThemePreset[] || [])].map(preset => (
+                        <div key={preset.name} className="relative group">
+                          <button
+                            onClick={() => handlePreset(preset)}
+                            className={`w-full border rounded p-3 text-left transition-all hover:border-primary/50 ${
+                              draft.activePreset === preset.name ? 'border-primary bg-primary/10' : 'border-primary/15'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.primary }} />
+                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.accent }} />
+                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.background }} />
+                            </div>
+                            <div className="font-mono text-xs text-primary/90">{preset.name}</div>
+                            <div className="font-mono text-[9px] text-muted-foreground/60">{preset.description}</div>
+                          </button>
+                          {!THEME_PRESETS.find(p => p.name === preset.name) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const updatedPresets = (draft.customConfig?.savedPresets as ThemePreset[] || []).filter(p => p.name !== preset.name)
+                                setDraft(prev => ({
+                                  ...prev,
+                                  customConfig: {
+                                    ...(prev.customConfig || {}),
+                                    savedPresets: updatedPresets
+                                  }
+                                }))
+                                toast.success('Preset deleted')
+                              }}
+                            >
+                              <X className="w-3 h-3 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
                       ))}
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <p className="font-mono text-[10px] text-muted-foreground/60 mb-2">Save current custom configuration as a new preset</p>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Preset Name"
+                          className="font-mono text-xs bg-black/40 border-primary/20 flex-1"
+                          id="new-preset-name"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="font-mono text-xs"
+                          onClick={() => {
+                            const input = document.getElementById('new-preset-name') as HTMLInputElement
+                            const name = input?.value?.trim()
+                            if (!name) return toast.error('Enter a preset name')
+
+                            const currentPresets = (draft.customConfig?.savedPresets as ThemePreset[] || [])
+                            if (currentPresets.find(p => p.name === name) || THEME_PRESETS.find(p => p.name === name)) {
+                              return toast.error('Preset name already exists')
+                            }
+
+                            const newPreset: ThemePreset = {
+                              name,
+                              description: 'Custom saved preset',
+                              theme: { ...draft, customConfig: { ...(draft.customConfig || {}), savedPresets: undefined } }
+                            }
+
+                            setDraft(prev => ({
+                              ...prev,
+                              customConfig: {
+                                ...(prev.customConfig || {}),
+                                savedPresets: [...currentPresets, newPreset]
+                              }
+                            }))
+
+                            if (input) input.value = ''
+                            toast.success('Preset saved')
+                          }}
+                        >
+                          Save Current
+                        </Button>
+                      </div>
                     </div>
                   </details>
                 </div>
@@ -667,6 +741,98 @@ export default function ThemeCustomizerDialog({
                           {visible ? <Eye size={14} /> : <EyeSlash size={14} />}
                           {visible ? 'VISIBLE' : 'HIDDEN'}
                         </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* THEME CONFIG TAB */}
+              {activeTab === 'theme_config' && hasCustomConfig && activeThemeDef?.customConfigSchema && (
+                <div className="space-y-4">
+                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
+                    Custom configuration settings specific to the active theme ({activeThemeDef.name}).
+                  </p>
+                  {Object.entries(activeThemeDef.customConfigSchema).map(([key, schema]) => {
+                    // Custom config is usually stored on the theme settings or we can place it on a dedicated customConfig object.
+                    // For now, let's look for a customConfig block on draft, or default.
+                    const val = draft.customConfig?.[key] ?? schema.default
+
+                    return (
+                      <div key={key} className="space-y-1">
+                        <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
+                          {schema.label}
+                          {schema.type === 'number' && <span className="text-[10px] text-primary/70">{val}</span>}
+                        </Label>
+                        <p className="font-mono text-[9px] text-muted-foreground/50">{schema.description}</p>
+
+                        {schema.type === 'number' && (
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={val as number}
+                            onChange={e => {
+                              const updatedVal = parseFloat(e.target.value)
+                              setDraft(prev => {
+                                const newConfig = {
+                                  ...prev,
+                                  customConfig: {
+                                    ...(prev.customConfig || {}),
+                                    [key]: updatedVal
+                                  }
+                                }
+                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
+                                return newConfig
+                              })
+                            }}
+                            className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary mt-2"
+                          />
+                        )}
+
+                        {schema.type === 'boolean' && (
+                          <button
+                            onClick={() => {
+                              setDraft(prev => {
+                                const newConfig = {
+                                  ...prev,
+                                  customConfig: {
+                                    ...(prev.customConfig || {}),
+                                    [key]: !val
+                                  }
+                                }
+                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
+                                return newConfig
+                              })
+                            }}
+                            className={`mt-1 flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono transition-colors ${
+                              val ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
+                            }`}
+                          >
+                            {val ? 'ENABLED' : 'DISABLED'}
+                          </button>
+                        )}
+
+                        {schema.type === 'string' && (
+                          <Input
+                            value={val as string}
+                            onChange={e => {
+                              setDraft(prev => {
+                                const newConfig = {
+                                  ...prev,
+                                  customConfig: {
+                                    ...(prev.customConfig || {}),
+                                    [key]: e.target.value
+                                  }
+                                }
+                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
+                                return newConfig
+                              })
+                            }}
+                            className="font-mono text-xs mt-1"
+                          />
+                        )}
                       </div>
                     )
                   })}

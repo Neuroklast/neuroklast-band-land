@@ -76,38 +76,22 @@ export default function SiteContentRenderer({
   onShowDatenschutz,
 }: SiteContentRendererProps) {
   const safeSocialLinks = data.socialLinks || defaultData.socialLinks
-  const { BackgroundEffects: ThemeBackgroundEffects } = useThemeSlots(data.themeSettings?.activePreset)
+  const { BackgroundEffects: ThemeBackgroundEffects, Hero: ThemeHero, Footer: ThemeFooter, SectionDivider: ThemeSectionDivider } = useThemeSlots(data.themeSettings?.activePreset)
 
   return (
     <>
       <ThemeBackgroundEffects />
       {/* Hero */}
       <SectionErrorBoundary sectionName="Hero">
-        {data.themeSettings?.activePreset === 'zardonic-industrial' && data.themeSettings?.heroStyle === 'glitch-parallax' ? (
-          <HeroZardonic
-            name={data.siteName}
-            genres={data.genres}
-            editMode={editMode && isOwner}
-            onEdit={onShowBandInfoEdit}
-            logoUrl={data.logoUrl}
-            titleImageUrl={data.titleImageUrl}
-            themeSettings={data.themeSettings}
-            hudTopLeft1={data.hudTexts?.topLeft1}
-            hudTopLeft2={data.hudTexts?.topLeftStatus}
-            hudBottomRight1={data.hudTexts?.bottomRight1}
-            hudBottomRight2={data.hudTexts?.bottomRight2}
-          />
-        ) : (
-          <Hero
-            name={data.siteName}
-            genres={data.genres}
-            editMode={editMode && isOwner}
-            onEdit={onShowBandInfoEdit}
-            logoUrl={data.logoUrl}
-            titleImageUrl={data.titleImageUrl}
-            heroStyle={data.themeSettings?.heroStyle}
-          />
-        )}
+        <ThemeHero
+          name={data.siteName}
+          genres={data.genres}
+          editMode={editMode && isOwner}
+          onEdit={onShowBandInfoEdit}
+          logoUrl={data.logoUrl}
+          titleImageUrl={data.titleImageUrl}
+          heroStyle={data.themeSettings?.heroStyle}
+        />
       </SectionErrorBoundary>
 
       <main id="main-content" className="relative">
@@ -298,7 +282,8 @@ export default function SiteContentRenderer({
         transition={{ duration: 0.6, delay: 1.6 }}
       >
         <SectionErrorBoundary sectionName="Footer">
-          <Footer
+          <ThemeSectionDivider />
+          <ThemeFooter
             socialLinks={safeSocialLinks}
             genres={data.genres}
             label={data.label}
