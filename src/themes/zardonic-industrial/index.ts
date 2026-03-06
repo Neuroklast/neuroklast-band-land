@@ -4,6 +4,9 @@ import ZardonicLoadingScreen from './LoadingScreen'
 import ZardonicBackgroundEffects from './BackgroundEffects'
 import ZardonicCard from './Card'
 import ZardonicSectionDivider from './SectionDivider'
+import ZardonicHero from './Hero'
+import ZardonicNavigation from './Navigation'
+import ZardonicFooter from './Footer'
 
 export const zardonicIndustrialTheme: ThemePackage = {
   id: 'zardonic-industrial',
@@ -141,7 +144,24 @@ export const zardonicIndustrialTheme: ThemePackage = {
   ],
   defaultPresetId: 'default-crimson',
   customizability: { customColors: true, customFonts: false, adjustEffects: true },
+  customConfigSchema: {
+    HERO_LOGO_GLITCH_PROBABILITY: {
+      label: 'Hero Logo Glitch Probability',
+      description: 'Chance (0-1) the main hero logo glitches per interval.',
+      type: 'number',
+      default: 0.75,
+    },
+    NAV_GLITCH_PROBABILITY: {
+      label: 'Navigation Glitch Probability',
+      description: 'Chance (0-1) the top navigation glitches per interval.',
+      type: 'number',
+      default: 0.85,
+    },
+  },
   slots: {
+    Hero: ZardonicHero,
+    Navigation: ZardonicNavigation,
+    Footer: ZardonicFooter,
     LoadingScreen: ZardonicLoadingScreen,
     BackgroundEffects: ZardonicBackgroundEffects,
     Card: ZardonicCard,

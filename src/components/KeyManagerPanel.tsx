@@ -93,6 +93,7 @@ export default function KeyManagerPanel() {
   const [loading, setLoading] = useState(false)
   const [newName, setNewName] = useState('')
   const [newTier, setNewTier] = useState<string>('free')
+  const [newExclusiveTheme, setNewExclusiveTheme] = useState<string>('')
   const [generating, setGenerating] = useState(false)
   const [generatedKey, setGeneratedKey] = useState<GeneratedKey | null>(null)
   const [copied, setCopied] = useState(false)
@@ -133,13 +134,18 @@ export default function KeyManagerPanel() {
     }
     setGenerating(true)
     try {
+      const payload: any = { name: newName.trim(), tier: newTier }
+      if (newExclusiveTheme) {
+        payload.assignedThemes = [newExclusiveTheme]
+      }
+
       const res = await fetch('/api/admin/keys', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'same-origin',
-        body: JSON.stringify({ name: newName.trim(), tier: newTier }),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) {
         const err = await res.json()
@@ -150,6 +156,7 @@ export default function KeyManagerPanel() {
       setGeneratedKey(data)
       setNewName('')
       setNewTier('free')
+      setNewExclusiveTheme('')
       await fetchKeys()
     } catch {
       toast.error('Failed to generate key')
@@ -305,6 +312,17 @@ export default function KeyManagerPanel() {
               <option value="pro">Pro</option>
               <option value="agency">Agency</option>
               <option value="saas">SaaS</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px]">Exclusive Theme (Optional)</Label>
+            <select
+              value={newExclusiveTheme}
+              onChange={(e) => setNewExclusiveTheme(e.target.value)}
+              className="w-full bg-secondary border border-input rounded px-2 py-1.5 text-xs text-foreground h-8"
+            >
+              <option value="">None</option>
+              <option value="zardonic-industrial">Zardonic Industrial</option>
             </select>
           </div>
         </div>

@@ -1,3 +1,40 @@
+
+/* ── Red Glitch Element (Custom port from old theme) ────────────────────── */
+
+.zardonic-red-glitch-element {
+  position: relative;
+  animation: zardonic-red-glitch-anim 0.3s steps(4) infinite;
+  filter: drop-shadow(2px 0 0 oklch(0.55 0.25 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.7 0.2 200 / 0.8));
+}
+
+@keyframes zardonic-red-glitch-anim {
+  0%   { transform: translate(0); }
+  25%  { transform: translate(-2px, 1px); filter: hue-rotate(90deg) saturate(1.5); }
+  50%  { transform: translate(2px, -1px); filter: hue-rotate(-90deg) saturate(1.5); }
+  75%  { transform: translate(-1px, -2px); filter: contrast(1.5); }
+  100% { transform: translate(0); }
+}
+
+/* ── Chromatic Aberration Hover ─────────────────────────────────────────── */
+
+.zardonic-chromatic-aberration-hover {
+  transition: filter 0.1s ease;
+}
+
+.zardonic-chromatic-aberration-hover:hover {
+  filter: drop-shadow(3px 0 0 oklch(0.55 0.25 25 / 0.5)) drop-shadow(-3px 0 0 oklch(0.7 0.2 200 / 0.5));
+  animation: zardonic-chromatic-pulse 0.15s ease;
+}
+
+@keyframes zardonic-chromatic-pulse {
+  0%, 100% {
+    filter: drop-shadow(3px 0 0 oklch(0.55 0.25 25 / 0.5)) drop-shadow(-3px 0 0 oklch(0.7 0.2 200 / 0.5));
+  }
+  50% {
+    filter: drop-shadow(5px 0 0 oklch(0.55 0.25 25 / 0.8)) drop-shadow(-5px 0 0 oklch(0.7 0.2 200 / 0.8));
+  }
+}
+
 /* Zardonic Industrial theme styles — all classes prefixed zardonic- */
 
 /* ── Keyframe animations ────────────────────────────────────────────────── */

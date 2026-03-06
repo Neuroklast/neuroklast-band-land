@@ -182,6 +182,8 @@ export interface ThemeSettings {
   fontSize?: number
   /** Overlay effects configuration */
   overlayEffects?: OverlayEffects
+  /** Theme-specific custom configuration */
+  customConfig?: Record<string, unknown>
   /** Animation settings (glitch, scanline, CRT, circuit-background, etc.) */
   animationSettings?: AnimationSettings
   /** Loading screen style identifier */
@@ -639,6 +641,11 @@ export interface ThemePackage {
 
   // Customizability
   customizability: ThemeCustomizability
+
+  // Optional theme-specific config parameters schema
+  // This allows the admin panel to render UI for adjusting things like
+  // specific glitch probabilities or effect intensities that only exist in this theme.
+  customConfigSchema?: Record<string, { label: string; description: string; type: 'number' | 'boolean' | 'string'; default: unknown }>
 
   // Slot components (the actual React components)
   slots: Partial<ThemeSlots>
