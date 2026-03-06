@@ -6,6 +6,7 @@
  */
 import { motion } from 'framer-motion'
 import { useThemeSlots } from '@/lib/theme-registry'
+import { useCachedImage } from '@/hooks/useCachedImage'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import NewsSection from '@/components/NewsSection'
 import BiographySection from '@/components/BiographySection'
@@ -74,6 +75,8 @@ export default function SiteContentRenderer({
 }: SiteContentRendererProps) {
   const safeSocialLinks = data.socialLinks || defaultData.socialLinks
   const { BackgroundEffects: ThemeBackgroundEffects, Hero: ThemeHero, Footer: ThemeFooter, SectionDivider: ThemeSectionDivider } = useThemeSlots(data.themeSettings?.activePreset)
+  const cachedLogoUrl = useCachedImage(data.logoUrl)
+  const cachedTitleImageUrl = useCachedImage(data.titleImageUrl)
 
   return (
     <>
@@ -85,8 +88,8 @@ export default function SiteContentRenderer({
           genres={data.genres}
           editMode={editMode && isOwner}
           onEdit={onShowBandInfoEdit}
-          logoUrl={data.logoUrl}
-          titleImageUrl={data.titleImageUrl}
+          logoUrl={cachedLogoUrl || undefined}
+          titleImageUrl={cachedTitleImageUrl || undefined}
           heroStyle={data.themeSettings?.heroStyle}
         />
       </SectionErrorBoundary>
