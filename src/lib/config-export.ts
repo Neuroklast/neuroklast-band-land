@@ -219,6 +219,138 @@ export function mergeImportedConfig(current: SiteConfig, imported: Partial<SiteC
   return current
 }
 
+// ─── WIDGET EXPORT / IMPORT ───────────────────────────────────────
+
+export interface WidgetExport {
+  exportVersion: string
+  exportedAt: string
+  exportType: 'widgets'
+  widgets: WidgetPlugin[]
+}
+
+export interface WidgetConflict {
+  id: string
+  name: string
+  existingConfig?: Record<string, unknown>
+  importedConfig?: Record<string, unknown>
+}
+
+export type WidgetConflictResolution = 'skip' | 'replace'
+
+export interface WidgetImportValidationResult {
+  valid: boolean
+  errors: string[]
+  warnings: string[]
+  widgets: WidgetPlugin[]
+}
+
+/** Create a widget export object from the installed plugins */
+export function exportWidgets(plugins: WidgetPlugin[]): WidgetExport {
+  const installed = plugins.filter((p) => p.installed)
+  return {
+    exportVersion: EXPORT_VERSION,
+    exportedAt: new Date().toISOString(),
+    exportType: 'widgets',
+    widgets: sanitizeWidgetPlugins(installed),
+  }
+}
+
+/** Download a WidgetExport as a JSON file */
+export function downloadWidgetExport(exportObj: WidgetExport): void {
+  const json = JSON.stringify(exportObj, null, 2)
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `widgets-${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+/** Copy a WidgetExport JSON to the clipboard */
+export async function copyWidgetsToClipboard(plugins: WidgetPlugin[]): Promise<void> {
+  const exportObj = exportWidgets(plugins)
+  const json = JSON.stringify(exportObj, null, 2)
+  await navigator.clipboard.writeText(json)
+}
+
+/** Validate and parse an imported widget JSON object */
+export function validateWidgetImport(raw: unknown): WidgetImportValidationResult {
+  const errors: string[] = []
+  const warnings: string[] = []
+
+  if (!raw || typeof raw !== 'object') {
+    return { valid: false, errors: ['Not a valid JSON object'], warnings, widgets: [] }
+  }
+
+  const obj = raw as Record<string, unknown>
+
+  if (obj.exportType !== 'widgets' || !Array.isArray(obj.widgets)) {
+    errors.push('Not a valid widget export file')
+    return { valid: false, errors, warnings, widgets: [] }
+  }
+
+  if (obj.exportVersion !== EXPORT_VERSION) {
+    warnings.push(`Export version ${String(obj.exportVersion)} may differ from current version ${EXPORT_VERSION}.`)
+  }
+
+  const widgets = obj.widgets as WidgetPlugin[]
+  if (widgets.length === 0) {
+    warnings.push('No widgets found in the export.')
+  }
+
+  return { valid: true, errors, warnings, widgets }
+}
+
+/**
+ * Merge imported widgets into the current plugins array.
+ * Returns the merged array and a list of conflicts that still need resolution.
+ * Conflict resolution defaults to 'skip' if not specified.
+ */
+export function mergeImportedWidgets(
+  current: WidgetPlugin[],
+  imported: WidgetPlugin[],
+  resolutions: Record<string, WidgetConflictResolution> = {},
+): { result: WidgetPlugin[]; conflicts: WidgetConflict[] } {
+  const conflicts: WidgetConflict[] = []
+  const result = [...current]
+  const currentMap = new Map(current.map((p) => [p.id, p]))
+
+  for (const widget of imported) {
+    const existing = currentMap.get(widget.id)
+
+    if (existing) {
+      const resolution = resolutions[widget.id]
+      if (resolution === undefined) {
+        // Conflict not yet resolved – report it
+        conflicts.push({
+          id: widget.id,
+          name: widget.name,
+          existingConfig: existing.config as Record<string, unknown> | undefined,
+          importedConfig: widget.config as Record<string, unknown> | undefined,
+        })
+      } else if (resolution === 'replace') {
+        const idx = result.findIndex((p) => p.id === widget.id)
+        result[idx] = {
+          ...widget,
+          installed: true,
+          enabled: existing.enabled,
+          order: existing.order,
+        }
+      }
+      // 'skip' → leave existing entry unchanged
+    } else {
+      // New widget – append it
+      const maxOrder = result.reduce((max, p) => Math.max(max, p.order), -1)
+      result.push({ ...widget, installed: true, order: maxOrder + 1 })
+    }
+  }
+
+  return { result, conflicts }
+}
+
 // ─── SHAREABLE THEME URL ───────────────────────────────────────────
 
 /** Encode a theme export as a Base64 URL-hash string */
