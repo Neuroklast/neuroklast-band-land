@@ -188,7 +188,7 @@ describe('mixThemeSettings', () => {
     const parts: MixPart[] = [
       { presetId: 'cyberpunk', aspects: ['colors'] },
       { presetId: 'elegant', aspects: ['fonts'] },
-      { presetId: 'zardonic-industrial', aspects: ['effects'] },
+      { presetId: 'zardonic', aspects: ['effects'] },
     ]
     const result = mixThemeSettings(parts, DESIGN_PRESETS)
     expect(result.overlayEffects).toBeDefined()

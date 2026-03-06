@@ -676,7 +676,7 @@ export interface DesignPreset {
     mutedForeground: string
     border: string
     secondary: string
-    // Extended optional colors matching the zardonic-industrial ThemeCustomization interface
+    // Extended optional colors matching the zardonic ThemeCustomization interface
     primaryForeground?: string
     cardForeground?: string
     popoverColor?: string

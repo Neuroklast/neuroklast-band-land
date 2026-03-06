@@ -1,7 +1,15 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import type { HeroSlotProps } from '@/lib/types'
 
-export default function Hero() {
+export default function Hero({
+  name,
+  genres,
+  editMode,
+  onEdit,
+  logoUrl,
+  titleImageUrl,
+}: HeroSlotProps) {
   const [glitchActive, setGlitchActive] = useState(false)
   const [signalText, setSignalText] = useState('[SIGNAL_DETECTED]')
   
@@ -48,20 +56,54 @@ export default function Hero() {
         className="relative z-10 text-center px-6"
       >
         <div className={`relative ${glitchActive ? 'glitch-noir-glitch-text' : ''}`}>
-          <div className="absolute -inset-4 opacity-20">
-            <div className="text-7xl md:text-9xl font-bold tracking-tighter text-accent font-mono blur-sm">
-              NEUROKLAST
+          {logoUrl && (
+            <div className="flex justify-center mb-8">
+              <img
+                src={logoUrl}
+                alt={`${name} Logo`}
+                className="w-[16rem] h-auto sm:w-[20rem] md:w-[24rem] lg:w-[28rem]"
+              />
             </div>
-          </div>
-          
-          <h1 className="relative text-7xl md:text-9xl font-bold tracking-tighter mb-6 text-foreground font-mono">
-            NEUROKLAST
-          </h1>
+          )}
+
+          {titleImageUrl ? (
+            <div className="mb-6 flex justify-center w-full px-4">
+              <img
+                src={titleImageUrl}
+                alt={name}
+                className="w-full max-w-xs sm:max-w-md md:max-w-2xl h-auto"
+              />
+            </div>
+          ) : (
+            <>
+              <div className="absolute -inset-4 opacity-20">
+                <div className="text-7xl md:text-9xl font-bold tracking-tighter text-accent font-mono blur-sm">
+                  {name}
+                </div>
+              </div>
+              
+              <h1 className="relative text-7xl md:text-9xl font-bold tracking-tighter mb-6 text-foreground font-mono">
+                {name}
+              </h1>
+            </>
+          )}
           
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="h-px w-12 bg-accent/50" />
             <div className="h-1 w-1 bg-accent glitch-noir-pulse" />
             <div className="h-px w-12 bg-accent/50" />
+          </div>
+
+          {/* Genre badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-6 px-2">
+            {(genres || []).map((genre) => (
+              <span
+                key={genre}
+                className="px-3 py-1 border border-border text-xs font-mono tracking-widest uppercase text-muted-foreground"
+              >
+                {genre}
+              </span>
+            ))}
           </div>
           
           <div className="relative overflow-hidden">

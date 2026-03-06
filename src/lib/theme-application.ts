@@ -64,6 +64,13 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
   const root = document.documentElement
   if (!theme) return
 
+  // Set data-theme attribute so theme-scoped CSS selectors ([data-theme="…"]) match
+  if (theme.activePreset) {
+    root.dataset.theme = theme.activePreset
+  } else {
+    delete root.dataset.theme
+  }
+
   if (theme.primary) root.style.setProperty('--primary', theme.primary)
   if (theme.accent) root.style.setProperty('--accent', theme.accent)
   if (theme.background) root.style.setProperty('--background', theme.background)
@@ -140,6 +147,7 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
 /** Reset all custom CSS variables set by theme */
 export function resetThemeDOM() {
   const root = document.documentElement
+  delete root.dataset.theme
   const props = [
     '--primary', '--accent', '--background', '--card', '--foreground',
     '--muted-foreground', '--border', '--secondary', '--font-sans', '--font-mono',

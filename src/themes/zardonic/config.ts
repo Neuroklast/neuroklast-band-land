@@ -1,4 +1,4 @@
-// Constants specifically for the Zardonic Industrial Theme
+// Constants specifically for the Zardonic Theme
 
 // Glitch Effects for Hero
 export const HERO_LOGO_GLITCH_PROBABILITY = 0.75

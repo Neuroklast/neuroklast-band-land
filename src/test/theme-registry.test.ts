@@ -10,7 +10,7 @@ import {
   elegantTheme,
   neonTheme,
   retroTheme,
-  zardonicIndustrialTheme,
+  zardonicTheme,
   neuroklastClassicTheme,
   artDecoCyberpunkTheme,
   vhsRetroTheme,
@@ -36,7 +36,7 @@ describe('Theme Registry — all themes registered', () => {
     expect(ids).toContain('elegant')
     expect(ids).toContain('neon')
     expect(ids).toContain('retro')
-    expect(ids).toContain('zardonic-industrial')
+    expect(ids).toContain('zardonic')
     expect(ids).toContain('neuroklast-classic')
     expect(ids).toContain('art-deco-cyberpunk')
     expect(ids).toContain('vhs-retro')
@@ -54,7 +54,7 @@ describe('getTheme', () => {
     expect(getTheme('elegant')).toBe(elegantTheme)
     expect(getTheme('neon')).toBe(neonTheme)
     expect(getTheme('retro')).toBe(retroTheme)
-    expect(getTheme('zardonic-industrial')).toBe(zardonicIndustrialTheme)
+    expect(getTheme('zardonic')).toBe(zardonicTheme)
     expect(getTheme('neuroklast-classic')).toBe(neuroklastClassicTheme)
     expect(getTheme('art-deco-cyberpunk')).toBe(artDecoCyberpunkTheme)
     expect(getTheme('vhs-retro')).toBe(vhsRetroTheme)
@@ -103,10 +103,10 @@ describe('Access levels', () => {
     expect(signalStaticTheme.access).toBe('premium')
   })
 
-  it('zardonic-industrial is exclusive', () => {
-    expect(zardonicIndustrialTheme.access).toBe('exclusive')
-    expect(zardonicIndustrialTheme.exclusiveFor).toBe('zardonic')
-    expect(zardonicIndustrialTheme.lockedMessage).toBe('Exclusive to ZARDONIC')
+  it('zardonic is exclusive', () => {
+    expect(zardonicTheme.access).toBe('exclusive')
+    expect(zardonicTheme.exclusiveFor).toBe('zardonic')
+    expect(zardonicTheme.lockedMessage).toBe('Exclusive to ZARDONIC')
   })
 
   it('neuroklast-classic is exclusive', () => {
@@ -171,10 +171,10 @@ describe('Customizability', () => {
     }
   })
 
-  it('zardonic-industrial locks font customization', () => {
-    expect(zardonicIndustrialTheme.customizability.customFonts).toBe(false)
-    expect(zardonicIndustrialTheme.customizability.customColors).toBe(true)
-    expect(zardonicIndustrialTheme.customizability.adjustEffects).toBe(true)
+  it('zardonic locks font customization', () => {
+    expect(zardonicTheme.customizability.customFonts).toBe(false)
+    expect(zardonicTheme.customizability.customColors).toBe(true)
+    expect(zardonicTheme.customizability.adjustEffects).toBe(true)
   })
 
   it('neuroklast-classic locks all customization', () => {

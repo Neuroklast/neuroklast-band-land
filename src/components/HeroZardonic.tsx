@@ -1,9 +1,9 @@
 /**
  * HeroZardonic — hero section ported from the Zardonic Industrial site.
  *
- * Replaces the default Hero when `activePreset === 'zardonic-industrial'`
+ * Replaces the default Hero when `activePreset === 'zardonic'`
  * and `heroStyle === 'glitch-parallax'`.  Closely mirrors the upstream
- * zardonic-industrial `Hero.tsx` design while integrating with the
+ * zardonic `Hero.tsx` design while integrating with the
  * band-land SiteConfig / ThemeSettings system.
  */
 

@@ -64,6 +64,8 @@ const defaultSiteConfig = createSiteConfig({
 
 function collectImageUrls(data: typeof defaultSiteConfig): string[] {
   const urls: string[] = []
+  if (data.logoUrl) urls.push(data.logoUrl)
+  if (data.titleImageUrl) urls.push(data.titleImageUrl)
   data.news?.slice(0, 3).forEach(item => { if (item.photo) urls.push(item.photo) })
   data.biography?.members?.forEach(m => { if (typeof m !== 'string' && m.photo) urls.push(m.photo) })
   return urls.slice(0, 6)

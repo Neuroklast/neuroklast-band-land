@@ -13,7 +13,7 @@ import {
   elegantTheme,
   neonTheme,
   retroTheme,
-  zardonicIndustrialTheme,
+  zardonicTheme,
   neuroklastClassicTheme,
   artDecoCyberpunkTheme,
   vhsRetroTheme,
@@ -92,7 +92,7 @@ for (const theme of builtInThemes) {
 
 // ─── Re-export theme objects for backward compatibility ───────────────────────
 
-export { cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme, zardonicIndustrialTheme, neuroklastClassicTheme, artDecoCyberpunkTheme, vhsRetroTheme, steampunkTheme, analogDarkMetalTheme, glitchNoirTheme, signalStaticTheme }
+export { cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme, zardonicTheme, neuroklastClassicTheme, artDecoCyberpunkTheme, vhsRetroTheme, steampunkTheme, analogDarkMetalTheme, glitchNoirTheme, signalStaticTheme }
 
 // ─── ThemeDefinition-based registry (license-aware) ──────────────────────────
 
@@ -204,11 +204,11 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     themeType: 'full',
   },
   {
-    id: 'zardonic-industrial',
-    name: 'Zardonic Industrial',
+    id: 'zardonic',
+    name: 'Zardonic',
     description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
     licenseStatus: 'locked',
-    theme: presetToThemeSettings(DESIGN_PRESETS['zardonic-industrial']),
+    theme: presetToThemeSettings(DESIGN_PRESETS['zardonic']),
     author: 'Zardonic / Neuroklast',
     tags: ['dark', 'industrial', 'glitch', 'premium'],
     themeType: 'full',

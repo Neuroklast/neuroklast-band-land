@@ -165,7 +165,7 @@ const customTheme = mixThemeSettings(
   [
     { presetId: 'neon', aspects: ['colors'] },
     { presetId: 'elegant', aspects: ['fonts'] },
-    { presetId: 'zardonic-industrial', aspects: ['effects'] },
+    { presetId: 'zardonic', aspects: ['effects'] },
   ],
   DESIGN_PRESETS,
 )
@@ -193,7 +193,7 @@ Features:
 
 ## Zardonic Integration Reference
 
-The **Zardonic Industrial** design preset (`zardonic-industrial` in `design-presets.ts`) demonstrates the style that widget plugins should match:
+The **Zardonic** design preset (`zardonic` in `design-presets.ts`) demonstrates the style that widget plugins should match:
 
 - **CRT + glitch overlay effects** (scanlines, noise, vignette, chromatic aberration)
 - **Aggressive red/orange colour palette**

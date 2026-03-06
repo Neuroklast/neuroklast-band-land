@@ -8,9 +8,9 @@ import ZardonicHero from './Hero'
 import ZardonicNavigation from './Navigation'
 import ZardonicFooter from './Footer'
 
-export const zardonicIndustrialTheme: ThemePackage = {
-  id: 'zardonic-industrial',
-  name: 'Zardonic Industrial',
+export const zardonicTheme: ThemePackage = {
+  id: 'zardonic',
+  name: 'Zardonic',
   description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
   author: 'Zardonic / Neuroklast',
   version: '1.0.0',

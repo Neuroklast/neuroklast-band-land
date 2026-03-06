@@ -1,4 +1,13 @@
-export default function Hero() {
+import type { HeroSlotProps } from '@/lib/types'
+
+export default function Hero({
+  name,
+  genres,
+  editMode,
+  onEdit,
+  logoUrl,
+  titleImageUrl,
+}: HeroSlotProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="signal-static-scanlines"></div>
@@ -13,9 +22,29 @@ export default function Hero() {
           </div>
         </div>
 
-        <h1 className="text-7xl md:text-9xl font-bold font-mono text-foreground mb-6 tracking-tighter signal-static-text-glitch">
-          NEUROKLAST
-        </h1>
+        {logoUrl && (
+          <div className="flex justify-center mb-8">
+            <img
+              src={logoUrl}
+              alt={`${name} Logo`}
+              className="w-[16rem] h-auto sm:w-[20rem] md:w-[24rem] lg:w-[28rem]"
+            />
+          </div>
+        )}
+
+        {titleImageUrl ? (
+          <div className="mb-6 flex justify-center w-full px-4">
+            <img
+              src={titleImageUrl}
+              alt={name}
+              className="w-full max-w-xs sm:max-w-md md:max-w-2xl h-auto"
+            />
+          </div>
+        ) : (
+          <h1 className="text-7xl md:text-9xl font-bold font-mono text-foreground mb-6 tracking-tighter signal-static-text-glitch">
+            {name}
+          </h1>
+        )}
 
         <div className="signal-static-transmission-box mb-8">
           <p className="text-lg md:text-xl font-mono text-muted-foreground tracking-wide leading-relaxed">
@@ -25,6 +54,17 @@ export default function Hero() {
             <br />
             {'>'} STATUS: BROADCASTING
           </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8 px-2">
+          {(genres || []).map((genre) => (
+            <span
+              key={genre}
+              className="px-3 py-1 border border-border text-xs font-mono tracking-widest uppercase text-muted-foreground"
+            >
+              {genre}
+            </span>
+          ))}
         </div>
 
         <div className="flex items-center justify-center gap-8 font-mono text-xs text-muted-foreground">

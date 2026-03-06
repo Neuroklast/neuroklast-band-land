@@ -9,7 +9,7 @@ Place your GLB model files here.
 
 ## Where to get the models
 
-The original `.glb` files are part of the [zardonic-industrial](https://github.com/Neuroklast/zardonic-industrial)
+The original `.glb` files are part of the [zardonic](https://github.com/Neuroklast/zardonic)
 design preset. Download them from there and place them in this directory.
 
 ## Fallback behaviour

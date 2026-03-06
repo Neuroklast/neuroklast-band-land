@@ -27,7 +27,7 @@ const BodySchema = z.object({
 
 /** Known key prefixes per theme ID */
 const THEME_KEY_PREFIXES: Record<string, string> = {
-  'zardonic-industrial': 'ZARDONIC-',
+  'zardonic': 'ZARDONIC-',
 }
 
 function isKeyFormatValid(themeId: string, key: string): boolean {

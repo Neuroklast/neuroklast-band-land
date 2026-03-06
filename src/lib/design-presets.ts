@@ -128,9 +128,9 @@ export const retroPreset: DesignPreset = {
   animationsEnabled: true,
 }
 
-export const zardonicIndustrialPreset: DesignPreset = {
-  id: 'zardonic-industrial',
-  name: 'Zardonic Industrial',
+export const zardonicPreset: DesignPreset = {
+  id: 'zardonic',
+  name: 'Zardonic',
   description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
   colors: {
     primary: 'oklch(0.50 0.22 25)',
@@ -475,7 +475,7 @@ export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   elegant: elegantPreset,
   neon: neonPreset,
   retro: retroPreset,
-  'zardonic-industrial': zardonicIndustrialPreset,
+  'zardonic': zardonicPreset,
   'neuroklast-classic': neuroklastClassicPreset,
   'art-deco-cyberpunk': artDecoCyberpunkPreset,
   'vhs-retro': vhsRetroPreset,

@@ -322,7 +322,7 @@ export default function KeyManagerPanel() {
               className="w-full bg-secondary border border-input rounded px-2 py-1.5 text-xs text-foreground h-8"
             >
               <option value="">None</option>
-              <option value="zardonic-industrial">Zardonic Industrial</option>
+              <option value="zardonic">Zardonic</option>
             </select>
           </div>
         </div>

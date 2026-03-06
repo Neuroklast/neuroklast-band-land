@@ -169,7 +169,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
           transition={{ duration: 1, delay: 0.2 }}
         >
           {heroStyle === 'glitch-parallax' ? (
-            /* 3D parallax logo — used by the zardonic-industrial preset */
+            /* 3D parallax logo — used by the zardonic preset */
             <Suspense fallback={
               <img
                 src={logoUrl ?? logoPng}

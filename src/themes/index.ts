@@ -7,7 +7,7 @@ export { minimalTheme } from './minimal'
 export { elegantTheme } from './elegant'
 export { neonTheme } from './neon'
 export { retroTheme } from './retro'
-export { zardonicIndustrialTheme } from './zardonic-industrial'
+export { zardonicTheme } from './zardonic'
 export { neuroklastClassicTheme } from './neuroklast-classic'
 export { artDecoCyberpunkTheme } from './art-deco-cyberpunk'
 export { vhsRetroTheme } from './vhs-retro'
@@ -24,7 +24,7 @@ import { minimalTheme } from './minimal'
 import { elegantTheme } from './elegant'
 import { neonTheme } from './neon'
 import { retroTheme } from './retro'
-import { zardonicIndustrialTheme } from './zardonic-industrial'
+import { zardonicTheme } from './zardonic'
 import { neuroklastClassicTheme } from './neuroklast-classic'
 import { artDecoCyberpunkTheme } from './art-deco-cyberpunk'
 import { vhsRetroTheme } from './vhs-retro'
@@ -39,7 +39,7 @@ export const builtInThemes: ThemePackage[] = [
   elegantTheme,
   neonTheme,
   retroTheme,
-  zardonicIndustrialTheme,
+  zardonicTheme,
   neuroklastClassicTheme,
   artDecoCyberpunkTheme,
   vhsRetroTheme,
