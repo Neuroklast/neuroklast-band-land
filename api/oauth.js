@@ -149,28 +149,36 @@ export default async function handler(req, res) {
     const sessionValid = await validateSession(req)
     if (!sessionValid) return res.status(401).json({ error: 'Authentication required' })
 
-    const statuses = {}
-    for (const key of Object.keys(PROVIDERS)) {
-      try {
-        const encrypted = await kv.get(`oauth:token:${key}`)
-        if (encrypted) {
-          const token = decryptToken(encrypted)
-          statuses[key] = {
-            connected: true,
-            displayName: token.displayName || null,
-            email: token.email || null,
-            connectedAt: token.connectedAt || null,
+    const providerKeys = Object.keys(PROVIDERS)
+    const [statusEntries, logs] = await Promise.all([
+      Promise.all(
+        providerKeys.map(async (key) => {
+          try {
+            const encrypted = await kv.get(`oauth:token:${key}`)
+            if (encrypted) {
+              const token = decryptToken(encrypted)
+              return [
+                key,
+                {
+                  connected: true,
+                  displayName: token.displayName || null,
+                  email: token.email || null,
+                  connectedAt: token.connectedAt || null,
+                },
+              ]
+            }
+            return [key, { connected: false }]
+          } catch (err) {
+            console.error(`Failed to fetch/decrypt OAuth token for provider '${key}':`, err)
+            return [key, { connected: false }]
           }
-        } else {
-          statuses[key] = { connected: false }
-        }
-      } catch (decryptErr) {
-        console.error(`Failed to decrypt OAuth token for provider '${key}':`, decryptErr)
-        statuses[key] = { connected: false }
-      }
-    }
-    const logs = (await kv.get(OAUTH_LOGS_KEY)) || []
-    return res.json({ statuses, logs })
+        }),
+      ),
+      kv.get(OAUTH_LOGS_KEY),
+    ])
+
+    const statuses = Object.fromEntries(statusEntries)
+    return res.json({ statuses, logs: logs || [] })
   }
 
   // --- GET: authorize ---
