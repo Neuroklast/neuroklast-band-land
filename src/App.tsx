@@ -86,6 +86,7 @@ function App() {
   const [showAttackerProfile, setShowAttackerProfile] = useState(false)
   const [selectedAttackerIp, setSelectedAttackerIp] = useState('')
   const isPrimary = import.meta.env.VITE_IS_PRIMARY === 'true'
+  const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
 
   useCRTEffects()
 
@@ -121,6 +122,21 @@ function App() {
   }, [])
   useEffect(() => { if (wantsSetup.current && needsSetup) { wantsSetup.current = false; startTransition(() => setShowSetupDialog(true)) } }, [needsSetup])
 
+  // Apply developer test data if active
+  useEffect(() => {
+    if (isDevTestMode && siteConfigLoaded && !config.setupComplete) {
+      setConfig({
+        ...config,
+        setupComplete: true,
+        siteName: 'Dev Test Band',
+        gigs: [{ id: '1', date: '2025-10-10', venue: 'Cyber Club', location: 'Night City', ticketUrl: '#' }],
+        releases: [{ id: '1', title: 'Test Release', releaseDate: '2024-01-01', coverUrl: 'https://via.placeholder.com/300', type: 'album' }],
+        socialLinks: { youtube: 'https://youtube.com', instagram: 'https://instagram.com' }
+      })
+      toast.success('Developer Test Mode Active: Fake data loaded.')
+    }
+  }, [isDevTestMode, siteConfigLoaded, config, setConfig])
+
   // Derived state
   const data = useMemo(() => ({ ...defaultSiteConfig, ...config }), [config])
   const precacheUrls = useMemo(() => collectImageUrls(data), [data])
@@ -145,7 +161,7 @@ function App() {
 
   return (
     <>
-      {siteConfigLoaded && !config.setupComplete && (
+      {(!data.setupComplete && !isDevTestMode) && (
         <SetupWizard onComplete={(r) => setConfig({ ...config, ...r, setupComplete: true })} onSetAdminPassword={handleSetupAdminPassword} initialConfig={config} />
       )}
       <a href="#main-content" className="skip-to-main">Zum Hauptinhalt springen</a>
