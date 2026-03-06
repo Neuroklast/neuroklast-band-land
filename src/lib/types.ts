@@ -404,6 +404,8 @@ export interface SiteConfig {
   fontConfig?: FontConfig
   /** Installed/configured widget plugins (#163) */
   widgetPlugins?: WidgetPlugin[]
+  /** Per-theme license-status overrides (primary instance only) */
+  themeAccessOverrides?: Record<string, ThemeLicenseStatus>
 }
 
 export interface SoundSettings {

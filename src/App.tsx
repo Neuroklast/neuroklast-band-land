@@ -293,6 +293,8 @@ function App() {
                 contactSettings={data.contactSettings}
                 onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })}
                 onSaveContact={(cs) => updateConfig({ contactSettings: cs })}
+                themeAccessOverrides={data.themeAccessOverrides}
+                onSaveThemeAccessOverrides={(tao) => updateConfig({ themeAccessOverrides: tao })}
               />
             </motion.div>
           </motion.div>
