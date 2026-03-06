@@ -3,8 +3,8 @@ import type { HeroSlotProps } from '@/lib/types'
 export default function Hero({
   name,
   genres,
-  editMode,
-  onEdit,
+  editMode: _editMode,
+  onEdit: _onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {

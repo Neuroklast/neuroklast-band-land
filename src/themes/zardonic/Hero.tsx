@@ -49,7 +49,9 @@ export default function ZardonicHero({
             })
           }
         }
-      } catch(e) {}
+      } catch {
+        // ignore parse errors
+      }
     }
 
     loadFromStorage()

@@ -25,7 +25,9 @@ export default function ZardonicNavigation({ items, siteName, onNavigate }: Navi
             setNavGlitchProbability(parsed.customConfig.NAV_GLITCH_PROBABILITY)
           }
         }
-      } catch(e) {}
+      } catch {
+        // ignore parse errors
+      }
     }
 
     loadFromStorage()

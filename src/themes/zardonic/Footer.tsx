@@ -3,7 +3,7 @@ import { ArrowUp } from '@phosphor-icons/react'
 import type { FooterSlotProps } from '@/lib/types'
 import './styles.css'
 
-export default function ZardonicFooter({ socialLinks, siteName }: FooterSlotProps) {
+export default function ZardonicFooter({ siteName }: FooterSlotProps) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
