@@ -384,6 +384,90 @@ export const analogDarkMetalPreset: DesignPreset = {
   },
 }
 
+export const glitchNoirPreset: DesignPreset = {
+  id: 'glitch-noir',
+  name: 'Glitch Noir',
+  description: 'High-contrast monochrome with glitch distortion – dark neo-noir aesthetic',
+  colors: {
+    primary: 'oklch(0.95 0 0)',
+    accent: 'oklch(0.70 0 0)',
+    background: 'oklch(0.08 0 0)',
+    card: 'oklch(0.12 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.60 0 0)',
+    border: 'oklch(0.25 0 0)',
+    secondary: 'oklch(0.15 0 0)',
+  },
+  fonts: {
+    heading: "'JetBrains Mono', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: true, intensity: 0.35 },
+    crt: { enabled: false, intensity: 0 },
+    noise: { enabled: true, intensity: 0.5 },
+    vignette: { enabled: true, intensity: 0.6 },
+    chromatic: { enabled: true, intensity: 0.3 },
+    dotMatrix: { enabled: false, intensity: 0 },
+  },
+  animationSettings: {
+    glitchEnabled: true,
+    scanlineEnabled: true,
+    chromaticEnabled: true,
+    crtEnabled: false,
+    noiseEnabled: true,
+    circuitBackgroundEnabled: false,
+    crtOverlayOpacity: 0,
+    crtVignetteOpacity: 0,
+    overlayTransitionEnabled: false,
+  },
+}
+
+export const signalStaticPreset: DesignPreset = {
+  id: 'signal-static',
+  name: 'Signal Static',
+  description: 'Broadcast interference aesthetic – analog noise, signal artifacts, and transmission distortion',
+  colors: {
+    primary: 'oklch(0.95 0 0)',
+    accent: 'oklch(0.70 0 0)',
+    background: 'oklch(0.08 0 0)',
+    card: 'oklch(0.12 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.60 0 0)',
+    border: 'oklch(0.25 0 0)',
+    secondary: 'oklch(0.15 0 0)',
+  },
+  fonts: {
+    heading: "'JetBrains Mono', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+  overlayEffects: {
+    scanlines: { enabled: true, intensity: 0.4 },
+    crt: { enabled: true, intensity: 0.3 },
+    noise: { enabled: true, intensity: 0.6 },
+    vignette: { enabled: true, intensity: 0.5 },
+    chromatic: { enabled: true, intensity: 0.25 },
+    dotMatrix: { enabled: false, intensity: 0 },
+  },
+  animationSettings: {
+    glitchEnabled: true,
+    scanlineEnabled: true,
+    chromaticEnabled: true,
+    crtEnabled: true,
+    noiseEnabled: true,
+    circuitBackgroundEnabled: false,
+    crtOverlayOpacity: 0.3,
+    crtVignetteOpacity: 0,
+    overlayTransitionEnabled: false,
+  },
+}
+
 /** All bundled presets indexed by their ID */
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   cyberpunk: cyberpunkPreset,
@@ -397,6 +481,8 @@ export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   'vhs-retro': vhsRetroPreset,
   steampunk: steampunkPreset,
   'analog-dark-metal': analogDarkMetalPreset,
+  'glitch-noir': glitchNoirPreset,
+  'signal-static': signalStaticPreset,
 }
 
 /** Ordered list of all bundled preset IDs */

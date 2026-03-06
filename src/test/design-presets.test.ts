@@ -15,15 +15,18 @@ import {
   vhsRetroPreset,
   steampunkPreset,
   analogDarkMetalPreset,
+  glitchNoirPreset,
+  signalStaticPreset,
 } from '@/lib/design-presets'
 
 describe('DESIGN_PRESETS', () => {
-  it('exports exactly 11 presets', () => {
-    expect(PRESET_IDS).toHaveLength(11)
+  it('exports exactly 13 presets', () => {
+    expect(PRESET_IDS).toHaveLength(13)
     expect(PRESET_IDS).toEqual([
       'cyberpunk', 'minimal', 'elegant', 'neon', 'retro',
       'zardonic-industrial', 'neuroklast-classic',
       'art-deco-cyberpunk', 'vhs-retro', 'steampunk', 'analog-dark-metal',
+      'glitch-noir', 'signal-static',
     ])
   })
 
@@ -57,6 +60,8 @@ describe('getPreset', () => {
     expect(getPreset('vhs-retro')).toBe(vhsRetroPreset)
     expect(getPreset('steampunk')).toBe(steampunkPreset)
     expect(getPreset('analog-dark-metal')).toBe(analogDarkMetalPreset)
+    expect(getPreset('glitch-noir')).toBe(glitchNoirPreset)
+    expect(getPreset('signal-static')).toBe(signalStaticPreset)
   })
 
   it('returns undefined for an unknown ID', () => {
