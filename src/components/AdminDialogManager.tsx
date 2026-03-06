@@ -66,6 +66,8 @@ export interface AdminDialogManagerProps {
   contactSettings?: ContactSettings
   onSaveNewsletter: (settings: NewsletterSettings) => void
   onSaveContact: (settings: ContactSettings) => void
+  themeAccessOverrides?: Record<string, import('@/lib/types').ThemeLicenseStatus>
+  onSaveThemeAccessOverrides?: (overrides: Record<string, import('@/lib/types').ThemeLicenseStatus>) => void
 }
 
 // ─── Suspense wrapper helper ──────────────────────────────────────────────────
@@ -112,6 +114,8 @@ export default function AdminDialogManager({
   contactSettings,
   onSaveNewsletter,
   onSaveContact,
+  themeAccessOverrides,
+  onSaveThemeAccessOverrides,
 }: AdminDialogManagerProps) {
   return (
     <>
@@ -256,6 +260,9 @@ export default function AdminDialogManager({
           onSaveTheme={onSaveTheme}
           sectionVisibility={sectionVisibility}
           onSaveSectionVisibility={onSaveSectionVisibility}
+          isPrimary={isPrimary}
+          themeAccessOverrides={themeAccessOverrides}
+          onSaveThemeAccessOverrides={onSaveThemeAccessOverrides}
         />
       </LazyBoundary>
 

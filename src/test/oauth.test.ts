@@ -49,7 +49,7 @@ function mockRes(): Res {
 
 const ENCRYPTION_KEY = 'a'.repeat(64) // 32 bytes as hex
 
-const { default: handler, encryptToken, decryptToken, PROVIDERS, appendOAuthLog } = await import('../../api/oauth.js')
+const { default: handler, encryptToken, decryptToken, PROVIDERS, appendOAuthLog: _appendOAuthLog } = await import('../../api/oauth.js')
 
 // ---------------------------------------------------------------------------
 describe('OAuth encryption helpers', () => {

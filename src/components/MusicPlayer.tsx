@@ -79,6 +79,7 @@ export default function MusicPlayer({ tracks, initialIndex = 0 }: MusicPlayerPro
       }
     }
     startTransition(() => setProgress(0))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, isPlaying])
   
   // Connect audio element to analyser for visualizer

@@ -5,7 +5,7 @@
  * during initial reveal.  Each mode exposes Framer Motion `containerVariants`
  * and a matching CSS `className` so the consumer can choose the visual style.
  *
- * Ported from the `zardonic-industrial` reference implementation.
+ * Ported from the `zardonic` reference implementation.
  */
 
 import type { Variants, Transition } from 'framer-motion'

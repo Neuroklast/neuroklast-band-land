@@ -17,7 +17,7 @@
 
 ## Features
 
-- **Design Presets** — Seven bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro, Zardonic Industrial, Neuroklast Classic) with one-line activation
+- **Design Presets** — Seven bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro, Zardonic, Neuroklast Classic) with one-line activation
 - **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
 - **Flexible Sections** — Enable/disable and reorder any section without touching code
 - **SEO & Open Graph** — Title, description, OG tags, Twitter cards, JSON-LD, and canonical URLs generated automatically from config
@@ -155,7 +155,7 @@ Seven bundled presets are available in `src/lib/design-presets.ts`:
 | `elegant` | Elegant | Dark canvas, warm gold, serif fonts |
 | `neon` | Neon | Electric blue/cyan synthwave |
 | `retro` | Retro | Amber phosphor-glow, vintage terminal |
-| `zardonic-industrial` | Zardonic Industrial | Industrial/synthwave with CRT effects |
+| `zardonic` | Zardonic | Industrial/synthwave with CRT effects |
 | `neuroklast-classic` | Neuroklast Classic | Dark cyberpunk with code-rain |
 
 ### Using a preset
@@ -224,7 +224,7 @@ src/themes/
   neon.ts
   retro.ts
   neuroklast-classic.ts
-  zardonic-industrial/
+  zardonic/
     index.ts            ← ThemePackage definition
     LoadingScreen.tsx   ← custom slot component
 
@@ -516,7 +516,7 @@ src/
     neon.ts               # Neon theme
     retro.ts              # Retro theme
     neuroklast-classic.ts # Neuroklast Classic theme
-    zardonic-industrial/  # Zardonic Industrial theme + custom LoadingScreen
+    zardonic/  # Zardonic theme + custom LoadingScreen
  components/                # React components
     widgets/              # Pluggable widget components
     ui/                   # shadcn/ui base components

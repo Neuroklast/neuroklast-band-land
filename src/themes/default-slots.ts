@@ -4,7 +4,6 @@
  */
 
 import type React from 'react'
-import type { NavigationSlotProps, FooterSlotProps } from '@/lib/types'
 
 export function DefaultHero() {
   return null

@@ -1,4 +1,4 @@
-import type { SiteConfig, ThemeSettings, FontConfig, WidgetPlugin } from '@/lib/types'
+import type { SiteConfig, WidgetPlugin } from '@/lib/types'
 import { createSiteConfig } from '@/lib/site-config'
 
 export const EXPORT_VERSION = '1.0'

@@ -16,7 +16,6 @@ const BOOT_LINES = [
 
 export default function RetroLoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   const [progress, setProgress] = useState(0)
-  const [visibleLines, setVisibleLines] = useState(0)
   const onCompleteRef = useRef(onComplete)
 
   useEffect(() => {
@@ -37,10 +36,7 @@ export default function RetroLoadingScreen({ onComplete }: LoadingScreenSlotProp
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    const lineIndex = Math.floor((progress / 100) * BOOT_LINES.length)
-    setVisibleLines(Math.min(lineIndex + 1, BOOT_LINES.length))
-  }, [progress])
+  const visibleLines = Math.min(Math.floor((progress / 100) * BOOT_LINES.length) + 1, BOOT_LINES.length)
 
   useEffect(() => {
     if (progress >= 100) {

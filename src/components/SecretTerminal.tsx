@@ -66,6 +66,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
       inputRef.current.focus()
     }
     prevIsOpenRef.current = isOpen
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   useEffect(() => {

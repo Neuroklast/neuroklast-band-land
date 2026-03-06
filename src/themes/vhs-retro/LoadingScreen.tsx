@@ -15,7 +15,6 @@ const VHS_LINES = [
 
 export default function VhsRetroLoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   const [progress, setProgress] = useState(0)
-  const [visibleLines, setVisibleLines] = useState(0)
   const onCompleteRef = useRef(onComplete)
 
   useEffect(() => {
@@ -36,10 +35,7 @@ export default function VhsRetroLoadingScreen({ onComplete }: LoadingScreenSlotP
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    const lineIndex = Math.floor((progress / 100) * VHS_LINES.length)
-    setVisibleLines(Math.min(lineIndex + 1, VHS_LINES.length))
-  }, [progress])
+  const visibleLines = Math.min(Math.floor((progress / 100) * VHS_LINES.length) + 1, VHS_LINES.length)
 
   useEffect(() => {
     if (progress >= 100) {

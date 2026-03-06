@@ -404,6 +404,8 @@ export interface SiteConfig {
   fontConfig?: FontConfig
   /** Installed/configured widget plugins (#163) */
   widgetPlugins?: WidgetPlugin[]
+  /** Per-theme license-status overrides (primary instance only) */
+  themeAccessOverrides?: Record<string, ThemeLicenseStatus>
 }
 
 export interface SoundSettings {
@@ -676,7 +678,7 @@ export interface DesignPreset {
     mutedForeground: string
     border: string
     secondary: string
-    // Extended optional colors matching the zardonic-industrial ThemeCustomization interface
+    // Extended optional colors matching the zardonic ThemeCustomization interface
     primaryForeground?: string
     cardForeground?: string
     popoverColor?: string

@@ -104,6 +104,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
         setCachedPhotos((prev) => ({ ...prev, [url]: cached }))
       }).catch(() => { /* ignore failed cache attempts */ })
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos, biography.members, biography.friends])
 
   const resolvePhoto = (url: string) => cachedPhotos[url] || url

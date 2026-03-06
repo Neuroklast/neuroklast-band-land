@@ -41,8 +41,7 @@ vi.mock('framer-motion', async () => {
 // Stub Logo3D so we don't need WebGL / Three.js in tests
 vi.mock('@/components/Logo3D', () => ({
   default: () => {
-    const React = require('react')
-    return React.createElement('div', { 'data-testid': 'logo3d-stub' })
+    return <div data-testid="logo3d-stub" />
   },
 }))
 

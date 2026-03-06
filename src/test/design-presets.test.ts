@@ -9,7 +9,7 @@ import {
   elegantPreset,
   neonPreset,
   retroPreset,
-  zardonicIndustrialPreset,
+  zardonicPreset,
   neuroklastClassicPreset,
   artDecoCyberpunkPreset,
   vhsRetroPreset,
@@ -24,7 +24,7 @@ describe('DESIGN_PRESETS', () => {
     expect(PRESET_IDS).toHaveLength(13)
     expect(PRESET_IDS).toEqual([
       'cyberpunk', 'minimal', 'elegant', 'neon', 'retro',
-      'zardonic-industrial', 'neuroklast-classic',
+      'zardonic', 'neuroklast-classic',
       'art-deco-cyberpunk', 'vhs-retro', 'steampunk', 'analog-dark-metal',
       'glitch-noir', 'signal-static',
     ])
@@ -54,7 +54,7 @@ describe('getPreset', () => {
     expect(getPreset('elegant')).toBe(elegantPreset)
     expect(getPreset('neon')).toBe(neonPreset)
     expect(getPreset('retro')).toBe(retroPreset)
-    expect(getPreset('zardonic-industrial')).toBe(zardonicIndustrialPreset)
+    expect(getPreset('zardonic')).toBe(zardonicPreset)
     expect(getPreset('neuroklast-classic')).toBe(neuroklastClassicPreset)
     expect(getPreset('art-deco-cyberpunk')).toBe(artDecoCyberpunkPreset)
     expect(getPreset('vhs-retro')).toBe(vhsRetroPreset)
@@ -104,7 +104,7 @@ describe('presetToThemeSettings', () => {
   })
 
   it('maps overlayEffects when preset defines them', () => {
-    const theme = presetToThemeSettings(zardonicIndustrialPreset)
+    const theme = presetToThemeSettings(zardonicPreset)
     expect(theme.overlayEffects).toBeDefined()
     expect(theme.overlayEffects?.scanlines?.enabled).toBe(true)
     expect(theme.overlayEffects?.scanlines?.intensity).toBe(0.4)
@@ -127,8 +127,8 @@ describe('presetToThemeSettings', () => {
     expect(theme.overlayEffects).toBeUndefined()
   })
 
-  it('maps animationSettings for zardonic-industrial', () => {
-    const theme = presetToThemeSettings(zardonicIndustrialPreset)
+  it('maps animationSettings for zardonic', () => {
+    const theme = presetToThemeSettings(zardonicPreset)
     expect(theme.animationSettings).toBeDefined()
     expect(theme.animationSettings?.glitchEnabled).toBe(true)
     expect(theme.animationSettings?.crtEnabled).toBe(true)
@@ -136,8 +136,8 @@ describe('presetToThemeSettings', () => {
     expect(theme.animationSettings?.crtOverlayOpacity).toBe(0.6)
   })
 
-  it('maps loadingScreenType and heroStyle for zardonic-industrial', () => {
-    const theme = presetToThemeSettings(zardonicIndustrialPreset)
+  it('maps loadingScreenType and heroStyle for zardonic', () => {
+    const theme = presetToThemeSettings(zardonicPreset)
     expect(theme.loadingScreenType).toBe('3d-model')
     expect(theme.heroStyle).toBe('glitch-parallax')
   })
@@ -164,25 +164,25 @@ describe('presetToThemeSettings', () => {
   })
 })
 
-describe('Zardonic Industrial preset', () => {
+describe('Zardonic preset', () => {
   it('has overlay effects configured', () => {
-    expect(zardonicIndustrialPreset.overlayEffects).toBeDefined()
-    expect(zardonicIndustrialPreset.overlayEffects?.scanlines?.enabled).toBe(true)
-    expect(zardonicIndustrialPreset.overlayEffects?.crt?.enabled).toBe(true)
-    expect(zardonicIndustrialPreset.overlayEffects?.noise?.enabled).toBe(true)
-    expect(zardonicIndustrialPreset.overlayEffects?.vignette?.enabled).toBe(true)
-    expect(zardonicIndustrialPreset.overlayEffects?.chromatic?.enabled).toBe(true)
+    expect(zardonicPreset.overlayEffects).toBeDefined()
+    expect(zardonicPreset.overlayEffects?.scanlines?.enabled).toBe(true)
+    expect(zardonicPreset.overlayEffects?.crt?.enabled).toBe(true)
+    expect(zardonicPreset.overlayEffects?.noise?.enabled).toBe(true)
+    expect(zardonicPreset.overlayEffects?.vignette?.enabled).toBe(true)
+    expect(zardonicPreset.overlayEffects?.chromatic?.enabled).toBe(true)
   })
 
   it('has animation settings configured', () => {
-    expect(zardonicIndustrialPreset.animationSettings).toBeDefined()
-    expect(zardonicIndustrialPreset.animationSettings?.glitchEnabled).toBe(true)
-    expect(zardonicIndustrialPreset.animationSettings?.crtEnabled).toBe(true)
+    expect(zardonicPreset.animationSettings).toBeDefined()
+    expect(zardonicPreset.animationSettings?.glitchEnabled).toBe(true)
+    expect(zardonicPreset.animationSettings?.crtEnabled).toBe(true)
   })
 
   it('has loading screen and hero style', () => {
-    expect(zardonicIndustrialPreset.loadingScreenType).toBe('3d-model')
-    expect(zardonicIndustrialPreset.heroStyle).toBe('glitch-parallax')
+    expect(zardonicPreset.loadingScreenType).toBe('3d-model')
+    expect(zardonicPreset.heroStyle).toBe('glitch-parallax')
   })
 })
 

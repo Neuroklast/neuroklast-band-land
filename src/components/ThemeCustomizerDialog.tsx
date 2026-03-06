@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import type { ThemeSettings, SectionVisibility, OverlayEffect } from '@/lib/types'
 import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
 import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
-import { applyThemeToDOM, applyOverlayEffectsToDOM, resetThemeDOM, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
+import { applyThemeToDOM, resetThemeDOM, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
 
 /* ─── Theme presets ─── */
 export interface ThemePreset {
@@ -17,6 +17,7 @@ export interface ThemePreset {
   theme: ThemeSettings
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const THEME_PRESETS: ThemePreset[] = [
   {
     name: 'Neon Red (Default)',
@@ -158,9 +159,13 @@ interface ThemeCustomizerDialogProps {
   onSaveTheme: (theme: ThemeSettings) => void
   sectionVisibility: SectionVisibility | undefined
   onSaveSectionVisibility: (vis: SectionVisibility) => void
+  isPrimary?: boolean
+  themeAccessOverrides?: Record<string, import('@/lib/types').ThemeLicenseStatus>
+  onSaveThemeAccessOverrides?: (overrides: Record<string, import('@/lib/types').ThemeLicenseStatus>) => void
 }
 
 // Re-export for backward compatibility
+// eslint-disable-next-line react-refresh/only-export-components
 export { applyThemeToDOM, resetThemeDOM }
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -240,6 +245,9 @@ export default function ThemeCustomizerDialog({
   onSaveTheme,
   sectionVisibility,
   onSaveSectionVisibility,
+  isPrimary,
+  themeAccessOverrides,
+  onSaveThemeAccessOverrides,
 }: ThemeCustomizerDialogProps) {
   const [draft, setDraft] = useState<ThemeSettings>(themeSettings || {})
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
@@ -260,6 +268,7 @@ export default function ThemeCustomizerDialog({
       })
     }
     prevOpenRef.current = open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // Load all Google Fonts when fonts tab is opened
@@ -432,7 +441,8 @@ export default function ThemeCustomizerDialog({
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {THEME_CATALOG.map(themeDefn => {
-                      const isUnlocked = themeDefn.licenseStatus === 'free' || unlockedThemeIds.includes(themeDefn.id)
+                      const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
+                      const isUnlocked = effectiveStatus === 'free' || effectiveStatus === 'licensed' || unlockedThemeIds.includes(themeDefn.id)
                       const isLocked = !isUnlocked
                       const isActive = draft.activePreset === themeDefn.id
                       return (
@@ -451,6 +461,29 @@ export default function ThemeCustomizerDialog({
                             <div className="font-mono text-xs text-primary/90">{themeDefn.name}</div>
                             <div className="font-mono text-[9px] text-muted-foreground/60">{themeDefn.description}</div>
                           </div>
+                          {isPrimary && onSaveThemeAccessOverrides && (
+                            <div className="mt-2 relative z-10" onClick={e => e.stopPropagation()}>
+                              <select
+                                value={effectiveStatus}
+                                onChange={e => {
+                                  const next = { ...themeAccessOverrides }
+                                  const val = e.target.value as import('@/lib/types').ThemeLicenseStatus
+                                  if (val === themeDefn.licenseStatus) {
+                                    delete next[themeDefn.id]
+                                  } else {
+                                    next[themeDefn.id] = val
+                                  }
+                                  onSaveThemeAccessOverrides(next)
+                                }}
+                                className="w-full bg-background border border-primary/20 rounded px-2 py-1 font-mono text-[9px] text-primary/80"
+                              >
+                                <option value="free">Free</option>
+                                <option value="preview">Preview</option>
+                                <option value="locked">Locked</option>
+                                <option value="licensed">Licensed</option>
+                              </select>
+                            </div>
+                          )}
                           {isLocked ? (
                             <button
                               onClick={() => setLicenseDialog({ themeId: themeDefn.id, themeName: themeDefn.name, licenseKeyPrefix: themeDefn.licenseKeyPrefix })}

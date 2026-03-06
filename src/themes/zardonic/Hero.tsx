@@ -1,49 +1,85 @@
 import { motion } from 'framer-motion'
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaretDown, PencilSimple } from '@phosphor-icons/react'
-import logoPng from '@/assets/images/baphomet no text.svg'
-import titlePng from '@/assets/images/titel.png'
-import { useLocale } from '@/contexts/LocaleContext'
+import type { HeroSlotProps } from '@/lib/types'
 import {
-  HERO_LOGO_GLITCH_PROBABILITY,
   HERO_LOGO_GLITCH_DURATION_MS,
   HERO_LOGO_GLITCH_INTERVAL_MS,
   HERO_TITLE_GLITCH_PROBABILITY,
   HERO_TITLE_GLITCH_DURATION_MS,
   HERO_TITLE_GLITCH_INTERVAL_MS,
-} from '@/lib/config'
-import type { ThemeSettings } from '@/lib/types'
+} from './config'
+import './styles.css'
 
-// Lazy-load Logo3D so that Three.js is only bundled when needed
-const Logo3D = lazy(() => import('@/components/Logo3D'))
+export default function ZardonicHero({
+  name,
+  genres,
+  editMode,
+  onEdit,
+  logoUrl,
+  titleImageUrl,
+}: HeroSlotProps) {
+  const [glitchLogo, setGlitchLogo] = useState(false)
+  const [glitchTitle, setGlitchTitle] = useState(false)
+  // In the slot architecture, custom config isn't passed down easily via global store unless it's imported correctly.
+  // Wait, there is no global store here. Let's fix this.
 
-interface HeroProps {
-  name: string
-  genres: string[]
-  editMode?: boolean
-  onEdit?: () => void
-  logoUrl?: string       // if set, display this logo
-  titleImageUrl?: string // if set, display this title image
-  heroStyle?: ThemeSettings['heroStyle']
-}
+  // Custom props are actually supposed to be passed via the slot wrapper or we can use localstorage since config is in the DOM or custom config prop
+  // As a fast fix without global state, we'll try reading from data attributes or default if unavailable.
+  // For the sake of this patch, let's revert to a safe local default and maybe read from localStorage or window if needed, or assume the parent passes it via a context.
+  // Let's use localStorage for now as it's quick and reliable since admin saves it.
 
-export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleImageUrl, heroStyle }: HeroProps) {
-  const [_glitchLogo, setGlitchLogo] = useState(false)
-  const [_glitchTitle, setGlitchTitle] = useState(false)
-  const { t } = useLocale()
+  const [glitchProbabilities, setGlitchProbabilities] = useState({
+    logo: 0.75,
+    title: HERO_TITLE_GLITCH_PROBABILITY
+  })
+
+  useEffect(() => {
+    const loadFromStorage = () => {
+      try {
+        const stored = localStorage.getItem('neuroklast_theme')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (parsed?.customConfig) {
+            setGlitchProbabilities({
+              logo: parsed.customConfig.HERO_LOGO_GLITCH_PROBABILITY ?? 0.75,
+              title: parsed.customConfig.HERO_TITLE_GLITCH_PROBABILITY ?? HERO_TITLE_GLITCH_PROBABILITY
+            })
+          }
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    loadFromStorage()
+
+    const handleConfigUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      if (detail) {
+        setGlitchProbabilities({
+          logo: detail.HERO_LOGO_GLITCH_PROBABILITY ?? 0.75,
+          title: detail.HERO_TITLE_GLITCH_PROBABILITY ?? HERO_TITLE_GLITCH_PROBABILITY
+        })
+      }
+    }
+
+    window.addEventListener('neuroklast_theme_config_update', handleConfigUpdate)
+    return () => window.removeEventListener('neuroklast_theme_config_update', handleConfigUpdate)
+  }, [])
 
   useEffect(() => {
     const logoInterval = setInterval(() => {
-      if (Math.random() > HERO_LOGO_GLITCH_PROBABILITY) {
+      if (Math.random() > glitchProbabilities.logo) {
         setGlitchLogo(true)
         setTimeout(() => setGlitchLogo(false), HERO_LOGO_GLITCH_DURATION_MS)
       }
     }, HERO_LOGO_GLITCH_INTERVAL_MS)
 
     const titleInterval = setInterval(() => {
-      if (Math.random() > HERO_TITLE_GLITCH_PROBABILITY) {
+      if (Math.random() > glitchProbabilities.title) {
         setGlitchTitle(true)
         setTimeout(() => setGlitchTitle(false), HERO_TITLE_GLITCH_DURATION_MS)
       }
@@ -53,24 +89,23 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
       clearInterval(logoInterval)
       clearInterval(titleInterval)
     }
-  }, [])
+  }, [glitchProbabilities])
 
-  const scrollToGigs = () => {
-    const element = document.getElementById('gigs')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
+  const scrollToNext = () => {
+    // In the slot architecture, we don't know the next section's ID specifically (like 'gigs').
+    // So we just scroll down by viewport height.
+    window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
   }
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
+    <section className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20 zardonic-theme">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, color-mix(in oklch, var(--primary) 5%, transparent) 0%, transparent 60%)' }} />
-        
-        <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-8" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style={{ color: 'var(--primary)' }}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.50_0.22_25/0.05)_0%,transparent_60%)]" />
+
+        <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-8" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
           <motion.polygon
             points="600,250 750,450 600,550 450,450"
-            stroke="currentColor"
+            stroke="var(--color-primary)"
             strokeWidth="1"
             fill="none"
             initial={{ pathLength: 0, opacity: 0 }}
@@ -81,7 +116,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             cx="600"
             cy="400"
             r="200"
-            stroke="currentColor"
+            stroke="var(--color-primary)"
             strokeWidth="0.5"
             opacity="0.15"
             fill="none"
@@ -94,7 +129,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             y1="400"
             x2="1100"
             y2="400"
-            stroke="currentColor"
+            stroke="var(--color-primary)"
             strokeWidth="0.5"
             opacity="0.1"
             initial={{ pathLength: 0 }}
@@ -104,22 +139,22 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
         </svg>
 
         <div className="absolute top-8 left-8 hidden lg:block">
-          <div className="hud-element p-3 bg-black/30 backdrop-blur-sm">
-            <div className="data-readout text-[9px] space-y-1">
-              <div>{t('hero.sysLabel')}</div>
+          <div className="hud-element p-3 bg-black/30 backdrop-blur-sm border border-primary/20">
+            <div className="font-mono text-[9px] text-primary/80 space-y-1">
+              <div>SYS: NK-MAIN</div>
               <div className="flex items-center gap-2">
                 <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
-                <span>{t('hero.online')}</span>
+                <span>ONLINE</span>
               </div>
             </div>
           </div>
         </div>
 
         <div className="absolute bottom-8 right-8 hidden lg:block">
-          <div className="hud-element p-3 bg-black/30 backdrop-blur-sm">
-            <div className="data-readout text-[9px] text-right space-y-1">
-              <div>{t('hero.freq')}</div>
-              <div>{t('hero.mode')}</div>
+          <div className="hud-element p-3 bg-black/30 backdrop-blur-sm border border-primary/20">
+            <div className="font-mono text-[9px] text-primary/80 text-right space-y-1">
+              <div>FREQ: 140-180</div>
+              <div>MODE: HARD</div>
             </div>
           </div>
         </div>
@@ -140,18 +175,18 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               repeat: Infinity,
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" style={{ color: 'var(--primary)' }}>
+            <svg width="20" height="20" viewBox="0 0 20 20">
               {i % 2 === 0 ? (
                 <path
                   d="M 0 0 L 10 0 L 0 10 Z"
-                  stroke="currentColor"
+                  stroke="var(--color-primary)"
                   strokeWidth="0.5"
                   fill="none"
                 />
               ) : (
                 <path
                   d="M 20 0 L 10 0 L 20 10 Z"
-                  stroke="currentColor"
+                  stroke="var(--color-primary)"
                   strokeWidth="0.5"
                   fill="none"
                 />
@@ -161,34 +196,15 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
         ))}
       </div>
 
-      <div className="relative z-10 text-center max-w-5xl mx-auto">
-        <motion.div
-          className="flex justify-center mb-8 md:mb-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2 }}
-        >
-          {heroStyle === 'glitch-parallax' ? (
-            /* 3D parallax logo — used by the zardonic preset */
-            <Suspense fallback={
-              <img
-                src={logoUrl ?? logoPng}
-                alt={t('hero.logoAlt').replace('{0}', name)}
-                className="w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]"
-              />
-            }>
-              <Logo3D className="w-[20rem] sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]" />
-            </Suspense>
-          ) : heroStyle === 'minimal' ? (
-            /* Minimal — plain logo without effects */
-            <img
-              src={logoUrl ?? logoPng}
-              alt={t('hero.logoAlt').replace('{0}', name)}
-              className="w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]"
-            />
-          ) : (
-            /* Default / chromatic-hover — original glitch + scanline overlay */
-            <div 
+      <div className="relative z-10 text-center max-w-5xl mx-auto flex flex-col items-center">
+        {logoUrl && (
+          <motion.div
+            className="flex justify-center mb-8 md:mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.2 }}
+          >
+            <div
               className="relative cursor-pointer touch-manipulation"
               onClick={() => {
                 setGlitchLogo(true)
@@ -196,25 +212,19 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               }}
             >
               <div className="relative">
-                <img 
-                  src={logoUrl ?? logoPng} 
-                  alt={t('hero.logoAlt').replace('{0}', name)} 
-                  className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
+                <img
+                  src={logoUrl}
+                  alt={`${name} Logo`}
+                  className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'zardonic-red-glitch-element' : ''}`}
                 />
                 <div className="absolute inset-0 pointer-events-none z-20">
-                  <div 
+                  <div
                     className="absolute inset-0 bg-repeat opacity-15"
                     style={{
-                      backgroundImage: `repeating-linear-gradient(
-                        0deg,
-                        transparent,
-                        transparent 2px,
-                        oklch(0 0 0 / 0.8) 2px,
-                        oklch(0 0 0 / 0.8) 3px
-                      )`
+                      backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, oklch(0 0 0 / 0.8) 2px, oklch(0 0 0 / 0.8) 3px)`
                     }}
                   />
-                  <div 
+                  <div
                     className="absolute inset-0 opacity-12"
                     style={{
                       backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.5) 1px, transparent 1px)`,
@@ -224,8 +234,8 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
                 </div>
               </div>
             </div>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
 
         <motion.div
           className="mb-4 md:mb-6 flex justify-center w-full px-4"
@@ -233,36 +243,41 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <div 
-            className="relative w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl cursor-pointer touch-manipulation chromatic-aberration-hover"
+          <div
+            className="relative w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl cursor-pointer touch-manipulation zardonic-chromatic-aberration-hover"
             onClick={() => {
               setGlitchTitle(true)
               setTimeout(() => setGlitchTitle(false), 300)
             }}
           >
-            <div className="relative">
-              <img 
-                src={titleImageUrl ?? titlePng} 
-                alt={t('hero.titleAlt').replace('{0}', name)} 
-                className={`w-full h-auto relative z-10`}
-                style={{ 
-                  filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
-                }}
-              />
-              <div className="absolute inset-0 pointer-events-none z-20">
-                <div 
-                  className="absolute inset-0 bg-repeat opacity-15"
+            <div className="relative flex justify-center">
+              {titleImageUrl ? (
+                <img
+                  src={titleImageUrl}
+                  alt={name}
+                  className={`w-full h-auto relative z-10 ${glitchTitle ? 'zardonic-red-glitch-element' : ''}`}
                   style={{
-                    backgroundImage: `repeating-linear-gradient(
-                      0deg,
-                      transparent,
-                      transparent 2px,
-                      oklch(0 0 0 / 0.8) 2px,
-                      oklch(0 0 0 / 0.8) 3px
-                    )`
+                    filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
                   }}
                 />
-                <div 
+              ) : (
+                <h1
+                  className={`text-6xl md:text-8xl lg:text-9xl font-heading font-black tracking-tighter text-primary relative z-10 ${glitchTitle ? 'zardonic-red-glitch-element' : ''}`}
+                  style={{
+                    textShadow: `2px 0 0 oklch(0.50 0.22 25 / 0.8), -2px 0 0 oklch(0.50 0.22 25 / 0.8), 0 0 20px oklch(0.50 0.22 25 / 0.4)`
+                  }}
+                >
+                  {name}
+                </h1>
+              )}
+              <div className="absolute inset-0 pointer-events-none z-20">
+                <div
+                  className="absolute inset-0 bg-repeat opacity-15"
+                  style={{
+                    backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, oklch(0 0 0 / 0.8) 2px, oklch(0 0 0 / 0.8) 3px)`
+                  }}
+                />
+                <div
                   className="absolute inset-0 opacity-12"
                   style={{
                     backgroundImage: `radial-gradient(circle, oklch(0 0 0 / 0.5) 1px, transparent 1px)`,
@@ -300,10 +315,10 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               onClick={onEdit}
               variant="outline"
               size="sm"
-              className="border-primary/40 text-primary/80 hover:bg-primary/10 text-[10px] font-mono"
+              className="border-primary/40 text-primary/80 hover:bg-primary/10 text-[10px] font-mono ml-2"
             >
               <PencilSimple size={12} className="mr-1" />
-              {t('hero.editInfo')}
+              Edit Info
             </Button>
           )}
         </motion.div>
@@ -314,11 +329,11 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
           transition={{ duration: 0.6, delay: 1 }}
         >
           <Button
-            onClick={scrollToGigs}
+            onClick={scrollToNext}
             variant="outline"
             className="group border-primary/40 text-foreground/80 hover:bg-primary/5 hover:border-primary/60 hover:text-foreground active:bg-primary/10 active:scale-95 active:border-primary px-8 py-6 md:px-10 md:py-7 text-sm md:text-base font-mono tracking-[0.08em] transition-all touch-manipulation shadow-lg shadow-primary/5 hover:shadow-primary/10 active:shadow-primary/20"
           >
-            {t('hero.enter')}
+            ENTER
             <motion.div
               animate={{ y: [0, 3, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}

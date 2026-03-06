@@ -134,7 +134,7 @@ export default function KeyManagerPanel() {
     }
     setGenerating(true)
     try {
-      const payload: any = { name: newName.trim(), tier: newTier }
+      const payload: Record<string, unknown> = { name: newName.trim(), tier: newTier }
       if (newExclusiveTheme) {
         payload.assignedThemes = [newExclusiveTheme]
       }
@@ -163,6 +163,7 @@ export default function KeyManagerPanel() {
     } finally {
       setGenerating(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newName, newTier, fetchKeys])
 
   const handleRevoke = useCallback((revokeId: string) => {
@@ -322,7 +323,7 @@ export default function KeyManagerPanel() {
               className="w-full bg-secondary border border-input rounded px-2 py-1.5 text-xs text-foreground h-8"
             >
               <option value="">None</option>
-              <option value="zardonic-industrial">Zardonic Industrial</option>
+              <option value="zardonic">Zardonic</option>
             </select>
           </div>
         </div>

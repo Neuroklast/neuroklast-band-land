@@ -4,11 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { PencilSimple } from '@phosphor-icons/react'
-import Navigation from '@/components/Navigation'
 import BandInfoEditDialog from '@/components/BandInfoEditDialog'
 import EditControls from '@/components/EditControls'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
-import CyberpunkLoader from '@/components/CyberpunkLoader'
 import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import SecretTerminal from '@/components/SecretTerminal'
@@ -64,6 +62,8 @@ const defaultSiteConfig = createSiteConfig({
 
 function collectImageUrls(data: typeof defaultSiteConfig): string[] {
   const urls: string[] = []
+  if (data.logoUrl) urls.push(data.logoUrl)
+  if (data.titleImageUrl) urls.push(data.titleImageUrl)
   data.news?.slice(0, 3).forEach(item => { if (item.photo) urls.push(item.photo) })
   data.biography?.members?.forEach(m => { if (typeof m !== 'string' && m.photo) urls.push(m.photo) })
   return urls.slice(0, 6)
@@ -141,7 +141,7 @@ function App() {
 
   // Derived state
   const data = useMemo(() => ({ ...defaultSiteConfig, ...config }), [config])
-  const precacheUrls = useMemo(() => collectImageUrls(data), [data])
+  const _precacheUrls = useMemo(() => collectImageUrls(data), [data])
   const vis = useMemo(() => data.sectionVisibility || {}, [data.sectionVisibility])
   const { play: playSound } = useSound(data.soundSettings, editMode)
 
@@ -153,6 +153,7 @@ function App() {
     if (typeof a?.crtOverlayOpacity === 'number') root.style.setProperty('--crt-overlay-opacity', String(a.crtOverlayOpacity))
     if (typeof a?.crtVignetteOpacity === 'number') root.style.setProperty('--crt-vignette-opacity', String(a.crtVignetteOpacity))
     return () => { root.style.removeProperty('--crt-overlay-opacity'); root.style.removeProperty('--crt-vignette-opacity') }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.animations?.crtOverlayOpacity, data.animations?.crtVignetteOpacity])
 
   const handleFontSizeChange = (key: keyof FontSizeSettings, value: string) => updateConfig({ fontSizes: { ...config.fontSizes, [key]: value } })
@@ -291,6 +292,8 @@ function App() {
                 contactSettings={data.contactSettings}
                 onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })}
                 onSaveContact={(cs) => updateConfig({ contactSettings: cs })}
+                themeAccessOverrides={data.themeAccessOverrides}
+                onSaveThemeAccessOverrides={(tao) => updateConfig({ themeAccessOverrides: tao })}
               />
             </motion.div>
           </motion.div>
