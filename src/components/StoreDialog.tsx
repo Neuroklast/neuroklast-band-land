@@ -20,6 +20,9 @@ import {
   GearSix,
   ArrowsClockwise,
   Warning,
+  Export,
+  Upload,
+  Copy,
 } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -29,6 +32,12 @@ import type { LicenseTier } from '@/lib/license'
 import { hasFeature } from '@/lib/license'
 import ThemePreviewCard from '@/components/ThemePreviewCard'
 import WidgetConfigDialog from '@/components/WidgetConfigDialog'
+import WidgetImportDialog from '@/components/WidgetImportDialog'
+import {
+  exportWidgets,
+  downloadWidgetExport,
+  copyWidgetsToClipboard,
+} from '@/lib/config-export'
 import {
   buildStoreItems,
   filterStoreItems,
@@ -379,6 +388,7 @@ export default function StoreDialog({
   const [search, setSearch] = useState('')
   const [licenseFilter, setLicenseFilter] = useState<StoreItemLicense | undefined>()
   const [configWidget, setConfigWidget] = useState<WidgetPlugin | null>(null)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
 
   const allItems = useMemo(
     () => buildStoreItems(widgetPlugins, DESIGN_PRESETS, activePresetId),
@@ -459,6 +469,25 @@ export default function StoreDialog({
     [configWidget, widgetPlugins, onUpdatePlugins],
   )
 
+  const handleExportWidgets = useCallback(() => {
+    const exportObj = exportWidgets(widgetPlugins)
+    downloadWidgetExport(exportObj)
+    toast.success(t('store.widgetsExported'))
+  }, [widgetPlugins, t])
+
+  const handleCopyWidgets = useCallback(async () => {
+    try {
+      await copyWidgetsToClipboard(widgetPlugins)
+      toast.success(t('store.widgetsCopied'))
+    } catch {
+      toast.error('Failed to copy to clipboard')
+    }
+  }, [widgetPlugins, t])
+
+  const handleImportWidgets = useCallback((plugins: WidgetPlugin[]) => {
+    onUpdatePlugins(plugins)
+  }, [onUpdatePlugins])
+
   if (!open) return null
 
   const tabs: { key: StoreTab; label: string }[] = [
@@ -491,7 +520,36 @@ export default function StoreDialog({
                 <Storefront size={22} className="text-primary" weight="duotone" />
                 <h2 className="font-mono text-base font-bold tracking-wider">{t('store.title')}</h2>
               </div>
-              <CyberCloseButton onClick={onClose} label="CLOSE" />
+              <div className="flex items-center gap-2">
+                {/* Export/Import widget actions */}
+                {(tab === 'all' || tab === 'widgets') && (
+                  <>
+                    <button
+                      onClick={handleCopyWidgets}
+                      title={t('store.copyWidgets')}
+                      className="p-1.5 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Copy size={16} />
+                    </button>
+                    <button
+                      onClick={handleExportWidgets}
+                      title={t('store.exportWidgets')}
+                      className="p-1.5 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Export size={16} />
+                    </button>
+                    <button
+                      onClick={() => setImportDialogOpen(true)}
+                      title={t('store.importWidgets')}
+                      className="p-1.5 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Upload size={16} />
+                    </button>
+                    <div className="w-px h-4 bg-primary/20 mx-0.5" />
+                  </>
+                )}
+                <CyberCloseButton onClick={onClose} label="CLOSE" />
+              </div>
             </div>
 
             {/* Search + Filters */}
@@ -598,6 +656,14 @@ export default function StoreDialog({
         onClose={() => setConfigWidget(null)}
       />
     )}
+
+    {/* Widget import dialog */}
+    <WidgetImportDialog
+      open={importDialogOpen}
+      onClose={() => setImportDialogOpen(false)}
+      currentPlugins={widgetPlugins}
+      onConfirm={handleImportWidgets}
+    />
   </>
   )
 }
