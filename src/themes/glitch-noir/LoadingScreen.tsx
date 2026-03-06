@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import type { LoadingScreenSlotProps } from '@/lib/types'
 
-export default function LoadingScreen() {
+export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   const [progress, setProgress] = useState(0)
   const [messages, setMessages] = useState<string[]>([])
   const [noiseLevel, setNoiseLevel] = useState(0)
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
   const bootSequence = [
     '/// SYSTEM_BOOT_INIT ///',
@@ -53,6 +56,13 @@ export default function LoadingScreen() {
 
     return () => clearInterval(messageInterval)
   }, [])
+
+  useEffect(() => {
+    if (progress >= 100) {
+      const t = setTimeout(() => onCompleteRef.current(), 600)
+      return () => clearTimeout(t)
+    }
+  }, [progress])
 
   return (
     <motion.div

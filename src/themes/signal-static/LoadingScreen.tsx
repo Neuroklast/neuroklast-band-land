@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import type { LoadingScreenSlotProps } from '@/lib/types'
 
-export default function LoadingScreen() {
+export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   const [progress, setProgress] = useState(0)
   const [phase, setPhase] = useState(0)
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
   const phases = [
     'INITIALIZING NEURAL NETWORK',
@@ -39,6 +42,13 @@ export default function LoadingScreen() {
       clearInterval(phaseInterval)
     }
   }, [])
+
+  useEffect(() => {
+    if (progress >= 100) {
+      const t = setTimeout(() => onCompleteRef.current(), 600)
+      return () => clearTimeout(t)
+    }
+  }, [progress])
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
