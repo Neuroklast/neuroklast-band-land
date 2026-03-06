@@ -441,6 +441,7 @@ export interface MediaFile {
 }
 
 export interface SectionLabels {
+  home?: string
   biography?: string
   gallery?: string
   gigs?: string
@@ -555,6 +556,7 @@ export interface HeroSlotProps {
   onEdit?: () => void
   logoUrl?: string
   titleImageUrl?: string
+  heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
 }
 
 export interface NavigationSlotProps {
@@ -583,7 +585,7 @@ export interface BackgroundEffectsSlotProps {
 }
 
 export interface FooterSlotProps {
-  socialLinks?: Record<string, string>
+  socialLinks?: SocialLinks
   siteName?: string
   genres?: string[]
   label?: string
