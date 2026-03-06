@@ -130,7 +130,7 @@ function App() {
         setupComplete: true,
         siteName: 'Dev Test Band',
         gigs: [{ id: '1', date: '2025-10-10', venue: 'Cyber Club', location: 'Night City', ticketUrl: '#' }],
-        releases: [{ id: '1', title: 'Test Release', releaseDate: '2024-01-01', coverUrl: 'https://via.placeholder.com/300', type: 'album' }],
+        releases: [{ id: '1', title: 'Test Release', releaseDate: '2024-01-01', artwork: 'https://via.placeholder.com/300', type: 'album', streamingLinks: {} }],
         socialLinks: { youtube: 'https://youtube.com', instagram: 'https://instagram.com' }
       })
       toast.success('Developer Test Mode Active: Fake data loaded.')

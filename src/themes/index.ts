@@ -13,6 +13,8 @@ export { artDecoCyberpunkTheme } from './art-deco-cyberpunk'
 export { vhsRetroTheme } from './vhs-retro'
 export { steampunkTheme } from './steampunk'
 export { analogDarkMetalTheme } from './analog-dark-metal'
+export { glitchNoirTheme } from './glitch-noir'
+export { signalStaticTheme } from './signal-static'
 
 export * from './default-slots'
 
@@ -28,6 +30,8 @@ import { artDecoCyberpunkTheme } from './art-deco-cyberpunk'
 import { vhsRetroTheme } from './vhs-retro'
 import { steampunkTheme } from './steampunk'
 import { analogDarkMetalTheme } from './analog-dark-metal'
+import { glitchNoirTheme } from './glitch-noir'
+import { signalStaticTheme } from './signal-static'
 
 export const builtInThemes: ThemePackage[] = [
   cyberpunkTheme,
@@ -41,4 +45,6 @@ export const builtInThemes: ThemePackage[] = [
   vhsRetroTheme,
   steampunkTheme,
   analogDarkMetalTheme,
+  glitchNoirTheme,
+  signalStaticTheme,
 ]

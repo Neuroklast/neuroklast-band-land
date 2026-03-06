@@ -19,6 +19,8 @@ import {
   vhsRetroTheme,
   steampunkTheme,
   analogDarkMetalTheme,
+  glitchNoirTheme,
+  signalStaticTheme,
   DefaultHero,
   DefaultNavigation,
   DefaultLoadingScreen,
@@ -90,7 +92,7 @@ for (const theme of builtInThemes) {
 
 // ─── Re-export theme objects for backward compatibility ───────────────────────
 
-export { cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme, zardonicIndustrialTheme, neuroklastClassicTheme, artDecoCyberpunkTheme, vhsRetroTheme, steampunkTheme, analogDarkMetalTheme }
+export { cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme, zardonicIndustrialTheme, neuroklastClassicTheme, artDecoCyberpunkTheme, vhsRetroTheme, steampunkTheme, analogDarkMetalTheme, glitchNoirTheme, signalStaticTheme }
 
 // ─── ThemeDefinition-based registry (license-aware) ──────────────────────────
 
@@ -199,6 +201,24 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     theme: presetToThemeSettings(DESIGN_PRESETS['zardonic-industrial']),
     author: 'Zardonic',
     tags: ['dark', 'industrial', 'glitch', 'premium'],
+  },
+  {
+    id: 'glitch-noir',
+    name: 'Glitch Noir',
+    description: 'High-contrast monochrome with glitch distortion – dark neo-noir aesthetic',
+    licenseStatus: 'preview',
+    theme: presetToThemeSettings(DESIGN_PRESETS['glitch-noir']),
+    author: 'Neuroklast',
+    tags: ['dark', 'monochrome', 'glitch', 'premium'],
+  },
+  {
+    id: 'signal-static',
+    name: 'Signal Static',
+    description: 'Broadcast interference aesthetic – analog noise, signal artifacts, and transmission distortion',
+    licenseStatus: 'preview',
+    theme: presetToThemeSettings(DESIGN_PRESETS['signal-static']),
+    author: 'Neuroklast',
+    tags: ['dark', 'analog', 'noise', 'premium'],
   },
 ]
 
