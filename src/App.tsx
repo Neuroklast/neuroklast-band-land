@@ -163,7 +163,7 @@ function App() {
 
   return (
     <>
-      {(!data.setupComplete && !isDevTestMode) && (
+      {(siteConfigLoaded && !data.setupComplete && !isDevTestMode) && (
         <SetupWizard onComplete={(r) => setConfig({ ...config, ...r, setupComplete: true })} onSetAdminPassword={handleSetupAdminPassword} initialConfig={config} />
       )}
       <a href="#main-content" className="skip-to-main">Zum Hauptinhalt springen</a>

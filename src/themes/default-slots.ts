@@ -4,16 +4,14 @@
  */
 
 import type React from 'react'
+import type { NavigationSlotProps, FooterSlotProps } from '@/lib/types'
 
 export function DefaultHero() {
   return null
 }
 DefaultHero.displayName = 'DefaultHero'
 
-export function DefaultNavigation() {
-  return null
-}
-DefaultNavigation.displayName = 'DefaultNavigation'
+export { default as DefaultNavigation } from '@/components/DefaultNavigationSlot'
 
 export function DefaultLoadingScreen({ onComplete }: { onComplete: () => void }) {
   onComplete()
@@ -36,7 +34,4 @@ export function DefaultBackgroundEffects() {
 }
 DefaultBackgroundEffects.displayName = 'DefaultBackgroundEffects'
 
-export function DefaultFooter() {
-  return null
-}
-DefaultFooter.displayName = 'DefaultFooter'
+export { default as DefaultFooter } from '@/components/DefaultFooterSlot'
