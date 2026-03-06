@@ -136,7 +136,7 @@ const config = createSiteConfig({
 | `domain` | `string?` | Primary domain for canonical/OG URLs |
 | `genres` | `string[]` | Music genres (used in JSON-LD) |
 | `themeSettings` | `ThemeSettings?` | Colors, fonts, border-radius |
-| `sectionOrder` | `string[]` | Legacy section order array |
+| `sectionOrder` | `string[]` | **Deprecated.** Legacy section order — use `sections` instead. Automatically migrated via `migrateSectionOrder()` |
 | `sections` | `SectionConfig[]?` | Rich section enable/order config |
 | `fontConfig` | `FontConfig?` | Google Fonts / local font loading |
 | `seo` | `SEOConfig` | OG image, Twitter card, analytics ID |
@@ -449,12 +449,17 @@ const config = createSiteConfig({
 
 ```bash
 npm run dev        # Start dev server (port 5173)
-npm run build      # TypeScript check + production build
+npm run build      # Full TypeScript check + production build
+npm run typecheck  # TypeScript type-check only (no emit) — useful in CI
 npm run test       # Run Vitest test suite
 npm run test:watch # Tests in watch mode
 npm run lint       # ESLint 10
 npm run preview    # Preview production build
 ```
+
+> **Obfuscation** — the production build includes optional JavaScript
+> obfuscation.  It is **off by default** (inflates bundle 30–100 %).
+> Enable with `VITE_OBFUSCATE=true npm run build`.
 
 ### Environment variables
 

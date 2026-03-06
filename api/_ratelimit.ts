@@ -3,39 +3,51 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { createHash } from 'node:crypto'
 
 /**
- * GDPR-compliant rate limiting utility.
+ * GDPR-compliant rate limiting utility for Vercel serverless functions.
  *
- * - Uses @upstash/ratelimit with Vercel KV (Redis) as the backing store.
+ * - Uses `@upstash/ratelimit` with Vercel KV (Redis) as the backing store.
  * - IP addresses are hashed with SHA-256 + a secret salt before being used
- *   as identifiers, so no personal data (IP) is stored in plaintext.
- * - Rate limit state is ephemeral — entries expire automatically after the
- *   sliding window period (10 s default).
+ *   as rate-limit identifiers, so no personal data (IP) is ever stored in
+ *   plaintext. Rate-limit state auto-expires after the sliding window period.
+ * - In production the RATE_LIMIT_SALT environment variable MUST be set to a
+ *   unique random string. The module throws at startup if the variable is
+ *   absent in a production environment (NODE_ENV=production).
+ * - In development the known fallback string is used so local testing works
+ *   without extra configuration.
  *
- * The salt is read from the RATE_LIMIT_SALT environment variable. If absent,
- * a hardcoded fallback is used so the system still works in development.
+ * See also: middleware.js — the Edge middleware uses the same salt approach
+ * with the Web Crypto API instead of Node's `crypto` module.
  */
+
+// ─── Salt ─────────────────────────────────────────────────────────────────────
 
 const SALT = process.env.RATE_LIMIT_SALT || 'nk-default-rate-limit-salt-change-me'
 
-// Refuse to start in production without a unique salt — a static fallback would
-// allow attackers to reverse IP hashes via rainbow tables since the code is public.
+// Refuse to start in production without a unique salt — a static fallback
+// would allow attackers to reverse IP hashes via rainbow tables because the
+// source code (and thus the fallback) is publicly available.
 if (!process.env.RATE_LIMIT_SALT && process.env.NODE_ENV === 'production') {
-  throw new Error('[SECURITY] RATE_LIMIT_SALT environment variable is not set. A unique random salt is required in production to protect IP hashes.')
+  throw new Error(
+    '[SECURITY] RATE_LIMIT_SALT environment variable is not set. ' +
+    'A unique random salt is required in production to protect IP hashes.'
+  )
 }
 
-// ─── Minimal request/response types for Vercel serverless functions ──────────
+// ─── Request / response types ─────────────────────────────────────────────────
 
+/** Minimal shape of an incoming Vercel serverless request used by this module. */
 interface VercelLikeRequest {
   headers: Record<string, string | string[] | undefined>
 }
 
+/** Minimal shape of a Vercel serverless response used by this module. */
 interface VercelLikeResponse {
   setHeader(name: string, value: string): this
   status(code: number): this
   json(data: unknown): this
 }
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
+// ─── IP utilities ─────────────────────────────────────────────────────────────
 
 /**
  * Hash an IP address with SHA-256 + salt so it can be used as a rate-limit
@@ -57,17 +69,20 @@ export function getClientIp(req: VercelLikeRequest): string {
   return '127.0.0.1'
 }
 
-// Check if KV is properly configured (needed for rate limiter)
-const isKVConfigured = (): boolean => {
+// ─── Rate limiter ─────────────────────────────────────────────────────────────
+
+/**
+ * Return true when the Vercel KV environment variables are present.
+ * The rate limiter is a no-op in environments without KV (e.g. local dev).
+ */
+function isKVConfigured(): boolean {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
 
 /**
- * Pre-configured rate limiter instance.
- * Sliding window: 5 requests per 10 seconds per (hashed) IP.
- *
- * Only created when KV is configured; otherwise applyRateLimit() is a no-op
- * so local development without KV still works.
+ * Lazily-initialised rate limiter instance.
+ * Sliding window: 5 requests per 10 seconds per hashed IP.
+ * Created on first use; null when KV is not configured.
  */
 let ratelimit: Ratelimit | null = null
 
@@ -83,18 +98,22 @@ function getRatelimit(): Ratelimit | null {
 }
 
 /**
- * Apply rate limiting to a request.
+ * Apply rate limiting to a serverless request.
  *
- * Returns `true` if the request is allowed, `false` + sends a 429 response
- * if the limit has been exceeded.
+ * Returns `true` when the request is allowed.  Returns `false` and sends a
+ * 429 response when the limit has been exceeded.  If KV is unavailable the
+ * function fails closed (503) to prevent brute-force bypass by destabilizing
+ * the KV backend.
  *
- * Usage inside a Vercel handler:
- *
- *   const allowed = await applyRateLimit(req, res)
- *   if (!allowed) return   // 429 already sent
- *   // … handle request normally
+ * @example
+ * const allowed = await applyRateLimit(req, res)
+ * if (!allowed) return   // 429 / 503 already sent
+ * // … handle request normally
  */
-export async function applyRateLimit(req: VercelLikeRequest, res: VercelLikeResponse): Promise<boolean> {
+export async function applyRateLimit(
+  req: VercelLikeRequest,
+  res: VercelLikeResponse,
+): Promise<boolean> {
   const rl = getRatelimit()
   if (!rl) return true // KV not configured — allow (dev mode)
 
@@ -113,8 +132,6 @@ export async function applyRateLimit(req: VercelLikeRequest, res: VercelLikeResp
     }
     return true
   } catch (err) {
-    // If rate limiting itself fails (e.g. KV outage), fail closed to prevent
-    // brute-force bypass by destabilizing the KV backend.
     console.error('Rate limit check failed, blocking request:', err)
     res.status(503).json({
       error: 'Service Unavailable',
@@ -123,3 +140,4 @@ export async function applyRateLimit(req: VercelLikeRequest, res: VercelLikeResp
     return false
   }
 }
+

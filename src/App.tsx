@@ -17,7 +17,15 @@ import CyberSpinner from '@/components/CyberSpinner'
 import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
-import type { FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, SectionVisibility, AdminDialog } from '@/lib/types'
+import type {
+  FontSizeSettings,
+  SectionLabels,
+  SoundSettings,
+  ThemeSettings,
+  SectionVisibility,
+  AdminDialog,
+  OverlayModalSlotProps,
+} from '@/lib/types'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
@@ -31,10 +39,11 @@ import { useThemeSlots } from '@/lib/theme-registry'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
-import type { OverlayModalSlotProps } from '@/lib/types'
 import { t } from '@/lib/i18n'
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────
+// These are only downloaded when an admin or specific user action requires them,
+// keeping the initial bundle lean for regular visitors.
 
 const SetupWizard = lazy(() => import('@/components/SetupWizard'))
 const SecretTerminal = lazy(() => import('@/components/SecretTerminal'))
@@ -43,7 +52,7 @@ const ImpressumWindow = lazy(() => import('@/components/ImpressumWindow'))
 const DatenschutzWindow = lazy(() => import('@/components/DatenschutzWindow'))
 const BandInfoEditDialog = lazy(() => import('@/components/BandInfoEditDialog'))
 
-// ─── Default config + image precache helper ────────────────────────────────
+// ─── Default config ───────────────────────────────────────────────────────────
 
 const defaultSiteConfig = createSiteConfig({
   siteName: bandDataJson.band.name,
@@ -59,12 +68,23 @@ const defaultSiteConfig = createSiteConfig({
     achievements: bandDataJson.biography.achievements,
   },
   terminalCommands: [
-    { name: 'status', description: 'System status', output: ['SYSTEM STATUS:', '  AUDIO ENGINE: ACTIVE', '  HUD SYSTEMS: OPERATIONAL', '  THREAT LEVEL: CLASSIFIED'] },
-    { name: 'info', description: 'Band information', output: ['SYSTEM INFO', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'] },
+    {
+      name: 'status',
+      description: 'System status',
+      output: ['SYSTEM STATUS:', '  AUDIO ENGINE: ACTIVE', '  HUD SYSTEMS: OPERATIONAL', '  THREAT LEVEL: CLASSIFIED'],
+    },
+    {
+      name: 'info',
+      description: 'Band information',
+      output: ['SYSTEM INFO', 'LOCATION: CLASSIFIED', 'FREQUENCY: 150+ BPM'],
+    },
   ],
   terminalMorseCode: '...',
 })
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Collect the first few image URLs for prefetching. */
 function collectImageUrls(data: typeof defaultSiteConfig): string[] {
   const urls: string[] = []
   if (data.logoUrl) urls.push(data.logoUrl)
@@ -72,6 +92,16 @@ function collectImageUrls(data: typeof defaultSiteConfig): string[] {
   data.news?.slice(0, 3).forEach(item => { if (item.photo) urls.push(item.photo) })
   data.biography?.members?.forEach(m => { if (typeof m !== 'string' && m.photo) urls.push(m.photo) })
   return urls.slice(0, 6)
+}
+
+/**
+ * Remove a query parameter from the current URL without triggering a
+ * navigation or adding a history entry.
+ */
+function removeSearchParam(key: string): void {
+  const url = new URL(window.location.href)
+  url.searchParams.delete(key)
+  window.history.replaceState({}, '', url.toString())
 }
 
 // ─── App ──────────────────────────────────────────────────────────────────────
@@ -97,15 +127,16 @@ function App() {
 
   useCRTEffects()
 
+  // ── Analytics ───────────────────────────────────────────────────────────────
   useEffect(() => { validateActivationKey().then(setActivationResult) }, [])
   useEffect(() => { trackPageView() }, [])
   useEffect(() => {
-    const h = (e: MouseEvent) => trackClick(e)
-    document.addEventListener('click', h)
-    return () => document.removeEventListener('click', h)
+    const handleClick = (e: MouseEvent) => trackClick(e)
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
   }, [])
 
-  // Offer to apply theme shared via URL hash
+  // ── Theme import from URL hash ───────────────────────────────────────────────
   const configAtMountRef = useRef(config)
   useEffect(() => {
     const te = getThemeFromUrlHash()
@@ -114,20 +145,37 @@ function App() {
     const base = configAtMountRef.current
     toast(t('app.themeDetected'), {
       duration: 10000,
-      action: { label: t('app.themeApply'), onClick: () => { setConfig(mergeImportedConfig(base, te.data, 'theme')); toast.success(t('app.themeApplied')) } },
+      action: {
+        label: t('app.themeApply'),
+        onClick: () => {
+          setConfig(mergeImportedConfig(base, te.data, 'theme'))
+          toast.success(t('app.themeApplied'))
+        },
+      },
       cancel: { label: t('app.themeIgnore'), onClick: () => {} },
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Parse special URL params once on mount
+  // ── Special URL params (parsed once on mount) ────────────────────────────────
   const wantsSetup = useRef(false)
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
-    if (p.has('admin-setup')) { wantsSetup.current = true; const u = new URL(window.location.href); u.searchParams.delete('admin-setup'); window.history.replaceState({}, '', u.toString()) }
-    if (p.has('access-secret-terminal-NK-666')) { startTransition(() => setActiveDialog('secret-terminal')); const u = new URL(window.location.href); u.searchParams.delete('access-secret-terminal-NK-666'); window.history.replaceState({}, '', u.toString()) }
+    if (p.has('admin-setup')) {
+      wantsSetup.current = true
+      removeSearchParam('admin-setup')
+    }
+    if (p.has('access-secret-terminal-NK-666')) {
+      startTransition(() => setActiveDialog('secret-terminal'))
+      removeSearchParam('access-secret-terminal-NK-666')
+    }
   }, [])
-  useEffect(() => { if (wantsSetup.current && needsSetup) { wantsSetup.current = false; startTransition(() => setShowSetupDialog(true)) } }, [needsSetup])
+  useEffect(() => {
+    if (wantsSetup.current && needsSetup) {
+      wantsSetup.current = false
+      startTransition(() => setShowSetupDialog(true))
+    }
+  }, [needsSetup])
 
   // Apply developer test data if active
   useEffect(() => {
@@ -150,20 +198,33 @@ function App() {
   const vis = useMemo(() => data.sectionVisibility || {}, [data.sectionVisibility])
   const { play: playSound } = useSound(data.soundSettings, editMode)
 
-  // DOM side effects
+  // ── DOM side effects ─────────────────────────────────────────────────────────
   useEffect(() => { applyConfigOverrides(data.configOverrides) }, [data.configOverrides])
   useEffect(() => { applyThemeToDOM(data.themeSettings) }, [data.themeSettings])
   useEffect(() => {
-    const a = data.animations; const root = document.documentElement
+    const a = data.animations
+    const root = document.documentElement
     if (typeof a?.crtOverlayOpacity === 'number') root.style.setProperty('--crt-overlay-opacity', String(a.crtOverlayOpacity))
     if (typeof a?.crtVignetteOpacity === 'number') root.style.setProperty('--crt-vignette-opacity', String(a.crtVignetteOpacity))
-    return () => { root.style.removeProperty('--crt-overlay-opacity'); root.style.removeProperty('--crt-vignette-opacity') }
+    return () => {
+      root.style.removeProperty('--crt-overlay-opacity')
+      root.style.removeProperty('--crt-vignette-opacity')
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.animations?.crtOverlayOpacity, data.animations?.crtVignetteOpacity])
 
-  const handleFontSizeChange = (key: keyof FontSizeSettings, value: string) => updateConfig({ fontSizes: { ...config.fontSizes, [key]: value } })
-  const handleLabelChange = (key: keyof SectionLabels, value: string) => updateConfig({ sectionLabels: { ...config.sectionLabels, [key]: value } })
-  const handleTerminalActivation = () => { setActiveDialog('secret-terminal'); trackInteraction('terminal_activated'); toast.success('TERMINAL ACCESS GRANTED', { description: 'Secret code activated' }) }
+  // ── Event handlers ────────────────────────────────────────────────────────────
+  const handleFontSizeChange = (key: keyof FontSizeSettings, value: string) =>
+    updateConfig({ fontSizes: { ...config.fontSizes, [key]: value } })
+
+  const handleLabelChange = (key: keyof SectionLabels, value: string) =>
+    updateConfig({ sectionLabels: { ...config.sectionLabels, [key]: value } })
+
+  const handleTerminalActivation = () => {
+    setActiveDialog('secret-terminal')
+    trackInteraction('terminal_activated')
+    toast.success('TERMINAL ACCESS GRANTED', { description: 'Secret code activated' })
+  }
 
   if (!activationResult?.valid) return <ActivationLockScreen pending={activationResult === null} />
 
@@ -190,7 +251,14 @@ function App() {
       {vis.systemMonitor !== false && <SystemMonitorHUD />}
       <OverlayEffectsLayer effects={data.themeSettings?.overlayEffects} />
       <AnimatePresence>
-        {loading && <ThemeLoadingScreen onComplete={() => { playSound('loadingFinished'); setLoading(false) }} />}
+        {loading && (
+          <ThemeLoadingScreen
+            onComplete={() => {
+              playSound('loadingFinished')
+              setLoading(false)
+            }}
+          />
+        )}
       </AnimatePresence>
 
       {!loading && (
@@ -261,8 +329,14 @@ function App() {
                     hasPassword={!needsSetup}
                     onChangePassword={handleChangeAdminPassword}
                     onSetPassword={handleSetAdminPassword}
-                    onLogout={async () => { await handleAdminLogout(); setEditMode(false) }}
-                    onResetSetup={() => { setEditMode(false); updateConfig({ setupComplete: false }) }}
+                    onLogout={async () => {
+                      await handleAdminLogout()
+                      setEditMode(false)
+                    }}
+                    onResetSetup={() => {
+                      setEditMode(false)
+                      updateConfig({ setupComplete: false })
+                    }}
                     siteConfig={data}
                     onImportData={(imported) => setConfig(imported)}
                     onOpenDialog={setActiveDialog}
@@ -318,7 +392,18 @@ function App() {
       <AdminLoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} mode="login" totpEnabled={totpEnabled} onLogin={handleAdminLogin} onSetPassword={handleSetAdminPassword} />
       <AdminLoginDialog open={showSetupDialog} onOpenChange={setShowSetupDialog} mode="setup" setupTokenRequired={setupTokenRequired} onSetPassword={handleSetupAdminPassword} />
       <Suspense fallback={null}>
-        <BandInfoEditDialog open={showBandInfoEdit} onOpenChange={setShowBandInfoEdit} name={data.siteName} genres={data.genres} label={data.label} logoUrl={data.logoUrl} titleImageUrl={data.titleImageUrl} onSave={({ name, genres, label, logoUrl, titleImageUrl }) => updateConfig({ siteName: name, genres, label, logoUrl, titleImageUrl })} />
+        <BandInfoEditDialog
+          open={showBandInfoEdit}
+          onOpenChange={setShowBandInfoEdit}
+          name={data.siteName}
+          genres={data.genres}
+          label={data.label}
+          logoUrl={data.logoUrl}
+          titleImageUrl={data.titleImageUrl}
+          onSave={({ name, genres, label, logoUrl, titleImageUrl }) =>
+            updateConfig({ siteName: name, genres, label, logoUrl, titleImageUrl })
+          }
+        />
       </Suspense>
       <ThemeOverlayModal
         overlay={cyberpunkOverlay as OverlayModalSlotProps['overlay']}

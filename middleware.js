@@ -17,33 +17,51 @@ import { kv } from '@vercel/kv'
  *
  * Edge Functions are billed by CPU cycles, not wall-clock time, so the
  * KV round-trip costs almost nothing compared to a Serverless Function.
+ *
+ * ## Salt configuration
+ * IP hashing uses RATE_LIMIT_SALT from the environment.  If the variable is
+ * not set a cryptographically random salt is generated once per cold start
+ * (see `initSalt()`).  The random fallback is secure against pre-computation
+ * attacks but the salt changes on each cold start, so blocklist hashes will
+ * not persist across restarts.  Set a stable RATE_LIMIT_SALT in production
+ * for long-lived, consistent IP blocking.  See also: api/_ratelimit.ts.
  */
 
-// Generate a cryptographically random salt per cold start if the environment
-// variable is not configured.  This is far safer than a publicly-known
-// fallback string because the generated salt cannot be pre-computed, though
-// it will change on every cold start — meaning the blocklist hashes won't
-// persist across restarts.  Set RATE_LIMIT_SALT to a stable secret value for
-// consistent, long-lived IP blocking across deployments.
-let SALT
+// ─── Salt initialisation ──────────────────────────────────────────────────────
 
-if (process.env.RATE_LIMIT_SALT) {
-  SALT = process.env.RATE_LIMIT_SALT
-} else {
-  const randomBytes = new Uint8Array(32)
-  crypto.getRandomValues(randomBytes)
-  SALT = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('')
+/**
+ * Return the rate-limit salt to use for IP hashing.
+ *
+ * Prefers the RATE_LIMIT_SALT environment variable.  If not set, generates
+ * a cryptographically random 32-byte hex string for this cold start and
+ * emits a loud security warning.
+ */
+function initSalt() {
+  if (process.env.RATE_LIMIT_SALT) {
+    return process.env.RATE_LIMIT_SALT
+  }
+
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  const randomSalt = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+
   console.error(
     '[SECURITY] RATE_LIMIT_SALT is not configured. ' +
     'A random salt has been generated for this cold start, but it will change on every restart. ' +
     'Set RATE_LIMIT_SALT in your environment variables for stable, consistent IP hashing.'
   )
+
+  return randomSalt
 }
 
+const SALT = initSalt()
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Hash an IP with SHA-256 + salt using the Web Crypto API (Edge-compatible).
- * Produces the same hex digest as the Node.js createHash in _ratelimit.js.
+ * Hash an IP with SHA-256 + SALT using the Web Crypto API (Edge-compatible).
+ * Produces the same hex digest as the Node.js createHash call in
+ * api/_ratelimit.ts when both share the same salt value.
  */
 async function hashIp(ip) {
   const data = new TextEncoder().encode(SALT + ip)
@@ -53,6 +71,10 @@ async function hashIp(ip) {
     .join('')
 }
 
+/**
+ * Extract the first IP from the x-forwarded-for header, which Vercel
+ * populates with the original client address.
+ */
 function getClientIp(req) {
   const forwarded = req.headers.get('x-forwarded-for')
   if (typeof forwarded === 'string') {
@@ -61,11 +83,15 @@ function getClientIp(req) {
   return '127.0.0.1'
 }
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 /** Requests per 10-second window before the circuit breaker trips. */
 const THRESHOLD = 500
 
 /** How long (seconds) the circuit breaker stays open once tripped. */
 const COOLDOWN_SECONDS = 300
+
+// ─── Middleware ───────────────────────────────────────────────────────────────
 
 export default async function middleware(req) {
   // Skip when KV is not configured (local development)
@@ -73,9 +99,12 @@ export default async function middleware(req) {
     return
   }
 
-  // Warn on every request in production if no stable salt is set
+  // Remind operators who have not set a stable salt in production
   if (!process.env.RATE_LIMIT_SALT && process.env.VERCEL) {
-    console.error('[SECURITY] RATE_LIMIT_SALT is not configured in production. IP hashes use a per-cold-start random salt and will not persist across restarts.')
+    console.error(
+      '[SECURITY] RATE_LIMIT_SALT is not configured in production. ' +
+      'IP hashes use a per-cold-start random salt and will not persist across restarts.'
+    )
   }
 
   try {
@@ -109,7 +138,7 @@ export default async function middleware(req) {
       return new Response(null, { status: 429 })
     }
 
-    // Pass through — Serverless Function handles the rest
+    // Pass through — the Serverless Function handles the rest
   } catch {
     // KV failure must never block legitimate traffic
   }

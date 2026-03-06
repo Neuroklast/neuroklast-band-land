@@ -2,17 +2,29 @@
  * Section registry and utility functions for enabling/disabling and reordering
  * site sections.
  *
+ * Public API (re-exported from this module):
+ *  - `ALL_SECTION_IDS`       — registry of all known section IDs
+ *  - `buildDefaultSections`  — build a fresh default SectionConfig[]
+ *  - `normalizeSections`     — merge user config with the full registry
+ *  - `migrateSectionOrder`   — convert legacy sectionOrder[] to SectionConfig[]
+ *  - `resolveSections`       — pick the right config source with fallback chain
+ *  - `getEnabledSections`    — filter + sort by order
+ *  - `getEnabledSectionIds`  — same as above but returns only the IDs
+ *  - `toggleSection`         — flip a section's enabled state immutably
+ *  - `reorderSections`       — move a section to a new index immutably
+ *
  * Related issue: #159
  */
 
 import type { SectionConfig } from './types'
 import { DEFAULT_SECTION_ORDER } from './site-config'
 
-// ─── Registry of all known section IDs ───────────────────────────────────────
+// ─── Registry ─────────────────────────────────────────────────────────────────
 
+/** All recognised section IDs, in default display order. */
 export const ALL_SECTION_IDS: readonly string[] = DEFAULT_SECTION_ORDER
 
-// ─── Default factory ─────────────────────────────────────────────────────────
+// ─── Core helpers ─────────────────────────────────────────────────────────────
 
 /**
  * Build the default `SectionConfig[]` where every known section is enabled
@@ -26,55 +38,12 @@ export function buildDefaultSections(): SectionConfig[] {
   }))
 }
 
-// ─── Migration helpers ────────────────────────────────────────────────────────
-
 /**
- * Convert a legacy `sectionOrder` string array to the new `SectionConfig[]`
- * format.  Each section is enabled by default and ordered according to its
- * position in the array.
+ * Merge a user-supplied `SectionConfig[]` with the full registry so that any
+ * section not explicitly configured receives sensible defaults (enabled,
+ * appended at the end in registry order).
  *
- * Use this when migrating persisted configs that still have `sectionOrder`
- * but not the newer `sections` field.
- *
- * @example
- * const sections = migrateSectionOrder(config.sectionOrder)
- * updateConfig({ sections, sectionOrder: sections.map(s => s.id) })
- */
-export function migrateSectionOrder(sectionOrder: string[]): SectionConfig[] {
-  return sectionOrder.map((id, index) => ({
-    id,
-    enabled: true,
-    order: index,
-  }))
-}
-
-/**
- * Resolve the active section configuration from a partial SiteConfig.
- *
- * Resolution priority:
- * 1. Use `sections` if present and non-empty (new format).
- * 2. Fall back to converting `sectionOrder` via `migrateSectionOrder` (legacy).
- * 3. If neither is present, return `buildDefaultSections()`.
- */
-export function resolveSections(config: {
-  sections?: SectionConfig[]
-  sectionOrder?: string[]
-}): SectionConfig[] {
-  if (config.sections && config.sections.length > 0) {
-    return normalizeSections(config.sections)
-  }
-  if (config.sectionOrder && config.sectionOrder.length > 0) {
-    return migrateSectionOrder(config.sectionOrder)
-  }
-  return buildDefaultSections()
-}
-
-// ─── Normalisation helper ─────────────────────────────────────────────────────
-
-/**
- * Merge a user-supplied `SectionConfig[]` with the full registry, so that any
- * section not explicitly configured gets sensible defaults (enabled, appended
- * at the end in registry order).
+ * The returned array is always sorted by `order` ascending.
  */
 export function normalizeSections(configs: SectionConfig[]): SectionConfig[] {
   const configMap = new Map(configs.map((c) => [c.id, c]))
@@ -90,7 +59,50 @@ export function normalizeSections(configs: SectionConfig[]): SectionConfig[] {
   return Array.from(configMap.values()).sort((a, b) => a.order - b.order)
 }
 
-// ─── Utility functions ────────────────────────────────────────────────────────
+// ─── Migration helpers ────────────────────────────────────────────────────────
+
+/**
+ * Convert a legacy `sectionOrder` string array to the new `SectionConfig[]`
+ * format.  Each section is enabled by default and ordered by its position
+ * in the input array.
+ *
+ * Call this when migrating persisted configs that only have `sectionOrder`
+ * (the deprecated field) and not the newer `sections` field.
+ *
+ * @example
+ * const sections = migrateSectionOrder(config.sectionOrder)
+ * updateConfig({ sections, sectionOrder: sections.map(s => s.id) })
+ */
+export function migrateSectionOrder(sectionOrder: string[]): SectionConfig[] {
+  return sectionOrder.map((id, index) => ({
+    id,
+    enabled: true,
+    order: index,
+  }))
+}
+
+/**
+ * Resolve the active section configuration from a partial `SiteConfig`.
+ *
+ * Resolution priority:
+ * 1. Use `sections` if present and non-empty (current format).
+ * 2. Fall back to `sectionOrder` via `migrateSectionOrder` (legacy format).
+ * 3. If neither is present, return `buildDefaultSections()`.
+ */
+export function resolveSections(config: {
+  sections?: SectionConfig[]
+  sectionOrder?: string[]
+}): SectionConfig[] {
+  if (config.sections && config.sections.length > 0) {
+    return normalizeSections(config.sections)
+  }
+  if (config.sectionOrder && config.sectionOrder.length > 0) {
+    return migrateSectionOrder(config.sectionOrder)
+  }
+  return buildDefaultSections()
+}
+
+// ─── Query helpers ────────────────────────────────────────────────────────────
 
 /**
  * Return only the enabled sections, sorted by their `order` value.
@@ -109,9 +121,11 @@ export function getEnabledSectionIds(configs: SectionConfig[]): string[] {
   return getEnabledSections(configs).map((s) => s.id)
 }
 
+// ─── Mutation helpers (immutable — always return new arrays) ──────────────────
+
 /**
  * Toggle the `enabled` state of a single section.
- * Returns a new array – does not mutate the input.
+ * Returns a new array; does not mutate the input.
  */
 export function toggleSection(configs: SectionConfig[], id: string): SectionConfig[] {
   const normalized = normalizeSections(configs)
@@ -119,12 +133,12 @@ export function toggleSection(configs: SectionConfig[], id: string): SectionConf
 }
 
 /**
- * Move a section to a new `order` index and shift other sections to
+ * Move a section to a new `order` index and shift the remaining sections to
  * accommodate.  Returns a new array sorted by the updated `order` values.
  *
- * @param configs  Current section config array.
- * @param id       ID of the section to move.
- * @param newOrder Target zero-based order index.
+ * @param configs   Current section config array.
+ * @param id        ID of the section to move.
+ * @param newOrder  Target zero-based order index.
  */
 export function reorderSections(
   configs: SectionConfig[],
