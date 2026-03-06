@@ -3,6 +3,10 @@ import type { ThemePackage } from '@/lib/types'
 import VhsRetroBackgroundEffects from './BackgroundEffects'
 import VhsRetroCard from './Card'
 import VhsRetroSectionDivider from './SectionDivider'
+import VhsRetroHero from './Hero'
+import VhsRetroNavigation from './Navigation'
+import VhsRetroFooter from './Footer'
+import VhsRetroLoadingScreen from './LoadingScreen'
 
 export const vhsRetroTheme: ThemePackage = {
   id: 'vhs-retro',
@@ -112,5 +116,9 @@ export const vhsRetroTheme: ThemePackage = {
     BackgroundEffects: VhsRetroBackgroundEffects,
     Card: VhsRetroCard,
     SectionDivider: VhsRetroSectionDivider,
+    Hero: VhsRetroHero,
+    Navigation: VhsRetroNavigation,
+    Footer: VhsRetroFooter,
+    LoadingScreen: VhsRetroLoadingScreen,
   },
 }
