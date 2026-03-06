@@ -28,6 +28,8 @@ interface NewsSectionProps {
   onUpdate?: (news: NewsItem[]) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  /** When provided, clicking a news item calls this instead of showing the internal overlay */
+  onNewsClick?: (item: NewsItem) => void
 }
 
 const INITIAL_VISIBLE_COUNT = 3
@@ -68,7 +70,7 @@ function formatNewsDate(date: string): string {
   return format(d, 'dd.MM.yyyy')
 }
 
-export default function NewsSection({ news = [], editMode, onUpdate, sectionLabels, onLabelChange }: NewsSectionProps) {
+export default function NewsSection({ news = [], editMode, onUpdate, sectionLabels, onLabelChange, onNewsClick }: NewsSectionProps) {
   const { t } = useLocale()
   const [glitchActive, setGlitchActive] = useState(false)
   const [showAll, setShowAll] = useState(false)
@@ -87,14 +89,20 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
 
   // Update URL hash when a news item is selected/deselected
   const selectNews = useCallback((item: NewsItem | null) => {
-    setSelectedNews(item)
     if (item) {
       window.history.replaceState(null, '', `#news/${item.id}`)
+      if (onNewsClick) {
+        // Delegate to external overlay — no need to track state internally
+        onNewsClick(item)
+      } else {
+        setSelectedNews(item)
+      }
     } else {
+      setSelectedNews(null)
       // Restore clean #news hash when closing the overlay
       window.history.replaceState(null, '', '#news')
     }
-  }, [])
+  }, [onNewsClick])
 
   // Deep-link: open a specific news item when the page loads with #news/{id}
   useEffect(() => {
@@ -104,9 +112,16 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
     if (match) {
       const target = news.find(n => n.id === match[1])
       if (target) {
-        startTransition(() => setSelectedNews(target))
+        startTransition(() => {
+          if (onNewsClick) {
+            onNewsClick(target)
+          } else {
+            setSelectedNews(target)
+          }
+        })
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [news])
 
   // Listen for hash changes (e.g. browser back/forward navigation)
@@ -116,14 +131,20 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
       const match = hash.match(/^#news\/(.+)$/)
       if (match) {
         const target = news.find(n => n.id === match[1])
-        if (target) setSelectedNews(target)
+        if (target) {
+          if (onNewsClick) {
+            onNewsClick(target)
+          } else {
+            setSelectedNews(target)
+          }
+        }
       } else {
         setSelectedNews(null)
       }
     }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
-  }, [news])
+  }, [news, onNewsClick])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -306,15 +327,18 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
         />
       )}
 
-      <AnimatePresence>
-        {selectedNews && (
-          <NewsDetailOverlay
-            item={selectedNews}
-            onClose={() => selectNews(null)}
-            sectionLabels={sectionLabels}
-          />
-        )}
-      </AnimatePresence>
+      {/* Internal overlay — only shown when no external onNewsClick handler is provided */}
+      {!onNewsClick && (
+        <AnimatePresence>
+          {selectedNews && (
+            <NewsDetailOverlay
+              item={selectedNews}
+              onClose={() => selectNews(null)}
+              sectionLabels={sectionLabels}
+            />
+          )}
+        </AnimatePresence>
+      )}
     </section>
   )
 }

@@ -24,7 +24,6 @@ import type { FontSizeSettings, SectionLabels, SoundSettings, ThemeSettings, Sec
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
-import CyberpunkOverlayModal from '@/components/CyberpunkOverlayModal'
 import SetupWizard from '@/components/SetupWizard'
 import ActivationLockScreen from '@/components/ActivationLockScreen'
 import LicenseStatusBadge from '@/components/LicenseStatusBadge'
@@ -37,6 +36,7 @@ import AdminDialogManager from '@/components/AdminDialogManager'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
+import type { OverlayModalSlotProps } from '@/lib/types'
 
 // ─── Default config + image precache helper ────────────────────────────────
 
@@ -74,8 +74,8 @@ function collectImageUrls(data: typeof defaultSiteConfig): string[] {
 function App() {
   const { config, updateConfig, setConfig, isLoaded: siteConfigLoaded } = useSiteConfig()
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
-  const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
-  const { Navigation: ThemeNavigation, LoadingScreen: ThemeLoadingScreen } = useThemeSlots(config.themeSettings?.activePreset)
+  const { cyberpunkOverlay, setCyberpunkOverlay } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
+  const { Navigation: ThemeNavigation, LoadingScreen: ThemeLoadingScreen, OverlayModal: ThemeOverlayModal } = useThemeSlots(config.themeSettings?.activePreset)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)
@@ -303,7 +303,17 @@ function App() {
       <AdminLoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} mode="login" totpEnabled={totpEnabled} onLogin={handleAdminLogin} onSetPassword={handleSetAdminPassword} />
       <AdminLoginDialog open={showSetupDialog} onOpenChange={setShowSetupDialog} mode="setup" setupTokenRequired={setupTokenRequired} onSetPassword={handleSetupAdminPassword} />
       <BandInfoEditDialog open={showBandInfoEdit} onOpenChange={setShowBandInfoEdit} name={data.siteName} genres={data.genres} label={data.label} logoUrl={data.logoUrl} titleImageUrl={data.titleImageUrl} onSave={({ name, genres, label, logoUrl, titleImageUrl }) => updateConfig({ siteName: name, genres, label, logoUrl, titleImageUrl })} />
-      <CyberpunkOverlayModal overlay={cyberpunkOverlay} phase={overlayPhase} loadingText={loadingText} animation={overlayAnimation} onClose={() => setCyberpunkOverlay(null)} sectionLabels={data.sectionLabels} />
+      <ThemeOverlayModal
+        overlay={cyberpunkOverlay as OverlayModalSlotProps['overlay']}
+        onClose={() => {
+          // Reset news URL hash when closing a news overlay
+          if (cyberpunkOverlay?.type === 'news') {
+            window.history.replaceState(null, '', '#news')
+          }
+          setCyberpunkOverlay(null)
+        }}
+        sectionLabels={data.sectionLabels}
+      />
     </>
   )
 }

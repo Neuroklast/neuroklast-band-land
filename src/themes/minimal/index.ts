@@ -7,6 +7,8 @@ import MinimalHero from './Hero'
 import MinimalNavigation from './Navigation'
 import MinimalFooter from './Footer'
 import MinimalLoadingScreen from './LoadingScreen'
+import MinimalScrollReveal from './ScrollReveal'
+import MinimalSectionHeading from './SectionHeading'
 
 export const minimalTheme: ThemePackage = {
   id: 'minimal',
@@ -70,5 +72,7 @@ export const minimalTheme: ThemePackage = {
     Navigation: MinimalNavigation,
     Footer: MinimalFooter,
     LoadingScreen: MinimalLoadingScreen,
+    ScrollReveal: MinimalScrollReveal,
+    SectionHeading: MinimalSectionHeading,
   },
 }

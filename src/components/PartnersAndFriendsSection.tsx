@@ -27,6 +27,8 @@ interface PartnersAndFriendsSectionProps {
   onUpdate?: (friends: Friend[]) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  /** When provided, clicking a friend card calls this instead of showing the internal ProfileOverlay */
+  onFriendClick?: (friend: Friend) => void
 }
 
 const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: Icon; label: string }[] = [
@@ -196,7 +198,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
   )
 }
 
-export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels, onLabelChange }: PartnersAndFriendsSectionProps) {
+export default function PartnersAndFriendsSection({ friends = [], editMode, onUpdate, sectionLabels, onLabelChange, onFriendClick }: PartnersAndFriendsSectionProps) {
   const { t } = useLocale()
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.05 })
@@ -306,7 +308,14 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
               <FriendCard
                 friend={friend}
                 editMode={editMode}
-                onSelect={() => { triggerTransition(); setSelectedFriend(friend) }}
+                onSelect={() => {
+                  triggerTransition()
+                  if (onFriendClick) {
+                    onFriendClick(friend)
+                  } else {
+                    setSelectedFriend(friend)
+                  }
+                }}
                 onUpdate={(updated) => {
                   if (onUpdate) {
                     onUpdate(friends.map(f => f.id === updated.id ? updated : f))
@@ -323,35 +332,38 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
         </div>
       </div>
 
-      <AnimatePresence>
-        {selectedFriend && (
-          <ProfileOverlay
-            name={selectedFriend.name}
-            photoUrl={selectedFriend.profilePhoto || selectedFriend.photo}
-            dataLines={buildFriendDataLines(selectedFriend, sectionLabels, friendSocialIcons)}
-            onClose={() => { triggerTransition(); setSelectedFriend(null) }}
-            sectionLabels={sectionLabels}
-          >
-            {/* Social link icons */}
-            {friendSocialIcons.filter(({ key }) => selectedFriend.socials?.[key]).length > 0 && (
-              <div className="flex gap-3 flex-wrap pt-2">
-                {friendSocialIcons.filter(({ key }) => selectedFriend.socials?.[key]).map(({ key, icon: Icon, label }) => (
-                  <a
-                    key={key}
-                    href={selectedFriend.socials![key]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary/60 hover:text-primary transition-colors"
-                    title={label}
-                  >
-                    <Icon size={22} weight="fill" />
-                  </a>
-                ))}
-              </div>
-            )}
-          </ProfileOverlay>
-        )}
-      </AnimatePresence>
+      {/* Internal overlay — only shown when no external onFriendClick handler is provided */}
+      {!onFriendClick && (
+        <AnimatePresence>
+          {selectedFriend && (
+            <ProfileOverlay
+              name={selectedFriend.name}
+              photoUrl={selectedFriend.profilePhoto || selectedFriend.photo}
+              dataLines={buildFriendDataLines(selectedFriend, sectionLabels, friendSocialIcons)}
+              onClose={() => { triggerTransition(); setSelectedFriend(null) }}
+              sectionLabels={sectionLabels}
+            >
+              {/* Social link icons */}
+              {friendSocialIcons.filter(({ key }) => selectedFriend.socials?.[key]).length > 0 && (
+                <div className="flex gap-3 flex-wrap pt-2">
+                  {friendSocialIcons.filter(({ key }) => selectedFriend.socials?.[key]).map(({ key, icon: Icon, label }) => (
+                    <a
+                      key={key}
+                      href={selectedFriend.socials![key]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary/60 hover:text-primary transition-colors"
+                      title={label}
+                    >
+                      <Icon size={22} weight="fill" />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </ProfileOverlay>
+          )}
+        </AnimatePresence>
+      )}
       {transitionElement}
     </section>
   )
