@@ -35,7 +35,7 @@ function renderMarkdown(text: string): string {
 /** Sanitize an external URL to prevent javascript: and other dangerous protocols */
 function sanitizeUrl(url?: string): string | undefined {
   if (!url) return undefined
-  if (/^(javascript|data|vbscript):/i.test(url.trim())) return '#'
+  if (/^(javascript|data|vbscript|file):/i.test(url.trim())) return undefined
   return url
 }
 
@@ -65,6 +65,8 @@ export default function NewsContent({ item, sectionLabels }: NewsContentProps) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
+      // Fallback for very old browsers that don't support navigator.clipboard
+      // document.execCommand is deprecated but still works in older environments
       const input = document.createElement('input')
       input.value = shareUrl
       document.body.appendChild(input)
@@ -142,7 +144,7 @@ export default function NewsContent({ item, sectionLabels }: NewsContentProps) {
           />
         )}
 
-        {item.link && (
+        {item.link && sanitizeUrl(item.link) && (
           <a
             href={sanitizeUrl(item.link)}
             target="_blank"

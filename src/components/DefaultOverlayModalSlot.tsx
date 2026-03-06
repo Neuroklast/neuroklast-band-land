@@ -37,7 +37,7 @@ export default function DefaultOverlayModalSlot({ overlay, onClose, sectionLabel
     let idx = 0
     const txtInterval = setInterval(() => {
       idx += 1
-      if (idx <= LOADING_TEXTS.length - 1) {
+      if (idx < LOADING_TEXTS.length) {
         setLoadingText(LOADING_TEXTS[idx])
       }
     }, OVERLAY_LOADING_TEXT_INTERVAL_MS)

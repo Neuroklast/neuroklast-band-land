@@ -7,6 +7,9 @@ import ElegantHero from './Hero'
 import ElegantNavigation from './Navigation'
 import ElegantFooter from './Footer'
 import ElegantLoadingScreen from './LoadingScreen'
+import ElegantOverlayModal from './OverlayModal'
+import ElegantSectionHeading from './SectionHeading'
+import ElegantScrollReveal from './ScrollReveal'
 
 export const elegantTheme: ThemePackage = {
   id: 'elegant',
@@ -85,5 +88,8 @@ export const elegantTheme: ThemePackage = {
     BackgroundEffects: ElegantBackgroundEffects,
     Card: ElegantCard,
     SectionDivider: ElegantSectionDivider,
+    OverlayModal: ElegantOverlayModal,
+    SectionHeading: ElegantSectionHeading,
+    ScrollReveal: ElegantScrollReveal,
   },
 }

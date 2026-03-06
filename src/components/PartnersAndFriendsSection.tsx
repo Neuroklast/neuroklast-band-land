@@ -310,9 +310,10 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
                 editMode={editMode}
                 onSelect={() => {
                   triggerTransition()
-                  setSelectedFriend(friend)
                   if (onFriendClick) {
                     onFriendClick(friend)
+                  } else {
+                    setSelectedFriend(friend)
                   }
                 }}
                 onUpdate={(updated) => {
