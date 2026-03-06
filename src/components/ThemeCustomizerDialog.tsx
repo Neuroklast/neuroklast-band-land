@@ -6,7 +6,7 @@ import { X, ArrowCounterClockwise, Export, ArrowSquareIn, FloppyDisk, Eye, EyeSl
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import type { ThemeSettings, SectionVisibility, OverlayEffect } from '@/lib/types'
-import { THEME_CATALOG } from '@/lib/theme-registry'
+import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
 import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
 import { applyThemeToDOM, applyOverlayEffectsToDOM, resetThemeDOM, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
 
@@ -349,7 +349,8 @@ export default function ThemeCustomizerDialog({
 
   // Determine if the currently selected theme has a customConfigSchema
   const activeThemeDef = draft.activePreset ? THEME_CATALOG.find(t => t.id === draft.activePreset) : undefined
-  const hasCustomConfig = !!activeThemeDef?.customConfigSchema
+  const activeThemePkg = draft.activePreset ? getTheme(draft.activePreset) : undefined
+  const hasCustomConfig = !!activeThemePkg?.customConfigSchema
 
   const tabs: { key: 'presets' | 'colors' | 'fonts' | 'effects' | 'visibility' | 'theme_config'; label: string }[] = [
     { key: 'presets', label: 'PRESETS' },
@@ -750,12 +751,12 @@ export default function ThemeCustomizerDialog({
               )}
 
               {/* THEME CONFIG TAB */}
-              {activeTab === 'theme_config' && hasCustomConfig && activeThemeDef?.customConfigSchema && (
+              {activeTab === 'theme_config' && hasCustomConfig && activeThemePkg?.customConfigSchema && (
                 <div className="space-y-4">
                   <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Custom configuration settings specific to the active theme ({activeThemeDef.name}).
+                    Custom configuration settings specific to the active theme ({activeThemeDef?.name ?? activeThemePkg.name}).
                   </p>
-                  {Object.entries(activeThemeDef.customConfigSchema).map(([key, schema]) => {
+                  {(Object.entries(activeThemePkg.customConfigSchema) as Array<[string, { label: string; description: string; type: 'number' | 'boolean' | 'string'; default: unknown }]>).map(([key, schema]) => {
                     // Custom config is usually stored on the theme settings or we can place it on a dedicated customConfig object.
                     // For now, let's look for a customConfig block on draft, or default.
                     const val = draft.customConfig?.[key] ?? schema.default
@@ -764,7 +765,7 @@ export default function ThemeCustomizerDialog({
                       <div key={key} className="space-y-1">
                         <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
                           {schema.label}
-                          {schema.type === 'number' && <span className="text-[10px] text-primary/70">{val}</span>}
+                          {schema.type === 'number' && <span className="text-[10px] text-primary/70">{val as number}</span>}
                         </Label>
                         <p className="font-mono text-[9px] text-muted-foreground/50">{schema.description}</p>
 

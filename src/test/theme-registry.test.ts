@@ -15,14 +15,16 @@ import {
   vhsRetroTheme,
   steampunkTheme,
   analogDarkMetalTheme,
+  glitchNoirTheme,
+  signalStaticTheme,
 } from '@/lib/theme-registry'
 
 // Ensure registry is populated (side effects run on import)
 
 describe('Theme Registry — all themes registered', () => {
-  it('has 11 built-in themes', () => {
+  it('has 13 built-in themes', () => {
     const themes = getAllThemes()
-    expect(themes).toHaveLength(11)
+    expect(themes).toHaveLength(13)
   })
 
   it('has expected IDs', () => {
@@ -38,6 +40,8 @@ describe('Theme Registry — all themes registered', () => {
     expect(ids).toContain('vhs-retro')
     expect(ids).toContain('steampunk')
     expect(ids).toContain('analog-dark-metal')
+    expect(ids).toContain('glitch-noir')
+    expect(ids).toContain('signal-static')
   })
 })
 
@@ -54,6 +58,8 @@ describe('getTheme', () => {
     expect(getTheme('vhs-retro')).toBe(vhsRetroTheme)
     expect(getTheme('steampunk')).toBe(steampunkTheme)
     expect(getTheme('analog-dark-metal')).toBe(analogDarkMetalTheme)
+    expect(getTheme('glitch-noir')).toBe(glitchNoirTheme)
+    expect(getTheme('signal-static')).toBe(signalStaticTheme)
   })
 
   it('returns undefined for unknown ID', () => {
@@ -85,12 +91,14 @@ describe('Access levels', () => {
     expect(retroTheme.access).toBe('free')
   })
 
-  it('cyberpunk, art-deco-cyberpunk, vhs-retro, steampunk, analog-dark-metal are premium', () => {
+  it('cyberpunk, art-deco-cyberpunk, vhs-retro, steampunk, analog-dark-metal, glitch-noir, signal-static are premium', () => {
     expect(cyberpunkTheme.access).toBe('premium')
     expect(artDecoCyberpunkTheme.access).toBe('premium')
     expect(vhsRetroTheme.access).toBe('premium')
     expect(steampunkTheme.access).toBe('premium')
     expect(analogDarkMetalTheme.access).toBe('premium')
+    expect(glitchNoirTheme.access).toBe('premium')
+    expect(signalStaticTheme.access).toBe('premium')
   })
 
   it('zardonic-industrial is exclusive', () => {
