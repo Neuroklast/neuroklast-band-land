@@ -8,6 +8,7 @@ import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 interface SpotifyConfig {
   uri?: string
   type?: 'playlist' | 'album' | 'track'
+  theme?: 'dark' | 'light'
 }
 
 interface SpotifyPlayerWidgetProps {
@@ -39,8 +40,10 @@ export default function SpotifyPlayerWidget({ widget, themeSettings }: SpotifyPl
   // or just use a plain ID string
   const uriParts = config.uri.split(':')
   const spotifyId = uriParts.length >= 3 ? uriParts[2] : config.uri
+  // theme=0 → dark (default), theme=1 → light
+  const themeParam = config.theme === 'light' ? '1' : '0'
 
-  const embedUrl = `https://open.spotify.com/embed/${type}/${spotifyId}?utm_source=generator&theme=0`
+  const embedUrl = `https://open.spotify.com/embed/${type}/${spotifyId}?utm_source=generator&theme=${themeParam}`
 
   return (
     <div className="w-full">

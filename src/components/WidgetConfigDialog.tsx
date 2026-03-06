@@ -102,6 +102,16 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 <option value="track">Track</option>
               </select>
             </Field>
+            <Field label="Player Theme">
+              <select
+                value={String(config.theme ?? 'dark')}
+                onChange={(e) => set('theme', e.target.value)}
+                className="w-full bg-secondary border border-input rounded px-3 py-2 text-sm font-mono text-foreground"
+              >
+                <option value="dark">Dark Mode</option>
+                <option value="light">Light Mode</option>
+              </select>
+            </Field>
           </>
         )
 
@@ -161,6 +171,215 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
             <p className="font-semibold mb-1">Analytics Dashboard</p>
             <p className="text-xs opacity-70">No configuration required — demo data is shown automatically.</p>
           </div>
+        )
+
+      case 'newsletter':
+        return (
+          <>
+            <Field label="Title" hint="Widget heading (optional, uses default if empty)">
+              <Input
+                value={String(config.title ?? '')}
+                onChange={(e) => set('title', e.target.value)}
+                placeholder="Stay in the loop"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Description" hint="Short description shown below the title">
+              <Input
+                value={String(config.description ?? '')}
+                onChange={(e) => set('description', e.target.value)}
+                placeholder="Subscribe to our newsletter"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Email Placeholder">
+              <Input
+                value={String(config.placeholder ?? '')}
+                onChange={(e) => set('placeholder', e.target.value)}
+                placeholder="your@email.com"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Button Text">
+              <Input
+                value={String(config.buttonText ?? '')}
+                onChange={(e) => set('buttonText', e.target.value)}
+                placeholder="Subscribe"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+          </>
+        )
+
+      case 'instagram-feed':
+        return (
+          <Field label="Number of Photos" hint="How many photos to display in the grid (1–24)">
+            <Input
+              type="number"
+              min={1}
+              max={24}
+              value={String(config.imageCount ?? 6)}
+              onChange={(e) => set('imageCount', parseInt(e.target.value, 10) || 6)}
+              className="bg-secondary border-input text-sm"
+            />
+          </Field>
+        )
+
+      case 'soundcloud-player':
+        return (
+          <>
+            <Field label="SoundCloud URL" hint="Track, playlist, or artist page URL">
+              <Input
+                value={String(config.url ?? '')}
+                onChange={(e) => set('url', e.target.value)}
+                placeholder="https://soundcloud.com/artist/track"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Accent Colour" hint="Player accent colour (hex, e.g. #ff5500)">
+              <Input
+                value={String(config.color ?? '#ff5500')}
+                onChange={(e) => set('color', e.target.value)}
+                placeholder="#ff5500"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+          </>
+        )
+
+      case 'apple-music-player':
+        return (
+          <Field label="Apple Music Embed URL" hint='From Share → Embed on Apple Music (starts with https://embed.music.apple.com/…)'>
+            <Input
+              value={String(config.embedUrl ?? '')}
+              onChange={(e) => set('embedUrl', e.target.value)}
+              placeholder="https://embed.music.apple.com/us/album/…"
+              className="bg-secondary border-input text-sm"
+            />
+          </Field>
+        )
+
+      case 'custom-html':
+        return (
+          <>
+            <Field label="Title" hint="Accessible title for the embed">
+              <Input
+                value={String(config.title ?? '')}
+                onChange={(e) => set('title', e.target.value)}
+                placeholder="Custom Embed"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Height (px)" hint="Height of the embed in pixels">
+              <Input
+                type="number"
+                min={100}
+                value={String(config.height ?? 400)}
+                onChange={(e) => set('height', parseInt(e.target.value, 10) || 400)}
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="HTML / Embed Code" hint="Paste the raw HTML, script tag, or iFrame snippet here">
+              <textarea
+                value={String(config.html ?? '')}
+                onChange={(e) => set('html', e.target.value)}
+                rows={8}
+                className="w-full bg-secondary border border-input rounded px-3 py-2 text-xs font-mono text-foreground resize-y"
+                spellCheck={false}
+                placeholder='<iframe src="https://…" width="100%" height="400"></iframe>'
+              />
+            </Field>
+          </>
+        )
+
+      case 'discord-widget':
+        return (
+          <>
+            <Field label="Server ID" hint="Found in Discord Server Settings → Widget">
+              <Input
+                value={String(config.serverId ?? '')}
+                onChange={(e) => set('serverId', e.target.value)}
+                placeholder="123456789012345678"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Theme">
+              <select
+                value={String(config.theme ?? 'dark')}
+                onChange={(e) => set('theme', e.target.value)}
+                className="w-full bg-secondary border border-input rounded px-3 py-2 text-sm font-mono text-foreground"
+              >
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+              </select>
+            </Field>
+          </>
+        )
+
+      case 'patreon-widget':
+        return (
+          <>
+            <Field label="Creator Name" hint="Your name as it appears on Patreon">
+              <Input
+                value={String(config.creatorName ?? '')}
+                onChange={(e) => set('creatorName', e.target.value)}
+                placeholder="Your Name"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Patreon Page URL">
+              <Input
+                value={String(config.pageUrl ?? '')}
+                onChange={(e) => set('pageUrl', e.target.value)}
+                placeholder="https://www.patreon.com/yourname"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+          </>
+        )
+
+      case 'eventbrite-widget':
+        return (
+          <>
+            <Field label="Organiser ID" hint="Your Eventbrite organiser ID (from your organiser page URL)">
+              <Input
+                value={String(config.organizerId ?? '')}
+                onChange={(e) => set('organizerId', e.target.value)}
+                placeholder="123456789"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="Event ID (optional)" hint="Leave blank to show all events for the organiser">
+              <Input
+                value={String(config.eventId ?? '')}
+                onChange={(e) => set('eventId', e.target.value)}
+                placeholder="987654321"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+          </>
+        )
+
+      case 'setlistfm-widget':
+        return (
+          <>
+            <Field label="Artist Name" hint="Display name for the artist">
+              <Input
+                value={String(config.artistName ?? '')}
+                onChange={(e) => set('artistName', e.target.value)}
+                placeholder="Zardonic"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label="MusicBrainz ID (MBID)" hint="From the Setlist.fm artist page URL">
+              <Input
+                value={String(config.artistMbid ?? '')}
+                onChange={(e) => set('artistMbid', e.target.value)}
+                placeholder="e.g. 4b585938-f271-45e2-b19a-91215b125e38"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+          </>
         )
 
       default:

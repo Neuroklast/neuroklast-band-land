@@ -743,7 +743,10 @@ export interface SectionConfig {
 // ─── WIDGET PLUGINS (#163) ───────────────────────────────────────────────────
 
 /** Category of a widget plugin */
-export type WidgetCategory = 'events' | 'music' | 'video' | 'social' | 'analytics' | 'merch' | 'other'
+export type WidgetCategory = 'events' | 'music' | 'video' | 'social' | 'analytics' | 'merch' | 'newsletter' | 'other'
+
+/** Layout position for a widget – where on the page it will be rendered */
+export type WidgetLayoutPosition = 'main' | 'sidebar' | 'footer' | 'hero-below'
 
 /** Configuration for a single widget plugin */
 export interface WidgetPlugin {
@@ -767,6 +770,8 @@ export interface WidgetPlugin {
   order: number
   /** Widget-specific configuration (e.g. artist name, playlist URI) */
   config?: Record<string, unknown>
+  /** Layout position – controls where on the page the widget is rendered */
+  layoutPosition?: WidgetLayoutPosition
   /** Optional theme overrides applied when this widget renders */
   themeOverrides?: Partial<ThemeSettings>
 }
