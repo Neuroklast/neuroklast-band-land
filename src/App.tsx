@@ -34,6 +34,7 @@ import { validateActivationKey } from '@/lib/activation'
 import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
 import { applyThemeToDOM } from '@/lib/theme-application'
+import { useThemeSlots } from '@/lib/theme-registry'
 import AdminDialogManager from '@/components/AdminDialogManager'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
@@ -74,6 +75,7 @@ function App() {
   const { config, updateConfig, setConfig, isLoaded: siteConfigLoaded } = useSiteConfig()
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
   const { cyberpunkOverlay, setCyberpunkOverlay, overlayPhase, loadingText, overlayAnimation } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
+  const { Navigation: ThemeNavigation, LoadingScreen: ThemeLoadingScreen } = useThemeSlots(config.themeSettings?.activePreset)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)
@@ -174,12 +176,24 @@ function App() {
       {vis.systemMonitor !== false && <SystemMonitorHUD />}
       <OverlayEffectsLayer effects={data.themeSettings?.overlayEffects} />
       <AnimatePresence>
-        {loading && <CyberpunkLoader precacheUrls={precacheUrls} siteName={data.siteName} loadingScreenType={data.themeSettings?.loadingScreenType} onLoadComplete={() => { playSound('loadingFinished'); setLoading(false) }} />}
+        {loading && <ThemeLoadingScreen precacheUrls={precacheUrls} siteName={data.siteName} loadingScreenType={data.themeSettings?.loadingScreenType} onLoadComplete={() => { playSound('loadingFinished'); setLoading(false) }} />}
       </AnimatePresence>
 
       {!loading && (
         <>
-          <Navigation siteName={data.siteName} sectionLabels={data.sectionLabels} terminalMorseCode={data.terminalMorseCode || defaultSiteConfig.terminalMorseCode} onTerminalActivation={handleTerminalActivation} />
+          <ThemeNavigation
+            siteName={data.siteName}
+            items={[
+              { label: data.sectionLabels?.home || 'Home', id: 'hero' },
+              { label: data.sectionLabels?.news || 'News', id: 'news' },
+              { label: data.sectionLabels?.biography || 'Biography', id: 'biography' },
+              { label: data.sectionLabels?.gallery || 'Gallery', id: 'gallery' },
+              { label: data.sectionLabels?.gigs || 'Gigs', id: 'gigs' },
+              { label: data.sectionLabels?.releases || 'Releases', id: 'releases' },
+              { label: data.sectionLabels?.media || 'Media', id: 'media' },
+              { label: data.sectionLabels?.connect || 'Connect', id: 'social' }
+            ]}
+          />
           <motion.div className="min-h-screen bg-background text-foreground overflow-x-hidden relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
             {vis.audioVisualizer !== false && <AudioVisualizer />}
             <div className="fixed inset-0 pointer-events-none z-[100]"><div className="absolute inset-0 hud-scanline opacity-30" /></div>
