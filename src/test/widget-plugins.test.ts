@@ -27,6 +27,17 @@ describe('WIDGET_CATALOG', () => {
     expect(WIDGET_CATALOG_IDS).toContain('spotify-player')
   })
 
+  it('contains all new widgets introduced by the widget store expansion', () => {
+    const expectedIds = [
+      'newsletter', 'instagram-feed', 'soundcloud-player', 'apple-music-player',
+      'custom-html', 'discord-widget', 'patreon-widget', 'eventbrite-widget',
+      'setlistfm-widget',
+    ]
+    for (const id of expectedIds) {
+      expect(WIDGET_CATALOG_IDS, `${id} should be in WIDGET_CATALOG`).toContain(id)
+    }
+  })
+
   it('each entry has required fields', () => {
     for (const entry of WIDGET_CATALOG) {
       expect(entry.id, `${entry.id}.id`).toBeTruthy()
@@ -543,5 +554,55 @@ describe('buildStoreItems update fields', () => {
     const items = buildStoreItems(plugins, {})
     const item = items.find((i) => i.id === 'bandsintown')
     expect(item?.version).toBe('0.9.0')
+  })
+})
+
+// ─── widgetDefs ────────────────────────────────────────────────────────────────
+
+import { WIDGET_DEFS, getWidgetDef, resolveLayoutPosition } from '@/lib/widgetDefs'
+
+describe('WIDGET_DEFS', () => {
+  it('has an entry for every catalog widget', () => {
+    for (const entry of WIDGET_CATALOG) {
+      const def = getWidgetDef(entry.id)
+      expect(def, `${entry.id} should have a WidgetDef`).toBeDefined()
+    }
+  })
+
+  it('has unique IDs', () => {
+    const ids = WIDGET_DEFS.map((d) => d.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+})
+
+describe('getWidgetDef', () => {
+  it('returns the def for a known widget', () => {
+    const def = getWidgetDef('bandsintown')
+    expect(def).toBeDefined()
+    expect(def?.id).toBe('bandsintown')
+  })
+
+  it('returns undefined for an unknown widget', () => {
+    expect(getWidgetDef('nonexistent')).toBeUndefined()
+  })
+})
+
+describe('resolveLayoutPosition', () => {
+  it('returns the override when provided', () => {
+    expect(resolveLayoutPosition('newsletter', 'main')).toBe('main')
+    expect(resolveLayoutPosition('bandsintown', 'footer')).toBe('footer')
+  })
+
+  it('returns the default position from the def when no override', () => {
+    // 'newsletter' defaults to 'footer' per POSITION_OVERRIDES
+    expect(resolveLayoutPosition('newsletter')).toBe('footer')
+    // 'discord-widget' defaults to 'sidebar'
+    expect(resolveLayoutPosition('discord-widget')).toBe('sidebar')
+    // 'bandsintown' has no override, so falls back to 'main'
+    expect(resolveLayoutPosition('bandsintown')).toBe('main')
+  })
+
+  it('returns "main" for an unknown widget ID with no override', () => {
+    expect(resolveLayoutPosition('totally-unknown-id')).toBe('main')
   })
 })

@@ -12,6 +12,15 @@ import SpotifyPlayerWidget from './SpotifyPlayerWidget'
 import YouTubeWidget from './YouTubeWidget'
 import MerchStoreWidget from './MerchStoreWidget'
 import AnalyticsWidget from './AnalyticsWidget'
+import NewsletterPluginWidget from './NewsletterPluginWidget'
+import InstagramFeedWidget from './InstagramFeedWidget'
+import SoundCloudWidget from './SoundCloudWidget'
+import AppleMusicWidget from './AppleMusicWidget'
+import CustomHtmlWidget from './CustomHtmlWidget'
+import DiscordWidget from './DiscordWidget'
+import PatreonWidget from './PatreonWidget'
+import EventbriteWidget from './EventbriteWidget'
+import SetlistFmWidget from './SetlistFmWidget'
 
 interface WidgetRendererProps {
   widget: WidgetPlugin
@@ -30,6 +39,24 @@ export default function WidgetRenderer({ widget, themeSettings }: WidgetRenderer
       return <MerchStoreWidget widget={widget} themeSettings={themeSettings} />
     case 'analytics-dashboard':
       return <AnalyticsWidget widget={widget} themeSettings={themeSettings} />
+    case 'newsletter':
+      return <NewsletterPluginWidget widget={widget} themeSettings={themeSettings} />
+    case 'instagram-feed':
+      return <InstagramFeedWidget widget={widget} themeSettings={themeSettings} />
+    case 'soundcloud-player':
+      return <SoundCloudWidget widget={widget} themeSettings={themeSettings} />
+    case 'apple-music-player':
+      return <AppleMusicWidget widget={widget} themeSettings={themeSettings} />
+    case 'custom-html':
+      return <CustomHtmlWidget widget={widget} themeSettings={themeSettings} />
+    case 'discord-widget':
+      return <DiscordWidget widget={widget} themeSettings={themeSettings} />
+    case 'patreon-widget':
+      return <PatreonWidget widget={widget} themeSettings={themeSettings} />
+    case 'eventbrite-widget':
+      return <EventbriteWidget widget={widget} themeSettings={themeSettings} />
+    case 'setlistfm-widget':
+      return <SetlistFmWidget widget={widget} themeSettings={themeSettings} />
     default:
       return (
         <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
