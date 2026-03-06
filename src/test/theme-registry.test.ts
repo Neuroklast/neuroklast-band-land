@@ -71,8 +71,8 @@ describe('getTheme', () => {
 })
 
 describe('getActiveTheme', () => {
-  it('returns cyberpunk when no ID is given', () => {
-    expect(getActiveTheme()).toBe(cyberpunkTheme)
+  it('returns minimal when no ID is given', () => {
+    expect(getActiveTheme()).toBe(minimalTheme)
   })
 
   it('returns the matching theme for a known ID', () => {
@@ -80,8 +80,8 @@ describe('getActiveTheme', () => {
     expect(getActiveTheme('elegant')).toBe(elegantTheme)
   })
 
-  it('falls back to cyberpunk for unknown ID', () => {
-    expect(getActiveTheme('nonexistent')).toBe(cyberpunkTheme)
+  it('falls back to minimal for unknown ID', () => {
+    expect(getActiveTheme('nonexistent')).toBe(minimalTheme)
   })
 })
 

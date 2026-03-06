@@ -3,6 +3,10 @@ import type { ThemePackage } from '@/lib/types'
 import CyberpunkBackgroundEffects from './BackgroundEffects'
 import CyberpunkCard from './Card'
 import CyberpunkSectionDivider from './SectionDivider'
+import CyberpunkHero from './Hero'
+import CyberpunkNavigation from './Navigation'
+import CyberpunkFooter from './Footer'
+import CyberpunkLoadingScreen from './LoadingScreen'
 
 export const cyberpunkTheme: ThemePackage = {
   id: 'cyberpunk',
@@ -127,5 +131,9 @@ export const cyberpunkTheme: ThemePackage = {
     BackgroundEffects: CyberpunkBackgroundEffects,
     Card: CyberpunkCard,
     SectionDivider: CyberpunkSectionDivider,
+    Hero: CyberpunkHero,
+    Navigation: CyberpunkNavigation,
+    Footer: CyberpunkFooter,
+    LoadingScreen: CyberpunkLoadingScreen,
   },
 }

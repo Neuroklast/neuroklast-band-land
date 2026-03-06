@@ -3,6 +3,10 @@ import type { ThemePackage } from '@/lib/types'
 import MinimalBackgroundEffects from './BackgroundEffects'
 import MinimalCard from './Card'
 import MinimalSectionDivider from './SectionDivider'
+import MinimalHero from './Hero'
+import MinimalNavigation from './Navigation'
+import MinimalFooter from './Footer'
+import MinimalLoadingScreen from './LoadingScreen'
 
 export const minimalTheme: ThemePackage = {
   id: 'minimal',
@@ -62,5 +66,9 @@ export const minimalTheme: ThemePackage = {
     BackgroundEffects: MinimalBackgroundEffects,
     Card: MinimalCard,
     SectionDivider: MinimalSectionDivider,
+    Hero: MinimalHero,
+    Navigation: MinimalNavigation,
+    Footer: MinimalFooter,
+    LoadingScreen: MinimalLoadingScreen,
   },
 }

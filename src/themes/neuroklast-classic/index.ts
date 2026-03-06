@@ -4,6 +4,9 @@ import NeuroklastClassicBackgroundEffects from './BackgroundEffects'
 import NeuroklastClassicCard from './Card'
 import NeuroklastClassicSectionDivider from './SectionDivider'
 import NeuroklastClassicLoadingScreen from './LoadingScreen'
+import NeuroklastClassicHero from './Hero'
+import NeuroklastClassicNavigation from './Navigation'
+import NeuroklastClassicFooter from './Footer'
 
 export const neuroklastClassicTheme: ThemePackage = {
   id: 'neuroklast-classic',
@@ -71,5 +74,8 @@ export const neuroklastClassicTheme: ThemePackage = {
     Card: NeuroklastClassicCard,
     SectionDivider: NeuroklastClassicSectionDivider,
     LoadingScreen: NeuroklastClassicLoadingScreen,
+    Hero: NeuroklastClassicHero,
+    Navigation: NeuroklastClassicNavigation,
+    Footer: NeuroklastClassicFooter,
   },
 }

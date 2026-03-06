@@ -3,6 +3,10 @@ import type { ThemePackage } from '@/lib/types'
 import ElegantBackgroundEffects from './BackgroundEffects'
 import ElegantCard from './Card'
 import ElegantSectionDivider from './SectionDivider'
+import ElegantHero from './Hero'
+import ElegantNavigation from './Navigation'
+import ElegantFooter from './Footer'
+import ElegantLoadingScreen from './LoadingScreen'
 
 export const elegantTheme: ThemePackage = {
   id: 'elegant',
@@ -74,6 +78,10 @@ export const elegantTheme: ThemePackage = {
   defaultPresetId: 'gold',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
+    Hero: ElegantHero,
+    Navigation: ElegantNavigation,
+    Footer: ElegantFooter,
+    LoadingScreen: ElegantLoadingScreen,
     BackgroundEffects: ElegantBackgroundEffects,
     Card: ElegantCard,
     SectionDivider: ElegantSectionDivider,

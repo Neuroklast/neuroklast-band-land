@@ -3,6 +3,10 @@ import type { ThemePackage } from '@/lib/types'
 import NeonBackgroundEffects from './BackgroundEffects'
 import NeonCard from './Card'
 import NeonSectionDivider from './SectionDivider'
+import NeonHero from './Hero'
+import NeonNavigation from './Navigation'
+import NeonFooter from './Footer'
+import NeonLoadingScreen from './LoadingScreen'
 
 export const neonTheme: ThemePackage = {
   id: 'neon',
@@ -77,5 +81,9 @@ export const neonTheme: ThemePackage = {
     BackgroundEffects: NeonBackgroundEffects,
     Card: NeonCard,
     SectionDivider: NeonSectionDivider,
+    Hero: NeonHero,
+    Navigation: NeonNavigation,
+    Footer: NeonFooter,
+    LoadingScreen: NeonLoadingScreen,
   },
 }

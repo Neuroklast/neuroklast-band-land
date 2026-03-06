@@ -583,6 +583,11 @@ export interface BackgroundEffectsSlotProps {
 export interface FooterSlotProps {
   socialLinks?: Record<string, string>
   siteName?: string
+  genres?: string[]
+  label?: string
+  onAdminLogin?: () => void
+  onImpressum?: () => void
+  onDatenschutz?: () => void
 }
 
 /** All visual slots a theme can override */

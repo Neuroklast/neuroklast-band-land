@@ -3,6 +3,10 @@ import type { ThemePackage } from '@/lib/types'
 import ArtDecoCyberpunkBackgroundEffects from './BackgroundEffects'
 import ArtDecoCyberpunkCard from './Card'
 import ArtDecoCyberpunkSectionDivider from './SectionDivider'
+import ArtDecoCyberpunkHero from './Hero'
+import ArtDecoCyberpunkNavigation from './Navigation'
+import ArtDecoCyberpunkFooter from './Footer'
+import ArtDecoCyberpunkLoadingScreen from './LoadingScreen'
 
 export const artDecoCyberpunkTheme: ThemePackage = {
   id: 'art-deco-cyberpunk',
@@ -97,5 +101,9 @@ export const artDecoCyberpunkTheme: ThemePackage = {
     BackgroundEffects: ArtDecoCyberpunkBackgroundEffects,
     Card: ArtDecoCyberpunkCard,
     SectionDivider: ArtDecoCyberpunkSectionDivider,
+    Hero: ArtDecoCyberpunkHero,
+    Navigation: ArtDecoCyberpunkNavigation,
+    Footer: ArtDecoCyberpunkFooter,
+    LoadingScreen: ArtDecoCyberpunkLoadingScreen,
   },
 }

@@ -49,13 +49,13 @@ export function getAllThemes(): ThemePackage[] {
   return Array.from(_registry.values())
 }
 
-/** Get the active theme based on a theme ID (falls back to cyberpunk) */
+/** Get the active theme based on a theme ID (falls back to minimal) */
 export function getActiveTheme(themeId?: string): ThemePackage {
   if (themeId) {
     const found = _registry.get(themeId)
     if (found) return found
   }
-  const fallback = _registry.get('cyberpunk') ?? Array.from(_registry.values())[0]
+  const fallback = _registry.get('minimal') ?? Array.from(_registry.values())[0]
   if (!fallback) throw new Error('Theme registry is empty — no themes have been registered')
   return fallback
 }
