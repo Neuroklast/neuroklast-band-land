@@ -476,7 +476,9 @@ export default function ThemeCustomizerDialog({
                   <details className="mt-4">
                     <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">Quick Color Presets</summary>
                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+
                       {[...THEME_PRESETS, ...(draft.customConfig?.savedPresets as ThemePreset[] || [])].map(preset => (
+
                         <div key={preset.name} className="relative group">
                           <button
                             onClick={() => handlePreset(preset)}
@@ -541,7 +543,7 @@ export default function ThemeCustomizerDialog({
                             const newPreset: ThemePreset = {
                               name,
                               description: 'Custom saved preset',
-                              theme: { ...draft }
+                              theme: { ...draft, customConfig: { ...(draft.customConfig || {}), savedPresets: undefined } }
                             }
 
                             setDraft(prev => ({
