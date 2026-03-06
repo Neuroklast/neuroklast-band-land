@@ -24,7 +24,7 @@ vi.mock('@vercel/kv', () => {
 })
 
 // Mock ratelimit
-vi.mock('../../api/_ratelimit.js', () => ({
+vi.mock('../../api/_ratelimit.ts', () => ({
   hashIp: vi.fn((ip) => `hashed_${ip}`),
   getClientIp: vi.fn(() => '127.0.0.1'),
 }))

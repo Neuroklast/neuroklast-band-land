@@ -107,12 +107,12 @@ This document summarizes the implementation of CRT/terminal aesthetic enhancemen
 #### Rate Limiting
 - **Implementation**: `@upstash/ratelimit` with Vercel KV (sliding window: 5 req / 10 s)
 - **GDPR**: IP addresses hashed with SHA-256 + salt; no plaintext IPs stored; auto-expires
-- **Files**: `api/_ratelimit.js`, all 7 API handlers
+- **Files**: `api/_ratelimit.ts`, all API handlers
 
 #### Input Validation (Zod)
 - **Implementation**: Strict Zod schemas for all API inputs
 - **Coverage**: KV key/value, email, analytics events, folder IDs, URLs, search terms
-- **Files**: `api/_schemas.js`, all 7 API handlers
+- **Files**: `api/_schemas.ts`, all API handlers
 
 #### Honeytokens (Intrusion Detection)
 - **Implementation**: Decoy records in KV; any access triggers silent alarm

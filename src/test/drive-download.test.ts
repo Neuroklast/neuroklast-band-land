@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // ---------------------------------------------------------------------------
 const mockApplyRateLimit = vi.fn()
 
-vi.mock('../../api/_ratelimit.js', () => ({
+vi.mock('../../api/_ratelimit.ts', () => ({
   applyRateLimit: (...args: unknown[]) => mockApplyRateLimit(...args),
   hashIp: vi.fn().mockReturnValue('hashed-ip'),
   getClientIp: vi.fn().mockReturnValue('1.2.3.4'),

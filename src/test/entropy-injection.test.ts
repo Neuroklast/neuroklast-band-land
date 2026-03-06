@@ -13,7 +13,7 @@ vi.mock('@vercel/kv', () => ({
 }))
 
 // Mock rate limiter
-vi.mock('../../api/_ratelimit.js', () => ({
+vi.mock('../../api/_ratelimit.ts', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(true),
   getClientIp: vi.fn().mockReturnValue('1.2.3.4'),
   hashIp: vi.fn().mockReturnValue('hashed-ip-1234'),

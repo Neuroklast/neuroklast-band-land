@@ -12,14 +12,20 @@ const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 // Use Vite's `mode` parameter (reliable) instead of process.env.NODE_ENV to
 // detect production builds — mode is 'production' for `vite build` and
 // 'development' for `vite dev`/`vite preview`.
+//
+// Obfuscation is opt-in: set VITE_OBFUSCATE=true to enable it.
+// Note: obfuscation with stringArray + base64 encoding inflates the bundle
+// by 30–100 % and can noticeably slow down script evaluation on mobile.
+// It is disabled by default so CI and development builds stay fast.
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
+  const enableObfuscation = process.env.VITE_OBFUSCATE === 'true';
 
   return {
     plugins: [
       react(),
       tailwindcss(),
-      ...(isProduction ? [{
+      ...(isProduction && enableObfuscation ? [{
         name: 'vite:obfuscatefiles',
         generateBundle(_options: unknown, bundle: OutputBundle) {
           const obfuscatorOptions: ObfuscatorOptions = {
@@ -67,6 +73,22 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': resolve(projectRoot, 'src')
       }
+    },
+    build: {
+      rollupOptions: {
+        // Server-only packages — these are used exclusively in Vercel serverless
+        // functions (api/*.js) and must never be bundled into the client build.
+        // Vite/Rollup should tree-shake them out automatically because they are
+        // not imported anywhere in src/, but listing them here makes that intent
+        // explicit and prevents accidental client-side bundling if an import
+        // ever slips through.
+        external: [
+          '@vercel/kv',
+          '@upstash/ratelimit',
+          'sharp',
+          'resend',
+        ],
+      },
     },
     test: {
       environment: 'jsdom',

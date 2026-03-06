@@ -1,5 +1,24 @@
 import fs from "fs";
 
+/**
+ * Tailwind CSS v4 + legacy config compatibility note
+ * ---------------------------------------------------
+ * This project uses the `@tailwindcss/vite` Vite plugin (Tailwind v4), which
+ * primarily reads configuration from CSS `@theme` directives in `src/index.css`.
+ *
+ * However, this file is still consumed by the Tailwind v4 Vite plugin for:
+ *   • `content` globs (template scanning)
+ *   • CSS variable–based color palette (`neutral`, `accent`, etc.)
+ *   • Custom screen breakpoints (`coarse`, `fine`, `pwa`)
+ *   • Dynamic theme overrides loaded from `theme.json` at build time
+ *   • `darkMode` selector configuration
+ *
+ * `@tailwindcss/postcss` is listed in devDependencies for tooling that
+ * invokes PostCSS directly (e.g. standalone CLI, IDE plugins). If you are
+ * using only the Vite dev server and `vite build`, the PostCSS plugin is not
+ * required and can safely be ignored.
+ */
+
 /** @type {import('tailwindcss').Config} */
 
 let theme = {};

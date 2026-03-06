@@ -55,7 +55,7 @@ Deployment of Band Land requires a valid activation key (see [README — Activat
 - **Sensitive Key Protection**: `admin-password-hash`, keys containing `token` or `secret` are blocked from API reads
 
 ### Input Validation (Zod)
-All API inputs are validated through strict [Zod](https://zod.dev/) schemas (`api/_schemas.js`):
+All API inputs are validated through strict [Zod](https://zod.dev/) schemas (`api/_schemas.ts`):
 - **KV API**: Key format, length (max 200), no control characters; value presence check
 - **Reset Password**: Email must be a valid RFC 5322 email (max 254 chars)
 - **Analytics**: Event type must be one of `page_view | section_view | interaction | click`; meta fields are bounded strings; heatmap coordinates clamped to `[0,1]×[0,2]`
@@ -65,7 +65,7 @@ All API inputs are validated through strict [Zod](https://zod.dev/) schemas (`ap
 - **Image Proxy**: URL is validated, protocol restricted to `http:` / `https:`, SSRF blocklist enforced
 
 ### Rate Limiting
-All API endpoints are protected by rate limiting (`api/_ratelimit.js`):
+All API endpoints are protected by rate limiting (`api/_ratelimit.ts`):
 - **Algorithm**: Sliding window — 5 requests per 10 seconds per client
 - **Backend**: `@upstash/ratelimit` with Vercel KV (Redis)
 - **GDPR Compliance**: Client IPs are hashed with SHA-256 + a secret salt before use as rate-limit keys. No plaintext IPs are stored. Rate-limit state auto-expires after the window period.
@@ -191,7 +191,7 @@ A state-of-the-art admin security center provides full visibility and control:
 | `KV_REST_API_URL` | Vercel KV endpoint | Yes |
 | `KV_REST_API_TOKEN` | Vercel KV auth token | Yes |
 | `VITE_ACTIVATION_KEY` | Deployment activation key (validated against central KV on app startup) | Yes |
-| `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting) | Recommended |
+| `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting). If unset, a random salt is generated per cold start — functional but not persistent across restarts | Recommended |
 | `ADMIN_SETUP_TOKEN` | One-time token required for initial admin password setup. Prevents unauthorized setup via URL guessing. | Recommended |
 | `ADMIN_RESET_EMAIL` | Email for password reset verification & security alerts | For reset & alerting |
 | `ALLOWED_ORIGIN` | Restricts CORS on image proxy to own domain (e.g. `https://neuroklast.net`) | Recommended |
