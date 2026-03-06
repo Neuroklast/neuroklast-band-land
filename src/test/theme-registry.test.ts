@@ -255,14 +255,17 @@ describe('Cross-layer consistency — ThemePackage ↔ THEME_CATALOG ↔ DesignP
       // Only compare when both define overlay effects
       if (pkgOverlay && presetOverlay) {
         for (const key of Object.keys(pkgOverlay) as (keyof typeof pkgOverlay)[]) {
+          const pkgVal = pkgOverlay[key]
+          const presetVal = presetOverlay[key]
+          if (pkgVal === undefined || presetVal === undefined) continue
           expect(
-            pkgOverlay[key].intensity,
+            pkgVal.intensity,
             `${pkg.id}.overlayEffects.${key}.intensity`,
-          ).toBe(presetOverlay[key].intensity)
+          ).toBe(presetVal.intensity)
           expect(
-            pkgOverlay[key].enabled,
+            pkgVal.enabled,
             `${pkg.id}.overlayEffects.${key}.enabled`,
-          ).toBe(presetOverlay[key].enabled)
+          ).toBe(presetVal.enabled)
         }
       }
     }

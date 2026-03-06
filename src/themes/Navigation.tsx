@@ -12,7 +12,7 @@ const LOADING_TEXTS = [
   '> IDENTITY VERIFIED',
 ]
 
-export default function LoadingScreen({ onLoadComplete, precacheUrls = [] }: LoadingScreenProps) {
+export default function LoadingScreen({ onLoadComplete, precacheUrls: _precacheUrls = [] }: LoadingScreenProps) {
   const [loadingText, setLoadingText] = useState(LOADING_TEXTS[0])
   const [progress, setProgress] = useState(0)
 
