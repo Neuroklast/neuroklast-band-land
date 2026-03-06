@@ -15,6 +15,15 @@ import {
   YouTubeWidget,
   MerchStoreWidget,
   AnalyticsWidget,
+  NewsletterPluginWidget,
+  InstagramFeedWidget,
+  SoundCloudWidget,
+  AppleMusicWidget,
+  CustomHtmlWidget,
+  DiscordWidget,
+  PatreonWidget,
+  EventbriteWidget,
+  SetlistFmWidget,
   WidgetRenderer,
 } from '@/components/widgets'
 
@@ -39,6 +48,42 @@ describe('widgets/index.ts re-exports', () => {
 
   it('exports AnalyticsWidget', () => {
     expect(typeof AnalyticsWidget).toBe('function')
+  })
+
+  it('exports NewsletterPluginWidget', () => {
+    expect(typeof NewsletterPluginWidget).toBe('function')
+  })
+
+  it('exports InstagramFeedWidget', () => {
+    expect(typeof InstagramFeedWidget).toBe('function')
+  })
+
+  it('exports SoundCloudWidget', () => {
+    expect(typeof SoundCloudWidget).toBe('function')
+  })
+
+  it('exports AppleMusicWidget', () => {
+    expect(typeof AppleMusicWidget).toBe('function')
+  })
+
+  it('exports CustomHtmlWidget', () => {
+    expect(typeof CustomHtmlWidget).toBe('function')
+  })
+
+  it('exports DiscordWidget', () => {
+    expect(typeof DiscordWidget).toBe('function')
+  })
+
+  it('exports PatreonWidget', () => {
+    expect(typeof PatreonWidget).toBe('function')
+  })
+
+  it('exports EventbriteWidget', () => {
+    expect(typeof EventbriteWidget).toBe('function')
+  })
+
+  it('exports SetlistFmWidget', () => {
+    expect(typeof SetlistFmWidget).toBe('function')
   })
 
   it('exports WidgetRenderer', () => {
@@ -92,13 +137,63 @@ describe('WidgetRenderer component routing', () => {
     expect(() => WidgetRenderer({ widget })).not.toThrow()
   })
 
+  it('accepts a WidgetPlugin with id=newsletter', () => {
+    const widget = makeWidget('newsletter')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=instagram-feed', () => {
+    const widget = makeWidget('instagram-feed')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=soundcloud-player', () => {
+    const widget = makeWidget('soundcloud-player')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=apple-music-player', () => {
+    const widget = makeWidget('apple-music-player')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=custom-html', () => {
+    const widget = makeWidget('custom-html')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=discord-widget', () => {
+    const widget = makeWidget('discord-widget')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=patreon-widget', () => {
+    const widget = makeWidget('patreon-widget')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=eventbrite-widget', () => {
+    const widget = makeWidget('eventbrite-widget')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
+  it('accepts a WidgetPlugin with id=setlistfm-widget', () => {
+    const widget = makeWidget('setlistfm-widget')
+    expect(() => WidgetRenderer({ widget })).not.toThrow()
+  })
+
   it('accepts an unknown widget id without throwing', () => {
     const widget = makeWidget('unknown-widget-xyz')
     expect(() => WidgetRenderer({ widget })).not.toThrow()
   })
 
   it('returns a non-null result for known IDs', () => {
-    const known = ['bandsintown', 'spotify-player', 'youtube-embed', 'merch-store', 'analytics-dashboard']
+    const known = [
+      'bandsintown', 'spotify-player', 'youtube-embed', 'merch-store',
+      'analytics-dashboard', 'newsletter', 'instagram-feed', 'soundcloud-player',
+      'apple-music-player', 'custom-html', 'discord-widget', 'patreon-widget',
+      'eventbrite-widget', 'setlistfm-widget',
+    ]
     for (const id of known) {
       const result = WidgetRenderer({ widget: makeWidget(id) })
       expect(result).not.toBeNull()
@@ -209,5 +304,177 @@ describe('AnalyticsWidget', () => {
       version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
     }
     expect(() => AnalyticsWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('NewsletterPluginWidget', () => {
+  it('renders without throwing when config is empty', () => {
+    const widget: WidgetPlugin = {
+      id: 'newsletter', name: 'Newsletter', description: '', category: 'newsletter',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => NewsletterPluginWidget({ widget })).not.toThrow()
+  })
+
+  it('renders with custom title/description config', () => {
+    const widget: WidgetPlugin = {
+      id: 'newsletter', name: 'Newsletter', description: '', category: 'newsletter',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { title: 'Subscribe', description: 'Get updates', buttonText: 'Join' },
+    }
+    expect(() => NewsletterPluginWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('InstagramFeedWidget', () => {
+  it('renders placeholder grid without throwing when config is empty', () => {
+    const widget: WidgetPlugin = {
+      id: 'instagram-feed', name: 'Instagram Feed', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => InstagramFeedWidget({ widget })).not.toThrow()
+  })
+
+  it('renders with custom imageCount', () => {
+    const widget: WidgetPlugin = {
+      id: 'instagram-feed', name: 'Instagram Feed', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { imageCount: 9 },
+    }
+    expect(() => InstagramFeedWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('SoundCloudWidget', () => {
+  it('renders placeholder when no URL', () => {
+    const widget: WidgetPlugin = {
+      id: 'soundcloud-player', name: 'SoundCloud', description: '', category: 'music',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => SoundCloudWidget({ widget })).not.toThrow()
+  })
+
+  it('renders iframe when URL is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'soundcloud-player', name: 'SoundCloud', description: '', category: 'music',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { url: 'https://soundcloud.com/artist/track', color: '#ff5500' },
+    }
+    const result = SoundCloudWidget({ widget })
+    expect(result).not.toBeNull()
+  })
+})
+
+describe('AppleMusicWidget', () => {
+  it('renders placeholder when no embed URL', () => {
+    const widget: WidgetPlugin = {
+      id: 'apple-music-player', name: 'Apple Music', description: '', category: 'music',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => AppleMusicWidget({ widget })).not.toThrow()
+  })
+
+  it('renders iframe when embed URL is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'apple-music-player', name: 'Apple Music', description: '', category: 'music',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { embedUrl: 'https://embed.music.apple.com/us/album/test/123' },
+    }
+    expect(() => AppleMusicWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('CustomHtmlWidget', () => {
+  it('renders placeholder when no HTML', () => {
+    const widget: WidgetPlugin = {
+      id: 'custom-html', name: 'Custom HTML', description: '', category: 'other',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => CustomHtmlWidget({ widget })).not.toThrow()
+  })
+
+  it('renders iframe when HTML is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'custom-html', name: 'Custom HTML', description: '', category: 'other',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { html: '<p>Hello World</p>', title: 'Test Embed', height: 300 },
+    }
+    expect(() => CustomHtmlWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('DiscordWidget', () => {
+  it('renders placeholder when no server ID', () => {
+    const widget: WidgetPlugin = {
+      id: 'discord-widget', name: 'Discord', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => DiscordWidget({ widget })).not.toThrow()
+  })
+
+  it('renders iframe when server ID is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'discord-widget', name: 'Discord', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { serverId: '123456789012345678', theme: 'dark' },
+    }
+    expect(() => DiscordWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('PatreonWidget', () => {
+  it('renders placeholder when no page URL', () => {
+    const widget: WidgetPlugin = {
+      id: 'patreon-widget', name: 'Patreon', description: '', category: 'other',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => PatreonWidget({ widget })).not.toThrow()
+  })
+
+  it('renders CTA when page URL is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'patreon-widget', name: 'Patreon', description: '', category: 'other',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { creatorName: 'Zardonic', pageUrl: 'https://www.patreon.com/zardonic' },
+    }
+    expect(() => PatreonWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('EventbriteWidget', () => {
+  it('renders placeholder when no IDs', () => {
+    const widget: WidgetPlugin = {
+      id: 'eventbrite-widget', name: 'Eventbrite', description: '', category: 'events',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => EventbriteWidget({ widget })).not.toThrow()
+  })
+
+  it('renders iframe when organiser ID is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'eventbrite-widget', name: 'Eventbrite', description: '', category: 'events',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { organizerId: '123456789' },
+    }
+    expect(() => EventbriteWidget({ widget })).not.toThrow()
+  })
+})
+
+describe('SetlistFmWidget', () => {
+  it('renders placeholder when no MBID', () => {
+    const widget: WidgetPlugin = {
+      id: 'setlistfm-widget', name: 'Setlist.fm', description: '', category: 'events',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    expect(() => SetlistFmWidget({ widget })).not.toThrow()
+  })
+
+  it('renders CTA link when MBID is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'setlistfm-widget', name: 'Setlist.fm', description: '', category: 'events',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { artistMbid: '4b585938-f271-45e2-b19a-91215b125e38', artistName: 'Zardonic' },
+    }
+    expect(() => SetlistFmWidget({ widget })).not.toThrow()
   })
 })
