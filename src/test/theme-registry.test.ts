@@ -185,8 +185,9 @@ describe('Customizability', () => {
 })
 
 describe('useThemeSlots — slot fallbacks', () => {
-  it('returns an object with all 7 slot component keys', () => {
+  it('returns an object with all 15 slot component keys', () => {
     const slots = useThemeSlots()
+    // Original 7 slots
     expect(slots.Hero).toBeDefined()
     expect(slots.Navigation).toBeDefined()
     expect(slots.LoadingScreen).toBeDefined()
@@ -194,6 +195,20 @@ describe('useThemeSlots — slot fallbacks', () => {
     expect(slots.Card).toBeDefined()
     expect(slots.BackgroundEffects).toBeDefined()
     expect(slots.Footer).toBeDefined()
+    // New 8 slots
+    expect(slots.OverlayModal).toBeDefined()
+    expect(slots.SectionHeading).toBeDefined()
+    expect(slots.OverlayTransition).toBeDefined()
+    expect(slots.ItemCard).toBeDefined()
+    expect(slots.CookieBanner).toBeDefined()
+    expect(slots.ScrollReveal).toBeDefined()
+    expect(slots.HoverEffect).toBeDefined()
+    expect(slots.PageLayout).toBeDefined()
+  })
+
+  it('has exactly 15 slots', () => {
+    const slots = useThemeSlots()
+    expect(Object.keys(slots)).toHaveLength(15)
   })
 
   it('all slot values are functions (React components)', () => {
@@ -207,6 +222,8 @@ describe('useThemeSlots — slot fallbacks', () => {
     const slots = useThemeSlots('minimal')
     expect(typeof slots.Hero).toBe('function')
     expect(typeof slots.Footer).toBe('function')
+    expect(typeof slots.OverlayModal).toBe('function')
+    expect(typeof slots.ScrollReveal).toBe('function')
   })
 })
 

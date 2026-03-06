@@ -28,6 +28,14 @@ import {
   DefaultCard,
   DefaultBackgroundEffects,
   DefaultFooter,
+  DefaultOverlayModal,
+  DefaultSectionHeading,
+  DefaultOverlayTransition,
+  DefaultItemCard,
+  DefaultCookieBanner,
+  DefaultScrollReveal,
+  DefaultHoverEffect,
+  DefaultPageLayout,
 } from '@/themes'
 
 // ─── Registry ────────────────────────────────────────────────────────────────
@@ -81,6 +89,14 @@ function resolveSlots(theme: ThemePackage): ThemeSlots {
     Card: theme.slots.Card ?? DefaultCard,
     BackgroundEffects: theme.slots.BackgroundEffects ?? DefaultBackgroundEffects,
     Footer: theme.slots.Footer ?? DefaultFooter,
+    OverlayModal: theme.slots.OverlayModal ?? DefaultOverlayModal,
+    SectionHeading: theme.slots.SectionHeading ?? DefaultSectionHeading,
+    OverlayTransition: theme.slots.OverlayTransition ?? DefaultOverlayTransition,
+    ItemCard: theme.slots.ItemCard ?? DefaultItemCard,
+    CookieBanner: theme.slots.CookieBanner ?? DefaultCookieBanner,
+    ScrollReveal: theme.slots.ScrollReveal ?? DefaultScrollReveal,
+    HoverEffect: theme.slots.HoverEffect ?? DefaultHoverEffect,
+    PageLayout: theme.slots.PageLayout ?? DefaultPageLayout,
   }
 }
 

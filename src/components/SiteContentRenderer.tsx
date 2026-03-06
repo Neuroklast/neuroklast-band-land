@@ -104,6 +104,7 @@ export default function SiteContentRenderer({
                 onUpdate={(news) => onUpdate('news', news)}
                 sectionLabels={data.sectionLabels}
                 onLabelChange={onLabelChange}
+                onNewsClick={(item) => onSetCyberpunkOverlay({ type: 'news', data: item })}
               />
             </SectionErrorBoundary>
           </SectionMotion>
@@ -250,6 +251,7 @@ export default function SiteContentRenderer({
                 })}
                 sectionLabels={data.sectionLabels}
                 onLabelChange={onLabelChange}
+                onFriendClick={(friend) => onSetCyberpunkOverlay({ type: 'friend', data: friend })}
               />
             </SectionErrorBoundary>
           </SectionMotion>

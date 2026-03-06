@@ -564,6 +564,8 @@ export interface NavigationSlotProps {
   siteName: string
   editMode?: boolean
   onNavigate?: (id: string) => void
+  /** Optional layout hint — themes can render sidebar, bottom, or floating navigation */
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'floating'
 }
 
 export interface LoadingScreenSlotProps {
@@ -594,7 +596,62 @@ export interface FooterSlotProps {
   onDatenschutz?: () => void
 }
 
-/** All visual slots a theme can override */
+// ─── New Slot Props (slots 8–15) ─────────────────────────────────────────────
+
+export interface OverlayModalSlotProps {
+  overlay: { type: 'member' | 'gig' | 'release' | 'news' | 'friend' | 'impressum' | 'datenschutz'; data: unknown } | null
+  onClose: () => void
+  sectionLabels?: SectionLabels
+}
+
+export interface SectionHeadingSlotProps {
+  title: string
+  /** Optional prefix character, e.g. ">" */
+  prefix?: string
+  isInView?: boolean
+  editMode?: boolean
+  editValue?: string
+  onEditChange?: (value: string) => void
+}
+
+export interface OverlayTransitionSlotProps {
+  show: boolean
+  onComplete?: () => void
+}
+
+export interface ItemCardSlotProps {
+  type: 'gig' | 'release' | 'news' | 'member' | 'friend' | 'gallery'
+  data: unknown
+  onClick?: () => void
+  editMode?: boolean
+  /** Compact list layout vs. full grid card */
+  compact?: boolean
+}
+
+export interface CookieBannerSlotProps {
+  onAccept: () => void
+  onDecline?: () => void
+}
+
+export interface ScrollRevealSlotProps {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}
+
+export interface HoverEffectSlotProps {
+  children: React.ReactNode
+  variant?: 'card' | 'button' | 'link' | 'image'
+  className?: string
+  onClick?: () => void
+}
+
+export interface PageLayoutSlotProps {
+  children: React.ReactNode
+  className?: string
+}
+
+
 export interface ThemeSlots {
   Hero: React.ComponentType<HeroSlotProps>
   Navigation: React.ComponentType<NavigationSlotProps>
@@ -603,6 +660,15 @@ export interface ThemeSlots {
   Card: React.ComponentType<CardSlotProps>
   BackgroundEffects: React.ComponentType<BackgroundEffectsSlotProps>
   Footer: React.ComponentType<FooterSlotProps>
+  // New slots (slots 8–15)
+  OverlayModal: React.ComponentType<OverlayModalSlotProps>
+  SectionHeading: React.ComponentType<SectionHeadingSlotProps>
+  OverlayTransition: React.ComponentType<OverlayTransitionSlotProps>
+  ItemCard: React.ComponentType<ItemCardSlotProps>
+  CookieBanner: React.ComponentType<CookieBannerSlotProps>
+  ScrollReveal: React.ComponentType<ScrollRevealSlotProps>
+  HoverEffect: React.ComponentType<HoverEffectSlotProps>
+  PageLayout: React.ComponentType<PageLayoutSlotProps>
 }
 
 /** A complete theme package */
