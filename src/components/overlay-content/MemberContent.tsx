@@ -21,7 +21,7 @@ export default function MemberContent({ member, sectionLabels }: { member: Membe
           {member.photo ? (
             <div
               className="w-full h-full overflow-hidden border border-primary/40 bg-black"
-              style={{ boxShadow: '0 0 20px color-mix(in oklch, var(--primary) 30%, transparent)' }}
+              style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent))' }}
             >
               <ProgressiveImage src={member.photo} alt={member.name} className="w-full h-full object-contain" />
             </div>

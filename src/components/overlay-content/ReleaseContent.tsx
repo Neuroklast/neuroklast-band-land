@@ -18,7 +18,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
         {release.artwork && (
           <div
             className="w-full sm:w-40 flex-shrink-0 aspect-square overflow-hidden border border-primary/30"
-            style={{ boxShadow: '0 0 20px color-mix(in oklch, var(--primary) 20%, transparent)' }}
+            style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 20%, transparent))' }}
           >
             <ProgressiveImage src={release.artwork} alt={release.title} className="w-full h-full object-cover" />
           </div>
