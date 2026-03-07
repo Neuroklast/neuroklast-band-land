@@ -13,7 +13,6 @@ import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
 import { MovingScanline } from '@/components/MovingScanline'
 import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import CyberSpinner from '@/components/CyberSpinner'
-import { useSound } from '@/hooks/use-sound'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
 import type {
@@ -195,8 +194,6 @@ function App() {
   const data = useMemo(() => ({ ...defaultSiteConfig, ...config }), [config])
   const _precacheUrls = useMemo(() => collectImageUrls(data), [data])
   const vis = useMemo(() => data.sectionVisibility || {}, [data.sectionVisibility])
-  const { play: playSound } = useSound(data.soundSettings, editMode)
-
   // ── DOM side effects ─────────────────────────────────────────────────────────
   useEffect(() => { applyConfigOverrides(data.configOverrides) }, [data.configOverrides])
   useEffect(() => { applyThemeToDOM(data.themeSettings) }, [data.themeSettings])
@@ -254,7 +251,6 @@ function App() {
           siteConfigLoaded ? (
             <ThemeLoadingScreen
               onComplete={() => {
-                playSound('loadingFinished')
                 setLoading(false)
               }}
             />

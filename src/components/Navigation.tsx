@@ -10,12 +10,9 @@ import {
   NAV_HEIGHT_PX,
 } from '@/lib/config'
 import MusicPlayer from '@/components/MusicPlayer'
-import type { Track } from '@/components/MusicPlayer'
+import { LOCAL_TRACKS } from '@/lib/music-tracks'
 import { useMorseCode } from '@/hooks/use-morse-code'
 import { useLocale } from '@/contexts/LocaleContext'
-
-/** Local tracks served from public/music/ */
-const LOCAL_TRACKS: Track[] = []
 
 interface NavigationProps {
   siteName?: string
