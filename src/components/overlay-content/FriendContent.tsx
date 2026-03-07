@@ -44,7 +44,7 @@ export default function FriendContent({ friend, sectionLabels }: FriendContentPr
             style={{ boxShadow: '0 0 20px color-mix(in oklch, var(--primary) 30%, transparent)' }}
           >
             {photoUrl ? (
-              <ProgressiveImage src={photoUrl} alt={friend.name} className="w-full h-full object-cover" />
+              <ProgressiveImage src={photoUrl} alt={friend.name} className="w-full h-full object-contain" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-muted-foreground font-mono text-xs">NO IMG</span>

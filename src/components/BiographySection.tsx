@@ -301,7 +301,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                                   <ProgressiveImage
                                     src={resolvePhoto(member.photo)}
                                     alt={member.name}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-contain"
                                   />
                                 </div>
                               ) : (

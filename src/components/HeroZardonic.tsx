@@ -201,7 +201,7 @@ export default function HeroZardonic({
                 className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
               />
               {/* CRT scanline overlay on logo */}
-              <div className="absolute inset-0 pointer-events-none z-20">
+              <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                 <div
                   className="absolute inset-0 bg-repeat opacity-15"
                   style={{
@@ -251,7 +251,7 @@ export default function HeroZardonic({
                 }}
               />
               {/* CRT scanline + dot-matrix overlays */}
-              <div className="absolute inset-0 pointer-events-none z-20">
+              <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                 <div
                   className="absolute inset-0 bg-repeat opacity-15"
                   style={{
