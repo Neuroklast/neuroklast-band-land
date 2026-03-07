@@ -3,8 +3,8 @@ import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { LoadingScreenSlotProps } from '@/lib/types'
 
-const CODE_CHARS = '01アイウエオNEUROKLAST'
-const GLITCH_CHARS = '01アイウエオNEUROKLAST#@!%&'
+const CODE_CHARS = '0123456789ABCDEFNEUROKLAST!@#$%&*'
+const GLITCH_CHARS = '0123456789ABCDEFNEUROKLAST#@!%&*><'
 const GLITCH_PROBABILITY = 0.45
 const BOOT_MESSAGE_INTERVAL_MS = 600
 const HEX_SCROLL_DISTANCE = -800

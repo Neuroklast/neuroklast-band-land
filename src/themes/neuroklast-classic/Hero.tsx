@@ -6,7 +6,7 @@ import { CaretDown, PencilSimple } from '@phosphor-icons/react'
 import type { HeroSlotProps } from '@/lib/types'
 import './styles.css'
 
-const CODE_CHARS = '01アイウエオNEUROKLAST'
+const CODE_CHARS = '0123456789ABCDEFNEUROKLAST!@#$%&*'
 
 export default function NeuroklastClassicHero({
   name,

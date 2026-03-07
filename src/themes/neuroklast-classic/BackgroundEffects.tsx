@@ -1,7 +1,7 @@
 import './styles.css'
 import type { BackgroundEffectsSlotProps } from '@/lib/types'
 
-const CODE_CHARS = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ'
+const CODE_CHARS = '0123456789ABCDEFNEUROKLAST!@#$%&*><'
 const COLS = 20
 const codeColumns = Array.from({ length: COLS }, (_, i) => ({
   chars: Array.from({ length: 30 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join(''),
