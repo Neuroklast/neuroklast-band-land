@@ -1,7 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import MinimalBackgroundEffects from './BackgroundEffects'
-import MinimalSectionDivider from './SectionDivider'
 import MinimalHero from './Hero'
 import MinimalNavigation from './Navigation'
 import MinimalFooter from './Footer'
@@ -65,7 +64,6 @@ export const minimalTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: MinimalBackgroundEffects,
-    SectionDivider: MinimalSectionDivider,
     Hero: MinimalHero,
     Navigation: MinimalNavigation,
     Footer: MinimalFooter,

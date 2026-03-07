@@ -19,10 +19,7 @@ export function DefaultLoadingScreen({ onComplete }: { onComplete: () => void })
 }
 DefaultLoadingScreen.displayName = 'DefaultLoadingScreen'
 
-export function DefaultSectionDivider() {
-  return null
-}
-DefaultSectionDivider.displayName = 'DefaultSectionDivider'
+export { default as DefaultSectionDivider } from './primitives/ThemeSectionDivider'
 
 export { default as DefaultCard } from './primitives/ThemeCard'
 

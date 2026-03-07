@@ -3,7 +3,6 @@ import type { ThemePackage } from '@/lib/types'
 import Hero from './Hero'
 import Navigation from './Navigation'
 import SignalStaticBackgroundEffects from './BackgroundEffects'
-import SignalStaticSectionDivider from './SectionDivider'
 import SignalStaticLoadingScreen from './LoadingScreen'
 
 export const signalStaticTheme: ThemePackage = {
@@ -99,7 +98,6 @@ export const signalStaticTheme: ThemePackage = {
     Hero,
     Navigation,
     BackgroundEffects: SignalStaticBackgroundEffects,
-    SectionDivider: SignalStaticSectionDivider,
     LoadingScreen: SignalStaticLoadingScreen,
   },
 }

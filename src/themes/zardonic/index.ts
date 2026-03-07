@@ -2,7 +2,6 @@ import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import ZardonicLoadingScreen from './LoadingScreen'
 import ZardonicBackgroundEffects from './BackgroundEffects'
-import ZardonicSectionDivider from './SectionDivider'
 import ZardonicHero from './Hero'
 import ZardonicNavigation from './Navigation'
 import ZardonicFooter from './Footer'
@@ -163,6 +162,5 @@ export const zardonicTheme: ThemePackage = {
     Footer: ZardonicFooter,
     LoadingScreen: ZardonicLoadingScreen,
     BackgroundEffects: ZardonicBackgroundEffects,
-    SectionDivider: ZardonicSectionDivider,
   },
 }

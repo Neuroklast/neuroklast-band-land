@@ -3,7 +3,6 @@ import type { ThemePackage } from '@/lib/types'
 import Hero from './Hero'
 import Navigation from './Navigation'
 import GlitchNoirBackgroundEffects from './BackgroundEffects'
-import GlitchNoirSectionDivider from './SectionDivider'
 import GlitchNoirLoadingScreen from './LoadingScreen'
 
 export const glitchNoirTheme: ThemePackage = {
@@ -99,7 +98,6 @@ export const glitchNoirTheme: ThemePackage = {
     Hero,
     Navigation,
     BackgroundEffects: GlitchNoirBackgroundEffects,
-    SectionDivider: GlitchNoirSectionDivider,
     LoadingScreen: GlitchNoirLoadingScreen,
   },
 }

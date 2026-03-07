@@ -1,7 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import SteampunkBackgroundEffects from './BackgroundEffects'
-import SteampunkSectionDivider from './SectionDivider'
 
 export const steampunkTheme: ThemePackage = {
   id: 'steampunk',
@@ -124,6 +123,5 @@ export const steampunkTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: SteampunkBackgroundEffects,
-    SectionDivider: SteampunkSectionDivider,
   },
 }
