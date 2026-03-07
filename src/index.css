@@ -340,10 +340,10 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes subtle-red-glow {
   0%, 100% {
-    box-shadow: 0 0 5px oklch(0.50 0.22 25 / 0.2);
+    filter: drop-shadow(0 0 5px oklch(0.50 0.22 25 / 0.2));
   }
   50% {
-    box-shadow: 0 0 15px oklch(0.50 0.22 25 / 0.4);
+    filter: drop-shadow(0 0 15px oklch(0.50 0.22 25 / 0.4));
   }
 }
 
@@ -374,7 +374,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .occult-border:hover {
   border-color: oklch(0.50 0.22 25 / 0.5);
-  box-shadow: 0 0 10px oklch(0.50 0.22 25 / 0.2);
+  filter: drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.2));
 }
 
 @keyframes scan-line {

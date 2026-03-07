@@ -41,7 +41,7 @@ export default function FriendContent({ friend, sectionLabels }: FriendContentPr
         <div className="relative w-full max-w-[200px]">
           <div
             className="w-full aspect-square overflow-hidden border border-primary/40 bg-black"
-            style={{ boxShadow: '0 0 20px color-mix(in oklch, var(--primary) 30%, transparent)' }}
+            style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent))' }}
           >
             {photoUrl ? (
               <ProgressiveImage src={photoUrl} alt={friend.name} className="w-full h-full object-contain" />
