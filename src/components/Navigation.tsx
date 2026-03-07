@@ -15,7 +15,12 @@ import { useMorseCode } from '@/hooks/use-morse-code'
 import { useLocale } from '@/contexts/LocaleContext'
 
 /** Local tracks served from public/music/ */
-const LOCAL_TRACKS: Track[] = []
+const LOCAL_TRACKS: Track[] = [
+  { title: 'Neuroklast – IGNITE', src: '/music/Neuroklast - IGNITE.mp3' },
+  { title: 'Neuroklast – LILITH', src: '/music/Neuroklast - LILITH.mp3' },
+  { title: 'Neuroklast – SUCCUBUS (DFG Edit)', src: '/music/Neuroklast - SUCCUBUS (DFG Edit).mp3' },
+  { title: 'Neuroklast ft Mechanical Vein – DETHRONE', src: '/music/Neuroklast ft Mechanical Vein - DETHRONE.mp3' },
+]
 
 interface NavigationProps {
   siteName?: string

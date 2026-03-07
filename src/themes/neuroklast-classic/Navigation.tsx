@@ -1,14 +1,24 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { List, X } from '@phosphor-icons/react'
+import { List, X, MusicNote } from '@phosphor-icons/react'
 import type { NavigationSlotProps } from '@/lib/types'
+import MusicPlayer from '@/components/MusicPlayer'
+import type { Track } from '@/components/MusicPlayer'
 import './styles.css'
 
 const NAV_HEIGHT_PX = 64
 const GLITCH_PROBABILITY = 0.95
 const GLITCH_DURATION_MS = 300
 const GLITCH_INTERVAL_MS = 3000
+
+/** Local tracks served from public/music/ */
+const LOCAL_TRACKS: Track[] = [
+  { title: 'Neuroklast – IGNITE', src: '/music/Neuroklast - IGNITE.mp3' },
+  { title: 'Neuroklast – LILITH', src: '/music/Neuroklast - LILITH.mp3' },
+  { title: 'Neuroklast – SUCCUBUS (DFG Edit)', src: '/music/Neuroklast - SUCCUBUS (DFG Edit).mp3' },
+  { title: 'Neuroklast ft Mechanical Vein – DETHRONE', src: '/music/Neuroklast ft Mechanical Vein - DETHRONE.mp3' },
+]
 
 export default function NeuroklastClassicNavigation({
   items,
@@ -17,6 +27,7 @@ export default function NeuroklastClassicNavigation({
 }: NavigationSlotProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [glitch, setGlitch] = useState(false)
+  const [playerOpen, setPlayerOpen] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -75,10 +86,24 @@ export default function NeuroklastClassicNavigation({
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary shadow-[0_0_4px_var(--primary)] transition-all duration-200 group-hover:w-full" />
               </button>
             ))}
+            <button
+              onClick={() => setPlayerOpen(o => !o)}
+              className={`p-1 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              title={playerOpen ? 'Close Player' : 'Open Player'}
+            >
+              <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+            </button>
           </div>
 
           {/* Mobile menu toggle */}
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={() => setPlayerOpen(o => !o)}
+              className={`p-2 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              title={playerOpen ? 'Close Player' : 'Open Player'}
+            >
+              <MusicNote size={18} weight={playerOpen ? 'fill' : 'regular'} />
+            </button>
             <Button
               variant="ghost"
               size="icon"
@@ -89,6 +114,25 @@ export default function NeuroklastClassicNavigation({
             </Button>
           </div>
         </div>
+
+        {/* Expandable music player dropdown */}
+        <AnimatePresence>
+          {playerOpen && LOCAL_TRACKS.length > 0 && (
+            <motion.div
+              key="nk-music-player-dropdown"
+              className="border-t border-primary/20"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div className="max-w-7xl mx-auto">
+                <MusicPlayer tracks={LOCAL_TRACKS} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       {/* Mobile menu */}
