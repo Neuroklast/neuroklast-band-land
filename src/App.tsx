@@ -251,12 +251,16 @@ function App() {
       <OverlayEffectsLayer effects={data.themeSettings?.overlayEffects} />
       <AnimatePresence>
         {loading && (
-          <ThemeLoadingScreen
-            onComplete={() => {
-              playSound('loadingFinished')
-              setLoading(false)
-            }}
-          />
+          siteConfigLoaded ? (
+            <ThemeLoadingScreen
+              onComplete={() => {
+                playSound('loadingFinished')
+                setLoading(false)
+              }}
+            />
+          ) : (
+            <div className="fixed inset-0 z-[9999] bg-background" />
+          )
         )}
       </AnimatePresence>
 

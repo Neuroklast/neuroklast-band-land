@@ -202,7 +202,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
                   className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
                   style={{ filter: 'drop-shadow(0 0 30px color-mix(in oklch, var(--primary) 60%, transparent))' }}
                 />
-                <div className="absolute inset-0 pointer-events-none z-20">
+                <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                   <div 
                     className="absolute inset-0 bg-repeat opacity-15"
                     style={{
@@ -250,7 +250,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
                   filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
                 }}
               />
-              <div className="absolute inset-0 pointer-events-none z-20">
+              <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                 <div 
                   className="absolute inset-0 bg-repeat opacity-15"
                   style={{

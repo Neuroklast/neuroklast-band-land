@@ -23,7 +23,7 @@ export default function MemberContent({ member, sectionLabels }: { member: Membe
               className="w-full h-full overflow-hidden border border-primary/40 bg-black"
               style={{ boxShadow: '0 0 20px color-mix(in oklch, var(--primary) 30%, transparent)' }}
             >
-              <ProgressiveImage src={member.photo} alt={member.name} className="w-full h-full object-cover" />
+              <ProgressiveImage src={member.photo} alt={member.name} className="w-full h-full object-contain" />
             </div>
           ) : (
             <div className="w-full h-full bg-muted border border-primary/40 flex items-center justify-center">
