@@ -4,21 +4,13 @@ import { Button } from '@/components/ui/button'
 import { List, X, MusicNote } from '@phosphor-icons/react'
 import type { NavigationSlotProps } from '@/lib/types'
 import MusicPlayer from '@/components/MusicPlayer'
-import type { Track } from '@/components/MusicPlayer'
+import { LOCAL_TRACKS } from '@/lib/music-tracks'
 import './styles.css'
 
 const NAV_HEIGHT_PX = 64
 const GLITCH_PROBABILITY = 0.95
 const GLITCH_DURATION_MS = 300
 const GLITCH_INTERVAL_MS = 3000
-
-/** Local tracks served from public/music/ */
-const LOCAL_TRACKS: Track[] = [
-  { title: 'Neuroklast – IGNITE', src: '/music/Neuroklast - IGNITE.mp3' },
-  { title: 'Neuroklast – LILITH', src: '/music/Neuroklast - LILITH.mp3' },
-  { title: 'Neuroklast – SUCCUBUS (DFG Edit)', src: '/music/Neuroklast - SUCCUBUS (DFG Edit).mp3' },
-  { title: 'Neuroklast ft Mechanical Vein – DETHRONE', src: '/music/Neuroklast ft Mechanical Vein - DETHRONE.mp3' },
-]
 
 export default function NeuroklastClassicNavigation({
   items,
