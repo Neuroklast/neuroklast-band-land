@@ -213,7 +213,7 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     id: 'neuroklast-classic',
     name: 'Neuroklast Classic',
     description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents and code-rain loading',
-    licenseStatus: 'locked',
+    licenseStatus: 'free',
     theme: presetToThemeSettings(DESIGN_PRESETS['neuroklast-classic']),
     author: 'Neuroklast',
     tags: ['dark', 'cyber', 'industrial'],

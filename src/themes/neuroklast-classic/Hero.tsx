@@ -176,10 +176,10 @@ export default function NeuroklastClassicHero({
             <img
               src={titleImageUrl}
               alt={name}
-              className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto drop-shadow-[0_0_30px_var(--primary)]"
+              className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto"
               style={{
                 filter:
-                  'drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent))',
+                  'drop-shadow(0 0 30px var(--primary)) drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent))',
               }}
             />
           ) : (

@@ -177,10 +177,10 @@ describe('Customizability', () => {
     expect(zardonicTheme.customizability.adjustEffects).toBe(true)
   })
 
-  it('neuroklast-classic locks all customization', () => {
-    expect(neuroklastClassicTheme.customizability.customColors).toBe(false)
-    expect(neuroklastClassicTheme.customizability.customFonts).toBe(false)
-    expect(neuroklastClassicTheme.customizability.adjustEffects).toBe(false)
+  it('neuroklast-classic allows full customization', () => {
+    expect(neuroklastClassicTheme.customizability.customColors).toBe(true)
+    expect(neuroklastClassicTheme.customizability.customFonts).toBe(true)
+    expect(neuroklastClassicTheme.customizability.adjustEffects).toBe(true)
   })
 })
 
