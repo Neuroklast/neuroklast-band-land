@@ -1,8 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import CyberpunkBackgroundEffects from './BackgroundEffects'
-import CyberpunkCard from './Card'
-import CyberpunkSectionDivider from './SectionDivider'
 import CyberpunkHero from './Hero'
 import CyberpunkNavigation from './Navigation'
 import CyberpunkFooter from './Footer'
@@ -129,8 +127,6 @@ export const cyberpunkTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: CyberpunkBackgroundEffects,
-    Card: CyberpunkCard,
-    SectionDivider: CyberpunkSectionDivider,
     Hero: CyberpunkHero,
     Navigation: CyberpunkNavigation,
     Footer: CyberpunkFooter,

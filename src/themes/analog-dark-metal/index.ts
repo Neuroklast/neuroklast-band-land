@@ -1,8 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import AnalogDarkMetalBackgroundEffects from './BackgroundEffects'
-import AnalogDarkMetalCard from './Card'
-import AnalogDarkMetalSectionDivider from './SectionDivider'
 
 export const analogDarkMetalTheme: ThemePackage = {
   id: 'analog-dark-metal',
@@ -110,7 +108,5 @@ export const analogDarkMetalTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: AnalogDarkMetalBackgroundEffects,
-    Card: AnalogDarkMetalCard,
-    SectionDivider: AnalogDarkMetalSectionDivider,
   },
 }

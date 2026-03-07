@@ -2,9 +2,7 @@ import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import Hero from './Hero'
 import Navigation from './Navigation'
-import SignalStaticCard from './Card'
 import SignalStaticBackgroundEffects from './BackgroundEffects'
-import SignalStaticSectionDivider from './SectionDivider'
 import SignalStaticLoadingScreen from './LoadingScreen'
 
 export const signalStaticTheme: ThemePackage = {
@@ -99,9 +97,7 @@ export const signalStaticTheme: ThemePackage = {
   slots: {
     Hero,
     Navigation,
-    Card: SignalStaticCard,
     BackgroundEffects: SignalStaticBackgroundEffects,
-    SectionDivider: SignalStaticSectionDivider,
     LoadingScreen: SignalStaticLoadingScreen,
   },
 }

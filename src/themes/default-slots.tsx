@@ -19,15 +19,9 @@ export function DefaultLoadingScreen({ onComplete }: { onComplete: () => void })
 }
 DefaultLoadingScreen.displayName = 'DefaultLoadingScreen'
 
-export function DefaultSectionDivider() {
-  return null
-}
-DefaultSectionDivider.displayName = 'DefaultSectionDivider'
+export { default as DefaultSectionDivider } from './primitives/ThemeSectionDivider'
 
-export function DefaultCard({ children }: { children: React.ReactNode }) {
-  return children as React.ReactElement
-}
-DefaultCard.displayName = 'DefaultCard'
+export { default as DefaultCard } from './primitives/ThemeCard'
 
 export function DefaultBackgroundEffects() {
   return null

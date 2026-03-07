@@ -1,8 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import VhsRetroBackgroundEffects from './BackgroundEffects'
-import VhsRetroCard from './Card'
-import VhsRetroSectionDivider from './SectionDivider'
 import VhsRetroHero from './Hero'
 import VhsRetroNavigation from './Navigation'
 import VhsRetroFooter from './Footer'
@@ -114,8 +112,6 @@ export const vhsRetroTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: VhsRetroBackgroundEffects,
-    Card: VhsRetroCard,
-    SectionDivider: VhsRetroSectionDivider,
     Hero: VhsRetroHero,
     Navigation: VhsRetroNavigation,
     Footer: VhsRetroFooter,

@@ -1,8 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import ArtDecoCyberpunkBackgroundEffects from './BackgroundEffects'
-import ArtDecoCyberpunkCard from './Card'
-import ArtDecoCyberpunkSectionDivider from './SectionDivider'
 import ArtDecoCyberpunkHero from './Hero'
 import ArtDecoCyberpunkNavigation from './Navigation'
 import ArtDecoCyberpunkFooter from './Footer'
@@ -99,8 +97,6 @@ export const artDecoCyberpunkTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: ArtDecoCyberpunkBackgroundEffects,
-    Card: ArtDecoCyberpunkCard,
-    SectionDivider: ArtDecoCyberpunkSectionDivider,
     Hero: ArtDecoCyberpunkHero,
     Navigation: ArtDecoCyberpunkNavigation,
     Footer: ArtDecoCyberpunkFooter,

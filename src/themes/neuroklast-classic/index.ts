@@ -1,8 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import NeuroklastClassicBackgroundEffects from './BackgroundEffects'
-import NeuroklastClassicCard from './Card'
-import NeuroklastClassicSectionDivider from './SectionDivider'
 import NeuroklastClassicLoadingScreen from './LoadingScreen'
 import NeuroklastClassicHero from './Hero'
 import NeuroklastClassicNavigation from './Navigation'
@@ -71,8 +69,6 @@ export const neuroklastClassicTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: NeuroklastClassicBackgroundEffects,
-    Card: NeuroklastClassicCard,
-    SectionDivider: NeuroklastClassicSectionDivider,
     LoadingScreen: NeuroklastClassicLoadingScreen,
     Hero: NeuroklastClassicHero,
     Navigation: NeuroklastClassicNavigation,

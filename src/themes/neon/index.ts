@@ -1,8 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import NeonBackgroundEffects from './BackgroundEffects'
-import NeonCard from './Card'
-import NeonSectionDivider from './SectionDivider'
 import NeonHero from './Hero'
 import NeonNavigation from './Navigation'
 import NeonFooter from './Footer'
@@ -79,8 +77,6 @@ export const neonTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: NeonBackgroundEffects,
-    Card: NeonCard,
-    SectionDivider: NeonSectionDivider,
     Hero: NeonHero,
     Navigation: NeonNavigation,
     Footer: NeonFooter,
