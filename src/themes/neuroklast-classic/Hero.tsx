@@ -1,12 +1,9 @@
-import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaretDown, PencilSimple } from '@phosphor-icons/react'
 import type { HeroSlotProps } from '@/lib/types'
 import './styles.css'
-
-const CODE_CHARS = '0123456789ABCDEFNEUROKLAST!@#$%&*'
 
 export default function NeuroklastClassicHero({
   name,
@@ -20,34 +17,8 @@ export default function NeuroklastClassicHero({
     window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
   }
 
-  const codeRainCols = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, i) => ({
-        chars: Array.from(
-          { length: 30 },
-          () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)],
-        ).join(''),
-        dur: `${4 + (i % 4) * 0.8}s`,
-        delay: `${(i * 0.3) % 2.5}s`,
-      })),
-    [],
-  )
-
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
-      {/* Subtle code-rain background hint */}
-      <div className="absolute inset-0 pointer-events-none theme-bg-code-rain opacity-30">
-        {codeRainCols.map((col, i) => (
-          <div
-            key={`hero-rain-${i}`}
-            className="theme-bg-code-col"
-            style={{ animationDuration: col.dur, animationDelay: col.delay, opacity: 0.06 }}
-          >
-            {col.chars}
-          </div>
-        ))}
-      </div>
-
       {/* Radial crimson glow */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,var(--primary)/0.05_0%,transparent_55%)]" />
 
