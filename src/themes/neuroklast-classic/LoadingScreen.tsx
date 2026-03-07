@@ -1,40 +1,50 @@
-import './styles.css'
+import { motion } from 'framer-motion'
 import { useEffect, useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import type { LoadingScreenSlotProps } from '@/lib/types'
+import logoImage from '@/assets/images/baphomet no text.svg'
 
-const CODE_CHARS = '01アイウエオNEUROKLAST'
-const GLITCH_CHARS = '01アイウエオNEUROKLAST#@!%&'
-const GLITCH_PROBABILITY = 0.45
-const BOOT_MESSAGE_INTERVAL_MS = 600
-const HEX_SCROLL_DISTANCE = -800
-const TITLE = 'NEUROKLAST.SYS'
-
-const HEX_CHARS = '0123456789ABCDEF'
-function randomHexWord() {
-  return '0x' + Array.from({ length: 4 }, () => HEX_CHARS[Math.floor(Math.random() * 16)]).join('')
-}
-const HEX_SCROLL = Array.from({ length: 24 }, () => randomHexWord()).join('  ')
-
-const BOOT_SEQUENCE = [
-  '> SCANNING NEURAL LINK...',
-  '> ENCRYPTING PAYLOAD...',
-  '> BYPASSING FIREWALL...',
-  '> IDENTITY VERIFIED',
-  '> ACCESS GRANTED',
+const HACKING_TEXTS = [
+  '> INITIALIZING NEURAL INTERFACE...',
+  '> LOADING CORE MODULES...',
+  '> ESTABLISHING SECURE LINK...',
+  '> DECRYPTING DATASTREAM...',
+  '> COMPILING AUDIO ENGINE...',
+  '> SYNCING FREQUENCY MATRIX...',
+  '> ACTIVATING HUD OVERLAY...',
+  '> LOADING VISUAL CORTEX...',
+  '> PROCESSING SIGNAL CHAIN...',
+  '> CALIBRATING BPM RESONANCE...',
+  '> FINALIZING BOOT SEQUENCE...',
+  '> SYSTEM ONLINE // ACCESS GRANTED',
 ]
 
-const cols = Array.from({ length: 20 }, (_, i) => ({
-  chars: Array.from({ length: 40 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join(''),
-  dur: `${3 + (i % 5) * 0.7}s`,
-  delay: `${(i * 0.2) % 2}s`,
+const CODE_FRAGMENTS = [
+  'fn init_neural() -> Result<()> {',
+  '  let freq = 150.0_f64;',
+  '  signal::process(bpm);',
+  '  audio.connect(output)?;',
+  '  hud.render(frame)?;',
+  'const NK = 0xFF2222;',
+  'mov eax, [neuro+0x1A]',
+  'jmp 0xDEADBEEF',
+  'syscall.exec("init")',
+  '  decrypt(stream, key);',
+  'KERNEL: audio_engine [OK]',
+  'SUBSYS: hud_display [OK]',
+  'NODE: freq_matrix v2.0.1',
+  'HASH: 0xA3F7B2C1D8E9',
+  '00110101 01001110 01001011',
+  'export NK_MODE=ACTIVATED',
+]
+
+const codeRainParams = Array.from({ length: 20 }, (_, i) => ({
+  duration: 3 + (i % 5) * 0.6,
+  delay: i * 0.15,
+  translateX: -200 + i * 50,
 }))
 
 export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   const [progress, setProgress] = useState(0)
-  const [glitchedTitle, setGlitchedTitle] = useState(TITLE)
-  const [titleResolved, setTitleResolved] = useState(false)
-  const [bootLog, setBootLog] = useState<string[]>([])
   const onCompleteRef = useRef(onComplete)
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
@@ -50,137 +60,111 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
 
   useEffect(() => {
     if (progress >= 100) {
-      const t = setTimeout(() => onCompleteRef.current(), 600)
+      const t = setTimeout(() => onCompleteRef.current(), 500)
       return () => clearTimeout(t)
     }
   }, [progress])
 
-  // One-shot glitch-in for title
-  useEffect(() => {
-    let frame = 0
-    const frames = 10
-    const id = setInterval(() => {
-      frame++
-      if (frame < frames) {
-        setGlitchedTitle(
-          TITLE.split('').map((ch) =>
-            ch === '.' ? '.' : Math.random() > GLITCH_PROBABILITY ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch
-          ).join('')
-        )
-      } else {
-        setGlitchedTitle(TITLE)
-        setTitleResolved(true)
-        clearInterval(id)
-      }
-    }, 50)
-    return () => clearInterval(id)
-  }, [])
-
-  // Boot message sequence
-  useEffect(() => {
-    let idx = 0
-    const add = () => {
-      if (idx < BOOT_SEQUENCE.length) {
-        const msg = BOOT_SEQUENCE[idx++]
-        setBootLog((prev) => [...prev, msg])
-        setTimeout(add, BOOT_MESSAGE_INTERVAL_MS)
-      }
-    }
-    const t = setTimeout(add, 300)
-    return () => clearTimeout(t)
-  }, [])
+  const hackingText = HACKING_TEXTS[Math.min(
+    Math.floor(progress / 100 * HACKING_TEXTS.length),
+    HACKING_TEXTS.length - 1,
+  )]
+  const codeFragment = CODE_FRAGMENTS[Math.floor(progress / 100 * CODE_FRAGMENTS.length) % CODE_FRAGMENTS.length]
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background overflow-hidden">
-      {/* Code-rain background */}
-      <div className="theme-bg-code-rain absolute inset-0">
-        {cols.map((col, i) => (
-          <div key={i} className="theme-bg-code-col" style={{ animationDuration: col.dur, animationDelay: col.delay, opacity: 0.08 }}>
-            {col.chars}
-          </div>
-        ))}
-      </div>
-      <div className="theme-bg-overlay absolute inset-0" />
-
-      {/* HUD corner brackets */}
-      <div className="pointer-events-none absolute inset-0">
-        <motion.div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-primary/60"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.1 }} />
-        <motion.div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-primary/60"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.2 }} />
-        <motion.div className="absolute bottom-12 left-6 w-8 h-8 border-b-2 border-l-2 border-primary/60"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.3 }} />
-        <motion.div className="absolute bottom-12 right-6 w-8 h-8 border-b-2 border-r-2 border-primary/60"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.4 }} />
-      </div>
-
-      {/* Bottom hex scroll */}
-      <div className="absolute bottom-0 left-0 right-0 h-8 overflow-hidden flex items-center pointer-events-none border-t border-primary/20">
-        <motion.div
-          className="whitespace-nowrap font-mono text-[10px] text-primary/50 px-4"
-          animate={{ x: [0, HEX_SCROLL_DISTANCE] }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-        >
-          {HEX_SCROLL}{'  '}{HEX_SCROLL}
-        </motion.div>
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background overflow-hidden"
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8 }}
+    >
+      {/* ASCII code fragments fading in background */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+        <div className="text-primary font-mono text-[10px] leading-tight">
+          {codeRainParams.map((params, i) => (
+            <motion.div
+              key={i}
+              className="whitespace-nowrap"
+              animate={{ opacity: [0.05, 0.4, 0.05] }}
+              transition={{ duration: params.duration, repeat: Infinity, delay: params.delay }}
+              style={{ transform: `translateX(${params.translateX}px)` }}
+            >
+              {CODE_FRAGMENTS[i % CODE_FRAGMENTS.length]}
+            </motion.div>
+          ))}
+        </div>
       </div>
 
-      {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center gap-6 px-8 w-full max-w-sm">
-        {/* Center NK monogram */}
-        <div className="relative flex items-center justify-center mb-2">
-          <motion.div
-            className="font-mono text-5xl font-black text-primary select-none"
-            style={{ animation: 'nk-hud-pulse 2s ease infinite', letterSpacing: '0.1em' }}
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            NK
-          </motion.div>
-        </div>
-
-        {/* Glitch-in title */}
-        <div
-          style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.25rem', letterSpacing: '0.2em', color: 'var(--primary)', animation: titleResolved ? 'nk-hud-pulse 2s ease infinite' : 'none' }}
-        >
-          {glitchedTitle}
-        </div>
-
-        {/* Boot message log */}
-        <div className="w-full min-h-[6rem] flex flex-col gap-0.5">
-          <AnimatePresence>
-            {bootLog.map((msg, i) => (
-              <motion.div
-                key={`boot-${i}`}
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2 }}
-                style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: 'var(--primary)', opacity: 0.8 }}
-              >
-                {msg}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+      <div className="flex flex-col items-center gap-8 relative z-10">
+        {/* Logo with pulsing crimson glow */}
+        <motion.img
+          src={logoImage}
+          alt="NEUROKLAST"
+          className="w-40 h-40 object-contain"
+          style={{
+            filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',
+          }}
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: [0.7, 1, 0.7], scale: 1 }}
+          transition={{
+            opacity: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+            scale: { duration: 0.8 },
+          }}
+        />
 
         {/* Progress bar */}
-        <div className="w-full">
-          <div className="w-full h-1 bg-secondary rounded-full overflow-hidden relative">
-            <div className="h-full bg-primary transition-all duration-100 relative overflow-hidden" style={{ width: `${progress}%` }}>
-              <motion.div
-                className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-              />
-            </div>
-          </div>
-          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: 'var(--primary)', opacity: 0.7, textAlign: 'right', marginTop: '4px' }}>
+        <div className="relative w-80 h-2 bg-secondary/30 overflow-hidden border border-primary/20">
+          <motion.div
+            className="absolute inset-0 bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.1 }}
+          />
+          <motion.div
+            className="absolute inset-0 bg-primary/30 blur-sm"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.1 }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-3 items-center">
+          <motion.div
+            className="text-primary font-mono text-base tracking-[0.08em]"
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
             {Math.floor(progress)}%
-          </div>
+          </motion.div>
+
+          <motion.div
+            className="text-primary/50 font-mono text-xs max-w-md text-center h-6"
+            key={hackingText}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {hackingText}
+          </motion.div>
+
+          <motion.div
+            className="text-primary/20 font-mono text-[9px] tracking-wider"
+            animate={{ opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            {codeFragment}
+          </motion.div>
         </div>
       </div>
-    </div>
+
+      <div className="absolute bottom-8 left-0 right-0 text-center">
+        <motion.div
+          className="text-muted-foreground/30 font-mono text-[10px] tracking-[0.08em]"
+          animate={{ opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          NEUROKLAST // BOOT SEQUENCE
+        </motion.div>
+      </div>
+    </motion.div>
   )
 }
 NeuroklastClassicLoadingScreen.displayName = 'NeuroklastClassicLoadingScreen'

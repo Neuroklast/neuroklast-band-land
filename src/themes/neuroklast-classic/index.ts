@@ -68,7 +68,7 @@ export const neuroklastClassicTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'crimson',
-  customizability: { customColors: false, customFonts: false, adjustEffects: false },
+  customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: NeuroklastClassicBackgroundEffects,
     Card: NeuroklastClassicCard,

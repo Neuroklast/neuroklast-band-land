@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import { PencilSimple } from '@phosphor-icons/react'
 import EditControls from '@/components/EditControls'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
-import CyberpunkBackground from '@/components/CyberpunkBackground'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
@@ -279,7 +278,6 @@ function App() {
           <motion.div className="min-h-screen bg-background text-foreground overflow-x-hidden relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
             {vis.audioVisualizer !== false && <AudioVisualizer />}
             <div className="fixed inset-0 pointer-events-none z-[100]"><div className="absolute inset-0 hud-scanline opacity-30" /></div>
-            {vis.hudBackground !== false && <CyberpunkBackground hudTexts={data.hudTexts} siteName={data.siteName} />}
             <Toaster position="top-right" />
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.4 }}>
               <AnimatePresence>

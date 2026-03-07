@@ -589,6 +589,8 @@ export interface CardSlotProps {
 
 export interface BackgroundEffectsSlotProps {
   className?: string
+  siteName?: string
+  hudTexts?: HudTexts
 }
 
 export interface FooterSlotProps {
