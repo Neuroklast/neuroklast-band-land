@@ -216,6 +216,7 @@ export default function ZardonicHero({
                   src={logoUrl}
                   alt={`${name} Logo`}
                   className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'zardonic-red-glitch-element' : ''}`}
+                  style={!glitchLogo ? { filter: 'drop-shadow(0 0 40px oklch(0.45 0.22 25 / 0.9))' } : undefined}
                 />
                 <div className="absolute inset-0 pointer-events-none z-20">
                   <div

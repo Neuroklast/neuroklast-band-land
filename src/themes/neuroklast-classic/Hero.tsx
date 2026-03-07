@@ -34,7 +34,7 @@ export default function NeuroklastClassicHero({
   )
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
       {/* Subtle code-rain background hint */}
       <div className="absolute inset-0 pointer-events-none theme-bg-code-rain opacity-30">
         {codeRainCols.map((col, i) => (

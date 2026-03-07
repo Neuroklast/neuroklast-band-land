@@ -162,3 +162,30 @@
   pointer-events: none;
   animation: artdeco-neon-glow 8s ease-in-out infinite;
 }
+
+/* ─── Gallery items — Art Deco framed photos ─────────────────────────────── */
+[data-theme="art-deco-cyberpunk"] .theme-gallery-item {
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="art-deco-cyberpunk"] .theme-gallery-item::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+[data-theme="art-deco-cyberpunk"] .theme-gallery-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, transparent) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+[data-theme="art-deco-cyberpunk"] .theme-gallery-item:hover::after {
+  opacity: 1;
+}
