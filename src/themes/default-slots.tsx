@@ -24,10 +24,7 @@ export function DefaultSectionDivider() {
 }
 DefaultSectionDivider.displayName = 'DefaultSectionDivider'
 
-export function DefaultCard({ children }: { children: React.ReactNode }) {
-  return children as React.ReactElement
-}
-DefaultCard.displayName = 'DefaultCard'
+export { default as DefaultCard } from './primitives/ThemeCard'
 
 export function DefaultBackgroundEffects() {
   return null
