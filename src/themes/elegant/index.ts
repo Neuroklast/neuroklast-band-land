@@ -1,7 +1,6 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import ElegantBackgroundEffects from './BackgroundEffects'
-import ElegantCard from './Card'
 import ElegantSectionDivider from './SectionDivider'
 import ElegantHero from './Hero'
 import ElegantNavigation from './Navigation'
@@ -86,7 +85,6 @@ export const elegantTheme: ThemePackage = {
     Footer: ElegantFooter,
     LoadingScreen: ElegantLoadingScreen,
     BackgroundEffects: ElegantBackgroundEffects,
-    Card: ElegantCard,
     SectionDivider: ElegantSectionDivider,
     OverlayModal: ElegantOverlayModal,
     SectionHeading: ElegantSectionHeading,

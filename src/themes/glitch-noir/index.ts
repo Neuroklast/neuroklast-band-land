@@ -2,7 +2,6 @@ import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import Hero from './Hero'
 import Navigation from './Navigation'
-import GlitchNoirCard from './Card'
 import GlitchNoirBackgroundEffects from './BackgroundEffects'
 import GlitchNoirSectionDivider from './SectionDivider'
 import GlitchNoirLoadingScreen from './LoadingScreen'
@@ -99,7 +98,6 @@ export const glitchNoirTheme: ThemePackage = {
   slots: {
     Hero,
     Navigation,
-    Card: GlitchNoirCard,
     BackgroundEffects: GlitchNoirBackgroundEffects,
     SectionDivider: GlitchNoirSectionDivider,
     LoadingScreen: GlitchNoirLoadingScreen,
