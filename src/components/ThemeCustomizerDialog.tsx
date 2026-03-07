@@ -287,12 +287,12 @@ export default function ThemeCustomizerDialog({
   }, [])
 
   const handlePreset = (preset: ThemePreset) => {
-    // Legacy color presets: apply colors/fonts only, preserve active theme engine
-    const { activePreset: _keep, ...colorPatch } = preset.theme
+    // Legacy quick color palettes: apply colors/fonts only, preserve active theme engine
+    const { activePreset: _discard, ...colorPatch } = preset.theme
     setDraft(prev => ({ ...prev, ...colorPatch }))
   }
 
-  /** Apply a design preset from design-presets.ts — updates only colors, fonts, and effects */
+  /** Apply a design preset from design-presets.ts — updates colors, fonts, effects, and animation settings */
   const handleDesignPreset = (presetId: string) => {
     const preset = DESIGN_PRESETS[presetId]
     if (!preset) return
