@@ -80,7 +80,7 @@ export default function SiteContentRenderer({
 
   return (
     <>
-      <ThemeBackgroundEffects siteName={data.siteName} hudTexts={data.hudTexts} />
+      <ThemeBackgroundEffects key={data.themeSettings?.activePreset ?? 'default'} siteName={data.siteName} hudTexts={data.hudTexts} />
       {/* Hero */}
       <SectionErrorBoundary sectionName="Hero">
         <ThemeHero
