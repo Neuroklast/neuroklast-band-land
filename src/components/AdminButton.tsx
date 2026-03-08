@@ -276,9 +276,8 @@ export default function AdminButton({
         <AdminLoginDialog
           open={showPasswordDialog}
           onOpenChange={setShowPasswordDialog}
-          mode={hasPassword ? 'change' : 'setup'}
+          mode='setup'
           onSetPassword={async (pw) => { await onSetPassword(pw); setShowPasswordDialog(false) }}
-          onChangePassword={async (oldPw, newPw) => { await onChangePassword(newPw); void oldPw; setShowPasswordDialog(false) }}
         />
       )}
 
