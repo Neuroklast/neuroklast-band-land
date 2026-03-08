@@ -74,3 +74,6 @@ Du musst die architektonische Trennung zwischen Themes und Presets unter allen U
 17. RESILIENZ UND GRACE PERIOD (AUSFALLSICHERHEIT)
 - Wenn der Master-Server (neuroklast.net) ausfällt oder nicht erreichbar ist, darf die öffentliche Website des Kunden nicht offline gehen oder abstürzen.
 - Implementiere eine "Grace Period" für Lizenzen: Einmal durch den Master-Server validierte Schlüssel müssen lokal in der KV-Datenbank des Kunden mit einem Timestamp zwischengespeichert werden (z.B. für 7 Tage). Bei Netzwerkausfällen greift der Code auf diesen Cache zurück.
+
+18. AKTUALITÄT
+    - Aktualisere nach jeder entwicklung alle readmes und halte alle infiormatioenen udn dokumentationeen stets aktuell. 
