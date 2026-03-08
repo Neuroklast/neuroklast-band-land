@@ -158,11 +158,11 @@ export const zardonicTheme: ThemePackage = {
   },
   animations: [
     { id: 'glitch', label: 'Glitch Effect', defaultEnabled: true, defaultIntensity: 0.7 },
-    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: true, defaultIntensity: 0.4 },
-    { id: 'crt', label: 'CRT Curvature', defaultEnabled: true, defaultIntensity: 0.6 },
-    { id: 'noise', label: 'Static Noise', defaultEnabled: true, defaultIntensity: 0.3 },
-    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.3 },
-    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.5 },
+    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: true, defaultIntensity: 0.4 , hasIntensity: true },
+    { id: 'crt', label: 'CRT Curvature', defaultEnabled: true, defaultIntensity: 0.6 , hasIntensity: true },
+    { id: 'noise', label: 'Static Noise', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
+    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
   ],
   customizability: { customColors: true, customFonts: false, adjustEffects: true },
   customConfigSchema: {

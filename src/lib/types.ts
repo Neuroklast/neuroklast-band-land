@@ -746,6 +746,8 @@ export interface ThemePackage {
     label: string
     defaultEnabled: boolean
     defaultIntensity?: number // 0-1
+    /** Whether this animation has an adjustable intensity slider */
+    hasIntensity?: boolean
   }[]
 
   /** Background options this theme supports */

@@ -961,8 +961,16 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                       src={toPreviewUrl(logoUrl)}
                       alt="Logo preview"
                       className="mt-2 h-16 object-contain"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement
+                        img.style.display = 'none'
+                        const sibling = img.nextElementSibling as HTMLElement | null
+                        if (sibling) sibling.style.display = 'block'
+                      }}
                     />
+                    <p className="mt-1 font-mono text-[10px] text-destructive/70 hidden">
+                      Bild konnte nicht geladen werden
+                    </p>
                   </div>
                 )}
               </Field>

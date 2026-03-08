@@ -140,7 +140,7 @@ export const cyberpunkTheme: ThemePackage = {
     mono: "'Share Tech Mono', monospace",
   },
   animations: [
-    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.3 },
+    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
     { id: 'overlayTransition', label: 'Overlay Transition', defaultEnabled: true },
     { id: 'glitch', label: 'Glitch Effect', defaultEnabled: false },
   ],

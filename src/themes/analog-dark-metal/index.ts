@@ -121,9 +121,9 @@ export const analogDarkMetalTheme: ThemePackage = {
     mono: "'IBM Plex Mono', monospace",
   },
   animations: [
-    { id: 'scanlines', label: 'Oscilloscope Lines', defaultEnabled: true, defaultIntensity: 0.15 },
-    { id: 'noise', label: 'Analog Noise', defaultEnabled: true, defaultIntensity: 0.6 },
-    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.7 },
+    { id: 'scanlines', label: 'Oscilloscope Lines', defaultEnabled: true, defaultIntensity: 0.15 , hasIntensity: true },
+    { id: 'noise', label: 'Analog Noise', defaultEnabled: true, defaultIntensity: 0.6 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.7 , hasIntensity: true },
   ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {

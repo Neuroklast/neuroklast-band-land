@@ -110,10 +110,10 @@ export const glitchNoirTheme: ThemePackage = {
   },
   animations: [
     { id: 'glitch', label: 'Glitch Effect', defaultEnabled: true, defaultIntensity: 0.7 },
-    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: true, defaultIntensity: 0.35 },
-    { id: 'noise', label: 'Static Noise', defaultEnabled: true, defaultIntensity: 0.5 },
-    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.6 },
-    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.3 },
+    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: true, defaultIntensity: 0.35 , hasIntensity: true },
+    { id: 'noise', label: 'Static Noise', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.6 , hasIntensity: true },
+    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
   ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {

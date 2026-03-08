@@ -136,9 +136,9 @@ export const steampunkTheme: ThemePackage = {
     mono: "'Courier Prime', monospace",
   },
   animations: [
-    { id: 'noise', label: 'Texture Noise', defaultEnabled: true, defaultIntensity: 0.2 },
-    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.6 },
-    { id: 'dotMatrix', label: 'Dot Matrix', defaultEnabled: true, defaultIntensity: 0.1 },
+    { id: 'noise', label: 'Texture Noise', defaultEnabled: true, defaultIntensity: 0.2 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.6 , hasIntensity: true },
+    { id: 'dotMatrix', label: 'Dot Matrix', defaultEnabled: true, defaultIntensity: 0.1 , hasIntensity: true },
   ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {

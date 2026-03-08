@@ -545,7 +545,7 @@ export default function ThemeCustomizerDialog({
                       {activeAnimations.map(anim => {
                         const enabled = getAnimationEnabled(draft, anim.id)
                         const intensity = getAnimationIntensity(draft, anim.id)
-                        const hasIntensity = anim.defaultIntensity !== undefined && ['scanlines','crt','noise','vignette','chromatic','dotMatrix'].includes(anim.id)
+                        const hasIntensity = anim.hasIntensity === true
                         return (
                           <div key={anim.id} className="border border-primary/10 p-3 space-y-2">
                             <div className="flex items-center justify-between">

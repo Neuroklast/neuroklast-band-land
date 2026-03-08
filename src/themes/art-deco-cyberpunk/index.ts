@@ -110,9 +110,9 @@ export const artDecoCyberpunkTheme: ThemePackage = {
     mono: "'Courier Prime', monospace",
   },
   animations: [
-    { id: 'noise', label: 'Subtle Noise', defaultEnabled: true, defaultIntensity: 0.05 },
-    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.5 },
-    { id: 'dotMatrix', label: 'Dot Matrix', defaultEnabled: true, defaultIntensity: 0.15 },
+    { id: 'noise', label: 'Subtle Noise', defaultEnabled: true, defaultIntensity: 0.05 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
+    { id: 'dotMatrix', label: 'Dot Matrix', defaultEnabled: true, defaultIntensity: 0.15 , hasIntensity: true },
     { id: 'overlayTransition', label: 'Overlay Transition', defaultEnabled: true },
   ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
