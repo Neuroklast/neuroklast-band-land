@@ -255,14 +255,22 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
         {/* Logo area: 3D model or 2D image depending on loadingScreenType */}
         {loadingScreenType === '3d-model' ? (
           <Suspense fallback={
-            <motion.img
-              src={logoImage}
-              alt={siteName || 'Site Logo'}
-              className="w-40 h-40 object-contain"
+            /*
+              ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+              nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+              Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+            */
+            <motion.div
               style={{ filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4))' }}
               animate={{ rotate: 360 }}
               transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-            />
+            >
+              <img
+                src={logoImage}
+                alt={siteName || 'Site Logo'}
+                className="w-40 h-40 object-contain"
+              />
+            </motion.div>
           }>
             <motion.div
               animate={{ rotateY: 360 }}
@@ -273,10 +281,12 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
             </motion.div>
           </Suspense>
         ) : (
-          <motion.img
-            src={logoImage}
-            alt={siteName || 'Site Logo'}
-            className="w-40 h-40 object-contain"
+          /*
+            ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+            nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+            Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+          */
+          <motion.div
             style={{ 
               filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',
             }}
@@ -289,7 +299,13 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
               opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" },
               scale: { duration: 0.8 },
             }}
-          />
+          >
+            <img
+              src={logoImage}
+              alt={siteName || 'Site Logo'}
+              className="w-40 h-40 object-contain"
+            />
+          </motion.div>
         )}
         
         <div className="relative w-80 h-2 bg-secondary/30 overflow-hidden border border-primary/20">

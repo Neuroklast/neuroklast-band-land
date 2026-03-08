@@ -212,12 +212,18 @@ export default function ZardonicHero({
               }}
             >
               <div className="relative">
-                <img
-                  src={logoUrl}
-                  alt={`${name} Logo`}
-                  className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'zardonic-red-glitch-element' : ''}`}
-                  style={!glitchLogo ? { filter: 'drop-shadow(0 0 40px oklch(0.45 0.22 25 / 0.9))' } : undefined}
-                />
+                {/*
+                  ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+                  nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+                  Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+                */}
+                <div style={!glitchLogo ? { filter: 'drop-shadow(0 0 40px oklch(0.45 0.22 25 / 0.9))' } : undefined}>
+                  <img
+                    src={logoUrl}
+                    alt={`${name} Logo`}
+                    className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'zardonic-red-glitch-element' : ''}`}
+                  />
+                </div>
                 <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                   <div
                     className="absolute inset-0 bg-repeat opacity-15"
@@ -253,14 +259,18 @@ export default function ZardonicHero({
           >
             <div className="relative flex justify-center">
               {titleImageUrl ? (
-                <img
-                  src={titleImageUrl}
-                  alt={name}
-                  className={`w-full h-auto relative z-10 ${glitchTitle ? 'zardonic-red-glitch-element' : ''}`}
-                  style={{
-                    filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`
-                  }}
-                />
+                /*
+                  ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+                  nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+                  Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+                */
+                <div style={{ filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))` }}>
+                  <img
+                    src={titleImageUrl}
+                    alt={name}
+                    className={`w-full h-auto relative z-10 ${glitchTitle ? 'zardonic-red-glitch-element' : ''}`}
+                  />
+                </div>
               ) : (
                 <h1
                   className={`text-6xl md:text-8xl lg:text-9xl font-heading font-black tracking-tighter text-primary relative z-10 ${glitchTitle ? 'zardonic-red-glitch-element' : ''}`}

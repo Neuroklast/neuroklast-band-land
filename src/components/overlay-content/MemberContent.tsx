@@ -19,11 +19,18 @@ export default function MemberContent({ member, sectionLabels }: { member: Membe
       <div className="md:w-2/5 p-4 md:p-6 flex items-center justify-center border-b md:border-b-0 md:border-r border-primary/20">
         <div className="relative w-full max-w-[200px] aspect-square">
           {member.photo ? (
-            <div
-              className="w-full h-full overflow-hidden border border-primary/40 bg-black"
-              style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent))' }}
-            >
-              <ProgressiveImage src={member.photo} alt={member.name} className="w-full h-full object-contain" />
+            /*
+              ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+              nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+              Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+              Das overflow:hidden bleibt auf dem inneren <div> erhalten.
+            */
+            <div style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent))' }}>
+              <div
+                className="w-full h-full overflow-hidden border border-primary/40 bg-black"
+              >
+                <ProgressiveImage src={member.photo} alt={member.name} className="w-full h-full object-contain" />
+              </div>
             </div>
           ) : (
             <div className="w-full h-full bg-muted border border-primary/40 flex items-center justify-center">

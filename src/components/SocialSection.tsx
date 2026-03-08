@@ -76,15 +76,21 @@ function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconS
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
           <div className="relative z-10 transition-all">
-            <img
-              src={iconSrc}
-              alt={label}
-              className="w-16 h-16 md:w-20 md:h-20 object-contain group-hover:scale-110 group-active:scale-125 transition-transform duration-200 select-none"
-              draggable={false}
-              style={{
-                filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
-              }}
-            />
+            {/*
+              ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+              nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+              Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+            */}
+            <div style={{
+              filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
+            }}>
+              <img
+                src={iconSrc}
+                alt={label}
+                className="w-16 h-16 md:w-20 md:h-20 object-contain group-hover:scale-110 group-active:scale-125 transition-transform duration-200 select-none"
+                draggable={false}
+              />
+            </div>
           </div>
           <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10 font-mono">{label}</span>
         </a>

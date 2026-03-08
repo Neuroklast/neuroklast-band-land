@@ -196,12 +196,18 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               }}
             >
               <div className="relative">
-                <img 
-                  src={logoUrl ?? logoPng} 
-                  alt={t('hero.logoAlt').replace('{0}', name)} 
-                  className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
-                  style={{ filter: 'drop-shadow(0 0 30px color-mix(in oklch, var(--primary) 60%, transparent))' }}
-                />
+                {/*
+                  ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+                  nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+                  Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+                */}
+                <div style={{ filter: 'drop-shadow(0 0 30px color-mix(in oklch, var(--primary) 60%, transparent))' }}>
+                  <img 
+                    src={logoUrl ?? logoPng} 
+                    alt={t('hero.logoAlt').replace('{0}', name)} 
+                    className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
+                  />
+                </div>
                 <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                   <div 
                     className="absolute inset-0 bg-repeat opacity-15"
@@ -242,14 +248,18 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
             }}
           >
             <div className="relative">
-              <img 
-                src={titleImageUrl ?? titlePng} 
-                alt={t('hero.titleAlt').replace('{0}', name)} 
-                className={`w-full h-auto relative z-10`}
-                style={{ 
-                  filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
-                }}
-              />
+              {/*
+                ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+                nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+                Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+              */}
+              <div style={{ filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))` }}>
+                <img 
+                  src={titleImageUrl ?? titlePng} 
+                  alt={t('hero.titleAlt').replace('{0}', name)} 
+                  className={`w-full h-auto relative z-10`}
+                />
+              </div>
               <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                 <div 
                   className="absolute inset-0 bg-repeat opacity-15"

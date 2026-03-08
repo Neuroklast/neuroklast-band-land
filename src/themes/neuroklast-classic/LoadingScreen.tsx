@@ -96,10 +96,12 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
 
       <div className="flex flex-col items-center gap-8 relative z-10">
         {/* Logo with pulsing crimson glow */}
-        <motion.img
-          src={logoImage}
-          alt="NEUROKLAST"
-          className="w-40 h-40 object-contain"
+        {/*
+          ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+          nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+          Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+        */}
+        <motion.div
           style={{
             filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',
           }}
@@ -109,7 +111,13 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
             opacity: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
             scale: { duration: 0.8 },
           }}
-        />
+        >
+          <img
+            src={logoImage}
+            alt="NEUROKLAST"
+            className="w-40 h-40 object-contain"
+          />
+        </motion.div>
 
         {/* Progress bar */}
         <div className="relative w-80 h-2 bg-secondary/30 overflow-hidden border border-primary/20">
