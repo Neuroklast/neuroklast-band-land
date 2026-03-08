@@ -24,8 +24,8 @@ import {
   Key,
   type Icon,
 } from '@phosphor-icons/react'
-import { DESIGN_PRESETS, PRESET_IDS, presetToThemeSettings } from '@/lib/design-presets'
-import { applyThemeToDOM } from '@/lib/theme-application'
+import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
+import { applyThemeDefaults, applyThemeToDOM } from '@/lib/theme-application'
 import { buildDefaultSections, toggleSection, reorderSections } from '@/lib/sections'
 import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { createSiteConfig } from '@/lib/site-config'
@@ -86,6 +86,13 @@ function loadGoogleFont(fontLabel: string) {
 
 function loadAllGoogleFonts() {
   FONT_OPTIONS.filter((f) => f.google).forEach((f) => loadGoogleFont(f.label))
+}
+
+/** Convert Google Drive share links to direct image URLs */
+function toPreviewUrl(url: string): string {
+  const driveMatch = url.match(/\/file\/d\/([^/]+)/)
+  if (driveMatch) return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`
+  return url
 }
 
 // ─── oklch ↔ hex helpers (lightweight, same pattern as ThemeCustomizerDialog) ─
@@ -161,7 +168,7 @@ const STEPS_BASE = [
   'Welcome',
   'Site Type',
   'Basic Info',
-  'Design Preset',
+  'Theme',
   'Colors',
   'Fonts',
   'Logo & Assets',
@@ -243,7 +250,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
   const [genresInput, setGenresInput] = useState((initialConfig?.genres ?? []).join(', '))
   const [domain, setDomain] = useState(initialConfig?.domain ?? '')
   const [selectedPreset, setSelectedPreset] = useState(
-    initialConfig?.themeSettings?.activePreset ?? 'cyberpunk',
+    initialConfig?.themeSettings?.activePreset ?? THEME_CATALOG[0]?.id ?? 'neuroklast-classic',
   )
   const [fontHeading, setFontHeading] = useState(
     initialConfig?.themeSettings?.fontHeading ?? FONT_OPTIONS[0].value,
@@ -353,25 +360,22 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
     }
   }, [activationKeyInput, goNext])
 
-  // ── Preset application ──────────────────────────────────────────────────────
+  // ── Theme application ──────────────────────────────────────────────────────
 
   const applyPreset = useCallback(
-    (presetId: string) => {
-      setSelectedPreset(presetId)
-      const preset = DESIGN_PRESETS[presetId]
-      if (preset) {
-        const theme = presetToThemeSettings(preset)
-        applyThemeToDOM(theme)
-        setFontHeading(theme.fontHeading ?? fontHeading)
-        setFontBody(theme.fontBody ?? fontBody)
-        setFontMono(theme.fontMono ?? fontMono)
-        if (theme.primary) setColorPrimary(theme.primary)
-        if (theme.accent) setColorAccent(theme.accent)
-        if (theme.background) setColorBackground(theme.background)
-        if (theme.foreground) setColorForeground(theme.foreground)
-      }
+    (themeId: string) => {
+      setSelectedPreset(themeId)
+      const defaults = applyThemeDefaults(themeId)
+      applyThemeToDOM(defaults)
+      if (defaults.fontHeading) setFontHeading(defaults.fontHeading)
+      if (defaults.fontBody) setFontBody(defaults.fontBody)
+      if (defaults.fontMono) setFontMono(defaults.fontMono)
+      if (defaults.primary) setColorPrimary(defaults.primary)
+      if (defaults.accent) setColorAccent(defaults.accent)
+      if (defaults.background) setColorBackground(defaults.background)
+      if (defaults.foreground) setColorForeground(defaults.foreground)
     },
-    [fontHeading, fontBody, fontMono],
+    [],
   )
 
   // ── Logo file upload ────────────────────────────────────────────────────────
@@ -398,19 +402,18 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
       }
     }
 
-    const preset = DESIGN_PRESETS[selectedPreset]
-    const themeSettings = preset
-      ? {
-          ...presetToThemeSettings(preset),
-          fontHeading,
-          fontBody,
-          fontMono,
-          primary: colorPrimary,
-          accent: colorAccent,
-          background: colorBackground,
-          foreground: colorForeground,
-        }
-      : { fontHeading, fontBody, fontMono, primary: colorPrimary, accent: colorAccent, background: colorBackground, foreground: colorForeground }
+    const themeDefaults = applyThemeDefaults(selectedPreset)
+    const themeSettings = {
+      ...themeDefaults,
+      activePreset: selectedPreset,
+      fontHeading,
+      fontBody,
+      fontMono,
+      primary: colorPrimary,
+      accent: colorAccent,
+      background: colorBackground,
+      foreground: colorForeground,
+    }
 
     const genres = genresInput
       .split(',')
@@ -754,44 +757,44 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">
-                DESIGN PRESET
+                THEME WÄHLEN
               </h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Choose a visual theme. Preview changes live as you hover.
+                Choose a theme. Preview changes live as you hover.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {PRESET_IDS.map((id) => {
-                const preset = DESIGN_PRESETS[id]
+              {THEME_CATALOG.map((themeDefn) => {
+                const themePkg = getTheme(themeDefn.id)
+                const colors = themePkg?.defaultColors
                 return (
                   <button
-                    key={id}
-                    onClick={() => applyPreset(id)}
-                    onMouseEnter={() => applyThemeToDOM(presetToThemeSettings(preset))}
-                    onMouseLeave={() => applyThemeToDOM(presetToThemeSettings(DESIGN_PRESETS[selectedPreset]))}
+                    key={themeDefn.id}
+                    onClick={() => applyPreset(themeDefn.id)}
+                    onMouseEnter={() => {
+                      const defaults = applyThemeDefaults(themeDefn.id)
+                      applyThemeToDOM(defaults)
+                    }}
+                    onMouseLeave={() => {
+                      const defaults = applyThemeDefaults(selectedPreset)
+                      applyThemeToDOM(defaults)
+                    }}
                     className={`border rounded p-3 text-left transition-all hover:border-primary/50 ${
-                      selectedPreset === id
+                      selectedPreset === themeDefn.id
                         ? 'border-primary bg-primary/10'
                         : 'border-primary/15 bg-card'
                     }`}
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <div
-                        className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
-                        style={{ background: preset.colors.primary }}
-                      />
-                      <div
-                        className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
-                        style={{ background: preset.colors.accent }}
-                      />
-                      <div
-                        className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
-                        style={{ background: preset.colors.background }}
-                      />
-                    </div>
-                    <div className="font-mono text-xs font-bold text-foreground">{preset.name}</div>
+                    {colors && (
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" style={{ background: colors.primary }} />
+                        <div className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" style={{ background: colors.accent }} />
+                        <div className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" style={{ background: colors.background }} />
+                      </div>
+                    )}
+                    <div className="font-mono text-xs font-bold text-foreground">{themeDefn.name}</div>
                     <div className="font-mono text-[10px] text-muted-foreground leading-tight mt-0.5">
-                      {preset.description}
+                      {themeDefn.description}
                     </div>
                   </button>
                 )
@@ -953,11 +956,14 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                   }}
                 />
                 {logoUrl && (
-                  <img
-                    src={logoUrl}
-                    alt="Logo preview"
-                    className="mt-2 h-16 object-contain border border-primary/20 rounded"
-                  />
+                  <div style={{ filter: 'drop-shadow(0 0 8px var(--primary))' }}>
+                    <img
+                      src={toPreviewUrl(logoUrl)}
+                      alt="Logo preview"
+                      className="mt-2 h-16 object-contain"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                  </div>
                 )}
               </Field>
               <Field label="OG Image URL (social preview)">

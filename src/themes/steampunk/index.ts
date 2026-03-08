@@ -120,6 +120,26 @@ export const steampunkTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'brass-copper',
+  defaultColors: {
+    primary: 'oklch(0.62 0.12 50)',
+    accent: 'oklch(0.72 0.14 55)',
+    background: 'oklch(0.10 0.03 40)',
+    card: 'oklch(0.15 0.03 40)',
+    foreground: 'oklch(0.92 0.04 60)',
+    mutedForeground: 'oklch(0.58 0.06 50)',
+    border: 'oklch(0.25 0.05 48)',
+    secondary: 'oklch(0.18 0.03 42)',
+  },
+  defaultFonts: {
+    heading: "'Cinzel', serif",
+    body: "'Lora', serif",
+    mono: "'Courier Prime', monospace",
+  },
+  animations: [
+    { id: 'noise', label: 'Texture Noise', defaultEnabled: true, defaultIntensity: 0.2 },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.6 },
+    { id: 'dotMatrix', label: 'Dot Matrix', defaultEnabled: true, defaultIntensity: 0.1 },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: SteampunkBackgroundEffects,

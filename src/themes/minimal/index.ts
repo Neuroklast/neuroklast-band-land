@@ -61,6 +61,22 @@ export const minimalTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'light',
+  defaultColors: {
+    primary: 'oklch(0.30 0 0)',
+    accent: 'oklch(0.45 0 0)',
+    background: 'oklch(0.99 0 0)',
+    card: 'oklch(0.96 0 0)',
+    foreground: 'oklch(0.15 0 0)',
+    mutedForeground: 'oklch(0.50 0 0)',
+    border: 'oklch(0.88 0 0)',
+    secondary: 'oklch(0.93 0 0)',
+  },
+  defaultFonts: {
+    heading: "'Inter', sans-serif",
+    body: "'Inter', sans-serif",
+    mono: "'Fira Code', monospace",
+  },
+  animations: [],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: MinimalBackgroundEffects,

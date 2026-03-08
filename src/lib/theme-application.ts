@@ -5,6 +5,7 @@
  */
 
 import type { ThemeSettings } from '@/lib/types'
+import { getTheme } from '@/lib/theme-registry'
 
 export const FONT_OPTIONS = [
   { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace", google: false },
@@ -163,4 +164,40 @@ export function resetThemeDOM() {
     '--overlay-moving-scanline', '--input', '--hover-color',
   ]
   props.forEach(p => root.style.removeProperty(p))
+}
+
+/**
+ * Build a ThemeSettings object from a theme's default colors and fonts.
+ * Returns a partial ThemeSettings that can be merged with the current settings.
+ * This is used when a new theme is selected to apply its default visual style.
+ */
+export function applyThemeDefaults(themeId: string): Partial<ThemeSettings> {
+  const theme = getTheme(themeId)
+  if (!theme) return {}
+  const result: Partial<ThemeSettings> = { activePreset: themeId }
+  if (theme.defaultColors) {
+    result.primary = theme.defaultColors.primary
+    result.accent = theme.defaultColors.accent
+    result.background = theme.defaultColors.background
+    result.card = theme.defaultColors.card
+    result.foreground = theme.defaultColors.foreground
+    result.mutedForeground = theme.defaultColors.mutedForeground
+    result.border = theme.defaultColors.border
+    result.secondary = theme.defaultColors.secondary
+  }
+  if (theme.defaultFonts) {
+    result.fontHeading = theme.defaultFonts.heading
+    result.fontBody = theme.defaultFonts.body
+    result.fontMono = theme.defaultFonts.mono
+  }
+  if (theme.borderRadius !== undefined) {
+    result.borderRadius = theme.borderRadius
+  }
+  if (theme.effects?.overlayEffects) {
+    result.overlayEffects = theme.effects.overlayEffects
+  }
+  if (theme.effects?.animationSettings) {
+    result.animationSettings = theme.effects.animationSettings
+  }
+  return result
 }

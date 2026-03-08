@@ -5,137 +5,101 @@ import { Label } from '@/components/ui/label'
 import { X, ArrowCounterClockwise, Export, ArrowSquareIn, FloppyDisk, Eye, EyeSlash, Lock } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import type { ThemeSettings, SectionVisibility, OverlayEffect } from '@/lib/types'
+import type { ThemeSettings, SectionVisibility } from '@/lib/types'
 import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
-import { DESIGN_PRESETS, PRESET_IDS, presetToThemeSettings } from '@/lib/design-presets'
 import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
-import { applyThemeToDOM, resetThemeDOM, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
+import { applyThemeToDOM, resetThemeDOM, applyThemeDefaults, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
 
-/* ─── Theme presets ─── */
-export interface ThemePreset {
-  name: string
-  description: string
-  theme: ThemeSettings
+// ─── Animation ID → ThemeSettings mapping ─────────────────────────────────────
+
+function getAnimationEnabled(draft: ThemeSettings, animId: string): boolean {
+  switch (animId) {
+    case 'glitch': return draft.animationSettings?.glitchEnabled ?? false
+    case 'scanlines': return draft.overlayEffects?.scanlines?.enabled ?? false
+    case 'crt': return draft.overlayEffects?.crt?.enabled ?? false
+    case 'noise': return draft.overlayEffects?.noise?.enabled ?? false
+    case 'vignette': return draft.overlayEffects?.vignette?.enabled ?? false
+    case 'chromatic': return draft.overlayEffects?.chromatic?.enabled ?? false
+    case 'dotMatrix': return draft.overlayEffects?.dotMatrix?.enabled ?? false
+    case 'particles': return draft.animationSettings?.circuitBackgroundEnabled ?? false
+    case 'overlayTransition': return draft.animationSettings?.overlayTransitionEnabled ?? false
+    default: return false
+  }
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const THEME_PRESETS: ThemePreset[] = [
-  {
-    name: 'Neon Red (Default)',
-    description: 'Default red cyberpunk theme',
-    theme: {
-      primary: 'oklch(0.50 0.22 25)',
-      accent: 'oklch(0.60 0.24 25)',
-      background: 'oklch(0 0 0)',
-      card: 'oklch(0.05 0 0)',
-      foreground: 'oklch(1 0 0)',
-      mutedForeground: 'oklch(0.55 0 0)',
-      border: 'oklch(0.15 0 0)',
-      secondary: 'oklch(0.10 0 0)',
-      fontHeading: "'JetBrains Mono', monospace",
-      fontBody: "'Space Grotesk', sans-serif",
-      fontMono: "'JetBrains Mono', monospace",
-    },
-  },
-  {
-    name: 'Cyber Blue',
-    description: 'Cool blue neon – Night City vibes',
-    theme: {
-      primary: 'oklch(0.55 0.20 250)',
-      accent: 'oklch(0.65 0.22 250)',
-      background: 'oklch(0.02 0.01 260)',
-      card: 'oklch(0.06 0.01 260)',
-      foreground: 'oklch(0.95 0.01 250)',
-      mutedForeground: 'oklch(0.55 0.05 250)',
-      border: 'oklch(0.15 0.03 250)',
-      secondary: 'oklch(0.10 0.02 260)',
-      fontHeading: "'JetBrains Mono', monospace",
-      fontBody: "'Space Grotesk', sans-serif",
-      fontMono: "'JetBrains Mono', monospace",
-    },
-  },
-  {
-    name: 'Toxic Green',
-    description: 'Matrix / hacker green terminal theme',
-    theme: {
-      primary: 'oklch(0.60 0.22 145)',
-      accent: 'oklch(0.70 0.24 145)',
-      background: 'oklch(0.01 0 0)',
-      card: 'oklch(0.04 0.01 145)',
-      foreground: 'oklch(0.90 0.10 145)',
-      mutedForeground: 'oklch(0.50 0.08 145)',
-      border: 'oklch(0.12 0.04 145)',
-      secondary: 'oklch(0.08 0.02 145)',
-      fontHeading: "'JetBrains Mono', monospace",
-      fontBody: "'JetBrains Mono', monospace",
-      fontMono: "'JetBrains Mono', monospace",
-    },
-  },
-  {
-    name: 'Violet Chrome',
-    description: 'Deep purple & chrome – synthwave aesthetic',
-    theme: {
-      primary: 'oklch(0.55 0.25 300)',
-      accent: 'oklch(0.65 0.27 310)',
-      background: 'oklch(0.02 0.02 290)',
-      card: 'oklch(0.06 0.03 290)',
-      foreground: 'oklch(0.95 0.02 300)',
-      mutedForeground: 'oklch(0.55 0.06 300)',
-      border: 'oklch(0.15 0.05 300)',
-      secondary: 'oklch(0.10 0.04 300)',
-      fontHeading: "'JetBrains Mono', monospace",
-      fontBody: "'Space Grotesk', sans-serif",
-      fontMono: "'JetBrains Mono', monospace",
-    },
-  },
-  {
-    name: 'Gold Circuit',
-    description: 'Gold & dark – luxury tech aesthetic',
-    theme: {
-      primary: 'oklch(0.65 0.18 80)',
-      accent: 'oklch(0.72 0.20 80)',
-      background: 'oklch(0.03 0.01 60)',
-      card: 'oklch(0.07 0.02 60)',
-      foreground: 'oklch(0.92 0.05 80)',
-      mutedForeground: 'oklch(0.55 0.04 60)',
-      border: 'oklch(0.18 0.06 80)',
-      secondary: 'oklch(0.10 0.03 60)',
-      fontHeading: "'JetBrains Mono', monospace",
-      fontBody: "'Space Grotesk', sans-serif",
-      fontMono: "'JetBrains Mono', monospace",
-    },
-  },
-  {
-    name: 'Crimson Punk',
-    description: 'Deep crimson & hot pink – aggressive cyberpunk',
-    theme: {
-      primary: 'oklch(0.55 0.24 10)',
-      accent: 'oklch(0.62 0.26 350)',
-      background: 'oklch(0.02 0.01 350)',
-      card: 'oklch(0.06 0.02 350)',
-      foreground: 'oklch(0.95 0.02 10)',
-      mutedForeground: 'oklch(0.50 0.06 350)',
-      border: 'oklch(0.15 0.04 350)',
-      secondary: 'oklch(0.10 0.03 350)',
-      fontHeading: "'JetBrains Mono', monospace",
-      fontBody: "'Space Grotesk', sans-serif",
-      fontMono: "'JetBrains Mono', monospace",
-    },
-  },
-]
-
-/** Default overlay effect */
-const DEFAULT_OVERLAY: OverlayEffect = { enabled: false, intensity: 0.5 }
-
-const OVERLAY_LABELS: Record<string, { name: string; description: string }> = {
-  dotMatrix: { name: 'Dot Matrix', description: 'Retro dot-grid pattern overlay' },
-  scanlines: { name: 'Scanlines', description: 'Horizontal CRT scanline bars' },
-  crt: { name: 'CRT Curvature', description: 'Curved screen edge distortion' },
-  noise: { name: 'Static Noise', description: 'Subtle random noise grain' },
-  vignette: { name: 'Vignette', description: 'Dark edges / spotlight center' },
-  chromatic: { name: 'Chromatic Aberration', description: 'RGB color fringe shift' },
-  movingScanline: { name: 'Moving Scanline', description: 'Animated CRT refresh line sweep' },
+function getAnimationIntensity(draft: ThemeSettings, animId: string): number {
+  switch (animId) {
+    case 'scanlines': return draft.overlayEffects?.scanlines?.intensity ?? 0.5
+    case 'crt': return draft.overlayEffects?.crt?.intensity ?? 0.5
+    case 'noise': return draft.overlayEffects?.noise?.intensity ?? 0.5
+    case 'vignette': return draft.overlayEffects?.vignette?.intensity ?? 0.5
+    case 'chromatic': return draft.overlayEffects?.chromatic?.intensity ?? 0.5
+    case 'dotMatrix': return draft.overlayEffects?.dotMatrix?.intensity ?? 0.5
+    default: return 0.5
+  }
 }
+
+function setAnimationEnabled(draft: ThemeSettings, animId: string, enabled: boolean): ThemeSettings {
+  switch (animId) {
+    case 'glitch':
+      return { ...draft, animationSettings: { ...draft.animationSettings, glitchEnabled: enabled } }
+    case 'scanlines':
+      return {
+        ...draft,
+        overlayEffects: { ...draft.overlayEffects, scanlines: { ...(draft.overlayEffects?.scanlines ?? { intensity: 0.3 }), enabled } },
+        animationSettings: { ...draft.animationSettings, scanlineEnabled: enabled },
+      }
+    case 'crt':
+      return {
+        ...draft,
+        overlayEffects: { ...draft.overlayEffects, crt: { ...(draft.overlayEffects?.crt ?? { intensity: 0.4 }), enabled } },
+        animationSettings: { ...draft.animationSettings, crtEnabled: enabled },
+      }
+    case 'noise':
+      return {
+        ...draft,
+        overlayEffects: { ...draft.overlayEffects, noise: { ...(draft.overlayEffects?.noise ?? { intensity: 0.3 }), enabled } },
+        animationSettings: { ...draft.animationSettings, noiseEnabled: enabled },
+      }
+    case 'vignette':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, vignette: { ...(draft.overlayEffects?.vignette ?? { intensity: 0.5 }), enabled } } }
+    case 'chromatic':
+      return {
+        ...draft,
+        overlayEffects: { ...draft.overlayEffects, chromatic: { ...(draft.overlayEffects?.chromatic ?? { intensity: 0.3 }), enabled } },
+        animationSettings: { ...draft.animationSettings, chromaticEnabled: enabled },
+      }
+    case 'dotMatrix':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, dotMatrix: { ...(draft.overlayEffects?.dotMatrix ?? { intensity: 0.1 }), enabled } } }
+    case 'particles':
+      return { ...draft, animationSettings: { ...draft.animationSettings, circuitBackgroundEnabled: enabled } }
+    case 'overlayTransition':
+      return { ...draft, animationSettings: { ...draft.animationSettings, overlayTransitionEnabled: enabled } }
+    default:
+      return draft
+  }
+}
+
+function setAnimationIntensity(draft: ThemeSettings, animId: string, intensity: number): ThemeSettings {
+  switch (animId) {
+    case 'scanlines':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, scanlines: { ...(draft.overlayEffects?.scanlines ?? { enabled: false }), intensity } } }
+    case 'crt':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, crt: { ...(draft.overlayEffects?.crt ?? { enabled: false }), intensity } } }
+    case 'noise':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, noise: { ...(draft.overlayEffects?.noise ?? { enabled: false }), intensity } } }
+    case 'vignette':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, vignette: { ...(draft.overlayEffects?.vignette ?? { enabled: false }), intensity } } }
+    case 'chromatic':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, chromatic: { ...(draft.overlayEffects?.chromatic ?? { enabled: false }), intensity } } }
+    case 'dotMatrix':
+      return { ...draft, overlayEffects: { ...draft.overlayEffects, dotMatrix: { ...(draft.overlayEffects?.dotMatrix ?? { enabled: false }), intensity } } }
+    default:
+      return draft
+  }
+}
+
+// ─── Section visibility labels ────────────────────────────────────────────────
 
 const SECTION_LABELS: Record<keyof SectionVisibility, string> = {
   news: 'News Section',
@@ -153,6 +117,8 @@ const SECTION_LABELS: Record<keyof SectionVisibility, string> = {
   systemMonitor: 'System Monitor HUD',
 }
 
+// ─── Props ────────────────────────────────────────────────────────────────────
+
 interface ThemeCustomizerDialogProps {
   open: boolean
   onClose: () => void
@@ -168,6 +134,8 @@ interface ThemeCustomizerDialogProps {
 // Re-export for backward compatibility
 // eslint-disable-next-line react-refresh/only-export-components
 export { applyThemeToDOM, resetThemeDOM }
+
+// ─── Color input helper ───────────────────────────────────────────────────────
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
@@ -191,7 +159,6 @@ function ColorInput({ label, value, onChange }: { label: string; value: string; 
   )
 }
 
-/** Simple oklch → hex approximation for the color picker */
 function oklchToHex(oklch: string): string {
   try {
     const el = document.createElement('div')
@@ -208,7 +175,6 @@ function oklchToHex(oklch: string): string {
   return '#ff3333'
 }
 
-/** Convert hex color to oklch via browser */
 function hexToOklch(hex: string): string {
   try {
     const el = document.createElement('div')
@@ -222,7 +188,6 @@ function hexToOklch(hex: string): string {
       const r = Number(rs) / 255
       const g = Number(gs) / 255
       const b = Number(bs) / 255
-      // Simple sRGB → approximate oklch
       const l = 0.2126 * r + 0.7152 * g + 0.0722 * b
       const max = Math.max(r, g, b)
       const min = Math.min(r, g, b)
@@ -252,7 +217,7 @@ export default function ThemeCustomizerDialog({
 }: ThemeCustomizerDialogProps) {
   const [draft, setDraft] = useState<ThemeSettings>(themeSettings || {})
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
-  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'presets' | 'visibility' | 'effects' | 'theme_config'>('presets')
+  const [activeTab, setActiveTab] = useState<'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'theme_config'>('theme')
   const [licenseDialog, setLicenseDialog] = useState<{ themeId: string; themeName: string; licenseKeyPrefix?: string } | null>(null)
   const [unlockedThemeIds, setUnlockedThemeIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('nk-unlocked-themes') || '[]') } catch { return [] }
@@ -260,7 +225,6 @@ export default function ThemeCustomizerDialog({
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const prevOpenRef = useRef(false)
 
-  // Sync draft when dialog opens (not on every prop change while open)
   useEffect(() => {
     if (open && !prevOpenRef.current) {
       startTransition(() => {
@@ -272,12 +236,10 @@ export default function ThemeCustomizerDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  // Load all Google Fonts when fonts tab is opened
   useEffect(() => {
     if (open && activeTab === 'fonts') loadAllGoogleFonts()
   }, [open, activeTab])
 
-  // Live preview: apply to DOM as user changes colors
   useEffect(() => {
     if (open) applyThemeToDOM(draft)
   }, [draft, open])
@@ -286,36 +248,20 @@ export default function ThemeCustomizerDialog({
     setDraft(prev => ({ ...prev, [key]: value }))
   }, [])
 
-  const handlePreset = (preset: ThemePreset) => {
-    // Legacy quick color palettes: apply colors/fonts only, preserve active theme engine
-    const { activePreset: _discard, ...colorPatch } = preset.theme
-    setDraft(prev => ({ ...prev, ...colorPatch }))
-  }
-
-  /** Apply a design preset from design-presets.ts — updates colors, fonts, effects, and animation settings */
-  const handleDesignPreset = (presetId: string) => {
-    const preset = DESIGN_PRESETS[presetId]
-    if (!preset) return
-    const patch = presetToThemeSettings(preset)
-    // Preserve the current theme engine (activePreset) — only apply visual settings
-    const { activePreset: _ignore, ...colorPatch } = patch
-    setDraft(prev => ({ ...prev, ...colorPatch }))
-  }
-
-  /**
-   * Switch the structural theme engine — updates activePreset and applies the
-   * engine's layout defaults (heroStyle, loadingScreenType) from the THEME_CATALOG.
-   * Colors and fonts are intentionally preserved so that the user's current
-   * design preset is not overwritten when switching themes.
-   */
-  const handleThemeEngine = (themeId: string) => {
+  const handleThemeSelect = (themeId: string) => {
+    const defaults = applyThemeDefaults(themeId)
     const themeDef = THEME_CATALOG.find(t => t.id === themeId)
     const structuralPatch: Partial<ThemeSettings> = { activePreset: themeId }
-    // Apply the engine's own layout defaults so heroStyle / loadingScreenType
-    // reflect the new theme instead of leftover values from a previous one.
     if (themeDef?.theme.heroStyle) structuralPatch.heroStyle = themeDef.theme.heroStyle
     if (themeDef?.theme.loadingScreenType) structuralPatch.loadingScreenType = themeDef.theme.loadingScreenType
-    setDraft(prev => ({ ...prev, ...structuralPatch }))
+    setDraft(prev => ({ ...prev, ...defaults, ...structuralPatch }))
+  }
+
+  const handleResetToThemeDefaults = () => {
+    if (!draft.activePreset) return
+    const defaults = applyThemeDefaults(draft.activePreset)
+    setDraft(prev => ({ ...prev, ...defaults }))
+    toast.success('Reset to theme defaults')
   }
 
   const handleSave = () => {
@@ -326,10 +272,16 @@ export default function ThemeCustomizerDialog({
   }
 
   const handleReset = () => {
-    const defaultPreset = presetToThemeSettings(DESIGN_PRESETS['cyberpunk'])
-    setDraft({ ...defaultPreset, activePreset: 'cyberpunk' })
-    resetThemeDOM()
-    applyThemeToDOM(defaultPreset)
+    const firstTheme = THEME_CATALOG[0]
+    if (firstTheme) {
+      const defaults = applyThemeDefaults(firstTheme.id)
+      setDraft({ ...defaults, activePreset: firstTheme.id })
+      resetThemeDOM()
+      applyThemeToDOM({ ...defaults, activePreset: firstTheme.id })
+    } else {
+      setDraft({})
+      resetThemeDOM()
+    }
   }
 
   const handleExportTheme = () => {
@@ -375,27 +327,17 @@ export default function ThemeCustomizerDialog({
     })
   }
 
-  const updateOverlayEffect = (key: string, updates: Partial<OverlayEffect>) => {
-    setDraft(prev => ({
-      ...prev,
-      overlayEffects: {
-        ...prev.overlayEffects,
-        [key]: { ...(prev.overlayEffects?.[key as keyof typeof prev.overlayEffects] || DEFAULT_OVERLAY), ...updates },
-      },
-    }))
-  }
-
-  // Determine if the currently selected theme has a customConfigSchema
   const activeThemeDef = draft.activePreset ? THEME_CATALOG.find(t => t.id === draft.activePreset) : undefined
   const activeThemePkg = draft.activePreset ? getTheme(draft.activePreset) : undefined
   const hasCustomConfig = !!activeThemePkg?.customConfigSchema
+  const activeAnimations = activeThemePkg?.animations ?? []
 
-  const tabs: { key: 'presets' | 'colors' | 'fonts' | 'effects' | 'visibility' | 'theme_config'; label: string }[] = [
-    { key: 'presets', label: 'PRESETS' },
-    { key: 'colors', label: 'COLORS' },
-    { key: 'fonts', label: 'FONTS' },
-    { key: 'effects', label: 'EFFECTS' },
-    { key: 'visibility', label: 'VISIBILITY' },
+  const tabs: { key: 'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'theme_config'; label: string }[] = [
+    { key: 'theme', label: 'THEME' },
+    { key: 'colors', label: 'FARBEN' },
+    { key: 'animations', label: 'ANIMATIONEN' },
+    { key: 'fonts', label: 'SCHRIFTEN' },
+    { key: 'visibility', label: 'SICHTBARKEIT' },
   ]
 
   if (hasCustomConfig) {
@@ -420,20 +362,18 @@ export default function ThemeCustomizerDialog({
             transition={{ duration: 0.3 }}
             onClick={e => e.stopPropagation()}
           >
-            {/* HUD corners */}
             <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50" />
             <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50" />
             <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50" />
             <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50" />
 
-            {/* Header */}
             <div className="h-12 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary/70 tracking-wider uppercase">THEME CUSTOMIZER</span>
                 {draft.activePreset && (
                   <span className="font-mono text-[9px] text-primary bg-primary/15 px-2 py-0.5 rounded">
-                    Engine: {THEME_CATALOG.find(t => t.id === draft.activePreset)?.name ?? draft.activePreset}
+                    {THEME_CATALOG.find(t => t.id === draft.activePreset)?.name ?? draft.activePreset}
                   </span>
                 )}
               </div>
@@ -442,13 +382,12 @@ export default function ThemeCustomizerDialog({
               </button>
             </div>
 
-            {/* Tabs */}
-            <div className="flex border-b border-primary/20">
+            <div className="flex border-b border-primary/20 overflow-x-auto">
               {tabs.map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 py-2 font-mono text-xs tracking-wider transition-colors ${
+                  className={`flex-shrink-0 flex-1 py-2 font-mono text-xs tracking-wider transition-colors ${
                     activeTab === tab.key
                       ? 'text-primary border-b-2 border-primary bg-primary/5'
                       : 'text-muted-foreground hover:text-primary/70'
@@ -459,225 +398,107 @@ export default function ThemeCustomizerDialog({
               ))}
             </div>
 
-            {/* Body */}
             <div className="max-h-[60vh] overflow-y-auto p-4">
 
-              {/* PRESETS TAB */}
-              {activeTab === 'presets' && (
-                <div className="space-y-6">
+              {activeTab === 'theme' && (
+                <div className="space-y-4">
+                  <p className="font-mono text-[10px] text-muted-foreground/60">
+                    Select a theme. Each theme is a complete visual package including colors, fonts, and effects.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {THEME_CATALOG.map(themeDefn => {
+                      const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
+                      const isUnlocked = effectiveStatus === 'free' || effectiveStatus === 'licensed' || unlockedThemeIds.includes(themeDefn.id)
+                      const isActive = draft.activePreset === themeDefn.id
+                      const themePkg = getTheme(themeDefn.id)
+                      const colors = themePkg?.defaultColors
+                      return (
+                        <button
+                          key={themeDefn.id}
+                          onClick={() => {
+                            if (!isUnlocked) {
+                              setLicenseDialog({ themeId: themeDefn.id, themeName: themeDefn.name, licenseKeyPrefix: themeDefn.licenseKeyPrefix })
+                              return
+                            }
+                            handleThemeSelect(themeDefn.id)
+                          }}
+                          className={`border rounded p-3 text-left transition-all hover:border-primary/50 relative ${
+                            isActive ? 'border-primary bg-primary/10' : 'border-primary/15'
+                          }`}
+                        >
+                          {!isUnlocked && (
+                            <div className="absolute top-2 right-2 text-muted-foreground/40">
+                              <Lock size={12} />
+                            </div>
+                          )}
+                          {colors && (
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <div className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0" style={{ background: colors.primary }} />
+                              <div className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0" style={{ background: colors.accent }} />
+                              <div className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0" style={{ background: colors.background }} />
+                            </div>
+                          )}
+                          <div className="font-mono text-xs text-primary/90 font-semibold">{themeDefn.name}</div>
+                          <div className="font-mono text-[9px] text-muted-foreground/60 mt-0.5 leading-tight">{themeDefn.description}</div>
+                          {!isUnlocked && (
+                            <div className="font-mono text-[9px] text-primary/40 mt-1">
+                              {effectiveStatus === 'preview' ? 'Preview Only' : 'Requires License'}
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
 
-                  {/* ── Section 1: Theme Engine (Layout & Effects) ── */}
-                  <div className="space-y-3">
-                    <div className="border-b border-primary/20 pb-2">
-                      <h3 className="font-mono text-xs text-primary/90 uppercase tracking-wider">Theme Engine (Layout &amp; Effects)</h3>
-                      <p className="font-mono text-[10px] text-muted-foreground/60 mt-1">
-                        Select the structural layout theme. This controls the page layout, background effects, and component style.
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="font-mono text-[10px] text-muted-foreground/60 mb-1 block">Active Layout Theme</Label>
-                      <select
-                        value={draft.activePreset || ''}
-                        onChange={e => {
-                          const themeId = e.target.value
-                          const themeDefn = THEME_CATALOG.find(t => t.id === themeId)
-                          if (!themeDefn) return
-                          const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
-                          const isUnlocked = effectiveStatus === 'free' || effectiveStatus === 'licensed' || unlockedThemeIds.includes(themeDefn.id)
-                          if (!isUnlocked) {
-                            setLicenseDialog({ themeId: themeDefn.id, themeName: themeDefn.name, licenseKeyPrefix: themeDefn.licenseKeyPrefix })
-                            return
-                          }
-                          handleThemeEngine(themeId)
-                        }}
-                        className="w-full h-9 rounded border border-primary/20 bg-card px-3 text-xs text-foreground font-mono"
-                      >
+                  {isPrimary && onSaveThemeAccessOverrides && (
+                    <details className="mt-2">
+                      <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">License Overrides (Admin)</summary>
+                      <div className="mt-2 space-y-2">
                         {THEME_CATALOG.map(themeDefn => {
                           const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
-                          const isUnlocked = effectiveStatus === 'free' || effectiveStatus === 'licensed' || unlockedThemeIds.includes(themeDefn.id)
                           return (
-                            <option key={themeDefn.id} value={themeDefn.id}>
-                              {themeDefn.name}{!isUnlocked ? ' 🔒' : ''} — {themeDefn.description}
-                            </option>
+                            <div key={themeDefn.id} className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-[10px] text-muted-foreground">{themeDefn.name}</span>
+                              <select
+                                value={effectiveStatus}
+                                onChange={e => {
+                                  const next = { ...themeAccessOverrides }
+                                  const val = e.target.value as import('@/lib/types').ThemeLicenseStatus
+                                  if (val === themeDefn.licenseStatus) {
+                                    delete next[themeDefn.id]
+                                  } else {
+                                    next[themeDefn.id] = val
+                                  }
+                                  onSaveThemeAccessOverrides(next)
+                                }}
+                                className="bg-background border border-primary/20 rounded px-2 py-1 font-mono text-[9px] text-primary/80"
+                              >
+                                <option value="free">Free</option>
+                                <option value="preview">Preview</option>
+                                <option value="locked">Locked</option>
+                                <option value="licensed">Licensed</option>
+                              </select>
+                            </div>
                           )
                         })}
-                      </select>
-                      {draft.activePreset && (
-                        <p className="font-mono text-[9px] text-primary/50 mt-1">
-                          Active engine: <strong>{THEME_CATALOG.find(t => t.id === draft.activePreset)?.name ?? draft.activePreset}</strong>
-                        </p>
-                      )}
-                    </div>
-
-                    {/* License override for primary admins */}
-                    {isPrimary && onSaveThemeAccessOverrides && (
-                      <details className="mt-2">
-                        <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">License Overrides (Admin)</summary>
-                        <div className="mt-2 space-y-2">
-                          {THEME_CATALOG.map(themeDefn => {
-                            const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
-                            return (
-                              <div key={themeDefn.id} className="flex items-center justify-between gap-2">
-                                <span className="font-mono text-[10px] text-muted-foreground">{themeDefn.name}</span>
-                                <select
-                                  value={effectiveStatus}
-                                  onChange={e => {
-                                    const next = { ...themeAccessOverrides }
-                                    const val = e.target.value as import('@/lib/types').ThemeLicenseStatus
-                                    if (val === themeDefn.licenseStatus) {
-                                      delete next[themeDefn.id]
-                                    } else {
-                                      next[themeDefn.id] = val
-                                    }
-                                    onSaveThemeAccessOverrides(next)
-                                  }}
-                                  className="bg-background border border-primary/20 rounded px-2 py-1 font-mono text-[9px] text-primary/80"
-                                >
-                                  <option value="free">Free</option>
-                                  <option value="preview">Preview</option>
-                                  <option value="locked">Locked</option>
-                                  <option value="licensed">Licensed</option>
-                                </select>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </details>
-                    )}
-                  </div>
-
-                  {/* ── Section 2: Design Presets (Colors & Typography) ── */}
-                  <div className="space-y-3">
-                    <div className="border-b border-primary/20 pb-2">
-                      <h3 className="font-mono text-xs text-primary/90 uppercase tracking-wider">Design Presets (Colors &amp; Typography)</h3>
-                      <p className="font-mono text-[10px] text-muted-foreground/60 mt-1">
-                        Apply a color palette and font pairing. This does not change the active layout theme.
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {PRESET_IDS.map(presetId => {
-                        const preset = DESIGN_PRESETS[presetId]
-                        return (
-                          <button
-                            key={presetId}
-                            onClick={() => handleDesignPreset(presetId)}
-                            className={`border rounded p-3 text-left transition-all hover:border-primary/50 ${
-                              draft.primary === preset.colors.primary && draft.accent === preset.colors.accent
-                                ? 'border-primary bg-primary/10'
-                                : 'border-primary/15'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.colors.primary }} />
-                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.colors.accent }} />
-                              <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.colors.background }} />
-                            </div>
-                            <div className="font-mono text-xs text-primary/90">{preset.name}</div>
-                            <div className="font-mono text-[9px] text-muted-foreground/60">{preset.description}</div>
-                          </button>
-                        )
-                      })}
-                    </div>
-
-                    {/* Quick Color Palettes + custom saved presets */}
-                    <details className="mt-4">
-                      <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">Quick Color Palettes</summary>
-                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-                        {[...THEME_PRESETS, ...(draft.customConfig?.savedPresets as ThemePreset[] || [])].map(preset => (
-
-                          <div key={preset.name} className="relative group">
-                            <button
-                              onClick={() => handlePreset(preset)}
-                              className="w-full border rounded p-3 text-left transition-all hover:border-primary/50 border-primary/15"
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.primary }} />
-                                <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.accent }} />
-                                <div className="w-4 h-4 rounded-full border border-white/20" style={{ background: preset.theme.background }} />
-                              </div>
-                              <div className="font-mono text-xs text-primary/90">{preset.name}</div>
-                              <div className="font-mono text-[9px] text-muted-foreground/60">{preset.description}</div>
-                            </button>
-                            {!THEME_PRESETS.find(p => p.name === preset.name) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  const updatedPresets = (draft.customConfig?.savedPresets as ThemePreset[] || []).filter(p => p.name !== preset.name)
-                                  setDraft(prev => ({
-                                    ...prev,
-                                    customConfig: {
-                                      ...(prev.customConfig || {}),
-                                      savedPresets: updatedPresets
-                                    }
-                                  }))
-                                  toast.success('Design preset deleted')
-                                }}
-                              >
-                                <X className="w-3 h-3 text-destructive" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <p className="font-mono text-[10px] text-muted-foreground/60 mb-2">Save current color palette as a custom design preset</p>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Design Preset Name"
-                            className="font-mono text-xs bg-black/40 border-primary/20 flex-1"
-                            id="new-preset-name"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="font-mono text-xs"
-                            onClick={() => {
-                              const input = document.getElementById('new-preset-name') as HTMLInputElement
-                              const name = input?.value?.trim()
-                              if (!name) return toast.error('Enter a design preset name')
-
-                              const currentPresets = (draft.customConfig?.savedPresets as ThemePreset[] || [])
-                              if (currentPresets.find(p => p.name === name) || THEME_PRESETS.find(p => p.name === name)) {
-                                return toast.error('Design preset name already exists')
-                              }
-
-                              const newPreset: ThemePreset = {
-                                name,
-                                description: 'Custom design preset',
-                                theme: { ...draft, customConfig: { ...(draft.customConfig || {}), savedPresets: undefined } }
-                              }
-
-                              setDraft(prev => ({
-                                ...prev,
-                                customConfig: {
-                                  ...(prev.customConfig || {}),
-                                  savedPresets: [...currentPresets, newPreset]
-                                }
-                              }))
-
-                              if (input) input.value = ''
-                              toast.success('Design preset saved')
-                            }}
-                          >
-                            Save Current
-                          </Button>
-                        </div>
                       </div>
                     </details>
-                  </div>
+                  )}
                 </div>
               )}
 
-              {/* COLORS TAB */}
               {activeTab === 'colors' && (
                 <div className="space-y-2">
-                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Customize individual colors and border radius. Changes preview live.
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="font-mono text-[10px] text-muted-foreground/60">
+                      Customize individual colors. Changes preview live.
+                    </p>
+                    {draft.activePreset && (
+                      <Button variant="outline" size="sm" onClick={handleResetToThemeDefaults} className="gap-1 text-xs border-primary/30 h-7">
+                        <ArrowCounterClockwise size={12} /> Theme-Defaults
+                      </Button>
+                    )}
+                  </div>
                   <ColorInput label="Primary" value={draft.primary || 'oklch(0.50 0.22 25)'} onChange={v => updateColor('primary', v)} />
                   <ColorInput label="Accent" value={draft.accent || 'oklch(0.60 0.24 25)'} onChange={v => updateColor('accent', v)} />
                   <ColorInput label="Background" value={draft.background || 'oklch(0 0 0)'} onChange={v => updateColor('background', v)} />
@@ -687,24 +508,19 @@ export default function ThemeCustomizerDialog({
                   <ColorInput label="Border" value={draft.border || 'oklch(0.15 0 0)'} onChange={v => updateColor('border', v)} />
                   <ColorInput label="Secondary" value={draft.secondary || 'oklch(0.10 0 0)'} onChange={v => updateColor('secondary', v)} />
 
-                  {/* Border Radius Slider */}
                   <div className="pt-4 border-t border-primary/10">
                     <div className="flex items-center justify-between mb-2">
                       <Label className="font-mono text-xs text-muted-foreground">Border Radius</Label>
                       <span className="font-mono text-[10px] text-primary/70">{(draft.borderRadius ?? 0.125).toFixed(3)}rem</span>
                     </div>
                     <input
-                      type="range"
-                      min="0"
-                      max="1.5"
-                      step="0.025"
+                      type="range" min="0" max="1.5" step="0.025"
                       value={draft.borderRadius ?? 0.125}
                       onChange={e => setDraft(prev => ({ ...prev, borderRadius: parseFloat(e.target.value) }))}
                       className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
                     />
                     <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
-                      <span>SHARP</span>
-                      <span>ROUNDED</span>
+                      <span>SHARP</span><span>ROUNDED</span>
                     </div>
                     <div className="flex items-center gap-3 mt-2">
                       <div className="w-16 h-10 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(draft.borderRadius ?? 0.125) * 16}px` }} />
@@ -715,19 +531,77 @@ export default function ThemeCustomizerDialog({
                 </div>
               )}
 
-              {/* FONTS TAB */}
+              {activeTab === 'animations' && (
+                <div className="space-y-3">
+                  {!draft.activePreset ? (
+                    <p className="font-mono text-[10px] text-muted-foreground/60">Select a theme first to see available animations.</p>
+                  ) : activeAnimations.length === 0 ? (
+                    <p className="font-mono text-[10px] text-muted-foreground/60">This theme has no configurable animations.</p>
+                  ) : (
+                    <>
+                      <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
+                        Toggle animations for the active theme.
+                      </p>
+                      {activeAnimations.map(anim => {
+                        const enabled = getAnimationEnabled(draft, anim.id)
+                        const intensity = getAnimationIntensity(draft, anim.id)
+                        const hasIntensity = anim.defaultIntensity !== undefined && ['scanlines','crt','noise','vignette','chromatic','dotMatrix'].includes(anim.id)
+                        return (
+                          <div key={anim.id} className="border border-primary/10 p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs text-foreground/90">{anim.label}</span>
+                              <button
+                                onClick={() => setDraft(prev => setAnimationEnabled(prev, anim.id, !enabled))}
+                                className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-mono transition-colors ${
+                                  enabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
+                                }`}
+                              >
+                                {enabled ? <Eye size={14} /> : <EyeSlash size={14} />}
+                                {enabled ? 'AN' : 'AUS'}
+                              </button>
+                            </div>
+                            {enabled && hasIntensity && (
+                              <div className="flex items-center gap-3">
+                                <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">Intensität</Label>
+                                <input
+                                  type="range" min="0.05" max="1" step="0.05"
+                                  value={intensity}
+                                  onChange={e => setDraft(prev => setAnimationIntensity(prev, anim.id, parseFloat(e.target.value)))}
+                                  className="flex-1 h-1 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
+                                />
+                                <span className="font-mono text-[10px] text-primary/70 w-8 text-right">
+                                  {Math.round(intensity * 100)}%
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </>
+                  )}
+                </div>
+              )}
+
               {activeTab === 'fonts' && (
                 <div className="space-y-4">
-                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Choose from local and Google Fonts. Font previews are shown below each selector.
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="font-mono text-[10px] text-muted-foreground/60">Choose from local and Google Fonts.</p>
+                    {draft.activePreset && activeThemePkg?.defaultFonts && (
+                      <Button variant="outline" size="sm" onClick={handleResetToThemeDefaults} className="gap-1 text-xs border-primary/30 h-7">
+                        <ArrowCounterClockwise size={12} /> Theme-Defaults
+                      </Button>
+                    )}
+                  </div>
                   {[
-                    { key: 'fontHeading' as const, label: 'Heading Font' },
-                    { key: 'fontBody' as const, label: 'Body Font' },
-                    { key: 'fontMono' as const, label: 'Mono/Code Font' },
-                  ].map(({ key, label }) => (
+                    { key: 'fontHeading' as const, label: 'Heading Font', hint: activeThemePkg?.defaultFonts?.heading },
+                    { key: 'fontBody' as const, label: 'Body Font', hint: activeThemePkg?.defaultFonts?.body },
+                    { key: 'fontMono' as const, label: 'Mono/Code Font', hint: activeThemePkg?.defaultFonts?.mono },
+                  ].map(({ key, label, hint }) => (
                     <div key={key} className="space-y-1">
-                      <Label className="font-mono text-xs text-muted-foreground">{label}</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="font-mono text-xs text-muted-foreground">{label}</Label>
+                        {hint && <span className="font-mono text-[9px] text-primary/40">Default: {hint.split(',')[0].replace(/'/g, '')}</span>}
+                      </div>
                       <select
                         value={draft[key] || FONT_OPTIONS[0].value}
                         onChange={e => {
@@ -744,98 +618,34 @@ export default function ThemeCustomizerDialog({
                           </option>
                         ))}
                       </select>
-                      <div
-                        className="border border-primary/10 bg-black/30 p-3 mt-1"
-                        style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}
-                      >
-                        <p className="text-sm text-foreground/80">
-                          SITE — The quick brown fox jumps over the lazy dog
-                        </p>
-                        <p className="text-xs text-foreground/50 mt-1">
-                          0123456789 !@#$%^&amp;*() ABCDEFGHIJKLMNOPQRSTUVWXYZ
-                        </p>
+                      <div className="border border-primary/10 bg-black/30 p-3 mt-1" style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}>
+                        <p className="text-sm text-foreground/80">SITE — The quick brown fox jumps over the lazy dog</p>
+                        <p className="text-xs text-foreground/50 mt-1">0123456789 !@#$%^&*() ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
                       </div>
                     </div>
                   ))}
-                  {/* Font Size Slider */}
                   <div className="pt-4 border-t border-primary/10">
                     <div className="flex items-center justify-between mb-2">
                       <Label className="font-mono text-xs text-muted-foreground">Schriftgröße (Basis)</Label>
                       <span className="font-mono text-[10px] text-primary/70">{Math.round((draft.fontSize ?? 1) * 100)}%</span>
                     </div>
                     <input
-                      type="range"
-                      min="0.75"
-                      max="1.5"
-                      step="0.05"
+                      type="range" min="0.75" max="1.5" step="0.05"
                       value={draft.fontSize ?? 1}
                       onChange={e => setDraft(prev => ({ ...prev, fontSize: parseFloat(e.target.value) }))}
                       className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
                       aria-label="Schriftgröße"
                     />
                     <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
-                      <span>KLEIN (75%)</span>
-                      <span>NORMAL (100%)</span>
-                      <span>GROß (150%)</span>
+                      <span>KLEIN (75%)</span><span>NORMAL (100%)</span><span>GROß (150%)</span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* EFFECTS TAB */}
-              {activeTab === 'effects' && (
-                <div className="space-y-3">
-                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Enable, disable, and adjust visual overlay effects.
-                  </p>
-                  {Object.entries(OVERLAY_LABELS).map(([key, { name, description }]) => {
-                    const effect = draft.overlayEffects?.[key as keyof typeof draft.overlayEffects] || DEFAULT_OVERLAY
-                    return (
-                      <div key={key} className="border border-primary/10 p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="font-mono text-xs text-foreground/90">{name}</span>
-                            <p className="font-mono text-[9px] text-muted-foreground/50">{description}</p>
-                          </div>
-                          <button
-                            onClick={() => updateOverlayEffect(key, { enabled: !effect.enabled })}
-                            className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-mono transition-colors ${
-                              effect.enabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
-                            }`}
-                          >
-                            {effect.enabled ? <Eye size={14} /> : <EyeSlash size={14} />}
-                            {effect.enabled ? 'ON' : 'OFF'}
-                          </button>
-                        </div>
-                        {effect.enabled && (
-                          <div className="flex items-center gap-3">
-                            <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">Intensity</Label>
-                            <input
-                              type="range"
-                              min="0.05"
-                              max="1"
-                              step="0.05"
-                              value={effect.intensity}
-                              onChange={e => updateOverlayEffect(key, { intensity: parseFloat(e.target.value) })}
-                              className="flex-1 h-1 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
-                            />
-                            <span className="font-mono text-[10px] text-primary/70 w-8 text-right">
-                              {Math.round(effect.intensity * 100)}%
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              {/* VISIBILITY TAB */}
               {activeTab === 'visibility' && (
                 <div className="space-y-2">
-                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Show or hide individual sections and effects.
-                  </p>
+                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">Show or hide individual sections and effects.</p>
                   {(Object.keys(SECTION_LABELS) as (keyof SectionVisibility)[]).map(key => {
                     const visible = visDraft[key] !== false
                     return (
@@ -856,17 +666,13 @@ export default function ThemeCustomizerDialog({
                 </div>
               )}
 
-              {/* THEME CONFIG TAB */}
               {activeTab === 'theme_config' && hasCustomConfig && activeThemePkg?.customConfigSchema && (
                 <div className="space-y-4">
                   <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
                     Custom configuration settings specific to the active theme ({activeThemeDef?.name ?? activeThemePkg.name}).
                   </p>
                   {(Object.entries(activeThemePkg.customConfigSchema) as Array<[string, { label: string; description: string; type: 'number' | 'boolean' | 'string'; default: unknown }]>).map(([key, schema]) => {
-                    // Custom config is usually stored on the theme settings or we can place it on a dedicated customConfig object.
-                    // For now, let's look for a customConfig block on draft, or default.
                     const val = draft.customConfig?.[key] ?? schema.default
-
                     return (
                       <div key={key} className="space-y-1">
                         <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
@@ -874,24 +680,14 @@ export default function ThemeCustomizerDialog({
                           {schema.type === 'number' && <span className="text-[10px] text-primary/70">{val as number}</span>}
                         </Label>
                         <p className="font-mono text-[9px] text-muted-foreground/50">{schema.description}</p>
-
                         {schema.type === 'number' && (
                           <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.05"
+                            type="range" min="0" max="1" step="0.05"
                             value={val as number}
                             onChange={e => {
                               const updatedVal = parseFloat(e.target.value)
                               setDraft(prev => {
-                                const newConfig = {
-                                  ...prev,
-                                  customConfig: {
-                                    ...(prev.customConfig || {}),
-                                    [key]: updatedVal
-                                  }
-                                }
+                                const newConfig = { ...prev, customConfig: { ...(prev.customConfig || {}), [key]: updatedVal } }
                                 window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
                                 return newConfig
                               })
@@ -899,18 +695,11 @@ export default function ThemeCustomizerDialog({
                             className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary mt-2"
                           />
                         )}
-
                         {schema.type === 'boolean' && (
                           <button
                             onClick={() => {
                               setDraft(prev => {
-                                const newConfig = {
-                                  ...prev,
-                                  customConfig: {
-                                    ...(prev.customConfig || {}),
-                                    [key]: !val
-                                  }
-                                }
+                                const newConfig = { ...prev, customConfig: { ...(prev.customConfig || {}), [key]: !val } }
                                 window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
                                 return newConfig
                               })
@@ -922,19 +711,12 @@ export default function ThemeCustomizerDialog({
                             {val ? 'ENABLED' : 'DISABLED'}
                           </button>
                         )}
-
                         {schema.type === 'string' && (
                           <Input
                             value={val as string}
                             onChange={e => {
                               setDraft(prev => {
-                                const newConfig = {
-                                  ...prev,
-                                  customConfig: {
-                                    ...(prev.customConfig || {}),
-                                    [key]: e.target.value
-                                  }
-                                }
+                                const newConfig = { ...prev, customConfig: { ...(prev.customConfig || {}), [key]: e.target.value } }
                                 window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
                                 return newConfig
                               })
@@ -949,20 +731,13 @@ export default function ThemeCustomizerDialog({
               )}
             </div>
 
-            {/* Footer */}
             <div className="p-4 border-t border-primary/20 flex flex-wrap gap-2 justify-between items-center">
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleExportTheme} className="gap-1 text-xs border-primary/30">
                   <Export size={14} /> Export
                 </Button>
                 <label>
-                  <input
-                    type="file"
-                    accept=".json,application/json"
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={handleImportTheme}
-                  />
+                  <input type="file" accept=".json,application/json" className="hidden" ref={fileInputRef} onChange={handleImportTheme} />
                   <Button variant="outline" size="sm" asChild className="gap-1 text-xs border-primary/30 cursor-pointer">
                     <span><ArrowSquareIn size={14} /> Import</span>
                   </Button>
@@ -993,8 +768,7 @@ export default function ThemeCustomizerDialog({
           const updated = [...unlockedThemeIds, themeId]
           setUnlockedThemeIds(updated)
           try { localStorage.setItem('nk-unlocked-themes', JSON.stringify(updated)) } catch { /* ignore */ }
-          // After unlocking, switch only the theme engine (layout), keep current colors
-          handleThemeEngine(themeId)
+          handleThemeSelect(themeId)
         }}
       />
     )}

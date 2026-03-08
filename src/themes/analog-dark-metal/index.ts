@@ -105,6 +105,26 @@ export const analogDarkMetalTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'ice-metal',
+  defaultColors: {
+    primary: 'oklch(0.78 0.10 230)',
+    accent: 'oklch(0.85 0.08 225)',
+    background: 'oklch(0.06 0.01 240)',
+    card: 'oklch(0.10 0.01 238)',
+    foreground: 'oklch(0.92 0.02 220)',
+    mutedForeground: 'oklch(0.55 0.04 230)',
+    border: 'oklch(0.20 0.04 235)',
+    secondary: 'oklch(0.12 0.02 238)',
+  },
+  defaultFonts: {
+    heading: "'Rajdhani', sans-serif",
+    body: "'Bitter', serif",
+    mono: "'IBM Plex Mono', monospace",
+  },
+  animations: [
+    { id: 'scanlines', label: 'Oscilloscope Lines', defaultEnabled: true, defaultIntensity: 0.15 },
+    { id: 'noise', label: 'Analog Noise', defaultEnabled: true, defaultIntensity: 0.6 },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.7 },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: AnalogDarkMetalBackgroundEffects,

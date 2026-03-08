@@ -77,6 +77,25 @@ export const elegantTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'gold',
+  defaultColors: {
+    primary: 'oklch(0.72 0.12 85)',
+    accent: 'oklch(0.80 0.14 90)',
+    background: 'oklch(0.07 0.01 60)',
+    card: 'oklch(0.11 0.01 60)',
+    foreground: 'oklch(0.95 0.02 80)',
+    mutedForeground: 'oklch(0.60 0.04 80)',
+    border: 'oklch(0.20 0.03 70)',
+    secondary: 'oklch(0.14 0.02 65)',
+  },
+  defaultFonts: {
+    heading: "'Playfair Display', serif",
+    body: "'Lora', serif",
+    mono: "'Source Code Pro', monospace",
+  },
+  animations: [
+    { id: 'vignette', label: 'Vignette', defaultEnabled: false },
+    { id: 'noise', label: 'Subtle Noise', defaultEnabled: false },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     Hero: ElegantHero,

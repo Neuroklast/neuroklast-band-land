@@ -721,6 +721,39 @@ export interface ThemePackage {
   colorPresets: ColorPreset[]
   defaultPresetId: string
 
+  /** Default color palette for this theme (used when theme is first selected) */
+  defaultColors?: {
+    primary: string
+    accent: string
+    background: string
+    card: string
+    foreground: string
+    mutedForeground: string
+    border: string
+    secondary: string
+  }
+
+  /** Default fonts for this theme (used when theme is first selected) */
+  defaultFonts?: {
+    heading: string
+    body: string
+    mono: string
+  }
+
+  /** Animations this theme supports and their default intensities */
+  animations?: {
+    id: string
+    label: string
+    defaultEnabled: boolean
+    defaultIntensity?: number // 0-1
+  }[]
+
+  /** Background options this theme supports */
+  backgroundOptions?: {
+    id: string
+    label: string
+  }[]
+
   // Customizability
   customizability: ThemeCustomizability
 
