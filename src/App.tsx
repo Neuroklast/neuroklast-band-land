@@ -37,7 +37,7 @@ import { useThemeSlots } from '@/lib/theme-registry'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
-import { t } from '@/lib/i18n'
+import { useLocale } from '@/contexts/LocaleContext'
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────
 // These are only downloaded when an admin or specific user action requires them,
@@ -105,6 +105,7 @@ function removeSearchParam(key: string): void {
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
+  const { t } = useLocale()
   const { config, updateConfig, setConfig, isLoaded: siteConfigLoaded } = useSiteConfig()
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
   const { cyberpunkOverlay, setCyberpunkOverlay } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
