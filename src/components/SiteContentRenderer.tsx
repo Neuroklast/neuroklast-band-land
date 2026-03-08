@@ -4,6 +4,7 @@
  * Each section is wrapped in a SectionErrorBoundary so that a broken section
  * never takes down the whole page.
  */
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useThemeSlots } from '@/lib/theme-registry'
 import { useCachedImage } from '@/hooks/useCachedImage'
@@ -20,6 +21,7 @@ import ContactSection from '@/components/ContactSection'
 import NewsletterWidget from '@/components/NewsletterWidget'
 import { WidgetRenderer } from '@/components/widgets'
 import { getActiveWidgets } from '@/lib/widget-plugins'
+import { resolveSections, getEnabledSectionIds } from '@/lib/sections'
 import type { SiteConfig, FontSizeSettings, SectionLabels, SectionVisibility } from '@/lib/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -27,7 +29,6 @@ import type { SiteConfig, FontSizeSettings, SectionLabels, SectionVisibility } f
 interface SiteContentRendererProps {
   data: SiteConfig
   defaultData: SiteConfig
-  editMode: boolean
   isOwner: boolean
   siteConfigLoaded: boolean
   vis: SectionVisibility
@@ -60,7 +61,6 @@ function SectionMotion({ delay, children }: { delay: number; children: React.Rea
 export default function SiteContentRenderer({
   data,
   defaultData,
-  editMode,
   isOwner,
   siteConfigLoaded,
   vis,
@@ -78,6 +78,14 @@ export default function SiteContentRenderer({
   const cachedLogoUrl = useCachedImage(data.logoUrl)
   const cachedTitleImageUrl = useCachedImage(data.titleImageUrl)
 
+  const activeSectionIds = useMemo(
+    () => getEnabledSectionIds(resolveSections({
+      sections: data.sections,
+      sectionOrder: data.sectionOrder,
+    })),
+    [data.sections, data.sectionOrder]
+  )
+
   return (
     <>
       <ThemeBackgroundEffects key={data.themeSettings?.activePreset ?? 'default'} siteName={data.siteName} hudTexts={data.hudTexts} />
@@ -86,7 +94,7 @@ export default function SiteContentRenderer({
         <ThemeHero
           name={data.siteName}
           genres={data.genres}
-          editMode={editMode && isOwner}
+          
           onEdit={onShowBandInfoEdit}
           logoUrl={cachedLogoUrl || undefined}
           titleImageUrl={cachedTitleImageUrl || undefined}
@@ -95,12 +103,12 @@ export default function SiteContentRenderer({
       </SectionErrorBoundary>
 
       <main id="main-content" className="relative">
-        {vis.news !== false && (
+        {activeSectionIds.includes('news') && (
           <SectionMotion delay={0.7}>
             <SectionErrorBoundary sectionName="News">
               <NewsSection
                 news={data.news}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(news) => onUpdate('news', news)}
                 sectionLabels={data.sectionLabels}
                 onLabelChange={onLabelChange}
@@ -110,12 +118,12 @@ export default function SiteContentRenderer({
           </SectionMotion>
         )}
 
-        {vis.biography !== false && (
+        {activeSectionIds.includes('biography') && (
           <SectionMotion delay={0.8}>
             <SectionErrorBoundary sectionName="Biography">
               <BiographySection
                 biography={data.biography}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(biography) => onUpdate('biography', biography)}
                 fontSizes={data.fontSizes}
                 onFontSizeChange={onFontSizeChange}
@@ -128,12 +136,12 @@ export default function SiteContentRenderer({
           </SectionMotion>
         )}
 
-        {vis.gallery !== false && (
+        {activeSectionIds.includes('gallery') && (
           <SectionMotion delay={0.9}>
             <SectionErrorBoundary sectionName="Gallery">
               <InstagramGallery
                 galleryImages={data.galleryImages}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(galleryImages) => onUpdate('galleryImages', galleryImages)}
                 driveFolderUrl={data.galleryDriveFolderUrl}
                 onDriveFolderUrlChange={(galleryDriveFolderUrl) => onUpdate('galleryDriveFolderUrl', galleryDriveFolderUrl)}
@@ -145,12 +153,12 @@ export default function SiteContentRenderer({
           </SectionMotion>
         )}
 
-        {vis.gigs !== false && (
+        {activeSectionIds.includes('gigs') && (
           <SectionMotion delay={1.0}>
             <SectionErrorBoundary sectionName="Gigs">
               <GigsSection
                 gigs={data.gigs}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(gigs) => onUpdate('gigs', gigs)}
                 fontSizes={data.fontSizes}
                 onFontSizeChange={onFontSizeChange}
@@ -176,12 +184,12 @@ export default function SiteContentRenderer({
           </div>
         )}
 
-        {vis.releases !== false && (
+        {activeSectionIds.includes('releases') && (
           <SectionMotion delay={1.2}>
             <SectionErrorBoundary sectionName="Releases">
               <ReleasesSection
                 releases={data.releases}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(releases) => onUpdate('releases', releases)}
                 fontSizes={data.fontSizes}
                 onFontSizeChange={onFontSizeChange}
@@ -195,12 +203,12 @@ export default function SiteContentRenderer({
           </SectionMotion>
         )}
 
-        {vis.media !== false && (
+        {activeSectionIds.includes('media') && (
           <SectionMotion delay={1.3}>
             <SectionErrorBoundary sectionName="Media">
               <MediaSection
                 mediaFiles={data.mediaFiles}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(mediaFiles) => onUpdate('mediaFiles', mediaFiles)}
                 sectionLabels={data.sectionLabels}
                 onLabelChange={onLabelChange}
@@ -209,12 +217,12 @@ export default function SiteContentRenderer({
           </SectionMotion>
         )}
 
-        {vis.social !== false && (
+        {activeSectionIds.includes('social') && (
           <SectionMotion delay={1.4}>
             <SectionErrorBoundary sectionName="Social">
               <SocialSection
                 socialLinks={safeSocialLinks}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(socialLinks) => onUpdate('socialLinks', socialLinks)}
                 fontSizes={data.fontSizes}
                 onFontSizeChange={onFontSizeChange}
@@ -225,12 +233,12 @@ export default function SiteContentRenderer({
           </SectionMotion>
         )}
 
-        {(vis.contact !== false || (editMode && isOwner)) && (
+        {activeSectionIds.includes('contact') && (
           <SectionMotion delay={1.45}>
             <SectionErrorBoundary sectionName="Contact">
               <ContactSection
                 contactSettings={data.contactSettings}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(contactSettings) => onUpdate('contactSettings', contactSettings)}
                 sectionLabels={data.sectionLabels}
                 onLabelChange={onLabelChange}
@@ -239,12 +247,12 @@ export default function SiteContentRenderer({
           </SectionMotion>
         )}
 
-        {vis.partnersAndFriends !== false && (
+        {activeSectionIds.includes('partners') && (
           <SectionMotion delay={1.5}>
             <SectionErrorBoundary sectionName="Partners & Friends">
               <PartnersAndFriendsSection
                 friends={data.biography?.friends}
-                editMode={editMode && isOwner}
+                
                 onUpdate={(friends) => onUpdate('biography', {
                   ...(data.biography || { story: '', members: [], achievements: [] }),
                   friends,

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CaretDown, PencilSimple } from '@phosphor-icons/react'
+import { CaretDown } from '@phosphor-icons/react'
 import type { HeroSlotProps } from '@/lib/types'
 import {
   HERO_LOGO_GLITCH_DURATION_MS,
@@ -16,8 +16,6 @@ import './styles.css'
 export default function ZardonicHero({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -321,17 +319,6 @@ export default function ZardonicHero({
               </Badge>
             </motion.div>
           ))}
-          {editMode && onEdit && (
-            <Button
-              onClick={onEdit}
-              variant="outline"
-              size="sm"
-              className="border-primary/40 text-primary/80 hover:bg-primary/10 text-[10px] font-mono ml-2"
-            >
-              <PencilSimple size={12} className="mr-1" />
-              Edit Info
-            </Button>
-          )}
         </motion.div>
 
         <motion.div

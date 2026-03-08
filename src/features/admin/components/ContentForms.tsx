@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Trash, ArrowsDownUp, Spinner } from '@phosphor-icons/react'
-import type { SiteConfig, Gig, Release } from '@/lib/types'
+import type { SiteConfig, Gig, Release, NewsItem } from '@/lib/types'
 import { toast } from 'sonner'
 import { useMutation } from '@tanstack/react-query'
 
@@ -13,7 +13,7 @@ interface ContentFormsProps {
 }
 
 export function ContentForms({ data, onUpdate }: ContentFormsProps) {
-  const [activeTab, setActiveTab] = useState<'info' | 'gigs' | 'releases' | 'contact'>('info')
+  const [activeTab, setActiveTab] = useState<'info' | 'news' | 'gigs' | 'releases' | 'contact'>('info')
 
   const handleBandInfoChange = (field: string, value: string) => {
     onUpdate(field as keyof SiteConfig, value)
@@ -126,8 +126,27 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
     onUpdate('releases', (data.releases || []).filter(r => r.id !== id))
   }
 
+  const handleAddNews = () => {
+    const newItem: NewsItem = {
+      id: Date.now().toString(),
+      date: new Date().toISOString().split('T')[0],
+      text: 'Neue Nachricht',
+    }
+    onUpdate('news', [...(data.news || []), newItem])
+  }
+
+  const handleUpdateNews = (id: string, field: keyof NewsItem, value: string) => {
+    const updated = (data.news || []).map(item => item.id === id ? { ...item, [field]: value } : item)
+    onUpdate('news', updated)
+  }
+
+  const handleRemoveNews = (id: string) => {
+    onUpdate('news', (data.news || []).filter(item => item.id !== id))
+  }
+
   const tabs = [
     { id: 'info', label: 'Band Info' },
+    { id: 'news', label: 'News & Ankündigungen' },
     { id: 'gigs', label: 'Gigs & Tour' },
     { id: 'releases', label: 'Releases' },
     { id: 'contact', label: 'Contact & SEO' },
@@ -204,6 +223,46 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                   />
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'news' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-border pb-2">
+                <h3 className="font-mono font-bold text-lg text-primary">News & Ankündigungen</h3>
+                <Button onClick={handleAddNews} size="sm" className="gap-2"><Plus size={16} /> Hinzufügen</Button>
+              </div>
+              {(!data.news || data.news.length === 0) ? (
+                <p className="text-muted-foreground text-sm font-mono">Keine News vorhanden.</p>
+              ) : (
+                <div className="space-y-4">
+                  {(data.news || []).map((item) => (
+                    <div key={item.id} className="bg-card border border-border rounded-lg p-4 flex gap-4 items-start">
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Datum</Label>
+                          <Input type="date" value={item.date?.split('T')[0] || ''} onChange={e => handleUpdateNews(item.id, 'date', e.target.value)} className="h-8 text-xs" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Link (optional)</Label>
+                          <Input value={item.link || ''} onChange={e => handleUpdateNews(item.id, 'link', e.target.value)} className="h-8 text-xs" placeholder="https://..." />
+                        </div>
+                        <div className="space-y-1 md:col-span-2">
+                          <Label className="text-xs">Nachricht</Label>
+                          <textarea className="w-full min-h-[80px] bg-secondary border border-input rounded-md p-2 text-xs font-mono" value={item.text} onChange={e => handleUpdateNews(item.id, 'text', e.target.value)} />
+                        </div>
+                        <div className="space-y-1 md:col-span-2">
+                          <Label className="text-xs">Details (optional)</Label>
+                          <textarea className="w-full min-h-[60px] bg-secondary border border-input rounded-md p-2 text-xs font-mono" value={item.details || ''} onChange={e => handleUpdateNews(item.id, 'details', e.target.value)} />
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveNews(item.id)} className="text-destructive hover:bg-destructive/20">
+                        <Trash size={18} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

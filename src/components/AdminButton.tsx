@@ -38,6 +38,8 @@ interface AdminButtonProps {
   onImportData?: (data: SiteConfig) => void
   onOpenDialog: (dialog: AdminDialog) => void
   isPrimary?: boolean
+  /** When true the AdminHubDialog opens immediately on mount (used after auto-login). */
+  openHubOnMount?: boolean
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -59,11 +61,13 @@ export default function AdminButton({
   onImportData,
   onOpenDialog,
   isPrimary = false,
+  openHubOnMount = false,
 }: AdminButtonProps) {
   const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
-  const [showAdminHub, setShowAdminHub] = useState(false)
+  const [showAdminHub, setShowAdminHub] = useState(openHubOnMount)
+  const openedOnMountRef = useRef(false)
   const [importUrl, setImportUrl] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
@@ -71,6 +75,14 @@ export default function AdminButton({
   const [pendingImportData, setPendingImportData] = useState<Partial<SiteConfig> | null>(null)
   const [pendingValidation, setPendingValidation] = useState<ImportValidationResult | null>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
+
+  // If openHubOnMount transitions to true after mount (e.g. after login), open the hub once
+  useEffect(() => {
+    if (openHubOnMount && !openedOnMountRef.current) {
+      openedOnMountRef.current = true
+      setShowAdminHub(true)
+    }
+  }, [openHubOnMount])
 
   const handleExportData = () => {
     if (!siteConfig) return
@@ -283,7 +295,7 @@ export default function AdminButton({
           size="icon"
           title="Admin Dashboard"
         >
-          <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
+          <div className="absolute inset-0 bg-foreground/0 group-active:bg-foreground/20 transition-colors duration-100 rounded-full" />
           <PencilSimple size={24} className="md:hidden relative z-10" weight="bold" />
           <PencilSimple size={28} className="hidden md:block relative z-10" weight="bold" />
         </Button>

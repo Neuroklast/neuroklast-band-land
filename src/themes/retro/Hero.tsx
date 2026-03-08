@@ -23,8 +23,6 @@ function useTypewriter(text: string, speed = 80) {
 export default function RetroHero({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -102,14 +100,6 @@ export default function RetroHero({
               [{genre}]
             </motion.span>
           ))}
-          {editMode && onEdit && (
-            <button
-              onClick={onEdit}
-              className="px-3 py-1 text-xs font-mono tracking-widest text-primary border border-primary/40 uppercase hover:bg-primary/10 transition-colors ml-2"
-            >
-              [EDIT]
-            </button>
-          )}
         </motion.div>
 
         <motion.div

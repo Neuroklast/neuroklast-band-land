@@ -1,15 +1,13 @@
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CaretDown, PencilSimple } from '@phosphor-icons/react'
+import { CaretDown } from '@phosphor-icons/react'
 import type { HeroSlotProps } from '@/lib/types'
 import './styles.css'
 
 export default function NeonHero({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -95,17 +93,6 @@ export default function NeonHero({
               </Badge>
             </motion.div>
           ))}
-          {editMode && onEdit && (
-            <Button
-              onClick={onEdit}
-              variant="outline"
-              size="sm"
-              className="border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-background text-xs ml-2"
-            >
-              <PencilSimple size={12} className="mr-1" />
-              Edit Info
-            </Button>
-          )}
         </motion.div>
 
         <motion.div

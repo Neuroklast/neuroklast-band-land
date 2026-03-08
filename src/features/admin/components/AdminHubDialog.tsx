@@ -29,6 +29,7 @@ import {
   Lock,
   ArrowCounterClockwise,
   SignOut,
+  Article,
 } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
 import type { AdminDialog } from '@/lib/types'
@@ -78,6 +79,12 @@ export default function AdminHubDialog({
     {
       title: t('hub.content'),
       items: [
+        {
+          icon: Article,
+          label: 'Inhalte bearbeiten',
+          description: 'Biografie, News, Gigs, Releases',
+          action: () => { onClose(); onOpenDialog('content') },
+        },
         {
           icon: UploadSimple,
           label: t('hub.exportData'),

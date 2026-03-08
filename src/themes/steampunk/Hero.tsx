@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import type { HeroSlotProps } from '@/lib/types'
 import './styles.css'
@@ -8,8 +7,6 @@ import './styles.css'
 export default function SteampunkHero({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -80,12 +77,6 @@ export default function SteampunkHero({
             </div>
             <span className="w-px h-16 bg-gradient-to-b from-primary/60 to-transparent" />
           </div>
-
-          {editMode && onEdit && (
-            <Button onClick={onEdit} variant="outline" className="mt-12 border-primary text-primary hover:bg-primary hover:text-background z-40 relative font-heading uppercase tracking-widest rounded-none shadow-[2px_2px_0_var(--primary)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-              <PencilSimple className="mr-2" size={16} /> Edit Details
-            </Button>
-          )}
         </motion.div>
       </div>
 

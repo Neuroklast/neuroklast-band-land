@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import type { HeroSlotProps } from '@/lib/types'
 import './styles.css'
@@ -8,8 +7,6 @@ import './styles.css'
 export default function AnalogDarkMetalHero({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -82,13 +79,6 @@ export default function AnalogDarkMetalHero({
           )}
 
           <div className="mt-16 w-px h-24 bg-gradient-to-b from-primary/80 to-transparent mx-auto opacity-70" />
-
-          {editMode && onEdit && (
-            <Button onClick={onEdit} variant="outline" className="mt-8 border-primary/50 text-primary hover:bg-primary hover:text-background z-40 relative group overflow-hidden rounded-none">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] opacity-0 group-hover:opacity-100 transition-opacity" />
-              <PencilSimple className="mr-2" size={16} /> Edit Profile
-            </Button>
-          )}
         </motion.div>
       </div>
 

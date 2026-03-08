@@ -24,8 +24,7 @@ import { useTouchSwipe } from '@/hooks/use-touch-swipe'
 
 interface ReleasesSectionProps {
   releases: Release[]
-  editMode: boolean
-  onUpdate: (releases: Release[]) => void
+  editMode?: boolean
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   dataLoaded?: boolean

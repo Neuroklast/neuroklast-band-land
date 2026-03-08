@@ -60,8 +60,10 @@ export function applyOverlayEffectsToDOM(theme: ThemeSettings | undefined) {
   root.style.setProperty('--overlay-moving-scanline', effects?.movingScanline?.enabled ? '1' : '0')
 }
 
-/** Internal: apply CSS custom properties from ThemeSettings to the root element.
- *  Does NOT touch the `data-theme` attribute. */
+/**
+ * Internal: apply CSS custom properties from ThemeSettings to the root element.
+ * Does NOT touch the `data-theme` attribute.
+ */
 function applyCSSVars(root: HTMLElement, theme: ThemeSettings) {
   if (theme.primary) root.style.setProperty('--primary', theme.primary)
   if (theme.accent) root.style.setProperty('--accent', theme.accent)

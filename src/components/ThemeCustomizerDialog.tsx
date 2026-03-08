@@ -2,14 +2,15 @@ import { useState, useEffect, useCallback, useRef, startTransition } from 'react
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { X, ArrowCounterClockwise, Export, ArrowSquareIn, FloppyDisk, Eye, EyeSlash, Lock } from '@phosphor-icons/react'
+import { X, ArrowCounterClockwise, Export, ArrowSquareIn, FloppyDisk, Eye, EyeSlash, Lock, ArrowUp, ArrowDown } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import type { ThemeSettings, SectionVisibility } from '@/lib/types'
+import type { ThemeSettings, SectionVisibility, SectionConfig } from '@/lib/types'
 import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
 import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
 import { applyThemeToDocument, applyThemeToDOM, resetThemeDOM, applyThemeDefaults, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
 import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
+import { resolveSections, normalizeSections, toggleSection, reorderSections } from '@/lib/sections'
 
 // ─── Animation ID → ThemeSettings mapping ─────────────────────────────────────
 
@@ -130,6 +131,22 @@ interface ThemeCustomizerDialogProps {
   isPrimary?: boolean
   themeAccessOverrides?: Record<string, import('@/lib/types').ThemeLicenseStatus>
   onSaveThemeAccessOverrides?: (overrides: Record<string, import('@/lib/types').ThemeLicenseStatus>) => void
+  sections?: SectionConfig[]
+  onSaveSections?: (sections: SectionConfig[]) => void
+}
+
+// ─── Section display names ─────────────────────────────────────────────────────
+
+const SECTION_DISPLAY_NAMES: Record<string, string> = {
+  news: 'News & Ankündigungen',
+  biography: 'Biografie',
+  gallery: 'Foto Galerie',
+  gigs: 'Live Gigs',
+  releases: 'Musik Releases',
+  media: 'Media / Videos',
+  social: 'Social Media',
+  partners: 'Partner & Freunde',
+  contact: 'Kontakt',
 }
 
 // Re-export for backward compatibility
@@ -224,13 +241,18 @@ export default function ThemeCustomizerDialog({
   isPrimary,
   themeAccessOverrides,
   onSaveThemeAccessOverrides,
+  sections,
+  onSaveSections,
 }: ThemeCustomizerDialogProps) {
   const [previewConfig, setPreviewConfig] = useState<PreviewConfig>(() => ({
     theme: themeSettings?.activePreset || '',
     themeSettings: themeSettings || {},
   }))
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
-  const [activeTab, setActiveTab] = useState<'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'theme_config'>('theme')
+  const [layoutDraft, setLayoutDraft] = useState<SectionConfig[]>(() =>
+    normalizeSections(resolveSections(sections ? { sections } : {}))
+  )
+  const [activeTab, setActiveTab] = useState<'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'layout' | 'theme_config'>('theme')
   const [licenseDialog, setLicenseDialog] = useState<{ themeId: string; themeName: string; licenseKeyPrefix?: string } | null>(null)
   const [unlockedThemeIds, setUnlockedThemeIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('nk-unlocked-themes') || '[]') } catch { return [] }
@@ -246,6 +268,7 @@ export default function ThemeCustomizerDialog({
           themeSettings: themeSettings || {},
         })
         setVisDraft(sectionVisibility || {})
+        setLayoutDraft(normalizeSections(resolveSections(sections ? { sections } : {})))
       })
     }
     prevOpenRef.current = open
@@ -286,6 +309,9 @@ export default function ThemeCustomizerDialog({
   const handleSave = () => {
     onSaveTheme({ ...previewConfig.themeSettings, activePreset: previewConfig.theme })
     onSaveSectionVisibility(visDraft)
+    if (onSaveSections) {
+      onSaveSections(layoutDraft)
+    }
     toast.success('Theme saved')
     onClose()
   }
@@ -326,8 +352,8 @@ export default function ThemeCustomizerDialog({
       try {
         const parsed = JSON.parse(reader.result as string)
         // Support both new format { theme, themeSettings } and legacy { theme: ThemeSettings }
-        if (parsed.themeSettings) {
-          setPreviewConfig({ theme: parsed.theme || '', themeSettings: parsed.themeSettings })
+        if (parsed.themeSettings && typeof parsed.theme === 'string') {
+          setPreviewConfig({ theme: parsed.theme, themeSettings: parsed.themeSettings })
           if (parsed.visibility) setVisDraft(parsed.visibility)
           toast.success('Theme imported')
         } else if (parsed.theme && typeof parsed.theme === 'object') {
@@ -359,12 +385,13 @@ export default function ThemeCustomizerDialog({
   const hasCustomConfig = !!activeThemePkg?.customConfigSchema
   const activeAnimations = activeThemePkg?.animations ?? []
 
-  const tabs: { key: 'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'theme_config'; label: string }[] = [
+  const tabs: { key: 'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'layout' | 'theme_config'; label: string }[] = [
     { key: 'theme', label: 'THEME' },
     { key: 'colors', label: 'FARBEN' },
     { key: 'animations', label: 'ANIMATIONEN' },
     { key: 'fonts', label: 'SCHRIFTEN' },
     { key: 'visibility', label: 'SICHTBARKEIT' },
+    { key: 'layout', label: 'SEITEN-LAYOUT' },
   ]
 
   if (hasCustomConfig) {
@@ -540,7 +567,7 @@ export default function ThemeCustomizerDialog({
                               const settings = presetToThemeSettings(preset)
                               setPreviewConfig(prev => ({
                                 theme: prev.theme,
-                                themeSettings: { ...prev.themeSettings, ...settings },
+                                themeSettings: { ...prev.themeSettings, ...settings, activePreset: preset.id },
                               }))
                             }}
                             className={`border rounded p-2 text-left transition-all hover:border-primary/50 ${
@@ -726,6 +753,50 @@ export default function ThemeCustomizerDialog({
                       </div>
                     )
                   })}
+                </div>
+              )}
+
+              {activeTab === 'layout' && (
+                <div className="space-y-2">
+                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
+                    Reihenfolge und Sichtbarkeit der Sektionen festlegen.
+                  </p>
+                  {layoutDraft.map((section, index) => (
+                    <div key={section.id} className={`flex items-center gap-2 p-2 border rounded transition-colors ${
+                      section.enabled ? 'border-primary/20 bg-primary/5' : 'border-primary/5 opacity-50'
+                    }`}>
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          onClick={() => setLayoutDraft(prev => reorderSections(prev, section.id, index - 1))}
+                          disabled={index === 0}
+                          className="text-muted-foreground/60 hover:text-primary disabled:opacity-20 p-0.5"
+                          title="Move up"
+                        >
+                          <ArrowUp size={12} />
+                        </button>
+                        <button
+                          onClick={() => setLayoutDraft(prev => reorderSections(prev, section.id, index + 1))}
+                          disabled={index === layoutDraft.length - 1}
+                          className="text-muted-foreground/60 hover:text-primary disabled:opacity-20 p-0.5"
+                          title="Move down"
+                        >
+                          <ArrowDown size={12} />
+                        </button>
+                      </div>
+                      <span className="flex-1 font-mono text-xs text-foreground/80">
+                        {SECTION_DISPLAY_NAMES[section.id] ?? section.id}
+                      </span>
+                      <button
+                        onClick={() => setLayoutDraft(prev => toggleSection(prev, section.id))}
+                        className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono transition-colors ${
+                          section.enabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
+                        }`}
+                      >
+                        {section.enabled ? <Eye size={12} /> : <EyeSlash size={12} />}
+                        {section.enabled ? 'AN' : 'AUS'}
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 
