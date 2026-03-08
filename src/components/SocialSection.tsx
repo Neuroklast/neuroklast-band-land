@@ -32,6 +32,7 @@ interface SocialSectionProps {
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
+  onUpdate?: (socialLinks: SocialLinks) => void
 }
 
 const socialPlatforms = [
@@ -201,7 +202,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
         <SocialEditDialog
           socialLinks={safeSocialLinks}
           onSave={(updated) => {
-            onUpdate(updated)
+            onUpdate?.(updated)
             setIsEditing(false)
           }}
           onClose={() => setIsEditing(false)}

@@ -181,7 +181,8 @@ function App() {
     prevIsOwnerRef.current = isOwner
   }, [isOwner])
 
-  // ── Theme import from URL hash ───────────────────────────────────────────────  const configAtMountRef = useRef(config)
+  // ── Theme import from URL hash ────────────────────────────────────────────────
+  const configAtMountRef = useRef(config)
   useEffect(() => {
     const te = getThemeFromUrlHash()
     if (!te?.data) return

@@ -24,6 +24,7 @@ interface GigsSectionProps {
   onLabelChange?: (key: keyof SectionLabels, value: string) => void
   /** When provided, clicking a gig card opens the cyberpunk overlay */
   onGigClick?: (gig: Gig) => void
+  onUpdate?: (gigs: Gig[]) => void
 }
 
 export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onGigClick }: GigsSectionProps) {
@@ -105,7 +106,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
         const newGigs = apiGigs.filter(g => !existingIds.has(g.id))
         
         if (newGigs.length > 0) {
-          onUpdate([...currentGigs, ...newGigs])
+          onUpdate?.([...currentGigs, ...newGigs])
           if (!isAutoLoad) {
             toast.success(`${newGigs.length} upcoming gig${newGigs.length > 1 ? 's' : ''} loaded from concert APIs`)
           }
@@ -130,15 +131,15 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   const handleDelete = (id: string) => {
-    onUpdate((gigs || []).filter(g => g.id !== id))
+    onUpdate?.((gigs || []).filter(g => g.id !== id))
   }
 
   const handleSave = (gig: Gig) => {
     const currentGigs = gigs || []
     if (editingGig) {
-      onUpdate(currentGigs.map(g => g.id === gig.id ? gig : g))
+      onUpdate?.(currentGigs.map(g => g.id === gig.id ? gig : g))
     } else {
-      onUpdate([...currentGigs, gig])
+      onUpdate?.([...currentGigs, gig])
     }
     setEditingGig(null)
     setIsAdding(false)

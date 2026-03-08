@@ -34,6 +34,7 @@ interface ReleasesSectionProps {
   onReleaseClick?: (release: Release) => void
   /** Site/artist name used for iTunes lookup */
   siteName?: string
+  onUpdate?: (releases: Release[]) => void
 }
 
 export default function ReleasesSection({ releases, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onReleaseClick, siteName = '' }: ReleasesSectionProps) {
@@ -138,15 +139,15 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
   })
 
   const handleDelete = (id: string) => {
-    onUpdate((releases || []).filter(r => r.id !== id))
+    onUpdate?.((releases || []).filter(r => r.id !== id))
   }
 
   const handleSave = (release: Release) => {
     const currentReleases = releases || []
     if (editingRelease) {
-      onUpdate(currentReleases.map(r => r.id === release.id ? release : r))
+      onUpdate?.(currentReleases.map(r => r.id === release.id ? release : r))
     } else {
-      onUpdate([...currentReleases, release])
+      onUpdate?.([...currentReleases, release])
     }
     setEditingRelease(null)
     setIsAdding(false)
@@ -238,7 +239,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
       })
 
       const mergedReleases = [...updatedReleases, ...newReleases]
-      onUpdate(mergedReleases)
+      onUpdate?.(mergedReleases)
       
       if (!isAutoLoad) {
         toast.success(`Imported ${newReleases.length} new releases from iTunes`)
