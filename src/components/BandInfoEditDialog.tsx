@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, X } from '@phosphor-icons/react'
+import { toDirectImageUrl } from '@/lib/image-cache'
 
 interface BandInfoEditDialogProps {
   open: boolean
@@ -51,8 +52,8 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
       name: bandName,
       genres: bandGenres,
       label: bandLabel || undefined,
-      logoUrl: bandLogoUrl || undefined,
-      titleImageUrl: bandTitleImageUrl || undefined,
+      logoUrl: toDirectImageUrl(bandLogoUrl) || bandLogoUrl || undefined,
+      titleImageUrl: toDirectImageUrl(bandTitleImageUrl) || bandTitleImageUrl || undefined,
     })
     onOpenChange(false)
   }
@@ -95,7 +96,7 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
             />
             {bandLogoUrl && (
               <div className="mt-2 flex justify-center">
-                <img src={bandLogoUrl} alt="Logo Preview" className="max-w-[200px] max-h-[200px] object-contain border border-border rounded p-2" />
+                <img src={toDirectImageUrl(bandLogoUrl) || bandLogoUrl} alt="Logo Preview" className="max-w-[200px] max-h-[200px] object-contain border border-border rounded p-2" />
               </div>
             )}
             <p className="text-xs text-muted-foreground">Leave empty to use default logo</p>
@@ -111,7 +112,7 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
             />
             {bandTitleImageUrl && (
               <div className="mt-2 flex justify-center">
-                <img src={bandTitleImageUrl} alt="Title Preview" className="max-w-full max-h-[100px] object-contain border border-border rounded p-2" />
+                <img src={toDirectImageUrl(bandTitleImageUrl) || bandTitleImageUrl} alt="Title Preview" className="max-w-full max-h-[100px] object-contain border border-border rounded p-2" />
               </div>
             )}
             <p className="text-xs text-muted-foreground">Leave empty to use default title image</p>

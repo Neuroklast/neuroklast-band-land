@@ -195,11 +195,18 @@ export default function HeroZardonic({
             }}
           >
             <div className="relative">
-              <img
-                src={logoUrl ?? logoPng}
-                alt={`${name} Logo`}
-                className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
-              />
+              {/*
+                ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+                nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+                Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+              */}
+              <div style={!glitchLogo ? { filter: 'drop-shadow(0 0 30px oklch(0.45 0.22 25 / 0.8))' } : undefined}>
+                <img
+                  src={logoUrl ?? logoPng}
+                  alt={`${name} Logo`}
+                  className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] ${glitchLogo ? 'red-glitch-element' : ''}`}
+                />
+              </div>
               {/* CRT scanline overlay on logo */}
               <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                 <div
@@ -251,7 +258,7 @@ export default function HeroZardonic({
                 <img
                   src={titleImageUrl ?? titlePng}
                   alt={name}
-                  className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
+                  className={`w-full h-auto ${glitchTitle ? 'red-glitch-element' : ''}`}
                 />
               </div>
               {/* CRT scanline + dot-matrix overlays */}

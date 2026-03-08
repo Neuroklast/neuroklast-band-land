@@ -41,121 +41,85 @@ export function GlitchImage({ src, alt, className = '', width, height }: GlitchI
   const duration = get('IMAGE_GLITCH_DURATION_MS')
 
   return (
+    /*
+      ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+      nicht auf dem inneren Container mit overflow:hidden. Der Wrapper darf KEIN
+      overflow:hidden haben — nur der innere Container hält den Clip.
+    */
     <div
-      ref={imageRef}
-      className={`relative overflow-hidden ${className}`}
-      onMouseEnter={handleMouseEnter}
-      style={{ width, height }}
+      style={isHovering ? { filter: 'drop-shadow(4px 0 0 oklch(0.50 0.22 25 / 0.7)) drop-shadow(-4px 0 0 oklch(0.60 0.24 200 / 0.7))' } : undefined}
     >
-      <img
-        src={src}
-        alt={alt}
-        className={`h-full w-full object-cover transition-all duration-150 ${
-          isHovering ? 'brightness-125' : 'brightness-100'
-        }`}
-        width={width}
-        height={height}
-      />
-      
-      {isHovering && (
-        <>
-          {Array.from({ length: sliceCount }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute left-0 right-0 overflow-hidden"
-              style={{
-                top: `${(i / sliceCount) * 100}%`,
-                height: `${100 / sliceCount}%`,
-                animation: `glitch-slice-${i % 3} ${duration}ms ease-out`,
-                animationDelay: `${i * (duration / sliceCount / 2)}ms`,
-              }}
-            >
-              <img
-                src={src}
-                alt=""
-                className="absolute h-full w-full object-cover"
+      <div
+        ref={imageRef}
+        className={`relative overflow-hidden ${className}`}
+        onMouseEnter={handleMouseEnter}
+        style={{ width, height }}
+      >
+        <img
+          src={src}
+          alt={alt}
+          className={`h-full w-full object-cover transition-all duration-150 ${
+            isHovering ? 'brightness-125' : 'brightness-100'
+          }`}
+          width={width}
+          height={height}
+        />
+        
+        {isHovering && (
+          <>
+            {Array.from({ length: sliceCount }).map((_, i) => (
+              <div
+                key={i}
+                className="absolute left-0 right-0 overflow-hidden"
                 style={{
-                  top: `${(-i / sliceCount) * 100}%`,
-                  height: `${sliceCount * 100}%`,
+                  top: `${(i / sliceCount) * 100}%`,
+                  height: `${100 / sliceCount}%`,
+                  animation: `glitch-slice-${i % 3} ${duration}ms ease-out`,
+                  animationDelay: `${i * (duration / sliceCount / 2)}ms`,
                 }}
-              />
-            </div>
-          ))}
-          
-          <style>
-            {`
-              @keyframes glitch-slice-0 {
-                0%, 100% {
-                  transform: translateX(0);
-                  filter: none;
+              >
+                <img
+                  src={src}
+                  alt=""
+                  className="absolute h-full w-full object-cover"
+                  style={{
+                    top: `${(-i / sliceCount) * 100}%`,
+                    height: `${sliceCount * 100}%`,
+                  }}
+                />
+              </div>
+            ))}
+            
+            <style>
+              {`
+                @keyframes glitch-slice-0 {
+                  0%, 100% { transform: translateX(0); }
+                  10% { transform: translateX(-8px); }
+                  20% { transform: translateX(6px); }
+                  30% { transform: translateX(-4px); }
+                  40% { transform: translateX(0); }
                 }
-                10% {
-                  transform: translateX(-8px);
-                  filter: drop-shadow(4px 0 0 oklch(0.50 0.22 25 / 0.8));
+                
+                @keyframes glitch-slice-1 {
+                  0%, 100% { transform: translateX(0); }
+                  15% { transform: translateX(10px); }
+                  25% { transform: translateX(-7px); }
+                  35% { transform: translateX(3px); }
+                  45% { transform: translateX(0); }
                 }
-                20% {
-                  transform: translateX(6px);
-                  filter: drop-shadow(-3px 0 0 oklch(0.60 0.24 200 / 0.7));
+                
+                @keyframes glitch-slice-2 {
+                  0%, 100% { transform: translateX(0); }
+                  12% { transform: translateX(5px); }
+                  22% { transform: translateX(-9px); }
+                  32% { transform: translateX(4px); }
+                  42% { transform: translateX(0); }
                 }
-                30% {
-                  transform: translateX(-4px);
-                  filter: drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.9));
-                }
-                40% {
-                  transform: translateX(0);
-                  filter: none;
-                }
-              }
-              
-              @keyframes glitch-slice-1 {
-                0%, 100% {
-                  transform: translateX(0);
-                  filter: none;
-                }
-                15% {
-                  transform: translateX(10px);
-                  filter: drop-shadow(-5px 0 0 oklch(0.60 0.24 200 / 0.8));
-                }
-                25% {
-                  transform: translateX(-7px);
-                  filter: drop-shadow(4px 0 0 oklch(0.50 0.22 25 / 0.7));
-                }
-                35% {
-                  transform: translateX(3px);
-                  filter: drop-shadow(-2px 0 0 oklch(0.60 0.24 200 / 0.9));
-                }
-                45% {
-                  transform: translateX(0);
-                  filter: none;
-                }
-              }
-              
-              @keyframes glitch-slice-2 {
-                0%, 100% {
-                  transform: translateX(0);
-                  filter: none;
-                }
-                12% {
-                  transform: translateX(5px);
-                  filter: drop-shadow(-3px 0 0 oklch(0.50 0.22 25 / 0.9));
-                }
-                22% {
-                  transform: translateX(-9px);
-                  filter: drop-shadow(5px 0 0 oklch(0.60 0.24 200 / 0.8));
-                }
-                32% {
-                  transform: translateX(4px);
-                  filter: drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.7));
-                }
-                42% {
-                  transform: translateX(0);
-                  filter: none;
-                }
-              }
-            `}
-          </style>
-        </>
-      )}
+              `}
+            </style>
+          </>
+        )}
+      </div>
     </div>
   )
 }
