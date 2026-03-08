@@ -7,7 +7,7 @@ import { z } from 'zod'
 interface VercelRequest {
   method?: string
   body?: Record<string, unknown>
-  headers?: Record<string, string | string[] | undefined>
+  headers: Record<string, string | string[] | undefined>
 }
 interface VercelResponse {
   setHeader(key: string, value: string): this
