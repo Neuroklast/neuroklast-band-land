@@ -168,8 +168,6 @@ export const zardonicPreset: DesignPreset = {
     crtVignetteOpacity: 0.3,
     overlayTransitionEnabled: false,
   },
-  loadingScreenType: '3d-model',
-  heroStyle: 'glitch-parallax',
 }
 
 export const neuroklastClassicPreset: DesignPreset = {
@@ -212,8 +210,6 @@ export const neuroklastClassicPreset: DesignPreset = {
     crtVignetteOpacity: 0.5,
     overlayTransitionEnabled: false,
   },
-  loadingScreenType: 'code-rain',
-  heroStyle: 'chromatic-hover',
 }
 
 export const artDecoCyberpunkPreset: DesignPreset = {
@@ -501,6 +497,11 @@ export function getPreset(id: string): DesignPreset | undefined {
  * Convert a `DesignPreset` into a `ThemeSettings` patch that can be merged
  * into the active `SiteConfig.themeSettings`.
  *
+ * Only colors, fonts, borderRadius, overlayEffects, and animationSettings are
+ * mapped. Structural layout properties (`heroStyle`, `loadingScreenType`) are
+ * intentionally excluded — those belong to the Theme Engine (ThemePackage) and
+ * must not be overwritten when a design preset is applied.
+ *
  * The caller can then override individual values after applying the preset.
  */
 export function presetToThemeSettings(preset: DesignPreset): ThemeSettings {
@@ -520,8 +521,6 @@ export function presetToThemeSettings(preset: DesignPreset): ThemeSettings {
     activePreset: preset.id,
     ...(preset.overlayEffects ? { overlayEffects: preset.overlayEffects } : {}),
     ...(preset.animationSettings ? { animationSettings: preset.animationSettings } : {}),
-    ...(preset.loadingScreenType ? { loadingScreenType: preset.loadingScreenType } : {}),
-    ...(preset.heroStyle ? { heroStyle: preset.heroStyle } : {}),
     // Extended optional colors
     ...(preset.colors.primaryForeground !== undefined ? { primaryForeground: preset.colors.primaryForeground } : {}),
     ...(preset.colors.cardForeground !== undefined ? { cardForeground: preset.colors.cardForeground } : {}),

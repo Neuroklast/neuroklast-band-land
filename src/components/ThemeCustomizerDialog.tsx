@@ -302,9 +302,20 @@ export default function ThemeCustomizerDialog({
     setDraft(prev => ({ ...prev, ...colorPatch }))
   }
 
-  /** Switch the structural theme engine — updates only activePreset for layout switching */
+  /**
+   * Switch the structural theme engine — updates activePreset and applies the
+   * engine's layout defaults (heroStyle, loadingScreenType) from the THEME_CATALOG.
+   * Colors and fonts are intentionally preserved so that the user's current
+   * design preset is not overwritten when switching themes.
+   */
   const handleThemeEngine = (themeId: string) => {
-    setDraft(prev => ({ ...prev, activePreset: themeId }))
+    const themeDef = THEME_CATALOG.find(t => t.id === themeId)
+    const structuralPatch: Partial<ThemeSettings> = { activePreset: themeId }
+    // Apply the engine's own layout defaults so heroStyle / loadingScreenType
+    // reflect the new theme instead of leftover values from a previous one.
+    if (themeDef?.theme.heroStyle) structuralPatch.heroStyle = themeDef.theme.heroStyle
+    if (themeDef?.theme.loadingScreenType) structuralPatch.loadingScreenType = themeDef.theme.loadingScreenType
+    setDraft(prev => ({ ...prev, ...structuralPatch }))
   }
 
   const handleSave = () => {

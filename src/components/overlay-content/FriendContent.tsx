@@ -39,17 +39,24 @@ export default function FriendContent({ friend, sectionLabels }: FriendContentPr
       {/* Photo */}
       <div className="md:w-2/5 p-4 md:p-6 flex flex-col items-center gap-4 border-b md:border-b-0 md:border-r border-primary/20">
         <div className="relative w-full max-w-[200px]">
-          <div
-            className="w-full aspect-square overflow-hidden border border-primary/40 bg-black"
-            style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent))' }}
-          >
-            {photoUrl ? (
-              <ProgressiveImage src={photoUrl} alt={friend.name} className="w-full h-full object-contain" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-muted-foreground font-mono text-xs">NO IMG</span>
-              </div>
-            )}
+          {/*
+            ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+            nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+            Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+            Das overflow:hidden bleibt auf dem inneren <div> erhalten.
+          */}
+          <div style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent))' }}>
+            <div
+              className="w-full aspect-square overflow-hidden border border-primary/40 bg-black"
+            >
+              {photoUrl ? (
+                <ProgressiveImage src={photoUrl} alt={friend.name} className="w-full h-full object-contain" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-muted-foreground font-mono text-xs">NO IMG</span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary/60" />
           <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/60" />

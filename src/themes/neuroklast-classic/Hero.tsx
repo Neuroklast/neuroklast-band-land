@@ -129,11 +129,18 @@ export default function NeuroklastClassicHero({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, ease: 'easeOut' }}
           >
-            <img
-              src={logoUrl}
-              alt={`${name} Logo`}
-              className="w-[18rem] h-auto sm:w-[22rem] md:w-[26rem] lg:w-[30rem] drop-shadow-[0_0_20px_var(--primary)]"
-            />
+            {/*
+              ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+              nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+              Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+            */}
+            <div style={{ filter: 'drop-shadow(0 0 20px var(--primary))' }}>
+              <img
+                src={logoUrl}
+                alt={`${name} Logo`}
+                className="w-[18rem] h-auto sm:w-[22rem] md:w-[26rem] lg:w-[30rem]"
+              />
+            </div>
           </motion.div>
         )}
 
@@ -144,15 +151,23 @@ export default function NeuroklastClassicHero({
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
           {titleImageUrl ? (
-            <img
-              src={titleImageUrl}
-              alt={name}
-              className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto"
+            /*
+              ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+              nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+              Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+            */
+            <div
               style={{
                 filter:
                   'drop-shadow(0 0 30px var(--primary)) drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent))',
               }}
-            />
+            >
+              <img
+                src={titleImageUrl}
+                alt={name}
+                className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto"
+              />
+            </div>
           ) : (
             <h1
               className="text-5xl md:text-7xl lg:text-9xl font-bold tracking-tight text-foreground"

@@ -242,14 +242,18 @@ export default function HeroZardonic({
             }}
           >
             <div className="relative">
-              <img
-                src={titleImageUrl ?? titlePng}
-                alt={name}
-                className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
-                style={{
-                  filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))`,
-                }}
-              />
+              {/*
+                ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+                nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+                Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+              */}
+              <div style={{ filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))` }}>
+                <img
+                  src={titleImageUrl ?? titlePng}
+                  alt={name}
+                  className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
+                />
+              </div>
               {/* CRT scanline + dot-matrix overlays */}
               <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                 <div

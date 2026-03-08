@@ -137,30 +137,38 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
                 {photoUrl && photoSrc ? (
-                  <div className="w-full h-full overflow-hidden border border-primary/40 bg-black" style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent)) drop-shadow(0 0 40px color-mix(in oklch, var(--primary) 15%, transparent))' }}>
-                    {!photoLoaded && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black">
-                        <div className="w-3/4 h-[2px] bg-primary/20 overflow-hidden mb-1">
-                          <div className="h-full bg-primary animate-progress-bar" />
+                  /*
+                    ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
+                    nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
+                    Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+                    Das overflow:hidden bleibt auf dem inneren <div> erhalten.
+                  */
+                  <div style={{ filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 30%, transparent)) drop-shadow(0 0 40px color-mix(in oklch, var(--primary) 15%, transparent))' }}>
+                    <div className="w-full h-full overflow-hidden border border-primary/40 bg-black">
+                      {!photoLoaded && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-[1] bg-black">
+                          <div className="w-3/4 h-[2px] bg-primary/20 overflow-hidden mb-1">
+                            <div className="h-full bg-primary animate-progress-bar" />
+                          </div>
+                          <p className="text-[8px] font-mono text-primary/40 tracking-wider">LOADING IMG...</p>
                         </div>
-                        <p className="text-[8px] font-mono text-primary/40 tracking-wider">LOADING IMG...</p>
-                      </div>
-                    )}
-                    <img
-                      src={photoSrc}
-                      alt={name}
-                      className="w-full h-full object-contain"
-                      style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
-                      onLoad={() => setPhotoLoaded(true)}
-                      onError={() => {
-                        if (photoUrl && !proxyAttempted.current) {
-                          proxyAttempted.current = true
-                          const directUrl = toDirectImageUrl(photoUrl)
-                          setPhotoSrc(`/api/image-proxy?url=${encodeURIComponent(directUrl)}`)
-                        }
-                      }}
-                    />
-                    <div className="dot-matrix-photo" />
+                      )}
+                      <img
+                        src={photoSrc}
+                        alt={name}
+                        className="w-full h-full object-contain"
+                        style={{ opacity: photoLoaded ? 1 : 0, transition: 'opacity 0.3s ease-in' }}
+                        onLoad={() => setPhotoLoaded(true)}
+                        onError={() => {
+                          if (photoUrl && !proxyAttempted.current) {
+                            proxyAttempted.current = true
+                            const directUrl = toDirectImageUrl(photoUrl)
+                            setPhotoSrc(`/api/image-proxy?url=${encodeURIComponent(directUrl)}`)
+                          }
+                        }}
+                      />
+                      <div className="dot-matrix-photo" />
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center border border-primary/40">
