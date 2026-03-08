@@ -94,6 +94,27 @@ export const artDecoCyberpunkTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'gold-lila',
+  defaultColors: {
+    primary: 'oklch(0.75 0.12 85)',
+    accent: 'oklch(0.65 0.20 310)',
+    background: 'oklch(0.02 0 0)',
+    card: 'oklch(0.06 0.02 300)',
+    foreground: 'oklch(0.95 0.03 80)',
+    mutedForeground: 'oklch(0.60 0.05 80)',
+    border: 'oklch(0.30 0.10 310)',
+    secondary: 'oklch(0.12 0.04 300)',
+  },
+  defaultFonts: {
+    heading: "'Orbitron', sans-serif",
+    body: "'Raleway', sans-serif",
+    mono: "'Courier Prime', monospace",
+  },
+  animations: [
+    { id: 'noise', label: 'Subtle Noise', defaultEnabled: true, defaultIntensity: 0.05 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
+    { id: 'dotMatrix', label: 'Dot Matrix', defaultEnabled: true, defaultIntensity: 0.15 , hasIntensity: true },
+    { id: 'overlayTransition', label: 'Overlay Transition', defaultEnabled: true },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: ArtDecoCyberpunkBackgroundEffects,

@@ -74,6 +74,25 @@ export const neonTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'blue',
+  defaultColors: {
+    primary: 'oklch(0.65 0.25 220)',
+    accent: 'oklch(0.75 0.22 190)',
+    background: 'oklch(0.02 0.01 260)',
+    card: 'oklch(0.07 0.02 260)',
+    foreground: 'oklch(0.97 0.01 200)',
+    mutedForeground: 'oklch(0.55 0.06 220)',
+    border: 'oklch(0.18 0.05 230)',
+    secondary: 'oklch(0.10 0.03 250)',
+  },
+  defaultFonts: {
+    heading: "'Orbitron', sans-serif",
+    body: "'Rajdhani', sans-serif",
+    mono: "'Share Tech Mono', monospace",
+  },
+  animations: [
+    { id: 'glitch', label: 'Glitch Effect', defaultEnabled: false },
+    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: false },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: NeonBackgroundEffects,

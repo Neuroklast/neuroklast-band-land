@@ -74,6 +74,26 @@ export const retroTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'amber',
+  defaultColors: {
+    primary: 'oklch(0.70 0.15 70)',
+    accent: 'oklch(0.80 0.18 75)',
+    background: 'oklch(0.05 0.02 60)',
+    card: 'oklch(0.09 0.02 60)',
+    foreground: 'oklch(0.88 0.10 80)',
+    mutedForeground: 'oklch(0.55 0.07 70)',
+    border: 'oklch(0.18 0.05 65)',
+    secondary: 'oklch(0.12 0.03 62)',
+  },
+  defaultFonts: {
+    heading: "'VT323', monospace",
+    body: "'Share Tech Mono', monospace",
+    mono: "'Share Tech Mono', monospace",
+  },
+  animations: [
+    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: false },
+    { id: 'noise', label: 'Static Noise', defaultEnabled: false },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: false },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     Hero: RetroHero,

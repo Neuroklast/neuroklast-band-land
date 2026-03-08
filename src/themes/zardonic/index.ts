@@ -141,6 +141,29 @@ export const zardonicTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'default-crimson',
+  defaultColors: {
+    primary: 'oklch(0.45 0.22 25)',
+    accent: 'oklch(0.55 0.25 25)',
+    background: 'oklch(0.1 0 0)',
+    card: 'oklch(0.15 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.6 0 0)',
+    border: 'oklch(0.25 0 0)',
+    secondary: 'oklch(0.2 0 0)',
+  },
+  defaultFonts: {
+    heading: "'JetBrains Mono', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  animations: [
+    { id: 'glitch', label: 'Glitch Effect', defaultEnabled: true, defaultIntensity: 0.7 },
+    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: true, defaultIntensity: 0.4 , hasIntensity: true },
+    { id: 'crt', label: 'CRT Curvature', defaultEnabled: true, defaultIntensity: 0.6 , hasIntensity: true },
+    { id: 'noise', label: 'Static Noise', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
+    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
+  ],
   customizability: { customColors: true, customFonts: false, adjustEffects: true },
   customConfigSchema: {
     HERO_LOGO_GLITCH_PROBABILITY: {

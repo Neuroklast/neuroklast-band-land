@@ -464,7 +464,12 @@ export const signalStaticPreset: DesignPreset = {
   },
 }
 
-/** All bundled presets indexed by their ID */
+/** All bundled presets indexed by their ID
+ * @deprecated The `DESIGN_PRESETS` map is kept for backward compatibility with the store
+ * system (`buildStoreItems`, `mixThemeSettings`) and existing configs. New code should use
+ * the `defaultColors` / `defaultFonts` fields on each `ThemePackage` instead, accessible
+ * via `getTheme(id)` from `theme-registry`.
+ */
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   cyberpunk: cyberpunkPreset,
   minimal: minimalPreset,
@@ -481,7 +486,10 @@ export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   'signal-static': signalStaticPreset,
 }
 
-/** Ordered list of all bundled preset IDs */
+/**
+ * Ordered list of all bundled preset IDs.
+ * @deprecated Use `THEME_CATALOG` from `theme-registry` instead.
+ */
 export const PRESET_IDS = Object.keys(DESIGN_PRESETS) as (keyof typeof DESIGN_PRESETS)[]
 
 // ─── Utilities ───────────────────────────────────────────────────────────────

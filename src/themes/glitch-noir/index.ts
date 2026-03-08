@@ -93,6 +93,28 @@ export const glitchNoirTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'noir-default',
+  defaultColors: {
+    primary: 'oklch(0.95 0 0)',
+    accent: 'oklch(0.70 0 0)',
+    background: 'oklch(0.08 0 0)',
+    card: 'oklch(0.12 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.60 0 0)',
+    border: 'oklch(0.25 0 0)',
+    secondary: 'oklch(0.15 0 0)',
+  },
+  defaultFonts: {
+    heading: "'JetBrains Mono', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'JetBrains Mono', monospace",
+  },
+  animations: [
+    { id: 'glitch', label: 'Glitch Effect', defaultEnabled: true, defaultIntensity: 0.7 },
+    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: true, defaultIntensity: 0.35 , hasIntensity: true },
+    { id: 'noise', label: 'Static Noise', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.6 , hasIntensity: true },
+    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     Hero,

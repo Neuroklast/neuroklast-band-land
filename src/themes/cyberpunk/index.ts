@@ -124,6 +124,26 @@ export const cyberpunkTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'night-city-neon',
+  defaultColors: {
+    primary: 'oklch(0.72 0.20 195)',
+    accent: 'oklch(0.65 0.28 330)',
+    background: 'oklch(0.08 0.02 260)',
+    card: 'oklch(0.12 0.02 260)',
+    foreground: 'oklch(0.95 0.01 210)',
+    mutedForeground: 'oklch(0.60 0.04 210)',
+    border: 'oklch(0.20 0.03 260)',
+    secondary: 'oklch(0.15 0.02 260)',
+  },
+  defaultFonts: {
+    heading: "'Orbitron', sans-serif",
+    body: "'Exo 2', sans-serif",
+    mono: "'Share Tech Mono', monospace",
+  },
+  animations: [
+    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
+    { id: 'overlayTransition', label: 'Overlay Transition', defaultEnabled: true },
+    { id: 'glitch', label: 'Glitch Effect', defaultEnabled: false },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: CyberpunkBackgroundEffects,

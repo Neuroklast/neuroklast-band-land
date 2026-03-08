@@ -109,6 +109,28 @@ export const vhsRetroTheme: ThemePackage = {
     },
   ],
   defaultPresetId: 'vhs-classic',
+  defaultColors: {
+    primary: 'oklch(0.72 0.10 75)',
+    accent: 'oklch(0.80 0.08 80)',
+    background: 'oklch(0.06 0.02 60)',
+    card: 'oklch(0.10 0.02 60)',
+    foreground: 'oklch(0.90 0.04 80)',
+    mutedForeground: 'oklch(0.58 0.05 70)',
+    border: 'oklch(0.22 0.03 65)',
+    secondary: 'oklch(0.14 0.02 62)',
+  },
+  defaultFonts: {
+    heading: "'Press Start 2P', monospace",
+    body: "'Space Grotesk', sans-serif",
+    mono: "'VT323', monospace",
+  },
+  animations: [
+    { id: 'scanlines', label: 'VHS Tracking Lines', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
+    { id: 'crt', label: 'CRT Curvature', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
+    { id: 'noise', label: 'Tape Noise', defaultEnabled: true, defaultIntensity: 0.4 , hasIntensity: true },
+    { id: 'chromatic', label: 'Color Bleed', defaultEnabled: true, defaultIntensity: 0.4 , hasIntensity: true },
+    { id: 'vignette', label: 'Vignette', defaultEnabled: false },
+  ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: VhsRetroBackgroundEffects,
