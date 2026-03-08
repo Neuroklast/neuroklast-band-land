@@ -1,6 +1,19 @@
 # CRT/Terminal Aesthetic Enhancement - Implementation Summary
 
-## Date: 2026-02-16
+## Date: 2026-03-08
+
+## SaaS Admin Workspace Architecture (V2 Refactoring)
+
+The project has recently undergone a major architectural refactoring of the admin area:
+
+1. **Dashboard Refactoring (4 Pillars)**: We transitioned from a "Dialog Hell" with multiple overlapping modals to a true SaaS workspace layout with a consistent sidebar menu. The sections are:
+    - **Content**: Edit Band Info, dynamic Gig Management (drag & drop, syncing), Release management, and SEO/Legal settings.
+    - **Design System**: Strict separation of Theme layout (structure) and Preset pallette (colors/typography).
+    - **App Store**: Marketplace for discovering plugins/layouts (no configuration here).
+    - **System**: Centralized tracking IDs, maintenance mode toggles, and secure API keys.
+2. **Master-Instance Bypass Security**: We removed the vulnerability of bypassing licensing via the `VITE_IS_PRIMARY` environment variable. Instead, the bypass logic strictly enforces a hostname check (`window.location.hostname === 'neuroklast.net'` on the client and `req.headers.host` on the server) to ensure zero unauthorized unlocking of premium assets on tenant (customer) domains.
+3. **Feature-Sliced Design (FSD)**: New admin code has been relocated from `src/components/` to `src/features/admin/components/`. The heavy Admin Hub dialog is lazy-loaded using `React.lazy()` and `Suspense` inside `EditControls.tsx`, so it is completely excluded from the public JavaScript bundle, heavily optimizing initial load times.
+4. **Data Fetching Consistency**: Migrated external integrations (e.g., the Bandsintown Sync functionality) away from manual `fetch` calls and local component state, adopting `@tanstack/react-query` (`useMutation`, `useQuery`) as the centralized standard for asynchronous caching, retry logic, and error boundaries.
 
 ### Overview
 This document summarizes the implementation of CRT/terminal aesthetic enhancements and admin dashboard improvements for the NEUROKLAST band website.

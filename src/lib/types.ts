@@ -315,6 +315,9 @@ export interface FooterConfig {
 }
 
 export interface SEOConfig {
+  title?: string
+  description?: string
+  favicon?: string
   ogImage?: string
   twitterCard?: 'summary' | 'summary_large_image'
   twitterHandle?: string

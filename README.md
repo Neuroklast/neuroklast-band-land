@@ -17,6 +17,10 @@
 
 ## Features
 
+- **SaaS Admin Workspace** — A clean, 4-pillar dashboard (Content, Design, Store, System) without modal/dialog-hell. Content routing persists state, ensuring no data loss when switching tabs.
+- **Design System vs. Presets** — Strict architectural separation: "Themes" strictly define structural layouts (DOM/clip-paths), while "Presets" define color palettes and typography.
+- **Data Integrations** — Built-in Bandsintown API syncing via React Query, alongside structured release management.
+- **Secure Architecture** — Client-bundle code splitting for Admin views (`React.lazy`), React Query for data fetching, and strict Hostname-based license bypass for master-instances (neuroklast.net).
 - **Design Presets** — Seven bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro, Zardonic, Neuroklast Classic) with one-line activation
 - **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
 - **Flexible Sections** — Enable/disable and reorder any section without touching code

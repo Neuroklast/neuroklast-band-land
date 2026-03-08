@@ -4,8 +4,10 @@ import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
-import AdminHubDialog from '@/components/AdminHubDialog'
+import { lazy, Suspense } from 'react'
 import CyberCloseButton from '@/components/CyberCloseButton'
+
+const AdminHubDialog = lazy(() => import('@/features/admin/components/AdminHubDialog'))
 import ConfigExportDialog from '@/components/ConfigExportDialog'
 import ConfigImportDialog from '@/components/ConfigImportDialog'
 import type { AdminDialog, SiteConfig } from '@/lib/types'
@@ -220,19 +222,21 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
       >
-        {editMode && (
-          <AdminHubDialog
-            open={showAdminHub}
-            onClose={() => setShowAdminHub(false)}
-            onOpenDialog={onOpenDialog}
-            onExportData={handleExportData}
-            onImportFile={() => importInputRef.current?.click()}
-            onImportUrl={() => setShowUrlImport(true)}
-            onChangePassword={() => setShowPasswordDialog(true)}
-            onLogout={onLogout}
-            onResetSetup={onResetSetup}
-            isPrimary={isPrimary}
-          />
+        {editMode && showAdminHub && (
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 text-primary font-mono text-sm uppercase tracking-widest backdrop-blur-sm">Initializing Admin Workspace...</div>}>
+            <AdminHubDialog
+              open={showAdminHub}
+              onClose={() => setShowAdminHub(false)}
+              onOpenDialog={onOpenDialog}
+              onExportData={handleExportData}
+              onImportFile={() => importInputRef.current?.click()}
+              onImportUrl={() => setShowUrlImport(true)}
+              onChangePassword={() => setShowPasswordDialog(true)}
+              onLogout={onLogout}
+              onResetSetup={onResetSetup}
+              isPrimary={isPrimary}
+            />
+          </Suspense>
         )}
 
         <AnimatePresence mode="wait">
