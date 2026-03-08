@@ -14,6 +14,7 @@ import { format } from 'date-fns'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import type { NewsItem, SectionLabels } from '@/lib/types'
+import { toDirectImageUrl } from '@/lib/image-cache'
 import {
   TITLE_TYPING_SPEED_MS,
   TITLE_TYPING_START_DELAY_MS,
@@ -553,6 +554,13 @@ function NewsEditDialog({ item, onSave, onClose }: {
     }
   }
 
+  const handleSave = () => {
+    onSave({
+      ...formData,
+      photo: formData.photo ? (toDirectImageUrl(formData.photo) || formData.photo) : undefined,
+    })
+  }
+
   return (
     <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto flex items-center justify-center p-4">
       <motion.div
@@ -688,7 +696,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
           </div>
         </div>
         <div className="flex gap-2 pt-2">
-          <Button onClick={() => onSave(formData)} className="flex-1">{t('news.save')}</Button>
+          <Button onClick={handleSave} className="flex-1">{t('news.save')}</Button>
           <Button variant="outline" onClick={onClose}>{t('news.cancel')}</Button>
         </div>
       </motion.div>

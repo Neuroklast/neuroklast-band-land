@@ -49,6 +49,10 @@ async function setCached(key: string, value: string): Promise<void> {
 }
 
 function compressImage(img: HTMLImageElement): string {
+  // SVG is a vector format that doesn't benefit from canvas compression and
+  // may fail to draw to canvas due to cross-origin restrictions. Return as-is.
+  if (/\.svg(\?|$)/i.test(img.src)) return img.src
+
   const canvas = document.createElement('canvas')
   let { width, height } = img
 
@@ -63,6 +67,23 @@ function compressImage(img: HTMLImageElement): string {
   const ctx = canvas.getContext('2d')
   if (!ctx) return img.src
   ctx.drawImage(img, 0, 0, width, height)
+
+  // Detect if the image has an alpha channel: check the src extension first,
+  // then sample pixel data. PNG/WebP/GIF may have transparency.
+  const hasAlpha = /\.(png|webp|gif)(\?|$)/i.test(img.src) ||
+    (() => {
+      const sampleW = Math.min(width, 100)
+      const sampleH = Math.min(height, 100)
+      const data = ctx.getImageData(0, 0, sampleW, sampleH).data
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] < 255) return true
+      }
+      return false
+    })()
+
+  if (hasAlpha) {
+    return canvas.toDataURL('image/png')
+  }
   return canvas.toDataURL('image/jpeg', JPEG_QUALITY)
 }
 

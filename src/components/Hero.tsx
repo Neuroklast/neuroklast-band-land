@@ -205,7 +205,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
                   <img 
                     src={logoUrl ?? logoPng} 
                     alt={t('hero.logoAlt').replace('{0}', name)} 
-                    className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
+                    className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]`}
                   />
                 </div>
                 <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
@@ -257,7 +257,7 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
                 <img 
                   src={titleImageUrl ?? titlePng} 
                   alt={t('hero.titleAlt').replace('{0}', name)} 
-                  className={`w-full h-auto relative z-10`}
+                  className={`w-full h-auto`}
                 />
               </div>
               <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
