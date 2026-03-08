@@ -60,21 +60,9 @@ export function applyOverlayEffectsToDOM(theme: ThemeSettings | undefined) {
   root.style.setProperty('--overlay-moving-scanline', effects?.movingScanline?.enabled ? '1' : '0')
 }
 
-/** Apply theme CSS variables to <html> element */
-export function applyThemeToDOM(theme: ThemeSettings | undefined) {
-  const root = document.documentElement
-  if (!theme) {
-    root.removeAttribute('data-theme')
-    return
-  }
-
-  // Always update data-theme attribute so theme-scoped CSS selectors ([data-theme="…"]) match
-  if (theme.activePreset) {
-    root.setAttribute('data-theme', theme.activePreset)
-  } else {
-    root.removeAttribute('data-theme')
-  }
-
+/** Internal: apply CSS custom properties from ThemeSettings to the root element.
+ *  Does NOT touch the `data-theme` attribute. */
+function applyCSSVars(root: HTMLElement, theme: ThemeSettings) {
   if (theme.primary) root.style.setProperty('--primary', theme.primary)
   if (theme.accent) root.style.setProperty('--accent', theme.accent)
   if (theme.background) root.style.setProperty('--background', theme.background)
@@ -86,7 +74,6 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
   if (theme.fontBody) root.style.setProperty('--font-sans', theme.fontBody)
   if (theme.fontMono) root.style.setProperty('--font-mono', theme.fontMono)
 
-  // Also update heading font
   if (theme.fontHeading) {
     root.style.setProperty('--font-heading', theme.fontHeading)
   }
@@ -146,6 +133,46 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
     const match = FONT_OPTIONS.find(f => f.value === val)
     if (match?.google) loadGoogleFont(match.label)
   }
+}
+
+/**
+ * Apply the layout theme AND color/font settings to the document in a single pass.
+ *
+ * This is the canonical function to use whenever both the layout engine and the
+ * design palette need to be applied together (e.g. in ThemeCustomizerDialog).
+ *
+ * @param layoutTheme - The layout engine ID (e.g. `'cyberpunk'`). Drives the
+ *   `data-theme` attribute so that theme-scoped CSS selectors match.
+ * @param settings    - Color, font, radius and effect overrides.  CSS custom
+ *   properties are written from this object.  `settings.activePreset` is NOT
+ *   used for `data-theme` — `layoutTheme` is always authoritative.
+ */
+export function applyThemeToDocument(layoutTheme: string, settings: ThemeSettings) {
+  const root = document.documentElement
+  if (layoutTheme) {
+    root.setAttribute('data-theme', layoutTheme)
+  } else {
+    root.removeAttribute('data-theme')
+  }
+  applyCSSVars(root, settings)
+}
+
+/** Apply theme CSS variables to <html> element */
+export function applyThemeToDOM(theme: ThemeSettings | undefined) {
+  const root = document.documentElement
+  if (!theme) {
+    root.removeAttribute('data-theme')
+    return
+  }
+
+  // Always update data-theme attribute so theme-scoped CSS selectors ([data-theme="…"]) match
+  if (theme.activePreset) {
+    root.setAttribute('data-theme', theme.activePreset)
+  } else {
+    root.removeAttribute('data-theme')
+  }
+
+  applyCSSVars(root, theme)
 }
 
 /** Reset all custom CSS variables set by theme */

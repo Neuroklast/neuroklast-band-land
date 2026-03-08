@@ -8,7 +8,8 @@ import { toast } from 'sonner'
 import type { ThemeSettings, SectionVisibility } from '@/lib/types'
 import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
 import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
-import { applyThemeToDOM, resetThemeDOM, applyThemeDefaults, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
+import { applyThemeToDocument, applyThemeToDOM, resetThemeDOM, applyThemeDefaults, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
+import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
 
 // ─── Animation ID → ThemeSettings mapping ─────────────────────────────────────
 
@@ -135,6 +136,15 @@ interface ThemeCustomizerDialogProps {
 // eslint-disable-next-line react-refresh/only-export-components
 export { applyThemeToDOM, resetThemeDOM }
 
+// ─── Preview config type ──────────────────────────────────────────────────────
+
+interface PreviewConfig {
+  /** The active layout engine ID (drives `data-theme` and structural layout). */
+  theme: string
+  /** Color, font, radius and effect settings for the current preview. */
+  themeSettings: ThemeSettings
+}
+
 // ─── Color input helper ───────────────────────────────────────────────────────
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -215,7 +225,10 @@ export default function ThemeCustomizerDialog({
   themeAccessOverrides,
   onSaveThemeAccessOverrides,
 }: ThemeCustomizerDialogProps) {
-  const [draft, setDraft] = useState<ThemeSettings>(themeSettings || {})
+  const [previewConfig, setPreviewConfig] = useState<PreviewConfig>(() => ({
+    theme: themeSettings?.activePreset || '',
+    themeSettings: themeSettings || {},
+  }))
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
   const [activeTab, setActiveTab] = useState<'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'theme_config'>('theme')
   const [licenseDialog, setLicenseDialog] = useState<{ themeId: string; themeName: string; licenseKeyPrefix?: string } | null>(null)
@@ -228,7 +241,10 @@ export default function ThemeCustomizerDialog({
   useEffect(() => {
     if (open && !prevOpenRef.current) {
       startTransition(() => {
-        setDraft(themeSettings || {})
+        setPreviewConfig({
+          theme: themeSettings?.activePreset || '',
+          themeSettings: themeSettings || {},
+        })
         setVisDraft(sectionVisibility || {})
       })
     }
@@ -241,31 +257,34 @@ export default function ThemeCustomizerDialog({
   }, [open, activeTab])
 
   useEffect(() => {
-    if (open) applyThemeToDOM(draft)
-  }, [draft, open])
+    if (open) applyThemeToDocument(previewConfig.theme, previewConfig.themeSettings)
+  }, [previewConfig, open])
 
   const updateColor = useCallback((key: keyof ThemeSettings, value: string) => {
-    setDraft(prev => ({ ...prev, [key]: value }))
+    setPreviewConfig(prev => ({ ...prev, themeSettings: { ...prev.themeSettings, [key]: value } }))
   }, [])
 
   const handleThemeSelect = (themeId: string) => {
-    const defaults = applyThemeDefaults(themeId)
     const themeDef = THEME_CATALOG.find(t => t.id === themeId)
-    const structuralPatch: Partial<ThemeSettings> = { activePreset: themeId }
+    // Only update the layout engine and structural props — do NOT overwrite colors.
+    const structuralPatch: Partial<ThemeSettings> = {}
     if (themeDef?.theme.heroStyle) structuralPatch.heroStyle = themeDef.theme.heroStyle
     if (themeDef?.theme.loadingScreenType) structuralPatch.loadingScreenType = themeDef.theme.loadingScreenType
-    setDraft(prev => ({ ...prev, ...defaults, ...structuralPatch }))
+    setPreviewConfig(prev => ({
+      theme: themeId,
+      themeSettings: { ...prev.themeSettings, ...structuralPatch },
+    }))
   }
 
   const handleResetToThemeDefaults = () => {
-    if (!draft.activePreset) return
-    const defaults = applyThemeDefaults(draft.activePreset)
-    setDraft(prev => ({ ...prev, ...defaults }))
+    if (!previewConfig.theme) return
+    const defaults = applyThemeDefaults(previewConfig.theme)
+    setPreviewConfig(prev => ({ ...prev, themeSettings: { ...prev.themeSettings, ...defaults } }))
     toast.success('Reset to theme defaults')
   }
 
   const handleSave = () => {
-    onSaveTheme(draft)
+    onSaveTheme({ ...previewConfig.themeSettings, activePreset: previewConfig.theme })
     onSaveSectionVisibility(visDraft)
     toast.success('Theme saved')
     onClose()
@@ -275,22 +294,23 @@ export default function ThemeCustomizerDialog({
     const firstTheme = THEME_CATALOG[0]
     if (firstTheme) {
       const defaults = applyThemeDefaults(firstTheme.id)
-      setDraft({ ...defaults, activePreset: firstTheme.id })
+      setPreviewConfig({ theme: firstTheme.id, themeSettings: { ...defaults, activePreset: firstTheme.id } })
       resetThemeDOM()
-      applyThemeToDOM({ ...defaults, activePreset: firstTheme.id })
+      applyThemeToDocument(firstTheme.id, { ...defaults, activePreset: firstTheme.id })
     } else {
-      setDraft({})
+      setPreviewConfig({ theme: '', themeSettings: {} })
       resetThemeDOM()
     }
   }
 
   const handleExportTheme = () => {
-    const json = JSON.stringify({ theme: draft, visibility: visDraft }, null, 2)
+    const exportData = { theme: previewConfig.theme, themeSettings: previewConfig.themeSettings, visibility: visDraft }
+    const json = JSON.stringify(exportData, null, 2)
     const blob = new Blob([json], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `theme-${(draft.activePreset || 'custom').replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `theme-${(previewConfig.theme || 'custom').replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -305,8 +325,15 @@ export default function ThemeCustomizerDialog({
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result as string)
-        if (parsed.theme) {
-          setDraft(parsed.theme)
+        // Support both new format { theme, themeSettings } and legacy { theme: ThemeSettings }
+        if (parsed.themeSettings) {
+          setPreviewConfig({ theme: parsed.theme || '', themeSettings: parsed.themeSettings })
+          if (parsed.visibility) setVisDraft(parsed.visibility)
+          toast.success('Theme imported')
+        } else if (parsed.theme && typeof parsed.theme === 'object') {
+          // Legacy format: { theme: ThemeSettings, visibility }
+          const legacySettings: ThemeSettings = parsed.theme
+          setPreviewConfig({ theme: legacySettings.activePreset || '', themeSettings: legacySettings })
           if (parsed.visibility) setVisDraft(parsed.visibility)
           toast.success('Theme imported')
         } else {
@@ -327,8 +354,8 @@ export default function ThemeCustomizerDialog({
     })
   }
 
-  const activeThemeDef = draft.activePreset ? THEME_CATALOG.find(t => t.id === draft.activePreset) : undefined
-  const activeThemePkg = draft.activePreset ? getTheme(draft.activePreset) : undefined
+  const activeThemeDef = previewConfig.theme ? THEME_CATALOG.find(t => t.id === previewConfig.theme) : undefined
+  const activeThemePkg = previewConfig.theme ? getTheme(previewConfig.theme) : undefined
   const hasCustomConfig = !!activeThemePkg?.customConfigSchema
   const activeAnimations = activeThemePkg?.animations ?? []
 
@@ -371,9 +398,9 @@ export default function ThemeCustomizerDialog({
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary/70 tracking-wider uppercase">THEME CUSTOMIZER</span>
-                {draft.activePreset && (
+                {previewConfig.theme && (
                   <span className="font-mono text-[9px] text-primary bg-primary/15 px-2 py-0.5 rounded">
-                    {THEME_CATALOG.find(t => t.id === draft.activePreset)?.name ?? draft.activePreset}
+                    {THEME_CATALOG.find(t => t.id === previewConfig.theme)?.name ?? previewConfig.theme}
                   </span>
                 )}
               </div>
@@ -409,7 +436,7 @@ export default function ThemeCustomizerDialog({
                     {THEME_CATALOG.map(themeDefn => {
                       const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
                       const isUnlocked = effectiveStatus === 'free' || effectiveStatus === 'licensed' || unlockedThemeIds.includes(themeDefn.id)
-                      const isActive = draft.activePreset === themeDefn.id
+                      const isActive = previewConfig.theme === themeDefn.id
                       const themePkg = getTheme(themeDefn.id)
                       const colors = themePkg?.defaultColors
                       return (
@@ -493,38 +520,74 @@ export default function ThemeCustomizerDialog({
                     <p className="font-mono text-[10px] text-muted-foreground/60">
                       Customize individual colors. Changes preview live.
                     </p>
-                    {draft.activePreset && (
+                    {previewConfig.theme && (
                       <Button variant="outline" size="sm" onClick={handleResetToThemeDefaults} className="gap-1 text-xs border-primary/30 h-7">
                         <ArrowCounterClockwise size={12} /> Theme-Defaults
                       </Button>
                     )}
                   </div>
-                  <ColorInput label="Primary" value={draft.primary || 'oklch(0.50 0.22 25)'} onChange={v => updateColor('primary', v)} />
-                  <ColorInput label="Accent" value={draft.accent || 'oklch(0.60 0.24 25)'} onChange={v => updateColor('accent', v)} />
-                  <ColorInput label="Background" value={draft.background || 'oklch(0 0 0)'} onChange={v => updateColor('background', v)} />
-                  <ColorInput label="Card" value={draft.card || 'oklch(0.05 0 0)'} onChange={v => updateColor('card', v)} />
-                  <ColorInput label="Foreground" value={draft.foreground || 'oklch(1 0 0)'} onChange={v => updateColor('foreground', v)} />
-                  <ColorInput label="Muted Text" value={draft.mutedForeground || 'oklch(0.55 0 0)'} onChange={v => updateColor('mutedForeground', v)} />
-                  <ColorInput label="Border" value={draft.border || 'oklch(0.15 0 0)'} onChange={v => updateColor('border', v)} />
-                  <ColorInput label="Secondary" value={draft.secondary || 'oklch(0.10 0 0)'} onChange={v => updateColor('secondary', v)} />
+
+                  {/* Design Palette Presets — apply colors only, layout engine is untouched */}
+                  <div className="mb-4">
+                    <p className="font-mono text-[9px] text-muted-foreground/50 uppercase tracking-wider mb-2">Farbpaletten</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {Object.values(DESIGN_PRESETS).map(preset => {
+                        const isActivePreset = previewConfig.themeSettings.activePreset === preset.id
+                        return (
+                          <button
+                            key={preset.id}
+                            onClick={() => {
+                              const settings = presetToThemeSettings(preset)
+                              setPreviewConfig(prev => ({
+                                theme: prev.theme,
+                                themeSettings: { ...prev.themeSettings, ...settings },
+                              }))
+                            }}
+                            className={`border rounded p-2 text-left transition-all hover:border-primary/50 ${
+                              isActivePreset ? 'border-primary bg-primary/10' : 'border-primary/15'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1 mb-1">
+                              <div className="w-3 h-3 rounded-full border border-white/20 flex-shrink-0" style={{ background: preset.colors.primary }} />
+                              <div className="w-3 h-3 rounded-full border border-white/20 flex-shrink-0" style={{ background: preset.colors.accent }} />
+                              <div className="w-3 h-3 rounded-full border border-white/20 flex-shrink-0" style={{ background: preset.colors.background }} />
+                            </div>
+                            <div className="font-mono text-[9px] text-primary/80 font-semibold leading-tight">{preset.name}</div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-primary/10 pt-3">
+                    <p className="font-mono text-[9px] text-muted-foreground/50 uppercase tracking-wider mb-2">Individuelle Farben</p>
+                    <ColorInput label="Primary" value={previewConfig.themeSettings.primary || 'oklch(0.50 0.22 25)'} onChange={v => updateColor('primary', v)} />
+                    <ColorInput label="Accent" value={previewConfig.themeSettings.accent || 'oklch(0.60 0.24 25)'} onChange={v => updateColor('accent', v)} />
+                    <ColorInput label="Background" value={previewConfig.themeSettings.background || 'oklch(0 0 0)'} onChange={v => updateColor('background', v)} />
+                    <ColorInput label="Card" value={previewConfig.themeSettings.card || 'oklch(0.05 0 0)'} onChange={v => updateColor('card', v)} />
+                    <ColorInput label="Foreground" value={previewConfig.themeSettings.foreground || 'oklch(1 0 0)'} onChange={v => updateColor('foreground', v)} />
+                    <ColorInput label="Muted Text" value={previewConfig.themeSettings.mutedForeground || 'oklch(0.55 0 0)'} onChange={v => updateColor('mutedForeground', v)} />
+                    <ColorInput label="Border" value={previewConfig.themeSettings.border || 'oklch(0.15 0 0)'} onChange={v => updateColor('border', v)} />
+                    <ColorInput label="Secondary" value={previewConfig.themeSettings.secondary || 'oklch(0.10 0 0)'} onChange={v => updateColor('secondary', v)} />
+                  </div>
 
                   <div className="pt-4 border-t border-primary/10">
                     <div className="flex items-center justify-between mb-2">
                       <Label className="font-mono text-xs text-muted-foreground">Border Radius</Label>
-                      <span className="font-mono text-[10px] text-primary/70">{(draft.borderRadius ?? 0.125).toFixed(3)}rem</span>
+                      <span className="font-mono text-[10px] text-primary/70">{(previewConfig.themeSettings.borderRadius ?? 0.125).toFixed(3)}rem</span>
                     </div>
                     <input
                       type="range" min="0" max="1.5" step="0.025"
-                      value={draft.borderRadius ?? 0.125}
-                      onChange={e => setDraft(prev => ({ ...prev, borderRadius: parseFloat(e.target.value) }))}
+                      value={previewConfig.themeSettings.borderRadius ?? 0.125}
+                      onChange={e => setPreviewConfig(prev => ({ ...prev, themeSettings: { ...prev.themeSettings, borderRadius: parseFloat(e.target.value) } }))}
                       className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
                     />
                     <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
                       <span>SHARP</span><span>ROUNDED</span>
                     </div>
                     <div className="flex items-center gap-3 mt-2">
-                      <div className="w-16 h-10 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(draft.borderRadius ?? 0.125) * 16}px` }} />
-                      <div className="w-20 h-8 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(draft.borderRadius ?? 0.125) * 16}px` }} />
+                      <div className="w-16 h-10 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(previewConfig.themeSettings.borderRadius ?? 0.125) * 16}px` }} />
+                      <div className="w-20 h-8 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(previewConfig.themeSettings.borderRadius ?? 0.125) * 16}px` }} />
                       <span className="font-mono text-[9px] text-muted-foreground/50">Preview</span>
                     </div>
                   </div>
@@ -533,7 +596,7 @@ export default function ThemeCustomizerDialog({
 
               {activeTab === 'animations' && (
                 <div className="space-y-3">
-                  {!draft.activePreset ? (
+                  {!previewConfig.theme ? (
                     <p className="font-mono text-[10px] text-muted-foreground/60">Select a theme first to see available animations.</p>
                   ) : activeAnimations.length === 0 ? (
                     <p className="font-mono text-[10px] text-muted-foreground/60">This theme has no configurable animations.</p>
@@ -543,15 +606,15 @@ export default function ThemeCustomizerDialog({
                         Toggle animations for the active theme.
                       </p>
                       {activeAnimations.map(anim => {
-                        const enabled = getAnimationEnabled(draft, anim.id)
-                        const intensity = getAnimationIntensity(draft, anim.id)
+                        const enabled = getAnimationEnabled(previewConfig.themeSettings, anim.id)
+                        const intensity = getAnimationIntensity(previewConfig.themeSettings, anim.id)
                         const hasIntensity = anim.hasIntensity === true
                         return (
                           <div key={anim.id} className="border border-primary/10 p-3 space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="font-mono text-xs text-foreground/90">{anim.label}</span>
                               <button
-                                onClick={() => setDraft(prev => setAnimationEnabled(prev, anim.id, !enabled))}
+                                onClick={() => setPreviewConfig(prev => ({ ...prev, themeSettings: setAnimationEnabled(prev.themeSettings, anim.id, !enabled) }))}
                                 className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-mono transition-colors ${
                                   enabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
                                 }`}
@@ -566,7 +629,7 @@ export default function ThemeCustomizerDialog({
                                 <input
                                   type="range" min="0.05" max="1" step="0.05"
                                   value={intensity}
-                                  onChange={e => setDraft(prev => setAnimationIntensity(prev, anim.id, parseFloat(e.target.value)))}
+                                  onChange={e => setPreviewConfig(prev => ({ ...prev, themeSettings: setAnimationIntensity(prev.themeSettings, anim.id, parseFloat(e.target.value)) }))}
                                   className="flex-1 h-1 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
                                 />
                                 <span className="font-mono text-[10px] text-primary/70 w-8 text-right">
@@ -586,7 +649,7 @@ export default function ThemeCustomizerDialog({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-3">
                     <p className="font-mono text-[10px] text-muted-foreground/60">Choose from local and Google Fonts.</p>
-                    {draft.activePreset && activeThemePkg?.defaultFonts && (
+                    {previewConfig.theme && activeThemePkg?.defaultFonts && (
                       <Button variant="outline" size="sm" onClick={handleResetToThemeDefaults} className="gap-1 text-xs border-primary/30 h-7">
                         <ArrowCounterClockwise size={12} /> Theme-Defaults
                       </Button>
@@ -603,14 +666,14 @@ export default function ThemeCustomizerDialog({
                         {hint && <span className="font-mono text-[9px] text-primary/40">Default: {hint.split(',')[0].replace(/'/g, '')}</span>}
                       </div>
                       <select
-                        value={draft[key] || FONT_OPTIONS[0].value}
+                        value={previewConfig.themeSettings[key] || FONT_OPTIONS[0].value}
                         onChange={e => {
                           const opt = FONT_OPTIONS.find(f => f.value === e.target.value)
                           if (opt?.google) loadGoogleFont(opt.label)
-                          setDraft(prev => ({ ...prev, [key]: e.target.value }))
+                          setPreviewConfig(prev => ({ ...prev, themeSettings: { ...prev.themeSettings, [key]: e.target.value } }))
                         }}
                         className="w-full h-9 rounded border border-primary/20 bg-card px-3 text-xs text-foreground"
-                        style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}
+                        style={{ fontFamily: previewConfig.themeSettings[key] || FONT_OPTIONS[0].value }}
                       >
                         {FONT_OPTIONS.map(opt => (
                           <option key={opt.value} value={opt.value} style={{ fontFamily: opt.value }}>
@@ -618,7 +681,7 @@ export default function ThemeCustomizerDialog({
                           </option>
                         ))}
                       </select>
-                      <div className="border border-primary/10 bg-black/30 p-3 mt-1" style={{ fontFamily: draft[key] || FONT_OPTIONS[0].value }}>
+                      <div className="border border-primary/10 bg-black/30 p-3 mt-1" style={{ fontFamily: previewConfig.themeSettings[key] || FONT_OPTIONS[0].value }}>
                         <p className="text-sm text-foreground/80">SITE — The quick brown fox jumps over the lazy dog</p>
                         <p className="text-xs text-foreground/50 mt-1">0123456789 !@#$%^&*() ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
                       </div>
@@ -627,12 +690,12 @@ export default function ThemeCustomizerDialog({
                   <div className="pt-4 border-t border-primary/10">
                     <div className="flex items-center justify-between mb-2">
                       <Label className="font-mono text-xs text-muted-foreground">Schriftgröße (Basis)</Label>
-                      <span className="font-mono text-[10px] text-primary/70">{Math.round((draft.fontSize ?? 1) * 100)}%</span>
+                      <span className="font-mono text-[10px] text-primary/70">{Math.round((previewConfig.themeSettings.fontSize ?? 1) * 100)}%</span>
                     </div>
                     <input
                       type="range" min="0.75" max="1.5" step="0.05"
-                      value={draft.fontSize ?? 1}
-                      onChange={e => setDraft(prev => ({ ...prev, fontSize: parseFloat(e.target.value) }))}
+                      value={previewConfig.themeSettings.fontSize ?? 1}
+                      onChange={e => setPreviewConfig(prev => ({ ...prev, themeSettings: { ...prev.themeSettings, fontSize: parseFloat(e.target.value) } }))}
                       className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
                       aria-label="Schriftgröße"
                     />
@@ -672,7 +735,7 @@ export default function ThemeCustomizerDialog({
                     Custom configuration settings specific to the active theme ({activeThemeDef?.name ?? activeThemePkg.name}).
                   </p>
                   {(Object.entries(activeThemePkg.customConfigSchema) as Array<[string, { label: string; description: string; type: 'number' | 'boolean' | 'string'; default: unknown }]>).map(([key, schema]) => {
-                    const val = draft.customConfig?.[key] ?? schema.default
+                    const val = previewConfig.themeSettings.customConfig?.[key] ?? schema.default
                     return (
                       <div key={key} className="space-y-1">
                         <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
@@ -686,10 +749,10 @@ export default function ThemeCustomizerDialog({
                             value={val as number}
                             onChange={e => {
                               const updatedVal = parseFloat(e.target.value)
-                              setDraft(prev => {
-                                const newConfig = { ...prev, customConfig: { ...(prev.customConfig || {}), [key]: updatedVal } }
-                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
-                                return newConfig
+                              setPreviewConfig(prev => {
+                                const newSettings = { ...prev.themeSettings, customConfig: { ...(prev.themeSettings.customConfig || {}), [key]: updatedVal } }
+                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newSettings.customConfig }))
+                                return { ...prev, themeSettings: newSettings }
                               })
                             }}
                             className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary mt-2"
@@ -698,10 +761,10 @@ export default function ThemeCustomizerDialog({
                         {schema.type === 'boolean' && (
                           <button
                             onClick={() => {
-                              setDraft(prev => {
-                                const newConfig = { ...prev, customConfig: { ...(prev.customConfig || {}), [key]: !val } }
-                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
-                                return newConfig
+                              setPreviewConfig(prev => {
+                                const newSettings = { ...prev.themeSettings, customConfig: { ...(prev.themeSettings.customConfig || {}), [key]: !val } }
+                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newSettings.customConfig }))
+                                return { ...prev, themeSettings: newSettings }
                               })
                             }}
                             className={`mt-1 flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono transition-colors ${
@@ -715,10 +778,10 @@ export default function ThemeCustomizerDialog({
                           <Input
                             value={val as string}
                             onChange={e => {
-                              setDraft(prev => {
-                                const newConfig = { ...prev, customConfig: { ...(prev.customConfig || {}), [key]: e.target.value } }
-                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newConfig.customConfig }))
-                                return newConfig
+                              setPreviewConfig(prev => {
+                                const newSettings = { ...prev.themeSettings, customConfig: { ...(prev.themeSettings.customConfig || {}), [key]: e.target.value } }
+                                window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newSettings.customConfig }))
+                                return { ...prev, themeSettings: newSettings }
                               })
                             }}
                             className="font-mono text-xs mt-1"
