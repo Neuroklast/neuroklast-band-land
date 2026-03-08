@@ -11,7 +11,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CaretDown, PencilSimple } from '@phosphor-icons/react'
+import { CaretDown } from '@phosphor-icons/react'
 import logoPng from '@/assets/images/baphomet no text.svg'
 import titlePng from '@/assets/images/titel.png'
 import {
@@ -27,8 +27,6 @@ import type { ThemeSettings } from '@/lib/types'
 interface HeroZardonicProps {
   name: string
   genres: string[]
-  editMode?: boolean
-  onEdit?: () => void
   logoUrl?: string
   titleImageUrl?: string
   themeSettings?: ThemeSettings
@@ -45,8 +43,6 @@ interface HeroZardonicProps {
 export default function HeroZardonic({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
   hudTopLeft1 = 'SYS: NK-MAIN',
@@ -309,17 +305,6 @@ export default function HeroZardonic({
               </Badge>
             </motion.div>
           ))}
-          {editMode && onEdit && (
-            <Button
-              onClick={onEdit}
-              variant="outline"
-              size="sm"
-              className="border-primary/40 text-primary/80 hover:bg-primary/10 text-[10px] font-mono"
-            >
-              <PencilSimple size={12} className="mr-1" />
-              Edit Info
-            </Button>
-          )}
         </motion.div>
 
         {/* ENTER button with animated caret */}

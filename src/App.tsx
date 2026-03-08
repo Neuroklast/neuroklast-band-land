@@ -3,8 +3,7 @@ import { useEffect, useRef, useState, useMemo, startTransition, lazy, Suspense }
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { PencilSimple } from '@phosphor-icons/react'
-import EditControls from '@/components/EditControls'
+import AdminButton from '@/components/AdminButton'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
 import AudioVisualizer from '@/components/AudioVisualizer'
 import CookieBanner from '@/components/CookieBanner'
@@ -110,7 +109,6 @@ function App() {
   const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
   const { cyberpunkOverlay, setCyberpunkOverlay } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
   const { Navigation: ThemeNavigation, LoadingScreen: ThemeLoadingScreen, OverlayModal: ThemeOverlayModal } = useThemeSlots(config.themeSettings?.activePreset)
-  const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)
   const [activeDialog, setActiveDialog] = useState<AdminDialog>(null)
@@ -121,8 +119,12 @@ function App() {
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
   const [showAttackerProfile, setShowAttackerProfile] = useState(false)
   const [selectedAttackerIp, setSelectedAttackerIp] = useState('')
+  /** Tells AdminButton to auto-open the hub when the admin logs in. */
+  const [openAdminHubOnMount, setOpenAdminHubOnMount] = useState(false)
   const isPrimary = import.meta.env.VITE_IS_PRIMARY === 'true'
   const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
+  /** Track the previous isOwner value to detect transitions (visitor → admin). */
+  const prevIsOwnerRef = useRef(false)
 
   useCRTEffects()
 
@@ -135,8 +137,51 @@ function App() {
     return () => document.removeEventListener('click', handleClick)
   }, [])
 
-  // ── Theme import from URL hash ───────────────────────────────────────────────
-  const configAtMountRef = useRef(config)
+  // ── #admin hash → open login dialog ─────────────────────────────────────────
+  useEffect(() => {
+    const handleAdminHash = () => {
+      if (window.location.hash === '#admin') {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        if (isOwner) {
+          // Already authenticated — open the dashboard immediately
+          setOpenAdminHubOnMount(true)
+        } else {
+          setShowLoginDialog(true)
+        }
+      }
+    }
+    // Check once on mount
+    handleAdminHash()
+    window.addEventListener('hashchange', handleAdminHash)
+    return () => window.removeEventListener('hashchange', handleAdminHash)
+  }, [isOwner])
+
+  // ── CMD+K / CTRL+K → open login dialog or dashboard ─────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        if (isOwner) {
+          setOpenAdminHubOnMount(true)
+        } else {
+          setShowLoginDialog(true)
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOwner])
+
+  // ── Auto-open dashboard after login ─────────────────────────────────────────
+  useEffect(() => {
+    if (isOwner && !prevIsOwnerRef.current) {
+      // Admin just logged in — flag the hub to auto-open
+      setOpenAdminHubOnMount(true)
+    }
+    prevIsOwnerRef.current = isOwner
+  }, [isOwner])
+
+  // ── Theme import from URL hash ───────────────────────────────────────────────  const configAtMountRef = useRef(config)
   useEffect(() => {
     const te = getThemeFromUrlHash()
     if (!te?.data) return
@@ -235,13 +280,13 @@ function App() {
       <a href="#main-content" className="skip-to-main">{t('app.skipToMain')}</a>
       <KonamiListener onCodeActivated={handleTerminalActivation} customCode={data.secretCode} />
       <Suspense fallback={null}>
-        <SecretTerminal isOpen={activeDialog === 'secret-terminal'} onClose={() => setActiveDialog(null)} customCommands={data.terminalCommands || []} secretCode={data.secretCode} siteName={data.siteName} editMode={editMode && isOwner} onSaveCommands={(tc) => updateConfig({ terminalCommands: tc })} onSaveSecretCode={(sc) => updateConfig({ secretCode: sc })} />
+        <SecretTerminal isOpen={activeDialog === 'secret-terminal'} onClose={() => setActiveDialog(null)} customCommands={data.terminalCommands || []} secretCode={data.secretCode} siteName={data.siteName} editMode={isOwner} onSaveCommands={(tc) => updateConfig({ terminalCommands: tc })} onSaveSecretCode={(sc) => updateConfig({ secretCode: sc })} />
       </Suspense>
       <Suspense fallback={null}>
-        <ImpressumWindow isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={editMode && isOwner} onSave={(impressum) => updateConfig({ impressum })} />
+        <ImpressumWindow isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={isOwner} onSave={(impressum) => updateConfig({ impressum })} />
       </Suspense>
       <Suspense fallback={null}>
-        <DatenschutzWindow isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={editMode && isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
+        <DatenschutzWindow isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
       </Suspense>
       <CookieBanner />
       {vis.scanline !== false && <MovingScanline />}
@@ -281,21 +326,10 @@ function App() {
             <div className="fixed inset-0 pointer-events-none z-[100]"><div className="absolute inset-0 hud-scanline opacity-30" /></div>
             <Toaster position="top-right" />
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.4 }}>
-              <AnimatePresence>
-                {editMode && isOwner && (
-                  <motion.div className="fixed top-0 left-0 right-0 z-40 bg-primary/20 backdrop-blur-sm border-b border-primary/40" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -50, opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                    <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-2">
-                      <PencilSimple size={16} weight="bold" className="text-primary" />
-                      <span className="text-xs md:text-sm font-mono text-primary tracking-wider">EDIT MODE ACTIVE — click any section to edit</span>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
               <SiteContentRenderer
                 data={data}
                 defaultData={defaultSiteConfig}
-                editMode={editMode}
                 isOwner={isOwner}
                 siteConfigLoaded={siteConfigLoaded}
                 vis={vis}
@@ -306,7 +340,7 @@ function App() {
                 onSetCyberpunkOverlay={setCyberpunkOverlay}
                 onShowLogin={() => setShowLoginDialog(true)}
                 onShowImpressum={() => {
-                  if (editMode && isOwner) {
+                  if (isOwner) {
                     setImpressumOpen(true)
                   } else if (data.impressum) {
                     setCyberpunkOverlay({ type: 'impressum', data: data.impressum })
@@ -322,24 +356,19 @@ function App() {
                   {activationResult && (
                     <LicenseStatusBadge valid={activationResult.valid} tier={activationResult.tier} />
                   )}
-                  <EditControls
-                    editMode={editMode}
-                    onToggleEdit={() => setEditMode(!editMode)}
+                  <AdminButton
                     hasPassword={!needsSetup}
                     onChangePassword={handleChangeAdminPassword}
                     onSetPassword={handleSetAdminPassword}
-                    onLogout={async () => {
-                      await handleAdminLogout()
-                      setEditMode(false)
-                    }}
+                    onLogout={handleAdminLogout}
                     onResetSetup={() => {
-                      setEditMode(false)
                       updateConfig({ setupComplete: false })
                     }}
                     siteConfig={data}
                     onImportData={(imported) => setConfig(imported)}
                     onOpenDialog={setActiveDialog}
                     isPrimary={isPrimary}
+                    openHubOnMount={openAdminHubOnMount}
                   />
                 </div>
               )}
@@ -381,6 +410,10 @@ function App() {
                   onSaveContact={(cs) => updateConfig({ contactSettings: cs })}
                   themeAccessOverrides={data.themeAccessOverrides}
                   onSaveThemeAccessOverrides={(tao) => updateConfig({ themeAccessOverrides: tao })}
+                  siteConfig={data}
+                  onUpdateSiteConfig={(key, value) => updateConfig({ [key]: value })}
+                  sections={data.sections}
+                  onSaveSections={(sections) => updateConfig({ sections, sectionOrder: sections.map(s => s.id) })}
                 />
               </Suspense>
             </motion.div>

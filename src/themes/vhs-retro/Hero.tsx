@@ -23,8 +23,6 @@ function useVhsGlitchText(text: string, speed = 70) {
 export default function VhsRetroHero({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -150,14 +148,6 @@ export default function VhsRetroHero({
               {genre}
             </motion.span>
           ))}
-          {editMode && onEdit && (
-            <button
-              onClick={onEdit}
-              className="px-3 py-1 text-xs font-mono tracking-widest text-primary border border-primary/40 uppercase hover:bg-primary/10 transition-colors ml-2"
-            >
-              [EDIT]
-            </button>
-          )}
         </motion.div>
 
         <motion.div

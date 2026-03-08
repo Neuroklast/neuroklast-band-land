@@ -11,7 +11,7 @@ import { AnimatePresence } from 'framer-motion'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import CyberSpinner from '@/components/CyberSpinner'
 import KeyManagerPanel from '@/components/KeyManagerPanel'
-import type { AdminDialog, SoundSettings, ThemeSettings, SectionVisibility, NewsletterSettings, ContactSettings } from '@/lib/types'
+import type { AdminDialog, SoundSettings, ThemeSettings, SectionVisibility, NewsletterSettings, ContactSettings, SiteConfig, SectionConfig } from '@/lib/types'
 import type { ActivationResult } from '@/lib/activation'
 import type { WidgetPlugin } from '@/lib/types'
 
@@ -27,6 +27,7 @@ const StoreDialog = lazy(() => import('@/components/StoreDialog'))
 const OAuthConnectionsDialog = lazy(() => import('@/components/OAuthConnectionsDialog'))
 const ConfigEditorDialog = lazy(() => import('@/components/ConfigEditorDialog'))
 const ThemeCustomizerDialog = lazy(() => import('@/components/ThemeCustomizerDialog'))
+const ContentView = lazy(() => import('@/features/admin/components/ContentView'))
 const TerminalSettingsDialog = lazy(() => import('@/components/TerminalSettingsDialog'))
 const SoundSettingsDialog = lazy(() => import('@/components/SoundSettingsDialog'))
 const ContactInboxDialog = lazy(() => import('@/components/ContactInboxDialog'))
@@ -68,6 +69,10 @@ export interface AdminDialogManagerProps {
   onSaveContact: (settings: ContactSettings) => void
   themeAccessOverrides?: Record<string, import('@/lib/types').ThemeLicenseStatus>
   onSaveThemeAccessOverrides?: (overrides: Record<string, import('@/lib/types').ThemeLicenseStatus>) => void
+  siteConfig?: SiteConfig
+  onUpdateSiteConfig?: (key: keyof SiteConfig, value: unknown) => void
+  sections?: SectionConfig[]
+  onSaveSections?: (sections: SectionConfig[]) => void
 }
 
 // ─── Suspense wrapper helper ──────────────────────────────────────────────────
@@ -116,6 +121,10 @@ export default function AdminDialogManager({
   onSaveContact,
   themeAccessOverrides,
   onSaveThemeAccessOverrides,
+  siteConfig,
+  onUpdateSiteConfig,
+  sections,
+  onSaveSections,
 }: AdminDialogManagerProps) {
   return (
     <>
@@ -263,7 +272,20 @@ export default function AdminDialogManager({
           isPrimary={isPrimary}
           themeAccessOverrides={themeAccessOverrides}
           onSaveThemeAccessOverrides={onSaveThemeAccessOverrides}
+          sections={sections}
+          onSaveSections={onSaveSections}
         />
+      </LazyBoundary>
+
+      <LazyBoundary name="ContentView">
+        {siteConfig && onUpdateSiteConfig && (
+          <ContentView
+            open={activeDialog === 'content'}
+            onClose={() => setActiveDialog(null)}
+            siteConfig={siteConfig}
+            onUpdate={onUpdateSiteConfig}
+          />
+        )}
       </LazyBoundary>
 
       <LazyBoundary name="TerminalSettingsDialog">

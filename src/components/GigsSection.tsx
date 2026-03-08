@@ -16,8 +16,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 
 interface GigsSectionProps {
   gigs: Gig[]
-  editMode: boolean
-  onUpdate: (gigs: Gig[]) => void
+  editMode?: boolean
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   dataLoaded?: boolean

@@ -1,15 +1,13 @@
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CaretDown, PencilSimple } from '@phosphor-icons/react'
+import { CaretDown } from '@phosphor-icons/react'
 import type { HeroSlotProps } from '@/lib/types'
 import './styles.css'
 
 export default function MinimalHero({
   name,
   genres,
-  editMode,
-  onEdit,
   logoUrl,
   titleImageUrl,
 }: HeroSlotProps) {
@@ -75,17 +73,6 @@ export default function MinimalHero({
               </Badge>
             </motion.div>
           ))}
-          {editMode && onEdit && (
-            <Button
-              onClick={onEdit}
-              variant="outline"
-              size="sm"
-              className="border-border text-muted-foreground hover:bg-secondary text-xs ml-2"
-            >
-              <PencilSimple size={12} className="mr-1" />
-              Edit Info
-            </Button>
-          )}
         </motion.div>
 
         <motion.div

@@ -27,8 +27,7 @@ import linkIcon from '@/assets/images/icons/link.png'
 
 interface SocialSectionProps {
   socialLinks: SocialLinks
-  editMode: boolean
-  onUpdate: (socialLinks: SocialLinks) => void
+  editMode?: boolean
   fontSizes?: FontSizeSettings
   onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
   sectionLabels?: SectionLabels

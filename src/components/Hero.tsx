@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CaretDown, PencilSimple } from '@phosphor-icons/react'
+import { CaretDown } from '@phosphor-icons/react'
 import logoPng from '@/assets/images/baphomet no text.svg'
 import titlePng from '@/assets/images/titel.png'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -22,14 +22,12 @@ const Logo3D = lazy(() => import('@/components/Logo3D'))
 interface HeroProps {
   name: string
   genres: string[]
-  editMode?: boolean
-  onEdit?: () => void
   logoUrl?: string       // if set, display this logo
   titleImageUrl?: string // if set, display this title image
   heroStyle?: ThemeSettings['heroStyle']
 }
 
-export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleImageUrl, heroStyle }: HeroProps) {
+export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }: HeroProps) {
   const [_glitchLogo, setGlitchLogo] = useState(false)
   const [_glitchTitle, setGlitchTitle] = useState(false)
   const { t } = useLocale()
@@ -306,17 +304,6 @@ export default function Hero({ name, genres, editMode, onEdit, logoUrl, titleIma
               </Badge>
             </motion.div>
           ))}
-          {editMode && onEdit && (
-            <Button
-              onClick={onEdit}
-              variant="outline"
-              size="sm"
-              className="border-primary/40 text-primary/80 hover:bg-primary/10 text-[10px] font-mono"
-            >
-              <PencilSimple size={12} className="mr-1" />
-              {t('hero.editInfo')}
-            </Button>
-          )}
         </motion.div>
 
         <motion.div

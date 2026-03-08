@@ -1,10 +1,18 @@
-import { PencilSimple, X, Lightning } from '@phosphor-icons/react'
+/**
+ * AdminButton — compact admin dashboard entry point for logged-in owners.
+ *
+ * Replaces the old floating EditControls pencil button. There is no
+ * "edit mode" toggle here — the admin simply clicks the gear icon to open
+ * the AdminHubDialog (the dashboard).
+ *
+ * Import / export / sync functionality is preserved from the old EditControls.
+ */
+import { PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import AdminLoginDialog from '@/components/AdminLoginDialog'
-import { lazy, Suspense } from 'react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 
 const AdminHubDialog = lazy(() => import('@/features/admin/components/AdminHubDialog'))
@@ -20,9 +28,7 @@ import {
   SYNC_INTERVAL_MS,
 } from '@/lib/config'
 
-interface EditControlsProps {
-  editMode: boolean
-  onToggleEdit: () => void
+interface AdminButtonProps {
   hasPassword: boolean
   onChangePassword: (password: string) => Promise<void>
   onSetPassword: (password: string) => Promise<void>
@@ -32,6 +38,8 @@ interface EditControlsProps {
   onImportData?: (data: SiteConfig) => void
   onOpenDialog: (dialog: AdminDialog) => void
   isPrimary?: boolean
+  /** When true the AdminHubDialog opens immediately on mount (used after auto-login). */
+  openHubOnMount?: boolean
 }
 
 /** Convert a Google Drive file share link to a direct-download URL for JSON */
@@ -43,11 +51,23 @@ function toDriveJsonUrl(url: string): string {
   return url
 }
 
-export default function EditControls({ editMode, onToggleEdit, hasPassword, onChangePassword, onSetPassword, onLogout, onResetSetup, siteConfig, onImportData, onOpenDialog, isPrimary = false }: EditControlsProps) {
+export default function AdminButton({
+  hasPassword,
+  onChangePassword,
+  onSetPassword,
+  onLogout,
+  onResetSetup,
+  siteConfig,
+  onImportData,
+  onOpenDialog,
+  isPrimary = false,
+  openHubOnMount = false,
+}: AdminButtonProps) {
   const { t } = useLocale()
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [showUrlImport, setShowUrlImport] = useState(false)
-  const [showAdminHub, setShowAdminHub] = useState(false)
+  const [showAdminHub, setShowAdminHub] = useState(openHubOnMount)
+  const openedOnMountRef = useRef(false)
   const [importUrl, setImportUrl] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
@@ -55,6 +75,14 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
   const [pendingImportData, setPendingImportData] = useState<Partial<SiteConfig> | null>(null)
   const [pendingValidation, setPendingValidation] = useState<ImportValidationResult | null>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
+
+  // If openHubOnMount transitions to true after mount (e.g. after login), open the hub once
+  useEffect(() => {
+    if (openHubOnMount && !openedOnMountRef.current) {
+      openedOnMountRef.current = true
+      setShowAdminHub(true)
+    }
+  }, [openHubOnMount])
 
   const handleExportData = () => {
     if (!siteConfig) return
@@ -67,7 +95,6 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
       toast.error(result.errors[0] || 'Invalid config file')
       return
     }
-    // For URL imports: preserve syncUrl in the imported data
     const data = preserveSyncUrl && result.data
       ? { ...result.data, syncUrl: preserveSyncUrl }
       : result.data
@@ -97,20 +124,17 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     setIsImporting(true)
     try {
       const directUrl = toDriveJsonUrl(url)
-      // Use the image proxy for CORS — it works for any file
       const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(directUrl)}`
       const res = await fetch(proxyUrl)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const text = await res.text()
       const parsed = JSON.parse(text)
       if (silent) {
-        // Auto-sync: direct import without dialog
         const result = validateImport(parsed)
         if (result.valid && result.data) {
           onImportData({ ...result.data, syncUrl: url } as SiteConfig)
         }
       } else {
-        // Manual URL import: open dialog with validation
         openImportDialog(parsed, url)
       }
     } catch (err) {
@@ -129,18 +153,13 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
     setImportUrl('')
   }
 
-  // Periodic sync: if siteConfig.syncUrl is set, check for updates every 5 minutes
+  // Periodic sync: if siteConfig.syncUrl is set, refresh every 5 minutes
   useEffect(() => {
     const syncUrl = siteConfig?.syncUrl
     if (!syncUrl) return
-
-    const checkSync = () => {
-      importDataFromUrl(syncUrl, true)
-    }
-
+    const checkSync = () => { importDataFromUrl(syncUrl, true) }
     const initialTimeout = setTimeout(checkSync, INITIAL_SYNC_DELAY_MS)
     const interval = setInterval(checkSync, SYNC_INTERVAL_MS)
-
     return () => {
       clearTimeout(initialTimeout)
       clearInterval(interval)
@@ -175,9 +194,7 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
             >
               <CyberCloseButton onClick={() => setShowUrlImport(false)} label="CLOSE" className="absolute top-3 right-3" />
               <h3 className="text-lg font-bold">{t('edit.importUrl')}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t('edit.importDesc')}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('edit.importDesc')}</p>
               <Input
                 value={importUrl}
                 onChange={(e) => setImportUrl(e.target.value)}
@@ -216,111 +233,73 @@ export default function EditControls({ editMode, onToggleEdit, hasPassword, onCh
         )}
       </AnimatePresence>
 
-      <motion.div
-        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col items-end gap-3"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-      >
-        {editMode && showAdminHub && (
-          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 text-primary font-mono text-sm uppercase tracking-widest backdrop-blur-sm">Initializing Admin Workspace...</div>}>
-            <AdminHubDialog
-              open={showAdminHub}
-              onClose={() => setShowAdminHub(false)}
-              onOpenDialog={onOpenDialog}
-              onExportData={handleExportData}
-              onImportFile={() => importInputRef.current?.click()}
-              onImportUrl={() => setShowUrlImport(true)}
-              onChangePassword={() => setShowPasswordDialog(true)}
-              onLogout={onLogout}
-              onResetSetup={onResetSetup}
-              isPrimary={isPrimary}
-            />
-          </Suspense>
+      {/* Admin dialogs */}
+      <Suspense fallback={null}>
+        {showExportDialog && siteConfig && (
+          <ConfigExportDialog
+            open={showExportDialog}
+            onClose={() => setShowExportDialog(false)}
+            config={siteConfig}
+          />
         )}
+        {showImportDialog && pendingImportData && pendingValidation && siteConfig && (
+          <ConfigImportDialog
+            open={showImportDialog}
+            onClose={() => { setShowImportDialog(false); setPendingImportData(null); setPendingValidation(null) }}
+            importData={pendingImportData}
+            validationResult={pendingValidation}
+            currentConfig={siteConfig}
+            onConfirm={(merged) => {
+              onImportData?.(merged)
+              setShowImportDialog(false)
+              setPendingImportData(null)
+              setPendingValidation(null)
+            }}
+          />
+        )}
+        <AdminHubDialog
+          open={showAdminHub}
+          onClose={() => setShowAdminHub(false)}
+          onOpenDialog={onOpenDialog}
+          onExportData={handleExportData}
+          onImportFile={() => importInputRef.current?.click()}
+          onImportUrl={() => setShowUrlImport(true)}
+          onChangePassword={() => setShowPasswordDialog(true)}
+          onLogout={onLogout}
+          onResetSetup={onResetSetup}
+          isPrimary={isPrimary}
+        />
+      </Suspense>
 
-        <AnimatePresence mode="wait">
-          {editMode ? (
-            <motion.div
-              key="exit"
-              className="flex flex-col items-center gap-2"
-              initial={{ scale: 0, rotate: -90 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 90 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            >
-              {/* Small hub button — opens Admin Hub without exiting edit mode */}
-              <Button
-                onClick={() => setShowAdminHub(true)}
-                className="bg-primary/20 hover:bg-primary/40 active:bg-primary/50 active:scale-90 w-8 h-8 md:w-9 md:h-9 rounded-full shadow-md shadow-primary/20 transition-all touch-manipulation relative overflow-hidden group border border-primary/40"
-                size="icon"
-                title="Open Admin Hub"
-              >
-                <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
-                <Lightning size={14} className="md:hidden relative z-10 text-primary" weight="bold" />
-                <Lightning size={16} className="hidden md:block relative z-10 text-primary" weight="bold" />
-              </Button>
-              {/* Main X button — exits edit mode */}
-              <Button
-                onClick={() => onToggleEdit()}
-                className="bg-destructive hover:bg-destructive/90 active:bg-destructive/80 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-destructive/40 hover:shadow-destructive/60 active:shadow-destructive/80 transition-all touch-manipulation relative overflow-hidden group"
-                size="icon"
-                title="Exit Edit Mode"
-              >
-                <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
-                <X size={24} className="md:hidden relative z-10" weight="bold" />
-                <X size={28} className="hidden md:block relative z-10" weight="bold" />
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="edit"
-              initial={{ scale: 0, rotate: -90 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 90 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            >
-              <Button
-                onClick={() => onToggleEdit()}
-                className="bg-primary hover:bg-accent active:bg-accent/90 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-primary/40 hover:shadow-primary/60 active:shadow-primary/80 transition-all touch-manipulation relative overflow-hidden group"
-                size="icon"
-              >
-                <div className="absolute inset-0 bg-white/0 group-active:bg-white/20 transition-colors duration-100 rounded-full" />
-                <PencilSimple size={24} className="md:hidden relative z-10" weight="bold" />
-                <PencilSimple size={28} className="hidden md:block relative z-10" weight="bold" />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
+      {/* Password dialog */}
       {showPasswordDialog && (
         <AdminLoginDialog
           open={showPasswordDialog}
           onOpenChange={setShowPasswordDialog}
-          mode="setup"
-          onSetPassword={hasPassword ? onChangePassword : onSetPassword}
+          mode={hasPassword ? 'change' : 'setup'}
+          onSetPassword={async (pw) => { await onSetPassword(pw); setShowPasswordDialog(false) }}
+          onChangePassword={async (oldPw, newPw) => { await onChangePassword(newPw); void oldPw; setShowPasswordDialog(false) }}
         />
       )}
 
-      {siteConfig && (
-        <ConfigExportDialog
-          open={showExportDialog}
-          onClose={() => setShowExportDialog(false)}
-          config={siteConfig}
-        />
-      )}
-
-      {siteConfig && onImportData && (
-        <ConfigImportDialog
-          open={showImportDialog}
-          onClose={() => { setShowImportDialog(false); setPendingImportData(null); setPendingValidation(null) }}
-          importData={pendingImportData}
-          validationResult={pendingValidation}
-          currentConfig={siteConfig}
-          onConfirm={onImportData}
-        />
-      )}
+      {/* Admin FAB — unobtrusive gear icon, only visible to logged-in admins */}
+      <motion.div
+        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+      >
+        <Button
+          onClick={() => setShowAdminHub(true)}
+          className="bg-primary hover:bg-accent active:bg-accent/90 active:scale-90 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-xl shadow-primary/40 hover:shadow-primary/60 transition-all touch-manipulation relative overflow-hidden group"
+          size="icon"
+          title="Admin Dashboard"
+        >
+          <div className="absolute inset-0 bg-foreground/0 group-active:bg-foreground/20 transition-colors duration-100 rounded-full" />
+          <PencilSimple size={24} className="md:hidden relative z-10" weight="bold" />
+          <PencilSimple size={28} className="hidden md:block relative z-10" weight="bold" />
+        </Button>
+      </motion.div>
     </>
   )
 }

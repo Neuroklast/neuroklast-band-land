@@ -80,8 +80,6 @@ describe('HeroZardonic', () => {
       <HeroZardonic
         name="Zardonic"
         genres={['Industrial Metal', 'Electronic']}
-        editMode={false}
-        onEdit={() => {}}
         logoUrl="/logo.png"
         titleImageUrl="/title.png"
         hudTopLeft1="SYS: NK-MAIN"
@@ -91,26 +89,6 @@ describe('HeroZardonic', () => {
       />
     )
     expect(container.querySelector('#hero')).not.toBeNull()
-  })
-
-  it('shows Edit Info button when editMode is true and onEdit is provided', () => {
-    const onEdit = vi.fn()
-    const { getByText } = render(
-      <HeroZardonic
-        name="Test Band"
-        genres={['Industrial']}
-        editMode={true}
-        onEdit={onEdit}
-      />
-    )
-    expect(getByText('Edit Info')).not.toBeNull()
-  })
-
-  it('does not show Edit Info button when editMode is false', () => {
-    const { queryByText } = render(
-      <HeroZardonic name="Test Band" genres={['Industrial']} editMode={false} />
-    )
-    expect(queryByText('Edit Info')).toBeNull()
   })
 
   it('renders img elements for logo and title', () => {
