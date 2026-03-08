@@ -1,191 +1,286 @@
-/* Art Deco Cyberpunk theme styles */
-@keyframes artdeco-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-@keyframes artdeco-gold-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-@keyframes artdeco-neon-glow {
-  0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.35; }
-}
-@keyframes artdeco-ornament-drift {
-  0% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-6px) rotate(0.5deg); }
-  100% { transform: translateY(0) rotate(0deg); }
+.spark-theme-bioshock-glow {
+  text-shadow:
+    0 0 5px rgba(255, 255, 255, 0.4),
+    0 0 10px rgba(255, 255, 255, 0.3),
+    0 0 15px rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(147, 112, 219, 0.15);
 }
 
-/* ─── Cards ────────────────────────────────────────────────────────────────── */
-[data-theme="art-deco-cyberpunk"] .theme-card {
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: var(--card);
-  position: relative;
-  padding: 1rem;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card::before {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-  pointer-events: none;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--primary) 6%, transparent) 0%,
-    transparent 50%,
-    color-mix(in srgb, var(--accent) 4%, transparent) 100%
-  );
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card:hover::after {
-  opacity: 1;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card-corner {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-color: var(--primary);
-  border-style: solid;
-  opacity: 0.8;
-  transition: opacity 0.3s;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card:hover .theme-card-corner {
-  opacity: 1;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card-corner-tl {
-  top: 0;
-  left: 0;
-  border-width: 2px 0 0 2px;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card-corner-tr {
-  top: 0;
-  right: 0;
-  border-width: 2px 2px 0 0;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card-corner-bl {
-  bottom: 0;
-  left: 0;
-  border-width: 0 0 2px 2px;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card-corner-br {
-  bottom: 0;
-  right: 0;
-  border-width: 0 2px 2px 0;
-}
-[data-theme="art-deco-cyberpunk"] .theme-card:hover {
-  border-color: var(--primary);
-  box-shadow:
-    0 0 16px color-mix(in srgb, var(--primary) 20%, transparent),
-    0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
+@keyframes spark-theme-bioshock-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 5px rgba(255, 255, 255, 0.4),
+      0 0 10px rgba(255, 255, 255, 0.3),
+      0 0 15px rgba(255, 255, 255, 0.2),
+      0 0 20px rgba(147, 112, 219, 0.15);
+  }
+  50% {
+    text-shadow:
+      0 0 8px rgba(255, 255, 255, 0.5),
+      0 0 15px rgba(255, 255, 255, 0.4),
+      0 0 20px rgba(255, 255, 255, 0.25),
+      0 0 30px rgba(147, 112, 219, 0.2);
+  }
 }
 
-/* ─── Buttons ──────────────────────────────────────────────────────────────── */
-[data-theme="art-deco-cyberpunk"] button,
-[data-theme="art-deco-cyberpunk"] [role="button"] {
-  border-radius: 0;
-}
-[data-theme="art-deco-cyberpunk"] button:hover,
-[data-theme="art-deco-cyberpunk"] [role="button"]:hover {
-  box-shadow: 0 0 10px color-mix(in srgb, var(--primary) 30%, transparent);
+.spark-theme-bioshock-glow-animated {
+  animation: spark-theme-bioshock-pulse 20s ease-in-out infinite;
 }
 
-/* ─── Section Divider ──────────────────────────────────────────────────────── */
-[data-theme="art-deco-cyberpunk"] .theme-divider {
+.spark-theme-moon-symbol {
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+.spark-theme-deco-line-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 2.5rem 0;
-  color: var(--primary);
-}
-[data-theme="art-deco-cyberpunk"] .theme-divider-line {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--primary), transparent);
-  animation: artdeco-gold-pulse 4s ease infinite;
-}
-[data-theme="art-deco-cyberpunk"] .theme-divider-ornament {
-  font-size: 1rem;
-  opacity: 0.8;
-  animation: artdeco-ornament-drift 6s ease-in-out infinite;
+  gap: 1rem;
+  justify-content: center;
 }
 
-/* ─── Background ───────────────────────────────────────────────────────────── */
-[data-theme="art-deco-cyberpunk"] .theme-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -10;
-  background: var(--background);
-}
-[data-theme="art-deco-cyberpunk"] .theme-bg-pattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0.04;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      var(--primary) 0px,
-      var(--primary) 1px,
-      transparent 1px,
-      transparent 10px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      var(--primary) 0px,
-      var(--primary) 1px,
-      transparent 1px,
-      transparent 10px
-    );
-  pointer-events: none;
-}
-[data-theme="art-deco-cyberpunk"] .theme-bg-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 100%);
-  pointer-events: none;
-}
-[data-theme="art-deco-cyberpunk"] .theme-bg-neon-glow {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 20% 80%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 50%),
-    radial-gradient(ellipse at 80% 20%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 50%);
-  pointer-events: none;
-  animation: artdeco-neon-glow 8s ease-in-out infinite;
+.spark-theme-deco-line {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, currentColor);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
 }
 
-/* ─── Gallery items — Art Deco framed photos ─────────────────────────────── */
-[data-theme="art-deco-cyberpunk"] .theme-gallery-item {
+.spark-theme-art-deco-button {
   position: relative;
-  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-[data-theme="art-deco-cyberpunk"] .theme-gallery-item::before {
+
+.spark-theme-art-deco-button::before {
   content: '';
   position: absolute;
-  inset: 4px;
-  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
-  pointer-events: none;
-  z-index: 1;
-}
-[data-theme="art-deco-cyberpunk"] .theme-gallery-item::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, transparent) 0%, transparent 40%);
-  pointer-events: none;
-  z-index: 1;
+  inset: -2px;
+  border: 1px solid currentColor;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
-[data-theme="art-deco-cyberpunk"] .theme-gallery-item:hover::after {
-  opacity: 1;
+
+.spark-theme-art-deco-button:hover::before {
+  inset: -6px;
+  opacity: 0.5;
+}
+
+.spark-theme-card-wrapper {
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spark-theme-card-corners::before,
+.spark-theme-card-corners::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 2px solid transparent;
+  border-color: inherit;
+  pointer-events: none;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.spark-theme-card-corners::before {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.spark-theme-card-corners::after {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
+.spark-theme-card-wrapper:hover .spark-theme-card-corners::before,
+.spark-theme-card-wrapper:hover .spark-theme-card-corners::after {
+  opacity: 0.8;
+}
+
+.spark-theme-nav-link {
+  position: relative;
+}
+
+.spark-theme-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spark-theme-nav-link:hover::after {
+  width: 100%;
+}
+
+@keyframes spark-theme-progress-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 15px currentColor;
+  }
+}
+
+.spark-theme-progress-glow {
+  animation: spark-theme-progress-glow 2s ease-in-out infinite;
+}
+
+@keyframes spark-theme-crt-flicker {
+  0% { opacity: 0.97; }
+  50% { opacity: 1; }
+  100% { opacity: 0.97; }
+}
+
+.spark-theme-crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  animation: spark-theme-crt-flicker 0.15s infinite;
+}
+
+@keyframes spark-theme-scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+.spark-theme-scanline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 9998;
+  animation: spark-theme-scanline 25s linear infinite;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+@keyframes spark-theme-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.spark-theme-fade-in {
+  animation: spark-theme-fade-in 0.8s ease-out forwards;
+}
+
+@keyframes spark-theme-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.spark-theme-slide-up {
+  animation: spark-theme-slide-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.spark-theme-stagger-1 { animation-delay: 0.1s; }
+.spark-theme-stagger-2 { animation-delay: 0.2s; }
+.spark-theme-stagger-3 { animation-delay: 0.3s; }
+.spark-theme-stagger-4 { animation-delay: 0.4s; }
+.spark-theme-stagger-5 { animation-delay: 0.5s; }
+
+.spark-theme-loading-frame-svg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  overflow: visible;
+}
+
+.frame-line-loading {
+  stroke: oklch(0.98 0 0);
+  stroke-width: 2;
+  fill: none;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+  stroke-linecap: square;
+}
+
+.moon-symbol-loading {
+  fill: oklch(0.98 0 0);
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+  font-family: 'Poiret One', cursive;
+}
+
+.spark-theme-logo-glow {
+  animation: spark-theme-logo-pulse 3s ease-in-out infinite;
+}
+
+@keyframes spark-theme-logo-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 30px rgba(102, 51, 153, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 50px rgba(102, 51, 153, 0.4));
+  }
+}
+
+@keyframes spark-theme-loading-shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.spark-theme-loading-text {
+  background: linear-gradient(
+    90deg,
+    oklch(0.98 0 0) 0%,
+    oklch(0.50 0.18 295) 50%,
+    oklch(0.98 0 0) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: spark-theme-loading-shimmer 3s linear infinite;
 }

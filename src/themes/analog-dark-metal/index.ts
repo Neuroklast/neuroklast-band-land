@@ -1,6 +1,9 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import AnalogDarkMetalBackgroundEffects from './BackgroundEffects'
+import AnalogDarkMetalHero from './Hero'
+import AnalogDarkMetalNavigation from './Navigation'
+import AnalogDarkMetalLoadingScreen from './LoadingScreen'
 
 export const analogDarkMetalTheme: ThemePackage = {
   id: 'analog-dark-metal',
@@ -128,5 +131,8 @@ export const analogDarkMetalTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: AnalogDarkMetalBackgroundEffects,
+    Hero: AnalogDarkMetalHero,
+    Navigation: AnalogDarkMetalNavigation,
+    LoadingScreen: AnalogDarkMetalLoadingScreen,
   },
 }
