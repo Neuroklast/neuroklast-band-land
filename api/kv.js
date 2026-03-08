@@ -191,7 +191,7 @@ export default async function handler(req, res) {
       if (key === 'band-data' && value && typeof value === 'object' && !Array.isArray(value)) {
         const SENSITIVE_FIELD_PATTERNS = [/token/i, /secret/i, /password/i, /apikey/i, /api_key/i, /credential/i]
         // Known-safe fields that match sensitive patterns but are not actual secrets
-        const SAFE_BAND_DATA_FIELDS = new Set(['secretCode'])
+        const SAFE_BAND_DATA_FIELDS = new Set(['secretCode', 'configOverrides', 'seo'])
         const sanitized = Object.fromEntries(
           Object.entries(value).filter(([k]) => SAFE_BAND_DATA_FIELDS.has(k) || !SENSITIVE_FIELD_PATTERNS.some(p => p.test(k)))
         )

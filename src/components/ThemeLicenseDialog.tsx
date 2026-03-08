@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { X, Lock, Key, CheckCircle } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
+import { usePermissions } from '@/hooks/use-permissions'
 
 interface ThemeLicenseDialogProps {
   open: boolean
@@ -31,13 +32,26 @@ export default function ThemeLicenseDialog({
 }: ThemeLicenseDialogProps) {
   const [keyValue, setKeyValue] = useState('')
   const [loading, setLoading] = useState(false)
-  const [validated, setValidated] = useState(false)
+  const { isThemeUnlocked } = usePermissions()
+  const [validated, setValidated] = useState(isThemeUnlocked(themeId))
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Clean up pending close timeout on unmount
   useEffect(() => {
     return () => { if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current) }
   }, [])
+
+  useEffect(() => {
+    if (open && isThemeUnlocked(themeId)) {
+      setValidated(true)
+      closeTimeoutRef.current = setTimeout(() => {
+        onUnlocked(themeId)
+        handleClose()
+      }, 500)
+    } else if (open) {
+      setValidated(false)
+    }
+  }, [open, themeId, isThemeUnlocked, onUnlocked])
 
   const handleClose = () => {
     if (loading) return

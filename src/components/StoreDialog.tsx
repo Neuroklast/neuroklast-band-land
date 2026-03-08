@@ -29,7 +29,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { toast } from 'sonner'
 import type { WidgetPlugin, ThemeSettings, StoreTab, StoreItemLicense } from '@/lib/types'
 import type { LicenseTier } from '@/lib/license'
-import { hasFeature } from '@/lib/license'
+import { usePermissions } from '@/hooks/use-permissions'
 import ThemePreviewCard from '@/components/ThemePreviewCard'
 import WidgetConfigDialog from '@/components/WidgetConfigDialog'
 import WidgetImportDialog from '@/components/WidgetImportDialog'
@@ -87,11 +87,11 @@ interface StoreItemCardProps {
 
 function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure, onUpdate }: StoreItemCardProps) {
   const { t } = useLocale()
+  const { canUsePremiumThemes, canUsePremiumWidgets } = usePermissions()
   const isWidget = item.type === 'widget'
   const isTheme = item.type === 'theme'
 
-  const tier = licenseTier ?? 'free'
-  const isPremiumLocked = item.license === 'premium' && !hasFeature(tier, 'premium-themes')
+  const isPremiumLocked = item.license === 'premium' && (isWidget ? !canUsePremiumWidgets() : !canUsePremiumThemes())
 
   return (
     <motion.div

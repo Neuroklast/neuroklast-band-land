@@ -35,6 +35,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { key } = req.body || {}
 
+  const host = (req as any).headers?.host || ''
+  const IS_PRIMARY = host.includes('neuroklast.net')
+
+  if (IS_PRIMARY) {
+    return res.status(200).json({ valid: true, tier: 'agency', features: [], assignedThemes: [] })
+  }
+
   if (!key || typeof key !== 'string' || key.trim().length === 0) {
     return res.status(400).json({ valid: false, error: 'Invalid key format' })
   }
@@ -75,8 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ valid: true, tier, features, assignedThemes })
   } catch (error) {
     console.error('[validate-key] KV error:', error)
-    // Bei KV-Fehler: fail open für eigene Instanz (VITE_IS_PRIMARY=true), fail closed für alle anderen
-    const isPrimary = process.env.VITE_IS_PRIMARY === 'true'
+    // Bei KV-Fehler: fail open für eigene Instanz, fail closed für alle anderen
+    const isPrimary = IS_PRIMARY
     return res.status(200).json({ valid: isPrimary, error: 'Service temporarily unavailable' })
   }
 }
