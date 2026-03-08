@@ -214,7 +214,12 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     name: 'Neuroklast Classic',
     description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents and code-rain loading',
     licenseStatus: 'free',
-    theme: presetToThemeSettings(DESIGN_PRESETS['neuroklast-classic']),
+    theme: {
+      ...presetToThemeSettings(DESIGN_PRESETS['neuroklast-classic']),
+      // Structural layout defaults for this theme engine (not part of the color preset)
+      heroStyle: 'chromatic-hover',
+      loadingScreenType: 'code-rain',
+    },
     author: 'Neuroklast',
     tags: ['dark', 'cyber', 'industrial'],
     themeType: 'full',
@@ -224,7 +229,12 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     name: 'Zardonic',
     description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
     licenseStatus: 'locked',
-    theme: presetToThemeSettings(DESIGN_PRESETS['zardonic']),
+    theme: {
+      ...presetToThemeSettings(DESIGN_PRESETS['zardonic']),
+      // Structural layout defaults for this theme engine (not part of the color preset)
+      heroStyle: 'glitch-parallax',
+      loadingScreenType: '3d-model',
+    },
     author: 'Zardonic / Neuroklast',
     tags: ['dark', 'industrial', 'glitch', 'premium'],
     themeType: 'full',

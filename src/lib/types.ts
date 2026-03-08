@@ -780,10 +780,11 @@ export interface DesignPreset {
   overlayEffects?: OverlayEffects
   /** Animation settings bundled with the preset */
   animationSettings?: AnimationSettings
-  /** Loading screen style identifier */
-  loadingScreenType?: 'cyberpunk' | 'code-rain' | '3d-model' | 'minimal'
-  /** Hero section visual style */
-  heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
+  /**
+   * Structural layout properties (`heroStyle`, `loadingScreenType`) are intentionally
+   * absent from `DesignPreset`. Presets define ONLY colors, fonts, and visual effects.
+   * Layout/structure is the responsibility of the Theme Engine (ThemePackage).
+   */
 }
 
 // ─── FONT CONFIG (#158) ──────────────────────────────────────────────────────

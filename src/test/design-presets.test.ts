@@ -138,8 +138,10 @@ describe('presetToThemeSettings', () => {
 
   it('maps loadingScreenType and heroStyle for zardonic', () => {
     const theme = presetToThemeSettings(zardonicPreset)
-    expect(theme.loadingScreenType).toBe('3d-model')
-    expect(theme.heroStyle).toBe('glitch-parallax')
+    // loadingScreenType and heroStyle are structural layout properties that belong
+    // to the Theme Engine, not the Design Preset — they must NOT appear in the output.
+    expect(theme.loadingScreenType).toBeUndefined()
+    expect(theme.heroStyle).toBeUndefined()
   })
 
   it('maps animationSettings for neuroklast-classic', () => {
@@ -152,13 +154,16 @@ describe('presetToThemeSettings', () => {
 
   it('maps loadingScreenType and heroStyle for neuroklast-classic', () => {
     const theme = presetToThemeSettings(neuroklastClassicPreset)
-    expect(theme.loadingScreenType).toBe('code-rain')
-    expect(theme.heroStyle).toBe('chromatic-hover')
+    // loadingScreenType and heroStyle are structural layout properties that belong
+    // to the Theme Engine, not the Design Preset — they must NOT appear in the output.
+    expect(theme.loadingScreenType).toBeUndefined()
+    expect(theme.heroStyle).toBeUndefined()
   })
 
-  it('does not include animationSettings/loadingScreenType/heroStyle when preset has none', () => {
+  it('does not include animationSettings when preset has none', () => {
     const theme = presetToThemeSettings(cyberpunkPreset)
     expect(theme.animationSettings).toBeUndefined()
+    // heroStyle / loadingScreenType are never included — they belong to the Theme Engine
     expect(theme.loadingScreenType).toBeUndefined()
     expect(theme.heroStyle).toBeUndefined()
   })
@@ -180,9 +185,9 @@ describe('Zardonic preset', () => {
     expect(zardonicPreset.animationSettings?.crtEnabled).toBe(true)
   })
 
-  it('has loading screen and hero style', () => {
-    expect(zardonicPreset.loadingScreenType).toBe('3d-model')
-    expect(zardonicPreset.heroStyle).toBe('glitch-parallax')
+  it('has no loadingScreenType or heroStyle — structural fields belong to the Theme Engine', () => {
+    expect((zardonicPreset as unknown as Record<string, unknown>).loadingScreenType).toBeUndefined()
+    expect((zardonicPreset as unknown as Record<string, unknown>).heroStyle).toBeUndefined()
   })
 })
 
@@ -200,8 +205,8 @@ describe('Neuroklast Classic preset', () => {
     expect(neuroklastClassicPreset.animationSettings?.chromaticEnabled).toBe(false)
   })
 
-  it('has loading screen and hero style', () => {
-    expect(neuroklastClassicPreset.loadingScreenType).toBe('code-rain')
-    expect(neuroklastClassicPreset.heroStyle).toBe('chromatic-hover')
+  it('has no loadingScreenType or heroStyle — structural fields belong to the Theme Engine', () => {
+    expect((neuroklastClassicPreset as unknown as Record<string, unknown>).loadingScreenType).toBeUndefined()
+    expect((neuroklastClassicPreset as unknown as Record<string, unknown>).heroStyle).toBeUndefined()
   })
 })

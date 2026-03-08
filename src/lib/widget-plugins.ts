@@ -677,8 +677,8 @@ export function mixThemeSettings(
           ...result,
           ...(preset.overlayEffects ? { overlayEffects: preset.overlayEffects } : {}),
           ...(preset.animationSettings ? { animationSettings: preset.animationSettings } : {}),
-          ...(preset.loadingScreenType ? { loadingScreenType: preset.loadingScreenType } : {}),
-          ...(preset.heroStyle ? { heroStyle: preset.heroStyle } : {}),
+          // heroStyle and loadingScreenType are NOT applied from presets — those are
+          // structural layout properties belonging to the Theme Engine.
         }
       }
     }
