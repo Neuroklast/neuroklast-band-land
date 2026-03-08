@@ -1,6 +1,9 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
 import SteampunkBackgroundEffects from './BackgroundEffects'
+import SteampunkHero from './Hero'
+import SteampunkNavigation from './Navigation'
+import SteampunkLoadingScreen from './LoadingScreen'
 
 export const steampunkTheme: ThemePackage = {
   id: 'steampunk',
@@ -143,5 +146,8 @@ export const steampunkTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   slots: {
     BackgroundEffects: SteampunkBackgroundEffects,
+    Hero: SteampunkHero,
+    Navigation: SteampunkNavigation,
+    LoadingScreen: SteampunkLoadingScreen,
   },
 }
