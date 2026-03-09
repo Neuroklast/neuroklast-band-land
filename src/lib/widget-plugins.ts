@@ -18,7 +18,7 @@
 
 import type { WidgetPlugin, WidgetCategory, StoreItemLicense, StoreItemRating, StoreItemType, StoreTab, ThemeSettings } from './types'
 import type { DesignPreset } from './types'
-import { cyberpunkPreset, presetToThemeSettings as _presetToTheme } from './design-presets'
+import { neuroklastClassicPreset, presetToThemeSettings } from './design-presets'
 
 // ─── Widget catalog (the "store") ────────────────────────────────────────────
 
@@ -641,7 +641,7 @@ export function mixThemeSettings(
 ): ThemeSettings {
   // Start from the cyberpunk default palette to avoid hardcoded values
   let result: ThemeSettings = {
-    ..._presetToTheme(cyberpunkPreset),
+    ...presetToThemeSettings(neuroklastClassicPreset),
     ...base,
   }
 

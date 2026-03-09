@@ -1,189 +1,46 @@
+import Hero from './Hero'
+import Navigation from './Navigation'
+import Card from './Card'
+import BackgroundEffects from './BackgroundEffects'
+import SectionDivider from './SectionDivider'
+import LoadingScreen from './LoadingScreen'
 import './styles.css'
+
 import type { ThemePackage } from '@/lib/types'
-import ZardonicLoadingScreen from './LoadingScreen'
-import ZardonicBackgroundEffects from './BackgroundEffects'
-import ZardonicHero from './Hero'
-import ZardonicNavigation from './Navigation'
-import ZardonicFooter from './Footer'
 
 export const zardonicTheme: ThemePackage = {
-  id: 'zardonic',
-  name: 'Zardonic',
-  description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
-  author: 'Zardonic / Neuroklast',
+  description: 'Zardonic industrial dark cyberpunk theme',
   version: '1.0.0',
-  access: 'exclusive',
-  exclusiveFor: 'zardonic',
-  lockedMessage: 'Exclusive to ZARDONIC',
+  author: 'Neuroklast',
+  access: 'free',
   layout: {
-    heroVariant: 'glitch-parallax',
-    loadingScreen: '3d-model',
-    navigationStyle: 'cyberpunk-hud',
+    heroVariant: 'default',
+    loadingScreen: 'minimal',
+    navigationStyle: 'clean',
   },
   typography: {
-    heading: "'JetBrains Mono', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'JetBrains Mono', monospace",
+    heading: "'Orbitron', sans-serif",
+    body: "'Share Tech Mono', monospace",
+    mono: "'Share Tech Mono', monospace",
   },
-  effects: {
-    overlayEffects: {
-      scanlines: { enabled: true, intensity: 0.4 },
-      crt: { enabled: true, intensity: 0.6 },
-      noise: { enabled: true, intensity: 0.3 },
-      vignette: { enabled: true, intensity: 0.3 },
-      chromatic: { enabled: true, intensity: 0.5 },
-      dotMatrix: { enabled: false, intensity: 0 },
-    },
-    animationSettings: {
-      glitchEnabled: true,
-      scanlineEnabled: true,
-      chromaticEnabled: true,
-      crtEnabled: true,
-      noiseEnabled: true,
-      circuitBackgroundEnabled: false,
-      crtOverlayOpacity: 0.6,
-      crtVignetteOpacity: 0.3,
-      overlayTransitionEnabled: false,
-    },
-  },
-  borderRadius: 0.125,
+  borderRadius: 0,
   animationsEnabled: true,
-  colorPresets: [
-    {
-      id: 'default-crimson',
-      name: 'Default Crimson',
-      description: 'Signature Zardonic crimson',
-      colors: {
-        primary: 'oklch(0.45 0.22 25)',
-        accent: 'oklch(0.55 0.25 25)',
-        background: 'oklch(0.1 0 0)',
-        card: 'oklch(0.15 0 0)',
-        foreground: 'oklch(0.95 0 0)',
-        mutedForeground: 'oklch(0.6 0 0)',
-        border: 'oklch(0.25 0 0)',
-        secondary: 'oklch(0.2 0 0)',
-      },
-    },
-    {
-      id: 'cyber-blue',
-      name: 'Cyber Blue',
-      description: 'Electric cyber blue',
-      colors: {
-        primary: 'oklch(0.55 0.22 220)',
-        accent: 'oklch(0.65 0.20 210)',
-        background: 'oklch(0 0 0)',
-        card: 'oklch(0.05 0.01 220)',
-        foreground: 'oklch(1 0 0)',
-        mutedForeground: 'oklch(0.55 0 0)',
-        border: 'oklch(0.15 0.02 220)',
-        secondary: 'oklch(0.10 0 0)',
-      },
-    },
-    {
-      id: 'toxic-green',
-      name: 'Toxic Green',
-      description: 'Toxic neon green',
-      colors: {
-        primary: 'oklch(0.60 0.22 145)',
-        accent: 'oklch(0.70 0.20 150)',
-        background: 'oklch(0 0 0)',
-        card: 'oklch(0.05 0.01 145)',
-        foreground: 'oklch(1 0 0)',
-        mutedForeground: 'oklch(0.55 0 0)',
-        border: 'oklch(0.15 0.02 145)',
-        secondary: 'oklch(0.10 0 0)',
-      },
-    },
-    {
-      id: 'violet-chrome',
-      name: 'Violet Chrome',
-      description: 'Deep violet with chrome sheen',
-      colors: {
-        primary: 'oklch(0.55 0.22 290)',
-        accent: 'oklch(0.65 0.20 300)',
-        background: 'oklch(0 0 0)',
-        card: 'oklch(0.05 0.01 290)',
-        foreground: 'oklch(1 0 0)',
-        mutedForeground: 'oklch(0.55 0 0)',
-        border: 'oklch(0.15 0.02 290)',
-        secondary: 'oklch(0.10 0 0)',
-      },
-    },
-    {
-      id: 'gold-circuit',
-      name: 'Gold Circuit',
-      description: 'Circuit board gold',
-      colors: {
-        primary: 'oklch(0.72 0.15 85)',
-        accent: 'oklch(0.80 0.14 90)',
-        background: 'oklch(0 0 0)',
-        card: 'oklch(0.05 0 0)',
-        foreground: 'oklch(1 0 0)',
-        mutedForeground: 'oklch(0.55 0 0)',
-        border: 'oklch(0.15 0.02 85)',
-        secondary: 'oklch(0.10 0 0)',
-      },
-    },
-    {
-      id: 'crimson-punk',
-      name: 'Crimson Punk',
-      description: 'Aggressive crimson punk',
-      colors: {
-        primary: 'oklch(0.45 0.25 10)',
-        accent: 'oklch(0.55 0.26 15)',
-        background: 'oklch(0 0 0)',
-        card: 'oklch(0.05 0 0)',
-        foreground: 'oklch(1 0 0)',
-        mutedForeground: 'oklch(0.55 0 0)',
-        border: 'oklch(0.15 0 0)',
-        secondary: 'oklch(0.10 0 0)',
-      },
-    },
-  ],
-  defaultPresetId: 'default-crimson',
-  defaultColors: {
-    primary: 'oklch(0.45 0.22 25)',
-    accent: 'oklch(0.55 0.25 25)',
-    background: 'oklch(0.1 0 0)',
-    card: 'oklch(0.15 0 0)',
-    foreground: 'oklch(0.95 0 0)',
-    mutedForeground: 'oklch(0.6 0 0)',
-    border: 'oklch(0.25 0 0)',
-    secondary: 'oklch(0.2 0 0)',
-  },
-  defaultFonts: {
-    heading: "'JetBrains Mono', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-  animations: [
-    { id: 'glitch', label: 'Glitch Effect', defaultEnabled: true, defaultIntensity: 0.7 },
-    { id: 'scanlines', label: 'CRT Scanlines', defaultEnabled: true, defaultIntensity: 0.4 , hasIntensity: true },
-    { id: 'crt', label: 'CRT Curvature', defaultEnabled: true, defaultIntensity: 0.6 , hasIntensity: true },
-    { id: 'noise', label: 'Static Noise', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
-    { id: 'vignette', label: 'Vignette', defaultEnabled: true, defaultIntensity: 0.3 , hasIntensity: true },
-    { id: 'chromatic', label: 'Chromatic Aberration', defaultEnabled: true, defaultIntensity: 0.5 , hasIntensity: true },
-  ],
-  customizability: { customColors: true, customFonts: false, adjustEffects: true },
-  customConfigSchema: {
-    HERO_LOGO_GLITCH_PROBABILITY: {
-      label: 'Hero Logo Glitch Probability',
-      description: 'Chance (0-1) the main hero logo glitches per interval.',
-      type: 'number',
-      default: 0.75,
-    },
-    NAV_GLITCH_PROBABILITY: {
-      label: 'Navigation Glitch Probability',
-      description: 'Chance (0-1) the top navigation glitches per interval.',
-      type: 'number',
-      default: 0.85,
-    },
-  },
+  effects: {},
+  colorPresets: [],
+  defaultPresetId: 'default',
+  customizability: { customColors: true, customFonts: true, adjustEffects: true },
+  id: 'zardonic-theme',
+  name: 'Zardonic Cyberpunk Theme',
+
+
   slots: {
-    Hero: ZardonicHero,
-    Navigation: ZardonicNavigation,
-    Footer: ZardonicFooter,
-    LoadingScreen: ZardonicLoadingScreen,
-    BackgroundEffects: ZardonicBackgroundEffects,
-  },
+    Hero,
+    Navigation,
+    Card,
+    BackgroundEffects,
+    SectionDivider,
+    LoadingScreen,
+  }
 }
+
+export type ZardonicTheme = typeof zardonicTheme

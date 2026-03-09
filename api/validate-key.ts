@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { key } = req.body || {}
 
-  const host = (req as any).headers?.host || ''
+  const host = (req as Record<string, unknown>).headers?.host || ''
   const IS_PRIMARY = host.includes('neuroklast.net')
 
   if (IS_PRIMARY) {

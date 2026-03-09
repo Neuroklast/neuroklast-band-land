@@ -62,7 +62,7 @@ describe('validateActivationKey', () => {
   })
 
   it('returns invalid when VITE_ACTIVATION_KEY is not set', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('VITE_ACTIVATION_KEY', ''); vi.stubEnv('VITE_IS_PRIMARY', 'false')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()
     expect(result.valid).toBe(false)

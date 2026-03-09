@@ -1,4 +1,8 @@
-import type { DesignPreset, ThemeSettings } from './types'
+const fs = require('fs');
+let code = fs.readFileSync('src/lib/design-presets.ts', 'utf8');
+
+// The new file should just have the neuroklastClassicPreset for now.
+const newCode = `import type { DesignPreset, ThemeSettings } from './types'
 
 export const neuroklastClassicPreset: DesignPreset = {
   id: 'neuroklast-classic',
@@ -41,6 +45,8 @@ export const neuroklastClassicPreset: DesignPreset = {
     overlayTransitionEnabled: false,
   },
 }
+
+export { neuroklastClassicPreset }
 
 export const builtInPresets: DesignPreset[] = [
   neuroklastClassicPreset,
@@ -87,3 +93,7 @@ export function presetToThemeSettings(preset: DesignPreset): ThemeSettings {
     ...(preset.colors.hoverColor !== undefined ? { hoverColor: preset.colors.hoverColor } : {}),
   }
 }
+`;
+
+fs.writeFileSync('src/lib/design-presets.ts', newCode);
+console.log('done');
