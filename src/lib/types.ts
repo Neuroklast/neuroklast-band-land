@@ -522,7 +522,6 @@ export type AdminDialog =
   | 'store'
   | 'keys'
   | 'admin-hub'
-  | 'content'
   | null
 
 // ─── THEME PLUGIN ARCHITECTURE ───────────────────────────────────────────────

@@ -276,17 +276,6 @@ export default function AdminDialogManager({
         />
       </LazyBoundary>
 
-      <LazyBoundary name="ContentView">
-        {siteConfig && onUpdateSiteConfig && (
-          <ContentView
-            open={activeDialog === 'content'}
-            onClose={() => setActiveDialog(null)}
-            siteConfig={siteConfig}
-            onUpdate={onUpdateSiteConfig}
-          />
-        )}
-      </LazyBoundary>
-
       <LazyBoundary name="TerminalSettingsDialog">
         <TerminalSettingsDialog
           open={activeDialog === 'terminal'}
