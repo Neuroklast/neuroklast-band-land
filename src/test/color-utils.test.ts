@@ -27,7 +27,7 @@ describe('oklchToHex', () => {
 })
 
 describe('hexToOklch', () => {
-  it('returns a valid oklch string for unparseable input', () => {
+  it('converts invalid color keywords (parsed as black by JSDOM) to oklch format', () => {
     // JSDOM resolves unknown color keywords as black (rgb(0,0,0)), so
     // cssColorToRgb succeeds and we get the conversion of black.
     const result = hexToOklch('not-a-color')
