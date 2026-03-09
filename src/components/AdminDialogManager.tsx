@@ -32,6 +32,7 @@ const SoundSettingsDialog = lazy(() => import('@/components/SoundSettingsDialog'
 const ContactInboxDialog = lazy(() => import('@/components/ContactInboxDialog'))
 const SubscriberListDialog = lazy(() => import('@/components/SubscriberListDialog'))
 const MarketingToolsDialog = lazy(() => import('@/components/MarketingToolsDialog'))
+const ContentView = lazy(() => import('@/features/admin/components/ContentView'))
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
