@@ -30,6 +30,7 @@ import { buildDefaultSections, toggleSection, reorderSections } from '@/lib/sect
 import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { createSiteConfig } from '@/lib/site-config'
 import { getContrastRatio, meetsWcagAA } from '@/lib/contrast'
+import { oklchToHex, hexToOklch } from '@/lib/color-utils'
 import { fetchEnvStatus, REQUIRED_ENV_VARS, allRequiredSet, type EnvStatus } from '@/lib/env-check'
 import { saveLocalActivationKey, getLocalActivationKey } from '@/hooks/use-activation-key'
 import type { SiteConfig, SectionConfig } from '@/lib/types'
@@ -93,53 +94,6 @@ function toPreviewUrl(url: string): string {
   const driveMatch = url.match(/\/file\/d\/([^/]+)/)
   if (driveMatch) return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`
   return url
-}
-
-// ─── oklch ↔ hex helpers (lightweight, same pattern as ThemeCustomizerDialog) ─
-
-function oklchToHex(oklch: string): string {
-  try {
-    const el = document.createElement('div')
-    el.style.color = oklch
-    document.body.appendChild(el)
-    const computed = getComputedStyle(el).color
-    document.body.removeChild(el)
-    const m = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
-    if (m) {
-      const [, r, g, b] = m
-      return `#${Number(r).toString(16).padStart(2, '0')}${Number(g).toString(16).padStart(2, '0')}${Number(b).toString(16).padStart(2, '0')}`
-    }
-  } catch { /* fallback */ }
-  return '#ff3333'
-}
-
-function hexToOklch(hex: string): string {
-  try {
-    const el = document.createElement('div')
-    el.style.color = hex
-    document.body.appendChild(el)
-    const computed = getComputedStyle(el).color
-    document.body.removeChild(el)
-    const m = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
-    if (m) {
-      const [, rs, gs, bs] = m
-      const r = Number(rs) / 255
-      const g = Number(gs) / 255
-      const b = Number(bs) / 255
-      const l = 0.2126 * r + 0.7152 * g + 0.0722 * b
-      const max = Math.max(r, g, b)
-      const min = Math.min(r, g, b)
-      const c = max - min
-      let h = 0
-      if (c > 0) {
-        if (max === r) h = ((g - b) / c + 6) % 6 * 60
-        else if (max === g) h = ((b - r) / c + 2) * 60
-        else h = ((r - g) / c + 4) * 60
-      }
-      return `oklch(${l.toFixed(2)} ${(c * 0.4).toFixed(2)} ${Math.round(h)})`
-    }
-  } catch { /* fallback */ }
-  return 'oklch(0.50 0.22 25)'
 }
 
 // ─── Site type definitions ────────────────────────────────────────────────────

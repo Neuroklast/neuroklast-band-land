@@ -12,6 +12,7 @@ import { applyThemeToDocument, applyThemeToDOM, resetThemeDOM, applyThemeDefault
 import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
 import { resolveSections, normalizeSections, toggleSection, reorderSections } from '@/lib/sections'
 import { t, Locale } from '@/lib/i18n'
+import { oklchToHex, hexToOklch } from '@/lib/color-utils'
 
 // ─── Animation ID → ThemeSettings mapping ─────────────────────────────────────
 
@@ -185,51 +186,6 @@ function ColorInput({ label, value, onChange }: { label: string; value: string; 
       </div>
     </div>
   )
-}
-
-function oklchToHex(oklch: string): string {
-  try {
-    const el = document.createElement('div')
-    el.style.color = oklch
-    document.body.appendChild(el)
-    const computed = getComputedStyle(el).color
-    document.body.removeChild(el)
-    const match = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
-    if (match) {
-      const [, r, g, b] = match
-      return `#${Number(r).toString(16).padStart(2, '0')}${Number(g).toString(16).padStart(2, '0')}${Number(b).toString(16).padStart(2, '0')}`
-    }
-  } catch { /* fallback */ }
-  return '#ff3333'
-}
-
-function hexToOklch(hex: string): string {
-  try {
-    const el = document.createElement('div')
-    el.style.color = hex
-    document.body.appendChild(el)
-    const computed = getComputedStyle(el).color
-    document.body.removeChild(el)
-    const match = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
-    if (match) {
-      const [, rs, gs, bs] = match
-      const r = Number(rs) / 255
-      const g = Number(gs) / 255
-      const b = Number(bs) / 255
-      const l = 0.2126 * r + 0.7152 * g + 0.0722 * b
-      const max = Math.max(r, g, b)
-      const min = Math.min(r, g, b)
-      const c = max - min
-      let h = 0
-      if (c > 0) {
-        if (max === r) h = ((g - b) / c + 6) % 6 * 60
-        else if (max === g) h = ((b - r) / c + 2) * 60
-        else h = ((r - g) / c + 4) * 60
-      }
-      return `oklch(${l.toFixed(2)} ${(c * 0.4).toFixed(2)} ${Math.round(h)})`
-    }
-  } catch { /* fallback */ }
-  return `oklch(0.50 0.22 25)`
 }
 
 export default function ThemeCustomizerDialog({

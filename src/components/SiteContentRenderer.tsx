@@ -1,14 +1,15 @@
 /**
  * SiteContentRenderer – renders all public-facing sections of the site.
  *
- * Each section is wrapped in a SectionErrorBoundary so that a broken section
- * never takes down the whole page.
+ * Each section is wrapped in a SectionGuard so that visibility checks,
+ * entrance animations, and error boundaries are managed in one place.
  */
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useThemeSlots } from '@/lib/theme-registry'
 import { useCachedImage } from '@/hooks/useCachedImage'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
+import SectionGuard from '@/components/SectionGuard'
 import NewsSection from '@/components/NewsSection'
 import BiographySection from '@/components/BiographySection'
 import GigsSection from '@/components/GigsSection'
@@ -40,20 +41,6 @@ interface SiteContentRendererProps {
   onShowLogin: () => void
   onShowImpressum: () => void
   onShowDatenschutz: () => void
-}
-
-// ─── Section animation wrapper ────────────────────────────────────────────────
-
-function SectionMotion({ delay, children }: { delay: number; children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay }}
-    >
-      {children}
-    </motion.div>
-  )
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -103,73 +90,57 @@ export default function SiteContentRenderer({
       </SectionErrorBoundary>
 
       <main id="main-content" className="relative">
-        {activeSectionIds.includes('news') && (
-          <SectionMotion delay={0.7}>
-            <SectionErrorBoundary sectionName="News">
-              <NewsSection
-                news={data.news}
-                
-                onUpdate={(news) => onUpdate('news', news)}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-                onNewsClick={(item) => onSetCyberpunkOverlay({ type: 'news', data: item })}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="news" activeSectionIds={activeSectionIds} delay={0.7} label="News">
+          <NewsSection
+            news={data.news}
+            
+            onUpdate={(news) => onUpdate('news', news)}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+            onNewsClick={(item) => onSetCyberpunkOverlay({ type: 'news', data: item })}
+          />
+        </SectionGuard>
 
-        {activeSectionIds.includes('biography') && (
-          <SectionMotion delay={0.8}>
-            <SectionErrorBoundary sectionName="Biography">
-              <BiographySection
-                biography={data.biography}
-                
-                onUpdate={(biography) => onUpdate('biography', biography)}
-                fontSizes={data.fontSizes}
-                onFontSizeChange={onFontSizeChange}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-                siteName={data.siteName}
-                onMemberClick={(member) => onSetCyberpunkOverlay({ type: 'member', data: member })}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="biography" activeSectionIds={activeSectionIds} delay={0.8} label="Biography">
+          <BiographySection
+            biography={data.biography}
+            
+            onUpdate={(biography) => onUpdate('biography', biography)}
+            fontSizes={data.fontSizes}
+            onFontSizeChange={onFontSizeChange}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+            siteName={data.siteName}
+            onMemberClick={(member) => onSetCyberpunkOverlay({ type: 'member', data: member })}
+          />
+        </SectionGuard>
 
-        {activeSectionIds.includes('gallery') && (
-          <SectionMotion delay={0.9}>
-            <SectionErrorBoundary sectionName="Gallery">
-              <InstagramGallery
-                galleryImages={data.galleryImages}
-                
-                onUpdate={(galleryImages) => onUpdate('galleryImages', galleryImages)}
-                driveFolderUrl={data.galleryDriveFolderUrl}
-                onDriveFolderUrlChange={(galleryDriveFolderUrl) => onUpdate('galleryDriveFolderUrl', galleryDriveFolderUrl)}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-                siteName={data.siteName}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="gallery" activeSectionIds={activeSectionIds} delay={0.9} label="Gallery">
+          <InstagramGallery
+            galleryImages={data.galleryImages}
+            
+            onUpdate={(galleryImages) => onUpdate('galleryImages', galleryImages)}
+            driveFolderUrl={data.galleryDriveFolderUrl}
+            onDriveFolderUrlChange={(galleryDriveFolderUrl) => onUpdate('galleryDriveFolderUrl', galleryDriveFolderUrl)}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+            siteName={data.siteName}
+          />
+        </SectionGuard>
 
-        {activeSectionIds.includes('gigs') && (
-          <SectionMotion delay={1.0}>
-            <SectionErrorBoundary sectionName="Gigs">
-              <GigsSection
-                gigs={data.gigs}
-                
-                onUpdate={(gigs) => onUpdate('gigs', gigs)}
-                fontSizes={data.fontSizes}
-                onFontSizeChange={onFontSizeChange}
-                dataLoaded={siteConfigLoaded}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-                onGigClick={(gig) => onSetCyberpunkOverlay({ type: 'gig', data: gig })}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="gigs" activeSectionIds={activeSectionIds} delay={1.0} label="Gigs">
+          <GigsSection
+            gigs={data.gigs}
+            
+            onUpdate={(gigs) => onUpdate('gigs', gigs)}
+            fontSizes={data.fontSizes}
+            onFontSizeChange={onFontSizeChange}
+            dataLoaded={siteConfigLoaded}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+            onGigClick={(gig) => onSetCyberpunkOverlay({ type: 'gig', data: gig })}
+          />
+        </SectionGuard>
 
         {(data.newsletterSettings?.showAfterGigs !== false && data.newsletterSettings?.enabled) && (
           <div className="py-8 px-4 max-w-2xl mx-auto">
@@ -184,86 +155,66 @@ export default function SiteContentRenderer({
           </div>
         )}
 
-        {activeSectionIds.includes('releases') && (
-          <SectionMotion delay={1.2}>
-            <SectionErrorBoundary sectionName="Releases">
-              <ReleasesSection
-                releases={data.releases}
-                
-                onUpdate={(releases) => onUpdate('releases', releases)}
-                fontSizes={data.fontSizes}
-                onFontSizeChange={onFontSizeChange}
-                dataLoaded={siteConfigLoaded}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-                siteName={data.siteName}
-                onReleaseClick={(release) => onSetCyberpunkOverlay({ type: 'release', data: release })}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="releases" activeSectionIds={activeSectionIds} delay={1.2} label="Releases">
+          <ReleasesSection
+            releases={data.releases}
+            
+            onUpdate={(releases) => onUpdate('releases', releases)}
+            fontSizes={data.fontSizes}
+            onFontSizeChange={onFontSizeChange}
+            dataLoaded={siteConfigLoaded}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+            siteName={data.siteName}
+            onReleaseClick={(release) => onSetCyberpunkOverlay({ type: 'release', data: release })}
+          />
+        </SectionGuard>
 
-        {activeSectionIds.includes('media') && (
-          <SectionMotion delay={1.3}>
-            <SectionErrorBoundary sectionName="Media">
-              <MediaSection
-                mediaFiles={data.mediaFiles}
-                
-                onUpdate={(mediaFiles) => onUpdate('mediaFiles', mediaFiles)}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="media" activeSectionIds={activeSectionIds} delay={1.3} label="Media">
+          <MediaSection
+            mediaFiles={data.mediaFiles}
+            
+            onUpdate={(mediaFiles) => onUpdate('mediaFiles', mediaFiles)}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+          />
+        </SectionGuard>
 
-        {activeSectionIds.includes('social') && (
-          <SectionMotion delay={1.4}>
-            <SectionErrorBoundary sectionName="Social">
-              <SocialSection
-                socialLinks={safeSocialLinks}
-                
-                onUpdate={(socialLinks) => onUpdate('socialLinks', socialLinks)}
-                fontSizes={data.fontSizes}
-                onFontSizeChange={onFontSizeChange}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="social" activeSectionIds={activeSectionIds} delay={1.4} label="Social">
+          <SocialSection
+            socialLinks={safeSocialLinks}
+            
+            onUpdate={(socialLinks) => onUpdate('socialLinks', socialLinks)}
+            fontSizes={data.fontSizes}
+            onFontSizeChange={onFontSizeChange}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+          />
+        </SectionGuard>
 
-        {activeSectionIds.includes('contact') && (
-          <SectionMotion delay={1.45}>
-            <SectionErrorBoundary sectionName="Contact">
-              <ContactSection
-                contactSettings={data.contactSettings}
-                
-                onUpdate={(contactSettings) => onUpdate('contactSettings', contactSettings)}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="contact" activeSectionIds={activeSectionIds} delay={1.45} label="Contact">
+          <ContactSection
+            contactSettings={data.contactSettings}
+            
+            onUpdate={(contactSettings) => onUpdate('contactSettings', contactSettings)}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+          />
+        </SectionGuard>
 
-        {activeSectionIds.includes('partners') && (
-          <SectionMotion delay={1.5}>
-            <SectionErrorBoundary sectionName="Partners & Friends">
-              <PartnersAndFriendsSection
-                friends={data.biography?.friends}
-                
-                onUpdate={(friends) => onUpdate('biography', {
-                  ...(data.biography || { story: '', members: [], achievements: [] }),
-                  friends,
-                })}
-                sectionLabels={data.sectionLabels}
-                onLabelChange={onLabelChange}
-                onFriendClick={(friend) => onSetCyberpunkOverlay({ type: 'friend', data: friend })}
-              />
-            </SectionErrorBoundary>
-          </SectionMotion>
-        )}
+        <SectionGuard sectionId="partners" activeSectionIds={activeSectionIds} delay={1.5} label="Partners & Friends">
+          <PartnersAndFriendsSection
+            friends={data.biography?.friends}
+            
+            onUpdate={(friends) => onUpdate('biography', {
+              ...(data.biography || { story: '', members: [], achievements: [] }),
+              friends,
+            })}
+            sectionLabels={data.sectionLabels}
+            onLabelChange={onLabelChange}
+            onFriendClick={(friend) => onSetCyberpunkOverlay({ type: 'friend', data: friend })}
+          />
+        </SectionGuard>
 
         {/* Active widget sections */}
         {getActiveWidgets(data.widgetPlugins ?? []).map((widget, i) => (
