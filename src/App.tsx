@@ -31,12 +31,12 @@ import LicenseStatusBadge from '@/components/LicenseStatusBadge'
 import { validateActivationKey } from '@/lib/activation'
 import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
-import { applyThemeToDOM } from '@/lib/theme-application'
 import { useThemeSlots } from '@/lib/theme-registry'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { useLocale } from '@/contexts/LocaleContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────
 // These are only downloaded when an admin or specific user action requires them,
@@ -243,7 +243,7 @@ function App() {
   const vis = useMemo(() => data.sectionVisibility || {}, [data.sectionVisibility])
   // ── DOM side effects ─────────────────────────────────────────────────────────
   useEffect(() => { applyConfigOverrides(data.configOverrides) }, [data.configOverrides])
-  useEffect(() => { applyThemeToDOM(data.themeSettings) }, [data.themeSettings])
+  // Theme DOM application is handled by ThemeProvider (see JSX below)
   useEffect(() => {
     const a = data.animations
     const root = document.documentElement
@@ -272,7 +272,10 @@ function App() {
   if (!activationResult?.valid) return <ActivationLockScreen pending={activationResult === null} />
 
   return (
-    <>
+    <ThemeProvider
+      themeSettings={data.themeSettings}
+      onChangeTheme={(themeSettings: ThemeSettings) => updateConfig({ themeSettings })}
+    >
       {(siteConfigLoaded && !data.setupComplete && !isDevTestMode) && (
         <Suspense fallback={<CyberSpinner />}>
           <SetupWizard onComplete={(r) => setConfig({ ...config, ...r, setupComplete: true })} onSetAdminPassword={handleSetupAdminPassword} initialConfig={config} />
@@ -450,7 +453,7 @@ function App() {
         }}
         sectionLabels={data.sectionLabels}
       />
-    </>
+    </ThemeProvider>
   )
 }
 
