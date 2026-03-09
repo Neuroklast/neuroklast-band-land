@@ -70,7 +70,5 @@
   "datenschutz.instructions": "Edit the privacy policy. Paragraphs are separated by blank lines. Lines starting with a number + period are rendered as headings. Lines starting with \"- \" are rendered as bullet points.",
   "datenschutz.cancel": "Cancel",
   "datenschutz.save": "Save",
-  "datenschutz.editTooltip": "Edit privacy policy",
-  "common.back": "BACK",
-  "common.close": "CLOSE"
+  "datenschutz.editTooltip": "Edit privacy policy"
 }

@@ -123,5 +123,7 @@
   "edit.subscribers": "ABONNENTEN",
   "edit.password": "PASSWORT",
   "edit.logout": "ABMELDEN",
-  "loader.bootSequence": "NK-SYS [v2.0] // STARTSEQUENZ"
+  "loader.bootSequence": "NK-SYS [v2.0] // STARTSEQUENZ",
+  "common.back": "ZURÜCK",
+  "common.close": "SCHLIEẞEN"
 }
