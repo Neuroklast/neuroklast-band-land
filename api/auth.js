@@ -31,9 +31,8 @@ export async function hashPassword(password) {
  * Supports both scrypt (new) and legacy SHA-256 formats.
  */
 async function verifyPassword(password, stored) {
-  // TODO: Remove legacy SHA-256 path after all passwords have been migrated to scrypt.
   if (!stored.startsWith('scrypt:')) {
-    // Legacy SHA-256 format
+    // Legacy SHA-256 format (will be migrated automatically on next login)
     const hash = createHash('sha256').update(password).digest('hex')
     const a = Buffer.from(hash, 'utf8')
     const b = Buffer.from(stored, 'utf8')
