@@ -1,454 +1,32 @@
-/**
- * Bundled design presets for the site template.
- *
- * Each preset defines a complete visual theme: color palette, font pairings,
- * border-radius, and animation preferences.  When a preset is applied its
- * values are written to `ThemeSettings`, which in turn populates CSS custom
- * properties.  Individual values can always be overridden afterwards.
- *
- * Related issue: #157
- */
-
 import type { DesignPreset, ThemeSettings } from './types'
-
-// ─── Bundled presets ─────────────────────────────────────────────────────────
-
-export const cyberpunkPreset: DesignPreset = {
-  id: 'cyberpunk',
-  name: 'Cyberpunk',
-  description: 'Neon-lit Night City aesthetic — holographic UI, glowing borders, perspective grids',
-  colors: {
-    primary: 'oklch(0.50 0.22 25)',
-    accent: 'oklch(0.60 0.24 25)',
-    background: 'oklch(0 0 0)',
-    card: 'oklch(0.05 0 0)',
-    foreground: 'oklch(1 0 0)',
-    mutedForeground: 'oklch(0.55 0 0)',
-    border: 'oklch(0.15 0 0)',
-    secondary: 'oklch(0.10 0 0)',
-  },
-  fonts: {
-    heading: "'JetBrains Mono', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-  borderRadius: 0.125,
-  animationsEnabled: true,
-}
-
-export const minimalPreset: DesignPreset = {
-  id: 'minimal',
-  name: 'Minimal',
-  description: 'Clean, light, content-first design with subtle accents',
-  colors: {
-    primary: 'oklch(0.30 0 0)',
-    accent: 'oklch(0.45 0 0)',
-    background: 'oklch(0.99 0 0)',
-    card: 'oklch(0.96 0 0)',
-    foreground: 'oklch(0.15 0 0)',
-    mutedForeground: 'oklch(0.50 0 0)',
-    border: 'oklch(0.88 0 0)',
-    secondary: 'oklch(0.93 0 0)',
-  },
-  fonts: {
-    heading: "'Inter', sans-serif",
-    body: "'Inter', sans-serif",
-    mono: "'Fira Code', monospace",
-  },
-  borderRadius: 0.5,
-  animationsEnabled: false,
-}
-
-export const elegantPreset: DesignPreset = {
-  id: 'elegant',
-  name: 'Elegant',
-  description: 'Refined serif typography with warm gold accents on dark canvas',
-  colors: {
-    primary: 'oklch(0.72 0.12 85)',
-    accent: 'oklch(0.80 0.14 90)',
-    background: 'oklch(0.07 0.01 60)',
-    card: 'oklch(0.11 0.01 60)',
-    foreground: 'oklch(0.95 0.02 80)',
-    mutedForeground: 'oklch(0.60 0.04 80)',
-    border: 'oklch(0.20 0.03 70)',
-    secondary: 'oklch(0.14 0.02 65)',
-  },
-  fonts: {
-    heading: "'Playfair Display', serif",
-    body: "'Lora', serif",
-    mono: "'Source Code Pro', monospace",
-  },
-  borderRadius: 0.25,
-  animationsEnabled: false,
-}
-
-export const neonPreset: DesignPreset = {
-  id: 'neon',
-  name: 'Neon',
-  description: 'High-contrast electric blue and cyan on deep black – synthwave',
-  colors: {
-    primary: 'oklch(0.65 0.25 220)',
-    accent: 'oklch(0.75 0.22 190)',
-    background: 'oklch(0.02 0.01 260)',
-    card: 'oklch(0.07 0.02 260)',
-    foreground: 'oklch(0.97 0.01 200)',
-    mutedForeground: 'oklch(0.55 0.06 220)',
-    border: 'oklch(0.18 0.05 230)',
-    secondary: 'oklch(0.10 0.03 250)',
-  },
-  fonts: {
-    heading: "'Orbitron', sans-serif",
-    body: "'Rajdhani', sans-serif",
-    mono: "'Share Tech Mono', monospace",
-  },
-  borderRadius: 0,
-  animationsEnabled: true,
-}
-
-export const retroPreset: DesignPreset = {
-  id: 'retro',
-  name: 'Retro',
-  description: 'Warm amber phosphor-glow on near-black – vintage terminal look',
-  colors: {
-    primary: 'oklch(0.70 0.15 70)',
-    accent: 'oklch(0.80 0.18 75)',
-    background: 'oklch(0.05 0.02 60)',
-    card: 'oklch(0.09 0.02 60)',
-    foreground: 'oklch(0.88 0.10 80)',
-    mutedForeground: 'oklch(0.55 0.07 70)',
-    border: 'oklch(0.18 0.05 65)',
-    secondary: 'oklch(0.12 0.03 62)',
-  },
-  fonts: {
-    heading: "'VT323', monospace",
-    body: "'Share Tech Mono', monospace",
-    mono: "'Share Tech Mono', monospace",
-  },
-  borderRadius: 0,
-  animationsEnabled: true,
-}
-
-export const zardonicPreset: DesignPreset = {
-  id: 'zardonic',
-  name: 'Zardonic',
-  description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
-  colors: {
-    primary: 'oklch(0.50 0.22 25)',
-    accent: 'oklch(0.60 0.24 25)',
-    background: 'oklch(0 0 0)',
-    card: 'oklch(0.05 0 0)',
-    foreground: 'oklch(1 0 0)',
-    mutedForeground: 'oklch(0.55 0 0)',
-    border: 'oklch(0.15 0 0)',
-    secondary: 'oklch(0.10 0 0)',
-  },
-  fonts: {
-    heading: "'JetBrains Mono', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-  borderRadius: 0.125,
-  animationsEnabled: true,
-  overlayEffects: {
-    scanlines: { enabled: true, intensity: 0.4 },
-    crt: { enabled: true, intensity: 0.6 },
-    noise: { enabled: true, intensity: 0.3 },
-    vignette: { enabled: true, intensity: 0.3 },
-    chromatic: { enabled: true, intensity: 0.5 },
-    dotMatrix: { enabled: false, intensity: 0 },
-  },
-  animationSettings: {
-    glitchEnabled: true,
-    scanlineEnabled: true,
-    chromaticEnabled: true,
-    crtEnabled: true,
-    noiseEnabled: true,
-    circuitBackgroundEnabled: false,
-    crtOverlayOpacity: 0.6,
-    crtVignetteOpacity: 0.3,
-    overlayTransitionEnabled: false,
-  },
-}
 
 export const neuroklastClassicPreset: DesignPreset = {
   id: 'neuroklast-classic',
   name: 'Neuroklast Classic',
   description: 'The original Neuroklast look – dark cyber aesthetic with crimson accents and code-rain loading',
   colors: {
-    primary: 'oklch(0.50 0.22 25)',
-    accent: 'oklch(0.60 0.24 25)',
-    background: 'oklch(0 0 0)',
-    card: 'oklch(0.05 0 0)',
-    foreground: 'oklch(1 0 0)',
-    mutedForeground: 'oklch(0.55 0 0)',
-    border: 'oklch(0.15 0 0)',
-    secondary: 'oklch(0.10 0 0)',
-  },
-  fonts: {
-    heading: "'JetBrains Mono', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-  borderRadius: 0.125,
-  animationsEnabled: true,
-  overlayEffects: {
-    scanlines: { enabled: true, intensity: 0.3 },
-    crt: { enabled: true, intensity: 0.4 },
-    noise: { enabled: true, intensity: 0.15 },
-    vignette: { enabled: true, intensity: 0.5 },
-    chromatic: { enabled: false, intensity: 0 },
-    dotMatrix: { enabled: false, intensity: 0 },
-  },
-  animationSettings: {
-    glitchEnabled: true,
-    scanlineEnabled: true,
-    chromaticEnabled: false,
-    crtEnabled: true,
-    noiseEnabled: true,
-    circuitBackgroundEnabled: true,
-    crtOverlayOpacity: 0.4,
-    crtVignetteOpacity: 0.5,
-    overlayTransitionEnabled: false,
-  },
-}
-
-export const artDecoCyberpunkPreset: DesignPreset = {
-  id: 'art-deco-cyberpunk',
-  name: 'Art Deco Cyberpunk',
-  description: '1920s Art Deco meets future tech – geometric gold leaf patterns on black, angular symmetry',
-  colors: {
-    primary: 'oklch(0.75 0.12 85)',
-    accent: 'oklch(0.85 0.14 90)',
-    background: 'oklch(0.02 0 0)',
-    card: 'oklch(0.06 0.01 60)',
-    foreground: 'oklch(0.95 0.03 80)',
-    mutedForeground: 'oklch(0.60 0.05 80)',
-    border: 'oklch(0.25 0.06 75)',
-    secondary: 'oklch(0.10 0.01 65)',
-  },
-  fonts: {
-    heading: "'Orbitron', sans-serif",
-    body: "'Raleway', sans-serif",
-    mono: "'Courier Prime', monospace",
-  },
-  borderRadius: 0,
-  animationsEnabled: true,
-  overlayEffects: {
-    scanlines: { enabled: false, intensity: 0 },
-    crt: { enabled: false, intensity: 0 },
-    noise: { enabled: true, intensity: 0.05 },
-    vignette: { enabled: true, intensity: 0.5 },
-    chromatic: { enabled: false, intensity: 0 },
-    dotMatrix: { enabled: true, intensity: 0.15 },
-  },
-  animationSettings: {
-    glitchEnabled: false,
-    scanlineEnabled: false,
-    chromaticEnabled: false,
-    crtEnabled: false,
-    noiseEnabled: false,
-    circuitBackgroundEnabled: false,
-    crtOverlayOpacity: 0,
-    crtVignetteOpacity: 0,
-    overlayTransitionEnabled: true,
-  },
-}
-
-export const vhsRetroPreset: DesignPreset = {
-  id: 'vhs-retro',
-  name: 'VHS Retro',
-  description: 'Analog VHS tape aesthetic – tracking lines, color bleeding, tape distortion',
-  colors: {
-    primary: 'oklch(0.72 0.10 75)',
-    accent: 'oklch(0.80 0.08 80)',
-    background: 'oklch(0.06 0.02 60)',
-    card: 'oklch(0.10 0.02 60)',
-    foreground: 'oklch(0.90 0.04 80)',
-    mutedForeground: 'oklch(0.58 0.05 70)',
-    border: 'oklch(0.22 0.03 65)',
-    secondary: 'oklch(0.14 0.02 62)',
-  },
-  fonts: {
-    heading: "'Press Start 2P', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'VT323', monospace",
-  },
-  borderRadius: 0,
-  animationsEnabled: true,
-  overlayEffects: {
-    scanlines: { enabled: true, intensity: 0.5 },
-    crt: { enabled: true, intensity: 0.5 },
-    noise: { enabled: true, intensity: 0.4 },
-    vignette: { enabled: false, intensity: 0 },
-    chromatic: { enabled: true, intensity: 0.4 },
-    dotMatrix: { enabled: false, intensity: 0 },
-  },
-  animationSettings: {
-    glitchEnabled: false,
-    scanlineEnabled: true,
-    chromaticEnabled: true,
-    crtEnabled: true,
-    noiseEnabled: true,
-    circuitBackgroundEnabled: false,
-    crtOverlayOpacity: 0.5,
-    crtVignetteOpacity: 0,
-    overlayTransitionEnabled: false,
-  },
-}
-
-export const steampunkPreset: DesignPreset = {
-  id: 'steampunk',
-  name: 'Steampunk',
-  description: 'Victorian industrial meets brass machinery – copper tones, mechanical aesthetics, ornate details',
-  colors: {
-    primary: 'oklch(0.62 0.12 50)',
-    accent: 'oklch(0.72 0.14 55)',
-    background: 'oklch(0.10 0.03 40)',
-    card: 'oklch(0.15 0.03 40)',
-    foreground: 'oklch(0.92 0.04 60)',
-    mutedForeground: 'oklch(0.58 0.06 50)',
-    border: 'oklch(0.25 0.05 48)',
-    secondary: 'oklch(0.18 0.03 42)',
-  },
-  fonts: {
-    heading: "'Cinzel', serif",
-    body: "'Lora', serif",
-    mono: "'Courier Prime', monospace",
-  },
-  borderRadius: 0.25,
-  animationsEnabled: true,
-  overlayEffects: {
-    scanlines: { enabled: false, intensity: 0 },
-    crt: { enabled: false, intensity: 0 },
-    noise: { enabled: true, intensity: 0.2 },
-    vignette: { enabled: true, intensity: 0.6 },
-    chromatic: { enabled: false, intensity: 0 },
-    dotMatrix: { enabled: true, intensity: 0.1 },
-  },
-  animationSettings: {
-    glitchEnabled: false,
-    scanlineEnabled: false,
-    chromaticEnabled: false,
-    crtEnabled: false,
-    noiseEnabled: false,
-    circuitBackgroundEnabled: false,
-    crtOverlayOpacity: 0,
-    crtVignetteOpacity: 0,
-    overlayTransitionEnabled: false,
-  },
-}
-
-export const analogDarkMetalPreset: DesignPreset = {
-  id: 'analog-dark-metal',
-  name: 'Analog Dark Metal',
-  description: 'Heavy metallic aesthetic meets analog warmth – brushed metal, cool neon accents, oscilloscope effects',
-  colors: {
-    primary: 'oklch(0.78 0.10 230)',
-    accent: 'oklch(0.85 0.08 225)',
-    background: 'oklch(0.06 0.01 240)',
-    card: 'oklch(0.10 0.01 238)',
-    foreground: 'oklch(0.92 0.02 220)',
-    mutedForeground: 'oklch(0.55 0.04 230)',
-    border: 'oklch(0.20 0.04 235)',
-    secondary: 'oklch(0.12 0.02 238)',
+    primary: 'oklch(0.60 0.25 25)',
+    accent: 'oklch(0.65 0.26 25)',
+    background: 'oklch(0.04 0.01 0)',
+    card: 'oklch(0.08 0.02 0)',
+    foreground: 'oklch(0.95 0.02 0)',
+    mutedForeground: 'oklch(0.55 0.05 0)',
+    border: 'oklch(0.20 0.05 0)',
+    secondary: 'oklch(0.12 0.02 0)',
   },
   fonts: {
     heading: "'Rajdhani', sans-serif",
-    body: "'Bitter', serif",
-    mono: "'IBM Plex Mono', monospace",
+    body: "'Rajdhani', sans-serif",
+    mono: "'Fira Code', monospace",
   },
   borderRadius: 0,
   animationsEnabled: true,
   overlayEffects: {
-    scanlines: { enabled: true, intensity: 0.15 },
-    crt: { enabled: false, intensity: 0 },
-    noise: { enabled: true, intensity: 0.6 },
-    vignette: { enabled: true, intensity: 0.7 },
-    chromatic: { enabled: false, intensity: 0 },
-    dotMatrix: { enabled: false, intensity: 0 },
-  },
-  animationSettings: {
-    glitchEnabled: false,
-    scanlineEnabled: true,
-    chromaticEnabled: false,
-    crtEnabled: false,
-    noiseEnabled: true,
-    circuitBackgroundEnabled: false,
-    crtOverlayOpacity: 0,
-    crtVignetteOpacity: 0,
-    overlayTransitionEnabled: false,
-  },
-}
-
-export const glitchNoirPreset: DesignPreset = {
-  id: 'glitch-noir',
-  name: 'Glitch Noir',
-  description: 'High-contrast monochrome with glitch distortion – dark neo-noir aesthetic',
-  colors: {
-    primary: 'oklch(0.95 0 0)',
-    accent: 'oklch(0.70 0 0)',
-    background: 'oklch(0.08 0 0)',
-    card: 'oklch(0.12 0 0)',
-    foreground: 'oklch(0.95 0 0)',
-    mutedForeground: 'oklch(0.60 0 0)',
-    border: 'oklch(0.25 0 0)',
-    secondary: 'oklch(0.15 0 0)',
-  },
-  fonts: {
-    heading: "'JetBrains Mono', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-  borderRadius: 0,
-  animationsEnabled: true,
-  overlayEffects: {
-    scanlines: { enabled: true, intensity: 0.35 },
-    crt: { enabled: false, intensity: 0 },
+    scanlines: { enabled: true, intensity: 0.2 },
+    crt: { enabled: true, intensity: 0.3 },
     noise: { enabled: true, intensity: 0.5 },
     vignette: { enabled: true, intensity: 0.6 },
-    chromatic: { enabled: true, intensity: 0.3 },
-    dotMatrix: { enabled: false, intensity: 0 },
-  },
-  animationSettings: {
-    glitchEnabled: true,
-    scanlineEnabled: true,
-    chromaticEnabled: true,
-    crtEnabled: false,
-    noiseEnabled: true,
-    circuitBackgroundEnabled: false,
-    crtOverlayOpacity: 0,
-    crtVignetteOpacity: 0,
-    overlayTransitionEnabled: false,
-  },
-}
-
-export const signalStaticPreset: DesignPreset = {
-  id: 'signal-static',
-  name: 'Signal Static',
-  description: 'Broadcast interference aesthetic – analog noise, signal artifacts, and transmission distortion',
-  colors: {
-    primary: 'oklch(0.95 0 0)',
-    accent: 'oklch(0.70 0 0)',
-    background: 'oklch(0.08 0 0)',
-    card: 'oklch(0.12 0 0)',
-    foreground: 'oklch(0.95 0 0)',
-    mutedForeground: 'oklch(0.60 0 0)',
-    border: 'oklch(0.25 0 0)',
-    secondary: 'oklch(0.15 0 0)',
-  },
-  fonts: {
-    heading: "'JetBrains Mono', monospace",
-    body: "'Space Grotesk', sans-serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-  borderRadius: 0,
-  animationsEnabled: true,
-  overlayEffects: {
-    scanlines: { enabled: true, intensity: 0.4 },
-    crt: { enabled: true, intensity: 0.3 },
-    noise: { enabled: true, intensity: 0.6 },
-    vignette: { enabled: true, intensity: 0.5 },
-    chromatic: { enabled: true, intensity: 0.25 },
+    chromatic: { enabled: true, intensity: 0.4 },
     dotMatrix: { enabled: false, intensity: 0 },
   },
   animationSettings: {
@@ -459,59 +37,25 @@ export const signalStaticPreset: DesignPreset = {
     noiseEnabled: true,
     circuitBackgroundEnabled: false,
     crtOverlayOpacity: 0.3,
-    crtVignetteOpacity: 0,
+    crtVignetteOpacity: 0.6,
     overlayTransitionEnabled: false,
   },
 }
 
-/** All bundled presets indexed by their ID
- * @deprecated The `DESIGN_PRESETS` map is kept for backward compatibility with the store
- * system (`buildStoreItems`, `mixThemeSettings`) and existing configs. New code should use
- * the `defaultColors` / `defaultFonts` fields on each `ThemePackage` instead, accessible
- * via `getTheme(id)` from `theme-registry`.
- */
+export const builtInPresets: DesignPreset[] = [
+  neuroklastClassicPreset,
+]
+
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
-  cyberpunk: cyberpunkPreset,
-  minimal: minimalPreset,
-  elegant: elegantPreset,
-  neon: neonPreset,
-  retro: retroPreset,
-  'zardonic': zardonicPreset,
   'neuroklast-classic': neuroklastClassicPreset,
-  'art-deco-cyberpunk': artDecoCyberpunkPreset,
-  'vhs-retro': vhsRetroPreset,
-  steampunk: steampunkPreset,
-  'analog-dark-metal': analogDarkMetalPreset,
-  'glitch-noir': glitchNoirPreset,
-  'signal-static': signalStaticPreset,
 }
 
-/**
- * Ordered list of all bundled preset IDs.
- * @deprecated Use `THEME_CATALOG` from `theme-registry` instead.
- */
 export const PRESET_IDS = Object.keys(DESIGN_PRESETS) as (keyof typeof DESIGN_PRESETS)[]
 
-// ─── Utilities ───────────────────────────────────────────────────────────────
-
-/**
- * Look up a preset by ID.  Returns `undefined` if the ID is unknown.
- */
 export function getPreset(id: string): DesignPreset | undefined {
   return DESIGN_PRESETS[id]
 }
 
-/**
- * Convert a `DesignPreset` into a `ThemeSettings` patch that can be merged
- * into the active `SiteConfig.themeSettings`.
- *
- * Only colors, fonts, borderRadius, overlayEffects, and animationSettings are
- * mapped. Structural layout properties (`heroStyle`, `loadingScreenType`) are
- * intentionally excluded — those belong to the Theme Engine (ThemePackage) and
- * must not be overwritten when a design preset is applied.
- *
- * The caller can then override individual values after applying the preset.
- */
 export function presetToThemeSettings(preset: DesignPreset): ThemeSettings {
   return {
     primary: preset.colors.primary,

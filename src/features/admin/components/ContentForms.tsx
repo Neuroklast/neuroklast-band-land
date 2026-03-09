@@ -15,7 +15,7 @@ interface ContentFormsProps {
 export function ContentForms({ data, onUpdate }: ContentFormsProps) {
   const [activeTab, setActiveTab] = useState<'info' | 'news' | 'gigs' | 'releases' | 'contact'>('info')
 
-  const handleBandInfoChange = (field: string, value: string) => {
+  const handleBandInfoChange = (field: string, value: unknown) => {
     onUpdate(field as keyof SiteConfig, value)
   }
 
@@ -43,7 +43,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
         date: event.datetime,
         venue: event.venue?.name || 'Unknown Venue',
         location: `${event.venue?.city || ''}, ${event.venue?.country || ''}`.replace(/^, | , $/g, ''),
-        ticketUrl: event.offers?.find((o: any) => o.type === 'Tickets')?.url || event.url,
+        ticketUrl: event.offers?.find((o: { type?: string; url?: string }) => o.type === 'Tickets')?.url || event.url,
         status: 'confirmed'
       }))
 
@@ -191,7 +191,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                   <Label>Genres (comma separated)</Label>
                   <Input
                     value={(data.genres || []).join(', ')}
-                    onChange={e => handleBandInfoChange('genres', e.target.value.split(',').map(s => s.trim()) as any)}
+                    onChange={e => handleBandInfoChange('genres', e.target.value.split(',').map(s => s.trim()))}
                   />
                 </div>
                 <div className="space-y-2">

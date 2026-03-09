@@ -35,6 +35,7 @@ interface AdminButtonProps {
   onLogout?: () => Promise<void>
   onResetSetup?: () => void
   siteConfig?: SiteConfig
+  onUpdateSiteConfig?: (key: keyof SiteConfig, value: unknown) => void
   onImportData?: (data: SiteConfig) => void
   onOpenDialog: (dialog: AdminDialog) => void
   isPrimary?: boolean
@@ -58,6 +59,7 @@ export default function AdminButton({
   onLogout,
   onResetSetup,
   siteConfig,
+  onUpdateSiteConfig,
   onImportData,
   onOpenDialog,
   isPrimary = false,
@@ -268,6 +270,8 @@ export default function AdminButton({
           onLogout={onLogout}
           onResetSetup={onResetSetup}
           isPrimary={isPrimary}
+          siteConfig={siteConfig}
+          onUpdateSiteConfig={onUpdateSiteConfig}
         />
       </Suspense>
 

@@ -27,7 +27,6 @@ const StoreDialog = lazy(() => import('@/components/StoreDialog'))
 const OAuthConnectionsDialog = lazy(() => import('@/components/OAuthConnectionsDialog'))
 const ConfigEditorDialog = lazy(() => import('@/components/ConfigEditorDialog'))
 const ThemeCustomizerDialog = lazy(() => import('@/components/ThemeCustomizerDialog'))
-const ContentView = lazy(() => import('@/features/admin/components/ContentView'))
 const TerminalSettingsDialog = lazy(() => import('@/components/TerminalSettingsDialog'))
 const SoundSettingsDialog = lazy(() => import('@/components/SoundSettingsDialog'))
 const ContactInboxDialog = lazy(() => import('@/components/ContactInboxDialog'))
@@ -275,17 +274,6 @@ export default function AdminDialogManager({
           sections={sections}
           onSaveSections={onSaveSections}
         />
-      </LazyBoundary>
-
-      <LazyBoundary name="ContentView">
-        {siteConfig && onUpdateSiteConfig && (
-          <ContentView
-            open={activeDialog === 'content'}
-            onClose={() => setActiveDialog(null)}
-            siteConfig={siteConfig}
-            onUpdate={onUpdateSiteConfig}
-          />
-        )}
       </LazyBoundary>
 
       <LazyBoundary name="TerminalSettingsDialog">

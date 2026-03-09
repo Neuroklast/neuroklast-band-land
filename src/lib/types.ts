@@ -192,6 +192,8 @@ export interface ThemeSettings {
   heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
   /** Overlay open/close animation variant (random if omitted) */
   overlayAnimationStyle?: 'circuitBreak' | 'systemBoot' | 'glitchScan' | 'dataStream' | 'neuralJackIn' | 'hologramMaterialize' | 'matrixDecode' | 'ringLink' | 'none'
+  /** Global animations toggle */
+  animationsEnabled?: boolean
   // Extended optional color overrides (mirrors DesignPreset extended colors)
   /** Primary foreground color (default: derived from foreground) */
   primaryForeground?: string
@@ -522,7 +524,6 @@ export type AdminDialog =
   | 'store'
   | 'keys'
   | 'admin-hub'
-  | 'content'
   | null
 
 // ─── THEME PLUGIN ARCHITECTURE ───────────────────────────────────────────────

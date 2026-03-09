@@ -7,20 +7,6 @@
 
 import type { ThemePackage, ThemeSlots } from './types'
 import {
-  builtInThemes,
-  cyberpunkTheme,
-  minimalTheme,
-  elegantTheme,
-  neonTheme,
-  retroTheme,
-  zardonicTheme,
-  neuroklastClassicTheme,
-  artDecoCyberpunkTheme,
-  vhsRetroTheme,
-  steampunkTheme,
-  analogDarkMetalTheme,
-  glitchNoirTheme,
-  signalStaticTheme,
   DefaultHero,
   DefaultNavigation,
   DefaultLoadingScreen,
@@ -36,45 +22,40 @@ import {
   DefaultScrollReveal,
   DefaultHoverEffect,
   DefaultPageLayout,
-} from '@/themes'
-
-// ─── Registry ────────────────────────────────────────────────────────────────
+} from '@/themes/default-slots'
+import { builtInThemes, neuroklastClassicTheme } from '@/themes'
+import type { ThemeDefinition, ThemeLicenseStatus } from './types'
+import type { LicenseTier } from './activation'
+import {
+  presetToThemeSettings,
+  neuroklastClassicPreset,
+} from './design-presets'
+import { hasFeature } from './license'
 
 const _registry: Map<string, ThemePackage> = new Map()
 
-/** Register a theme package in the registry */
 export function registerTheme(theme: ThemePackage): void {
   _registry.set(theme.id, theme)
 }
 
-/** Get a theme by ID, or undefined if not found */
 export function getTheme(id: string): ThemePackage | undefined {
   return _registry.get(id)
 }
 
-/** Get all registered themes */
 export function getAllThemes(): ThemePackage[] {
   return Array.from(_registry.values())
 }
 
-/** Get the active theme based on a theme ID (falls back to minimal) */
 export function getActiveTheme(themeId?: string): ThemePackage {
   if (themeId) {
     const found = _registry.get(themeId)
     if (found) return found
   }
-  const fallback = _registry.get('minimal') ?? Array.from(_registry.values())[0]
+  const fallback = _registry.get('neuroklast-classic') ?? Array.from(_registry.values())[0]
   if (!fallback) throw new Error('Theme registry is empty — no themes have been registered')
   return fallback
 }
 
-// ─── useThemeSlots hook ───────────────────────────────────────────────────────
-
-/**
- * Resolves a theme's slots with fallback stubs for any missing slot.
- * Returns a complete ThemeSlots object where every slot is guaranteed to
- * be a valid React component.
- */
 export function useThemeSlots(themeId?: string): ThemeSlots {
   const theme = getActiveTheme(themeId)
   return resolveSlots(theme)
@@ -100,130 +81,13 @@ function resolveSlots(theme: ThemePackage): ThemeSlots {
   }
 }
 
-// ─── Auto-register all built-in themes ────────────────────────────────────────
-
 for (const theme of builtInThemes) {
   registerTheme(theme)
 }
 
-// ─── Re-export theme objects for backward compatibility ───────────────────────
+export { neuroklastClassicTheme }
 
-export { cyberpunkTheme, minimalTheme, elegantTheme, neonTheme, retroTheme, zardonicTheme, neuroklastClassicTheme, artDecoCyberpunkTheme, vhsRetroTheme, steampunkTheme, analogDarkMetalTheme, glitchNoirTheme, signalStaticTheme }
-
-// ─── ThemeDefinition-based registry (license-aware) ──────────────────────────
-
-import type { ThemeDefinition, ThemeLicenseStatus } from './types'
-import type { LicenseTier } from './activation'
-import {
-  presetToThemeSettings,
-  minimalPreset,
-  elegantPreset,
-  neonPreset,
-  retroPreset,
-  cyberpunkPreset,
-  artDecoCyberpunkPreset,
-  vhsRetroPreset,
-  steampunkPreset,
-  analogDarkMetalPreset,
-  neuroklastClassicPreset,
-  zardonicPreset,
-  glitchNoirPreset,
-  signalStaticPreset,
-} from './design-presets'
-import { hasFeature } from './license'
-
-/** Catalog of all built-in themes with license metadata */
 export const THEME_CATALOG: ThemeDefinition[] = [
-  {
-    id: 'minimal',
-    name: 'Minimal',
-    description: 'Clean, light, content-first design with subtle accents',
-    licenseStatus: 'free',
-    theme: presetToThemeSettings(minimalPreset),
-    author: 'Neuroklast',
-    tags: ['light', 'clean', 'minimal'],
-    themeType: 'preset',
-  },
-  {
-    id: 'elegant',
-    name: 'Elegant',
-    description: 'Refined serif typography with warm gold accents on dark canvas',
-    licenseStatus: 'free',
-    theme: presetToThemeSettings(elegantPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'gold', 'serif'],
-    themeType: 'preset',
-  },
-  {
-    id: 'neon',
-    name: 'Neon',
-    description: 'High-contrast electric blue and cyan on deep black – synthwave',
-    licenseStatus: 'free',
-    theme: presetToThemeSettings(neonPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'neon', 'synthwave'],
-    themeType: 'preset',
-  },
-  {
-    id: 'retro',
-    name: 'Retro',
-    description: 'Warm amber phosphor-glow on near-black – vintage terminal look',
-    licenseStatus: 'free',
-    theme: presetToThemeSettings(retroPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'amber', 'retro', 'terminal'],
-    themeType: 'preset',
-  },
-  {
-    id: 'cyberpunk',
-    name: 'Cyberpunk',
-    description: 'Neon-lit Night City aesthetic — holographic UI, glowing borders, perspective grids',
-    licenseStatus: 'preview',
-    theme: presetToThemeSettings(cyberpunkPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'neon', 'cyberpunk'],
-    themeType: 'full',
-  },
-  {
-    id: 'art-deco-cyberpunk',
-    name: 'Art Deco Cyberpunk',
-    description: '1920s Art Deco meets future tech – geometric gold leaf patterns on black, angular symmetry',
-    licenseStatus: 'preview',
-    theme: presetToThemeSettings(artDecoCyberpunkPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'gold', 'art-deco', 'premium'],
-    themeType: 'full',
-  },
-  {
-    id: 'vhs-retro',
-    name: 'VHS Retro',
-    description: 'Analog VHS tape aesthetic – tracking lines, color bleeding, tape distortion',
-    licenseStatus: 'preview',
-    theme: presetToThemeSettings(vhsRetroPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'retro', 'analog', 'premium'],
-    themeType: 'full',
-  },
-  {
-    id: 'steampunk',
-    name: 'Steampunk',
-    description: 'Victorian industrial meets brass machinery – copper tones, mechanical aesthetics, ornate details',
-    licenseStatus: 'preview',
-    theme: presetToThemeSettings(steampunkPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'copper', 'victorian', 'premium'],
-    themeType: 'full',
-  },
-  {
-    id: 'analog-dark-metal',
-    name: 'Analog Dark Metal',
-    description: 'Heavy metallic aesthetic meets analog warmth – brushed metal, cool neon accents, oscilloscope effects',
-    licenseStatus: 'preview',
-    theme: presetToThemeSettings(analogDarkMetalPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'metal', 'analog', 'premium'],
-    themeType: 'full',
-  },
   {
     id: 'neuroklast-classic',
     name: 'Neuroklast Classic',
@@ -231,47 +95,11 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     licenseStatus: 'free',
     theme: {
       ...presetToThemeSettings(neuroklastClassicPreset),
-      // Structural layout defaults for this theme engine (not part of the color preset)
       heroStyle: 'chromatic-hover',
       loadingScreenType: 'code-rain',
     },
     author: 'Neuroklast',
     tags: ['dark', 'cyber', 'industrial'],
-    themeType: 'full',
-  },
-  {
-    id: 'zardonic',
-    name: 'Zardonic',
-    description: 'Heavy industrial aesthetic – CRT distortion, glitch effects, and aggressive red/orange tones',
-    licenseStatus: 'locked',
-    theme: {
-      ...presetToThemeSettings(zardonicPreset),
-      // Structural layout defaults for this theme engine (not part of the color preset)
-      heroStyle: 'glitch-parallax',
-      loadingScreenType: '3d-model',
-    },
-    author: 'Zardonic / Neuroklast',
-    tags: ['dark', 'industrial', 'glitch', 'premium'],
-    themeType: 'full',
-  },
-  {
-    id: 'glitch-noir',
-    name: 'Glitch Noir',
-    description: 'High-contrast monochrome with glitch distortion – dark neo-noir aesthetic',
-    licenseStatus: 'preview',
-    theme: presetToThemeSettings(glitchNoirPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'monochrome', 'glitch', 'premium'],
-    themeType: 'full',
-  },
-  {
-    id: 'signal-static',
-    name: 'Signal Static',
-    description: 'Broadcast interference aesthetic – analog noise, signal artifacts, and transmission distortion',
-    licenseStatus: 'preview',
-    theme: presetToThemeSettings(signalStaticPreset),
-    author: 'Neuroklast',
-    tags: ['dark', 'analog', 'noise', 'premium'],
     themeType: 'full',
   },
 ]
@@ -283,13 +111,6 @@ export interface ThemeCatalogRegistry {
   isUnlocked(id: string): boolean
 }
 
-/**
- * Create a license-aware ThemeCatalogRegistry.
- *
- * @param unlockedThemeIds IDs of themes whose license has been validated.
- * @param assignedThemeIds IDs of themes explicitly assigned via activation key metadata.
- * @param tier             The current license tier.
- */
 export function createThemeRegistry(
   unlockedThemeIds: string[] = [],
   assignedThemeIds: string[] = [],
@@ -301,7 +122,6 @@ export function createThemeRegistry(
   function getEffectiveStatus(def: ThemeDefinition): ThemeLicenseStatus {
     if (def.licenseStatus === 'free') return 'free'
     if (unlockedSet.has(def.id) || assignedSet.has(def.id)) return 'licensed'
-    // Look up the ThemePackage to check its access level
     const pkg = _registry.get(def.id)
     if (pkg?.access === 'premium' && hasFeature(tier, 'premium-themes')) return 'licensed'
     return def.licenseStatus

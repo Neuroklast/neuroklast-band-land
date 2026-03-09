@@ -6,18 +6,14 @@ export default function BackgroundEffects() {
   const [signalGlitch, setSignalGlitch] = useState(false)
 
   useEffect(() => {
-    let glitchTimeoutId: ReturnType<typeof setTimeout> | undefined
     const glitchInterval = setInterval(() => {
       if (Math.random() > 0.85) {
         setSignalGlitch(true)
-        glitchTimeoutId = setTimeout(() => setSignalGlitch(false), Math.random() * 200 + 100)
+        setTimeout(() => setSignalGlitch(false), Math.random() * 200 + 100)
       }
     }, 2000)
 
-    return () => {
-      clearInterval(glitchInterval)
-      if (glitchTimeoutId !== undefined) clearTimeout(glitchTimeoutId)
-    }
+    return () => clearInterval(glitchInterval)
   }, [])
 
   useEffect(() => {

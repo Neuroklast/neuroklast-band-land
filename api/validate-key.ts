@@ -4,6 +4,7 @@ import { kv } from '@vercel/kv'
 interface VercelRequest {
   method?: string
   body?: Record<string, unknown>
+  headers?: Record<string, string | string[] | undefined>
 }
 interface VercelResponse {
   setHeader(key: string, value: string): this
@@ -35,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { key } = req.body || {}
 
-  const host = (req as any).headers?.host || ''
+  const host = [req.headers?.host].flat()[0] ?? ''
   const IS_PRIMARY = host.includes('neuroklast.net')
 
   if (IS_PRIMARY) {
