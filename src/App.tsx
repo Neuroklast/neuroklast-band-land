@@ -274,7 +274,7 @@ function App() {
   return (
     <ThemeProvider
       themeSettings={data.themeSettings}
-      onChangeTheme={(ts: ThemeSettings) => updateConfig({ themeSettings: ts })}
+      onChangeTheme={(themeSettings: ThemeSettings) => updateConfig({ themeSettings })}
     >
       {(siteConfigLoaded && !data.setupComplete && !isDevTestMode) && (
         <Suspense fallback={<CyberSpinner />}>

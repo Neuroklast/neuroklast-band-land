@@ -5,7 +5,11 @@ import type { ThemeSettings } from '@/lib/types'
 
 // ── Helper: renders a component that exposes context values ─────────────────
 
-function TestConsumer({ onRender }: { onRender: (ctx: ReturnType<typeof useThemeEngine>) => void }) {
+interface TestConsumerProps {
+  onRender: (ctx: ReturnType<typeof useThemeEngine>) => void
+}
+
+function TestConsumer({ onRender }: TestConsumerProps) {
   const ctx = useThemeEngine()
   onRender(ctx)
   return null
