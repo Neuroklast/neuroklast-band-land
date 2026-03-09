@@ -133,8 +133,22 @@ const translations: Record<string, Record<Locale, string>> = {
   // ── Admin Hub ───────────────────────────────────────────────────────
   'hub.content':               { en: 'Content', de: 'Inhalte' },
   'hub.appearance':            { en: 'Design & Theme', de: 'Design & Theme' },
-  'hub.themeStore':            { en: 'Store & Apps', de: 'Store & Apps' },
+  'hub.store':                 { en: 'Store & Apps', de: 'Store & Apps' },
   'hub.system':                { en: 'System & Security', de: 'System & Sicherheit' },
+
+  // ── Theme Customizer / Animations ───────────────────────────────────
+  'theme.globalEffects':       { en: 'GLOBAL EFFECTS', de: 'GLOBALE EFFEKTE' },
+  'theme.globalAnimations':    { en: 'Global Animations', de: 'Globale Animationen' },
+  'theme.globalAnimationsDesc':{ en: 'Toggles all complex CSS and Framer-Motion animations', de: 'Schaltet alle komplexen CSS- und Framer-Motion-Animationen um' },
+  'theme.themeSpecific':       { en: 'THEME SPECIFIC EFFECTS', de: 'THEME-SPEZIFISCHE EFFEKTE' },
+  'theme.intensity':           { en: 'Intensity', de: 'Intensität' },
+  'theme.on':                  { en: 'ON', de: 'AN' },
+  'theme.off':                 { en: 'OFF', de: 'AUS' },
+  'theme.crt':                 { en: 'CRT Effect', de: 'CRT Effekt' },
+  'theme.scanlines':           { en: 'Scanlines', de: 'Scanlines' },
+  'theme.noise':               { en: 'Noise / Glitch', de: 'Noise / Glitch' },
+  'theme.selectThemeAnim':     { en: 'Select a theme first to see theme-specific animations.', de: 'Wählen Sie zuerst ein Theme, um spezifische Animationen zu sehen.' },
+  'theme.noAnim':              { en: 'This theme has no additional configurable animations.', de: 'Dieses Theme hat keine zusätzlichen konfigurierbaren Animationen.' },
 
   // ── EditControls ────────────────────────────────────────────────────
   'edit.export':               { en: 'EXPORT', de: 'EXPORT' },

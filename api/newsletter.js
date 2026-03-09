@@ -59,7 +59,45 @@ export default async function handler(req, res) {
       }
     }
 
-    // TODO: Also unsubscribe from Mailchimp/Brevo if configured
+    // Also unsubscribe from Mailchimp if configured
+    if (process.env.MAILCHIMP_API_KEY && process.env.MAILCHIMP_LIST_ID) {
+      try {
+        const dc = process.env.MAILCHIMP_API_KEY.split('-').pop()
+        const crypto = await import('node:crypto')
+        const subscriberHash = crypto.createHash('md5').update(sanitizedEmail).digest('hex')
+        const url = `https://${dc}.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_LIST_ID}/members/${subscriberHash}`
+
+        await fetch(url, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `apikey ${process.env.MAILCHIMP_API_KEY}`,
+          },
+          body: JSON.stringify({ status: 'unsubscribed' }),
+        })
+      } catch (err) {
+        console.error('Mailchimp unsubscribe failed:', err)
+      }
+    }
+
+    // Also unsubscribe from Brevo if configured
+    if (process.env.BREVO_API_KEY && process.env.BREVO_LIST_ID) {
+      try {
+        await fetch('https://api.brevo.com/v3/contacts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': process.env.BREVO_API_KEY,
+          },
+          body: JSON.stringify({
+            email: sanitizedEmail,
+            unlinkListIds: [parseInt(process.env.BREVO_LIST_ID)],
+          }),
+        })
+      } catch (err) {
+        console.error('Brevo unsubscribe failed:', err)
+      }
+    }
 
     return res.status(200).json({ success: true, message: 'Unsubscribed successfully' })
   }

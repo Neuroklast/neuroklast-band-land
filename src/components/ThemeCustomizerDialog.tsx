@@ -11,6 +11,7 @@ import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
 import { applyThemeToDocument, applyThemeToDOM, resetThemeDOM, applyThemeDefaults, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
 import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
 import { resolveSections, normalizeSections, toggleSection, reorderSections } from '@/lib/sections'
+import { t, Locale } from '@/lib/i18n'
 
 // ─── Animation ID → ThemeSettings mapping ─────────────────────────────────────
 
@@ -257,10 +258,21 @@ export default function ThemeCustomizerDialog({
   const [unlockedThemeIds, setUnlockedThemeIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('nk-unlocked-themes') || '[]') } catch { return [] }
   })
+  const [locale, setLocale] = useState<Locale>('en')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const prevOpenRef = useRef(false)
 
   useEffect(() => {
+    try {
+      const siteConfigStr = localStorage.getItem('site-config')
+      if (siteConfigStr) {
+        const parsed = JSON.parse(siteConfigStr)
+        if (parsed?.locale === 'de' || parsed?.locale === 'en') {
+          setLocale(parsed.locale)
+        }
+      }
+    } catch { /* ignore */ }
+
     if (open && !prevOpenRef.current) {
       startTransition(() => {
         setPreviewConfig({
@@ -625,13 +637,13 @@ export default function ThemeCustomizerDialog({
                 <div className="space-y-4">
                   {/* Global Animation & Overlay Controls */}
                   <div className="space-y-3 border border-primary/20 p-3 bg-primary/5 rounded">
-                    <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">Globale Effekte</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">{t('theme.globalEffects', locale)}</p>
 
                     {/* Global Animations Toggle */}
                     <div className="flex items-center justify-between border-b border-primary/10 pb-2">
                       <div>
-                        <span className="font-mono text-xs text-foreground/90 block">Globale Animationen</span>
-                        <span className="font-mono text-[9px] text-muted-foreground/60">Schaltet alle komplexen CSS- und Framer-Motion-Animationen um</span>
+                        <span className="font-mono text-xs text-foreground/90 block">{t('theme.globalAnimations', locale)}</span>
+                        <span className="font-mono text-[9px] text-muted-foreground/60">{t('theme.globalAnimationsDesc', locale)}</span>
                       </div>
                       <button
                         onClick={() => {
@@ -651,14 +663,14 @@ export default function ThemeCustomizerDialog({
                         }`}
                       >
                         {previewConfig.themeSettings.animationsEnabled !== false ? <Eye size={14} /> : <EyeSlash size={14} />}
-                        {previewConfig.themeSettings.animationsEnabled !== false ? 'AN' : 'AUS'}
+                        {previewConfig.themeSettings.animationsEnabled !== false ? t('theme.on', locale) : t('theme.off', locale)}
                       </button>
                     </div>
 
                     {[
-                      { id: 'crt', label: 'CRT Effekt' },
-                      { id: 'scanlines', label: 'Scanlines' },
-                      { id: 'noise', label: 'Noise / Glitch' }
+                      { id: 'crt', label: t('theme.crt', locale) },
+                      { id: 'scanlines', label: t('theme.scanlines', locale) },
+                      { id: 'noise', label: t('theme.noise', locale) }
                     ].map(effect => {
                       const isEnabled = getAnimationEnabled(previewConfig.themeSettings, effect.id)
                       const intensity = getAnimationIntensity(previewConfig.themeSettings, effect.id)
@@ -673,12 +685,12 @@ export default function ThemeCustomizerDialog({
                               }`}
                             >
                               {isEnabled ? <Eye size={14} /> : <EyeSlash size={14} />}
-                              {isEnabled ? 'AN' : 'AUS'}
+                              {isEnabled ? t('theme.on', locale) : t('theme.off', locale)}
                             </button>
                           </div>
                           {isEnabled && (
                             <div className="flex items-center gap-3">
-                              <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">Intensität</Label>
+                              <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">{t('theme.intensity', locale)}</Label>
                               <input
                                 type="range" min="0.05" max="1" step="0.05"
                                 value={intensity}
@@ -696,13 +708,13 @@ export default function ThemeCustomizerDialog({
                   </div>
 
                   {!previewConfig.theme ? (
-                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">Select a theme first to see theme-specific animations.</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">{t('theme.selectThemeAnim', locale)}</p>
                   ) : activeAnimations.length === 0 ? (
-                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">This theme has no additional configurable animations.</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">{t('theme.noAnim', locale)}</p>
                   ) : (
                     <div className="mt-4">
                       <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">
-                        Theme-spezifische Effekte
+                        {t('theme.themeSpecific', locale)}
                       </p>
                       <div className="space-y-3">
                       {activeAnimations.map(anim => {
@@ -720,12 +732,12 @@ export default function ThemeCustomizerDialog({
                                 }`}
                               >
                                 {enabled ? <Eye size={14} /> : <EyeSlash size={14} />}
-                                {enabled ? 'AN' : 'AUS'}
+                                {enabled ? t('theme.on', locale) : t('theme.off', locale)}
                               </button>
                             </div>
                             {enabled && hasIntensity && (
                               <div className="flex items-center gap-3">
-                                <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">Intensität</Label>
+                                <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">{t('theme.intensity', locale)}</Label>
                                 <input
                                   type="range" min="0.05" max="1" step="0.05"
                                   value={intensity}
