@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { createHash } from 'node:crypto'
 import { applyRateLimit } from './_ratelimit.js'
 
 /** Store subscriber locally in KV for the admin mailing list view. */
@@ -59,14 +60,13 @@ export default async function handler(req, res) {
       }
     }
 
-    // Also unsubscribe from Mailchimp if configured
-    if (process.env.MAILCHIMP_API_KEY && process.env.MAILCHIMP_LIST_ID) {
-      try {
+    // Also unsubscribe from Mailchimp/Brevo if configured
+    try {
+      // Mailchimp
+      if (process.env.MAILCHIMP_API_KEY && process.env.MAILCHIMP_LIST_ID) {
         const dc = process.env.MAILCHIMP_API_KEY.split('-').pop()
-        const crypto = await import('node:crypto')
-        const subscriberHash = crypto.createHash('md5').update(sanitizedEmail).digest('hex')
-        const url = `https://${dc}.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_LIST_ID}/members/${subscriberHash}`
-
+        const hash = createHash('md5').update(sanitizedEmail).digest('hex')
+        const url = `https://${dc}.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_LIST_ID}/members/${hash}`
         await fetch(url, {
           method: 'PATCH',
           headers: {
@@ -75,28 +75,22 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({ status: 'unsubscribed' }),
         })
-      } catch (err) {
-        console.error('Mailchimp unsubscribe failed:', err)
       }
-    }
 
-    // Also unsubscribe from Brevo if configured
-    if (process.env.BREVO_API_KEY && process.env.BREVO_LIST_ID) {
-      try {
-        await fetch('https://api.brevo.com/v3/contacts', {
+      // Brevo
+      if (process.env.BREVO_API_KEY && process.env.BREVO_LIST_ID) {
+        const url = `https://api.brevo.com/v3/contacts/lists/${process.env.BREVO_LIST_ID}/contacts/remove`
+        await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'api-key': process.env.BREVO_API_KEY,
           },
-          body: JSON.stringify({
-            email: sanitizedEmail,
-            unlinkListIds: [parseInt(process.env.BREVO_LIST_ID)],
-          }),
+          body: JSON.stringify({ emails: [sanitizedEmail] }),
         })
-      } catch (err) {
-        console.error('Brevo unsubscribe failed:', err)
       }
+    } catch (err) {
+      console.error('External unsubscription failed:', err)
     }
 
     return res.status(200).json({ success: true, message: 'Unsubscribed successfully' })
