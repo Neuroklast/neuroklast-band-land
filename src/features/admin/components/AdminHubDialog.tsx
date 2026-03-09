@@ -1,9 +1,4 @@
-/**
- * AdminHubDialog — Central admin panel replacing the 21-button grid.
- *
- * Opens as a fullscreen overlay when the admin FAB is clicked in edit mode.
- * Organizes all admin actions into logical category sections.
- */
+import { useState, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
@@ -30,23 +25,15 @@ import {
   ArrowCounterClockwise,
   SignOut,
   Article,
+  Layout,
+  Storefront,
+  ShieldChevron
 } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
 import type { AdminDialog } from '@/lib/types'
-import type { Icon } from '@phosphor-icons/react'
 
-interface AdminHubItem {
-  icon: Icon
-  label: string
-  description?: string
-  action: () => void
-  disabled?: boolean
-}
-
-interface AdminHubSection {
-  title: string
-  items: AdminHubItem[]
-}
+// Lazy load the underlying forms/modals to keep bundle lean
+const ThemeCustomizerDialog = lazy(() => import('@/components/ThemeCustomizerDialog'))
 
 interface AdminHubDialogProps {
   open: boolean
@@ -61,6 +48,8 @@ interface AdminHubDialogProps {
   isPrimary?: boolean
 }
 
+type TabKey = 'content' | 'design' | 'store' | 'system'
+
 export default function AdminHubDialog({
   open,
   onClose,
@@ -74,127 +63,128 @@ export default function AdminHubDialog({
   isPrimary = false,
 }: AdminHubDialogProps) {
   const { t } = useLocale()
+  const [activeTab, setActiveTab] = useState<TabKey>('content')
+  // For the customizer we mount it when the design tab is active.
+  const [showCustomizer, setShowCustomizer] = useState(false)
 
-  const sections: AdminHubSection[] = [
+  const tabs = [
+    { id: 'content', label: t('hub.content') || 'Content', icon: Article },
+    { id: 'design', label: t('hub.appearance') || 'Design System', icon: Palette },
+    { id: 'store', label: t('hub.themeStore') || 'Store & Apps', icon: Storefront },
+    { id: 'system', label: t('hub.system') || 'System & Security', icon: ShieldChevron },
+  ] as const
+
+  const contentItems = [
     {
-      title: t('hub.content'),
-      items: [
-        {
-          icon: Article,
-          label: 'Inhalte bearbeiten',
-          description: 'Biografie, News, Gigs, Releases',
-          action: () => { onClose(); onOpenDialog('content') },
-        },
-        {
-          icon: UploadSimple,
-          label: t('hub.exportData'),
-          action: () => { onClose(); onExportData() },
-        },
-        {
-          icon: DownloadSimple,
-          label: t('hub.importFile'),
-          action: () => { onClose(); onImportFile() },
-        },
-        {
-          icon: Globe,
-          label: t('hub.syncUrl'),
-          action: () => { onClose(); onImportUrl() },
-        },
-        {
-          icon: GearSix,
-          label: t('hub.configEditor'),
-          action: () => { onClose(); onOpenDialog('config') },
-        },
-      ],
+      icon: Article,
+      label: 'Edit Content',
+      description: 'Biography, News, Gigs, Releases',
+      action: () => { onClose(); onOpenDialog('content') },
     },
     {
-      title: t('hub.appearance'),
-      items: [
-        {
-          icon: Palette,
-          label: t('hub.themeStore'),
-          action: () => { onClose(); onOpenDialog('store') },
-        },
-        {
-          icon: Sliders,
-          label: t('hub.customizer'),
-          action: () => { onClose(); onOpenDialog('design') },
-        },
-        {
-          icon: Terminal,
-          label: t('hub.terminal'),
-          action: () => { onClose(); onOpenDialog('terminal') },
-        },
-        {
-          icon: SpeakerHigh,
-          label: t('hub.sound'),
-          action: () => { onClose(); onOpenDialog('sound') },
-        },
-      ],
-    },
-    {
-      title: t('hub.analytics'),
-      items: [
-        {
-          icon: ChartBar,
-          label: t('hub.analyticsDashboard'),
-          action: () => { onClose(); onOpenDialog('analytics') },
-        },
-        {
-          icon: ShieldWarning,
-          label: t('hub.securityLog'),
-          action: () => { onClose(); onOpenDialog('security-log') },
-        },
-        {
-          icon: ShieldCheck,
-          label: t('hub.securitySettings'),
-          action: () => { onClose(); onOpenDialog('security-settings') },
-        },
-        {
-          icon: Prohibit,
-          label: t('hub.blocklist'),
-          action: () => { onClose(); onOpenDialog('blocklist') },
-        },
-        {
-          icon: UserCircle,
-          label: t('hub.attackerProfiles'),
-          action: () => { onClose(); onOpenDialog('attacker-profiles') },
-        },
-      ],
-    },
-    {
-      title: t('hub.communication'),
-      items: [
-        {
-          icon: EnvelopeSimple,
-          label: t('hub.inbox'),
-          action: () => { onClose(); onOpenDialog('inbox') },
-        },
-        {
-          icon: UsersThree,
-          label: t('hub.subscribers'),
-          action: () => { onClose(); onOpenDialog('subscribers') },
-        },
-        {
-          icon: MegaphoneSimple,
-          label: t('hub.marketing'),
-          action: () => { onClose(); onOpenDialog('marketing') },
-        },
-        {
-          icon: LinkSimple,
-          label: t('hub.oauth'),
-          action: () => { onClose(); onOpenDialog('oauth') },
-        },
-      ],
+      icon: Layout,
+      label: 'Layout & Visibility',
+      description: 'Reorder sections and toggle visibility',
+      action: () => { onClose(); onOpenDialog('design') },
     },
   ]
 
-  const systemItems: AdminHubItem[] = [
+  const storeItems = [
+    {
+      icon: Palette,
+      label: 'Theme Store',
+      description: 'Install premium themes',
+      action: () => { onClose(); onOpenDialog('store') },
+    },
+    {
+      icon: Sliders,
+      label: 'Widget Store',
+      description: 'Add new widgets to the site',
+      action: () => { onClose(); onOpenDialog('store') }, // Assuming 'plugins' maps to widgets in dialog manager
+    },
+  ]
+
+  const systemItems = [
+    {
+      icon: UploadSimple,
+      label: 'Export Configuration',
+      action: () => { onClose(); onExportData() },
+    },
+    {
+      icon: DownloadSimple,
+      label: 'Import Configuration',
+      action: () => { onClose(); onImportFile() },
+    },
+    {
+      icon: Globe,
+      label: 'Sync Configuration URL',
+      action: () => { onClose(); onImportUrl() },
+    },
+    {
+      icon: GearSix,
+      label: 'JSON Configuration Editor',
+      action: () => { onClose(); onOpenDialog('config') },
+    },
+    {
+      icon: Terminal,
+      label: 'Terminal Console',
+      action: () => { onClose(); onOpenDialog('terminal') },
+    },
+    {
+      icon: SpeakerHigh,
+      label: 'Audio System',
+      action: () => { onClose(); onOpenDialog('sound') },
+    },
+    {
+      icon: ChartBar,
+      label: 'Analytics Dashboard',
+      action: () => { onClose(); onOpenDialog('analytics') },
+    },
+    {
+      icon: ShieldWarning,
+      label: 'Security Logs',
+      action: () => { onClose(); onOpenDialog('security-log') },
+    },
+    {
+      icon: ShieldCheck,
+      label: 'Security Settings',
+      action: () => { onClose(); onOpenDialog('security-settings') },
+    },
+    {
+      icon: Prohibit,
+      label: 'Blocklist Manager',
+      action: () => { onClose(); onOpenDialog('blocklist') },
+    },
+    {
+      icon: UserCircle,
+      label: 'Attacker Profiles',
+      action: () => { onClose(); onOpenDialog('attacker-profiles') },
+    },
+    {
+      icon: EnvelopeSimple,
+      label: 'Inbox',
+      action: () => { onClose(); onOpenDialog('inbox') },
+    },
+    {
+      icon: UsersThree,
+      label: 'Subscribers',
+      action: () => { onClose(); onOpenDialog('subscribers') },
+    },
+    {
+      icon: MegaphoneSimple,
+      label: 'Marketing Settings',
+      action: () => { onClose(); onOpenDialog('marketing') },
+    },
+    {
+      icon: LinkSimple,
+      label: 'OAuth Connections',
+      action: () => { onClose(); onOpenDialog('oauth') },
+    },
     ...(isPrimary
       ? [
           {
             icon: Key,
-            label: t('hub.keyManager'),
+            label: 'Key Manager',
             description: 'Manage activation keys',
             action: () => { onClose(); onOpenDialog('keys') },
           },
@@ -202,14 +192,14 @@ export default function AdminHubDialog({
       : []),
     {
       icon: Lock,
-      label: t('hub.changePassword'),
+      label: 'Change Password',
       action: () => { onClose(); onChangePassword() },
     },
     ...(onResetSetup
       ? [
           {
             icon: ArrowCounterClockwise,
-            label: t('hub.resetSetup'),
+            label: 'Reset Setup',
             action: () => { onClose(); onResetSetup?.() },
           },
         ]
@@ -218,12 +208,33 @@ export default function AdminHubDialog({
       ? [
           {
             icon: SignOut,
-            label: t('hub.logout'),
+            label: 'Logout',
             action: () => { onClose(); onLogout?.() },
           },
         ]
       : []),
   ]
+
+  // If the user wants the customizer, we unmount the hub and let the customizer run.
+  // We don't want to completely embed the customizer into this modal because it needs
+  // side-by-side previewing capabilities (it shrinks the site view).
+  if (showCustomizer) {
+    return (
+      <Suspense fallback={null}>
+        <ThemeCustomizerDialog
+          open={true}
+          onClose={() => {
+            setShowCustomizer(false)
+            onClose()
+          }}
+          themeSettings={{} as any} // The customizer will use the global hook state or be passed properly in AdminButton if we lift state up
+          onSaveTheme={(ts) => { window.dispatchEvent(new CustomEvent('save-theme-event', { detail: ts })) }}
+          sectionVisibility={{} as any}
+          onSaveSectionVisibility={(vs) => { window.dispatchEvent(new CustomEvent('save-visibility-event', { detail: vs })) }}
+        />
+      </Suspense>
+    )
+  }
 
   return (
     <AnimatePresence>
@@ -236,54 +247,86 @@ export default function AdminHubDialog({
           onClick={onClose}
         >
           <motion.div
-            className="min-h-full flex items-start justify-center p-4 py-8"
+            className="min-h-full flex items-center justify-center p-4 py-8"
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-card border border-border rounded-lg w-full max-w-3xl relative">
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <Lightning size={18} weight="fill" className="text-primary" />
-                  <h2 className="text-sm font-mono font-bold tracking-widest text-foreground">
-                    {t('hub.title')}
+            <div className="bg-card border border-border rounded-lg w-full max-w-4xl flex overflow-hidden min-h-[600px] max-h-[85vh]">
+              {/* Sidebar Tabs */}
+              <div className="w-64 bg-muted/20 border-r border-border flex flex-col">
+                <div className="flex items-center gap-2 px-6 py-5 border-b border-border/50">
+                  <Lightning size={20} weight="fill" className="text-primary" />
+                  <h2 className="text-sm font-mono font-bold tracking-widest text-foreground uppercase">
+                    Admin Hub
                   </h2>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                  aria-label="Close"
-                >
-                  <X size={18} weight="bold" />
-                </button>
+                <div className="flex-1 overflow-y-auto py-4">
+                  <div className="space-y-1 px-3">
+                    {tabs.map((tab) => {
+                      const IconComponent = tab.icon
+                      const isActive = activeTab === tab.id
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-mono text-xs uppercase tracking-wider ${
+                            isActive
+                              ? 'bg-primary/10 text-primary font-bold'
+                              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                          }`}
+                        >
+                          <IconComponent size={18} className={isActive ? 'text-primary' : 'text-muted-foreground/70'} />
+                          {tab.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
 
-              {/* Content */}
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                {sections.map((section) => (
-                  <div key={section.title} className="space-y-2">
-                    <h3 className="text-[10px] font-mono font-bold tracking-widest text-primary/70 uppercase border-b border-primary/10 pb-1">
-                      {section.title}
-                    </h3>
-                    <div className="space-y-1">
-                      {section.items.map((item) => (
-                        <HubItem key={item.label} item={item} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              {/* Main Content Area */}
+              <div className="flex-1 flex flex-col relative bg-card">
+                <div className="absolute top-4 right-4 z-10">
+                  <button
+                    onClick={onClose}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors p-2"
+                    aria-label="Close"
+                  >
+                    <X size={20} weight="bold" />
+                  </button>
+                </div>
 
-                {/* System section — full width */}
-                <div className="col-span-1 md:col-span-2 space-y-2">
-                  <h3 className="text-[10px] font-mono font-bold tracking-widest text-primary/70 uppercase border-b border-primary/10 pb-1">
-                    {t('hub.system')}
+                <div className="flex-1 overflow-y-auto p-8">
+                  <h3 className="text-lg font-mono font-bold text-foreground mb-6 pb-2 border-b border-border/50 uppercase tracking-widest">
+                    {tabs.find((t) => t.id === activeTab)?.label}
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                    {systemItems.map((item) => (
-                      <HubItem key={item.label} item={item} />
-                    ))}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {activeTab === 'content' &&
+                      contentItems.map((item) => <HubItem key={item.label} item={item} />)}
+
+                    {activeTab === 'design' && (
+                      <div className="col-span-1 md:col-span-2 space-y-4">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Launch the Theme Customizer to visually edit your site's layout, fonts, colors, and visual effects side-by-side with your content.
+                        </p>
+                        <button
+                          onClick={() => setShowCustomizer(true)}
+                          className="w-full md:w-auto flex items-center justify-center gap-3 px-6 py-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-mono text-sm tracking-wider uppercase shadow-lg shadow-primary/20 transition-all active:scale-95"
+                        >
+                          <Sliders size={20} weight="bold" />
+                          Launch Design Customizer
+                        </button>
+                      </div>
+                    )}
+
+                    {activeTab === 'store' &&
+                      storeItems.map((item) => <HubItem key={item.label} item={item} />)}
+
+                    {activeTab === 'system' &&
+                      systemItems.map((item) => <HubItem key={item.label} item={item} />)}
                   </div>
                 </div>
               </div>
@@ -295,21 +338,23 @@ export default function AdminHubDialog({
   )
 }
 
-function HubItem({ item }: { item: AdminHubItem }) {
+function HubItem({ item }: { item: any }) {
   const IconComponent = item.icon
   return (
     <button
       onClick={item.disabled ? undefined : item.action}
       disabled={item.disabled}
-      className="w-full flex items-center gap-3 px-3 py-2 rounded text-left hover:bg-primary/10 active:bg-primary/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed group"
+      className="w-full flex items-center gap-4 px-4 py-3 rounded-md text-left bg-muted/10 border border-border/50 hover:bg-primary/10 hover:border-primary/30 active:bg-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
     >
-      <IconComponent size={16} className="flex-shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+      <div className="flex-shrink-0 p-2 rounded bg-background group-hover:bg-background border border-border/50 group-hover:border-primary/20 transition-colors">
+        <IconComponent size={20} className="text-primary/70 group-hover:text-primary transition-colors" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
           {item.label}
         </p>
         {item.description && (
-          <p className="text-[10px] text-muted-foreground/70">{item.description}</p>
+          <p className="text-xs text-muted-foreground/70 mt-0.5">{item.description}</p>
         )}
       </div>
     </button>

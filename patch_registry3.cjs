@@ -1,4 +1,5 @@
-/**
+const fs = require('fs');
+const newCode = `/**
  * Theme Registry — manages available ThemePackage instances.
  *
  * Provides theme lookup, registration, and a React hook for resolving
@@ -148,3 +149,6 @@ export function createThemeRegistry(
     },
   }
 }
+`;
+fs.writeFileSync('src/lib/theme-registry.ts', newCode);
+console.log('done');

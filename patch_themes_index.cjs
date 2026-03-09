@@ -1,4 +1,5 @@
-export { neuroklastClassicTheme } from './neuroklast-classic'
+const fs = require('fs');
+let code = `export { neuroklastClassicTheme } from './neuroklast-classic'
 export { nebulaNoirTheme } from './nebula-noir-theme'
 export { glitchNoirTheme } from './glitch-noir'
 export { zardonicTheme } from './zardonic'
@@ -17,3 +18,6 @@ export const builtInThemes: ThemePackage[] = [
   glitchNoirTheme,
   zardonicTheme,
 ]
+`;
+fs.writeFileSync('src/themes/index.ts', code);
+console.log('done');

@@ -8,10 +8,8 @@ import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
 
-export const glitchNoirTheme: ThemePackage = {
-  description: 'A minimal dark techno theme',
-  version: '1.0.0',
-  author: 'Neuroklast',
+export const nebulaNoirTheme: ThemePackage = {
+  id: 'nebula-noir-theme',
   access: 'free',
   layout: {
     heroVariant: 'default',
@@ -19,19 +17,26 @@ export const glitchNoirTheme: ThemePackage = {
     navigationStyle: 'clean',
   },
   typography: {
-    heading: "'Inter', serif",
-    body: "'Inter', sans-serif",
+    heading: "'Cinzel', serif",
+    body: "'Montserrat', sans-serif",
     mono: "'Fira Code', monospace",
   },
   borderRadius: 0,
   animationsEnabled: true,
-  effects: {},
   colorPresets: [],
+  effects: {},
   defaultPresetId: 'default',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
-  id: 'glitch-noir',
-  name: 'Glitch Noir',
-  // colors: {
+  name: 'Nebula Noir - Cosmic Art Deco Goth',
+  description: 'A dark, elegant theme inspired by Art Deco geometry, cosmic aesthetics, and gothic sensibilities. Features subtle CRT effects, glowing purple accents, and mechanical animations.',
+  version: '1.0.0',
+  author: 'Nebula Noir',
+
+
+
+
+
+
 
   slots: {
     Hero,
@@ -39,6 +44,19 @@ export const glitchNoirTheme: ThemePackage = {
     Card,
     BackgroundEffects,
     SectionDivider,
-    LoadingScreen
-  }
+    LoadingScreen,
+  },
+
+
+}
+
+export default nebulaNoirTheme
+
+export {
+  Hero,
+  Navigation,
+  Card,
+  BackgroundEffects,
+  SectionDivider,
+  LoadingScreen,
 }
