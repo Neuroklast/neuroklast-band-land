@@ -335,7 +335,7 @@ export default function AdminHubDialog({
   )
 }
 
-function HubItem({ item }: { item: { label: string; icon: React.ElementType; action?: () => void; description?: string; disabled?: boolean; } }) {
+function HubItem({ item }: { item: any }) {
   const IconComponent = item.icon
   return (
     <button
