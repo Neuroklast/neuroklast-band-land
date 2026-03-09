@@ -30,10 +30,11 @@ import {
   ShieldChevron
 } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
-import type { AdminDialog } from '@/lib/types'
+import type { AdminDialog, SiteConfig } from '@/lib/types'
 
 // Lazy load the underlying forms/modals to keep bundle lean
 const ThemeCustomizerDialog = lazy(() => import('@/components/ThemeCustomizerDialog'))
+const ContentForms = lazy(() => import('./ContentForms').then(m => ({ default: m.ContentForms })))
 
 interface AdminHubDialogProps {
   open: boolean
@@ -46,6 +47,8 @@ interface AdminHubDialogProps {
   onLogout?: () => void
   onResetSetup?: () => void
   isPrimary?: boolean
+  siteConfig?: SiteConfig
+  onUpdateSiteConfig?: (key: keyof SiteConfig, value: unknown) => void
 }
 
 type TabKey = 'content' | 'design' | 'store' | 'system'
@@ -61,6 +64,8 @@ export default function AdminHubDialog({
   onLogout,
   onResetSetup,
   isPrimary = false,
+  siteConfig,
+  onUpdateSiteConfig,
 }: AdminHubDialogProps) {
   const { t } = useLocale()
   const [activeTab, setActiveTab] = useState<TabKey>('content')
@@ -74,20 +79,7 @@ export default function AdminHubDialog({
     { id: 'system', label: t('hub.system') || 'System & Security', icon: ShieldChevron },
   ] as const
 
-  const contentItems = [
-    {
-      icon: Article,
-      label: 'Edit Content',
-      description: 'Biography, News, Gigs, Releases',
-      action: () => { onClose(); onOpenDialog('content') },
-    },
-    {
-      icon: Layout,
-      label: 'Layout & Visibility',
-      description: 'Reorder sections and toggle visibility',
-      action: () => { onClose(); onOpenDialog('design') },
-    },
-  ]
+  const contentItems = [] // Rendered directly
 
   const storeItems = [
     {
@@ -227,9 +219,9 @@ export default function AdminHubDialog({
             setShowCustomizer(false)
             onClose()
           }}
-          themeSettings={{} as any} // The customizer will use the global hook state or be passed properly in AdminButton if we lift state up
+          themeSettings={{} as unknown as SiteConfig["themeSettings"]} // The customizer will use the global hook state or be passed properly in AdminButton if we lift state up
           onSaveTheme={(ts) => { window.dispatchEvent(new CustomEvent('save-theme-event', { detail: ts })) }}
-          sectionVisibility={{} as any}
+          sectionVisibility={{} as unknown as SiteConfig["sectionVisibility"]}
           onSaveSectionVisibility={(vs) => { window.dispatchEvent(new CustomEvent('save-visibility-event', { detail: vs })) }}
         />
       </Suspense>
@@ -304,8 +296,13 @@ export default function AdminHubDialog({
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {activeTab === 'content' &&
-                      contentItems.map((item) => <HubItem key={item.label} item={item} />)}
+                    {activeTab === 'content' && siteConfig && onUpdateSiteConfig && (
+                      <div className="col-span-1 md:col-span-2">
+                        <Suspense fallback={null}>
+                          <ContentForms data={siteConfig} onUpdate={onUpdateSiteConfig} />
+                        </Suspense>
+                      </div>
+                    )}
 
                     {activeTab === 'design' && (
                       <div className="col-span-1 md:col-span-2 space-y-4">
@@ -338,7 +335,7 @@ export default function AdminHubDialog({
   )
 }
 
-function HubItem({ item }: { item: any }) {
+function HubItem({ item }: { item: { label: string; icon: React.ElementType; action?: () => void; description?: string; disabled?: boolean; } }) {
   const IconComponent = item.icon
   return (
     <button

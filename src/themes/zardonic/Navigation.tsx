@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { List, X, Pencil } from '@phosphor-icons/react'
+import { List, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 
 import type { NavigationSlotProps } from '@/lib/types'
@@ -25,7 +25,7 @@ export default function Navigation({ siteName, items }: NavigationProps) {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <motion.div
           className="text-2xl md:text-3xl font-bold tracking-tighter text-foreground uppercase"
-          whileHover={{ filter: 'drop-shadow(2px 0 0 rgba(255,0,100,0.3)) drop-shadow(-2px 0 0 rgba(0,255,255,0.3))' }}
+          whileHover={{ filter: 'drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 30%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--accent) 30%, transparent))' }}
         >
           <span>{siteName}</span>
         </motion.div>

@@ -1,25 +1,25 @@
 .spark-theme-bioshock-glow {
   text-shadow:
-    0 0 5px rgba(255, 255, 255, 0.4),
-    0 0 10px rgba(255, 255, 255, 0.3),
-    0 0 15px rgba(255, 255, 255, 0.2),
-    0 0 20px rgba(147, 112, 219, 0.15);
+    0 0 5px color-mix(in oklch, var(--foreground) calc(0.4 * 100%), transparent),
+    0 0 10px color-mix(in oklch, var(--foreground) calc(0.3 * 100%), transparent),
+    0 0 15px color-mix(in oklch, var(--foreground) calc(0.2 * 100%), transparent),
+    0 0 20px color-mix(in oklch, var(--primary) calc(0.15 * 100%), transparent);
 }
 
 @keyframes spark-theme-bioshock-pulse {
   0%, 100% {
     text-shadow:
-      0 0 5px rgba(255, 255, 255, 0.4),
-      0 0 10px rgba(255, 255, 255, 0.3),
-      0 0 15px rgba(255, 255, 255, 0.2),
-      0 0 20px rgba(147, 112, 219, 0.15);
+      0 0 5px color-mix(in oklch, var(--foreground) calc(0.4 * 100%), transparent),
+      0 0 10px color-mix(in oklch, var(--foreground) calc(0.3 * 100%), transparent),
+      0 0 15px color-mix(in oklch, var(--foreground) calc(0.2 * 100%), transparent),
+      0 0 20px color-mix(in oklch, var(--primary) calc(0.15 * 100%), transparent);
   }
   50% {
     text-shadow:
-      0 0 8px rgba(255, 255, 255, 0.5),
-      0 0 15px rgba(255, 255, 255, 0.4),
-      0 0 20px rgba(255, 255, 255, 0.25),
-      0 0 30px rgba(147, 112, 219, 0.2);
+      0 0 8px color-mix(in oklch, var(--foreground) calc(0.5 * 100%), transparent),
+      0 0 15px color-mix(in oklch, var(--foreground) calc(0.4 * 100%), transparent),
+      0 0 20px color-mix(in oklch, var(--foreground) calc(0.25 * 100%), transparent),
+      0 0 30px color-mix(in oklch, var(--primary) calc(0.2 * 100%), transparent);
   }
 }
 
@@ -43,7 +43,7 @@
   width: 60px;
   height: 2px;
   background: linear-gradient(90deg, transparent, currentColor);
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 5px color-mix(in oklch, var(--foreground) calc(0.5 * 100%), transparent);
   flex-shrink: 0;
 }
 
@@ -178,13 +178,13 @@
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(255, 255, 255, 0.08),
+    color-mix(in oklch, var(--foreground) calc(0.08 * 100%), transparent),
     transparent
   );
   pointer-events: none;
   z-index: 9998;
   animation: spark-theme-scanline 25s linear infinite;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px color-mix(in oklch, var(--foreground) calc(0.1 * 100%), transparent);
 }
 
 @keyframes spark-theme-fade-in {
@@ -238,14 +238,14 @@
   stroke: oklch(0.98 0 0);
   stroke-width: 2;
   fill: none;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+  filter: drop-shadow(0 0 5px color-mix(in oklch, var(--foreground) calc(0.5 * 100%), transparent));
   stroke-linecap: square;
 }
 
 .moon-symbol-loading {
   fill: oklch(0.98 0 0);
   font-size: 1.5rem;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+  filter: drop-shadow(0 0 8px color-mix(in oklch, var(--foreground) calc(0.6 * 100%), transparent));
   font-family: 'Poiret One', cursive;
 }
 
@@ -255,10 +255,10 @@
 
 @keyframes spark-theme-logo-pulse {
   0%, 100% {
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 30px rgba(102, 51, 153, 0.2));
+    filter: drop-shadow(0 0 15px color-mix(in oklch, var(--foreground) calc(0.3 * 100%), transparent)) drop-shadow(0 0 30px rgba(102, 51, 153, 0.2));
   }
   50% {
-    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 50px rgba(102, 51, 153, 0.4));
+    filter: drop-shadow(0 0 25px color-mix(in oklch, var(--foreground) calc(0.5 * 100%), transparent)) drop-shadow(0 0 50px rgba(102, 51, 153, 0.4));
   }
 }
 

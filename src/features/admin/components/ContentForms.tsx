@@ -43,7 +43,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
         date: event.datetime,
         venue: event.venue?.name || 'Unknown Venue',
         location: `${event.venue?.city || ''}, ${event.venue?.country || ''}`.replace(/^, | , $/g, ''),
-        ticketUrl: event.offers?.find((o: any) => o.type === 'Tickets')?.url || event.url,
+        ticketUrl: event.offers?.find((o: unknown) => o.type === 'Tickets')?.url || event.url,
         status: 'confirmed'
       }))
 
@@ -191,7 +191,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                   <Label>Genres (comma separated)</Label>
                   <Input
                     value={(data.genres || []).join(', ')}
-                    onChange={e => handleBandInfoChange('genres', e.target.value.split(',').map(s => s.trim()) as any)}
+                    onChange={e => handleBandInfoChange('genres', e.target.value.split(',').map(s => s.trim()) as unknown)}
                   />
                 </div>
                 <div className="space-y-2">

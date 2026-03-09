@@ -74,13 +74,15 @@ export default function BackgroundEffects() {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       ctx.shadowBlur = 8
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.3)'
+      ctx.shadowColor = 'var(--foreground)'
+      ctx.globalAlpha = 0.3
 
       lines.forEach((line, index) => {
         const parallaxSpeed = 0.1 + (index % 3) * 0.05
         const offset = scrollY * parallaxSpeed
 
-        ctx.strokeStyle = `rgba(147, 112, 219, ${line.opacity})`
+        ctx.strokeStyle = 'var(--primary)'
+        ctx.globalAlpha = line.opacity
         ctx.lineWidth = 1
 
         ctx.beginPath()

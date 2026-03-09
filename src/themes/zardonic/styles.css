@@ -203,8 +203,8 @@
 
 .zardonic-theme-hover-chromatic:hover {
   text-shadow:
-    2px 0 0 rgba(255, 0, 100, 0.5),
-    -2px 0 0 rgba(0, 255, 255, 0.5);
+    2px 0 0 color-mix(in oklch, var(--primary) calc(0.5 * 100%), transparent),
+    -2px 0 0 color-mix(in oklch, var(--accent) calc(0.5 * 100%), transparent);
 }
 
 .zardonic-theme-hover-chromatic-image {
@@ -214,8 +214,8 @@
 
 .zardonic-theme-hover-chromatic-image:hover {
   filter:
-    drop-shadow(2px 0 0 rgba(255, 0, 100, 0.4))
-    drop-shadow(-2px 0 0 rgba(0, 255, 255, 0.4));
+    drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) calc(0.4 * 100%), transparent))
+    drop-shadow(-2px 0 0 color-mix(in oklch, var(--accent) calc(0.4 * 100%), transparent));
 }
 
 .zardonic-theme-hover-glitch {
@@ -283,8 +283,8 @@
 .zardonic-theme-cyber-card:hover {
   border-color: var(--primary);
   box-shadow:
-    0 0 15px rgba(var(--primary-rgb, 180, 50, 50), 0.1),
-    inset 0 0 15px rgba(var(--primary-rgb, 180, 50, 50), 0.03);
+    0 0 15px color-mix(in oklch, var(--primary) calc(0.1 * 100%), transparent),
+    inset 0 0 15px color-mix(in oklch, var(--primary) calc(0.03 * 100%), transparent);
 }
 
 .zardonic-theme-cyber-border {
@@ -321,8 +321,8 @@
 .zardonic-theme-cyber-border:hover {
   border-color: var(--primary);
   box-shadow:
-    0 0 20px rgba(var(--primary-rgb, 180, 50, 50), 0.2),
-    inset 0 0 20px rgba(var(--primary-rgb, 180, 50, 50), 0.05);
+    0 0 20px color-mix(in oklch, var(--primary) calc(0.2 * 100%), transparent),
+    inset 0 0 20px color-mix(in oklch, var(--primary) calc(0.05 * 100%), transparent);
 }
 
 .zardonic-theme-cyber-border:hover::before,

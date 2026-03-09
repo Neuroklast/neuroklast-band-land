@@ -278,7 +278,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                   alt="Nebula Noir Logo"
                   className="w-48 h-48 object-contain spark-theme-logo-glow"
                   style={{
-                    filter: 'drop-shadow(0 0 15px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 30px rgba(102, 51, 153, 0.2))'
+                    filter: 'drop-shadow(0 0 15px color-mix(in oklch, var(--foreground) 30%, transparent)) drop-shadow(0 0 30px color-mix(in oklch, var(--primary) 20%, transparent))'
                   }}
                 />
               </motion.div>
@@ -320,7 +320,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                       className="absolute inset-0 h-full bg-gradient-to-r from-foreground via-primary to-foreground"
                       style={{
                         width: `${progress}%`,
-                        boxShadow: '0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(102, 51, 153, 0.3)'
+                        boxShadow: '0 0 15px color-mix(in oklch, var(--foreground) 50%, transparent), 0 0 30px color-mix(in oklch, var(--primary) 30%, transparent)'
                       }}
                       transition={{ duration: 0.1 }}
                     />
@@ -329,7 +329,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                       className="absolute top-0 h-full w-1 bg-foreground"
                       style={{
                         left: `${progress}%`,
-                        boxShadow: '0 0 8px rgba(255, 255, 255, 0.8)'
+                        boxShadow: '0 0 8px color-mix(in oklch, var(--foreground) 80%, transparent)'
                       }}
                       transition={{ duration: 0.1 }}
                     />

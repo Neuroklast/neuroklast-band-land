@@ -48,11 +48,7 @@ export default function Navigation({ items, siteName }: NavigationProps) {
                 className="relative text-foreground"
               >
                 <ShoppingCart size={24} weight="thin" />
-                {0 > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-accent text-background text-xs w-5 h-5 flex items-center justify-center">
-                    {0}
-                  </span>
-                )}
+
               </motion.button>
 
               <button
