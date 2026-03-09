@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { createHash } from 'node:crypto'
 import { validateSession } from './auth.js'
 
 const KV_KEY = 'newsletter-subscribers'
@@ -36,12 +37,49 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       const { email } = req.body || {}
-      if (!email) {
-        return res.status(400).json({ error: 'Email is required' })
+      if (!email || typeof email !== 'string' || !email.includes('@')) {
+        return res.status(400).json({ error: 'Valid email required' })
       }
+
+      const sanitizedEmail = email.toLowerCase().trim().slice(0, 254)
+
       const subscribers = (await kv.get(KV_KEY)) || []
-      const filtered = subscribers.filter((s) => s.email !== email)
+      const filtered = subscribers.filter((s) => s.email !== sanitizedEmail)
       await kv.set(KV_KEY, filtered)
+
+      // Also unsubscribe from Mailchimp/Brevo if configured
+      try {
+        // Mailchimp
+        if (process.env.MAILCHIMP_API_KEY && process.env.MAILCHIMP_LIST_ID) {
+          const dc = process.env.MAILCHIMP_API_KEY.split('-').pop()
+          const hash = createHash('md5').update(sanitizedEmail).digest('hex')
+          const url = `https://${dc}.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_LIST_ID}/members/${hash}`
+          await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `apikey ${process.env.MAILCHIMP_API_KEY}`,
+            },
+            body: JSON.stringify({ status: 'unsubscribed' }),
+          })
+        }
+
+        // Brevo
+        if (process.env.BREVO_API_KEY && process.env.BREVO_LIST_ID) {
+          const url = `https://api.brevo.com/v3/contacts/lists/${process.env.BREVO_LIST_ID}/contacts/remove`
+          await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'api-key': process.env.BREVO_API_KEY,
+            },
+            body: JSON.stringify({ emails: [sanitizedEmail] }),
+          })
+        }
+      } catch (err) {
+        console.error('External unsubscription failed:', err)
+      }
+
       return res.status(200).json({ success: true })
     }
 
