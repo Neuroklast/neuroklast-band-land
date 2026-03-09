@@ -366,6 +366,7 @@ function App() {
                       updateConfig({ setupComplete: false })
                     }}
                     siteConfig={data}
+                    onUpdateSiteConfig={(key, value) => updateConfig({ [key]: value })}
                     onImportData={(imported) => setConfig(imported)}
                     onOpenDialog={setActiveDialog}
                     isPrimary={isPrimary}
