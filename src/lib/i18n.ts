@@ -130,6 +130,12 @@ const translations: Record<string, Record<Locale, string>> = {
   // ── Partners ────────────────────────────────────────────────────────
   'partners.defaultTitle':     { en: 'PARTNERS & FRIENDS', de: 'PARTNER & FREUNDE' },
 
+  // ── Admin Hub ───────────────────────────────────────────────────────
+  'hub.content':               { en: 'Content', de: 'Inhalte' },
+  'hub.appearance':            { en: 'Design & Theme', de: 'Design & Theme' },
+  'hub.themeStore':            { en: 'Store & Apps', de: 'Store & Apps' },
+  'hub.system':                { en: 'System & Security', de: 'System & Sicherheit' },
+
   // ── EditControls ────────────────────────────────────────────────────
   'edit.export':               { en: 'EXPORT', de: 'EXPORT' },
   'edit.import':               { en: 'IMPORT', de: 'IMPORT' },

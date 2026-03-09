@@ -622,16 +622,89 @@ export default function ThemeCustomizerDialog({
               )}
 
               {activeTab === 'animations' && (
-                <div className="space-y-3">
+                <div className="space-y-4">
+                  {/* Global Animation & Overlay Controls */}
+                  <div className="space-y-3 border border-primary/20 p-3 bg-primary/5 rounded">
+                    <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">Globale Effekte</p>
+
+                    {/* Global Animations Toggle */}
+                    <div className="flex items-center justify-between border-b border-primary/10 pb-2">
+                      <div>
+                        <span className="font-mono text-xs text-foreground/90 block">Globale Animationen</span>
+                        <span className="font-mono text-[9px] text-muted-foreground/60">Schaltet alle komplexen CSS- und Framer-Motion-Animationen um</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setPreviewConfig(prev => {
+                            const current = prev.themeSettings.animationsEnabled ?? true
+                            return {
+                              ...prev,
+                              themeSettings: {
+                                ...prev.themeSettings,
+                                animationsEnabled: !current
+                              }
+                            }
+                          })
+                        }}
+                        className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-mono transition-colors ${
+                          previewConfig.themeSettings.animationsEnabled !== false ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
+                        }`}
+                      >
+                        {previewConfig.themeSettings.animationsEnabled !== false ? <Eye size={14} /> : <EyeSlash size={14} />}
+                        {previewConfig.themeSettings.animationsEnabled !== false ? 'AN' : 'AUS'}
+                      </button>
+                    </div>
+
+                    {[
+                      { id: 'crt', label: 'CRT Effekt' },
+                      { id: 'scanlines', label: 'Scanlines' },
+                      { id: 'noise', label: 'Noise / Glitch' }
+                    ].map(effect => {
+                      const isEnabled = getAnimationEnabled(previewConfig.themeSettings, effect.id)
+                      const intensity = getAnimationIntensity(previewConfig.themeSettings, effect.id)
+                      return (
+                        <div key={effect.id} className="space-y-2 border-b border-primary/10 pb-2 last:border-0 last:pb-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs text-foreground/90">{effect.label}</span>
+                            <button
+                              onClick={() => setPreviewConfig(prev => ({ ...prev, themeSettings: setAnimationEnabled(prev.themeSettings, effect.id, !isEnabled) }))}
+                              className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-mono transition-colors ${
+                                isEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'
+                              }`}
+                            >
+                              {isEnabled ? <Eye size={14} /> : <EyeSlash size={14} />}
+                              {isEnabled ? 'AN' : 'AUS'}
+                            </button>
+                          </div>
+                          {isEnabled && (
+                            <div className="flex items-center gap-3">
+                              <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">Intensität</Label>
+                              <input
+                                type="range" min="0.05" max="1" step="0.05"
+                                value={intensity}
+                                onChange={e => setPreviewConfig(prev => ({ ...prev, themeSettings: setAnimationIntensity(prev.themeSettings, effect.id, parseFloat(e.target.value)) }))}
+                                className="flex-1 h-1 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
+                              />
+                              <span className="font-mono text-[10px] text-primary/70 w-8 text-right">
+                                {Math.round(intensity * 100)}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+
                   {!previewConfig.theme ? (
-                    <p className="font-mono text-[10px] text-muted-foreground/60">Select a theme first to see available animations.</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">Select a theme first to see theme-specific animations.</p>
                   ) : activeAnimations.length === 0 ? (
-                    <p className="font-mono text-[10px] text-muted-foreground/60">This theme has no configurable animations.</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">This theme has no additional configurable animations.</p>
                   ) : (
-                    <>
-                      <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                        Toggle animations for the active theme.
+                    <div className="mt-4">
+                      <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">
+                        Theme-spezifische Effekte
                       </p>
+                      <div className="space-y-3">
                       {activeAnimations.map(anim => {
                         const enabled = getAnimationEnabled(previewConfig.themeSettings, anim.id)
                         const intensity = getAnimationIntensity(previewConfig.themeSettings, anim.id)
@@ -667,7 +740,8 @@ export default function ThemeCustomizerDialog({
                           </div>
                         )
                       })}
-                    </>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
