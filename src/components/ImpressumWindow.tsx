@@ -9,6 +9,8 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import ProtectedText from '@/components/ProtectedText'
 import type { Impressum } from '@/lib/types'
 import { useLocale } from '@/contexts/LocaleContext'
+import { t as i18nT } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n'
 
 interface ImpressumWindowProps {
   isOpen: boolean
@@ -33,9 +35,12 @@ const emptyImpressum: Impressum = {
 export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, onSave }: ImpressumWindowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<Impressum>(impressum || emptyImpressum)
-  const { locale } = useLocale()
+  const { locale, t: translate } = useLocale()
   const [lang, setLang] = useState<'de' | 'en'>(locale)
   const [editLang, setEditLang] = useState<'de' | 'en'>(locale)
+
+  // Helper to translate using the local language toggle
+  const tl = (key: string, l: Locale = lang) => i18nT(key, l)
 
   useEffect(() => {
     if (isOpen) {
@@ -79,34 +84,20 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
     setIsEditing(false)
   }
 
-  const t = lang === 'de' ? {
-    title: 'IMPRESSUM',
-    titleEdit: 'IMPRESSUM BEARBEITEN',
-    legalRef: 'Angaben gemäß § 5 DDG',
-    contact: 'Kontakt',
-    phone: 'Telefon',
-    email: 'E-Mail',
-    responsible: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
+  const t = {
+    title: tl('impressum.title'),
+    titleEdit: tl('impressum.titleEdit'),
+    legalRef: tl('impressum.legalRef'),
+    contact: tl('impressum.contactLabel'),
+    phone: tl('impressum.phoneLabel'),
+    email: tl('impressum.emailLabel'),
+    responsible: tl('impressum.responsibleLabel'),
     noData: editMode
-      ? 'Noch kein Impressum hinterlegt. Klicke auf den Stift oben rechts, um es zu bearbeiten.'
-      : 'Impressum wird noch eingerichtet.',
-    editTitle: 'Impressum bearbeiten',
-    cancel: 'Abbrechen',
-    save: 'Speichern',
-  } : {
-    title: 'LEGAL NOTICE',
-    titleEdit: 'EDIT LEGAL NOTICE',
-    legalRef: 'Information according to § 5 DDG',
-    contact: 'Contact',
-    phone: 'Phone',
-    email: 'Email',
-    responsible: 'Responsible for Content according to § 18 Para. 2 MStV',
-    noData: editMode
-      ? 'No legal notice has been set up yet. Click the pencil icon above to edit.'
-      : 'Legal notice is being set up.',
-    editTitle: 'Edit legal notice',
-    cancel: 'Cancel',
-    save: 'Save',
+      ? tl('impressum.noDataAdmin')
+      : tl('impressum.noData'),
+    editTitle: tl('impressum.editTitle'),
+    cancel: tl('impressum.cancel'),
+    save: tl('impressum.save'),
   }
 
   return (
@@ -171,7 +162,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                 )}
                 <CyberCloseButton
                   onClick={() => { if (isEditing) { setIsEditing(false) } else { onClose() } }}
-                  label={isEditing ? 'BACK' : 'CLOSE'}
+                  label={isEditing ? tl('common.back') : tl('common.close')}
                 />
               </div>
             </div>
@@ -179,28 +170,28 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
             <div className="pb-8 px-8 pt-6 font-mono text-sm space-y-6 overflow-y-auto">
               {isEditing ? (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">{editLang === 'de' ? t.legalRef : 'Information according to § 5 DDG'}</p>
+                  <p className="text-sm text-muted-foreground">{editLang === 'de' ? t.legalRef : tl('impressum.legalRef', 'en')}</p>
                   <p className="text-xs text-primary/60 font-mono">
-                    {editLang === 'de' ? '▸ Editing German version' : '▸ Editing English version (leave empty to use German values)'}
+                    {editLang === 'de' ? tl('impressum.editingDe') : tl('impressum.editingEn')}
                   </p>
 
                   {editLang === 'de' ? (
                     <>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-name">Name / Bandmitglieder</Label>
-                        <Input id="imp-name" value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Vorname Nachname oder Bandmitglieder" />
+                        <Label htmlFor="imp-name">{tl('impressum.nameLabel', 'de')}</Label>
+                        <Input id="imp-name" value={form.name} onChange={(e) => update('name', e.target.value)} placeholder={tl('impressum.namePlaceholder', 'de')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-careof">c/o Impressum-Service</Label>
-                        <Input id="imp-careof" value={form.careOf || ''} onChange={(e) => update('careOf', e.target.value)} placeholder="Name des Impressum-Services" />
+                        <Label htmlFor="imp-careof">{tl('impressum.careOfLabel', 'de')}</Label>
+                        <Input id="imp-careof" value={form.careOf || ''} onChange={(e) => update('careOf', e.target.value)} placeholder={tl('impressum.careOfPlaceholder', 'de')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-street">Straße und Hausnummer</Label>
-                        <Input id="imp-street" value={form.street || ''} onChange={(e) => update('street', e.target.value)} placeholder="Straße und Hausnummer" />
+                        <Label htmlFor="imp-street">{tl('impressum.streetLabel', 'de')}</Label>
+                        <Input id="imp-street" value={form.street || ''} onChange={(e) => update('street', e.target.value)} placeholder={tl('impressum.streetPlaceholder', 'de')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-zipcity">PLZ und Ort</Label>
-                        <Input id="imp-zipcity" value={form.zipCity || ''} onChange={(e) => update('zipCity', e.target.value)} placeholder="PLZ und Ort" />
+                        <Label htmlFor="imp-zipcity">{tl('impressum.zipCityLabel', 'de')}</Label>
+                        <Input id="imp-zipcity" value={form.zipCity || ''} onChange={(e) => update('zipCity', e.target.value)} placeholder={tl('impressum.zipCityPlaceholder', 'de')} />
                       </div>
 
                       <div className="border-t border-border pt-4 mt-4">
@@ -216,58 +207,58 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                       </div>
 
                       <div className="border-t border-border pt-4 mt-4">
-                        <p className="text-sm text-muted-foreground mb-4">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</p>
+                        <p className="text-sm text-muted-foreground mb-4">{tl('impressum.responsibleLabel', 'de')}</p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-resp-name">Name</Label>
-                        <Input id="imp-resp-name" value={form.responsibleName || ''} onChange={(e) => update('responsibleName', e.target.value)} placeholder="Name der verantwortlichen Person" />
+                        <Label htmlFor="imp-resp-name">{tl('impressum.responsibleNameLabel', 'de')}</Label>
+                        <Input id="imp-resp-name" value={form.responsibleName || ''} onChange={(e) => update('responsibleName', e.target.value)} placeholder={tl('impressum.responsibleNamePlaceholder', 'de')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-resp-addr">Anschrift</Label>
-                        <Input id="imp-resp-addr" value={form.responsibleAddress || ''} onChange={(e) => update('responsibleAddress', e.target.value)} placeholder="Anschrift oder Service-Adresse" />
+                        <Label htmlFor="imp-resp-addr">{tl('impressum.responsibleAddressLabel', 'de')}</Label>
+                        <Input id="imp-resp-addr" value={form.responsibleAddress || ''} onChange={(e) => update('responsibleAddress', e.target.value)} placeholder={tl('impressum.responsibleAddressPlaceholder', 'de')} />
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-name-en">Name / Band members</Label>
-                        <Input id="imp-name-en" value={form.nameEn || ''} onChange={(e) => update('nameEn', e.target.value)} placeholder={form.name || 'Name (leave empty to use German)'} />
+                        <Label htmlFor="imp-name-en">{tl('impressum.nameEnLabel', 'en')}</Label>
+                        <Input id="imp-name-en" value={form.nameEn || ''} onChange={(e) => update('nameEn', e.target.value)} placeholder={form.name || tl('impressum.namePlaceholder', 'en')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-careof-en">c/o Impressum Service</Label>
-                        <Input id="imp-careof-en" value={form.careOfEn || ''} onChange={(e) => update('careOfEn', e.target.value)} placeholder={form.careOf || 'c/o service name'} />
+                        <Label htmlFor="imp-careof-en">{tl('impressum.careOfEnLabel', 'en')}</Label>
+                        <Input id="imp-careof-en" value={form.careOfEn || ''} onChange={(e) => update('careOfEn', e.target.value)} placeholder={form.careOf || tl('impressum.careOfPlaceholder', 'en')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-street-en">Street and number</Label>
-                        <Input id="imp-street-en" value={form.streetEn || ''} onChange={(e) => update('streetEn', e.target.value)} placeholder={form.street || 'Street and number'} />
+                        <Label htmlFor="imp-street-en">{tl('impressum.streetEnLabel', 'en')}</Label>
+                        <Input id="imp-street-en" value={form.streetEn || ''} onChange={(e) => update('streetEn', e.target.value)} placeholder={form.street || tl('impressum.streetPlaceholder', 'en')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-zipcity-en">Postal code and city</Label>
-                        <Input id="imp-zipcity-en" value={form.zipCityEn || ''} onChange={(e) => update('zipCityEn', e.target.value)} placeholder={form.zipCity || 'Postal code and city'} />
+                        <Label htmlFor="imp-zipcity-en">{tl('impressum.zipCityEnLabel', 'en')}</Label>
+                        <Input id="imp-zipcity-en" value={form.zipCityEn || ''} onChange={(e) => update('zipCityEn', e.target.value)} placeholder={form.zipCity || tl('impressum.zipCityPlaceholder', 'en')} />
                       </div>
 
                       <div className="border-t border-border pt-4 mt-4">
-                        <p className="text-sm text-muted-foreground mb-4">Contact (shared across languages)</p>
+                        <p className="text-sm text-muted-foreground mb-4">{tl('impressum.contactShared', 'en')}</p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-phone-en">Phone</Label>
-                        <Input id="imp-phone-en" value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} placeholder="+49 ..." />
+                        <Label htmlFor="imp-phone-en">{tl('impressum.phoneLabel', 'en')}</Label>
+                        <Input id="imp-phone-en" value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} placeholder={tl('impressum.phonePlaceholder', 'en')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-email-en">Email</Label>
-                        <Input id="imp-email-en" value={form.email || ''} onChange={(e) => update('email', e.target.value)} placeholder="email@example.com" />
+                        <Label htmlFor="imp-email-en">{tl('impressum.emailLabel', 'en')}</Label>
+                        <Input id="imp-email-en" value={form.email || ''} onChange={(e) => update('email', e.target.value)} placeholder={tl('impressum.emailPlaceholder', 'en')} />
                       </div>
 
                       <div className="border-t border-border pt-4 mt-4">
-                        <p className="text-sm text-muted-foreground mb-4">Responsible for content according to § 18 para. 2 MStV</p>
+                        <p className="text-sm text-muted-foreground mb-4">{tl('impressum.responsibleEn', 'en')}</p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-resp-name-en">Name</Label>
-                        <Input id="imp-resp-name-en" value={form.responsibleNameEn || ''} onChange={(e) => update('responsibleNameEn', e.target.value)} placeholder={form.responsibleName || 'Name of responsible person'} />
+                        <Label htmlFor="imp-resp-name-en">{tl('impressum.responsibleNameLabel', 'en')}</Label>
+                        <Input id="imp-resp-name-en" value={form.responsibleNameEn || ''} onChange={(e) => update('responsibleNameEn', e.target.value)} placeholder={form.responsibleName || tl('impressum.responsibleNamePlaceholder', 'en')} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="imp-resp-addr-en">Address</Label>
-                        <Input id="imp-resp-addr-en" value={form.responsibleAddressEn || ''} onChange={(e) => update('responsibleAddressEn', e.target.value)} placeholder={form.responsibleAddress || 'Address or service address'} />
+                        <Label htmlFor="imp-resp-addr-en">{tl('impressum.responsibleAddressLabel', 'en')}</Label>
+                        <Input id="imp-resp-addr-en" value={form.responsibleAddressEn || ''} onChange={(e) => update('responsibleAddressEn', e.target.value)} placeholder={form.responsibleAddress || tl('impressum.responsibleAddressPlaceholder', 'en')} />
                       </div>
                     </>
                   )}
