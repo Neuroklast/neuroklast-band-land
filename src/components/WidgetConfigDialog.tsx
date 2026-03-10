@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Sliders, X, ChartBar } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
+import { useLocale } from '@/hooks/use-locale'
 import type { WidgetPlugin } from '@/lib/types'
 
 interface WidgetConfigDialogProps {
@@ -19,6 +20,7 @@ interface WidgetConfigDialogProps {
 }
 
 export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetConfigDialogProps) {
+  const { t } = useLocale()
   const [config, setConfig] = useState<Record<string, unknown>>(
     (widget.config as Record<string, unknown>) ?? {}
   )
@@ -108,8 +110,8 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 onChange={(e) => set('theme', e.target.value)}
                 className="w-full bg-secondary border border-input rounded px-3 py-2 text-sm font-mono text-foreground"
               >
-                <option value="dark">Dark Mode</option>
-                <option value="light">Light Mode</option>
+                <option value="dark">{t('widgetConfig.darkMode')}</option>
+                <option value="light">{t('widgetConfig.lightMode')}</option>
               </select>
             </Field>
           </>
@@ -168,8 +170,8 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
         return (
           <div className="text-sm text-muted-foreground font-mono py-4 text-center">
             <ChartBar size={24} className="text-primary/60 mx-auto mb-2" />
-            <p className="font-semibold mb-1">Analytics Dashboard</p>
-            <p className="text-xs opacity-70">No configuration required — demo data is shown automatically.</p>
+            <p className="font-semibold mb-1">{t('widgetConfig.analyticsTitle')}</p>
+            <p className="text-xs opacity-70">{t('widgetConfig.analyticsNoConfig')}</p>
           </div>
         )
 
@@ -385,7 +387,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       default:
         return (
           <div className="text-sm text-muted-foreground font-mono py-4 text-center">
-            <p className="text-xs opacity-70">No configuration available for this widget.</p>
+            <p className="text-xs opacity-70">{t('widgetConfig.noConfigAvailable')}</p>
           </div>
         )
     }
@@ -412,7 +414,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
             <div className="flex items-center gap-2">
               <Sliders size={18} className="text-primary" />
               <h2 className="font-mono text-sm font-bold tracking-wider">
-                Configure: {widget.name}
+                {t('widgetConfig.configure').replace('{0}', widget.name)}
               </h2>
             </div>
             <CyberCloseButton onClick={onClose} label="CLOSE" />
@@ -427,7 +429,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
           {widget.id !== 'analytics-dashboard' && (
             <div className="p-4 border-t border-primary/10 flex justify-end gap-2">
               <Button size="sm" variant="outline" onClick={onClose} className="text-xs gap-1 h-7 border-primary/30">
-                <X size={12} /> Cancel
+                <X size={12} /> {t('common.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -435,7 +437,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 disabled={!!jsonError}
                 className="text-xs gap-1 h-7"
               >
-                Save
+                {t('common.save')}
               </Button>
             </div>
           )}

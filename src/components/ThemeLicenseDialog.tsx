@@ -11,6 +11,7 @@ import { X, Lock, Key, CheckCircle } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ThemeLicenseDialogProps {
   open: boolean
@@ -33,6 +34,7 @@ export default function ThemeLicenseDialog({
   const [keyValue, setKeyValue] = useState('')
   const [loading, setLoading] = useState(false)
   const { isThemeUnlocked } = usePermissions()
+  const { t } = useLocale()
   const [validated, setValidated] = useState(isThemeUnlocked(themeId))
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -118,16 +120,16 @@ export default function ThemeLicenseDialog({
             <div className="flex items-center gap-2 mb-4">
               <Lock size={16} className="text-primary" />
               <h2 className="font-mono text-sm font-bold tracking-widest text-foreground uppercase">
-                Unlock Theme
+                {t('themeLicense.title')}
               </h2>
             </div>
 
             <p className="font-mono text-xs text-muted-foreground mb-1">
-              Theme: <span className="text-foreground">{themeName}</span>
+              {t('themeLicense.themeLabel')} <span className="text-foreground">{themeName}</span>
             </p>
             {licenseKeyPrefix && (
               <p className="font-mono text-[10px] text-primary/60 mb-4">
-                Key format: {licenseKeyPrefix}XXXX-XXXX-XXXX-XXXX
+                {t('themeLicense.keyFormat').replace('{0}', licenseKeyPrefix)}
               </p>
             )}
 
@@ -143,7 +145,7 @@ export default function ThemeLicenseDialog({
                     <Key size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-primary/40" />
                     <Input
                       className="pl-7 font-mono text-xs h-9"
-                      placeholder={licenseKeyPrefix ? `${licenseKeyPrefix}XXXX-XXXX-XXXX-XXXX` : 'Enter license key'}
+                      placeholder={licenseKeyPrefix ? `${licenseKeyPrefix}XXXX-XXXX-XXXX-XXXX` : t('themeLicense.enterKey')}
                       value={keyValue}
                       onChange={(e) => setKeyValue(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
@@ -158,11 +160,11 @@ export default function ThemeLicenseDialog({
                     disabled={loading || !keyValue.trim()}
                     className="font-mono text-xs h-9"
                   >
-                    {loading ? '...' : 'Validate'}
+                    {loading ? '...' : t('themeLicense.validate')}
                   </Button>
                 </div>
                 <p className="font-mono text-[9px] text-muted-foreground/50 mt-3">
-                  Your key will be validated against the license server. Internet access required.
+                  {t('themeLicense.validationNotice')}
                 </p>
               </>
             )}
