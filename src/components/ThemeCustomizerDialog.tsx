@@ -11,7 +11,7 @@ import ThemeLicenseDialog from '@/components/ThemeLicenseDialog'
 import { applyThemeToDocument, applyThemeToDOM, resetThemeDOM, applyThemeDefaults, FONT_OPTIONS, loadGoogleFont, loadAllGoogleFonts } from '@/lib/theme-application'
 import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
 import { resolveSections, normalizeSections, toggleSection, reorderSections } from '@/lib/sections'
-import { t, Locale } from '@/lib/i18n'
+import { useLocale } from '@/hooks/use-locale'
 import { oklchToHex, hexToOklch } from '@/lib/color-utils'
 
 // ─── Animation ID → ThemeSettings mapping ─────────────────────────────────────
@@ -214,21 +214,11 @@ export default function ThemeCustomizerDialog({
   const [unlockedThemeIds, setUnlockedThemeIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('nk-unlocked-themes') || '[]') } catch { return [] }
   })
-  const [locale, setLocale] = useState<Locale>('en')
+  const { t } = useLocale()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const prevOpenRef = useRef(false)
 
   useEffect(() => {
-    try {
-      const siteConfigStr = localStorage.getItem('site-config')
-      if (siteConfigStr) {
-        const parsed = JSON.parse(siteConfigStr)
-        if (parsed?.locale === 'de' || parsed?.locale === 'en') {
-          setLocale(parsed.locale)
-        }
-      }
-    } catch { /* ignore */ }
-
     if (open && !prevOpenRef.current) {
       startTransition(() => {
         setPreviewConfig({
@@ -392,7 +382,7 @@ export default function ThemeCustomizerDialog({
             <div className="h-12 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-mono text-xs text-primary/70 tracking-wider uppercase">THEME CUSTOMIZER</span>
+                <span className="font-mono text-xs text-primary/70 tracking-wider uppercase">{t('themeCustomizer.title')}</span>
                 {previewConfig.theme && (
                   <span className="font-mono text-[9px] text-primary bg-primary/15 px-2 py-0.5 rounded">
                     {THEME_CATALOG.find(t => t.id === previewConfig.theme)?.name ?? previewConfig.theme}
@@ -425,7 +415,7 @@ export default function ThemeCustomizerDialog({
               {activeTab === 'theme' && (
                 <div className="space-y-4">
                   <p className="font-mono text-[10px] text-muted-foreground/60">
-                    Select a theme. Each theme is a complete visual package including colors, fonts, and effects.
+                    {t('themeCustomizer.selectThemeDesc')}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {THEME_CATALOG.map(themeDefn => {
@@ -474,7 +464,7 @@ export default function ThemeCustomizerDialog({
 
                   {isPrimary && onSaveThemeAccessOverrides && (
                     <details className="mt-2">
-                      <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">License Overrides (Admin)</summary>
+                      <summary className="font-mono text-[9px] text-primary/40 cursor-pointer hover:text-primary/60 uppercase tracking-wider">{t('themeCustomizer.licenseOverrides')}</summary>
                       <div className="mt-2 space-y-2">
                         {THEME_CATALOG.map(themeDefn => {
                           const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
@@ -495,10 +485,10 @@ export default function ThemeCustomizerDialog({
                                 }}
                                 className="bg-background border border-primary/20 rounded px-2 py-1 font-mono text-[9px] text-primary/80"
                               >
-                                <option value="free">Free</option>
-                                <option value="preview">Preview</option>
-                                <option value="locked">Locked</option>
-                                <option value="licensed">Licensed</option>
+                                <option value="free">{t('themeCustomizer.free')}</option>
+                                <option value="preview">{t('themeCustomizer.preview')}</option>
+                                <option value="locked">{t('themeCustomizer.locked')}</option>
+                                <option value="licensed">{t('themeCustomizer.licensed')}</option>
                               </select>
                             </div>
                           )
@@ -513,18 +503,18 @@ export default function ThemeCustomizerDialog({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between mb-3">
                     <p className="font-mono text-[10px] text-muted-foreground/60">
-                      Customize individual colors. Changes preview live.
+                      {t('themeCustomizer.customizeColorsDesc')}
                     </p>
                     {previewConfig.theme && (
                       <Button variant="outline" size="sm" onClick={handleResetToThemeDefaults} className="gap-1 text-xs border-primary/30 h-7">
-                        <ArrowCounterClockwise size={12} /> Theme-Defaults
+                        <ArrowCounterClockwise size={12} /> {t('themeCustomizer.themeDefaults')}
                       </Button>
                     )}
                   </div>
 
                   {/* Design Palette Presets — apply colors only, layout engine is untouched */}
                   <div className="mb-4">
-                    <p className="font-mono text-[9px] text-muted-foreground/50 uppercase tracking-wider mb-2">Farbpaletten</p>
+                    <p className="font-mono text-[9px] text-muted-foreground/50 uppercase tracking-wider mb-2">{t('themeCustomizer.colorPalettes')}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {Object.values(DESIGN_PRESETS).map(preset => {
                         const isActivePreset = previewConfig.themeSettings.activePreset === preset.id
@@ -555,7 +545,7 @@ export default function ThemeCustomizerDialog({
                   </div>
 
                   <div className="border-t border-primary/10 pt-3">
-                    <p className="font-mono text-[9px] text-muted-foreground/50 uppercase tracking-wider mb-2">Individuelle Farben</p>
+                    <p className="font-mono text-[9px] text-muted-foreground/50 uppercase tracking-wider mb-2">{t('themeCustomizer.customColors')}</p>
                     <ColorInput label="Primary" value={previewConfig.themeSettings.primary || 'oklch(0.50 0.22 25)'} onChange={v => updateColor('primary', v)} />
                     <ColorInput label="Accent" value={previewConfig.themeSettings.accent || 'oklch(0.60 0.24 25)'} onChange={v => updateColor('accent', v)} />
                     <ColorInput label="Background" value={previewConfig.themeSettings.background || 'oklch(0 0 0)'} onChange={v => updateColor('background', v)} />
@@ -568,8 +558,8 @@ export default function ThemeCustomizerDialog({
 
                   <div className="pt-4 border-t border-primary/10">
                     <div className="flex items-center justify-between mb-2">
-                      <Label className="font-mono text-xs text-muted-foreground">Border Radius</Label>
-                      <span className="font-mono text-[10px] text-primary/70">{(previewConfig.themeSettings.borderRadius ?? 0.125).toFixed(3)}rem</span>
+                      <Label className="font-mono text-xs text-muted-foreground">{t('themeCustomizer.borderRadius')}</Label>
+                      <span className="font-mono text-[10px] text-primary/70">{t('themeCustomizer.remValue').replace('{0}', (previewConfig.themeSettings.borderRadius ?? 0.125).toFixed(3))}</span>
                     </div>
                     <input
                       type="range" min="0" max="1.5" step="0.025"
@@ -583,7 +573,7 @@ export default function ThemeCustomizerDialog({
                     <div className="flex items-center gap-3 mt-2">
                       <div className="w-16 h-10 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(previewConfig.themeSettings.borderRadius ?? 0.125) * 16}px` }} />
                       <div className="w-20 h-8 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(previewConfig.themeSettings.borderRadius ?? 0.125) * 16}px` }} />
-                      <span className="font-mono text-[9px] text-muted-foreground/50">Preview</span>
+                      <span className="font-mono text-[9px] text-muted-foreground/50">{t('common.preview')}</span>
                     </div>
                   </div>
                 </div>
@@ -593,13 +583,13 @@ export default function ThemeCustomizerDialog({
                 <div className="space-y-4">
                   {/* Global Animation & Overlay Controls */}
                   <div className="space-y-3 border border-primary/20 p-3 bg-primary/5 rounded">
-                    <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">{t('theme.globalEffects', locale)}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">{t('theme.globalEffects')}</p>
 
                     {/* Global Animations Toggle */}
                     <div className="flex items-center justify-between border-b border-primary/10 pb-2">
                       <div>
-                        <span className="font-mono text-xs text-foreground/90 block">{t('theme.globalAnimations', locale)}</span>
-                        <span className="font-mono text-[9px] text-muted-foreground/60">{t('theme.globalAnimationsDesc', locale)}</span>
+                        <span className="font-mono text-xs text-foreground/90 block">{t('theme.globalAnimations')}</span>
+                        <span className="font-mono text-[9px] text-muted-foreground/60">{t('theme.globalAnimationsDesc')}</span>
                       </div>
                       <button
                         onClick={() => {
@@ -619,14 +609,14 @@ export default function ThemeCustomizerDialog({
                         }`}
                       >
                         {previewConfig.themeSettings.animationsEnabled !== false ? <Eye size={14} /> : <EyeSlash size={14} />}
-                        {previewConfig.themeSettings.animationsEnabled !== false ? t('theme.on', locale) : t('theme.off', locale)}
+                        {previewConfig.themeSettings.animationsEnabled !== false ? t('theme.on') : t('theme.off')}
                       </button>
                     </div>
 
                     {[
-                      { id: 'crt', label: t('theme.crt', locale) },
-                      { id: 'scanlines', label: t('theme.scanlines', locale) },
-                      { id: 'noise', label: t('theme.noise', locale) }
+                      { id: 'crt', label: t('theme.crt') },
+                      { id: 'scanlines', label: t('theme.scanlines') },
+                      { id: 'noise', label: t('theme.noise') }
                     ].map(effect => {
                       const isEnabled = getAnimationEnabled(previewConfig.themeSettings, effect.id)
                       const intensity = getAnimationIntensity(previewConfig.themeSettings, effect.id)
@@ -641,12 +631,12 @@ export default function ThemeCustomizerDialog({
                               }`}
                             >
                               {isEnabled ? <Eye size={14} /> : <EyeSlash size={14} />}
-                              {isEnabled ? t('theme.on', locale) : t('theme.off', locale)}
+                              {isEnabled ? t('theme.on') : t('theme.off')}
                             </button>
                           </div>
                           {isEnabled && (
                             <div className="flex items-center gap-3">
-                              <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">{t('theme.intensity', locale)}</Label>
+                              <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">{t('theme.intensity')}</Label>
                               <input
                                 type="range" min="0.05" max="1" step="0.05"
                                 value={intensity}
@@ -664,13 +654,13 @@ export default function ThemeCustomizerDialog({
                   </div>
 
                   {!previewConfig.theme ? (
-                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">{t('theme.selectThemeAnim', locale)}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">{t('theme.selectThemeAnim')}</p>
                   ) : activeAnimations.length === 0 ? (
-                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">{t('theme.noAnim', locale)}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 mt-4">{t('theme.noAnim')}</p>
                   ) : (
                     <div className="mt-4">
                       <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">
-                        {t('theme.themeSpecific', locale)}
+                        {t('theme.themeSpecific')}
                       </p>
                       <div className="space-y-3">
                       {activeAnimations.map(anim => {
@@ -688,12 +678,12 @@ export default function ThemeCustomizerDialog({
                                 }`}
                               >
                                 {enabled ? <Eye size={14} /> : <EyeSlash size={14} />}
-                                {enabled ? t('theme.on', locale) : t('theme.off', locale)}
+                                {enabled ? t('theme.on') : t('theme.off')}
                               </button>
                             </div>
                             {enabled && hasIntensity && (
                               <div className="flex items-center gap-3">
-                                <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">{t('theme.intensity', locale)}</Label>
+                                <Label className="font-mono text-[10px] text-muted-foreground/60 w-16 flex-shrink-0">{t('theme.intensity')}</Label>
                                 <input
                                   type="range" min="0.05" max="1" step="0.05"
                                   value={intensity}
@@ -717,10 +707,10 @@ export default function ThemeCustomizerDialog({
               {activeTab === 'fonts' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="font-mono text-[10px] text-muted-foreground/60">Choose from local and Google Fonts.</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60">{t('themeCustomizer.fontDesc')}</p>
                     {previewConfig.theme && activeThemePkg?.defaultFonts && (
                       <Button variant="outline" size="sm" onClick={handleResetToThemeDefaults} className="gap-1 text-xs border-primary/30 h-7">
-                        <ArrowCounterClockwise size={12} /> Theme-Defaults
+                        <ArrowCounterClockwise size={12} /> {t('themeCustomizer.themeDefaults')}
                       </Button>
                     )}
                   </div>
@@ -732,7 +722,7 @@ export default function ThemeCustomizerDialog({
                     <div key={key} className="space-y-1">
                       <div className="flex items-center justify-between">
                         <Label className="font-mono text-xs text-muted-foreground">{label}</Label>
-                        {hint && <span className="font-mono text-[9px] text-primary/40">Default: {hint.split(',')[0].replace(/'/g, '')}</span>}
+                        {hint && <span className="font-mono text-[9px] text-primary/40">{t('themeCustomizer.fontDefault').replace('{0}', hint.split(',')[0].replace(/'/g, ''))}</span>}
                       </div>
                       <select
                         value={previewConfig.themeSettings[key] || FONT_OPTIONS[0].value}
@@ -751,14 +741,14 @@ export default function ThemeCustomizerDialog({
                         ))}
                       </select>
                       <div className="border border-primary/10 bg-black/30 p-3 mt-1" style={{ fontFamily: previewConfig.themeSettings[key] || FONT_OPTIONS[0].value }}>
-                        <p className="text-sm text-foreground/80">SITE — The quick brown fox jumps over the lazy dog</p>
-                        <p className="text-xs text-foreground/50 mt-1">0123456789 !@#$%^&*() ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                        <p className="text-sm text-foreground/80">{t('themeCustomizer.fontSampleText')}</p>
+                        <p className="text-xs text-foreground/50 mt-1">{t('themeCustomizer.fontSampleChars')}</p>
                       </div>
                     </div>
                   ))}
                   <div className="pt-4 border-t border-primary/10">
                     <div className="flex items-center justify-between mb-2">
-                      <Label className="font-mono text-xs text-muted-foreground">Schriftgröße (Basis)</Label>
+                      <Label className="font-mono text-xs text-muted-foreground">{t('themeCustomizer.fontSize')}</Label>
                       <span className="font-mono text-[10px] text-primary/70">{Math.round((previewConfig.themeSettings.fontSize ?? 1) * 100)}%</span>
                     </div>
                     <input
@@ -769,7 +759,7 @@ export default function ThemeCustomizerDialog({
                       aria-label="Schriftgröße"
                     />
                     <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
-                      <span>KLEIN (75%)</span><span>NORMAL (100%)</span><span>GROß (150%)</span>
+                      <span>{t('themeCustomizer.fontSizeSmall')}</span><span>{t('themeCustomizer.fontSizeNormal')}</span><span>{t('themeCustomizer.fontSizeLarge')}</span>
                     </div>
                   </div>
                 </div>
@@ -777,7 +767,7 @@ export default function ThemeCustomizerDialog({
 
               {activeTab === 'visibility' && (
                 <div className="space-y-2">
-                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">Show or hide individual sections and effects.</p>
+                  <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">{t('themeCustomizer.visibilityDesc')}</p>
                   {(Object.keys(SECTION_LABELS) as (keyof SectionVisibility)[]).map(key => {
                     const visible = visDraft[key] !== false
                     return (
@@ -801,7 +791,7 @@ export default function ThemeCustomizerDialog({
               {activeTab === 'layout' && (
                 <div className="space-y-2">
                   <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Reihenfolge und Sichtbarkeit der Sektionen festlegen.
+                    {t('themeCustomizer.layoutDesc')}
                   </p>
                   {layoutDraft.map((section, index) => (
                     <div key={section.id} className={`flex items-center gap-2 p-2 border rounded transition-colors ${
@@ -845,7 +835,7 @@ export default function ThemeCustomizerDialog({
               {activeTab === 'theme_config' && hasCustomConfig && activeThemePkg?.customConfigSchema && (
                 <div className="space-y-4">
                   <p className="font-mono text-[10px] text-muted-foreground/60 mb-3">
-                    Custom configuration settings specific to the active theme ({activeThemeDef?.name ?? activeThemePkg.name}).
+                    {t('themeCustomizer.themeConfigDesc').replace('{0}', activeThemeDef?.name ?? activeThemePkg.name)}
                   </p>
                   {(Object.entries(activeThemePkg.customConfigSchema) as Array<[string, { label: string; description: string; type: 'number' | 'boolean' | 'string'; default: unknown }]>).map(([key, schema]) => {
                     const val = previewConfig.themeSettings.customConfig?.[key] ?? schema.default
@@ -910,22 +900,22 @@ export default function ThemeCustomizerDialog({
             <div className="p-4 border-t border-primary/20 flex flex-wrap gap-2 justify-between items-center">
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleExportTheme} className="gap-1 text-xs border-primary/30">
-                  <Export size={14} /> Export
+                  <Export size={14} /> {t('common.export')}
                 </Button>
                 <label>
                   <input type="file" accept=".json,application/json" className="hidden" ref={fileInputRef} onChange={handleImportTheme} />
                   <Button variant="outline" size="sm" asChild className="gap-1 text-xs border-primary/30 cursor-pointer">
-                    <span><ArrowSquareIn size={14} /> Import</span>
+                    <span><ArrowSquareIn size={14} /> {t('common.import')}</span>
                   </Button>
                 </label>
                 <Button variant="outline" size="sm" onClick={handleReset} className="gap-1 text-xs border-primary/30">
-                  <ArrowCounterClockwise size={14} /> Reset
+                  <ArrowCounterClockwise size={14} /> {t('common.reset')}
                 </Button>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+                <Button variant="outline" size="sm" onClick={onClose}>{t('common.cancel')}</Button>
                 <Button size="sm" onClick={handleSave} className="gap-1">
-                  <FloppyDisk size={14} /> Save Theme
+                  <FloppyDisk size={14} /> {t('themeCustomizer.saveTheme')}
                 </Button>
               </div>
             </div>
