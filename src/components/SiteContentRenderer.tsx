@@ -3,6 +3,9 @@
  *
  * Each section is wrapped in a SectionGuard so that visibility checks,
  * entrance animations, and error boundaries are managed in one place.
+ *
+ * All content-section components are resolved via the theme slot mechanism,
+ * allowing themes to override any section with their own implementation.
  */
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
@@ -10,15 +13,6 @@ import { useThemeSlots } from '@/lib/theme-registry'
 import { useCachedImage } from '@/hooks/useCachedImage'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import SectionGuard from '@/components/SectionGuard'
-import NewsSection from '@/components/NewsSection'
-import BiographySection from '@/components/BiographySection'
-import GigsSection from '@/components/GigsSection'
-import ReleasesSection from '@/components/ReleasesSection'
-import MediaSection from '@/components/MediaSection'
-import SocialSection from '@/components/SocialSection'
-import PartnersAndFriendsSection from '@/components/PartnersAndFriendsSection'
-import InstagramGallery from '@/components/InstagramGallery'
-import ContactSection from '@/components/ContactSection'
 import NewsletterWidget from '@/components/NewsletterWidget'
 import { WidgetRenderer } from '@/components/widgets'
 import { getActiveWidgets } from '@/lib/widget-plugins'
@@ -61,7 +55,21 @@ export default function SiteContentRenderer({
   onShowDatenschutz,
 }: SiteContentRendererProps) {
   const safeSocialLinks = data.socialLinks || defaultData.socialLinks
-  const { BackgroundEffects: ThemeBackgroundEffects, Hero: ThemeHero, Footer: ThemeFooter, SectionDivider: ThemeSectionDivider } = useThemeSlots(data.themeSettings?.activePreset)
+  const {
+    BackgroundEffects: ThemeBackgroundEffects,
+    Hero: ThemeHero,
+    Footer: ThemeFooter,
+    SectionDivider: ThemeSectionDivider,
+    GigsSection: ThemeGigsSection,
+    ReleasesSection: ThemeReleasesSection,
+    BiographySection: ThemeBiographySection,
+    NewsSection: ThemeNewsSection,
+    MediaSection: ThemeMediaSection,
+    GallerySection: ThemeGallerySection,
+    SocialSection: ThemeSocialSection,
+    ContactSection: ThemeContactSection,
+    PartnersSection: ThemePartnersSection,
+  } = useThemeSlots(data.themeSettings?.activePreset)
   const cachedLogoUrl = useCachedImage(data.logoUrl)
   const cachedTitleImageUrl = useCachedImage(data.titleImageUrl)
 
@@ -91,9 +99,9 @@ export default function SiteContentRenderer({
 
       <main id="main-content" className="relative">
         <SectionGuard sectionId="news" activeSectionIds={activeSectionIds} delay={0.7} label="News">
-          <NewsSection
+          <ThemeNewsSection
             news={data.news}
-            
+            editMode={isOwner}
             onUpdate={(news) => onUpdate('news', news)}
             sectionLabels={data.sectionLabels}
             onLabelChange={onLabelChange}
@@ -102,9 +110,9 @@ export default function SiteContentRenderer({
         </SectionGuard>
 
         <SectionGuard sectionId="biography" activeSectionIds={activeSectionIds} delay={0.8} label="Biography">
-          <BiographySection
+          <ThemeBiographySection
             biography={data.biography}
-            
+            editMode={isOwner}
             onUpdate={(biography) => onUpdate('biography', biography)}
             fontSizes={data.fontSizes}
             onFontSizeChange={onFontSizeChange}
@@ -116,9 +124,9 @@ export default function SiteContentRenderer({
         </SectionGuard>
 
         <SectionGuard sectionId="gallery" activeSectionIds={activeSectionIds} delay={0.9} label="Gallery">
-          <InstagramGallery
+          <ThemeGallerySection
             galleryImages={data.galleryImages}
-            
+            editMode={isOwner}
             onUpdate={(galleryImages) => onUpdate('galleryImages', galleryImages)}
             driveFolderUrl={data.galleryDriveFolderUrl}
             onDriveFolderUrlChange={(galleryDriveFolderUrl) => onUpdate('galleryDriveFolderUrl', galleryDriveFolderUrl)}
@@ -129,9 +137,9 @@ export default function SiteContentRenderer({
         </SectionGuard>
 
         <SectionGuard sectionId="gigs" activeSectionIds={activeSectionIds} delay={1.0} label="Gigs">
-          <GigsSection
+          <ThemeGigsSection
             gigs={data.gigs}
-            
+            editMode={isOwner}
             onUpdate={(gigs) => onUpdate('gigs', gigs)}
             fontSizes={data.fontSizes}
             onFontSizeChange={onFontSizeChange}
@@ -156,9 +164,9 @@ export default function SiteContentRenderer({
         )}
 
         <SectionGuard sectionId="releases" activeSectionIds={activeSectionIds} delay={1.2} label="Releases">
-          <ReleasesSection
+          <ThemeReleasesSection
             releases={data.releases}
-            
+            editMode={isOwner}
             onUpdate={(releases) => onUpdate('releases', releases)}
             fontSizes={data.fontSizes}
             onFontSizeChange={onFontSizeChange}
@@ -171,9 +179,9 @@ export default function SiteContentRenderer({
         </SectionGuard>
 
         <SectionGuard sectionId="media" activeSectionIds={activeSectionIds} delay={1.3} label="Media">
-          <MediaSection
+          <ThemeMediaSection
             mediaFiles={data.mediaFiles}
-            
+            editMode={isOwner}
             onUpdate={(mediaFiles) => onUpdate('mediaFiles', mediaFiles)}
             sectionLabels={data.sectionLabels}
             onLabelChange={onLabelChange}
@@ -181,9 +189,9 @@ export default function SiteContentRenderer({
         </SectionGuard>
 
         <SectionGuard sectionId="social" activeSectionIds={activeSectionIds} delay={1.4} label="Social">
-          <SocialSection
+          <ThemeSocialSection
             socialLinks={safeSocialLinks}
-            
+            editMode={isOwner}
             onUpdate={(socialLinks) => onUpdate('socialLinks', socialLinks)}
             fontSizes={data.fontSizes}
             onFontSizeChange={onFontSizeChange}
@@ -193,9 +201,9 @@ export default function SiteContentRenderer({
         </SectionGuard>
 
         <SectionGuard sectionId="contact" activeSectionIds={activeSectionIds} delay={1.45} label="Contact">
-          <ContactSection
+          <ThemeContactSection
             contactSettings={data.contactSettings}
-            
+            editMode={isOwner}
             onUpdate={(contactSettings) => onUpdate('contactSettings', contactSettings)}
             sectionLabels={data.sectionLabels}
             onLabelChange={onLabelChange}
@@ -203,9 +211,9 @@ export default function SiteContentRenderer({
         </SectionGuard>
 
         <SectionGuard sectionId="partners" activeSectionIds={activeSectionIds} delay={1.5} label="Partners & Friends">
-          <PartnersAndFriendsSection
+          <ThemePartnersSection
             friends={data.biography?.friends}
-            
+            editMode={isOwner}
             onUpdate={(friends) => onUpdate('biography', {
               ...(data.biography || { story: '', members: [], achievements: [] }),
               friends,

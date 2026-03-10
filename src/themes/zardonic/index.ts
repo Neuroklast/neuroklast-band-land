@@ -12,7 +12,9 @@ export const zardonicTheme: ThemePackage = {
   description: 'Zardonic industrial dark cyberpunk theme',
   version: '1.0.0',
   author: 'Neuroklast',
-  access: 'free',
+  access: 'exclusive',
+  exclusiveFor: 'zardonic',
+  lockedMessage: 'Exclusive to ZARDONIC',
   layout: {
     heroVariant: 'default',
     loadingScreen: 'minimal',

@@ -176,11 +176,11 @@ function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, on
             variant="outline"
             onClick={isPremiumLocked ? undefined : onInstall}
             disabled={isPremiumLocked}
-            title={isPremiumLocked ? 'Upgrade to Pro to install premium widgets' : undefined}
+            title={isPremiumLocked ? t('store.proRequiredWidgets') : undefined}
             className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
           >
             {isPremiumLocked ? (
-              <><Lock size={12} /> PRO REQUIRED</>
+              <><Lock size={12} /> {t('store.proRequired')}</>
             ) : (
               <><DownloadSimple size={14} /> {t('store.install')}</>
             )}
@@ -227,11 +227,11 @@ function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, on
             variant="outline"
             onClick={isPremiumLocked ? undefined : onApplyTheme}
             disabled={isPremiumLocked}
-            title={isPremiumLocked ? 'Upgrade to Pro to use premium themes' : undefined}
+            title={isPremiumLocked ? t('store.proRequiredThemes') : undefined}
             className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
           >
             {isPremiumLocked ? (
-              <><Lock size={12} /> PRO REQUIRED</>
+              <><Lock size={12} /> {t('store.proRequired')}</>
             ) : (
               <><Palette size={14} /> {t('store.apply')}</>
             )}

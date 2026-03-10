@@ -87,6 +87,16 @@ function resolveSlots(theme: ThemePackage): ThemeSlots {
     ScrollReveal: theme.slots.ScrollReveal ?? DefaultScrollReveal,
     HoverEffect: theme.slots.HoverEffect ?? DefaultHoverEffect,
     PageLayout: theme.slots.PageLayout ?? DefaultPageLayout,
+    // Content-section slots (16–24)
+    GigsSection: theme.slots.GigsSection ?? DefaultGigsSection,
+    ReleasesSection: theme.slots.ReleasesSection ?? DefaultReleasesSection,
+    BiographySection: theme.slots.BiographySection ?? DefaultBiographySection,
+    NewsSection: theme.slots.NewsSection ?? DefaultNewsSection,
+    MediaSection: theme.slots.MediaSection ?? DefaultMediaSection,
+    GallerySection: theme.slots.GallerySection ?? DefaultGallerySection,
+    SocialSection: theme.slots.SocialSection ?? DefaultSocialSection,
+    ContactSection: theme.slots.ContactSection ?? DefaultContactSection,
+    PartnersSection: theme.slots.PartnersSection ?? DefaultPartnersSection,
   }
 }
 
@@ -109,6 +119,43 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     },
     author: 'Neuroklast',
     tags: ['dark', 'cyber', 'industrial'],
+    themeType: 'full',
+  },
+  {
+    id: 'nebula-noir-theme',
+    name: 'Nebula Noir - Cosmic Art Deco Goth',
+    description: 'Dark, elegant theme inspired by Art Deco geometry, cosmic aesthetics, and gothic sensibilities with subtle CRT effects',
+    licenseStatus: 'free',
+    theme: {
+      activePreset: 'nebula-noir-theme',
+    },
+    author: 'Nebula Noir',
+    tags: ['dark', 'elegant', 'art-deco', 'cosmic'],
+    themeType: 'full',
+  },
+  {
+    id: 'glitch-noir',
+    name: 'Glitch Noir',
+    description: 'A minimal dark techno theme with clean aesthetics',
+    licenseStatus: 'free',
+    theme: {
+      activePreset: 'glitch-noir',
+    },
+    author: 'Neuroklast',
+    tags: ['dark', 'minimal', 'techno'],
+    themeType: 'full',
+  },
+  {
+    id: 'zardonic-theme',
+    name: 'Zardonic Cyberpunk Theme',
+    description: 'Industrial dark cyberpunk theme — exclusive to Zardonic',
+    licenseStatus: 'locked',
+    licenseKeyPrefix: 'ZARDONIC-',
+    theme: {
+      activePreset: 'zardonic-theme',
+    },
+    author: 'Neuroklast',
+    tags: ['dark', 'industrial', 'cyberpunk', 'exclusive'],
     themeType: 'full',
   },
 ]
