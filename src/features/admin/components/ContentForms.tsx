@@ -6,6 +6,7 @@ import { Plus, Trash, ArrowsDownUp, Spinner } from '@phosphor-icons/react'
 import type { SiteConfig, Gig, Release, NewsItem } from '@/lib/types'
 import { toast } from 'sonner'
 import { useMutation } from '@tanstack/react-query'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface ContentFormsProps {
   data: SiteConfig
@@ -13,6 +14,7 @@ interface ContentFormsProps {
 }
 
 export function ContentForms({ data, onUpdate }: ContentFormsProps) {
+  const { t } = useLocale()
   const [activeTab, setActiveTab] = useState<'info' | 'news' | 'gigs' | 'releases' | 'contact'>('info')
 
   const handleBandInfoChange = (field: string, value: unknown) => {
@@ -130,7 +132,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
     const newItem: NewsItem = {
       id: Date.now().toString(),
       date: new Date().toISOString().split('T')[0],
-      text: 'Neue Nachricht',
+      text: '',
     }
     onUpdate('news', [...(data.news || []), newItem])
   }
@@ -145,11 +147,11 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
   }
 
   const tabs = [
-    { id: 'info', label: 'Band Info' },
-    { id: 'news', label: 'News & Ankündigungen' },
-    { id: 'gigs', label: 'Gigs & Tour' },
-    { id: 'releases', label: 'Releases' },
-    { id: 'contact', label: 'Contact & SEO' },
+    { id: 'info', label: t('content.bandInfo') || 'Band Info' },
+    { id: 'news', label: t('content.newsTab') || 'News' },
+    { id: 'gigs', label: t('content.gigsTab') || 'Gigs & Tour' },
+    { id: 'releases', label: t('content.releasesTab') || 'Releases' },
+    { id: 'contact', label: t('content.contactTab') || 'Contact & SEO' },
   ] as const
 
   return (
@@ -177,37 +179,37 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
 
           {activeTab === 'info' && (
             <div className="space-y-6">
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">Global Identity</h3>
+              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">{t('content.globalIdentity') || 'Global Identity'}</h3>
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label>Band Name</Label>
+                  <Label>{t('content.bandName') || 'Band Name'}</Label>
                   <Input value={data.siteName || ''} onChange={e => handleBandInfoChange('siteName', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Slogan / Subtitle</Label>
+                  <Label>{t('content.slogan') || 'Slogan / Subtitle'}</Label>
                   <Input value={data.tagline || ''} onChange={e => handleBandInfoChange('tagline', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Genres (comma separated)</Label>
+                  <Label>{t('content.genres') || 'Genres (comma separated)'}</Label>
                   <Input
                     value={(data.genres || []).join(', ')}
                     onChange={e => handleBandInfoChange('genres', e.target.value.split(',').map(s => s.trim()))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Logo URL</Label>
+                  <Label>{t('content.logoUrl') || 'Logo URL'}</Label>
                   <Input value={data.logoUrl || ''} onChange={e => handleBandInfoChange('logoUrl', e.target.value)} placeholder="https://..." />
                 </div>
                 <div className="space-y-2">
-                  <Label>Press Photo / Hero Image URL</Label>
+                  <Label>{t('content.heroImageUrl') || 'Press Photo / Hero Image URL'}</Label>
                   <Input value={data.titleImageUrl || ''} onChange={e => handleBandInfoChange('titleImageUrl', e.target.value)} placeholder="https://..." />
                 </div>
               </div>
 
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2 mt-8">Biography</h3>
+              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2 mt-8">{t('bio.defaultTitle') || 'Biography'}</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Short Bio (Start page)</Label>
+                  <Label>{t('content.shortBio') || 'Short Bio (Start page)'}</Label>
                   <textarea
                     className="w-full min-h-[100px] bg-secondary border border-input rounded-md p-3 text-sm font-mono"
                     value={data.description || ''}
@@ -215,7 +217,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Full Story (Bio page)</Label>
+                  <Label>{t('content.fullStory') || 'Full Story (Bio page)'}</Label>
                   <textarea
                     className="w-full min-h-[200px] bg-secondary border border-input rounded-md p-3 text-sm font-mono"
                     value={data.biography?.story || ''}
@@ -229,30 +231,30 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
           {activeTab === 'news' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b border-border pb-2">
-                <h3 className="font-mono font-bold text-lg text-primary">News & Ankündigungen</h3>
-                <Button onClick={handleAddNews} size="sm" className="gap-2"><Plus size={16} /> Hinzufügen</Button>
+                <h3 className="font-mono font-bold text-lg text-primary">{t('content.newsManager') || 'News Manager'}</h3>
+                <Button onClick={handleAddNews} size="sm" className="gap-2"><Plus size={16} /> {t('content.add') || 'Add'}</Button>
               </div>
               {(!data.news || data.news.length === 0) ? (
-                <p className="text-muted-foreground text-sm font-mono">Keine News vorhanden.</p>
+                <p className="text-muted-foreground text-sm font-mono">{t('content.noNews') || 'No news posts yet.'}</p>
               ) : (
                 <div className="space-y-4">
                   {(data.news || []).map((item) => (
                     <div key={item.id} className="bg-card border border-border rounded-lg p-4 flex gap-4 items-start">
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <Label className="text-xs">Datum</Label>
+                          <Label className="text-xs">{t('content.date') || 'Date'}</Label>
                           <Input type="date" value={item.date?.split('T')[0] || ''} onChange={e => handleUpdateNews(item.id, 'date', e.target.value)} className="h-8 text-xs" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Link (optional)</Label>
+                          <Label className="text-xs">{t('content.linkOptional') || 'Link (optional)'}</Label>
                           <Input value={item.link || ''} onChange={e => handleUpdateNews(item.id, 'link', e.target.value)} className="h-8 text-xs" placeholder="https://..." />
                         </div>
                         <div className="space-y-1 md:col-span-2">
-                          <Label className="text-xs">Nachricht</Label>
+                          <Label className="text-xs">{t('content.message') || 'Message'}</Label>
                           <textarea className="w-full min-h-[80px] bg-secondary border border-input rounded-md p-2 text-xs font-mono" value={item.text} onChange={e => handleUpdateNews(item.id, 'text', e.target.value)} />
                         </div>
                         <div className="space-y-1 md:col-span-2">
-                          <Label className="text-xs">Details (optional)</Label>
+                          <Label className="text-xs">{t('content.detailsOptional') || 'Details (optional)'}</Label>
                           <textarea className="w-full min-h-[60px] bg-secondary border border-input rounded-md p-2 text-xs font-mono" value={item.details || ''} onChange={e => handleUpdateNews(item.id, 'details', e.target.value)} />
                         </div>
                       </div>
@@ -269,7 +271,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
           {activeTab === 'gigs' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b border-border pb-2">
-                <h3 className="font-mono font-bold text-lg text-primary">Gig Manager</h3>
+                <h3 className="font-mono font-bold text-lg text-primary">{t('content.gigManager') || 'Gig Manager'}</h3>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -279,14 +281,14 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                     disabled={syncBandsintownMutation.isPending}
                   >
                     {syncBandsintownMutation.isPending ? <Spinner className="animate-spin" size={16} /> : null}
-                    {syncBandsintownMutation.isPending ? 'Syncing...' : 'Sync via Bandsintown'}
+                    {syncBandsintownMutation.isPending ? (t('content.syncing') || 'Syncing...') : (t('content.syncBandsintown') || 'Sync via Bandsintown')}
                   </Button>
-                  <Button onClick={handleAddGig} size="sm" className="gap-2"><Plus size={16} /> Add Gig</Button>
+                  <Button onClick={handleAddGig} size="sm" className="gap-2"><Plus size={16} /> {t('gigs.addGig') || 'Add Gig'}</Button>
                 </div>
               </div>
 
               {(!data.gigs || data.gigs.length === 0) ? (
-                <p className="text-muted-foreground text-sm font-mono">No gigs configured. Click Add Gig to start.</p>
+                <p className="text-muted-foreground text-sm font-mono">{t('content.noGigs') || 'No gigs configured. Click Add Gig to start.'}</p>
               ) : (
                 <div className="space-y-4">
                   {(data.gigs || []).map((gig, index) => (
@@ -294,23 +296,23 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                       <div className="mt-2 text-muted-foreground cursor-grab"><ArrowsDownUp size={20} /></div>
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <Label className="text-xs">Date</Label>
+                          <Label className="text-xs">{t('content.date') || 'Date'}</Label>
                           <Input type="date" value={gig.date.split('T')[0]} onChange={e => handleUpdateGig(gig.id, 'date', e.target.value)} className="h-8 text-xs" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Venue / Festival</Label>
+                          <Label className="text-xs">{t('content.venue') || 'Venue / Festival'}</Label>
                           <Input value={gig.venue} onChange={e => handleUpdateGig(gig.id, 'venue', e.target.value)} className="h-8 text-xs" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Location (City, Country)</Label>
+                          <Label className="text-xs">{t('content.location') || 'Location (City, Country)'}</Label>
                           <Input value={gig.location} onChange={e => handleUpdateGig(gig.id, 'location', e.target.value)} className="h-8 text-xs" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Ticket URL</Label>
+                          <Label className="text-xs">{t('content.ticketUrl') || 'Ticket URL'}</Label>
                           <Input value={gig.ticketUrl || ''} onChange={e => handleUpdateGig(gig.id, 'ticketUrl', e.target.value)} className="h-8 text-xs" placeholder="https://..." />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Status</Label>
+                          <Label className="text-xs">{t('content.status') || 'Status'}</Label>
                           <select
                             className="w-full h-8 bg-secondary border border-input rounded-md px-2 text-xs"
                             value={gig.status || 'confirmed'}
@@ -336,12 +338,12 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
           {activeTab === 'releases' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b border-border pb-2">
-                <h3 className="font-mono font-bold text-lg text-primary">Release Manager</h3>
-                <Button onClick={handleAddRelease} size="sm" className="gap-2"><Plus size={16} /> Add Release</Button>
+                <h3 className="font-mono font-bold text-lg text-primary">{t('content.releaseManager') || 'Release Manager'}</h3>
+                <Button onClick={handleAddRelease} size="sm" className="gap-2"><Plus size={16} /> {t('releases.addRelease') || 'Add Release'}</Button>
               </div>
 
               {(!data.releases || data.releases.length === 0) ? (
-                <p className="text-muted-foreground text-sm font-mono">No releases configured. Click Add Release to start.</p>
+                <p className="text-muted-foreground text-sm font-mono">{t('content.noReleases') || 'No releases configured. Click Add Release to start.'}</p>
               ) : (
                 <div className="space-y-4">
                   {(data.releases || []).map((release) => (
@@ -349,23 +351,23 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                       <div className="mt-2 text-muted-foreground cursor-grab"><ArrowsDownUp size={20} /></div>
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <Label className="text-xs">Title</Label>
+                          <Label className="text-xs">{t('content.title') || 'Title'}</Label>
                           <Input value={release.title} onChange={e => handleUpdateRelease(release.id, 'title', e.target.value)} className="h-8 text-xs" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Release Date</Label>
+                          <Label className="text-xs">{t('content.releaseDate') || 'Release Date'}</Label>
                           <Input type="date" value={release.releaseDate?.split('T')[0] || ''} onChange={e => handleUpdateRelease(release.id, 'releaseDate', e.target.value)} className="h-8 text-xs" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Cover Artwork URL</Label>
+                          <Label className="text-xs">{t('content.coverArtworkUrl') || 'Cover Artwork URL'}</Label>
                           <Input value={release.artwork || ''} onChange={e => handleUpdateRelease(release.id, 'artwork', e.target.value)} className="h-8 text-xs" placeholder="https://..." />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Spotify URL</Label>
+                          <Label className="text-xs">{t('content.spotifyUrl') || 'Spotify URL'}</Label>
                           <Input value={release.streamingLinks?.spotify || ''} onChange={e => handleUpdateRelease(release.id, 'link.spotify', e.target.value)} className="h-8 text-xs" placeholder="https://open.spotify.com/..." />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Apple Music URL</Label>
+                          <Label className="text-xs">{t('content.appleMusicUrl') || 'Apple Music URL'}</Label>
                           <Input value={release.streamingLinks?.appleMusic || ''} onChange={e => handleUpdateRelease(release.id, 'link.appleMusic', e.target.value)} className="h-8 text-xs" placeholder="https://music.apple.com/..." />
                         </div>
                       </div>
@@ -381,10 +383,10 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
 
           {activeTab === 'contact' && (
             <div className="space-y-6">
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">Contact</h3>
+              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">{t('contact.defaultTitle') || 'Contact'}</h3>
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label>Booking Email</Label>
+                  <Label>{t('content.bookingEmail') || 'Booking Email'}</Label>
                   <Input
                     value={data.contactSettings?.emailForwardTo || ''}
                     onChange={e => onUpdate('contactSettings', { ...data.contactSettings, emailForwardTo: e.target.value })}
@@ -393,17 +395,17 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                 </div>
               </div>
 
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2 mt-8">SEO & Identity</h3>
+              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2 mt-8">{t('content.seoIdentity') || 'SEO & Identity'}</h3>
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label>Global Meta Title</Label>
+                  <Label>{t('content.metaTitle') || 'Global Meta Title'}</Label>
                   <Input
                     value={data.seo?.title || ''}
                     onChange={e => onUpdate('seo', { ...data.seo, title: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Global Meta Description</Label>
+                  <Label>{t('content.metaDescription') || 'Global Meta Description'}</Label>
                   <textarea
                     className="w-full min-h-[80px] bg-secondary border border-input rounded-md p-3 text-sm font-mono"
                     value={data.seo?.description || ''}
@@ -411,7 +413,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Favicon URL</Label>
+                  <Label>{t('content.faviconUrl') || 'Favicon URL'}</Label>
                   <Input
                     value={data.seo?.favicon || ''}
                     onChange={e => onUpdate('seo', { ...data.seo, favicon: e.target.value })}
@@ -419,7 +421,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Global OG Image URL</Label>
+                  <Label>{t('content.ogImageUrl') || 'Global OG Image URL'}</Label>
                   <Input
                     value={data.seo?.ogImage || ''}
                     onChange={e => onUpdate('seo', { ...data.seo, ogImage: e.target.value })}
@@ -428,10 +430,10 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                 </div>
               </div>
 
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2 mt-8">Legal</h3>
+              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2 mt-8">{t('content.legal') || 'Legal'}</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Impressum (Plain text or markdown)</Label>
+                  <Label>{t('content.impressum') || 'Impressum (Plain text or markdown)'}</Label>
                   <textarea
                     className="w-full min-h-[150px] bg-secondary border border-input rounded-md p-3 text-sm font-mono"
                     value={data.impressum?.name ? JSON.stringify(data.impressum, null, 2) : ''}
