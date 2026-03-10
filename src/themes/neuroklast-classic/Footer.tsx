@@ -3,6 +3,11 @@ import { ArrowUp } from '@phosphor-icons/react'
 import type { FooterSlotProps } from '@/lib/types'
 import './styles.css'
 
+const SIGNAL_ACTIVE_TEXT = 'SIGNAL::ACTIVE'
+const IMPRESSUM_TEXT = 'Impressum'
+const DATENSCHUTZ_TEXT = 'Datenschutz'
+const ADMIN_LOGIN_TEXT = '>:Admin_Login'
+
 export default function NeuroklastClassicFooter({
   socialLinks,
   siteName,
@@ -46,7 +51,7 @@ export default function NeuroklastClassicFooter({
         {/* HUD label — top-right */}
         <div className="absolute top-4 right-4 hidden md:block">
           <div className="font-mono text-[9px] text-primary/40 tracking-wider">
-            SIGNAL::ACTIVE
+            {SIGNAL_ACTIVE_TEXT}
           </div>
         </div>
 
@@ -98,7 +103,7 @@ export default function NeuroklastClassicFooter({
           {/* Copyright & legal */}
           <div className="text-center space-y-3">
             <p className="text-[10px] md:text-xs font-mono text-muted-foreground/70 tracking-wider">
-              &copy; {new Date().getFullYear()} {(siteName || 'NEUROKLAST').toUpperCase()}. ALL RIGHTS RESERVED.
+              {`\u00A9 ${new Date().getFullYear()} ${(siteName || 'NEUROKLAST').toUpperCase()}. ALL RIGHTS RESERVED.`}
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-[10px] font-mono text-muted-foreground/50 tracking-wider">
@@ -107,7 +112,7 @@ export default function NeuroklastClassicFooter({
                   onClick={onImpressum}
                   className="hover:text-primary transition-colors uppercase"
                 >
-                  Impressum
+                  {IMPRESSUM_TEXT}
                 </button>
               )}
               {onDatenschutz && (
@@ -115,7 +120,7 @@ export default function NeuroklastClassicFooter({
                   onClick={onDatenschutz}
                   className="hover:text-primary transition-colors uppercase"
                 >
-                  Datenschutz
+                  {DATENSCHUTZ_TEXT}
                 </button>
               )}
               {onAdminLogin && (
@@ -123,7 +128,7 @@ export default function NeuroklastClassicFooter({
                   onClick={onAdminLogin}
                   className="hover:text-primary transition-colors uppercase"
                 >
-                  &gt;:Admin_Login
+                  {ADMIN_LOGIN_TEXT}
                 </button>
               )}
             </div>

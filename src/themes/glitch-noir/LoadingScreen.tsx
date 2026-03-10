@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
+const NK_BOOT_TEXT = 'NK://BOOT'
+const LOADING_SEQUENCE_LABEL = '[LOADING_SEQUENCE]'
+const BLOCK_CHAR = '█'
+
 const BOOT_SEQUENCE = [
   '/// SYSTEM_BOOT_INIT ///',
   '[CARRIER_WAVE] FREQUENCY_LOCK...',
@@ -96,10 +100,10 @@ export default function LoadingScreen() {
             className="relative"
           >
             <div className="absolute inset-0 text-6xl font-mono font-bold text-accent blur-sm opacity-30">
-              NK://BOOT
+              {NK_BOOT_TEXT}
             </div>
             <div className="relative text-6xl font-mono font-bold text-foreground mb-4">
-              NK://BOOT
+              {NK_BOOT_TEXT}
             </div>
           </motion.div>
           <div className="flex items-center justify-center gap-2">
@@ -137,8 +141,8 @@ export default function LoadingScreen() {
 
         <div className="space-y-3">
           <div className="flex justify-between text-muted-foreground font-mono text-xs">
-            <span>[LOADING_SEQUENCE]</span>
-            <span>{progress}% COMPLETE</span>
+            <span>{LOADING_SEQUENCE_LABEL}</span>
+            <span>{`${progress}% COMPLETE`}</span>
           </div>
           <div className="h-2 bg-border overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/20 to-transparent glitch-noir-flicker" />
@@ -152,19 +156,19 @@ export default function LoadingScreen() {
             </motion.div>
           </div>
           <div className="flex justify-between text-muted-foreground font-mono text-xs">
-            <span>SIGNAL_STRENGTH: {Math.floor(progress * 0.95)}%</span>
-            <span>NOISE_FLOOR: {Math.floor(noiseLevel * 20)}dB</span>
+            <span>{`SIGNAL_STRENGTH: ${Math.floor(progress * 0.95)}%`}</span>
+            <span>{`NOISE_FLOOR: ${Math.floor(noiseLevel * 20)}dB`}</span>
           </div>
         </div>
 
         <div className="mt-8 flex justify-center gap-3 font-mono text-accent items-center">
-          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2 }}>█</motion.span>
-          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }}>█</motion.span>
-          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }}>█</motion.span>
+          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2 }}>{BLOCK_CHAR}</motion.span>
+          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }}>{BLOCK_CHAR}</motion.span>
+          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }}>{BLOCK_CHAR}</motion.span>
           <span className="text-muted-foreground text-xs">PROCESSING</span>
-          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.6 }}>█</motion.span>
-          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.8 }}>█</motion.span>
-          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 1.0 }}>█</motion.span>
+          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.6 }}>{BLOCK_CHAR}</motion.span>
+          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.8 }}>{BLOCK_CHAR}</motion.span>
+          <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 1.0 }}>{BLOCK_CHAR}</motion.span>
         </div>
       </div>
     </motion.div>

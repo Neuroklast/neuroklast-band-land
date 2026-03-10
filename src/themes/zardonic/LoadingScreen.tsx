@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import type { LoadingScreenSlotProps } from '@/lib/types'
 type LoadingScreenProps = LoadingScreenSlotProps;
 
+const TRIANGLE_CHAR = '▸'
+
 const LOADING_TEXTS = [
   '> ACCESSING PROFILE...',
   '> DECRYPTING DATA...',
@@ -85,10 +87,10 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
           </div>
 
           <div className="flex gap-2 font-mono text-xs text-muted-foreground">
-            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0 }}>▸</motion.span>
-            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0.2 }}>▸</motion.span>
-            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0.4 }}>▸</motion.span>
-            <span className="ml-2">LOADING MODULES [{progress}%]</span>
+            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0 }}>{TRIANGLE_CHAR}</motion.span>
+            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0.2 }}>{TRIANGLE_CHAR}</motion.span>
+            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0.4 }}>{TRIANGLE_CHAR}</motion.span>
+            <span className="ml-2">{`LOADING MODULES [${progress}%]`}</span>
           </div>
         </motion.div>
       </div>

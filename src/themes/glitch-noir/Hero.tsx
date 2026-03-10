@@ -1,6 +1,14 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
+const BLOCK_CHAR = '█'
+const FREQUENCY_TEXT = 'FREQUENCY: 136.5 Hz'
+const BPM_TEXT = 'BPM: 138'
+const DOWN_ARROW = '▼'
+const BAND_NAME = 'NEUROKLAST'
+const LIVE_TEXT = 'LIVE'
+const BULLET = '•'
+
 const SIGNAL_STATES = [
   '[SIGNAL_DETECTED]',
   '[TRANSMISSION_ACTIVE]',
@@ -50,12 +58,12 @@ export default function Hero() {
         <div className={`relative ${glitchActive ? 'glitch-noir-glitch-text' : ''}`}>
           <div className="absolute -inset-4 opacity-20">
             <div className="text-7xl md:text-9xl font-bold tracking-tighter text-accent font-mono blur-sm">
-              NEUROKLAST
+              {BAND_NAME}
             </div>
           </div>
 
           <h1 className="relative text-7xl md:text-9xl font-bold tracking-tighter mb-6 text-foreground font-mono">
-            NEUROKLAST
+            {BAND_NAME}
           </h1>
           
           <div className="flex items-center justify-center gap-2 mb-6">
@@ -86,19 +94,19 @@ export default function Hero() {
         />
 
         <div className="mt-8 flex gap-4 justify-center font-mono text-sm text-muted-foreground">
-          <span className="glitch-noir-flicker">█</span>
-          <span className="glitch-noir-flicker" style={{ animationDelay: '0.3s' }}>█</span>
-          <span className="glitch-noir-flicker" style={{ animationDelay: '0.6s' }}>█</span>
-          <span className="glitch-noir-flicker" style={{ animationDelay: '0.9s' }}>█</span>
-          <span className="glitch-noir-flicker" style={{ animationDelay: '1.2s' }}>█</span>
+          <span className="glitch-noir-flicker">{BLOCK_CHAR}</span>
+          <span className="glitch-noir-flicker" style={{ animationDelay: '0.3s' }}>{BLOCK_CHAR}</span>
+          <span className="glitch-noir-flicker" style={{ animationDelay: '0.6s' }}>{BLOCK_CHAR}</span>
+          <span className="glitch-noir-flicker" style={{ animationDelay: '0.9s' }}>{BLOCK_CHAR}</span>
+          <span className="glitch-noir-flicker" style={{ animationDelay: '1.2s' }}>{BLOCK_CHAR}</span>
         </div>
 
         <div className="mt-8 font-mono text-xs text-muted-foreground/50 flex items-center justify-center gap-3">
-          <span>FREQUENCY: 136.5 Hz</span>
-          <span>•</span>
-          <span>BPM: 138</span>
-          <span>•</span>
-          <span className="glitch-noir-flicker">LIVE</span>
+          <span>{FREQUENCY_TEXT}</span>
+          <span>{BULLET}</span>
+          <span>{BPM_TEXT}</span>
+          <span>{BULLET}</span>
+          <span className="glitch-noir-flicker">{LIVE_TEXT}</span>
         </div>
       </motion.div>
 
@@ -107,7 +115,7 @@ export default function Hero() {
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
-          ▼
+          {DOWN_ARROW}
         </motion.div>
       </div>
     </section>
