@@ -3,7 +3,8 @@ import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect, useMemo, startTransition } from 'react'
 import { Shield, Eye, Trash, MagnifyingGlass, Warning, ArrowsDownUp, SortAscending, SortDescending, UsersFour } from '@phosphor-icons/react'
-import { t, type Locale, LOCALES } from '@/lib/i18n-security'
+import { t, type Locale } from '@/lib/i18n-security'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ProfileSummary {
   hashedIp: string
@@ -87,7 +88,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
   const [search, setSearch] = useState('')
   const [sortField, setSortField] = useState<SortField>('score')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
-  const [locale, setLocale] = useState<Locale>('en')
+  const { locale } = useLocale()
   const [now, setNow] = useState(() => Date.now())
 
   const L = (key: string) => t(key, locale)
@@ -203,20 +204,6 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex border border-primary/20">
-              {LOCALES.map(loc => (
-                <button
-                  key={loc.value}
-                  onClick={() => setLocale(loc.value)}
-                  className={`px-2 py-0.5 text-[9px] font-mono transition-colors ${
-                    locale === loc.value ? 'bg-primary/30 text-primary' : 'text-primary/40 hover:text-primary/70'
-                  }`}
-                  title={loc.value === 'en' ? 'English' : 'Deutsch'}
-                >
-                  {loc.label}
-                </button>
-              ))}
-            </div>
             <CyberCloseButton onClick={onClose} label={L('sec.close')} />
           </div>
         </div>

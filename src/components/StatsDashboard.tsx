@@ -32,12 +32,12 @@ interface StatsDashboardProps {
 
 type TabId = 'overview' | 'traffic' | 'engagement' | 'heatmap' | 'utm'
 
-const TABS: { id: TabId; label: string; icon: React.ComponentType<{ size: number; className?: string }> }[] = [
-  { id: 'overview', label: 'OVERVIEW', icon: TrendUp },
-  { id: 'traffic', label: 'TRAFFIC', icon: Globe },
-  { id: 'engagement', label: 'ENGAGEMENT', icon: Target },
-  { id: 'heatmap', label: 'HEATMAP', icon: MapPin },
-  { id: 'utm', label: 'UTM BUILDER', icon: LinkSimple },
+const TABS: { id: TabId; labelKey: string; icon: React.ComponentType<{ size: number; className?: string }> }[] = [
+  { id: 'overview', labelKey: 'stats.tabOverview', icon: TrendUp },
+  { id: 'traffic', labelKey: 'stats.tabTraffic', icon: Globe },
+  { id: 'engagement', labelKey: 'stats.tabEngagement', icon: Target },
+  { id: 'heatmap', labelKey: 'stats.tabHeatmap', icon: MapPin },
+  { id: 'utm', labelKey: 'stats.tabUtmBuilder', icon: LinkSimple },
 ]
 
 /** Simple bar chart for daily stats */
@@ -379,11 +379,11 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                 <button
                   onClick={handleReset}
                   className="text-destructive/60 hover:text-destructive transition-colors"
-                  title="Reset analytics"
+                  title={t('stats.resetAnalytics')}
                 >
                   <Trash size={16} />
                 </button>
-                <CyberCloseButton onClick={onClose} label="CLOSE" />
+                <CyberCloseButton onClick={onClose} label={t('common.close')} />
               </div>
             </div>
 
@@ -403,7 +403,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                     }`}
                   >
                     <TabIcon size={12} />
-                    {tab.label}
+                    {t(tab.labelKey)}
                   </button>
                 )
               })}
@@ -420,24 +420,24 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <StatCard
                           icon={Eye}
-                          label="Page Views"
+                          label={t('stats.pageViews')}
                           value={analytics.totalPageViews}
                           sublabel={`~${stats.avgDailyViews}/day avg`}
                         />
                         <StatCard
                           icon={Users}
-                          label="Sessions"
+                          label={t('stats.sessions')}
                           value={analytics.totalSessions}
                           sublabel={analytics.firstTracked ? `Since ${analytics.firstTracked}` : undefined}
                         />
                         <StatCard
                           icon={ArrowSquareOut}
-                          label="Section Views"
+                          label={t('stats.sectionViews')}
                           value={stats.totalSectionViews}
                         />
                         <StatCard
                           icon={CursorClick}
-                          label="Interactions"
+                          label={t('stats.interactions')}
                           value={stats.totalInteractions}
                         />
                       </div>
@@ -446,33 +446,33 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <StatCard
                           icon={ChartBar}
-                          label="Total Clicks"
+                          label={t('stats.totalClicks')}
                           value={stats.totalClicks}
-                          sublabel="Last 30 days"
+                          sublabel={t('stats.last30Days')}
                         />
                         <StatCard
                           icon={Target}
-                          label="Est. Bounce Rate"
+                          label={t('stats.estBounceRate')}
                           value={`${Math.max(0, Math.min(100, stats.nonInteractionRate))}%`}
-                          sublabel="Non-interaction rate (lower is better)"
+                          sublabel={t('stats.nonInteractionDesc')}
                         />
                         <StatCard
                           icon={TrendUp}
-                          label="Views/Session"
+                          label={t('stats.viewsPerSession')}
                           value={analytics.totalSessions > 0 ? (analytics.totalPageViews / analytics.totalSessions).toFixed(1) : '—'}
-                          sublabel="Engagement depth"
+                          sublabel={t('stats.engagementDepth')}
                         />
                         <StatCard
                           icon={Eye}
-                          label="Tracking Period"
+                          label={t('stats.trackingPeriod')}
                           value={stats.last30Days.length}
-                          sublabel="Days with data"
+                          sublabel={t('stats.daysWithData')}
                         />
                         <StatCard
                           icon={Users}
-                          label="Newsletter Signups"
+                          label={t('stats.newsletterSignups')}
                           value={analytics.interactions['newsletter_signup'] || 0}
-                          sublabel="Total signups"
+                          sublabel={t('stats.totalSignups')}
                         />
                       </div>
 
@@ -892,9 +892,9 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                               onClick={() => {
                                 if (!generatedUrl) return
                                 navigator.clipboard.writeText(generatedUrl).then(() => {
-                                  toast('Link kopiert!')
+                                  toast(t('stats.linkCopied'))
                                   if (utmSource) {
-                                    const entry = { url: generatedUrl, campaign: utmCampaign || utmSource, date: new Date().toLocaleDateString('de-DE') }
+                                    const entry = { url: generatedUrl, campaign: utmCampaign || utmSource, date: new Date().toLocaleDateString() }
                                     setUtmHistory(prev => {
                                       const updated = [entry, ...(prev ?? [])].slice(0, 10)
                                       return updated
@@ -904,7 +904,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                               }}
                               className="px-3 py-1.5 bg-primary/20 border border-primary/50 text-primary text-[10px] font-mono tracking-wider hover:bg-primary/30 transition-colors"
                             >
-                              KOPIEREN
+                              {t('stats.copyButton')}
                             </button>
                           </div>
                           <p className="text-[9px] font-mono text-primary/30">{t('stats.qrCodeTip')}</p>
@@ -937,7 +937,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                                   <p className="text-[9px] font-mono text-primary/40">{entry.date}</p>
                                 </div>
                                 <button
-                                  onClick={() => navigator.clipboard.writeText(entry.url).then(() => toast('Link kopiert!')).catch(() => {})}
+                                  onClick={() => navigator.clipboard.writeText(entry.url).then(() => toast(t('stats.linkCopied'))).catch(() => {})}
                                   className="text-[9px] font-mono text-primary/50 hover:text-primary transition-colors border border-primary/20 px-2 py-1"
                                 >
                                   COPY
@@ -989,7 +989,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                 <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
                 <span>{t('stats.analyticsModuleActive')}</span>
                 <span className="ml-auto">
-                  {dataSource === 'server' ? 'Data from persistent server storage' : 'Data stored locally in browser'}
+                  {dataSource === 'server' ? t('stats.serverStorage') : t('stats.localStorage')}
                 </span>
               </div>
             </div>

@@ -3,7 +3,8 @@ import { Trash, ShieldWarning, Globe, Clock, User, Hash, Eye, ShieldCheck, Caret
 import CyberCloseButton from '@/components/CyberCloseButton'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { useState, useEffect, useMemo, Fragment, startTransition } from 'react'
-import { t, type Locale, LOCALES } from '@/lib/i18n-security'
+import { t } from '@/lib/i18n-security'
+import { useLocale } from '@/hooks/use-locale'
 
 export interface SecurityIncident {
   key: string
@@ -141,7 +142,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
   const [sortField, setSortField] = useState<SortField>('time')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [groupBy, setGroupBy] = useState<GroupField>('none')
-  const [locale, setLocale] = useState<Locale>('en')
+  const { locale } = useLocale()
   const [showExportMenu, setShowExportMenu] = useState(false)
 
   const L = (key: string) => t(key, locale)
@@ -454,20 +455,6 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
           </div>
           <div className="flex items-center gap-2">
             {/* Language switch */}
-            <div className="flex border border-primary/20">
-              {LOCALES.map(loc => (
-                <button
-                  key={loc.value}
-                  onClick={() => setLocale(loc.value)}
-                  className={`px-2 py-0.5 text-[9px] font-mono transition-colors ${
-                    locale === loc.value ? 'bg-primary/30 text-primary' : 'text-primary/40 hover:text-primary/70'
-                  }`}
-                  title={loc.value === 'en' ? 'English' : 'Deutsch'}
-                >
-                  {loc.label}
-                </button>
-              ))}
-            </div>
             {/* Export */}
             <div className="relative">
               <button

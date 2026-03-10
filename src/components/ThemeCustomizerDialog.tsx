@@ -168,14 +168,23 @@ interface PreviewConfig {
 // ─── Color input helper ───────────────────────────────────────────────────────
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  // Local state so dragging the color picker doesn't re-render the whole
+  // theme on every mouse move. The theme is only updated on mouseup/blur.
+  const [localHex, setLocalHex] = useState(() => oklchToHex(value))
+
+  // Keep local hex in sync when external value changes (e.g. preset applied)
+  useEffect(() => { setLocalHex(oklchToHex(value)) }, [value])
+
   return (
     <div className="flex items-center gap-3 py-1.5">
       <Label className="font-mono text-xs text-muted-foreground w-36 flex-shrink-0">{label}</Label>
       <div className="flex items-center gap-2 flex-1">
         <input
           type="color"
-          value={oklchToHex(value)}
-          onChange={e => onChange(hexToOklch(e.target.value))}
+          value={localHex}
+          onChange={e => setLocalHex(e.target.value)}
+          onMouseUp={e => onChange(hexToOklch((e.target as HTMLInputElement).value))}
+          onBlur={e => onChange(hexToOklch(e.target.value))}
           className="w-8 h-8 rounded cursor-pointer border border-primary/20 bg-transparent"
         />
         <Input
@@ -343,16 +352,16 @@ export default function ThemeCustomizerDialog({
   const activeAnimations = activeThemePkg?.animations ?? []
 
   const tabs: { key: 'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'layout' | 'theme_config'; label: string }[] = [
-    { key: 'theme', label: 'THEME' },
-    { key: 'colors', label: 'FARBEN' },
-    { key: 'animations', label: 'ANIMATIONEN' },
-    { key: 'fonts', label: 'SCHRIFTEN' },
-    { key: 'visibility', label: 'SICHTBARKEIT' },
-    { key: 'layout', label: 'SEITEN-LAYOUT' },
+    { key: 'theme', label: t('themeCustomizer.tabTheme') || 'THEME' },
+    { key: 'colors', label: t('themeCustomizer.tabColors') || 'COLORS' },
+    { key: 'animations', label: t('themeCustomizer.tabAnimations') || 'ANIMATIONS' },
+    { key: 'fonts', label: t('themeCustomizer.tabFonts') || 'FONTS' },
+    { key: 'visibility', label: t('themeCustomizer.tabVisibility') || 'VISIBILITY' },
+    { key: 'layout', label: t('themeCustomizer.tabLayout') || 'PAGE LAYOUT' },
   ]
 
   if (hasCustomConfig) {
-    tabs.push({ key: 'theme_config', label: 'THEME CONFIG' })
+    tabs.push({ key: 'theme_config', label: t('themeCustomizer.tabConfig') || 'THEME CONFIG' })
   }
 
   return (

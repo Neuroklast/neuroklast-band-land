@@ -24,6 +24,7 @@ import type {
   OverlayModalSlotProps,
 } from '@/lib/types'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
+import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
 import ActivationLockScreen from '@/components/ActivationLockScreen'
@@ -127,6 +128,13 @@ function App() {
   const prevIsOwnerRef = useRef(false)
 
   useCRTEffects()
+
+  // ── Meta tags / browser tab title ───────────────────────────────────────────
+  useEffect(() => {
+    if (siteConfigLoaded) {
+      applyMetaTags(generateMetaTags(config))
+    }
+  }, [config, siteConfigLoaded])
 
   // ── Analytics ───────────────────────────────────────────────────────────────
   useEffect(() => { validateActivationKey().then(setActivationResult) }, [])
@@ -287,10 +295,10 @@ function App() {
         <SecretTerminal isOpen={activeDialog === 'secret-terminal'} onClose={() => setActiveDialog(null)} customCommands={data.terminalCommands || []} secretCode={data.secretCode} siteName={data.siteName} editMode={isOwner} onSaveCommands={(tc) => updateConfig({ terminalCommands: tc })} onSaveSecretCode={(sc) => updateConfig({ secretCode: sc })} />
       </Suspense>
       <Suspense fallback={null}>
-        <ImpressumWindow isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={isOwner} onSave={(impressum) => updateConfig({ impressum })} />
+        <ImpressumWindow open={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={isOwner} onSave={(impressum) => updateConfig({ impressum })} />
       </Suspense>
       <Suspense fallback={null}>
-        <DatenschutzWindow isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
+        <DatenschutzWindow open={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
       </Suspense>
       <CookieBanner />
       {vis.scanline !== false && <MovingScanline />}

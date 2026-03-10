@@ -425,6 +425,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
 
       {(editingGig || isAdding) && (
         <GigEditDialog
+          open={!!(editingGig || isAdding)}
           gig={editingGig}
           onSave={handleSave}
           onClose={() => {

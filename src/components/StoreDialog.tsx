@@ -372,6 +372,8 @@ interface StoreDialogProps {
   activePresetId?: string
   onApplyTheme: (theme: ThemeSettings) => void
   licenseTier?: LicenseTier
+  /** Open dialog on a specific tab: 'themes', 'widgets', or 'all' (default) */
+  initialTab?: StoreTab
 }
 
 export default function StoreDialog({
@@ -382,9 +384,10 @@ export default function StoreDialog({
   activePresetId,
   onApplyTheme,
   licenseTier,
+  initialTab,
 }: StoreDialogProps) {
   const { t } = useLocale()
-  const [tab, setTab] = useState<StoreTab>('all')
+  const [tab, setTab] = useState<StoreTab>(initialTab ?? 'all')
   const [search, setSearch] = useState('')
   const [licenseFilter, setLicenseFilter] = useState<StoreItemLicense | undefined>()
   const [configWidget, setConfigWidget] = useState<WidgetPlugin | null>(null)
@@ -651,6 +654,7 @@ export default function StoreDialog({
     {/* Widget config dialog */}
     {configWidget && (
       <WidgetConfigDialog
+        open={!!configWidget}
         widget={configWidget}
         onSave={handleSaveConfig}
         onClose={() => setConfigWidget(null)}

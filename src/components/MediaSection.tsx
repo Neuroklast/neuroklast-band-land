@@ -285,7 +285,7 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
   const addFile = () => {
     const newFile: MediaFile = {
       id: `media-${Date.now()}`,
-      name: 'New File',
+      name: t('media.newFileName'),
       url: '',
     }
     setEditFiles([...editFiles, newFile])
@@ -315,7 +315,7 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
             <Input
               value={file.name}
               onChange={(e) => updateFile(idx, { name: e.target.value })}
-              placeholder="File Name"
+              placeholder={t('media.fileNamePlaceholder')}
               className="flex-1 text-xs"
             />
             <Button variant="ghost" size="icon" onClick={() => removeFile(idx)}>
@@ -359,7 +359,7 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
             <Input
               value={file.description || ''}
               onChange={(e) => updateFile(idx, { description: e.target.value || undefined })}
-              placeholder="Short description"
+              placeholder={t('media.descriptionPlaceholder')}
               className="text-xs"
             />
           </div>
@@ -441,7 +441,7 @@ function MediaOverlay({ files, editMode, onUpdate, onClose, sectionLabels }: {
                 <button
                   onClick={() => setIsEditing(true)}
                   className="text-primary hover:text-accent transition-colors"
-                  title="Edit media files"
+                  title={t('media.editFiles')}
                 >
                   <PencilSimple size={18} />
                 </button>
@@ -487,7 +487,7 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
   const [overlayOpen, setOverlayOpen] = useState(false)
   const { trigger: triggerTransition, element: transitionElement } = useOverlayTransition()
-  const titleText = sectionLabels?.media || 'MEDIA'
+  const titleText = sectionLabels?.media || t('media.defaultTitle')
   const headingPrefix = sectionLabels?.headingPrefix ?? '>'
   const { displayedText: displayedTitle } = useTypingEffect(
     isInView ? titleText : '',

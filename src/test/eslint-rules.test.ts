@@ -159,3 +159,110 @@ describe('ESLint rule: no-direct-theme-context', () => {
     expect(messages.filter((m) => m.ruleId === 'band-land/no-direct-theme-context')).toHaveLength(0);
   });
 });
+
+// ─── New rule tests ────────────────────────────────────────────────────────────
+
+import requireDialogProps from '../../eslint-rules/require-dialog-props.js';
+import noHardcodedColorValues from '../../eslint-rules/no-hardcoded-color-values.js';
+
+// ESLint v9 flat config arrays — required for .tsx/.ts/.jsx files
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const tsParser = require('@typescript-eslint/parser')
+
+const lintConfigExtra = {
+  // require-dialog-props: uses TSPropertySignature — needs TS parser for full coverage.
+  // Unit tests here only cover file-level exemptions (non-dialog / test files).
+  // Full TypeScript dialog compliance is verified in architecture.test.ts.
+  dialogProps: [{
+    files: ['**/*.{ts,tsx,js}'],
+    plugins: { 'band-land': { rules: { 'require-dialog-props': requireDialogProps } } },
+    rules: { 'band-land/require-dialog-props': 'warn' as const },
+    languageOptions: { ecmaVersion: 2020 as const, sourceType: 'module' as const },
+  }],
+  // no-hardcoded-color-values: needs @typescript-eslint/parser for JSX support in ESLint v9
+  // (ecmaFeatures.jsx was removed in v9 flat config; parser handles JSX instead)
+  hardcodedColors: [{
+    files: ['**/*.{ts,tsx,js,jsx}'],
+    plugins: { 'band-land': { rules: { 'no-hardcoded-color-values': noHardcodedColorValues } } },
+    rules: { 'band-land/no-hardcoded-color-values': 'warn' as const },
+    languageOptions: {
+      ecmaVersion: 2020 as const,
+      sourceType: 'module' as const,
+      parser: tsParser,
+    },
+  }],
+};
+
+describe('ESLint rule: require-dialog-props', () => {
+  // Note: TSPropertySignature detection requires the TypeScript parser which is wired up
+  // in the full ESLint pipeline. These unit tests cover the file-type exemptions only.
+  // Full dialog contract compliance (with TS parser) is verified in architecture.test.ts.
+
+  it('does not warn for non-dialog files', () => {
+    const linter = createLinter();
+    // No TSPropertySignature — rule should never fire on non-dialog files
+    const code = `var x = 1;`;
+    const messages = linter.verify(code, lintConfigExtra.dialogProps, { filename: 'MyComponent.tsx' });
+    expect(messages.filter((m) => m.ruleId === 'band-land/require-dialog-props')).toHaveLength(0);
+  });
+
+  it('does not warn for test files (even named *Dialog.test.tsx)', () => {
+    const linter = createLinter();
+    const code = `var x = 1;`;
+    const messages = linter.verify(code, lintConfigExtra.dialogProps, { filename: 'MyDialog.test.tsx' });
+    expect(messages.filter((m) => m.ruleId === 'band-land/require-dialog-props')).toHaveLength(0);
+  });
+
+  it('does not warn for spec files', () => {
+    const linter = createLinter();
+    const code = `var x = 1;`;
+    const messages = linter.verify(code, lintConfigExtra.dialogProps, { filename: 'MyDialog.spec.tsx' });
+    expect(messages.filter((m) => m.ruleId === 'band-land/require-dialog-props')).toHaveLength(0);
+  });
+
+  it('reports warnings for Dialog files lacking open/onClose (no TSPropertySignature at all)', () => {
+    const linter = createLinter();
+    // Plain JS — no TSPropertySignature nodes, so hasOpen and hasOnClose stay false
+    const code = `var x = 1;`;
+    const messages = linter.verify(code, lintConfigExtra.dialogProps, { filename: 'MyDialog.tsx' });
+    // Both missingOpen and missingCloseHandler should fire
+    expect(messages.filter((m) => m.ruleId === 'band-land/require-dialog-props')).toHaveLength(2);
+  });
+});
+
+describe('ESLint rule: no-hardcoded-color-values', () => {
+  it('warns on Tailwind palette color in className', () => {
+    const linter = createLinter();
+    const code = `function C() { return <div className="bg-red-500 text-white" /> }`;
+    const messages = linter.verify(code, lintConfigExtra.hardcodedColors, { filename: 'Comp.tsx' });
+    expect(messages.some((m) => m.ruleId === 'band-land/no-hardcoded-color-values')).toBe(true);
+  });
+
+  it('warns on hex color in style prop', () => {
+    const linter = createLinter();
+    const code = `function C() { return <div style={{ color: '#ff0000' }} /> }`;
+    const messages = linter.verify(code, lintConfigExtra.hardcodedColors, { filename: 'Comp.tsx' });
+    expect(messages.some((m) => m.ruleId === 'band-land/no-hardcoded-color-values')).toBe(true);
+  });
+
+  it('does not warn on design token classes', () => {
+    const linter = createLinter();
+    const code = `function C() { return <div className="bg-primary text-foreground border-border" /> }`;
+    const messages = linter.verify(code, lintConfigExtra.hardcodedColors, { filename: 'Comp.tsx' });
+    expect(messages.filter((m) => m.ruleId === 'band-land/no-hardcoded-color-values')).toHaveLength(0);
+  });
+
+  it('does not warn in index.css', () => {
+    const linter = createLinter();
+    const code = `const x = 'bg-red-500';`;
+    const messages = linter.verify(code, lintConfigExtra.hardcodedColors, { filename: 'index.css' });
+    expect(messages.filter((m) => m.ruleId === 'band-land/no-hardcoded-color-values')).toHaveLength(0);
+  });
+
+  it('does not warn in test files', () => {
+    const linter = createLinter();
+    const code = `function C() { return <div className="bg-red-500" /> }`;
+    const messages = linter.verify(code, lintConfigExtra.hardcodedColors, { filename: 'Comp.test.tsx' });
+    expect(messages.filter((m) => m.ruleId === 'band-land/no-hardcoded-color-values')).toHaveLength(0);
+  });
+});

@@ -522,6 +522,8 @@ export type AdminDialog =
   | 'marketing'
   | 'oauth'
   | 'store'
+  | 'store-themes'
+  | 'store-widgets'
   | 'keys'
   | 'admin-hub'
   | null

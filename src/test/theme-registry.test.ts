@@ -121,14 +121,15 @@ describe('resolveSlots — content-section slots', () => {
 })
 
 describe('THEME_CATALOG completeness', () => {
-  it('has entries for all 4 built-in themes', async () => {
+  it('has entries for all 5 built-in themes', async () => {
     const { THEME_CATALOG } = await import('@/lib/theme-registry')
     const ids = THEME_CATALOG.map(t => t.id)
+    expect(ids).toContain('dark-minimal')
     expect(ids).toContain('neuroklast-classic')
     expect(ids).toContain('nebula-noir-theme')
     expect(ids).toContain('glitch-noir')
     expect(ids).toContain('zardonic-theme')
-    expect(THEME_CATALOG).toHaveLength(4)
+    expect(THEME_CATALOG).toHaveLength(5)
   })
 })
 
@@ -139,9 +140,9 @@ describe('getActiveTheme fallback', () => {
     expect(theme.id).toBe('my-theme')
   })
 
-  it('falls back to neuroklast-classic when requested theme does not exist', () => {
+  it('falls back to dark-minimal when requested theme does not exist', () => {
     const theme = getActiveTheme('nonexistent-theme')
-    expect(theme.id).toBe('neuroklast-classic')
+    expect(theme.id).toBe('dark-minimal')
   })
 })
 

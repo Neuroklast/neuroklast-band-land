@@ -10,7 +10,7 @@ import { t as i18nT } from '@/lib/i18n'
 import type { Locale } from '@/lib/i18n'
 
 interface DatenschutzWindowProps {
-  isOpen: boolean
+  open: boolean
   onClose: () => void
   datenschutz?: Datenschutz
   impressumName?: string
@@ -168,7 +168,7 @@ You have the right at any time to:
 
 This website contains links to external websites (e.g. Spotify, YouTube, Instagram, etc.). By clicking these links you leave our website. We are not responsible for the data protection practices of these external websites. Please refer to their respective privacy policies.`
 
-export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impressumName, editMode, onSave }: DatenschutzWindowProps) {
+export default function DatenschutzWindow({ open, onClose, datenschutz, impressumName, editMode, onSave }: DatenschutzWindowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState('')
   const [lang, setLang] = useState<'de' | 'en'>('de')
@@ -192,22 +192,22 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
   )
 
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       startTransition(() => {
         setEditText(datenschutz?.customText || defaultTextDE)
         setIsEditing(false)
       })
     }
-  }, [isOpen, datenschutz])
+  }, [open, datenschutz])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!open) return
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [isOpen, onClose])
+  }, [open, onClose])
 
   // Update the edit text when switching language in edit mode
   useEffect(() => {
@@ -260,7 +260,7 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
   }
 
   return (
-    <CyberModalBackdrop open={isOpen} zIndex="z-[10000]" bgClass="bg-background/95 backdrop-blur-sm">
+    <CyberModalBackdrop open={open} zIndex="z-[10000]" bgClass="bg-background/95 backdrop-blur-sm">
           <motion.div
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}

@@ -606,6 +606,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
 
       {(editingRelease || isAdding) && (
         <ReleaseEditDialog
+          open={!!(editingRelease || isAdding)}
           release={editingRelease}
           onSave={handleSave}
           onClose={() => {

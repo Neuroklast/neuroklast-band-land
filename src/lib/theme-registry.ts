@@ -6,6 +6,7 @@
  */
 
 import type { ThemePackage, ThemeSlots } from './types'
+import { assertThemeValid } from './theme-validator'
 import {
   DefaultHero,
   DefaultNavigation,
@@ -32,7 +33,7 @@ import {
   DefaultContactSection,
   DefaultPartnersSection,
 } from '@/themes/default-slots'
-import { builtInThemes, neuroklastClassicTheme } from '@/themes'
+import { builtInThemes, neuroklastClassicTheme, darkMinimalTheme } from '@/themes'
 import type { ThemeDefinition, ThemeLicenseStatus } from './types'
 import type { LicenseTier } from './activation'
 import {
@@ -44,6 +45,11 @@ import { hasFeature } from './license'
 const _registry: Map<string, ThemePackage> = new Map()
 
 export function registerTheme(theme: ThemePackage): void {
+  // Validate in development and test environments to catch incomplete themes early.
+  // This is a no-op in production (import.meta.env.PROD) to avoid startup overhead.
+  if (typeof import.meta !== 'undefined' && !(import.meta as unknown as Record<string, Record<string, unknown>>).env?.PROD) {
+    assertThemeValid(theme)
+  }
   _registry.set(theme.id, theme)
 }
 
@@ -60,7 +66,9 @@ export function getActiveTheme(themeId?: string): ThemePackage {
     const found = _registry.get(themeId)
     if (found) return found
   }
-  const fallback = _registry.get('neuroklast-classic') ?? Array.from(_registry.values())[0]
+  // dark-minimal is the default free theme for all users.
+  // neuroklast-classic is exclusive to Neuroklast and must not be the public default.
+  const fallback = _registry.get('dark-minimal') ?? _registry.get('neuroklast-classic') ?? Array.from(_registry.values())[0]
   if (!fallback) throw new Error('Theme registry is empty — no themes have been registered')
   return fallback
 }
@@ -104,9 +112,21 @@ for (const theme of builtInThemes) {
   registerTheme(theme)
 }
 
-export { neuroklastClassicTheme }
+export { neuroklastClassicTheme, darkMinimalTheme }
 
 export const THEME_CATALOG: ThemeDefinition[] = [
+  {
+    id: 'dark-minimal',
+    name: 'Dark Minimal',
+    description: 'A clean, simple dark theme with white text. The default starting point for any band site.',
+    licenseStatus: 'free',
+    theme: {
+      activePreset: 'dark-minimal',
+    },
+    author: 'Neuroklast',
+    tags: ['dark', 'minimal', 'simple', 'default'],
+    themeType: 'full',
+  },
   {
     id: 'neuroklast-classic',
     name: 'Neuroklast Classic',
