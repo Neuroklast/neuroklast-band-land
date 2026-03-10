@@ -1,7 +1,9 @@
 /**
  * Lightweight i18n utility for the Security Center.
- * English only — German translations retained for data compatibility.
+ * Powered by i18next with JSON dictionary files in public/locales/.
  */
+
+import i18n from './i18n-config'
 
 export type Locale = 'en' | 'de'
 
@@ -448,12 +450,17 @@ const translations: Record<string, Record<Locale, string>> = {
 
 /** Get a translated string for a key and locale */
 export function t(key: string, locale: Locale): string {
+  // Try i18next security namespace first, fall back to inline dictionary
+  const i18nResult = i18n.getFixedT(locale, 'security')(key, { defaultValue: '' })
+  if (i18nResult) return i18nResult
   return translations[key]?.[locale] ?? translations[key]?.en ?? key
 }
 
 /** Get tooltip for a key (uses the 'Tip' variant) */
 export function tip(key: string, locale: Locale): string | undefined {
   const tipKey = key + 'Tip'
+  const i18nResult = i18n.getFixedT(locale, 'security')(tipKey, { defaultValue: '' })
+  if (i18nResult) return i18nResult
   return translations[tipKey]?.[locale] ?? translations[tipKey]?.en
 }
 

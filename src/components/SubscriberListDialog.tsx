@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Users, Trash, DownloadSimple, CircleNotch } from '@phosphor-icons/react'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface Subscriber {
   email: string
@@ -22,6 +23,7 @@ function formatDate(iso: string): string {
 export default function SubscriberListDialog({ open, onClose }: SubscriberListDialogProps) {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(false)
+  const { t } = useLocale()
 
   const fetchSubscribers = useCallback(async () => {
     setLoading(true)
@@ -76,7 +78,7 @@ export default function SubscriberListDialog({ open, onClose }: SubscriberListDi
         <DialogHeader>
           <DialogTitle className="font-mono text-primary flex items-center gap-2">
             <Users size={20} />
-            MAILING LIST
+            {t('subscribers.title')}
             <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
               {subscribers.length}
             </span>
@@ -84,7 +86,7 @@ export default function SubscriberListDialog({ open, onClose }: SubscriberListDi
               <button
                 onClick={handleExportCsv}
                 className="ml-auto text-foreground/50 hover:text-primary transition-colors"
-                aria-label="Als CSV exportieren"
+                aria-label={t('subscribers.exportCsv')}
               >
                 <DownloadSimple size={18} />
               </button>
@@ -96,19 +98,19 @@ export default function SubscriberListDialog({ open, onClose }: SubscriberListDi
           {loading ? (
             <div className="flex items-center justify-center py-12 font-mono text-foreground/50">
               <CircleNotch className="animate-spin mr-2" size={20} />
-              Laden...
+              {t('subscribers.loading')}
             </div>
           ) : subscribers.length === 0 ? (
             <div className="flex items-center justify-center py-12 font-mono text-foreground/50">
-              Keine Abonnenten
+              {t('subscribers.noSubscribers')}
             </div>
           ) : (
             <div className="space-y-0.5">
               {/* Table header */}
               <div className="flex items-center gap-3 px-3 py-1.5 font-mono text-[10px] text-foreground/40 uppercase tracking-wider">
-                <span className="flex-1">Email</span>
-                <span className="w-24 text-center">Source</span>
-                <span className="w-32 text-right">Datum</span>
+                <span className="flex-1">{t('subscribers.email')}</span>
+                <span className="w-24 text-center">{t('subscribers.source')}</span>
+                <span className="w-32 text-right">{t('subscribers.date')}</span>
                 <span className="w-8" />
               </div>
 
@@ -131,7 +133,7 @@ export default function SubscriberListDialog({ open, onClose }: SubscriberListDi
                   <button
                     onClick={() => handleDelete(sub.email)}
                     className="w-8 flex justify-center shrink-0 text-foreground/20 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                    aria-label={`${sub.email} entfernen`}
+                    aria-label={t('subscribers.remove').replace('{{email}}', sub.email)}
                   >
                     <Trash size={14} />
                   </button>

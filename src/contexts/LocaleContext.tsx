@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { type Locale, t as translate } from '@/lib/i18n'
+import i18n from '@/lib/i18n-config'
 
 interface LocaleContextValue {
   locale: Locale
@@ -64,8 +65,12 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true }
   }, [])
 
+  // Sync i18next language with locale state
   useEffect(() => {
     document.documentElement.lang = locale
+    if (i18n.language !== locale) {
+      i18n.changeLanguage(locale)
+    }
   }, [locale])
 
   const setLocale = useCallback((newLocale: Locale) => {

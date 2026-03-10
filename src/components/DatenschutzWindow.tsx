@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import SafeText from '@/components/SafeText'
 import type { Datenschutz } from '@/lib/types'
+import { t as i18nT } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n'
 
 interface DatenschutzWindowProps {
   isOpen: boolean
@@ -172,6 +174,8 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
   const [lang, setLang] = useState<'de' | 'en'>('de')
   const [editLang, setEditLang] = useState<'de' | 'en'>('de')
 
+  const tl = (key: string, l: Locale = lang) => i18nT(key, l)
+
   const defaultText = lang === 'de' ? defaultTextDE : defaultTextEN
 
   const displayText = (lang === 'de' ? datenschutz?.customText : datenschutz?.customTextEn) || defaultText.replace(
@@ -270,7 +274,7 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary uppercase tracking-wider">
-                  {isEditing ? (lang === 'de' ? 'DATENSCHUTZ BEARBEITEN' : 'EDIT PRIVACY POLICY') : (lang === 'de' ? 'DATENSCHUTZERKLÄRUNG' : 'PRIVACY POLICY')}
+                  {isEditing ? (lang === 'de' ? tl('datenschutz.titleEdit', 'de') : tl('datenschutz.titleEdit', 'en')) : (lang === 'de' ? tl('datenschutz.title', 'de') : tl('datenschutz.title', 'en'))}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -310,14 +314,14 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-primary hover:text-accent transition-colors"
-                    title={lang === 'de' ? 'Datenschutzerklärung bearbeiten' : 'Edit privacy policy'}
+                    title={lang === 'de' ? tl('datenschutz.editTooltip', 'de') : tl('datenschutz.editTooltip', 'en')}
                   >
                     <PencilSimple size={18} />
                   </button>
                 )}
                 <CyberCloseButton
                   onClick={() => { if (isEditing) { setIsEditing(false) } else { onClose() } }}
-                  label={isEditing ? 'BACK' : 'CLOSE'}
+                  label={isEditing ? tl('common.back') : tl('common.close')}
                 />
               </div>
             </div>
@@ -326,12 +330,12 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
               {isEditing ? (
                 <div className="space-y-4">
                   <p className="text-xs text-primary/60 font-mono">
-                    {editLang === 'de' ? '▸ Editing German version' : '▸ Editing English version'}
+                    {editLang === 'de' ? tl('datenschutz.editingDe', 'de') : tl('datenschutz.editingEn', 'en')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {editLang === 'de'
-                      ? 'Bearbeiten Sie die Datenschutzerklärung. Absätze werden durch Leerzeilen getrennt. Zeilen die mit einer Zahl + Punkt beginnen werden als Überschriften dargestellt. Zeilen die mit "- " beginnen werden als Aufzählung dargestellt.'
-                      : 'Edit the privacy policy. Paragraphs are separated by blank lines. Lines starting with a number + period are rendered as headings. Lines starting with "- " are rendered as bullet points.'
+                      ? tl('datenschutz.instructions', 'de')
+                      : tl('datenschutz.instructions', 'en')
                     }
                   </p>
                   <textarea
@@ -340,8 +344,8 @@ export default function DatenschutzWindow({ isOpen, onClose, datenschutz, impres
                     className="w-full h-[50vh] bg-background border border-border rounded-sm p-4 text-xs font-mono text-foreground/90 resize-none focus:outline-none focus:border-primary/50"
                   />
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>{editLang === 'de' ? 'Abbrechen' : 'Cancel'}</Button>
-                    <Button onClick={handleSave}>{editLang === 'de' ? 'Speichern' : 'Save'}</Button>
+                    <Button variant="outline" onClick={() => setIsEditing(false)}>{editLang === 'de' ? tl('datenschutz.cancel', 'de') : tl('datenschutz.cancel', 'en')}</Button>
+                    <Button onClick={handleSave}>{editLang === 'de' ? tl('datenschutz.save', 'de') : tl('datenschutz.save', 'en')}</Button>
                   </div>
                 </div>
               ) : (
