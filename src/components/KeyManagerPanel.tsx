@@ -12,6 +12,7 @@
  * - Stats overview (total keys, by tier, recent)
  */
 import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useLocale } from '@/hooks/use-locale'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -58,6 +59,7 @@ interface GeneratedKey {
 // ─── Client-side QR code display ─────────────────────────────────────────────
 
 function QrCodeDisplay({ value }: { value: string }) {
+  const { t } = useLocale()
   const [dataUrl, setDataUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -73,7 +75,7 @@ function QrCodeDisplay({ value }: { value: string }) {
   if (!dataUrl) {
     return (
       <div className="w-[160px] h-[160px] border border-primary/20 rounded flex items-center justify-center text-xs text-muted-foreground">
-        Generating QR…
+        {t('keyManager.generatingQr')}
       </div>
     )
   }
@@ -89,6 +91,7 @@ function QrCodeDisplay({ value }: { value: string }) {
 // ─── KeyManagerPanel ─────────────────────────────────────────────────────────
 
 export default function KeyManagerPanel() {
+  const { t } = useLocale()
   const [keys, setKeys] = useState<KeyEntry[]>([])
   const [loading, setLoading] = useState(false)
   const [newName, setNewName] = useState('')
@@ -262,9 +265,9 @@ export default function KeyManagerPanel() {
       {/* Header */}
       <div className="flex items-center gap-2">
         <Key size={18} className="text-primary" />
-        <h3 className="text-sm font-bold tracking-wider">KEY MANAGER</h3>
+        <h3 className="text-sm font-bold tracking-wider">{t('keyManager.title')}</h3>
         <span className="text-[10px] bg-primary/10 text-primary/80 px-2 py-0.5 rounded border border-primary/20">
-          PRIMARY ONLY
+          {t('keyManager.primaryOnly')}
         </span>
       </div>
 
@@ -272,11 +275,11 @@ export default function KeyManagerPanel() {
       <div className="grid grid-cols-3 gap-2">
         <div className="border border-primary/10 rounded p-2 bg-card/20 text-center">
           <p className="text-lg font-bold text-primary">{stats.total}</p>
-          <p className="text-[10px] text-muted-foreground">Total Keys</p>
+          <p className="text-[10px] text-muted-foreground">{t('keyManager.totalKeys')}</p>
         </div>
         <div className="border border-primary/10 rounded p-2 bg-card/20 text-center">
           <p className="text-lg font-bold text-status-success">{stats.recentCount}</p>
-          <p className="text-[10px] text-muted-foreground">Last 7 Days</p>
+          <p className="text-[10px] text-muted-foreground">{t('keyManager.last7Days')}</p>
         </div>
         <div className="border border-primary/10 rounded p-2 bg-card/20 text-center">
           <p className="text-[10px] font-bold text-foreground/80 leading-relaxed">
@@ -285,16 +288,16 @@ export default function KeyManagerPanel() {
             ))}
             {Object.keys(stats.byTier).length === 0 && <span className="text-muted-foreground">–</span>}
           </p>
-          <p className="text-[10px] text-muted-foreground">By Tier</p>
+          <p className="text-[10px] text-muted-foreground">{t('keyManager.byTier')}</p>
         </div>
       </div>
 
       {/* Generate new key */}
       <div className="border border-primary/20 rounded bg-card/30 p-4 space-y-3">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Generate New Key</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('keyManager.generateNewKey')}</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <Label className="text-[10px]">Key Name</Label>
+            <Label className="text-[10px]">{t('keyManager.keyName')}</Label>
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
@@ -303,27 +306,27 @@ export default function KeyManagerPanel() {
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Tier</Label>
+            <Label className="text-[10px]">{t('keyManager.tier')}</Label>
             <select
               value={newTier}
               onChange={(e) => setNewTier(e.target.value)}
               className="w-full bg-secondary border border-input rounded px-2 py-1.5 text-xs text-foreground h-8"
             >
-              <option value="free">Free</option>
-              <option value="pro">Pro</option>
-              <option value="agency">Agency</option>
-              <option value="saas">SaaS</option>
+              <option value="free">{t('keyManager.tierFree')}</option>
+              <option value="pro">{t('keyManager.tierPro')}</option>
+              <option value="agency">{t('keyManager.tierAgency')}</option>
+              <option value="saas">{t('keyManager.tierSaas')}</option>
             </select>
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Exclusive Theme (Optional)</Label>
+            <Label className="text-[10px]">{t('keyManager.exclusiveTheme')}</Label>
             <select
               value={newExclusiveTheme}
               onChange={(e) => setNewExclusiveTheme(e.target.value)}
               className="w-full bg-secondary border border-input rounded px-2 py-1.5 text-xs text-foreground h-8"
             >
-              <option value="">None</option>
-              <option value="zardonic">Zardonic</option>
+              <option value="">{t('common.none')}</option>
+              <option value="zardonic">{t('keyManager.zardonic')}</option>
             </select>
           </div>
         </div>
@@ -333,7 +336,7 @@ export default function KeyManagerPanel() {
           disabled={generating || !newName.trim()}
           className="text-xs gap-1.5 h-7"
         >
-          <Plus size={12} /> {generating ? 'Generating…' : 'Generate Key'}
+          <Plus size={12} /> {generating ? t('keyManager.generating') : t('keyManager.generateKey')}
         </Button>
       </div>
 
@@ -348,7 +351,7 @@ export default function KeyManagerPanel() {
           >
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-status-success flex items-center gap-1.5">
-                <Check size={14} /> Key Generated — copy it now!
+                <Check size={14} /> {t('keyManager.keyGenerated')}
               </p>
               <button onClick={() => setGeneratedKey(null)} className="text-muted-foreground hover:text-foreground">
                 <X size={14} />
@@ -359,10 +362,10 @@ export default function KeyManagerPanel() {
             </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={handleCopy} className="text-xs gap-1.5 h-7 border-status-success-em/30 text-status-success hover:text-status-success-dim">
-                {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : 'Copy'}
+                {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? t('common.copied') : t('common.copy')}
               </Button>
               <Button size="sm" variant="outline" onClick={() => setShowQr(!showQr)} className="text-xs gap-1.5 h-7 border-primary/30">
-                <QrCode size={12} /> QR Code
+                <QrCode size={12} /> {t('keyManager.qrCode')}
               </Button>
             </div>
             {showQr && <QrCodeDisplay value={generatedKey.key} />}
@@ -384,11 +387,11 @@ export default function KeyManagerPanel() {
       {/* Key list */}
       <div className="space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Active Keys {loading && <span className="text-[10px] opacity-60">(loading…)</span>}
+          {t('keyManager.activeKeys')} {loading && <span className="text-[10px] opacity-60">{t('keyManager.loadingIndicator')}</span>}
           {searchQuery && <span className="text-[10px] opacity-60"> ({filteredKeys.length} / {keys.length})</span>}
         </p>
         {filteredKeys.length === 0 && !loading && (
-          <p className="text-xs text-muted-foreground/60 py-2">{searchQuery ? 'No matching keys.' : 'No keys found.'}</p>
+          <p className="text-xs text-muted-foreground/60 py-2">{searchQuery ? t('keyManager.noMatchingKeys') : t('keyManager.noKeysFound')}</p>
         )}
         {filteredKeys.map((entry, idx) => (
           <div key={entry.revokeId ?? idx} className="border border-primary/10 rounded bg-card/20 hover:border-primary/20 transition-colors">
@@ -396,7 +399,7 @@ export default function KeyManagerPanel() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold truncate">{entry.name}</p>
                 <p className="text-[10px] text-muted-foreground">
-                  Tier: <span className="text-primary">{entry.tier}</span>
+                  {t('keyManager.tierLabel')} <span className="text-primary">{entry.tier}</span>
                   {entry.createdAt && ` · ${new Date(entry.createdAt).toLocaleDateString()}`}
                   {entry.holderName && ` · ${entry.holderName}`}
                 </p>
@@ -432,7 +435,7 @@ export default function KeyManagerPanel() {
                     onClick={() => handleRevoke(entry.revokeId!)}
                     className="text-xs gap-1 h-6 border-destructive/40 text-destructive"
                   >
-                    <Trash size={11} /> Revoke
+                    <Trash size={11} /> {t('keyManager.revoke')}
                   </Button>
                 )}
               </div>
@@ -449,7 +452,7 @@ export default function KeyManagerPanel() {
                   <div className="px-3 pb-3 pt-1 border-t border-primary/10 space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-[10px]">Holder Name</Label>
+                        <Label className="text-[10px]">{t('keyManager.holderName')}</Label>
                         <Input
                           value={editingMeta.holderName ?? ''}
                           onChange={(e) => setEditingMeta((m) => ({ ...m, holderName: e.target.value }))}
@@ -458,7 +461,7 @@ export default function KeyManagerPanel() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px]">Holder Email</Label>
+                        <Label className="text-[10px]">{t('keyManager.holderEmail')}</Label>
                         <Input
                           value={editingMeta.holderEmail ?? ''}
                           onChange={(e) => setEditingMeta((m) => ({ ...m, holderEmail: e.target.value }))}
@@ -468,7 +471,7 @@ export default function KeyManagerPanel() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px]">Website</Label>
+                      <Label className="text-[10px]">{t('keyManager.website')}</Label>
                       <Input
                         value={editingMeta.holderWebsite ?? ''}
                         onChange={(e) => setEditingMeta((m) => ({ ...m, holderWebsite: e.target.value }))}
@@ -477,7 +480,7 @@ export default function KeyManagerPanel() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px]">Notes</Label>
+                      <Label className="text-[10px]">{t('keyManager.notes')}</Label>
                       <textarea
                         value={editingMeta.notes ?? ''}
                         onChange={(e) => setEditingMeta((m) => ({ ...m, notes: e.target.value }))}
@@ -492,7 +495,7 @@ export default function KeyManagerPanel() {
                       disabled={savingMeta}
                       className="text-xs gap-1.5 h-7"
                     >
-                      <FloppyDisk size={12} /> {savingMeta ? 'Saving…' : 'Save'}
+                      <FloppyDisk size={12} /> {savingMeta ? t('keyManager.saving') : t('common.save')}
                     </Button>
                   </div>
                 </motion.div>
@@ -519,18 +522,17 @@ export default function KeyManagerPanel() {
             >
               <div className="flex items-center gap-2 text-destructive">
                 <Warning size={18} />
-                <p className="font-semibold text-sm">Revoke Key?</p>
+                <p className="font-semibold text-sm">{t('keyManager.revokeKeyTitle')}</p>
               </div>
               <p className="text-xs text-muted-foreground">
-                This will permanently revoke this activation key.
-                Any deployment using this key will be locked out.
+                {t('keyManager.revokeKeyDescription')}
               </p>
               <div className="flex gap-2 justify-end">
                 <Button size="sm" variant="outline" onClick={() => setRevokeTarget(null)} className="text-xs h-7">
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button size="sm" onClick={confirmRevoke} className="text-xs h-7 bg-destructive hover:bg-destructive/80 text-destructive-foreground gap-1">
-                  <Trash size={12} /> Revoke
+                  <Trash size={12} /> {t('keyManager.revoke')}
                 </Button>
               </div>
             </motion.div>

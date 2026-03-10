@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
+import { useLocale } from '@/hooks/use-locale'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PencilSimple, Plus, Trash, CaretDown, CaretUp, Keyboard } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -32,6 +33,7 @@ const RESERVED = TERMINAL_RESERVED_COMMANDS
 const TYPING_SPEED_MS = TERMINAL_TYPING_SPEED_MS
 
 export default function SecretTerminal({ isOpen, onClose, customCommands = [], secretCode, editMode, onSaveCommands, onSaveSecretCode, siteName = '' }: SecretTerminalProps) {
+  const { t } = useLocale()
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<Array<{ type: 'command' | 'output' | 'error', text: string }>>([
     { type: 'output', text: `> ${siteName ? siteName + ' ' : ''}TERMINAL v1.3.37` },
@@ -365,7 +367,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary uppercase tracking-wider">
-                  {isEditing ? (editTab === 'shortcut' ? 'EDIT KEY SEQUENCE' : 'EDIT COMMANDS') : 'TERMINAL ACTIVE'}
+                  {isEditing ? (editTab === 'shortcut' ? t('secretTerminal.editKeySequence') : t('secretTerminal.editCommands')) : t('secretTerminal.terminalActive')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -393,13 +395,13 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                     onClick={() => setEditTab('commands')}
                     className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 ${editTab === 'commands' ? 'text-primary border-primary' : 'text-primary/40 border-transparent hover:text-primary/70'}`}
                   >
-                    <PencilSimple size={12} /> COMMANDS
+                    <PencilSimple size={12} /> {t('secretTerminal.tabCommands')}
                   </button>
                   <button
                     onClick={() => setEditTab('shortcut')}
                     className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 ${editTab === 'shortcut' ? 'text-primary border-primary' : 'text-primary/40 border-transparent hover:text-primary/70'}`}
                   >
-                    <Keyboard size={12} /> KEY SEQUENCE
+                    <Keyboard size={12} /> {t('secretTerminal.tabKeySequence')}
                   </button>
                 </div>
 
@@ -407,7 +409,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                   {editTab === 'commands' ? (
                     <>
                       <p className="text-sm text-muted-foreground">
-                        Add custom commands for the secret terminal. Built-in commands (help, glitch, matrix, clear, exit) cannot be overridden.
+                        {t('secretTerminal.commandsDescription')}
                       </p>
 
                       {cmds.map((cmd, idx) => {
@@ -440,7 +442,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                             )}
                             {isExpanded && (
                               <div className="space-y-2 pl-2 border-l-2 border-primary/20 ml-2">
-                                <Label className="text-xs text-muted-foreground">Output lines</Label>
+                                <Label className="text-xs text-muted-foreground">{t('secretTerminal.outputLines')}</Label>
                                 {cmd.output.map((line, lineIdx) => (
                                   <div key={lineIdx} className="flex gap-2 items-center">
                                     <span className="text-xs text-muted-foreground font-mono w-4">{lineIdx + 1}</span>
@@ -458,9 +460,9 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                                   </div>
                                 ))}
                                 <Button variant="outline" size="sm" onClick={() => addOutputLine(idx)} className="text-xs">
-                                  <Plus size={12} className="mr-1" /> Add line
+                                  <Plus size={12} className="mr-1" /> {t('secretTerminal.addLine')}
                                 </Button>
-                                <Label className="text-xs text-muted-foreground mt-2">File Download (optional)</Label>
+                                <Label className="text-xs text-muted-foreground mt-2">{t('secretTerminal.fileDownload')}</Label>
                                 <Input
                                   value={cmd.fileUrl || ''}
                                   onChange={(e) => updateField(idx, 'fileUrl', e.target.value)}
@@ -480,18 +482,18 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                       })}
 
                       <Button variant="outline" onClick={addCommand} className="w-full">
-                        <Plus size={16} className="mr-2" /> Add Command
+                        <Plus size={16} className="mr-2" /> {t('secretTerminal.addCommand')}
                       </Button>
 
                       <div className="flex justify-end gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                        <Button onClick={handleSaveCommands}>Save Commands</Button>
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>{t('common.cancel')}</Button>
+                        <Button onClick={handleSaveCommands}>{t('secretTerminal.saveCommands')}</Button>
                       </div>
                     </>
                   ) : (
                     <>
                       <p className="text-sm text-muted-foreground">
-                        Define the key sequence that activates the secret terminal. Minimum 2 keys. Click "Record Key" then press any key.
+                        {t('secretTerminal.keySequenceDescription')}
                       </p>
                       <div className="flex flex-wrap gap-2 min-h-[48px] p-3 border border-border bg-background/30">
                         {codeKeys.map((key, i) => (
@@ -509,7 +511,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                           </span>
                         ))}
                         {codeKeys.length === 0 && (
-                          <span className="text-muted-foreground text-xs font-mono">No keys defined</span>
+                          <span className="text-muted-foreground text-xs font-mono">{t('secretTerminal.noKeysDefined')}</span>
                         )}
                       </div>
                       <div className="flex gap-2">
@@ -532,7 +534,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                           onFocus={() => {}}
                         >
                           <Keyboard size={12} className="mr-1" />
-                          {isRecordingKey ? 'PRESS A KEY…' : 'Record Key'}
+                          {isRecordingKey ? t('secretTerminal.pressAKey') : t('secretTerminal.recordKey')}
                         </Button>
                         <Button
                           variant="ghost"
@@ -540,15 +542,15 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                           className="text-xs text-muted-foreground"
                           onClick={() => setCodeKeys(DEFAULT_KONAMI_CODE)}
                         >
-                          Reset to Default
+                          {t('secretTerminal.resetToDefault')}
                         </Button>
                       </div>
                       {codeKeys.length < 2 && (
-                        <p className="text-xs text-destructive">Minimum 2 keys required.</p>
+                        <p className="text-xs text-destructive">{t('secretTerminal.minKeysRequired')}</p>
                       )}
                       <div className="flex justify-end gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                        <Button onClick={handleSaveShortcut} disabled={codeKeys.length < 2}>Save Shortcut</Button>
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>{t('common.cancel')}</Button>
+                        <Button onClick={handleSaveShortcut} disabled={codeKeys.length < 2}>{t('secretTerminal.saveShortcut')}</Button>
                       </div>
                     </>
                   )}
@@ -586,7 +588,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                       }`}
                     >
                       {currentTyping.displayed}
-                      <span className="animate-pulse">▌</span>
+                      <span className="animate-pulse">{t('secretTerminal.cursorChar')}</span>
                     </div>
                   )}
                   {/* CP2077 Download Animation */}
@@ -610,7 +612,7 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                             transition={{ duration: 0.4 }}
                           >
                             <div className="text-primary font-mono text-xs tracking-widest">
-                              &gt; TRANSFER COMPLETE
+                              {t('secretTerminal.transferComplete')}
                             </div>
                           </motion.div>
                         ) : isAccessing ? (
@@ -648,9 +650,9 @@ export default function SecretTerminal({ isOpen, onClose, customCommands = [], s
                             </div>
                             {/* Fake stats */}
                             <div className="text-primary/50 space-y-0.5 text-[9px] tracking-wider">
-                              <div>TRANSFER RATE: <span className="text-primary/80">{fakeStats.rate} MB/s</span></div>
-                              <div>ENCRYPTION: <span className="text-primary/80">{fakeStats.enc}</span></div>
-                              <div>NODE: <span className="text-primary/80">{fakeStats.node}</span></div>
+                              <div>{t('secretTerminal.transferRate')} <span className="text-primary/80">{t('secretTerminal.transferRateValue').replace('{0}', fakeStats.rate)}</span></div>
+                              <div>{t('secretTerminal.encryption')} <span className="text-primary/80">{fakeStats.enc}</span></div>
+                              <div>{t('secretTerminal.node')} <span className="text-primary/80">{fakeStats.node}</span></div>
                             </div>
                           </motion.div>
                         )}

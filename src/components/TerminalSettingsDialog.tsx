@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, startTransition } from 'react'
+import { useLocale } from '@/hooks/use-locale'
 import { motion } from 'framer-motion'
 import { PencilSimple, Plus, Trash, CaretDown, CaretUp, Keyboard, Terminal } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ export default function TerminalSettingsDialog({
   morseCode,
   onSave,
 }: TerminalSettingsDialogProps) {
+  const { t } = useLocale()
   const [activeTab, setActiveTab] = useState<'commands' | 'shortcut' | 'morse'>('commands')
 
   // Commands state
@@ -139,7 +141,7 @@ export default function TerminalSettingsDialog({
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
             <Terminal size={14} className="text-primary" />
-            <span className="font-mono text-xs text-primary uppercase tracking-wider">TERMINAL SETTINGS</span>
+            <span className="font-mono text-xs text-primary uppercase tracking-wider">{t('terminalSettings.title')}</span>
           </div>
           <CyberCloseButton onClick={onClose} label="CLOSE" />
         </div>
@@ -150,19 +152,19 @@ export default function TerminalSettingsDialog({
             onClick={() => setActiveTab('commands')}
             className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 ${activeTab === 'commands' ? 'text-primary border-primary' : 'text-primary/40 border-transparent hover:text-primary/70'}`}
           >
-            <PencilSimple size={12} /> COMMANDS
+            <PencilSimple size={12} /> {t('terminalSettings.tabCommands')}
           </button>
           <button
             onClick={() => setActiveTab('shortcut')}
             className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 ${activeTab === 'shortcut' ? 'text-primary border-primary' : 'text-primary/40 border-transparent hover:text-primary/70'}`}
           >
-            <Keyboard size={12} /> KEY SEQUENCE
+            <Keyboard size={12} /> {t('terminalSettings.tabKeySequence')}
           </button>
           <button
             onClick={() => setActiveTab('morse')}
             className={`flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-wider transition-colors border-b-2 ${activeTab === 'morse' ? 'text-primary border-primary' : 'text-primary/40 border-transparent hover:text-primary/70'}`}
           >
-            <span className="font-mono text-[10px]">· –</span> MORSE CODE
+            <span className="font-mono text-[10px]">{t('terminalSettings.morseIcon')}</span> {t('terminalSettings.tabMorseCode')}
           </button>
         </div>
 
@@ -171,7 +173,7 @@ export default function TerminalSettingsDialog({
           {activeTab === 'commands' && (
             <>
               <p className="text-sm text-muted-foreground">
-                Add custom commands for the secret terminal. Built-in commands (help, glitch, matrix, clear, exit) cannot be overridden.
+                {t('terminalSettings.commandsDescription')}
               </p>
 
               {cmds.map((cmd, idx) => {
@@ -202,7 +204,7 @@ export default function TerminalSettingsDialog({
                     {conflict && <p className="text-xs text-destructive">{conflict}</p>}
                     {isExpanded && (
                       <div className="space-y-2 pl-2 border-l-2 border-primary/20 ml-2">
-                        <Label className="text-xs text-muted-foreground">Output lines</Label>
+                        <Label className="text-xs text-muted-foreground">{t('terminalSettings.outputLines')}</Label>
                         {cmd.output.map((line, lineIdx) => (
                           <div key={lineIdx} className="flex gap-2 items-center">
                             <span className="text-xs text-muted-foreground font-mono w-4">{lineIdx + 1}</span>
@@ -220,9 +222,9 @@ export default function TerminalSettingsDialog({
                           </div>
                         ))}
                         <Button variant="outline" size="sm" onClick={() => addOutputLine(idx)} className="text-xs">
-                          <Plus size={12} className="mr-1" /> Add line
+                          <Plus size={12} className="mr-1" /> {t('terminalSettings.addLine')}
                         </Button>
-                        <Label className="text-xs text-muted-foreground mt-2">File Download (optional)</Label>
+                        <Label className="text-xs text-muted-foreground mt-2">{t('terminalSettings.fileDownload')}</Label>
                         <Input
                           value={cmd.fileUrl || ''}
                           onChange={(e) => updateField(idx, 'fileUrl', e.target.value)}
@@ -242,7 +244,7 @@ export default function TerminalSettingsDialog({
               })}
 
               <Button variant="outline" onClick={addCommand} className="w-full">
-                <Plus size={16} className="mr-2" /> Add Command
+                <Plus size={16} className="mr-2" /> {t('terminalSettings.addCommand')}
               </Button>
             </>
           )}
@@ -250,7 +252,7 @@ export default function TerminalSettingsDialog({
           {activeTab === 'shortcut' && (
             <>
               <p className="text-sm text-muted-foreground">
-                Define the key sequence that activates the secret terminal. Minimum 2 keys. Click "Record Key" then press any key.
+                {t('terminalSettings.keySequenceDescription')}
               </p>
               <div className="flex flex-wrap gap-2 min-h-[48px] p-3 border border-border bg-background/30">
                 {codeKeys.map((key, i) => (
@@ -268,7 +270,7 @@ export default function TerminalSettingsDialog({
                   </span>
                 ))}
                 {codeKeys.length === 0 && (
-                  <span className="text-muted-foreground text-xs font-mono">No keys defined</span>
+                  <span className="text-muted-foreground text-xs font-mono">{t('terminalSettings.noKeysDefined')}</span>
                 )}
               </div>
               <div className="flex gap-2">
@@ -289,7 +291,7 @@ export default function TerminalSettingsDialog({
                   onClick={() => setIsRecordingKey(true)}
                 >
                   <Keyboard size={12} className="mr-1" />
-                  {isRecordingKey ? 'PRESS A KEY…' : 'Record Key'}
+                  {isRecordingKey ? t('terminalSettings.pressAKey') : t('terminalSettings.recordKey')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -297,11 +299,11 @@ export default function TerminalSettingsDialog({
                   className="text-xs text-muted-foreground"
                   onClick={() => setCodeKeys(DEFAULT_KONAMI_CODE)}
                 >
-                  Reset to Default
+                  {t('terminalSettings.resetToDefault')}
                 </Button>
               </div>
               {codeKeys.length < 2 && (
-                <p className="text-xs text-destructive">Minimum 2 keys required.</p>
+                <p className="text-xs text-destructive">{t('terminalSettings.minKeysRequired')}</p>
               )}
             </>
           )}
@@ -309,10 +311,10 @@ export default function TerminalSettingsDialog({
           {activeTab === 'morse' && (
             <>
               <p className="text-sm text-muted-foreground">
-                Set the Morse code pattern that activates the secret terminal via the site name button.
+                {t('terminalSettings.morseDescription')}
               </p>
               <div className="space-y-2">
-                <Label className="text-xs font-mono text-primary">MORSE CODE PATTERN</Label>
+                <Label className="text-xs font-mono text-primary">{t('terminalSettings.morseCodePattern')}</Label>
                 <Input
                   value={morseInput}
                   onChange={(e) => handleMorseChange(e.target.value)}
@@ -323,17 +325,24 @@ export default function TerminalSettingsDialog({
                 {morseError && <p className="text-xs text-destructive">{morseError}</p>}
                 {!morseError && morseInput && (
                   <p className="text-xs text-primary/60 font-mono">
-                    Current Code: <span className="text-primary tracking-[0.3em]">{morseInput}</span>
+                    {t('terminalSettings.currentCode')} <span className="text-primary tracking-[0.3em]">{morseInput}</span>
                   </p>
                 )}
               </div>
               <div className="mt-4 p-3 border border-primary/20 bg-primary/5 space-y-1">
-                <p className="text-xs font-mono text-primary/60">HINT</p>
+                <p className="text-xs font-mono text-primary/60">{t('terminalSettings.hint')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Hold the site name button <span className="text-primary font-mono">briefly</span> for <span className="font-mono text-primary">·</span> (Dot) and <span className="text-primary font-mono">longer</span> for <span className="font-mono text-primary">–</span> (Dash).
+                  {t('terminalSettings.morseInstructions').split(/(<[1-4]>.*?<\/[1-4]>)/g).map((segment, i) => {
+                    const tagMatch = segment.match(/^<([1-4])>(.*)<\/\1>$/)
+                    if (!tagMatch) return <span key={i}>{segment}</span>
+                    const tag = tagMatch[1]
+                    const content = tagMatch[2]
+                    if (tag === '1' || tag === '3') return <span key={i} className="text-primary font-mono">{content}</span>
+                    return <span key={i} className="font-mono text-primary">{content}</span>
+                  })}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Short = under 300 ms · Long = 300 ms or longer · Pause = 1.5 s resets
+                  {t('terminalSettings.morseTiming')}
                 </p>
               </div>
             </>
@@ -342,12 +351,12 @@ export default function TerminalSettingsDialog({
 
         {/* Footer */}
         <div className="flex justify-end gap-2 px-6 py-4 border-t border-primary/20 bg-primary/5 flex-shrink-0">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button
             onClick={handleSave}
             disabled={activeTab === 'shortcut' && codeKeys.length < 2}
           >
-            Save Settings
+            {t('terminalSettings.saveSettings')}
           </Button>
         </div>
       </motion.div>
