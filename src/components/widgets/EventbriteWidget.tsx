@@ -26,7 +26,7 @@ export default function EventbriteWidget({ widget }: EventbriteWidgetProps) {
   if (!config.organizerId && !config.eventId) {
     return (
       <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
-        <div className="text-2xl mb-2">🎟️</div>
+        <div className="text-2xl mb-2">{t('widget.eventbrite.icon')}</div>
         <p className="font-semibold mb-1">{t('widget.eventbrite.title')}</p>
         <p className="text-xs opacity-70">
           {t('widget.eventbrite.configureHint')}

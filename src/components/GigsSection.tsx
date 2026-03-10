@@ -411,7 +411,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
 
                       {gig.supportingArtists && gig.supportingArtists.length > 0 && (
                         <p className="text-xs md:text-sm text-muted-foreground/70 mt-1 italic">
-                          w/ {gig.supportingArtists.join(', ')}
+                          {t('gigOverlay.withArtists')} {gig.supportingArtists.join(', ')}
                         </p>
                       )}
                     </div>

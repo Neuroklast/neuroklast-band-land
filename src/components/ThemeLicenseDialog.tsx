@@ -136,7 +136,7 @@ export default function ThemeLicenseDialog({
             {validated ? (
               <div className="flex items-center gap-2 text-primary font-mono text-sm py-4 justify-center">
                 <CheckCircle size={18} weight="fill" />
-                <span>Theme unlocked!</span>
+                <span>{t('themeLicense.unlocked')}</span>
               </div>
             ) : (
               <>

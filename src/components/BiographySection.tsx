@@ -334,7 +334,7 @@ export default function BiographySection({ biography = defaultBiography, editMod
                     <ul className="space-y-3">
                       {biography.collabs.map((collab, index) => (
                         <li key={index} className="text-foreground/90 text-sm flex gap-2">
-                          <span className="text-primary mt-1">◆</span>
+                          <span className="text-primary mt-1">{t('common.bulletSymbol')}</span>
                           <span className="flex-1">{collab}</span>
                         </li>
                       ))}

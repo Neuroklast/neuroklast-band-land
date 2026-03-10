@@ -116,7 +116,7 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
           <div className="min-w-0">
             <h4 className="font-mono text-sm font-semibold truncate">{item.name}</h4>
             <span className="text-[10px] text-muted-foreground font-mono">
-              v{item.version} {item.author && `· ${item.author}`}
+              {t('store.versionPrefix')}{item.version} {item.author && `· ${item.author}`}
             </span>
           </div>
         </div>

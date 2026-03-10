@@ -375,6 +375,10 @@ const translations: Record<string, Record<Locale, string>> = {
   'profile.yes':                  { en: 'Yes', de: 'Ja' },
   'profile.no':                   { en: 'No', de: 'Nein' },
   'profile.unique':               { en: 'unique', de: 'eindeutig' },
+  'profile.topUserAgentsByCategory': { en: 'Top User-Agents by category', de: 'Top User-Agents nach Kategorie' },
+  'profile.acceptLanguage':       { en: 'Accept-Language', de: 'Accept-Language' },
+  'profile.screenSeparator':      { en: '×', de: '×' },
+  'profile.bitSuffix':            { en: 'bit', de: 'bit' },
 
   // ── Attacker Profiles Overview ──────────────────────────────────────
   'profiles.title':               { en: 'ATTACKER PROFILES // OVERVIEW', de: 'ANGREIFER-PROFILE // ÜBERSICHT' },

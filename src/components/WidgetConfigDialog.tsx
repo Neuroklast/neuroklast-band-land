@@ -99,9 +99,9 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 onChange={(e) => set('type', e.target.value)}
                 className="w-full bg-secondary border border-input rounded px-3 py-2 text-sm font-mono text-foreground"
               >
-                <option value="playlist">Playlist</option>
-                <option value="album">Album</option>
-                <option value="track">Track</option>
+                <option value="playlist">{t('widgetConfig.playlist')}</option>
+                <option value="album">{t('widgetConfig.album')}</option>
+                <option value="track">{t('widgetConfig.track')}</option>
               </select>
             </Field>
             <Field label="Player Theme">
@@ -311,8 +311,8 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 onChange={(e) => set('theme', e.target.value)}
                 className="w-full bg-secondary border border-input rounded px-3 py-2 text-sm font-mono text-foreground"
               >
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
+                <option value="dark">{t('widgetConfig.dark')}</option>
+                <option value="light">{t('widgetConfig.light')}</option>
               </select>
             </Field>
           </>

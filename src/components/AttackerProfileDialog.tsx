@@ -412,7 +412,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {/* Category breakdown — horizontal CSS bars */}
                       <div className="space-y-2">
-                        <p className="font-mono text-[10px] text-primary/50 uppercase mb-2">{L('profile.topUserAgents')} by category</p>
+                        <p className="font-mono text-[10px] text-primary/50 uppercase mb-2">{L('profile.topUserAgentsByCategory')}</p>
                         {uaCategoryData.length === 0 ? (
                           <p className="font-mono text-[10px] text-primary/30 text-center py-4">—</p>
                         ) : (
@@ -589,7 +589,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                               </div>
                               {entry.acceptLanguage && (
                                 <div className="col-span-2">
-                                  <p className="font-mono text-[9px] text-primary/40">Accept-Language</p>
+                                  <p className="font-mono text-[9px] text-primary/40">{L('profile.acceptLanguage')}</p>
                                   <p className="font-mono text-[10px] text-foreground/80">{entry.acceptLanguage}</p>
                                 </div>
                               )}
@@ -626,7 +626,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                                   {entry.jsFingerprint.screenWidth != null && entry.jsFingerprint.screenHeight != null && (
                                     <div>
                                       <p className="font-mono text-[9px] text-primary/40">{L('profile.screen')}</p>
-                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.screenWidth}×{entry.jsFingerprint.screenHeight} ({entry.jsFingerprint.colorDepth || '?'}bit)</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.screenWidth}{L('profile.screenSeparator')}{entry.jsFingerprint.screenHeight} ({entry.jsFingerprint.colorDepth || '?'}{L('profile.bitSuffix')})</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.cores != null && (

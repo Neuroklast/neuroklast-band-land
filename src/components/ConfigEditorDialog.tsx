@@ -390,7 +390,7 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
                                     className="text-xs text-primary/60 hover:text-primary h-8 px-2"
                                   >
                                     <ArrowCounterClockwise size={12} className="mr-1" />
-                                    Reset
+                                    {t('common.reset')}
                                   </Button>
                                 )}
                               </div>

@@ -2,10 +2,12 @@ import { motion } from 'framer-motion'
 import { SpotifyLogo, SoundcloudLogo, YoutubeLogo, MusicNote } from '@phosphor-icons/react'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import { format } from 'date-fns'
+import { useLocale } from '@/hooks/use-locale'
 import type { Release } from '@/lib/types'
 
 /** Release detail content — artwork + streaming links */
 export default function ReleaseContent({ release }: { release: Release }) {
+  const { t } = useLocale()
   return (
     <motion.div
       className="p-4 md:p-6 flex flex-col gap-4"
@@ -44,7 +46,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
       {/* Tracklist */}
       {release.tracks && release.tracks.length > 0 && (
         <div>
-          <p className="text-[10px] text-primary/50 font-mono tracking-wider mb-2">// TRACKLIST</p>
+          <p className="text-[10px] text-primary/50 font-mono tracking-wider mb-2">{t('releaseOverlay.tracklist')}</p>
           <div className="bg-black/40 border border-primary/20 p-3 space-y-1 max-h-32 overflow-y-auto">
             {release.tracks.map((track, i) => (
               <div key={i} className="flex items-center justify-between font-mono text-xs">
@@ -71,7 +73,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-colors font-mono text-xs"
               >
-                <SpotifyLogo size={14} weight="fill" /> Spotify
+                <SpotifyLogo size={14} weight="fill" /> {t('releaseOverlay.spotify')}
               </a>
             )}
             {release.streamingLinks.soundcloud && (
@@ -81,7 +83,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-colors font-mono text-xs"
               >
-                <SoundcloudLogo size={14} weight="fill" /> SoundCloud
+                <SoundcloudLogo size={14} weight="fill" /> {t('releaseOverlay.soundcloud')}
               </a>
             )}
             {release.streamingLinks.youtube && (
@@ -91,7 +93,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-colors font-mono text-xs"
               >
-                <YoutubeLogo size={14} weight="fill" /> YouTube
+                <YoutubeLogo size={14} weight="fill" /> {t('releaseOverlay.youtube')}
               </a>
             )}
             {release.streamingLinks.bandcamp && (
@@ -101,7 +103,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-colors font-mono text-xs"
               >
-                <MusicNote size={14} weight="fill" /> Bandcamp
+                <MusicNote size={14} weight="fill" /> {t('releaseOverlay.bandcamp')}
               </a>
             )}
             {release.streamingLinks.appleMusic && (
@@ -111,7 +113,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-colors font-mono text-xs"
               >
-                <MusicNote size={14} weight="fill" /> Apple Music
+                <MusicNote size={14} weight="fill" /> {t('releaseOverlay.appleMusic')}
               </a>
             )}
             {release.streamingLinks.beatport && (
@@ -121,7 +123,7 @@ export default function ReleaseContent({ release }: { release: Release }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-colors font-mono text-xs"
               >
-                <MusicNote size={14} weight="fill" /> Beatport
+                <MusicNote size={14} weight="fill" /> {t('releaseOverlay.beatport')}
               </a>
             )}
           </div>

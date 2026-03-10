@@ -3,6 +3,7 @@ import { Ticket, MapPin, CalendarBlank, FacebookLogo, InstagramLogo, Link, Share
 import ProgressiveImage from '@/components/ProgressiveImage'
 import { format, differenceInDays, differenceInHours, differenceInMinutes, isPast } from 'date-fns'
 import { useEffect, useState } from 'react'
+import { useLocale } from '@/hooks/use-locale'
 import type { Gig } from '@/lib/types'
 
 /** Default event duration used for calendar link generation (3 hours) */
@@ -10,6 +11,7 @@ const GIG_CALENDAR_DURATION_MS = 3 * 60 * 60 * 1000
 
 /** Gig detail content — enhanced with countdown, links, share, calendar */
 export default function GigContent({ gig }: { gig: Gig }) {
+  const { t } = useLocale()
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -164,7 +166,7 @@ export default function GigContent({ gig }: { gig: Gig }) {
           {countdown && (
             <div className="border border-primary/30 bg-primary/5 px-3 py-2 flex items-center gap-2">
               <Clock size={14} className="text-primary/60 flex-shrink-0" />
-              <span className="text-[10px] text-primary/50 uppercase tracking-wider">Starts in</span>
+              <span className="text-[10px] text-primary/50 uppercase tracking-wider">{t('gigOverlay.startsIn')}</span>
               <span className="font-bold text-primary text-sm">{countdown}</span>
             </div>
           )}
@@ -172,7 +174,7 @@ export default function GigContent({ gig }: { gig: Gig }) {
           {/* Description */}
           {gig.description && (
             <div>
-              <p className="text-[10px] text-primary/50 tracking-wider mb-1">// DESCRIPTION</p>
+              <p className="text-[10px] text-primary/50 tracking-wider mb-1">{t('gigOverlay.description')}</p>
               <p className="text-sm text-muted-foreground leading-relaxed">{gig.description}</p>
             </div>
           )}
@@ -180,7 +182,7 @@ export default function GigContent({ gig }: { gig: Gig }) {
           {/* Supporting artists */}
           {gig.supportingArtists && gig.supportingArtists.length > 0 && (
             <div>
-              <p className="text-[10px] text-primary/50 tracking-wider mb-1">// LINEUP</p>
+              <p className="text-[10px] text-primary/50 tracking-wider mb-1">{t('gigOverlay.lineup')}</p>
               <ul className="space-y-1">
                 {gig.supportingArtists.map((artist, i) => (
                   <li key={i} className="text-sm text-muted-foreground">
@@ -201,7 +203,7 @@ export default function GigContent({ gig }: { gig: Gig }) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-accent transition-colors font-mono text-xs tracking-wider uppercase"
               >
                 <Ticket size={14} />
-                GET TICKETS
+                {t('gigOverlay.getTickets')}
               </a>
             )}
             <a

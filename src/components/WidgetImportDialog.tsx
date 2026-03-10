@@ -140,7 +140,7 @@ export default function WidgetImportDialog({
           {/* Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-primary text-lg tracking-widest uppercase">
-              ▸ {t('store.importWidgets')}
+              {t('store.importWidgets')}
             </h2>
             <CyberCloseButton onClick={handleClose} />
           </div>
@@ -255,7 +255,7 @@ export default function WidgetImportDialog({
                     <div key={w.id} className="flex items-center gap-2 text-xs text-status-success">
                       <CheckCircle size={12} />
                       <span>{w.name}</span>
-                      <span className="text-muted-foreground/50">v{w.version}</span>
+                      <span className="text-muted-foreground/50">{t('widgetImport.versionPrefix')}{w.version}</span>
                     </div>
                   ))}
                 </div>

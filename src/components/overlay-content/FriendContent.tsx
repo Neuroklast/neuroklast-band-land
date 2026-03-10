@@ -4,6 +4,7 @@ import ConsoleLines from '@/components/ConsoleLines'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import type { Friend, SectionLabels } from '@/lib/types'
 import { CONSOLE_TYPING_SPEED_MS, CONSOLE_LINE_DELAY_MS } from '@/lib/config'
+import { useLocale } from '@/hooks/use-locale'
 import { buildFriendDataLines } from '@/lib/profile-data'
 
 const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: Icon; label: string }[] = [
@@ -26,6 +27,7 @@ interface FriendContentProps {
  * Renders without a loading phase; the parent OverlayModal slot handles loading.
  */
 export default function FriendContent({ friend, sectionLabels }: FriendContentProps) {
+  const { t } = useLocale()
   const photoUrl = friend.profilePhoto || friend.photo
   const dataLines = buildFriendDataLines(friend, sectionLabels, friendSocialIcons)
 
@@ -53,7 +55,7 @@ export default function FriendContent({ friend, sectionLabels }: FriendContentPr
                 <ProgressiveImage src={photoUrl} alt={friend.name} className="w-full h-full object-contain" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-muted-foreground font-mono text-xs">NO IMG</span>
+                  <span className="text-muted-foreground font-mono text-xs">{t('friendOverlay.noImg')}</span>
                 </div>
               )}
             </div>
@@ -86,7 +88,7 @@ export default function FriendContent({ friend, sectionLabels }: FriendContentPr
       {/* Terminal data */}
       <div className="md:w-3/5 p-4 md:p-6">
         <div className="font-mono space-y-3">
-          <div className="text-[10px] text-primary/50 tracking-wider mb-3">{'>'} TERMINAL OUTPUT // PROFILE DATA</div>
+          <div className="text-[10px] text-primary/50 tracking-wider mb-3">{'>'} {t('friendOverlay.terminalOutput')}</div>
           <div className="bg-black/50 border border-primary/20 p-4 h-[180px] overflow-y-auto">
             <ConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
           </div>

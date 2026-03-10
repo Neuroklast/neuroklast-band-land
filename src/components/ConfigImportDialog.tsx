@@ -91,7 +91,7 @@ export default function ConfigImportDialog({ open, onClose, importData, validati
           {/* Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-primary text-lg tracking-widest uppercase">
-              ▸ {t('configImport.title')}
+              {t('configImport.title')}
             </h2>
             <CyberCloseButton onClick={onClose} />
           </div>

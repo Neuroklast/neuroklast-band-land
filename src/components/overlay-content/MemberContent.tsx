@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import ConsoleLines from '@/components/ConsoleLines'
+import { useLocale } from '@/hooks/use-locale'
 import { buildMemberDataLines } from '@/lib/profile-data'
 import type { Member, SectionLabels } from '@/lib/types'
 import { CONSOLE_TYPING_SPEED_MS, CONSOLE_LINE_DELAY_MS } from '@/lib/config'
 
 /** Member profile content — bio + photo in terminal style */
 export default function MemberContent({ member, sectionLabels }: { member: Member; sectionLabels?: SectionLabels }) {
+  const { t } = useLocale()
   const dataLines = buildMemberDataLines(member, sectionLabels)
   return (
     <motion.div
@@ -34,7 +36,7 @@ export default function MemberContent({ member, sectionLabels }: { member: Membe
             </div>
           ) : (
             <div className="w-full h-full bg-muted border border-primary/40 flex items-center justify-center">
-              <span className="text-muted-foreground font-mono text-xs">NO IMG</span>
+              <span className="text-muted-foreground font-mono text-xs">{t('memberOverlay.noImg')}</span>
             </div>
           )}
           <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary/60" />
@@ -46,7 +48,7 @@ export default function MemberContent({ member, sectionLabels }: { member: Membe
       {/* Terminal data */}
       <div className="md:w-3/5 p-4 md:p-6">
         <div className="font-mono space-y-3">
-          <div className="text-[10px] text-primary/50 tracking-wider mb-3">{'>'} TERMINAL OUTPUT // PROFILE DATA</div>
+          <div className="text-[10px] text-primary/50 tracking-wider mb-3">{'>'} {t('memberOverlay.terminalOutput')}</div>
           <div className="bg-black/50 border border-primary/20 p-4 h-[180px] overflow-y-auto">
             <ConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />
           </div>

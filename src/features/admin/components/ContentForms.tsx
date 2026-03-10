@@ -318,10 +318,10 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                             value={gig.status || 'confirmed'}
                             onChange={e => handleUpdateGig(gig.id, 'status', e.target.value)}
                           >
-                            <option value="confirmed">Available / Confirmed</option>
-                            <option value="soldout">Sold Out</option>
-                            <option value="cancelled">Cancelled</option>
-                            <option value="announced">Announced</option>
+                            <option value="confirmed">{t('contentForms.statusConfirmed')}</option>
+                            <option value="soldout">{t('contentForms.statusSoldout')}</option>
+                            <option value="cancelled">{t('contentForms.statusCancelled')}</option>
+                            <option value="announced">{t('contentForms.statusAnnounced')}</option>
                           </select>
                         </div>
                       </div>
