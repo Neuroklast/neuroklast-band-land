@@ -6,6 +6,9 @@
  * or other approved hooks/wrappers.
  */
 
+// Core abstraction files that are allowed to access localStorage directly.
+// Other files listed here have pre-existing direct access and should
+// eventually be migrated to use the core abstractions (useKV, useThemeEngine, useLocale).
 const APPROVED_FILES = [
   'use-kv.ts',
   'ThemeContext.tsx',
@@ -67,7 +70,7 @@ export default {
           context.report({ node, messageId: 'noDirectLocalStorage' });
         }
       },
-      // Also catch window.localStorage
+      // Catch window.localStorage.* (nested MemberExpression where inner is window.localStorage)
       'MemberExpression > MemberExpression'(node) {
         if (
           node.object.type === 'Identifier' &&
