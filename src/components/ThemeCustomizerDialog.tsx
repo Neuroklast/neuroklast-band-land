@@ -930,7 +930,7 @@ export default function ThemeCustomizerDialog({
         themeName={licenseDialog.themeName}
         licenseKeyPrefix={licenseDialog.licenseKeyPrefix}
         onUnlocked={(themeId) => {
-          const updated = [...(unlockedThemeIds || []), themeId]
+          const updated = [...(unlockedThemeIds ?? []), themeId]
           setUnlockedThemeIds(updated)
           handleThemeSelect(themeId)
         }}

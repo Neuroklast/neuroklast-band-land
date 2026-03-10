@@ -896,7 +896,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                                   if (utmSource) {
                                     const entry = { url: generatedUrl, campaign: utmCampaign || utmSource, date: new Date().toLocaleDateString('de-DE') }
                                     setUtmHistory(prev => {
-                                      const updated = [entry, ...(prev || [])].slice(0, 10)
+                                      const updated = [entry, ...(prev ?? [])].slice(0, 10)
                                       return updated
                                     })
                                   }
