@@ -33,8 +33,8 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
   const generalSettings = (data.configOverrides?.generalSettings as Record<string, unknown>) || {}
 
   const tabs = [
-    { id: 'integrations', label: 'Integrations & APIs' },
-    { id: 'general', label: 'General Settings' },
+    { id: 'integrations', label: t('systemSettings.tabIntegrations') },
+    { id: 'general', label: t('systemSettings.tabGeneral') },
   ] as const
 
   return (
@@ -71,7 +71,7 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
                   <Input
                     value={integrations.bandsintownAppId || ''}
                     onChange={e => handleIntegrationChange('bandsintownAppId', e.target.value)}
-                    placeholder="Enter your Bandsintown App ID"
+                    placeholder={t('systemSettings.bandsintownPlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
@@ -79,7 +79,7 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
                   <Input
                     value={integrations.spotifyClientId || ''}
                     onChange={e => handleIntegrationChange('spotifyClientId', e.target.value)}
-                    placeholder="Enter your Spotify Client ID"
+                    placeholder={t('systemSettings.spotifyClientIdPlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
@@ -87,7 +87,7 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
                   <Input
                     value={integrations.youtubeApiKey || ''}
                     onChange={e => handleIntegrationChange('youtubeApiKey', e.target.value)}
-                    placeholder="Enter your YouTube API Key"
+                    placeholder={t('systemSettings.youtubeApiKeyPlaceholder')}
                   />
                 </div>
               </div>

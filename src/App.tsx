@@ -24,6 +24,7 @@ import type {
   OverlayModalSlotProps,
 } from '@/lib/types'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
+import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
 import ActivationLockScreen from '@/components/ActivationLockScreen'
@@ -127,6 +128,13 @@ function App() {
   const prevIsOwnerRef = useRef(false)
 
   useCRTEffects()
+
+  // ── Meta tags / browser tab title ───────────────────────────────────────────
+  useEffect(() => {
+    if (siteConfigLoaded) {
+      applyMetaTags(generateMetaTags(config))
+    }
+  }, [config, siteConfigLoaded])
 
   // ── Analytics ───────────────────────────────────────────────────────────────
   useEffect(() => { validateActivationKey().then(setActivationResult) }, [])

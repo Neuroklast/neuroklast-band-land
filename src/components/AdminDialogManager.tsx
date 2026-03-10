@@ -231,13 +231,15 @@ export default function AdminDialogManager({
 
       <LazyBoundary name="StoreDialog">
         <StoreDialog
-          open={activeDialog === 'store'}
+          key={activeDialog === 'store-themes' ? 'themes' : activeDialog === 'store-widgets' ? 'widgets' : 'all'}
+          open={activeDialog === 'store' || activeDialog === 'store-themes' || activeDialog === 'store-widgets'}
           onClose={() => setActiveDialog(null)}
           widgetPlugins={widgetPlugins}
           onUpdatePlugins={onUpdatePlugins}
           activePresetId={activePresetId}
           onApplyTheme={(ts: ThemeSettings) => onSaveTheme(ts)}
           licenseTier={activationResult?.tier}
+          initialTab={activeDialog === 'store-themes' ? 'themes' : activeDialog === 'store-widgets' ? 'widgets' : 'all'}
         />
       </LazyBoundary>
 

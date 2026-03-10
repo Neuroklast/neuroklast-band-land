@@ -92,13 +92,13 @@ export default function AdminHubDialog({
       icon: Palette,
       label: t('hub.storeThemes') || 'Theme Store',
       description: t('hub.storeThemesDesc') || 'Install premium themes',
-      action: () => { onClose(); onOpenDialog('store') },
+      action: () => { onClose(); onOpenDialog('store-themes') },
     },
     {
       icon: Sliders,
       label: t('hub.storeWidgets') || 'Widget Store',
       description: t('hub.storeWidgetsDesc') || 'Add new widgets to the site',
-      action: () => { onClose(); onOpenDialog('store') },
+      action: () => { onClose(); onOpenDialog('store-widgets') },
     },
   ]
 
@@ -290,7 +290,7 @@ export default function AdminHubDialog({
                   <button
                     onClick={onClose}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors p-2"
-                    aria-label="Close"
+                    aria-label={t('common.close')}
                   >
                     <X size={20} weight="bold" />
                   </button>

@@ -13,29 +13,13 @@ function detectLocale(): Locale {
     // localStorage unavailable
   }
 
-  if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) {
-    return 'de'
-  }
-
+  // Default to English — users can switch to German via the language picker
   return 'en'
 }
 
 async function detectLocaleAsync(): Promise<Locale> {
-  try {
-    const res = await fetch('/api/geo')
-    if (res.ok) {
-      const data = await res.json()
-      if (data?.country === 'DE') return 'de'
-    }
-  } catch {
-    // geo detection failed, fall through
-  }
-
-  if (typeof navigator !== 'undefined' && navigator.language?.startsWith('de')) {
-    return 'de'
-  }
-
-  return 'en'
+  // No-op: locale defaults to English; only stored preference is respected
+  return detectLocale()
 }
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
