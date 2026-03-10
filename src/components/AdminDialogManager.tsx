@@ -247,6 +247,7 @@ export default function AdminDialogManager({
         <AnimatePresence>
           {activeDialog === 'sound' && (
             <SoundSettingsDialog
+              open={activeDialog === 'sound'}
               settings={soundSettings}
               onSave={(ss: SoundSettings) => onSaveSoundSettings(ss)}
               onClose={() => setActiveDialog(null)}

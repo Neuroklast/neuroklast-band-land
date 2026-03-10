@@ -654,6 +654,7 @@ export default function StoreDialog({
     {/* Widget config dialog */}
     {configWidget && (
       <WidgetConfigDialog
+        open={!!configWidget}
         widget={configWidget}
         onSave={handleSaveConfig}
         onClose={() => setConfigWidget(null)}

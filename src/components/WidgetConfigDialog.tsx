@@ -14,6 +14,7 @@ import { useLocale } from '@/hooks/use-locale'
 import type { WidgetPlugin } from '@/lib/types'
 
 interface WidgetConfigDialogProps {
+  open: boolean
   widget: WidgetPlugin
   onSave: (config: Record<string, unknown>) => void
   onClose: () => void

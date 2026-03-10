@@ -200,6 +200,7 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
 
       {isEditing && (
         <SocialEditDialog
+          open={isEditing}
           socialLinks={safeSocialLinks}
           onSave={(updated) => {
             onUpdate?.(updated)

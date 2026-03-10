@@ -7,6 +7,7 @@ import type { SocialLinks } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 
 interface SocialEditDialogProps {
+  open: boolean
   socialLinks: SocialLinks
   onSave: (socialLinks: SocialLinks) => void
   onClose: () => void

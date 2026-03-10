@@ -17,29 +17,28 @@ function detectLocale(): Locale {
   return 'en'
 }
 
-async function detectLocaleAsync(): Promise<Locale> {
-  // No-op: locale defaults to English; only stored preference is respected
-  return detectLocale()
-}
+// Async detection is no longer needed (locale defaults to stored preference or English).
+// detectLocale() is called synchronously on mount.
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(detectLocale)
 
-  // Async geo detection on mount if no stored preference
+  // On mount, re-apply stored preference if it was set since initial render.
+  // Wrapped in setTimeout to avoid synchronous setState in effect (react-hooks/set-state-in-effect).
   useEffect(() => {
     let cancelled = false
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored === 'en' || stored === 'de') return
-    } catch {
-      // localStorage unavailable
-    }
-
-    detectLocaleAsync().then((detected) => {
-      if (!cancelled) setLocaleState(detected)
-    })
-
-    return () => { cancelled = true }
+    const timer = setTimeout(() => {
+      if (cancelled) return
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        if (stored === 'en' || stored === 'de') {
+          setLocaleState(stored as Locale)
+        }
+      } catch {
+        // localStorage unavailable
+      }
+    }, 0)
+    return () => { cancelled = true; clearTimeout(timer) }
   }, [])
 
   // Sync i18next language with locale state

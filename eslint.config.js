@@ -40,6 +40,8 @@ export default tseslint.config(
       ],
       'band-land/no-direct-localstorage': 'error',
       'band-land/no-direct-theme-context': 'error',
+      'band-land/require-dialog-props': 'warn',
+      'band-land/no-hardcoded-color-values': 'warn',
     },
   },
 )

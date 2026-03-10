@@ -13,7 +13,7 @@ import { t as i18nT } from '@/lib/i18n'
 import type { Locale } from '@/lib/i18n'
 
 interface ImpressumWindowProps {
-  isOpen: boolean
+  open: boolean
   onClose: () => void
   impressum?: Impressum
   editMode?: boolean
@@ -32,7 +32,7 @@ const emptyImpressum: Impressum = {
   responsibleAddress: '',
 }
 
-export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, onSave }: ImpressumWindowProps) {
+export default function ImpressumWindow({ open, onClose, impressum, editMode, onSave }: ImpressumWindowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<Impressum>(impressum || emptyImpressum)
   const { locale } = useLocale()
@@ -43,22 +43,22 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
   const tl = (key: string, l: Locale = lang) => i18nT(key, l)
 
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       startTransition(() => {
         setForm(impressum || emptyImpressum)
         setIsEditing(false)
       })
     }
-  }, [isOpen, impressum])
+  }, [open, impressum])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!open) return
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [isOpen, onClose])
+  }, [open, onClose])
 
   const update = (field: keyof Impressum, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -101,7 +101,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
   }
 
   return (
-    <CyberModalBackdrop open={isOpen} zIndex="z-[10000]" bgClass="bg-background/95 backdrop-blur-sm">
+    <CyberModalBackdrop open={open} zIndex="z-[10000]" bgClass="bg-background/95 backdrop-blur-sm">
           <motion.div
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
