@@ -4,9 +4,10 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import i18next from 'eslint-plugin-i18next'
+import bandLandPlugin from './eslint-rules/index.js'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['dist', 'node_modules', 'eslint-rules', 'src/_theme_inbox'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -18,6 +19,7 @@ export default tseslint.config(
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       'i18next': i18next,
+      'band-land': bandLandPlugin,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -36,6 +38,8 @@ export default tseslint.config(
           ignoreAttribute: ['data-testid', 'className', 'id', 'key', 'htmlFor', 'type', 'name', 'value', 'style'],
         },
       ],
+      'band-land/no-direct-localstorage': 'error',
+      'band-land/no-direct-theme-context': 'error',
     },
   },
 )
