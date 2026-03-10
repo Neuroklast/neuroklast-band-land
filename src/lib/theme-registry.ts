@@ -22,6 +22,15 @@ import {
   DefaultScrollReveal,
   DefaultHoverEffect,
   DefaultPageLayout,
+  DefaultGigsSection,
+  DefaultReleasesSection,
+  DefaultBiographySection,
+  DefaultNewsSection,
+  DefaultMediaSection,
+  DefaultGallerySection,
+  DefaultSocialSection,
+  DefaultContactSection,
+  DefaultPartnersSection,
 } from '@/themes/default-slots'
 import { builtInThemes, neuroklastClassicTheme } from '@/themes'
 import type { ThemeDefinition, ThemeLicenseStatus } from './types'

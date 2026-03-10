@@ -663,6 +663,99 @@ export interface PageLayoutSlotProps {
   className?: string
 }
 
+// ─── Content-Section Slot Props (slots 16–24) ───────────────────────────────
+
+export interface GigsSectionSlotProps {
+  gigs: Gig[]
+  onGigClick?: (gig: Gig) => void
+  sectionLabels?: SectionLabels
+  dataLoaded?: boolean
+  editMode?: boolean
+  fontSizes?: FontSizeSettings
+  onUpdate?: (gigs: Gig[]) => void
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface ReleasesSectionSlotProps {
+  releases: Release[]
+  onReleaseClick?: (release: Release) => void
+  sectionLabels?: SectionLabels
+  dataLoaded?: boolean
+  editMode?: boolean
+  fontSizes?: FontSizeSettings
+  siteName?: string
+  onUpdate?: (releases: Release[]) => void
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface BiographySectionSlotProps {
+  biography?: Biography
+  onMemberClick?: (member: Member) => void
+  sectionLabels?: SectionLabels
+  editMode?: boolean
+  fontSizes?: FontSizeSettings
+  siteName?: string
+  onUpdate?: (biography: Biography) => void
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface NewsSectionSlotProps {
+  news?: NewsItem[]
+  onNewsClick?: (item: NewsItem) => void
+  sectionLabels?: SectionLabels
+  editMode?: boolean
+  onUpdate?: (news: NewsItem[]) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface MediaSectionSlotProps {
+  mediaFiles?: MediaFile[]
+  sectionLabels?: SectionLabels
+  editMode?: boolean
+  onUpdate?: (files: MediaFile[]) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface GallerySectionSlotProps {
+  galleryImages?: GalleryImage[]
+  sectionLabels?: SectionLabels
+  editMode?: boolean
+  siteName?: string
+  driveFolderUrl?: string
+  onDriveFolderUrlChange?: (url: string) => void
+  onUpdate?: (images: GalleryImage[]) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface SocialSectionSlotProps {
+  socialLinks: SocialLinks
+  sectionLabels?: SectionLabels
+  editMode?: boolean
+  fontSizes?: FontSizeSettings
+  onUpdate?: (socialLinks: SocialLinks) => void
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface ContactSectionSlotProps {
+  contactSettings?: ContactSettings
+  sectionLabels?: SectionLabels
+  editMode?: boolean
+  onUpdate?: (settings: ContactSettings) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+
+export interface PartnersSectionSlotProps {
+  friends?: Friend[]
+  onFriendClick?: (friend: Friend) => void
+  sectionLabels?: SectionLabels
+  editMode?: boolean
+  onUpdate?: (friends: Friend[]) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
 
 export interface ThemeSlots {
   Hero: React.ComponentType<HeroSlotProps>
@@ -672,7 +765,7 @@ export interface ThemeSlots {
   Card: React.ComponentType<CardSlotProps>
   BackgroundEffects: React.ComponentType<BackgroundEffectsSlotProps>
   Footer: React.ComponentType<FooterSlotProps>
-  // New slots (slots 8–15)
+  // Slots 8–15
   OverlayModal: React.ComponentType<OverlayModalSlotProps>
   SectionHeading: React.ComponentType<SectionHeadingSlotProps>
   OverlayTransition: React.ComponentType<OverlayTransitionSlotProps>
@@ -681,6 +774,16 @@ export interface ThemeSlots {
   ScrollReveal: React.ComponentType<ScrollRevealSlotProps>
   HoverEffect: React.ComponentType<HoverEffectSlotProps>
   PageLayout: React.ComponentType<PageLayoutSlotProps>
+  // Content-section slots (16–24)
+  GigsSection: React.ComponentType<GigsSectionSlotProps>
+  ReleasesSection: React.ComponentType<ReleasesSectionSlotProps>
+  BiographySection: React.ComponentType<BiographySectionSlotProps>
+  NewsSection: React.ComponentType<NewsSectionSlotProps>
+  MediaSection: React.ComponentType<MediaSectionSlotProps>
+  GallerySection: React.ComponentType<GallerySectionSlotProps>
+  SocialSection: React.ComponentType<SocialSectionSlotProps>
+  ContactSection: React.ComponentType<ContactSectionSlotProps>
+  PartnersSection: React.ComponentType<PartnersSectionSlotProps>
 }
 
 /** A complete theme package */
