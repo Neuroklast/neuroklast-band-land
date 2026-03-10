@@ -13,6 +13,7 @@ import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
 import { resolveSections, normalizeSections, toggleSection, reorderSections } from '@/lib/sections'
 import { useLocale } from '@/hooks/use-locale'
 import { oklchToHex, hexToOklch } from '@/lib/color-utils'
+import { useKV } from '@/hooks/use-kv'
 
 // ─── Animation ID → ThemeSettings mapping ─────────────────────────────────────
 
@@ -211,9 +212,7 @@ export default function ThemeCustomizerDialog({
   )
   const [activeTab, setActiveTab] = useState<'theme' | 'colors' | 'animations' | 'fonts' | 'visibility' | 'layout' | 'theme_config'>('theme')
   const [licenseDialog, setLicenseDialog] = useState<{ themeId: string; themeName: string; licenseKeyPrefix?: string } | null>(null)
-  const [unlockedThemeIds, setUnlockedThemeIds] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem('nk-unlocked-themes') || '[]') } catch { return [] }
-  })
+  const [unlockedThemeIds, setUnlockedThemeIds] = useKV<string[]>('unlocked-themes', [])
   const { t } = useLocale()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const prevOpenRef = useRef(false)
@@ -931,9 +930,8 @@ export default function ThemeCustomizerDialog({
         themeName={licenseDialog.themeName}
         licenseKeyPrefix={licenseDialog.licenseKeyPrefix}
         onUnlocked={(themeId) => {
-          const updated = [...unlockedThemeIds, themeId]
+          const updated = [...(unlockedThemeIds || []), themeId]
           setUnlockedThemeIds(updated)
-          try { localStorage.setItem('nk-unlocked-themes', JSON.stringify(updated)) } catch { /* ignore */ }
           handleThemeSelect(themeId)
         }}
       />

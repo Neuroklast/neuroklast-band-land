@@ -16,9 +16,6 @@ const APPROVED_FILES = [
   'use-activation-key.ts',
   'use-sound.ts',
   'analytics.ts',
-  'CookieBanner.tsx',
-  'ThemeCustomizerDialog.tsx',
-  'StatsDashboard.tsx',
 ];
 
 /** @type {import('eslint').Rule.RuleModule} */

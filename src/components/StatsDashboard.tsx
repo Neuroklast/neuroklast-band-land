@@ -7,6 +7,7 @@ import { loadServerAnalytics, loadHeatmapData, resetAnalytics, loadAnalytics } f
 import type { SiteAnalytics, DailyStats, HeatmapPoint } from '@/lib/analytics'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useLocale } from '@/hooks/use-locale'
+import { useKV } from '@/hooks/use-kv'
 import {
   LineChart,
   Line,
@@ -280,9 +281,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
   const [utmCampaign, setUtmCampaign] = useState('')
   const [utmContent, setUtmContent] = useState('')
   const [utmTerm, setUtmTerm] = useState('')
-  const [utmHistory, setUtmHistory] = useState<Array<{ url: string; campaign: string; date: string }>>(() => {
-    try { return JSON.parse(localStorage.getItem('nk-utm-history') || '[]') } catch (e) { console.warn('Failed to parse UTM history:', e); return [] }
-  })
+  const [utmHistory, setUtmHistory] = useKV<Array<{ url: string; campaign: string; date: string }>>('utm-history', [])
 
   useEffect(() => {
     if (open) {
@@ -897,8 +896,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                                   if (utmSource) {
                                     const entry = { url: generatedUrl, campaign: utmCampaign || utmSource, date: new Date().toLocaleDateString('de-DE') }
                                     setUtmHistory(prev => {
-                                      const updated = [entry, ...prev].slice(0, 10)
-                                      try { localStorage.setItem('nk-utm-history', JSON.stringify(updated)) } catch (e) { console.warn('Failed to save UTM history:', e) }
+                                      const updated = [entry, ...(prev || [])].slice(0, 10)
                                       return updated
                                     })
                                   }
@@ -920,7 +918,6 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                           {utmHistory.length > 0 && (
                             <button
                               onClick={() => {
-                                try { localStorage.removeItem('nk-utm-history') } catch (e) { console.warn('Failed to clear UTM history:', e) }
                                 setUtmHistory([])
                               }}
                               className="text-[9px] font-mono text-destructive/60 hover:text-destructive transition-colors"
