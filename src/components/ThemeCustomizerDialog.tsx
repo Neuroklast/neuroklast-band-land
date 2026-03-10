@@ -862,6 +862,7 @@ export default function ThemeCustomizerDialog({
                               const updatedVal = parseFloat(e.target.value)
                               setPreviewConfig(prev => {
                                 const newSettings = { ...prev.themeSettings, customConfig: { ...(prev.themeSettings.customConfig || {}), [key]: updatedVal } }
+                                // eslint-disable-next-line no-restricted-syntax -- legitimate theme-engine live-preview event, not React state propagation
                                 window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newSettings.customConfig }))
                                 return { ...prev, themeSettings: newSettings }
                               })
@@ -874,6 +875,7 @@ export default function ThemeCustomizerDialog({
                             onClick={() => {
                               setPreviewConfig(prev => {
                                 const newSettings = { ...prev.themeSettings, customConfig: { ...(prev.themeSettings.customConfig || {}), [key]: !val } }
+                                // eslint-disable-next-line no-restricted-syntax -- legitimate theme-engine live-preview event, not React state propagation
                                 window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newSettings.customConfig }))
                                 return { ...prev, themeSettings: newSettings }
                               })
@@ -891,6 +893,7 @@ export default function ThemeCustomizerDialog({
                             onChange={e => {
                               setPreviewConfig(prev => {
                                 const newSettings = { ...prev.themeSettings, customConfig: { ...(prev.themeSettings.customConfig || {}), [key]: e.target.value } }
+                                // eslint-disable-next-line no-restricted-syntax -- legitimate theme-engine live-preview event, not React state propagation
                                 window.dispatchEvent(new CustomEvent('neuroklast_theme_config_update', { detail: newSettings.customConfig }))
                                 return { ...prev, themeSettings: newSettings }
                               })

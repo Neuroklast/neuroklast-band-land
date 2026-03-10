@@ -1,79 +1,148 @@
-REGELN FÜR DIE ERSTELLUNG UND BEARBEITUNG VON KOMPONENTEN (DESIGN SYSTEM)
+# CODING AGENT INSTRUCTIONS — NEUROKLAST BAND LAND
 
-Du befindest dich in einem Projekt mit einer strikten Trennung von Struktur (Themes) und Farben (Presets). Wenn du neue React Komponenten erstellst oder bestehende bearbeitest, musst du folgende Gesetze ausnahmslos befolgen.
+This project has a strict separation of layout structure (Themes) and color palettes (Presets). All rules below are non-negotiable. They are grouped into structural principles that eliminate entire failure categories — not just individual bugs.
 
-1. KEINE THEME SPEZIFISCHEN KOMPONENTEN
-Du darfst niemals mehrere Versionen derselben Komponente für verschiedene Designs erstellen. Es gibt keine CyberpunkCard.tsx oder MinimalCard.tsx. Es gibt immer nur eine einzige allgemeingültige Version.
+---
 
-2. KEINE HARTCODIERTEN FARBEN IN TAILWIND
-Verwende niemals statische Tailwind Farben wie bg-red-500, text-blue-300 oder border-gray-800. 
-Du darfst ausschließlich unsere globalen Design Tokens verwenden. Diese sind:
-Hintergründe: bg-background, bg-card, bg-popover, bg-muted
-Texte: text-foreground, text-primary, text-muted-foreground
-Akzente: bg-primary, bg-accent, border-primary, border-border
+## PRINCIPLE A — DATA INTEGRITY
 
-3. KEINE LOKALEN EFFEKTE
-Verwende niemals inline Styles für komplexe Layouts. Wenn eine Komponente spezielle Formen, Ecken, Rahmen oder Animationen benötigt, fügst du unsichtbare Platzhalter Divs in das React Markup ein (z.B. <div className="theme-widget-corner" aria-hidden="true" />).
-Diese Platzhalter werden standardmäßig im CSS ausgeblendet und ausschließlich über globale CSS Regeln in der Datei src/styles/theme-slots.css aktiviert, wenn das entsprechende [data-theme="..."] Attribut aktiv ist.
+> Every component must receive real data through its props or context. Placeholder data, empty objects with type-casts, and disconnected event buses are architecture bugs, not shortcuts.
 
-4. KEINE DIREKTEN DOM MANIPULATIONEN
-Komponenten dürfen das Aussehen nicht selbst über document.documentElement ändern. Das Aussehen wird zentral über den globalen React Zustand und die globale Layout Engine gesteuert.
+### A1. NO DOUBLE TYPE-CASTS
+`as unknown as X` is banned without exception. It is the TypeScript equivalent of `any` and bypasses the entire type system. If TypeScript reports an error at a prop boundary, the architecture is wrong — fix the data flow, not the types.
 
-5. FEATURE-SLICED DESIGN (FSD) ERZWINGEN
-Du darfst keine komplexen Komponenten mit Geschäftslogik im Ordner src/components/ ablegen. Dieser Ordner ist ausschließlich für dumme, wiederverwendbare UI-Primitiven (Buttons, Inputs) reserviert.
-Jedes neue logische Modul muss in eine eigene Domäne unter src/features/ (z.B. src/features/gigs/, src/features/admin/) gekapselt werden. Jede Feature-Domäne enthält ihre eigenen Komponenten, Hooks und API-Aufrufe.
+```tsx
+// ❌ BANNED
+themeSettings={{} as unknown as SiteConfig["themeSettings"]}
 
-6. STRIKTE ADMIN-ISOLIERUNG (CODE SPLITTING)
-Admin-Komponenten dürfen niemals direkt in öffentliche Client-Routen importiert werden. Wenn du eine Admin-Komponente (wie den ConfigEditor oder SetupWizard) in den Hauptbaum einhängst, musst du zwingend React.lazy() und <Suspense> verwenden. Das öffentliche JavaScript-Bundle darf keinen Byte Admin-Logik enthalten.
+// ✅ CORRECT
+themeSettings={siteConfig?.themeSettings}
+```
 
-7. DATA FETCHING UND STATE MANAGEMENT
-Schreibe niemals manuelle fetch-Aufrufe innerhalb von useEffect-Hooks, um Daten zu laden. 
-Jegliche Kommunikation mit dem Backend (/api) muss zwingend über TanStack Query (React Query) abstrahiert werden. Erstelle dafür dedizierte Custom Hooks (z.B. useGigsQuery), die Caching, Loading-States und Retries übernehmen.
+### A2. NO CustomEvent FOR REACT STATE
+`window.dispatchEvent(new CustomEvent(...))` must never be used to pass data between React components. It creates invisible, untraceable couplings with no guaranteed listener and silently drops data on page load order issues. Use props, context, or TanStack Query.
 
-8. TYPESCRIPT STRICTNESS
-Die Verwendung von "any" ist strikt verboten. Jede API-Antwort, jeder Component-Prop und jeder Zustand muss durch ein TypeScript-Interface oder einen Zod-Schema-Typ typisiert sein. Lege globale Typen in src/lib/types.ts ab oder kapsle sie in den jeweiligen Feature-Ordnern.
+```tsx
+// ❌ BANNED — no guaranteed listener, save silently fails
+onSaveTheme={(ts) => window.dispatchEvent(new CustomEvent('save-theme-event', { detail: ts }))}
 
-9. SICHERHEIT UND UMGEBUNGSVARIABLEN
-Speichere niemals API-Keys (z.B. Spotify, Bandsintown) im React-Code oder im lokalen State. Sensible Keys gehören ausschließlich in serverseitige Umgebungsvariablen oder in die Vercel KV Datenbank des jeweiligen Tenants.
-Umgebungsvariablen für das Frontend müssen zwingend mit VITE_ präfigiert sein.
+// ✅ CORRECT — direct callback to the persistence layer
+onSaveTheme={(ts) => onUpdateSiteConfig?.('themeSettings', ts)}
+```
 
-10. SPRACHE UND BENENNUNG
-Variablen, Funktionen, Dateinamen und Code-Kommentare müssen ausnahmslos auf Englisch geschrieben werden. 
+### A3. PROPS MUST CARRY REAL DATA
+If a parent component doesn't have the data a child needs, thread it through via props or lift state — never replace it with an empty placeholder. Every prop passed to a component must contain actual, current data.
 
-11. STRUKTURELLE DEFINITIONEN: THEMES VS. PRESETS
-Du musst die architektonische Trennung zwischen Themes und Presets unter allen Umständen respektieren.
-- THEME (Layout Engine): Ein Theme definiert AUSSCHLIESSLICH die Struktur, das Layout, DOM-Platzhalter, komplexe CSS-Formen (clip-path) und Hardware-Animationen. Ein Theme wird über das HTML-Attribut [data-theme="..."] aktiviert. Ein Theme enthält NIEMALS Farbwerte oder Schriftarten.
-- PRESET (Design Palette): Ein Preset definiert AUSSCHLIESSLICH globale CSS-Variablen für Farben (Primary, Accent, Background), Typografie und Rundungen (Radius). Ein Preset hat NIEMALS eine Referenz auf ein strukturelles Theme und verändert niemals das HTML-Markup.
+### A4. NO `any` TYPES
+`any` is strictly forbidden. Every API response, component prop, and state variable must be typed via a TypeScript interface or Zod schema. Global types belong in `src/lib/types.ts`.
 
-12. CLEAN CODE UND SOFTWAREQUALITÄT
-- Early Returns: Vermeide tiefe if/else-Verschachtelungen. Nutze Guard Clauses am Anfang von Funktionen, um Fehlerzustände oder fehlende Daten (z.B. loading states) sofort abzufangen.
-- Single Responsibility Principle (SRP): Jede Komponente und jeder Custom Hook darf nur exakt eine Aufgabe haben. Wenn eine Datei mehr als 250 Zeilen Code erreicht, ist das ein Indikator dafür, dass Logik in Unterkomponenten oder Hooks extrahiert werden muss.
-- Keine toten Code-Pfade: Kommentierter Code und console.log() Befehle dürfen niemals in Commits landen oder bei Code-Erweiterungen generiert werden.
-- Destrukturierung: Nutze konsequent Object-Destructuring für Props und State-Objekte, um den Code lesbar zu halten.
+---
 
-13. ERWEITERBARKEIT UND PLUGIN-ARCHITEKTUR (OPEN/CLOSED PRINCIPLE)
-- Das System ist offen für Erweiterungen, aber geschlossen für Modifikationen der Core-Engine.
-- Wenn du ein neues Widget (z.B. Spotify, YouTube, Newsletter) erstellst, darfst du dieses NIEMALS hartcodiert in bestehende Layout-Komponenten schreiben.
-- Jedes neue Widget muss als eigenständiges Modul entwickelt und ausschließlich über die WidgetRegistry (src/lib/widget-registry.ts) im System angemeldet werden. Die Hauptanwendung lädt Widgets nur dynamisch über diese Schnittstelle.
+## PRINCIPLE B — VERIFICATION BEFORE WRITING
 
-14. ERROR HANDLING
-- Vertraue niemals auf externe Daten. Jede API-Antwort und jede Eingabe des Endnutzers muss validiert werden (bevorzugt über Zod-Schemas).
-- UI-Komponenten dürfen bei fehlerhaften Daten nicht die gesamte Anwendung zum Absturz bringen. Umschließe fehleranfällige Module (wie externe Widgets oder komplexe Editoren) mit ErrorBoundaries und rendere stattdessen sichere Fallback-UIs.
+> Before writing new code that connects to existing systems, find a working example in the codebase and follow the same pattern exactly.
 
-15. LIZENZIERUNG UND MASTER-INSTANZ
-- Es gibt eine Master-Instanz (neuroklast.net) und Tenant-Instanzen (Kunden-Deployments).
-- Lizenzprüfungen für Premium-Features dürfen NIEMALS gegen lokale Datenbanken erfolgen. Sie müssen zwingend über den Master-Server validiert werden.
-- Nutze für den Bypass von Berechtigungen auf der Master-Instanz NIEMALS Umgebungsvariablen (wie VITE_IS_PRIMARY), da diese von Tenants manipuliert werden können.
-- Der Super-User-Bypass darf ausschließlich über einen strikten Hostname-Check gegen "neuroklast.net" im Window-Objekt oder in den Request-Headern erfolgen.
-- 
-16. ASSET MANAGEMENT UND DATENBANK-LIMITS
-- Vercel KV ist ein reiner Key-Value-Store für flache JSON-Konfigurationen. 
-- Speichere NIEMALS hochgeladene Bilder, Logos oder Audio-Dateien als Base64-Strings in der Vercel KV Datenbank. Das führt zu einer sofortigen Überlastung des Speichers und extremen Kosten.
-- Nutze für Bild-Assets ausschließlich URLs (Hosting über externe Storage-Provider) und verarbeite sie über unsere lokalen Image-Proxy-Routen (/api/image-proxy), um CORS-Probleme zu umgehen.
+### B1. FOLLOW EXISTING PATTERNS
+Before wiring up any callback (e.g. `onSaveTheme`, `onUpdateSiteConfig`), search the codebase for existing usages. Replicate the pattern exactly. Do not invent a new mechanism.
 
-17. RESILIENZ UND GRACE PERIOD (AUSFALLSICHERHEIT)
-- Wenn der Master-Server (neuroklast.net) ausfällt oder nicht erreichbar ist, darf die öffentliche Website des Kunden nicht offline gehen oder abstürzen.
-- Implementiere eine "Grace Period" für Lizenzen: Einmal durch den Master-Server validierte Schlüssel müssen lokal in der KV-Datenbank des Kunden mit einem Timestamp zwischengespeichert werden (z.B. für 7 Tage). Bei Netzwerkausfällen greift der Code auf diesen Cache zurück.
+Example: The correct way to persist theme settings is `onUpdateSiteConfig?.('themeSettings', ts)` — this already exists. Do not create a new event bus or custom hook for the same purpose.
 
-18. AKTUALITÄT
-    - Aktualisere nach jeder entwicklung alle readmes und halte alle infiormatioenen udn dokumentationeen stets aktuell. 
+### B2. TRACE THE DATA FLOW
+Before passing props, trace where the data comes from end-to-end. If `siteConfig` is available as a prop in the parent, it must be passed through — never replaced with an empty object. Ask: "Where does this data live? Who owns it? Who persists it?"
+
+The canonical data flow for site config is:
+```
+Vercel KV / localStorage
+  → useSiteConfig() hook
+    → App.tsx (owns the state)
+      → Component props (reads and writes via onUpdateSiteConfig)
+```
+
+---
+
+## PRINCIPLE C — ZERO DEAD CODE
+
+> Every line of code must be reachable, serve an active purpose, and be connected end-to-end.
+
+- No `// TODO: wire up later` comments. Wire it up now or don't add the code.
+- No unused props that are accepted but never connected to anything.
+- No `console.log()` in committed code.
+- No commented-out code blocks.
+- If a file exceeds 250 lines, extract logic into subcomponents or hooks (Single Responsibility Principle).
+
+---
+
+## PRINCIPLE D — STRUCTURAL RULES (UI & ARCHITECTURE)
+
+### D1. NO THEME-SPECIFIC COMPONENTS
+Never create multiple versions of the same component for different designs. There is no `CyberpunkCard.tsx` or `MinimalCard.tsx`. There is always exactly one universal version.
+
+### D2. NO HARDCODED COLORS IN TAILWIND
+Never use static Tailwind colors like `bg-red-500`, `text-blue-300`, or `border-gray-800`. Use only our global design tokens:
+- Backgrounds: `bg-background`, `bg-card`, `bg-popover`, `bg-muted`
+- Text: `text-foreground`, `text-primary`, `text-muted-foreground`
+- Accents: `bg-primary`, `bg-accent`, `border-primary`, `border-border`
+- Status: `text-status-error`, `bg-status-success-em/10`, etc. (defined in `src/index.css`)
+
+### D3. NO INLINE STYLES FOR LAYOUT EFFECTS
+For special shapes, borders, or animations, add invisible placeholder divs (e.g. `<div className="theme-widget-corner" aria-hidden="true" />`). These are hidden by default and activated via global CSS rules in `src/styles/theme-slots.css` when `[data-theme="..."]` is active.
+
+### D4. NO DIRECT DOM MANIPULATION
+Components must not change their appearance via `document.documentElement`. All visual state is managed centrally through React state and the global layout engine (ThemeContext).
+
+### D5. FEATURE-SLICED DESIGN (FSD)
+`src/components/` is for dumb, reusable UI primitives only (Buttons, Inputs, etc.). Complex components with business logic belong in `src/features/<domain>/`. Each feature domain owns its own components, hooks, and API calls.
+
+### D6. STRICT ADMIN ISOLATION (CODE SPLITTING)
+Admin components must never be imported directly into public routes. Always use `React.lazy()` + `<Suspense>` for admin components. The public JS bundle must contain zero bytes of admin logic.
+
+### D7. THEMES VS. PRESETS — STRICT SEPARATION
+- **THEME (Layout Engine)**: Defines structure, layout, DOM placeholders, clip-path shapes, and hardware animations. Activated via `[data-theme="..."]`. **Never contains color values or fonts.**
+- **PRESET (Design Palette)**: Defines CSS variables for colors, typography, and radius. **Never references a structural theme and never modifies HTML markup.**
+
+---
+
+## PRINCIPLE E — SAFETY & PLATFORM RULES
+
+### E1. DATA FETCHING
+Never write manual `fetch()` calls inside `useEffect`. All backend communication (`/api`) must go through TanStack Query custom hooks (e.g. `useGigsQuery`) for caching, loading states, and retries.
+
+### E2. SECURITY & ENVIRONMENT VARIABLES
+Never store API keys in React code or local state. Sensitive keys belong in server-side environment variables or Vercel KV. Frontend env vars must use the `VITE_` prefix.
+
+### E3. LICENSING & PRIMARY INSTANCE
+- License checks for premium features must validate against the master server — never a local database.
+- Never use `VITE_IS_PRIMARY` env vars for permission bypasses (tenants can manipulate these).
+- Super-user bypass must use a strict hostname check against `"neuroklast.net"` only.
+
+### E4. ASSET MANAGEMENT
+Never store uploaded images or audio as base64 strings in Vercel KV — this immediately exhausts storage. Use URLs and route them through `/api/image-proxy` for CORS handling.
+
+### E5. RESILIENCE (GRACE PERIOD)
+If the master server is unreachable, the customer's public site must not go offline. License keys validated by the master server must be cached locally in KV with a timestamp (e.g. 7-day grace period).
+
+### E6. ERROR HANDLING
+Never trust external data. Validate all API responses and user input with Zod schemas. Wrap failure-prone modules (external widgets, complex editors) with ErrorBoundaries and render safe fallback UIs.
+
+### E7. EXTENSIBILITY (OPEN/CLOSED PRINCIPLE)
+Never hardcode new widgets into existing layout components. Every widget (Spotify, YouTube, Newsletter) must be registered via `WidgetRegistry` (`src/lib/widget-registry.ts`). The app loads widgets dynamically through this interface only.
+
+### E8. LANGUAGE
+All variables, functions, filenames, and code comments must be in English.
+
+---
+
+## SELF-CHECK BEFORE EVERY COMMIT
+
+Before completing any task, verify each item below. Do not skip this checklist.
+
+1. [ ] No `as unknown as` anywhere in changed files
+2. [ ] No `new CustomEvent()` used for React component communication
+3. [ ] Every prop passed to a component carries real data — no `{}`, no `undefined` where data is expected
+4. [ ] Every callback prop is connected to the actual persistence/state layer — trace it end-to-end
+5. [ ] Changed code follows the same pattern as existing working code for the same feature
+6. [ ] No `any` types, no type assertions that weaken the type
+7. [ ] Run `npx tsc --noEmit` — zero new errors
+8. [ ] Every new file is under 250 lines
+9. [ ] No `console.log()`, no commented-out code, no TODO comments in committed files
+10. [ ] No hardcoded Tailwind palette colors (`bg-red-500`, etc.) — use design tokens only
