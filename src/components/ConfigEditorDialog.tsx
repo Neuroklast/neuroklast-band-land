@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { X, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { getConfigValues, CONFIG_META, type ConfigKey } from '@/lib/config'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLocale } from '@/hooks/use-locale'
 
 /** Slider ranges for numeric config keys – provides sensible min/max/step for the UI */
 const SLIDER_RANGES: Partial<Record<ConfigKey, { min: number; max: number; step: number }>> = {
@@ -77,6 +78,7 @@ interface ConfigEditorDialogProps {
 }
 
 export default function ConfigEditorDialog({ open, onClose, overrides, onSave }: ConfigEditorDialogProps) {
+  const { t } = useLocale()
   const defaults = getConfigValues()
   const [draft, setDraft] = useState<Record<string, unknown>>({ ...overrides })
   const [filter, setFilter] = useState('')
@@ -209,10 +211,10 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
             <div className="h-12 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-mono text-xs text-primary/70 tracking-wider uppercase">ANIMATION & EFFECTS CONFIG</span>
+                <span className="font-mono text-xs text-primary/70 tracking-wider uppercase">{t('configEditor.title')}</span>
                 {overrideCount > 0 && (
                   <span className="font-mono text-[9px] text-primary bg-primary/15 px-2 py-0.5 rounded">
-                    {overrideCount} OVERRIDE{overrideCount !== 1 ? 'S' : ''}
+                    {t(overrideCount !== 1 ? 'configEditor.overrideCountPlural' : 'configEditor.overrideCount').replace('{0}', String(overrideCount))}
                   </span>
                 )}
               </div>
@@ -224,14 +226,14 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
             {/* Filter + actions */}
             <div className="p-4 border-b border-primary/20 flex gap-3 items-center">
               <Input
-                placeholder="Search effects, animations, timings..."
+                placeholder={t('configEditor.searchPlaceholder')}
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
                 className="font-mono text-xs flex-1"
               />
               <Button size="sm" variant="outline" onClick={handleResetAll} className="gap-1 text-xs border-primary/30">
                 <ArrowCounterClockwise size={14} />
-                Reset All
+                {t('configEditor.resetAll')}
               </Button>
             </div>
 
@@ -253,10 +255,10 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
                       <div className="flex items-center gap-2">
                         {groupOverrides > 0 && (
                           <span className="font-mono text-[9px] text-primary bg-primary/15 px-1.5 py-0.5 rounded">
-                            {groupOverrides} modified
+                            {t('configEditor.modified').replace('{0}', String(groupOverrides))}
                           </span>
                         )}
-                        <span className="font-mono text-[9px] text-primary/40">{keys.length} settings</span>
+                        <span className="font-mono text-[9px] text-primary/40">{t('configEditor.settingsCount').replace('{0}', String(keys.length))}</span>
                       </div>
                     </button>
                     {!collapsed && (
@@ -403,15 +405,15 @@ export default function ConfigEditorDialog({ open, onClose, overrides, onSave }:
 
               {filteredGroups.size === 0 && (
                 <p className="text-center text-muted-foreground font-mono text-xs py-8">
-                  No config variables match &quot;{filter}&quot;
+                  {t('configEditor.noMatch').replace('{0}', filter)}
                 </p>
               )}
             </div>
 
             {/* Footer */}
             <div className="p-4 border-t border-primary/20 flex justify-end gap-3">
-              <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-              <Button size="sm" onClick={handleSave}>Save Config</Button>
+              <Button variant="outline" size="sm" onClick={onClose}>{t('common.cancel')}</Button>
+              <Button size="sm" onClick={handleSave}>{t('configEditor.saveConfig')}</Button>
             </div>
           </motion.div>
         </motion.div>
