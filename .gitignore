@@ -32,3 +32,6 @@ pids
 .devcontainer/
 
 .spark-workbench-id
+
+# Leftover patch scripts from automated agents
+patch_*.cjs
