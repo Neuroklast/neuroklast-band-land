@@ -225,10 +225,10 @@ export default function AdminHubDialog({
             setShowCustomizer(false)
             onClose()
           }}
-          themeSettings={{} as unknown as SiteConfig["themeSettings"]} // The customizer will use the global hook state or be passed properly in AdminButton if we lift state up
-          onSaveTheme={(ts) => { window.dispatchEvent(new CustomEvent('save-theme-event', { detail: ts })) }}
-          sectionVisibility={{} as unknown as SiteConfig["sectionVisibility"]}
-          onSaveSectionVisibility={(vs) => { window.dispatchEvent(new CustomEvent('save-visibility-event', { detail: vs })) }}
+          themeSettings={siteConfig?.themeSettings}
+          onSaveTheme={(ts) => onUpdateSiteConfig?.('themeSettings', ts)}
+          sectionVisibility={siteConfig?.sectionVisibility}
+          onSaveSectionVisibility={(vs) => onUpdateSiteConfig?.('sectionVisibility', vs)}
         />
       </Suspense>
     )
