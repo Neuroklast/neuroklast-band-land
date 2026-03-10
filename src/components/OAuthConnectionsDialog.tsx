@@ -35,12 +35,12 @@ interface OAuthConnectionsDialogProps {
 const PROVIDER_META: Record<string, { label: string; color: string; hint: string }> = {
   spotify: {
     label: 'Spotify',
-    color: 'text-green-400',
+    color: 'text-status-success',
     hint: 'Requires SPOTIFY_CLIENT_ID + SPOTIFY_CLIENT_SECRET env vars.',
   },
   'google-drive': {
     label: 'Google Drive',
-    color: 'text-blue-400',
+    color: 'text-status-info',
     hint: 'Requires GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET env vars.',
   },
 }
@@ -186,7 +186,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
 
         <div className="px-4 py-3 space-y-4 overflow-y-auto max-h-[70vh]">
           {error && (
-            <div className="text-[10px] font-mono text-red-400 bg-red-400/10 border border-red-400/30 px-3 py-2">
+            <div className="text-[10px] font-mono text-status-error bg-status-error/10 border border-status-error/30 px-3 py-2">
               ⚠ {error}
             </div>
           )}
@@ -207,7 +207,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {status?.connected ? (
-                        <CheckCircle size={14} className="text-green-400 shrink-0" />
+                        <CheckCircle size={14} className="text-status-success shrink-0" />
                       ) : (
                         <XCircle size={14} className="text-primary/30 shrink-0" />
                       )}
@@ -221,7 +221,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                         variant="outline"
                         disabled={isDisconnecting}
                         onClick={() => handleDisconnect(key)}
-                        className="text-[10px] font-mono border-red-400/40 text-red-400/80 hover:text-red-400 hover:border-red-400 gap-1 h-6 px-2"
+                        className="text-[10px] font-mono border-status-error/40 text-status-error/80 hover:text-status-error hover:border-status-error gap-1 h-6 px-2"
                       >
                         <LinkBreak size={11} />
                         {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
@@ -283,7 +283,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                     className="text-[9px] font-mono flex items-start gap-2 py-0.5 border-b border-primary/5 last:border-0"
                   >
                     <span
-                      className={`shrink-0 mt-0.5 ${entry.success ? 'text-green-400/70' : 'text-red-400/70'}`}
+                      className={`shrink-0 mt-0.5 ${entry.success ? 'text-status-success/70' : 'text-status-error/70'}`}
                     >
                       {entry.success ? '✓' : '✗'}
                     </span>
@@ -297,7 +297,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                         <span className="text-foreground/40"> · {entry.displayName}</span>
                       )}
                       {!entry.success && entry.reason && (
-                        <span className="text-red-400/60"> · {entry.reason}</span>
+                        <span className="text-status-error/60"> · {entry.reason}</span>
                       )}
                     </div>
                     <span className="text-primary/20 shrink-0 whitespace-nowrap">

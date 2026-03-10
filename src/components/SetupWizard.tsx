@@ -494,7 +494,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           </div>
 
           {activationValid ? (
-            <div className="flex items-center justify-center gap-2 text-green-400 font-mono text-sm">
+            <div className="flex items-center justify-center gap-2 text-status-success font-mono text-sm">
               <Check size={16} weight="bold" /> Key activated!
             </div>
           ) : (
@@ -587,7 +587,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                   {REQUIRED_ENV_VARS.map((v) => (
                     <div key={v.key} className="flex items-center gap-2 font-mono text-[11px]">
                       {envStatus[v.key]
-                        ? <CheckCircle size={14} weight="fill" className="text-green-500 shrink-0" />
+                        ? <CheckCircle size={14} weight="fill" className="text-status-success-em shrink-0" />
                         : <Warning size={14} weight="fill" className="shrink-0" style={{ color: v.required ? ENV_WARNING_COLOR : 'var(--muted-foreground)' }} />
                       }
                       <span className={envStatus[v.key] ? 'text-muted-foreground' : v.required ? 'text-foreground' : 'text-muted-foreground'}>
@@ -780,8 +780,8 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
               <div
                 className={`flex items-center gap-2 border rounded px-3 py-2 font-mono text-xs ${
                   passesAA
-                    ? 'border-green-500/30 bg-green-500/5 text-green-400'
-                    : 'border-yellow-500/30 bg-yellow-500/5 text-yellow-400'
+                    ? 'border-status-success-em/30 bg-status-success-em/5 text-status-success'
+                    : 'border-status-warning-em/30 bg-status-warning-em/5 text-status-warning'
                 }`}
               >
                 {passesAA ? <CheckCircle size={16} /> : <Warning size={16} />}

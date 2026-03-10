@@ -66,7 +66,7 @@ export default function NewsletterWidget({
         <p className="text-[11px] text-foreground/60 mt-1">{resolvedDescription}</p>
       </div>
       {status === 'success' ? (
-        <p className="text-[12px] text-green-400 font-mono">{t('newsletter.success')}</p>
+        <p className="text-[12px] text-status-success font-mono">{t('newsletter.success')}</p>
       ) : (
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
@@ -88,7 +88,7 @@ export default function NewsletterWidget({
         </form>
       )}
       {status === 'error' && (
-        <p className="text-[11px] text-red-400 font-mono">{errorMsg}</p>
+        <p className="text-[11px] text-status-error font-mono">{errorMsg}</p>
       )}
       <p className="text-[9px] text-foreground/30">{t('newsletter.unsubscribe')}</p>
     </div>

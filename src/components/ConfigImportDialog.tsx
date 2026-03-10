@@ -149,7 +149,7 @@ export default function ConfigImportDialog({ open, onClose, importData, validati
             {validationResult.warnings.length > 0 && (
               <div className="flex flex-col gap-1.5 mt-1">
                 {validationResult.warnings.map((w, i) => (
-                  <div key={i} className="flex items-start gap-2 text-yellow-400 text-xs">
+                  <div key={i} className="flex items-start gap-2 text-status-warning text-xs">
                     <Warning size={14} className="shrink-0 mt-0.5" />
                     <span>{w}</span>
                   </div>

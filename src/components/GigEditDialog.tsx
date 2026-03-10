@@ -234,15 +234,15 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2">
                 {locationStatus === 'validating' && <SpinnerGap size={16} className="text-muted-foreground animate-spin" />}
-                {locationStatus === 'valid' && <CheckCircle size={16} className="text-green-500" weight="fill" />}
-                {locationStatus === 'invalid' && <WarningCircle size={16} className="text-yellow-500" weight="fill" />}
+                {locationStatus === 'valid' && <CheckCircle size={16} className="text-status-success-em" weight="fill" />}
+                {locationStatus === 'invalid' && <WarningCircle size={16} className="text-status-warning-em" weight="fill" />}
               </div>
             </div>
             {locationStatus === 'invalid' && (
-              <p className="text-[10px] text-yellow-500 mt-1 font-mono">Address not found – check spelling</p>
+              <p className="text-[10px] text-status-warning-em mt-1 font-mono">Address not found – check spelling</p>
             )}
             {locationStatus === 'valid' && (
-              <p className="text-[10px] text-green-500 mt-1 font-mono">Address verified ✓</p>
+              <p className="text-[10px] text-status-success-em mt-1 font-mono">Address verified ✓</p>
             )}
           </div>
 

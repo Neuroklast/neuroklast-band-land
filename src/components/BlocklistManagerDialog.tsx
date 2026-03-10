@@ -199,13 +199,13 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                   <p className="font-mono text-[10px] text-primary/50 uppercase tracking-wider mb-1">{L('blocklist.totalBlocked')}</p>
                   <p className="font-mono text-[20px] text-foreground/90 font-bold">{totalBlocked}</p>
                 </div>
-                <div className="border border-orange-500/20 bg-orange-500/5 p-3" title={LT('blocklist.autoBlocked')}>
-                  <p className="font-mono text-[10px] text-orange-400/70 uppercase tracking-wider mb-1">{L('blocklist.autoBlocked')}</p>
-                  <p className="font-mono text-[20px] text-orange-400 font-bold">{autoBlocked}</p>
+                <div className="border border-status-alert-em/20 bg-status-alert-em/5 p-3" title={LT('blocklist.autoBlocked')}>
+                  <p className="font-mono text-[10px] text-status-alert/70 uppercase tracking-wider mb-1">{L('blocklist.autoBlocked')}</p>
+                  <p className="font-mono text-[20px] text-status-alert font-bold">{autoBlocked}</p>
                 </div>
-                <div className="border border-blue-500/20 bg-blue-500/5 p-3" title={LT('blocklist.manualBlocked')}>
-                  <p className="font-mono text-[10px] text-blue-400/70 uppercase tracking-wider mb-1">{L('blocklist.manualBlocked')}</p>
-                  <p className="font-mono text-[20px] text-blue-400 font-bold">{manualBlocked}</p>
+                <div className="border border-status-info-em/20 bg-status-info-em/5 p-3" title={LT('blocklist.manualBlocked')}>
+                  <p className="font-mono text-[10px] text-status-info/70 uppercase tracking-wider mb-1">{L('blocklist.manualBlocked')}</p>
+                  <p className="font-mono text-[20px] text-status-info font-bold">{manualBlocked}</p>
                 </div>
               </div>
 
@@ -272,10 +272,10 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                     <button
                       onClick={handleAddBlock}
                       disabled={adding}
-                      className="w-full border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed p-3 flex items-center justify-center gap-2 transition-colors"
+                      className="w-full border border-status-error-em/30 bg-status-error-em/10 hover:bg-status-error-em/20 disabled:opacity-50 disabled:cursor-not-allowed p-3 flex items-center justify-center gap-2 transition-colors"
                     >
-                      <ProhibitInset size={16} className="text-red-400" />
-                      <span className="font-mono text-[11px] text-red-400 uppercase tracking-wider">
+                      <ProhibitInset size={16} className="text-status-error" />
+                      <span className="font-mono text-[11px] text-status-error uppercase tracking-wider">
                         {adding ? L('blocklist.blocking') : L('blocklist.blockIp')}
                       </span>
                     </button>
@@ -291,14 +291,14 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
               )}
 
               {error && (
-                <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-                  <p className="font-mono text-[12px] text-red-400">{L('blocklist.failedToLoad')}: {error}</p>
+                <div className="border border-status-error-em/30 bg-status-error-em/10 p-4 text-center">
+                  <p className="font-mono text-[12px] text-status-error">{L('blocklist.failedToLoad')}: {error}</p>
                 </div>
               )}
 
               {!loading && !error && entries.length === 0 && (
                 <div className="border border-primary/15 bg-primary/5 p-8 text-center">
-                  <CheckCircle size={32} className="text-green-400/50 mx-auto mb-2" />
+                  <CheckCircle size={32} className="text-status-success/50 mx-auto mb-2" />
                   <p className="font-mono text-[12px] text-primary/50">{L('blocklist.noBlocked')}</p>
                   <p className="font-mono text-[10px] text-primary/40 mt-1">{L('blocklist.allClear')}</p>
                 </div>
@@ -327,7 +327,7 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                             {entry.hashedIp.slice(0, 12)}...{entry.hashedIp.slice(-8)}
                           </p>
                           {entry.autoBlocked && (
-                            <span className="inline-block mt-1 px-1.5 py-0.5 text-[8px] font-mono font-bold tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
+                            <span className="inline-block mt-1 px-1.5 py-0.5 text-[8px] font-mono font-bold tracking-wider bg-status-alert-em/20 text-status-alert border border-status-alert-em/30 rounded">
                               {L('blocklist.auto')}
                             </span>
                           )}
@@ -339,10 +339,10 @@ export default function BlocklistManagerDialog({ open, onClose }: BlocklistManag
                         <p className="font-mono text-[10px] text-primary/50">{getExpiryTime(entry.blockedAt)}</p>
                         <button
                           onClick={() => handleUnblock(entry.hashedIp)}
-                          className="px-3 py-1.5 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-colors flex items-center gap-2"
+                          className="px-3 py-1.5 border border-status-error-em/30 bg-status-error-em/10 hover:bg-status-error-em/20 transition-colors flex items-center gap-2"
                         >
-                          <Trash size={12} className="text-red-400" />
-                          <span className="font-mono text-[9px] text-red-400 uppercase tracking-wider">{L('blocklist.unblock')}</span>
+                          <Trash size={12} className="text-status-error" />
+                          <span className="font-mono text-[9px] text-status-error uppercase tracking-wider">{L('blocklist.unblock')}</span>
                         </button>
                       </div>
                     ))}

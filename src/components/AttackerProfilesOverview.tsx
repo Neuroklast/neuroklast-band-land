@@ -231,8 +231,8 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
           )}
 
           {error && (
-            <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-              <p className="font-mono text-[12px] text-red-400">{L('profiles.failedToLoad')}: {error}</p>
+            <div className="border border-status-error-em/30 bg-status-error-em/10 p-4 text-center">
+              <p className="font-mono text-[12px] text-status-error">{L('profiles.failedToLoad')}: {error}</p>
             </div>
           )}
 
@@ -248,18 +248,18 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
                   <p className="text-xl font-mono font-bold text-foreground">{total}</p>
                 </div>
                 <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
-                  <div className="flex items-center gap-2 text-red-400/60">
+                  <div className="flex items-center gap-2 text-status-error/60">
                     <Warning size={16} />
                     <span className="text-[11px] font-mono tracking-wider uppercase">{L('profiles.highThreat')}</span>
                   </div>
-                  <p className="text-xl font-mono font-bold text-red-400">{highThreatCount}</p>
+                  <p className="text-xl font-mono font-bold text-status-error">{highThreatCount}</p>
                 </div>
                 <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
-                  <div className="flex items-center gap-2 text-orange-400/60">
+                  <div className="flex items-center gap-2 text-status-alert/60">
                     <Eye size={16} />
                     <span className="text-[11px] font-mono tracking-wider uppercase">{L('profiles.activeAttackers')}</span>
                   </div>
-                  <p className="text-xl font-mono font-bold text-orange-400">{active24h}</p>
+                  <p className="text-xl font-mono font-bold text-status-alert">{active24h}</p>
                 </div>
                 <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
                   <div className="flex items-center gap-2 text-primary/60">
@@ -350,12 +350,12 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
                                 {patterns.length > 0 ? (
                                   <div className="flex items-center gap-1.5">
                                     {highPatterns > 0 && (
-                                      <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] bg-red-500/10 text-red-400 border border-red-500/20">
+                                      <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] bg-status-error-em/10 text-status-error border border-status-error-em/20">
                                         <Warning size={9} /> {highPatterns} HIGH
                                       </span>
                                     )}
                                     {patterns.length - highPatterns > 0 && (
-                                      <span className="px-1.5 py-0.5 text-[8px] bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                                      <span className="px-1.5 py-0.5 text-[8px] bg-status-warning-em/10 text-status-warning border border-status-warning-em/20">
                                         {patterns.length - highPatterns} MED
                                       </span>
                                     )}
@@ -379,7 +379,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
                                   </button>
                                   <button
                                     onClick={() => handleDelete(profile.hashedIp)}
-                                    className="px-1.5 py-1 border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                    className="px-1.5 py-1 border border-status-error-em/20 text-status-error/60 hover:text-status-error hover:bg-status-error-em/10 transition-colors"
                                     title={L('profiles.deleteProfile')}
                                   >
                                     <Trash size={12} />
@@ -435,9 +435,9 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
                               <p className="font-mono text-[13px] text-foreground/80 font-bold">
                                 {patterns.length > 0 ? (
                                   <span>
-                                    {highPatterns > 0 && <span className="text-red-400">{highPatterns}</span>}
+                                    {highPatterns > 0 && <span className="text-status-error">{highPatterns}</span>}
                                     {highPatterns > 0 && patterns.length - highPatterns > 0 && '/'}
-                                    {patterns.length - highPatterns > 0 && <span className="text-yellow-400">{patterns.length - highPatterns}</span>}
+                                    {patterns.length - highPatterns > 0 && <span className="text-status-warning">{patterns.length - highPatterns}</span>}
                                   </span>
                                 ) : '—'}
                               </p>
@@ -473,7 +473,7 @@ export default function AttackerProfilesOverview({ open, onClose, onViewProfile 
                               </button>
                               <button
                                 onClick={() => handleDelete(profile.hashedIp)}
-                                className="px-1.5 py-1 border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                className="px-1.5 py-1 border border-status-error-em/20 text-status-error/60 hover:text-status-error hover:bg-status-error-em/10 transition-colors"
                                 title={L('profiles.deleteProfile')}
                               >
                                 <Trash size={11} />

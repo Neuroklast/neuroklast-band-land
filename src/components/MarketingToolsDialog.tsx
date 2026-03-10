@@ -227,7 +227,7 @@ export default function MarketingToolsDialog({
                 <div className="flex gap-2">
                   <Input className={inputCls + ' flex-1'} value={generatedUrl} readOnly />
                   <Button size="sm" variant="outline" onClick={handleCopy} className="gap-1.5 text-xs font-mono border-primary/30 shrink-0">
-                    {copied ? <Check size={13} className="text-green-400" /> : <Copy size={13} />}
+                    {copied ? <Check size={13} className="text-status-success" /> : <Copy size={13} />}
                     {copied ? 'Copied' : 'Copy'}
                   </Button>
                 </div>

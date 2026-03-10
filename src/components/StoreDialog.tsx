@@ -62,8 +62,8 @@ function StarRating({ average, count }: { average: number; count: number }) {
   return (
     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
       {Array.from({ length: 5 }, (_, i) => {
-        if (i < full) return <Star key={i} size={12} weight="fill" className="text-yellow-500" />
-        if (i === full && half) return <StarHalf key={i} size={12} weight="fill" className="text-yellow-500" />
+        if (i < full) return <Star key={i} size={12} weight="fill" className="text-status-warning-em" />
+        if (i === full && half) return <StarHalf key={i} size={12} weight="fill" className="text-status-warning-em" />
         return <Star key={i} size={12} className="text-muted-foreground/40" />
       })}
       <span className="ml-0.5">{average.toFixed(1)}</span>
@@ -101,7 +101,7 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
       exit={{ opacity: 0, y: -10 }}
       className={`border rounded bg-card/50 p-3 flex flex-col gap-2 transition-colors ${
         item.hasUpdate
-          ? 'border-blue-500/30 hover:border-blue-500/50'
+          ? 'border-status-info-em/30 hover:border-status-info-em/50'
           : 'border-primary/15 hover:border-primary/30'
       }`}
     >
@@ -122,7 +122,7 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {item.hasUpdate && (
-            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-status-info-em/20 text-status-info border border-status-info-em/30 flex items-center gap-1">
               {item.updateIsBreaking && <Warning size={9} weight="fill" />}
               <ArrowsClockwise size={9} />
               {t('store.updateAvailable').replace('{0}', item.updateVersion ?? '')}
@@ -131,8 +131,8 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
           <span
             className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
               item.license === 'premium'
-                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                ? 'bg-status-warning-em/20 text-status-warning border border-status-warning-em/30'
+                : 'bg-status-success-em/20 text-status-success border border-status-success-em/30'
             }`}
           >
             {item.license === 'premium' ? t('store.premium') : t('store.free')}
@@ -177,7 +177,7 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
             onClick={isPremiumLocked ? undefined : onInstall}
             disabled={isPremiumLocked}
             title={isPremiumLocked ? t('store.proRequiredWidgets') : undefined}
-            className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
+            className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-status-warning-em/30 text-status-warning-em/70' : 'border-primary/30'}`}
           >
             {isPremiumLocked ? (
               <><Lock size={12} /> {t('store.proRequired')}</>
@@ -192,7 +192,7 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
               size="sm"
               variant="outline"
               onClick={onToggle}
-              className={`text-xs gap-1 h-7 border-primary/30 ${item.enabled ? 'text-green-400' : 'text-muted-foreground'}`}
+              className={`text-xs gap-1 h-7 border-primary/30 ${item.enabled ? 'text-status-success' : 'text-muted-foreground'}`}
             >
               {item.enabled ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
               {item.enabled ? t('store.disable') : t('store.enable')}
@@ -211,7 +211,7 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
                 variant="outline"
                 onClick={onUpdate}
                 title={item.updateIsBreaking ? t('store.updateBreaking') : undefined}
-                className="text-xs gap-1 h-7 border-blue-500/40 text-blue-400 hover:bg-blue-500/10"
+                className="text-xs gap-1 h-7 border-status-info-em/40 text-status-info hover:bg-status-info-em/10"
               >
                 {item.updateIsBreaking
                   ? <><Warning size={14} weight="fill" /> {t('store.update')}</>
@@ -228,7 +228,7 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
             onClick={isPremiumLocked ? undefined : onApplyTheme}
             disabled={isPremiumLocked}
             title={isPremiumLocked ? t('store.proRequiredThemes') : undefined}
-            className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-yellow-500/30 text-yellow-500/70' : 'border-primary/30'}`}
+            className={`text-xs gap-1 h-7 ${isPremiumLocked ? 'opacity-50 cursor-not-allowed border-status-warning-em/30 text-status-warning-em/70' : 'border-primary/30'}`}
           >
             {isPremiumLocked ? (
               <><Lock size={12} /> {t('store.proRequired')}</>
@@ -238,12 +238,12 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
           </Button>
         )}
         {isTheme && item.enabled && (
-          <span className="text-xs font-mono text-green-400 flex items-center gap-1">
+          <span className="text-xs font-mono text-status-success flex items-center gap-1">
             <Check size={14} /> {t('store.applied')}
           </span>
         )}
         {isWidget && item.installed && (
-          <span className="ml-auto text-[10px] font-mono text-green-400/60 flex items-center gap-1">
+          <span className="ml-auto text-[10px] font-mono text-status-success/60 flex items-center gap-1">
             <Check size={12} /> {t('store.installed')}
           </span>
         )}
@@ -592,8 +592,8 @@ export default function StoreDialog({
                   onClick={() => setLicenseFilter(licenseFilter === 'free' ? undefined : 'free')}
                   className={`text-xs font-mono px-2 py-1 rounded transition-colors ${
                     licenseFilter === 'free'
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      : 'bg-secondary text-muted-foreground border border-transparent hover:border-green-500/20'
+                      ? 'bg-status-success-em/20 text-status-success border border-status-success-em/30'
+                      : 'bg-secondary text-muted-foreground border border-transparent hover:border-status-success-em/20'
                   }`}
                 >
                   {t('store.filterFree')}
@@ -602,8 +602,8 @@ export default function StoreDialog({
                   onClick={() => setLicenseFilter(licenseFilter === 'premium' ? undefined : 'premium')}
                   className={`text-xs font-mono px-2 py-1 rounded transition-colors ${
                     licenseFilter === 'premium'
-                      ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                      : 'bg-secondary text-muted-foreground border border-transparent hover:border-yellow-500/20'
+                      ? 'bg-status-warning-em/20 text-status-warning border border-status-warning-em/30'
+                      : 'bg-secondary text-muted-foreground border border-transparent hover:border-status-warning-em/20'
                   }`}
                 >
                   {t('store.filterPremium')}

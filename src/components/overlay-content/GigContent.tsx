@@ -124,10 +124,10 @@ export default function GigContent({ gig }: { gig: Gig }) {
               <h2 className="text-xl font-bold text-foreground">{gig.venue}</h2>
               {gig.status && (
                 <span className={`self-center text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${
-                  gig.status === 'soldout' ? 'bg-yellow-500/20 text-yellow-400' :
-                  gig.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+                  gig.status === 'soldout' ? 'bg-status-warning-em/20 text-status-warning' :
+                  gig.status === 'cancelled' ? 'bg-status-error-em/20 text-status-error' :
                   gig.status === 'announced' ? 'bg-primary/20 text-primary' :
-                  'bg-green-500/20 text-green-400'
+                  'bg-status-success-em/20 text-status-success'
                 }`}>
                   {gig.status}
                 </span>

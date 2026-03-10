@@ -145,8 +145,8 @@ export default function ContactSection({
         >
           {status === 'success' ? (
             <div className="flex flex-col items-center gap-4 py-8 text-center">
-              <CheckCircle size={48} className="text-green-500" weight="duotone" />
-              <p className="font-mono text-sm text-green-400">
+              <CheckCircle size={48} className="text-status-success-em" weight="duotone" />
+              <p className="font-mono text-sm text-status-success">
                 {contactSettings?.successMessage || t('contact.defaultSuccess')}
               </p>
               <Button
@@ -207,7 +207,7 @@ export default function ContactSection({
               </div>
 
               {status === 'error' && (
-                <div className="flex items-center gap-2 text-red-400 font-mono text-xs">
+                <div className="flex items-center gap-2 text-status-error font-mono text-xs">
                   <Warning size={16} />
                   <span>{errorMsg || t('contact.sendError')}</span>
                 </div>

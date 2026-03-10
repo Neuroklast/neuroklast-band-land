@@ -45,7 +45,7 @@ export default function AnalyticsWidget({ themeSettings }: AnalyticsWidgetProps)
           >
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
             <p className="text-xl font-bold" style={{ color: primary }}>{stat.value}</p>
-            <p className={`text-[10px] ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
+            <p className={`text-[10px] ${stat.up ? 'text-status-success' : 'text-status-error'}`}>
               {stat.trend} vs last week
             </p>
           </div>

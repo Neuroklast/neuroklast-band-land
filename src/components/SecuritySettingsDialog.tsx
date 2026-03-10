@@ -155,7 +155,7 @@ function ToggleRow({ label, description, checked, onChange, icon: Icon, badge, t
           <div className="flex items-center gap-2">
             <p className="font-mono text-[12px] text-foreground/85 uppercase tracking-wider">{label}</p>
             {badge && (
-              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 rounded">
+              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-wider bg-status-error-em/20 text-status-error border border-status-error-em/30 rounded">
                 {badge}
               </span>
             )}
@@ -172,7 +172,7 @@ function ToggleRow({ label, description, checked, onChange, icon: Icon, badge, t
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <span className={`font-mono text-[9px] tracking-wider ${checked ? 'text-green-400/70' : 'text-red-400/50'}`}>
+        <span className={`font-mono text-[9px] tracking-wider ${checked ? 'text-status-success/70' : 'text-status-error/50'}`}>
           {checked ? statusActive : statusDisabled}
         </span>
         <button
@@ -437,8 +437,8 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
               )}
 
               {error && (
-                <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-                  <p className="font-mono text-[12px] text-red-400">{L('sec.failedToLoad')}: {error}</p>
+                <div className="border border-status-error-em/30 bg-status-error-em/10 p-4 text-center">
+                  <p className="font-mono text-[12px] text-status-error">{L('sec.failedToLoad')}: {error}</p>
                 </div>
               )}
 
@@ -447,7 +447,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                   {/* Security status overview */}
                   <div className="border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? 'bg-green-500' : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`} />
+                      <div className={`w-3 h-3 rounded-full ${activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? 'bg-status-success-em' : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? 'bg-status-warning-em' : 'bg-status-error-em'} animate-pulse`} />
                       <div>
                         <p className="font-mono text-[12px] text-foreground/85 uppercase">
                           {L('settings.securityLevel')}: {activeModules >= SECURITY_LEVEL_HIGH_THRESHOLD ? L('settings.high') : activeModules >= SECURITY_LEVEL_MEDIUM_THRESHOLD ? L('settings.medium') : L('settings.low')}
@@ -500,7 +500,7 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                   {activeTab === 'modules' && (
                     <div className="space-y-0">
                       {/* Under Attack Mode */}
-                      <div className="border border-red-500/30 bg-red-500/5 p-3 mb-3">
+                      <div className="border border-status-error-em/30 bg-status-error-em/5 p-3 mb-3">
                         <ToggleRow
                           icon={ShieldWarning}
                           label={L('mod.underAttack')}

@@ -445,7 +445,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
               className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors tracking-wider"
               title="Copy link"
             >
-              {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+              {copied ? <Check size={12} className="text-status-success" /> : <Copy size={12} />}
               {copied ? t('news.copied') : t('news.link')}
             </button>
             <CyberCloseButton
