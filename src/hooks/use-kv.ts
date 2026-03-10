@@ -9,15 +9,15 @@ import { useState, useEffect, useCallback, useRef } from 'react'
  * KV/localStorage/default fetch has completed so consumers can avoid acting on
  * stale default data.
  */
-export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater: T | ((current: T | undefined) => T)) => void, boolean] {
-  const [value, setValue] = useState<T | undefined>(undefined)
+export function useKV<T>(key: string, defaultValue: T): [T, (updater: T | ((current: T) => T)) => void, boolean] {
+  const [value, setValue] = useState<T>(defaultValue)
   const [loaded, setLoaded] = useState(false)
   const initializedRef = useRef(false)
   const defaultRef = useRef(defaultValue)
   const loadedRef = useRef(false)
   // Ref tracking the latest value so the updater function always sees
   // the most recent state, even when React batches multiple setState calls.
-  const valueRef = useRef<T | undefined>(undefined)
+  const valueRef = useRef<T>(defaultValue)
   // AbortController for cancelling in-flight POST requests when a newer
   // update supersedes them.
   const abortRef = useRef<AbortController | null>(null)
@@ -82,12 +82,12 @@ export function useKV<T>(key: string, defaultValue: T): [T | undefined, (updater
     return () => { abortRef.current?.abort() }
   }, [])
 
-  const updateValue = useCallback((updater: T | ((current: T | undefined) => T)) => {
+  const updateValue = useCallback((updater: T | ((current: T) => T)) => {
     // Compute the new value from the latest ref (always up-to-date, even when
     // React batches state updates).
     const prev = valueRef.current
     const newValue = typeof updater === 'function'
-      ? (updater as (current: T | undefined) => T)(prev)
+      ? (updater as (current: T) => T)(prev)
       : updater
 
     // Update React state and value ref synchronously
