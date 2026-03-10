@@ -150,26 +150,20 @@ const config = createSiteConfig({
 
 ## Design Presets
 
-Seven bundled presets are available in `src/lib/design-presets.ts`:
+Bundled presets are available in `src/lib/design-presets.ts`:
 
 | ID | Name | Aesthetic |
 |----|------|-----------|
-| `cyberpunk` | Cyberpunk | Dark industrial, crimson red neon |
-| `minimal` | Minimal | Light, clean, content-first |
-| `elegant` | Elegant | Dark canvas, warm gold, serif fonts |
-| `neon` | Neon | Electric blue/cyan synthwave |
-| `retro` | Retro | Amber phosphor-glow, vintage terminal |
-| `zardonic` | Zardonic | Industrial/synthwave with CRT effects |
 | `neuroklast-classic` | Neuroklast Classic | Dark cyberpunk with code-rain |
 
 ### Using a preset
 
 ```ts
-import { getPreset, presetToThemeSettings } from '@/lib/design-presets'
+import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
 
-const preset = getPreset('neon')!
+const preset = DESIGN_PRESETS['neuroklast-classic']
 const config = createSiteConfig({
-  siteName: 'DJ Neon',
+  siteName: 'My Band',
   themeSettings: presetToThemeSettings(preset),
 })
 ```
@@ -177,9 +171,11 @@ const config = createSiteConfig({
 ### Overriding individual values after a preset
 
 ```ts
+import { DESIGN_PRESETS, presetToThemeSettings } from '@/lib/design-presets'
+
 const config = createSiteConfig({
   themeSettings: {
-    ...presetToThemeSettings(getPreset('minimal')!),
+    ...presetToThemeSettings(DESIGN_PRESETS['neuroklast-classic']),
     primary: 'oklch(0.60 0.18 200)', // custom override
   },
 })
