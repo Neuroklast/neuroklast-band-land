@@ -13,8 +13,6 @@
  */
 
 import {
-  createContext,
-  useContext,
   useEffect,
   useCallback,
   useMemo,
@@ -22,22 +20,10 @@ import {
 } from 'react'
 import type { ThemeSettings } from '@/lib/types'
 import { applyThemeToDOM } from '@/lib/theme-application'
+import { ThemeContext, type ThemeContextValue } from '@/hooks/use-theme-engine'
 
 // ── Cache key used by both this provider and public/theme-init.js ───────────
 const THEME_CACHE_KEY = 'nk-theme-cache'
-
-// ── Context shape ───────────────────────────────────────────────────────────
-
-interface ThemeContextValue {
-  /** Current theme settings (undefined while site config is still loading). */
-  themeSettings: ThemeSettings | undefined
-  /** Replace the active theme settings — persists to localStorage and updates DOM atomically. */
-  setThemeSettings: (settings: ThemeSettings) => void
-  /** Shorthand for `themeSettings?.activePreset`. */
-  activePreset: string | undefined
-}
-
-const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 // ── Provider ────────────────────────────────────────────────────────────────
 
@@ -99,14 +85,4 @@ export function ThemeProvider({
   )
 
   return <ThemeContext value={value}>{children}</ThemeContext>
-}
-
-// ── Consumer hook ───────────────────────────────────────────────────────────
-
-export function useThemeEngine(): ThemeContextValue {
-  const ctx = useContext(ThemeContext)
-  if (!ctx) {
-    throw new Error('useThemeEngine must be used within a ThemeProvider')
-  }
-  return ctx
 }

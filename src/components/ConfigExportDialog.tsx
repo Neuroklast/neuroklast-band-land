@@ -9,7 +9,7 @@ import type { SiteConfig } from '@/lib/types'
 import type { ExportScope } from '@/lib/config-export'
 import { exportSiteConfig, downloadConfigExport, copyThemeShareUrl } from '@/lib/config-export'
 import type { Icon } from '@phosphor-icons/react'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ConfigExportDialogProps {
   open: boolean

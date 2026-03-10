@@ -6,7 +6,7 @@ import { Plus, Trash, ArrowsDownUp, Spinner } from '@phosphor-icons/react'
 import type { SiteConfig, Gig, Release, NewsItem } from '@/lib/types'
 import { toast } from 'sonner'
 import { useMutation } from '@tanstack/react-query'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ContentFormsProps {
   data: SiteConfig
@@ -291,7 +291,7 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
                 <p className="text-muted-foreground text-sm font-mono">{t('content.noGigs') || 'No gigs configured. Click Add Gig to start.'}</p>
               ) : (
                 <div className="space-y-4">
-                  {(data.gigs || []).map((gig, index) => (
+                  {(data.gigs || []).map((gig, _index) => (
                     <div key={gig.id} className="bg-card border border-border rounded-lg p-4 flex gap-4 items-start group">
                       <div className="mt-2 text-muted-foreground cursor-grab"><ArrowsDownUp size={20} /></div>
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">

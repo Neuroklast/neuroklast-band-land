@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from 'react'
 import SocialEditDialog from './SocialEditDialog'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { trackSocialClick } from '@/lib/analytics'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import {
   TITLE_TYPING_SPEED_MS,
   TITLE_TYPING_START_DELAY_MS,

@@ -2,26 +2,10 @@ import { motion } from 'framer-motion'
 import { ArrowSquareOut, ShareNetwork, Copy, Check } from '@phosphor-icons/react'
 import ProgressiveImage from '@/components/ProgressiveImage'
 import { useState, useMemo } from 'react'
-import { format } from 'date-fns'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import type { NewsItem, SectionLabels } from '@/lib/types'
-import { useLocale } from '@/contexts/LocaleContext'
-
-/** Format a news date for display */
-export function formatNewsDate(date: string): string {
-  if (!date) return '---'
-  const d = new Date(date)
-  if (isNaN(d.getTime())) {
-    if (/^\d{4}-\d{2}$/.test(date)) {
-      const [year, month] = date.split('-')
-      const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-      return `${monthNames[parseInt(month) - 1]} ${year}`
-    }
-    return date
-  }
-  return format(d, 'dd.MM.yyyy')
-}
+import { useLocale } from '@/hooks/use-locale'
 
 /** Safely render markdown to sanitized HTML */
 function renderMarkdown(text: string): string {
@@ -48,7 +32,7 @@ interface NewsContentProps {
  * News item body content — headline, photo, details, link, share actions.
  * Renders without a header/close button; the parent OverlayModal provides those.
  */
-export default function NewsContent({ item, sectionLabels }: NewsContentProps) {
+export default function NewsContent({ item, sectionLabels: _sectionLabels }: NewsContentProps) {
   const [copied, setCopied] = useState(false)
   const { t } = useLocale()
 

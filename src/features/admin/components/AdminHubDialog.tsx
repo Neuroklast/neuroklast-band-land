@@ -25,12 +25,20 @@ import {
   ArrowCounterClockwise,
   SignOut,
   Article,
-  Layout,
   Storefront,
   ShieldChevron
 } from '@phosphor-icons/react'
-import { useLocale } from '@/contexts/LocaleContext'
+import type { Icon } from '@phosphor-icons/react'
+import { useLocale } from '@/hooks/use-locale'
 import type { AdminDialog, SiteConfig } from '@/lib/types'
+
+interface HubItemData {
+  icon: Icon
+  label: string
+  description?: string
+  action: () => void
+  disabled?: boolean
+}
 
 // Lazy load the underlying forms/modals to keep bundle lean
 const ThemeCustomizerDialog = lazy(() => import('@/components/ThemeCustomizerDialog'))
@@ -78,8 +86,6 @@ export default function AdminHubDialog({
     { id: 'store', label: t('hub.store') || 'Store & Apps', icon: Storefront },
     { id: 'system', label: t('hub.system') || 'System & Security', icon: ShieldChevron },
   ] as const
-
-  const contentItems = [] // Rendered directly
 
   const storeItems = [
     {
@@ -335,7 +341,7 @@ export default function AdminHubDialog({
   )
 }
 
-function HubItem({ item }: { item: any }) {
+function HubItem({ item }: { item: HubItemData }) {
   const IconComponent = item.icon
   return (
     <button

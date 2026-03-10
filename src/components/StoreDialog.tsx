@@ -25,7 +25,7 @@ import {
   Copy,
 } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import { toast } from 'sonner'
 import type { WidgetPlugin, ThemeSettings, StoreTab, StoreItemLicense } from '@/lib/types'
 import type { LicenseTier } from '@/lib/license'
@@ -85,7 +85,7 @@ interface StoreItemCardProps {
   onUpdate?: () => void
 }
 
-function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure, onUpdate }: StoreItemCardProps) {
+function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure, onUpdate }: StoreItemCardProps) {
   const { t } = useLocale()
   const { canUsePremiumThemes, canUsePremiumWidgets } = usePermissions()
   const isWidget = item.type === 'widget'

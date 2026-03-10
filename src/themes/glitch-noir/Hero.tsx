@@ -1,21 +1,21 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
+const SIGNAL_STATES = [
+  '[SIGNAL_DETECTED]',
+  '[TRANSMISSION_ACTIVE]',
+  '[CARRIER_WAVE_LOCKED]',
+  '[FREQUENCY_SYNC]',
+  '[NEURAL_LINK_ESTABLISHED]'
+]
+
 export default function Hero() {
   const [glitchActive, setGlitchActive] = useState(false)
-  const [signalText, setSignalText] = useState('[SIGNAL_DETECTED]')
-  
-  const signalStates = [
-    '[SIGNAL_DETECTED]',
-    '[TRANSMISSION_ACTIVE]',
-    '[CARRIER_WAVE_LOCKED]',
-    '[FREQUENCY_SYNC]',
-    '[NEURAL_LINK_ESTABLISHED]'
-  ]
+  const [signalText, setSignalText] = useState(SIGNAL_STATES[0])
 
   useEffect(() => {
     const textInterval = setInterval(() => {
-      setSignalText(signalStates[Math.floor(Math.random() * signalStates.length)])
+      setSignalText(SIGNAL_STATES[Math.floor(Math.random() * SIGNAL_STATES.length)])
     }, 3500)
     
     return () => clearInterval(textInterval)

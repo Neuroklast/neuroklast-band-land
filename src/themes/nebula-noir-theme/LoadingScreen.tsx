@@ -6,7 +6,6 @@ import type { LoadingScreenSlotProps } from '@/lib/types'
 type LoadingScreenProps = LoadingScreenSlotProps;
 
 export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const duration = 2500;
   const [progress, setProgress] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
 
@@ -28,7 +27,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
     }, 16)
 
     return () => clearInterval(interval)
-  }, [2500, onComplete])
+  }, [onComplete])
 
   return (
     <AnimatePresence>

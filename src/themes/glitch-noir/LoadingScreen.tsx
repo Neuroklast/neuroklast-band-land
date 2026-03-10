@@ -1,21 +1,21 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
+const BOOT_SEQUENCE = [
+  '/// SYSTEM_BOOT_INIT ///',
+  '[CARRIER_WAVE] FREQUENCY_LOCK...',
+  '[NEURAL_LINK] ESTABLISHING...',
+  '[AUDIO_MATRIX] LOADING_SAMPLES...',
+  '[SIGNAL_PROC] ANALYZING_WAVEFORMS...',
+  '[SYNC_CLOCK] 138 BPM LOCKED',
+  '[STATUS] READY_TO_TRANSMIT',
+  '/// NEUROKLAST_ONLINE ///'
+]
+
 export default function LoadingScreen() {
   const [progress, setProgress] = useState(0)
   const [messages, setMessages] = useState<string[]>([])
   const [noiseLevel, setNoiseLevel] = useState(0)
-
-  const bootSequence = [
-    '/// SYSTEM_BOOT_INIT ///',
-    '[CARRIER_WAVE] FREQUENCY_LOCK...',
-    '[NEURAL_LINK] ESTABLISHING...',
-    '[AUDIO_MATRIX] LOADING_SAMPLES...',
-    '[SIGNAL_PROC] ANALYZING_WAVEFORMS...',
-    '[SYNC_CLOCK] 138 BPM LOCKED',
-    '[STATUS] READY_TO_TRANSMIT',
-    '/// NEUROKLAST_ONLINE ///'
-  ]
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -43,8 +43,8 @@ export default function LoadingScreen() {
     const messageInterval = setInterval(() => {
       setMessages((prev) => {
         const nextIndex = prev.length
-        if (nextIndex < bootSequence.length) {
-          return [...prev, bootSequence[nextIndex]]
+        if (nextIndex < BOOT_SEQUENCE.length) {
+          return [...prev, BOOT_SEQUENCE[nextIndex]]
         }
         clearInterval(messageInterval)
         return prev

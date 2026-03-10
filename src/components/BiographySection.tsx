@@ -1,5 +1,5 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import { PencilSimple, CaretLeft, CaretRight, User } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

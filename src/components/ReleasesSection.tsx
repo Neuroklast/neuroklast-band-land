@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { useTrackSection } from '@/hooks/use-track-section'
 import FontSizePicker from '@/components/FontSizePicker'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 import { useTouchSwipe } from '@/hooks/use-touch-swipe'
 

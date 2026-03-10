@@ -22,7 +22,7 @@ export default function Navigation() {
           </div>
 
           <div className="hidden md:flex gap-8">
-            {navItems.map((item, i) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}

@@ -11,7 +11,6 @@ const LOADING_TEXTS = [
 ]
 
 export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const precacheUrls: string[] = [];
   const [loadingText, setLoadingText] = useState(LOADING_TEXTS[0])
   const [progress, setProgress] = useState(0)
 

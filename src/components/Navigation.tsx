@@ -12,7 +12,7 @@ import {
 import MusicPlayer from '@/components/MusicPlayer'
 import { LOCAL_TRACKS } from '@/lib/music-tracks'
 import { useMorseCode } from '@/hooks/use-morse-code'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface NavigationProps {
   siteName?: string
