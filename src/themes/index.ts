@@ -2,6 +2,7 @@ export { neuroklastClassicTheme } from './neuroklast-classic'
 export { nebulaNoirTheme } from './nebula-noir-theme'
 export { glitchNoirTheme } from './glitch-noir'
 export { zardonicTheme } from './zardonic'
+export { minimalDarkTheme } from './minimal-dark'
 
 export * from './default-slots'
 
@@ -10,10 +11,12 @@ import { neuroklastClassicTheme } from './neuroklast-classic'
 import { nebulaNoirTheme } from './nebula-noir-theme'
 import { glitchNoirTheme } from './glitch-noir'
 import { zardonicTheme } from './zardonic'
+import { minimalDarkTheme } from './minimal-dark'
 
 export const builtInThemes: ThemePackage[] = [
   neuroklastClassicTheme,
   nebulaNoirTheme,
   glitchNoirTheme,
   zardonicTheme,
+  minimalDarkTheme,
 ]
