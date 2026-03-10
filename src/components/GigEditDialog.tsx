@@ -7,6 +7,7 @@ import { Plus, X, UploadSimple, CheckCircle, WarningCircle, SpinnerGap } from '@
 import type { Gig } from '@/lib/types'
 import { toast } from 'sonner'
 import { toDirectImageUrl } from '@/lib/image-cache'
+import { useLocale } from '@/hooks/use-locale'
 
 type LocationStatus = 'idle' | 'validating' | 'valid' | 'invalid'
 
@@ -20,6 +21,7 @@ interface GigEditDialogProps {
 }
 
 export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogProps) {
+  const { t } = useLocale()
   const [formData, setFormData] = useState({
     date: '',
     venue: '',
@@ -143,12 +145,12 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="bg-card border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{gig ? 'Edit Gig' : 'Add New Gig'}</DialogTitle>
+          <DialogTitle>{gig ? t('gigEdit.editTitle') : t('gigEdit.addTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1">
-              <Label htmlFor="date">{formData.allDay ? 'Date' : 'Date & Time'}</Label>
+              <Label htmlFor="date">{formData.allDay ? t('common.date') : t('gigEdit.dateTime')}</Label>
               <Input
                 id="date"
                 type={formData.allDay ? 'date' : 'datetime-local'}
@@ -172,42 +174,42 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
                 }}
                 className="h-4 w-4 accent-primary"
               />
-              <Label htmlFor="allDay" className="text-sm whitespace-nowrap cursor-pointer">All Day</Label>
+              <Label htmlFor="allDay" className="text-sm whitespace-nowrap cursor-pointer">{t('gigEdit.allDay')}</Label>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="gigType">Gig Type (optional)</Label>
+            <Label htmlFor="gigType">{t('gigEdit.gigType')}</Label>
             <select
               id="gigType"
               value={formData.gigType}
               onChange={(e) => setFormData({ ...formData, gigType: e.target.value as '' | 'concert' | 'dj' })}
               className="flex h-10 w-full rounded-md border border-input bg-secondary px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="">— None —</option>
-              <option value="concert">Concert</option>
-              <option value="dj">DJ Set</option>
+              <option value="">{t('common.noneOption')}</option>
+              <option value="concert">{t('gigEdit.concert')}</option>
+              <option value="dj">{t('gigEdit.djSet')}</option>
             </select>
           </div>
 
           <div>
-            <Label htmlFor="status">Status (optional)</Label>
+            <Label htmlFor="status">{t('gigEdit.statusOptional')}</Label>
             <select
               id="status"
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value as '' | 'confirmed' | 'cancelled' | 'soldout' | 'announced' })}
               className="flex h-10 w-full rounded-md border border-input bg-secondary px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="">— None —</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="announced">Announced</option>
-              <option value="soldout">Sold Out</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="">{t('common.noneOption')}</option>
+              <option value="confirmed">{t('gigEdit.confirmed')}</option>
+              <option value="announced">{t('gigEdit.announced')}</option>
+              <option value="soldout">{t('gigEdit.soldOut')}</option>
+              <option value="cancelled">{t('gigEdit.cancelled')}</option>
             </select>
           </div>
 
           <div>
-            <Label htmlFor="venue">Venue</Label>
+            <Label htmlFor="venue">{t('gigEdit.venue')}</Label>
             <Input
               id="venue"
               value={formData.venue}
@@ -219,7 +221,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
           </div>
 
           <div>
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">{t('gigEdit.location')}</Label>
             <div className="relative">
               <Input
                 id="location"
@@ -239,15 +241,15 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
               </div>
             </div>
             {locationStatus === 'invalid' && (
-              <p className="text-[10px] text-status-warning-em mt-1 font-mono">Address not found – check spelling</p>
+              <p className="text-[10px] text-status-warning-em mt-1 font-mono">{t('gigEdit.addressNotFound')}</p>
             )}
             {locationStatus === 'valid' && (
-              <p className="text-[10px] text-status-success-em mt-1 font-mono">Address verified ✓</p>
+              <p className="text-[10px] text-status-success-em mt-1 font-mono">{t('gigEdit.addressVerified')}</p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="ticketUrl">Ticket URL (optional)</Label>
+            <Label htmlFor="ticketUrl">{t('gigEdit.ticketUrlOptional')}</Label>
             <Input
               id="ticketUrl"
               type="url"
@@ -259,7 +261,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
           </div>
 
           <div>
-            <Label htmlFor="photo">Photo (optional)</Label>
+            <Label htmlFor="photo">{t('gigEdit.photoOptional')}</Label>
             <div className="flex gap-2">
               <Input
                 id="photo"
@@ -295,7 +297,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
           </div>
 
           <div>
-            <Label>Supporting Artists</Label>
+            <Label>{t('gigEdit.supportingArtists')}</Label>
             <div className="flex gap-2 mt-1">
               <Input
                 value={newArtist}
@@ -319,7 +321,7 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
           </div>
 
           <div>
-            <Label className="mb-2 block">Event Links (optional)</Label>
+            <Label className="mb-2 block">{t('gigEdit.eventLinksOptional')}</Label>
             <div className="space-y-2">
               <Input
                 type="url"
@@ -354,10 +356,10 @@ export default function GigEditDialog({ gig, onSave, onClose }: GigEditDialogPro
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1 bg-primary hover:bg-accent">
-              Save
+              {t('common.save')}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

@@ -51,6 +51,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState(friend)
   const [_hovered, setHovered] = useState(false)
+  const { t } = useLocale()
 
   const handleSave = () => {
     // Convert Google Drive URLs to wsrv.nl URLs before saving
@@ -69,23 +70,23 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
       <Card className="bg-card border-primary/30 p-4 space-y-3">
         <div className="space-y-2">
           <div>
-            <Label className="text-[10px]">Name</Label>
+            <Label className="text-[10px]">{t('common.name')}</Label>
             <Input value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className="text-xs h-8" />
           </div>
           <div>
-            <Label className="text-[10px]">Photo URL</Label>
+            <Label className="text-[10px]">{t('partnersEdit.photoUrl')}</Label>
             <Input value={editData.photo || ''} onChange={(e) => setEditData({ ...editData, photo: e.target.value })} className="text-xs h-8" placeholder="https://..." />
           </div>
           <div>
-            <Label className="text-[10px]">Icon Photo URL (card thumbnail, optional)</Label>
+            <Label className="text-[10px]">{t('partnersEdit.iconPhotoUrl')}</Label>
             <Input value={editData.iconPhoto || ''} onChange={(e) => setEditData({ ...editData, iconPhoto: e.target.value || undefined })} className="text-xs h-8" placeholder="https://..." />
           </div>
           <div>
-            <Label className="text-[10px]">Profile Photo URL (overlay photo, optional)</Label>
+            <Label className="text-[10px]">{t('partnersEdit.profilePhotoUrl')}</Label>
             <Input value={editData.profilePhoto || ''} onChange={(e) => setEditData({ ...editData, profilePhoto: e.target.value || undefined })} className="text-xs h-8" placeholder="https://..." />
           </div>
           <div>
-            <Label className="text-[10px]">Description</Label>
+            <Label className="text-[10px]">{t('common.description')}</Label>
             <textarea
               value={editData.description || ''}
               onChange={(e) => setEditData({ ...editData, description: e.target.value })}
@@ -95,20 +96,20 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
             />
           </div>
           <div>
-            <Label className="text-[10px]">Main URL</Label>
+            <Label className="text-[10px]">{t('partnersEdit.mainUrl')}</Label>
             <Input value={editData.url || ''} onChange={(e) => setEditData({ ...editData, url: e.target.value })} className="text-xs h-8" placeholder="https://..." />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px]">Subject Label</Label>
+              <Label className="text-[10px]">{t('partnersEdit.subjectLabel')}</Label>
               <Input value={editData.subjectLabel || ''} onChange={(e) => setEditData({ ...editData, subjectLabel: e.target.value })} className="text-xs h-8" placeholder="SUBJECT" />
             </div>
             <div>
-              <Label className="text-[10px]">Status Label</Label>
+              <Label className="text-[10px]">{t('partnersEdit.statusLabel')}</Label>
               <Input value={editData.statusLabel || ''} onChange={(e) => setEditData({ ...editData, statusLabel: e.target.value })} className="text-xs h-8" placeholder="STATUS" />
             </div>
             <div className="col-span-2">
-              <Label className="text-[10px]">Status Value</Label>
+              <Label className="text-[10px]">{t('partnersEdit.statusValue')}</Label>
               <Input value={editData.statusValue || ''} onChange={(e) => setEditData({ ...editData, statusValue: e.target.value })} className="text-xs h-8" placeholder="ACTIVE" />
             </div>
           </div>
@@ -127,8 +128,8 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" onClick={handleSave} className="flex-1">Save</Button>
-          <Button size="sm" variant="outline" onClick={() => { setEditData(friend); setIsEditing(false) }}>Cancel</Button>
+          <Button size="sm" onClick={handleSave} className="flex-1">{t('common.save')}</Button>
+          <Button size="sm" variant="outline" onClick={() => { setEditData(friend); setIsEditing(false) }}>{t('common.cancel')}</Button>
         </div>
       </Card>
     )
@@ -283,7 +284,7 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
                 }}
               >
                 <Plus size={16} />
-                <span className="hidden md:inline">Add</span>
+                <span className="hidden md:inline">{t('common.add')}</span>
               </Button>
             )}
           </div>

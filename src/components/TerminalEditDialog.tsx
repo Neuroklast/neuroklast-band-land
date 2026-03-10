@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Trash, CaretDown, CaretUp } from '@phosphor-icons/react'
 import type { TerminalCommand } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface TerminalEditDialogProps {
   open: boolean
@@ -16,6 +17,7 @@ interface TerminalEditDialogProps {
 const RESERVED = ['help', 'clear', 'exit', 'glitch', 'matrix']
 
 export default function TerminalEditDialog({ open, onOpenChange, commands, onSave }: TerminalEditDialogProps) {
+  const { t } = useLocale()
   const [cmds, setCmds] = useState<TerminalCommand[]>(commands)
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
 
@@ -77,12 +79,12 @@ export default function TerminalEditDialog({ open, onOpenChange, commands, onSav
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Terminal Commands</DialogTitle>
+          <DialogTitle>{t('terminalEdit.editTitle')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 py-4">
           <p className="text-sm text-muted-foreground">
-            Add custom commands for the secret terminal. Built-in commands (help, glitch, matrix, clear, exit) cannot be overridden.
+            {t('terminalEdit.description')}
           </p>
 
           {cmds.map((cmd, idx) => {
@@ -115,7 +117,7 @@ export default function TerminalEditDialog({ open, onOpenChange, commands, onSav
                 )}
                 {isExpanded && (
                   <div className="space-y-2 pl-2 border-l-2 border-primary/20 ml-2">
-                    <Label className="text-xs text-muted-foreground">Output lines</Label>
+                    <Label className="text-xs text-muted-foreground">{t('terminalEdit.outputLines')}</Label>
                     {cmd.output.map((line, lineIdx) => (
                       <div key={lineIdx} className="flex gap-2 items-center">
                         <span className="text-xs text-muted-foreground font-mono w-4">{lineIdx + 1}</span>
@@ -133,9 +135,9 @@ export default function TerminalEditDialog({ open, onOpenChange, commands, onSav
                       </div>
                     ))}
                     <Button variant="outline" size="sm" onClick={() => addOutputLine(idx)} className="text-xs">
-                      <Plus size={12} className="mr-1" /> Add line
+                      <Plus size={12} className="mr-1" /> {t('terminalEdit.addLine')}
                     </Button>
-                    <Label className="text-xs text-muted-foreground mt-2">File Download (optional)</Label>
+                    <Label className="text-xs text-muted-foreground mt-2">{t('terminalEdit.fileDownloadOptional')}</Label>
                     <Input
                       value={cmd.fileUrl || ''}
                       onChange={(e) => updateField(idx, 'fileUrl', e.target.value)}
@@ -155,13 +157,13 @@ export default function TerminalEditDialog({ open, onOpenChange, commands, onSav
           })}
 
           <Button variant="outline" onClick={addCommand} className="w-full">
-            <Plus size={16} className="mr-2" /> Add Command
+            <Plus size={16} className="mr-2" /> {t('terminalEdit.addCommand')}
           </Button>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave}>Save Commands</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
+          <Button onClick={handleSave}>{t('terminalEdit.saveCommands')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

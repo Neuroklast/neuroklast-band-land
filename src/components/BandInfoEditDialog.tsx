@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, X } from '@phosphor-icons/react'
 import { toDirectImageUrl } from '@/lib/image-cache'
+import { useLocale } from '@/hooks/use-locale'
 
 interface BandInfoEditDialogProps {
   open: boolean
@@ -18,6 +19,7 @@ interface BandInfoEditDialogProps {
 }
 
 export default function BandInfoEditDialog({ open, onOpenChange, name, genres, label, logoUrl, titleImageUrl, onSave }: BandInfoEditDialogProps) {
+  const { t } = useLocale()
   const [bandName, setBandName] = useState(name)
   const [bandGenres, setBandGenres] = useState<string[]>(genres)
   const [bandLabel, setBandLabel] = useState(label || '')
@@ -62,12 +64,12 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Band Info</DialogTitle>
+          <DialogTitle>{t('bandInfo.editTitle')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label htmlFor="band-name">Band Name</Label>
+            <Label htmlFor="band-name">{t('bandInfo.bandName')}</Label>
             <Input
               id="band-name"
               value={bandName}
@@ -77,7 +79,7 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="band-label">Label</Label>
+            <Label htmlFor="band-label">{t('common.label')}</Label>
             <Input
               id="band-label"
               value={bandLabel}
@@ -87,7 +89,7 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="logo-url">Logo URL (optional)</Label>
+            <Label htmlFor="logo-url">{t('bandInfo.logoUrlOptional')}</Label>
             <Input
               id="logo-url"
               value={bandLogoUrl}
@@ -99,11 +101,11 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
                 <img src={toDirectImageUrl(bandLogoUrl) || bandLogoUrl} alt="Logo Preview" className="max-w-[200px] max-h-[200px] object-contain border border-border rounded p-2" />
               </div>
             )}
-            <p className="text-xs text-muted-foreground">Leave empty to use default logo</p>
+            <p className="text-xs text-muted-foreground">{t('bandInfo.defaultLogoHint')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title-image-url">Title Image URL (optional)</Label>
+            <Label htmlFor="title-image-url">{t('bandInfo.titleImageUrlOptional')}</Label>
             <Input
               id="title-image-url"
               value={bandTitleImageUrl}
@@ -115,11 +117,11 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
                 <img src={toDirectImageUrl(bandTitleImageUrl) || bandTitleImageUrl} alt="Title Preview" className="max-w-full max-h-[100px] object-contain border border-border rounded p-2" />
               </div>
             )}
-            <p className="text-xs text-muted-foreground">Leave empty to use default title image</p>
+            <p className="text-xs text-muted-foreground">{t('bandInfo.defaultTitleImageHint')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label>Genres</Label>
+            <Label>{t('bandInfo.genres')}</Label>
             <div className="space-y-2">
               {bandGenres.map((genre, index) => (
                 <div key={index} className="flex gap-2 items-center">
@@ -151,9 +153,9 @@ export default function BandInfoEditDialog({ open, onOpenChange, name, genres, l
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
