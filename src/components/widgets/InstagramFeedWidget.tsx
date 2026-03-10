@@ -7,6 +7,7 @@
  * config key controls how many photos to show (default: 6).
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface InstagramFeedConfig {
   imageCount?: number
@@ -18,6 +19,7 @@ interface InstagramFeedWidgetProps {
 }
 
 export default function InstagramFeedWidget({ widget, themeSettings }: InstagramFeedWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as InstagramFeedConfig
   const imageCount = typeof config.imageCount === 'number' && config.imageCount > 0
     ? config.imageCount
@@ -28,7 +30,7 @@ export default function InstagramFeedWidget({ widget, themeSettings }: Instagram
   return (
     <div className="w-full space-y-3 font-mono">
       <h3 className="text-xs font-bold tracking-wider text-primary uppercase opacity-70">
-        Instagram Feed
+        {t('widget.instagram.title')}
       </h3>
       <div
         className="grid gap-2"
@@ -45,7 +47,7 @@ export default function InstagramFeedWidget({ widget, themeSettings }: Instagram
         ))}
       </div>
       <p className="text-[10px] text-muted-foreground opacity-60">
-        Connect a gallery in the site settings to display photos here.
+        {t('widget.instagram.connectHint')}
       </p>
     </div>
   )

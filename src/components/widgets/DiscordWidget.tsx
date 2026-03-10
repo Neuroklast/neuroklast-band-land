@@ -4,6 +4,7 @@
  * Config: { serverId: string, theme?: 'dark' | 'light' }
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface DiscordConfig {
   serverId?: string
@@ -16,15 +17,16 @@ interface DiscordWidgetProps {
 }
 
 export default function DiscordWidget({ widget }: DiscordWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as DiscordConfig
 
   if (!config.serverId) {
     return (
       <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
         <div className="text-2xl mb-2">💬</div>
-        <p className="font-semibold mb-1">Discord Server Widget</p>
+        <p className="font-semibold mb-1">{t('widget.discord.title')}</p>
         <p className="text-xs opacity-70">
-          Enter your Discord Server ID in the widget settings to show who's online.
+          {t('widget.discord.configureHint')}
         </p>
       </div>
     )

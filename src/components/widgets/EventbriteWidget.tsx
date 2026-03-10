@@ -7,6 +7,7 @@
  * When `eventId` is also provided, a single event checkout widget is shown.
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface EventbriteConfig {
   organizerId?: string
@@ -19,15 +20,16 @@ interface EventbriteWidgetProps {
 }
 
 export default function EventbriteWidget({ widget }: EventbriteWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as EventbriteConfig
 
   if (!config.organizerId && !config.eventId) {
     return (
       <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
         <div className="text-2xl mb-2">🎟️</div>
-        <p className="font-semibold mb-1">Eventbrite Events</p>
+        <p className="font-semibold mb-1">{t('widget.eventbrite.title')}</p>
         <p className="text-xs opacity-70">
-          Configure your Eventbrite Organiser ID or Event ID in the widget settings.
+          {t('widget.eventbrite.configureHint')}
         </p>
       </div>
     )

@@ -5,6 +5,7 @@
  * Premium-Gate: Only available for pro tier or higher.
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface AnalyticsWidgetProps {
   widget: WidgetPlugin
@@ -21,6 +22,7 @@ const DEMO_STATS = [
 const DEMO_BARS = [40, 65, 45, 80, 60, 90, 55, 75, 50, 85, 70, 95, 60, 45, 80, 65, 55, 70, 88, 72, 50, 63, 77, 84, 58, 71, 49, 93, 66, 78]
 
 export default function AnalyticsWidget({ themeSettings }: AnalyticsWidgetProps) {
+  const { t } = useLocale()
   const primary = themeSettings?.primary ?? 'oklch(0.50 0.22 25)'
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
@@ -29,7 +31,7 @@ export default function AnalyticsWidget({ themeSettings }: AnalyticsWidgetProps)
     <div className="w-full space-y-4 font-mono">
       {/* Demo notice */}
       <p className="text-[10px] text-muted-foreground/60 text-right uppercase tracking-wider">
-        Demo data — connect analytics to see real stats
+        {t('widget.analytics.demoNotice')}
       </p>
 
       {/* Stat cards */}
@@ -46,7 +48,7 @@ export default function AnalyticsWidget({ themeSettings }: AnalyticsWidgetProps)
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
             <p className="text-xl font-bold" style={{ color: primary }}>{stat.value}</p>
             <p className={`text-[10px] ${stat.up ? 'text-status-success' : 'text-status-error'}`}>
-              {stat.trend} vs last week
+              {t('widget.analytics.vsLastWeek').replace('{0}', stat.trend)}
             </p>
           </div>
         ))}
@@ -61,7 +63,7 @@ export default function AnalyticsWidget({ themeSettings }: AnalyticsWidgetProps)
         }}
       >
         <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">
-          Daily Visitors (Last 30 days)
+          {t('widget.analytics.dailyVisitors')}
         </p>
         <div className="flex items-end gap-0.5 h-16">
           {DEMO_BARS.map((h, i) => (

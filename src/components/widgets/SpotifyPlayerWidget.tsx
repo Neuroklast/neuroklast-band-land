@@ -4,6 +4,7 @@
  * Config: { uri: string, type: 'playlist' | 'album' | 'track' }
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface SpotifyConfig {
   uri?: string
@@ -17,6 +18,7 @@ interface SpotifyPlayerWidgetProps {
 }
 
 export default function SpotifyPlayerWidget({ widget, themeSettings }: SpotifyPlayerWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as SpotifyConfig
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
@@ -27,9 +29,9 @@ export default function SpotifyPlayerWidget({ widget, themeSettings }: SpotifyPl
         className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30"
       >
         <div className="text-2xl mb-2">🎵</div>
-        <p className="font-semibold mb-1">Spotify Player</p>
+        <p className="font-semibold mb-1">{t('widget.spotify.title')}</p>
         <p className="text-xs opacity-70">
-          Configure a Spotify URI (playlist, album, or track) to embed the player.
+          {t('widget.spotify.configureHint')}
         </p>
       </div>
     )

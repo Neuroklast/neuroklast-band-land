@@ -8,6 +8,7 @@
  *   https://embed.music.apple.com/us/album/…
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface AppleMusicConfig {
   embedUrl?: string
@@ -19,6 +20,7 @@ interface AppleMusicWidgetProps {
 }
 
 export default function AppleMusicWidget({ widget, themeSettings }: AppleMusicWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as AppleMusicConfig
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
@@ -27,9 +29,9 @@ export default function AppleMusicWidget({ widget, themeSettings }: AppleMusicWi
     return (
       <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
         <div className="text-2xl mb-2">🍎</div>
-        <p className="font-semibold mb-1">Apple Music Player</p>
+        <p className="font-semibold mb-1">{t('widget.appleMusic.title')}</p>
         <p className="text-xs opacity-70">
-          Configure an Apple Music embed URL (song, album, or playlist) to display the player.
+          {t('widget.appleMusic.configureHint')}
         </p>
       </div>
     )

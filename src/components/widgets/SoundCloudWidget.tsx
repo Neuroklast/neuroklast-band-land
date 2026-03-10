@@ -4,6 +4,7 @@
  * Config: { url: string, color?: string, autoPlay?: boolean }
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface SoundCloudConfig {
   url?: string
@@ -17,15 +18,16 @@ interface SoundCloudWidgetProps {
 }
 
 export default function SoundCloudWidget({ widget }: SoundCloudWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as SoundCloudConfig
 
   if (!config.url) {
     return (
       <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
         <div className="text-2xl mb-2">🎧</div>
-        <p className="font-semibold mb-1">SoundCloud Player</p>
+        <p className="font-semibold mb-1">{t('widget.soundcloud.title')}</p>
         <p className="text-xs opacity-70">
-          Configure a SoundCloud track or playlist URL to embed the player.
+          {t('widget.soundcloud.configureHint')}
         </p>
       </div>
     )

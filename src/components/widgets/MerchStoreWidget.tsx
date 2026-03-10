@@ -5,6 +5,7 @@
  * Premium-Gate: Only available for pro tier or higher.
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface MerchItem {
   name: string
@@ -24,6 +25,7 @@ interface MerchStoreWidgetProps {
 }
 
 export default function MerchStoreWidget({ widget, themeSettings }: MerchStoreWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as MerchConfig
   const primary = themeSettings?.primary ?? 'oklch(0.50 0.22 25)'
   const borderRadius = themeSettings?.borderRadius ?? 0.125
@@ -37,9 +39,9 @@ export default function MerchStoreWidget({ widget, themeSettings }: MerchStoreWi
         className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30"
       >
         <div className="text-2xl mb-2">🛒</div>
-        <p className="font-semibold mb-1">Merch Store</p>
+        <p className="font-semibold mb-1">{t('widget.merch.title')}</p>
         <p className="text-xs opacity-70">
-          Configure your shop URL and add merchandise items to display here.
+          {t('widget.merch.configureHint')}
         </p>
       </div>
     )
@@ -59,7 +61,7 @@ export default function MerchStoreWidget({ widget, themeSettings }: MerchStoreWi
               color: primary,
             }}
           >
-            🛒 Open Full Shop →
+            {t('widget.merch.openShop')}
           </a>
         </div>
       )}

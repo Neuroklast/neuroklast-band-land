@@ -7,6 +7,7 @@
  *   themeSettings?: ThemeSettings — active theme for styling
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 import BandsintownWidget from './BandsintownWidget'
 import SpotifyPlayerWidget from './SpotifyPlayerWidget'
 import YouTubeWidget from './YouTubeWidget'
@@ -28,6 +29,7 @@ interface WidgetRendererProps {
 }
 
 export default function WidgetRenderer({ widget, themeSettings }: WidgetRendererProps) {
+  const { t } = useLocale()
   switch (widget.id) {
     case 'bandsintown':
       return <BandsintownWidget widget={widget} themeSettings={themeSettings} />
@@ -63,7 +65,7 @@ export default function WidgetRenderer({ widget, themeSettings }: WidgetRenderer
           <div className="text-2xl mb-2">🔌</div>
           <p className="font-semibold mb-1">{widget.name}</p>
           <p className="text-xs opacity-70">
-            This widget type (<code className="text-xs">{widget.id}</code>) has no renderer yet.
+            {t('widget.renderer.noRenderer').replace('{0}', widget.id)}
           </p>
         </div>
       )
