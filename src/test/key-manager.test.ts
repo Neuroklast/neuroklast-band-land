@@ -38,11 +38,14 @@ vi.mock('../../api/auth.js', () => ({
 
 // ─── Request / Response helpers ───────────────────────────────────────────────
 
-function makeReq(method: string, body?: Record<string, unknown>, authenticated = false) {
+function makeReq(method: string, body?: Record<string, unknown>, authenticated = false, host = 'neuroklast.net') {
   return {
     method,
     body: body ?? {},
-    headers: authenticated ? { cookie: 'nk-session=valid-session-token' } : {},
+    headers: {
+      host,
+      ...(authenticated ? { cookie: 'nk-session=valid-session-token' } : {}),
+    },
   }
 }
 
@@ -72,7 +75,6 @@ function makeRes() {
 describe('api/admin/keys auth guard', () => {
   beforeEach(() => {
     vi.resetModules()
-    vi.stubEnv('VITE_IS_PRIMARY', 'true')
     mockKv.smembers.mockResolvedValue([])
   })
 
@@ -120,19 +122,17 @@ describe('api/admin/keys primary-only guard', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns 403 when VITE_IS_PRIMARY is not true', async () => {
-    vi.stubEnv('VITE_IS_PRIMARY', 'false')
+  it('returns 403 when host is not a primary hostname', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, true)
+    const req = makeReq('GET', {}, true, 'other-tenant.vercel.app')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(403)
   })
 
-  it('returns 403 when VITE_IS_PRIMARY is not set', async () => {
-    vi.stubEnv('VITE_IS_PRIMARY', '')
+  it('returns 403 when host header is missing', async () => {
     const { default: handler } = await import('../../api/admin/keys')
-    const req = makeReq('GET', {}, true)
+    const req = makeReq('GET', {}, true, '')
     const res = makeRes()
     await handler(req as never, res as never)
     expect(res._status).toBe(403)
@@ -144,7 +144,6 @@ describe('api/admin/keys primary-only guard', () => {
 describe('GET /api/admin/keys', () => {
   beforeEach(() => {
     vi.resetModules()
-    vi.stubEnv('VITE_IS_PRIMARY', 'true')
     mockValidateSession.mockResolvedValue(true)
   })
 
@@ -185,7 +184,6 @@ describe('GET /api/admin/keys', () => {
 describe('POST /api/admin/keys', () => {
   beforeEach(() => {
     vi.resetModules()
-    vi.stubEnv('VITE_IS_PRIMARY', 'true')
     mockValidateSession.mockResolvedValue(true)
     mockKv.sadd.mockResolvedValue(1)
     mockKv.hset.mockResolvedValue(1)
@@ -242,7 +240,6 @@ describe('POST /api/admin/keys', () => {
 describe('DELETE /api/admin/keys', () => {
   beforeEach(() => {
     vi.resetModules()
-    vi.stubEnv('VITE_IS_PRIMARY', 'true')
     mockValidateSession.mockResolvedValue(true)
     mockKv.srem.mockResolvedValue(1)
     mockKv.del.mockResolvedValue(1)
@@ -296,7 +293,6 @@ describe('DELETE /api/admin/keys', () => {
 describe('api/admin/keys method guard', () => {
   beforeEach(() => {
     vi.resetModules()
-    vi.stubEnv('VITE_IS_PRIMARY', 'true')
     mockValidateSession.mockResolvedValue(true)
   })
 

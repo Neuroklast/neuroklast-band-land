@@ -34,10 +34,12 @@ import { getContrastRatio, meetsWcagAA } from '@/lib/contrast'
 import { oklchToHex, hexToOklch } from '@/lib/color-utils'
 import { fetchEnvStatus, REQUIRED_ENV_VARS, allRequiredSet, type EnvStatus } from '@/lib/env-check'
 import { saveLocalActivationKey, getLocalActivationKey } from '@/hooks/use-activation-key'
+import { isPrimaryInstance } from '@/lib/primary-check'
 import type { SiteConfig, SectionConfig } from '@/lib/types'
 
 const VITE_ACTIVATION_KEY = import.meta.env.VITE_ACTIVATION_KEY as string | undefined
-const IS_PRIMARY = import.meta.env.VITE_IS_PRIMARY === 'true'
+// SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
+const IS_PRIMARY = isPrimaryInstance()
 const VALIDATE_URL =
   (import.meta.env.VITE_ACTIVATION_API_URL as string | undefined) ||
   'https://neuroklast-band-land.vercel.app/api/validate-key'

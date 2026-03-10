@@ -64,7 +64,11 @@ describe('useActivationKey — localStorage fallback', () => {
   })
 
   it('goes to invalid state when no ENV key AND no localStorage key', async () => {
-    vi.stubEnv('VITE_IS_PRIMARY', 'false')
+    Object.defineProperty(window, 'location', {
+      value: { hostname: 'other-tenant.vercel.app' },
+      writable: true,
+      configurable: true,
+    })
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
 
     const { useActivationKey } = await import('@/hooks/use-activation-key')
@@ -74,7 +78,11 @@ describe('useActivationKey — localStorage fallback', () => {
   })
 
   it('validates localStorage key against API', async () => {
-    vi.stubEnv('VITE_IS_PRIMARY', 'false')
+    Object.defineProperty(window, 'location', {
+      value: { hostname: 'other-tenant.vercel.app' },
+      writable: true,
+      configurable: true,
+    })
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
 
     // Pre-store a key in localStorage
@@ -112,8 +120,7 @@ describe('Wizard activation step conditions', () => {
     vi.restoreAllMocks()
   })
 
-  it('needsActivationStep returns false when IS_PRIMARY is true', async () => {
-    vi.stubEnv('VITE_IS_PRIMARY', 'true')
+  it('needsActivationStep returns false when isPrimary flag is true', async () => {
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
 
     // Dynamically test the logic (mirrors SetupWizard's needsActivationStep)
