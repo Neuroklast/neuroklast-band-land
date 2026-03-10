@@ -278,7 +278,7 @@ export default function ImpressumWindow({ isOpen, onClose, impressum, editMode, 
                     <div>
                       <h2 className="text-primary text-base mb-3 tracking-wider">{t.legalRef}</h2>
                       <p className="text-foreground/80">{(lang === 'en' && impressum.nameEn) || impressum.name}</p>
-                      {((lang === 'en' && impressum.careOfEn) || impressum.careOf) && <p className="text-foreground/80">c/o {(lang === 'en' && impressum.careOfEn) || impressum.careOf}</p>}
+                      {((lang === 'en' && impressum.careOfEn) || impressum.careOf) && <p className="text-foreground/80">{tl('impressum.careOfPrefix')} {(lang === 'en' && impressum.careOfEn) || impressum.careOf}</p>}
                       {((lang === 'en' && impressum.streetEn) || impressum.street) && <p className="text-foreground/80">{(lang === 'en' && impressum.streetEn) || impressum.street}</p>}
                       {((lang === 'en' && impressum.zipCityEn) || impressum.zipCity) && <p className="text-foreground/80">{(lang === 'en' && impressum.zipCityEn) || impressum.zipCity}</p>}
                     </div>

@@ -11,6 +11,7 @@
  * setlist page.
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface SetlistFmConfig {
   artistMbid?: string
@@ -23,15 +24,16 @@ interface SetlistFmWidgetProps {
 }
 
 export default function SetlistFmWidget({ widget }: SetlistFmWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as SetlistFmConfig
 
   if (!config.artistMbid) {
     return (
       <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
         <div className="text-2xl mb-2">📋</div>
-        <p className="font-semibold mb-1">Setlist.fm Widget</p>
+        <p className="font-semibold mb-1">{t('widget.setlistfm.title')}</p>
         <p className="text-xs opacity-70">
-          Configure the artist MusicBrainz ID (MBID) in the widget settings.
+          {t('widget.setlistfm.configureHint')}
         </p>
       </div>
     )
@@ -45,11 +47,11 @@ export default function SetlistFmWidget({ widget }: SetlistFmWidgetProps) {
       <div className="flex items-center gap-2">
         <span className="text-2xl">📋</span>
         <h3 className="text-sm font-bold tracking-wider text-primary uppercase">
-          Recent Setlists
+          {t('widget.setlistfm.recentTitle')}
         </h3>
       </div>
       <p className="text-xs text-muted-foreground">
-        Check out recent live setlists for {artistName} on Setlist.fm.
+        {t('widget.setlistfm.recentDesc').replace('{0}', artistName)}
       </p>
       <a
         href={href}
@@ -57,7 +59,7 @@ export default function SetlistFmWidget({ widget }: SetlistFmWidgetProps) {
         rel="noopener noreferrer"
         className="inline-block px-4 py-2 bg-primary/20 border border-primary/50 text-primary text-xs font-mono tracking-wider hover:bg-primary/30 transition-colors"
       >
-        View Setlists on Setlist.fm →
+        {t('widget.setlistfm.viewLink')}
       </a>
     </div>
   )

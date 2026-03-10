@@ -7,6 +7,7 @@
  */
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
+import i18n from '@/lib/i18n-config'
 
 interface Props {
   /** Human-readable section label used in the fallback message */
@@ -38,7 +39,7 @@ export default class SectionErrorBoundary extends Component<Props, State> {
       return (
         <div className="py-12 px-4 flex flex-col items-center gap-3 border border-primary/20 bg-primary/5 text-primary/60 font-mono text-xs tracking-wider">
           <span className="text-primary/40 text-[10px] uppercase">
-            {this.props.sectionName ? `${this.props.sectionName} – ` : ''}SECTION UNAVAILABLE
+            {this.props.sectionName ? `${this.props.sectionName} – ` : ''}{i18n.t('common.sectionUnavailable')}
           </span>
           {import.meta.env.DEV && this.state.error && (
             <pre className="text-[9px] text-primary/30 max-w-lg overflow-auto whitespace-pre-wrap">

@@ -11,6 +11,7 @@ import { AnimatePresence } from 'framer-motion'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import CyberSpinner from '@/components/CyberSpinner'
 import KeyManagerPanel from '@/components/KeyManagerPanel'
+import { useLocale } from '@/hooks/use-locale'
 import type { AdminDialog, SoundSettings, ThemeSettings, SectionVisibility, NewsletterSettings, ContactSettings, SiteConfig, SectionConfig } from '@/lib/types'
 import type { ActivationResult } from '@/lib/activation'
 import type { WidgetPlugin } from '@/lib/types'
@@ -125,6 +126,7 @@ export default function AdminDialogManager({
   sections,
   onSaveSections,
 }: AdminDialogManagerProps) {
+  const { t } = useLocale()
   return (
     <>
       {/* Key Manager — only on primary deployment, no lazy needed (lightweight) */}
@@ -136,7 +138,7 @@ export default function AdminDialogManager({
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
               aria-label="Close"
             >
-              ✕
+              {t('common.closeSymbol')}
             </button>
             <KeyManagerPanel />
           </div>

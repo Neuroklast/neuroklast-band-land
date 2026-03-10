@@ -421,7 +421,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                       <span className="text-xs font-mono">{photos[mobileIndex].caption}</span>
                     </div>
                     <div className="mt-1 flex gap-2 text-[9px] text-primary/60">
-                      <span>SECTOR: {String.fromCharCode(65 + (mobileIndex % 26))}</span>
+                      <span>{t('instagram.sector')} {String.fromCharCode(65 + (mobileIndex % 26))}</span>
                       <span>•</span>
                       <span>{t('gallery.statusActive')}</span>
                     </div>
@@ -506,7 +506,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
                       <span className="text-xs font-mono line-clamp-2">{photo.caption}</span>
                     </div>
                     <div className="mt-2 flex gap-2 text-[9px] text-primary/60">
-                      <span>SECTOR: {String.fromCharCode(65 + (index % 26))}</span>
+                      <span>{t('instagram.sector')} {String.fromCharCode(65 + (index % 26))}</span>
                       <span>•</span>
                       <span>{t('gallery.statusActive')}</span>
                     </div>

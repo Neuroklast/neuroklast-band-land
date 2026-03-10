@@ -246,7 +246,7 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
               delay: params.delay,
             }}
           >
-            0x{params.hex}
+            {t('loader.hexPrefix')}{params.hex}
           </motion.div>
         ))}
       </div>

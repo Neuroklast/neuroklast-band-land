@@ -36,12 +36,12 @@ type GroupField = 'none' | 'type' | 'ip' | 'level' | 'countermeasure'
 /** Classify incident type from the key field */
 // eslint-disable-next-line react-refresh/only-export-components
 export function classifyIncident(key: string): { type: string; label: string; color: string } {
-  if (key.startsWith('robots:')) return { type: 'robots', label: 'ROBOTS.TXT VIOLATION', color: 'text-orange-400' }
-  if (key.startsWith('threat:')) return { type: 'threat', label: 'THREAT ESCALATION', color: 'text-purple-400' }
-  if (key.startsWith('blocked:')) return { type: 'blocked', label: 'HARD BLOCK', color: 'text-red-600' }
+  if (key.startsWith('robots:')) return { type: 'robots', label: 'ROBOTS.TXT VIOLATION', color: 'text-status-alert' }
+  if (key.startsWith('threat:')) return { type: 'threat', label: 'THREAT ESCALATION', color: 'text-status-special' }
+  if (key.startsWith('blocked:')) return { type: 'blocked', label: 'HARD BLOCK', color: 'text-destructive' }
   if (key.includes('backup') || key.includes('credential') || key.includes('master-key') || key.includes('password'))
-    return { type: 'honeytoken', label: 'HONEYTOKEN ACCESS', color: 'text-red-400' }
-  return { type: 'event', label: 'SECURITY EVENT', color: 'text-yellow-400' }
+    return { type: 'honeytoken', label: 'HONEYTOKEN ACCESS', color: 'text-status-error' }
+  return { type: 'event', label: 'SECURITY EVENT', color: 'text-status-warning' }
 }
 
 /** Shorten hashed IP for display */
@@ -264,18 +264,18 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
   }
 
   const cmColors: Record<string, string> = {
-    BLOCKED: 'bg-red-500/20 text-red-400 border-red-500/30',
-    TARPITTED: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    RATE_LIMITED: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    BLOCKED: 'bg-status-error-em/20 text-status-error border-status-error-em/30',
+    TARPITTED: 'bg-status-alert-em/20 text-status-alert border-status-alert-em/30',
+    RATE_LIMITED: 'bg-status-warning-em/20 text-status-warning border-status-warning-em/30',
     LOGGED: 'bg-primary/20 text-primary border-primary/30',
-    ZIP_BOMB: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    ZIP_BOMB: 'bg-status-special-em/20 text-status-special border-status-special-em/30',
   }
 
   const threatColors: Record<string, string> = {
-    BLOCK: 'bg-red-500/20 text-red-400 border-red-500/30',
-    TARPIT: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    WARN: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    CLEAN: 'bg-green-500/20 text-green-400 border-green-500/30',
+    BLOCK: 'bg-status-error-em/20 text-status-error border-status-error-em/30',
+    TARPIT: 'bg-status-alert-em/20 text-status-alert border-status-alert-em/30',
+    WARN: 'bg-status-warning-em/20 text-status-warning border-status-warning-em/30',
+    CLEAN: 'bg-status-success-em/20 text-status-success border-status-success-em/30',
   }
 
   const renderIncidentRow = (inc: SecurityIncident, i: number) => {
@@ -360,7 +360,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                   {inc.autoBlocked && inc.blockExpiry && (
                     <div className="flex items-center gap-2">
                       <span className="text-foreground/40 w-28">{L('sec.blockExpiry')}</span>
-                      <span className="text-red-400/80">{new Date(inc.blockExpiry).toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB')}</span>
+                      <span className="text-status-error/80">{new Date(inc.blockExpiry).toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB')}</span>
                     </div>
                   )}
                 </div>
@@ -447,7 +447,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
         {/* Header */}
         <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-status-error-em animate-pulse" />
             <span className="font-mono text-[11px] text-primary/70 tracking-wider uppercase">
               {L('sec.title')} // {L('sec.subtitle')}
             </span>
@@ -515,8 +515,8 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
           )}
 
           {error && (
-            <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-              <p className="font-mono text-[12px] text-red-400">{L('sec.failedToLoad')}: {error}</p>
+            <div className="border border-status-error-em/30 bg-status-error-em/10 p-4 text-center">
+              <p className="font-mono text-[12px] text-status-error">{L('sec.failedToLoad')}: {error}</p>
             </div>
           )}
 
@@ -536,22 +536,22 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                 </Tip>
                 <Tip text={L('sec.honeytokenTip')}>
                   <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
-                    <div className="flex items-center gap-2 text-red-400/60">
+                    <div className="flex items-center gap-2 text-status-error/60">
                       <Hash size={16} />
                       <span className="text-[11px] font-mono tracking-wider uppercase">{L('sec.honeytoken')}</span>
                       <Info size={10} className="opacity-30" />
                     </div>
-                    <p className="text-xl font-mono font-bold text-red-400">{honeytokenCount}</p>
+                    <p className="text-xl font-mono font-bold text-status-error">{honeytokenCount}</p>
                   </div>
                 </Tip>
                 <Tip text={L('sec.robotsTip')}>
                   <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
-                    <div className="flex items-center gap-2 text-orange-400/60">
+                    <div className="flex items-center gap-2 text-status-alert/60">
                       <Globe size={16} />
                       <span className="text-[11px] font-mono tracking-wider uppercase">{L('sec.robots')}</span>
                       <Info size={10} className="opacity-30" />
                     </div>
-                    <p className="text-xl font-mono font-bold text-orange-400">{robotsCount}</p>
+                    <p className="text-xl font-mono font-bold text-status-alert">{robotsCount}</p>
                   </div>
                 </Tip>
                 <Tip text={L('sec.uniqueIpsTip')}>
@@ -566,12 +566,12 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
                 </Tip>
                 <Tip text={L('sec.blockedTip')}>
                   <div className="border border-primary/20 bg-black/30 p-3 space-y-1">
-                    <div className="flex items-center gap-2 text-green-400/60">
+                    <div className="flex items-center gap-2 text-status-success/60">
                       <ShieldCheck size={16} />
                       <span className="text-[11px] font-mono tracking-wider uppercase">{L('sec.blocked')}</span>
                       <Info size={10} className="opacity-30" />
                     </div>
-                    <p className="text-xl font-mono font-bold text-green-400">{autoBlockedCount}</p>
+                    <p className="text-xl font-mono font-bold text-status-success">{autoBlockedCount}</p>
                   </div>
                 </Tip>
               </div>
@@ -692,7 +692,7 @@ export default function SecurityIncidentsDashboard({ open, onClose, onViewProfil
 
           {/* Footer */}
           <div className="flex items-center gap-2 text-[10px] text-primary/40 pt-2 border-t border-primary/10">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500/60 animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-status-error-em/60 animate-pulse" />
             <span>{L('sec.threatMonitorActive')}</span>
             <span className="ml-auto">
               {incidents.length} {L('sec.events')} &middot; {L('sec.gdprNote')}

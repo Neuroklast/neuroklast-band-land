@@ -1,5 +1,6 @@
 import { useEffect, useState, startTransition } from 'react'
 import { get } from '@/lib/config'
+import { useLocale } from '@/hooks/use-locale'
 
 interface SystemMetrics {
   timestamp: string
@@ -14,6 +15,7 @@ interface SystemMetrics {
  * Shows timestamps, pseudo-IP, uptime, sector designation, and scroll speed
  */
 export function SystemMonitorHUD() {
+  const { t } = useLocale()
   const [enabled, setEnabled] = useState(true)
   const [metrics, setMetrics] = useState<SystemMetrics>({
     timestamp: '',
@@ -96,12 +98,12 @@ export function SystemMonitorHUD() {
       <div className="pointer-events-none fixed left-2 top-2 z-40 font-mono text-[9px] leading-tight tracking-wider text-primary/60 sm:left-4 sm:top-4 sm:text-[10px]">
         {showTimestamp && (
           <div className="animate-pulse">
-            <span className="text-primary/40">SYS_TIME:</span> {metrics.timestamp}
+            <span className="text-primary/40">{t('monitor.sysTime')}</span> {metrics.timestamp}
           </div>
         )}
         {showPseudoIp && (
           <div className="mt-1">
-            <span className="text-primary/40">NODE_IP:</span> {metrics.pseudoIp}
+            <span className="text-primary/40">{t('monitor.nodeIp')}</span> {metrics.pseudoIp}
           </div>
         )}
       </div>
@@ -110,12 +112,12 @@ export function SystemMonitorHUD() {
       <div className="pointer-events-none fixed right-2 top-2 z-40 font-mono text-[9px] leading-tight tracking-wider text-primary/60 sm:right-4 sm:top-4 sm:text-[10px]">
         {showUptime && (
           <div className="text-right">
-            <span className="text-primary/40">UPTIME:</span> {metrics.uptime}
+            <span className="text-primary/40">{t('monitor.uptime')}</span> {metrics.uptime}
           </div>
         )}
         {showSector && (
           <div className="mt-1 text-right">
-            <span className="text-primary/40">SECTOR:</span> {metrics.sector}
+            <span className="text-primary/40">{t('monitor.sector')}</span> {metrics.sector}
           </div>
         )}
       </div>
@@ -124,7 +126,7 @@ export function SystemMonitorHUD() {
       {showScrollSpeed && (
         <div className="pointer-events-none fixed bottom-2 right-2 z-40 font-mono text-[9px] leading-tight tracking-wider text-primary/60 sm:bottom-4 sm:right-4 sm:text-[10px]">
           <div className="text-right">
-            <span className="text-primary/40">DATA_RATE:</span> {metrics.scrollSpeed} KB/s
+            <span className="text-primary/40">{t('monitor.dataRate')}</span> {metrics.scrollSpeed} {t('monitor.kbPerSec')}
           </div>
         </div>
       )}

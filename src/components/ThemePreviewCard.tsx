@@ -6,6 +6,7 @@
  */
 import type React from 'react'
 import type { DesignPreset } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ThemePreviewCardProps {
   preset: DesignPreset
@@ -14,6 +15,7 @@ interface ThemePreviewCardProps {
 }
 
 export default function ThemePreviewCard({ preset, active, className = '' }: ThemePreviewCardProps) {
+  const { t } = useLocale()
   const { colors, fonts, borderRadius } = preset
   const radiusPx = Math.round((borderRadius ?? 0.125) * 16)
 
@@ -66,7 +68,7 @@ export default function ThemePreviewCard({ preset, active, className = '' }: The
           className="text-[8px] opacity-70 leading-tight"
           style={{ color: colors.mutedForeground, fontFamily: fonts.body }}
         >
-          Industrial · Electronic
+          {t('themePreview.genre')}
         </div>
 
         {/* Color swatches */}

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import type { SocialLinks } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface SocialEditDialogProps {
   socialLinks: SocialLinks
@@ -12,6 +13,7 @@ interface SocialEditDialogProps {
 }
 
 export default function SocialEditDialog({ socialLinks, onSave, onClose }: SocialEditDialogProps) {
+  const { t } = useLocale()
   const [formData, setFormData] = useState<SocialLinks>({})
 
   useEffect(() => {
@@ -31,11 +33,11 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="bg-card border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Social Links</DialogTitle>
+          <DialogTitle>{t('socialEdit.editTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="instagram">Instagram</Label>
+            <Label htmlFor="instagram">{t('socialEdit.instagram')}</Label>
             <Input
               id="instagram"
               type="url"
@@ -47,7 +49,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="facebook">Facebook</Label>
+            <Label htmlFor="facebook">{t('socialEdit.facebook')}</Label>
             <Input
               id="facebook"
               type="url"
@@ -59,7 +61,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="spotify">Spotify</Label>
+            <Label htmlFor="spotify">{t('socialEdit.spotify')}</Label>
             <Input
               id="spotify"
               type="url"
@@ -71,7 +73,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="soundcloud">SoundCloud</Label>
+            <Label htmlFor="soundcloud">{t('socialEdit.soundcloud')}</Label>
             <Input
               id="soundcloud"
               type="url"
@@ -83,7 +85,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="youtube">YouTube</Label>
+            <Label htmlFor="youtube">{t('socialEdit.youtube')}</Label>
             <Input
               id="youtube"
               type="url"
@@ -95,7 +97,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="bandcamp">Bandcamp</Label>
+            <Label htmlFor="bandcamp">{t('socialEdit.bandcamp')}</Label>
             <Input
               id="bandcamp"
               type="url"
@@ -107,7 +109,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="tiktok">TikTok</Label>
+            <Label htmlFor="tiktok">{t('socialEdit.tiktok')}</Label>
             <Input
               id="tiktok"
               type="url"
@@ -119,7 +121,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="twitter">Twitter/X</Label>
+            <Label htmlFor="twitter">{t('socialEdit.twitter')}</Label>
             <Input
               id="twitter"
               type="url"
@@ -131,7 +133,7 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
           </div>
 
           <div>
-            <Label htmlFor="linktr">Linktree</Label>
+            <Label htmlFor="linktr">{t('socialEdit.linktree')}</Label>
             <Input
               id="linktr"
               type="url"
@@ -144,10 +146,10 @@ export default function SocialEditDialog({ socialLinks, onSave, onClose }: Socia
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1 bg-primary hover:bg-accent">
-              Save
+              {t('common.save')}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

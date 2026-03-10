@@ -218,7 +218,7 @@ export default function NewsSection({ news = [], editMode, onUpdate, sectionLabe
                 className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
               >
                 <Plus className="mr-0 md:mr-2" size={20} />
-                <span className="hidden md:inline">Add News</span>
+                <span className="hidden md:inline">{t('newsSection.addNews')}</span>
               </Button>
             </div>
           )}
@@ -428,7 +428,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
-              NEWS // {formatNewsDate(item.date)}
+              {t('newsSection.newsPrefix')} {formatNewsDate(item.date)}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -445,7 +445,7 @@ function NewsDetailOverlay({ item, onClose, sectionLabels }: {
               className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors tracking-wider"
               title="Copy link"
             >
-              {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+              {copied ? <Check size={12} className="text-status-success" /> : <Copy size={12} />}
               {copied ? t('news.copied') : t('news.link')}
             </button>
             <CyberCloseButton
@@ -572,7 +572,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
         <h3 className="font-mono text-sm text-primary tracking-wider">{item ? t('news.editTitle') : t('news.addTitle')}</h3>
         <div className="space-y-3">
           <div>
-            <Label className="text-[10px]">Date Format</Label>
+            <Label className="text-[10px]">{t('newsSection.dateFormat')}</Label>
             <div className="flex gap-2 mt-1">
               <button
                 onClick={() => handleDateTypeChange('month')}
@@ -606,7 +606,7 @@ function NewsEditDialog({ item, onSave, onClose }: {
             />
           </div>
           <div>
-            <Label className="text-[10px]">Text</Label>
+            <Label className="text-[10px]">{t('newsSection.text')}</Label>
             <Input
               value={formData.text}
               onChange={(e) => setFormData({ ...formData, text: e.target.value })}

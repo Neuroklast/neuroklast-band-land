@@ -1,26 +1,28 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocale } from '@/hooks/use-locale'
+import { useKV } from '@/hooks/use-kv'
 
 export default function CookieBanner() {
   const { t } = useLocale()
+  const [consent, setConsent, consentLoaded] = useKV<string | null>('cookie-consent', null)
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const consent = localStorage.getItem('nk-cookie-consent')
+    if (!consentLoaded) return
     if (!consent) {
       const timer = setTimeout(() => setVisible(true), 1500)
       return () => clearTimeout(timer)
     }
-  }, [])
+  }, [consentLoaded, consent])
 
   const handleAccept = () => {
-    localStorage.setItem('nk-cookie-consent', 'accepted')
+    setConsent('accepted')
     setVisible(false)
   }
 
   const handleDecline = () => {
-    localStorage.setItem('nk-cookie-consent', 'declined')
+    setConsent('declined')
     setVisible(false)
   }
 

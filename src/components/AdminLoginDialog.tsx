@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LockSimple, Eye, EyeSlash, Key, ShieldCheck } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { useLocale } from '@/hooks/use-locale'
 
 interface AdminLoginDialogProps {
   open: boolean
@@ -17,6 +18,7 @@ interface AdminLoginDialogProps {
 }
 
 export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled, setupTokenRequired, onLogin, onSetPassword }: AdminLoginDialogProps) {
+  const { t } = useLocale()
   const isLoginMode = mode === 'login'
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -108,12 +110,12 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-mono">
             <LockSimple size={20} className="text-primary" />
-            {isLoginMode ? 'ADMIN LOGIN' : 'SET ADMIN PASSWORD'}
+            {isLoginMode ? t('adminLogin.title') : t('adminLogin.setPasswordTitle')}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             {isLoginMode
-              ? 'Enter your admin password to access edit mode.'
-              : 'Set a password to protect the admin edit mode. You will need this password to edit the page content.'
+              ? t('adminLogin.loginDescription')
+              : t('adminLogin.setupDescription')
             }
           </DialogDescription>
         </DialogHeader>
@@ -121,7 +123,7 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
         <form onSubmit={isLoginMode ? handleLogin : handleSetPassword} className="space-y-4">
           {!isLoginMode && setupTokenRequired && (
             <div className="space-y-2">
-              <Label htmlFor="admin-setup-token">Setup Token</Label>
+              <Label htmlFor="admin-setup-token">{t('adminLogin.setupToken')}</Label>
               <div className="relative">
                 <ShieldCheck size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -138,7 +140,7 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="admin-password">Password</Label>
+            <Label htmlFor="admin-password">{t('adminLogin.password')}</Label>
             <div className="relative">
               <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -163,7 +165,7 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
 
           {!isLoginMode && (
             <div className="space-y-2">
-              <Label htmlFor="admin-confirm-password">Confirm Password</Label>
+              <Label htmlFor="admin-confirm-password">{t('adminLogin.confirmPassword')}</Label>
               <div className="relative">
                 <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -181,7 +183,7 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
 
           {isLoginMode && showTotpInput && (
             <div className="space-y-2">
-              <Label htmlFor="admin-totp-code">Authenticator Code</Label>
+              <Label htmlFor="admin-totp-code">{t('adminLogin.authenticatorCode')}</Label>
               <div className="relative">
                 <ShieldCheck size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -200,19 +202,19 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
           )}
 
           {error && (
-            <p className="text-sm text-destructive font-mono">&gt; ERROR: {error}</p>
+            <p className="text-sm text-destructive font-mono">&gt; {t('adminLogin.errorPrefix')} {error}</p>
           )}
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={() => handleClose(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               className="bg-primary hover:bg-accent"
               disabled={isLoading || !password.trim()}
             >
-              {isLoading ? 'Processing...' : isLoginMode ? 'Login' : 'Set Password'}
+              {isLoading ? t('common.processing') : isLoginMode ? t('adminLogin.login') : t('adminLogin.setPassword')}
             </Button>
           </DialogFooter>
         </form>

@@ -308,10 +308,10 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                             )}
                             {gig.status && (
                               <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                                gig.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
-                                gig.status === 'soldout' ? 'bg-yellow-500/20 text-yellow-400' :
-                                gig.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
-                                'bg-blue-500/20 text-blue-400'
+                                gig.status === 'confirmed' ? 'bg-status-success-em/20 text-status-success' :
+                                gig.status === 'soldout' ? 'bg-status-warning-em/20 text-status-warning' :
+                                gig.status === 'cancelled' ? 'bg-status-error-em/20 text-status-error' :
+                                'bg-status-info-em/20 text-status-info'
                               }`}>
                                 {gig.status}
                               </span>
@@ -411,7 +411,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
 
                       {gig.supportingArtists && gig.supportingArtists.length > 0 && (
                         <p className="text-xs md:text-sm text-muted-foreground/70 mt-1 italic">
-                          w/ {gig.supportingArtists.join(', ')}
+                          {t('gigOverlay.withArtists')} {gig.supportingArtists.join(', ')}
                         </p>
                       )}
                     </div>

@@ -92,6 +92,32 @@
   --primary-glow: color-mix(in oklch, var(--primary) 30%, transparent);
   --primary-glow-dim: color-mix(in oklch, var(--primary) 15%, transparent);
   --primary-glow-xs: color-mix(in oklch, var(--primary) 8%, transparent);
+
+  /* ── Semantic status colors ─────────────────────────────────────────────
+     Centralised design tokens for success / error / warning / info / alert
+     states.  Components must use these tokens instead of hard-coded
+     Tailwind palette colours (e.g. text-red-400, bg-green-500/20).
+
+     Each status has two tiers:
+       *          – lighter shade for text  (≈ Tailwind -400)
+       *-em       – bolder shade for bg / border tints  (≈ Tailwind -500)
+
+     Themes can override these in their own :root / .dark blocks.
+  */
+  --status-error:        oklch(0.704 0.191 22.216);   /* ≈ red-400    */
+  --status-error-em:     oklch(0.637 0.237 25.331);   /* ≈ red-500    */
+  --status-success:      oklch(0.792 0.209 151.711);  /* ≈ green-400  */
+  --status-success-dim:  oklch(0.871 0.178 154.000);  /* ≈ green-300  */
+  --status-success-em:   oklch(0.723 0.219 149.579);  /* ≈ green-500  */
+  --status-warning:      oklch(0.852 0.199 91.936);   /* ≈ yellow-400 */
+  --status-warning-em:   oklch(0.795 0.184 86.047);   /* ≈ yellow-500 */
+  --status-alert:        oklch(0.750 0.183 55.934);   /* ≈ orange-400 */
+  --status-alert-em:     oklch(0.705 0.213 47.604);   /* ≈ orange-500 */
+  --status-info:         oklch(0.707 0.165 254.624);  /* ≈ blue-400   */
+  --status-info-em:      oklch(0.623 0.214 259.815);  /* ≈ blue-500   */
+  --status-special:      oklch(0.714 0.203 305.504);  /* ≈ purple-400 */
+  --status-special-em:   oklch(0.627 0.265 303.9);    /* ≈ purple-500 */
+  --status-neutral-border: oklch(0.872 0.010 258.338); /* ≈ gray-300  */
 }
 
 @theme {
@@ -114,6 +140,23 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Semantic status tokens */
+  --color-status-error: var(--status-error);
+  --color-status-error-em: var(--status-error-em);
+  --color-status-success: var(--status-success);
+  --color-status-success-dim: var(--status-success-dim);
+  --color-status-success-em: var(--status-success-em);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-em: var(--status-warning-em);
+  --color-status-alert: var(--status-alert);
+  --color-status-alert-em: var(--status-alert-em);
+  --color-status-info: var(--status-info);
+  --color-status-info-em: var(--status-info-em);
+  --color-status-special: var(--status-special);
+  --color-status-special-em: var(--status-special-em);
+  --color-status-neutral-border: var(--status-neutral-border);
+
   --radius-sm: calc(2px * var(--radius-factor, 1) * var(--size-scale, 1));
   --radius-md: calc(6px * var(--radius-factor, 1) * var(--size-scale, 1));
   --radius-lg: calc(8px * var(--radius-factor, 1) * var(--size-scale, 1));

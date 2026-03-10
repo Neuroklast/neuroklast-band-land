@@ -4,6 +4,7 @@
  * Config: { videoId?: string, playlistId?: string }
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface YouTubeConfig {
   videoId?: string
@@ -16,6 +17,7 @@ interface YouTubeWidgetProps {
 }
 
 export default function YouTubeWidget({ widget, themeSettings }: YouTubeWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as YouTubeConfig
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
@@ -26,9 +28,9 @@ export default function YouTubeWidget({ widget, themeSettings }: YouTubeWidgetPr
         className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30"
       >
         <div className="text-2xl mb-2">📺</div>
-        <p className="font-semibold mb-1">YouTube Embed</p>
+        <p className="font-semibold mb-1">{t('widget.youtube.title')}</p>
         <p className="text-xs opacity-70">
-          Configure a Video ID or Playlist ID to embed YouTube content.
+          {t('widget.youtube.configureHint')}
         </p>
       </div>
     )

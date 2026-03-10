@@ -8,6 +8,7 @@
  * embeds, custom ticket provider widgets, and similar third-party snippets.
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface CustomHtmlConfig {
   html?: string
@@ -21,6 +22,7 @@ interface CustomHtmlWidgetProps {
 }
 
 export default function CustomHtmlWidget({ widget }: CustomHtmlWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as CustomHtmlConfig
   const html = config.html ?? ''
   const title = config.title ?? 'Custom Embed'
@@ -30,9 +32,9 @@ export default function CustomHtmlWidget({ widget }: CustomHtmlWidgetProps) {
     return (
       <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
         <div className="text-2xl mb-2">📄</div>
-        <p className="font-semibold mb-1">Custom HTML Embed</p>
+        <p className="font-semibold mb-1">{t('widget.customHtml.title')}</p>
         <p className="text-xs opacity-70">
-          Paste HTML, an iFrame, or an embed snippet in the widget settings.
+          {t('widget.customHtml.configureHint')}
         </p>
       </div>
     )

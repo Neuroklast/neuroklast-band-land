@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { LockSimple, CircleNotch } from '@phosphor-icons/react'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ActivationLockScreenProps {
   /** When true the key is still being validated — show a loading indicator instead of the lock message. */
@@ -14,6 +15,7 @@ interface ActivationLockScreenProps {
  * Matches the cyberpunk/CRT aesthetic of the rest of the app.
  */
 export default function ActivationLockScreen({ pending = false }: ActivationLockScreenProps) {
+  const { t } = useLocale()
   return (
     <div
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black overflow-hidden"
@@ -89,10 +91,10 @@ export default function ActivationLockScreen({ pending = false }: ActivationLock
             }}
           >
             <p>
-              <span style={{ color: '#ff2222' }}>VITE_ACTIVATION_KEY</span> is missing or invalid.
+              <span style={{ color: '#ff2222' }}>{'VITE_ACTIVATION_KEY'}</span>{' '}{t('activation.keyMissingOrInvalid')}
             </p>
             <p className="mt-2">
-              Set your activation key in the Vercel environment variables to unlock this deployment.
+              {t('activation.setKeyInstructions')}
             </p>
           </div>
         )}
@@ -121,7 +123,7 @@ export default function ActivationLockScreen({ pending = false }: ActivationLock
               el.style.boxShadow = '0 0 12px rgba(255,34,34,0.2)'
             }}
           >
-            Contact Neuroklast for access
+            {t('activation.contactForAccess')}
           </a>
         )}
 
@@ -130,7 +132,7 @@ export default function ActivationLockScreen({ pending = false }: ActivationLock
           className="font-mono text-xs"
           style={{ color: 'rgba(255,255,255,0.3)' }}
         >
-          The source code remains publicly readable for educational purposes and AI assistants.
+          {t('activation.sourceCodeNote')}
         </p>
       </motion.div>
     </div>

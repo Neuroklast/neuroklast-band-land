@@ -8,6 +8,7 @@ import { UploadSimple, Plus, X } from '@phosphor-icons/react'
 import type { Release } from '@/lib/types'
 import { fetchOdesliLinks } from '@/lib/odesli'
 import { toast } from 'sonner'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ReleaseEditDialogProps {
   release: Release | null
@@ -16,6 +17,7 @@ interface ReleaseEditDialogProps {
 }
 
 export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseEditDialogProps) {
+  const { t } = useLocale()
   const [formData, setFormData] = useState({
     title: '',
     type: '' as '' | 'album' | 'ep' | 'single' | 'remix' | 'compilation',
@@ -136,11 +138,11 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="bg-card border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{release ? 'Edit Release' : 'Add New Release'}</DialogTitle>
+          <DialogTitle>{release ? t('releaseEdit.editTitle') : t('releaseEdit.addTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t('common.title')}</Label>
             <Input
               id="title"
               value={formData.title}
@@ -152,24 +154,24 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
           </div>
 
           <div>
-            <Label htmlFor="type">Type (optional)</Label>
+            <Label htmlFor="type">{t('releaseEdit.typeOptional')}</Label>
             <select
               id="type"
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as '' | 'album' | 'ep' | 'single' | 'remix' | 'compilation' })}
               className="flex h-10 w-full rounded-md border border-input bg-secondary px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="">— None —</option>
-              <option value="album">Album</option>
-              <option value="ep">EP</option>
-              <option value="single">Single</option>
-              <option value="remix">Remix</option>
-              <option value="compilation">Compilation</option>
+              <option value="">{t('common.noneOption')}</option>
+              <option value="album">{t('releaseEdit.album')}</option>
+              <option value="ep">{t('releaseEdit.ep')}</option>
+              <option value="single">{t('releaseEdit.single')}</option>
+              <option value="remix">{t('releaseEdit.remix')}</option>
+              <option value="compilation">{t('releaseEdit.compilation')}</option>
             </select>
           </div>
 
           <div>
-            <Label htmlFor="releaseDate">Release Date (optional)</Label>
+            <Label htmlFor="releaseDate">{t('releaseEdit.releaseDateOptional')}</Label>
             <Input
               id="releaseDate"
               type="date"
@@ -180,7 +182,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
           </div>
 
           <div>
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">{t('releaseEdit.descriptionOptional')}</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -199,11 +201,11 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
               onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
               className="h-4 w-4 accent-primary"
             />
-            <Label htmlFor="featured" className="cursor-pointer">Featured Release (shown prominently)</Label>
+            <Label htmlFor="featured" className="cursor-pointer">{t('releaseEdit.featured')}</Label>
           </div>
 
           <div>
-            <Label htmlFor="artwork">Artwork (optional)</Label>
+            <Label htmlFor="artwork">{t('releaseEdit.artworkOptional')}</Label>
             <div className="flex gap-2">
               <Input
                 id="artwork"
@@ -239,11 +241,11 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
           </div>
 
           <div className="border-t border-border pt-4">
-            <h4 className="font-semibold mb-3">Streaming Links (optional)</h4>
+            <h4 className="font-semibold mb-3">{t('releaseEdit.streamingLinks')}</h4>
             
             <div className="space-y-3">
               <div>
-                <Label htmlFor="spotify">Spotify</Label>
+                <Label htmlFor="spotify">{t('releaseEdit.spotify')}</Label>
                 <Input
                   id="spotify"
                   type="url"
@@ -255,7 +257,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
               </div>
 
               <div>
-                <Label htmlFor="soundcloud">SoundCloud</Label>
+                <Label htmlFor="soundcloud">{t('releaseEdit.soundcloud')}</Label>
                 <Input
                   id="soundcloud"
                   type="url"
@@ -267,7 +269,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
               </div>
 
               <div>
-                <Label htmlFor="youtube">YouTube</Label>
+                <Label htmlFor="youtube">{t('releaseEdit.youtube')}</Label>
                 <Input
                   id="youtube"
                   type="url"
@@ -279,7 +281,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
               </div>
 
               <div>
-                <Label htmlFor="bandcamp">Bandcamp</Label>
+                <Label htmlFor="bandcamp">{t('releaseEdit.bandcamp')}</Label>
                 <Input
                   id="bandcamp"
                   type="url"
@@ -291,7 +293,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
               </div>
 
               <div>
-                <Label htmlFor="appleMusic">Apple Music</Label>
+                <Label htmlFor="appleMusic">{t('releaseEdit.appleMusic')}</Label>
                 <Input
                   id="appleMusic"
                   type="url"
@@ -303,7 +305,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
               </div>
 
               <div>
-                <Label htmlFor="beatport">Beatport</Label>
+                <Label htmlFor="beatport">{t('releaseEdit.beatport')}</Label>
                 <Input
                   id="beatport"
                   type="url"
@@ -317,7 +319,7 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
           </div>
 
           <div className="border-t border-border pt-4">
-            <h4 className="font-semibold mb-3">Track List (optional)</h4>
+            <h4 className="font-semibold mb-3">{t('releaseEdit.trackList')}</h4>
             <div className="space-y-2">
               {tracks.map((track, index) => (
                 <div key={index} className="flex gap-2 items-center">
@@ -352,10 +354,10 @@ export default function ReleaseEditDialog({ release, onSave, onClose }: ReleaseE
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" disabled={isSaving} className="flex-1 bg-primary hover:bg-accent">
-              {isSaving ? 'Saving…' : 'Save'}
+              {isSaving ? t('releaseEdit.saving') : t('common.save')}
             </Button>
             <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

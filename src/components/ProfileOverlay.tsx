@@ -4,6 +4,7 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import ConsoleLines from '@/components/ConsoleLines'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { useState, useRef, useEffect, startTransition } from 'react'
+import { useLocale } from '@/hooks/use-locale'
 import type { SectionLabels } from '@/lib/types'
 import {
   CONSOLE_TYPING_SPEED_MS,
@@ -31,6 +32,7 @@ export interface ProfileOverlayProps {
 
 /** Shared cyberpunk profile overlay with loading→reveal phases */
 export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines, onClose, sectionLabels, children }: ProfileOverlayProps) {
+  const { t } = useLocale()
   const [phase, setPhase] = useState<'loading' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(LOADING_TEXTS[0])
   const [photoLoaded, setPhotoLoaded] = useState(false)
@@ -119,7 +121,7 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
           <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">PROFILE // {name.toUpperCase()}</span>
+              <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">{t('profile.profilePrefix')} {name.toUpperCase()}</span>
             </div>
             <CyberCloseButton
               onClick={onClose}
@@ -192,7 +194,7 @@ export default function ProfileOverlay({ name, photoUrl, resolvePhoto, dataLines
                 transition={{ duration: 0.3, delay: 0.2 }}
               >
                 <div className="text-[10px] text-primary/50 tracking-wider mb-3">
-                  {'>'} TERMINAL OUTPUT // PROFILE DATA
+                  {'>'} {t('profile.terminalOutput')}
                 </div>
                 <div className="bg-black/50 border border-primary/20 p-4 h-[200px] max-h-[40vh] overflow-y-auto">
                   <ConsoleLines lines={dataLines} speed={CONSOLE_TYPING_SPEED_MS} delayBetween={CONSOLE_LINE_DELAY_MS} />

@@ -4,6 +4,7 @@
  * Config: { artist: string, appId: string }
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface BandsintownConfig {
   artist?: string
@@ -16,6 +17,7 @@ interface BandsintownWidgetProps {
 }
 
 export default function BandsintownWidget({ widget, themeSettings }: BandsintownWidgetProps) {
+  const { t } = useLocale()
   const config = (widget.config ?? {}) as BandsintownConfig
   const primary = themeSettings?.primary ?? 'oklch(0.50 0.22 25)'
 
@@ -26,9 +28,9 @@ export default function BandsintownWidget({ widget, themeSettings }: Bandsintown
         style={{ borderColor: `color-mix(in oklch, ${primary} 20%, transparent)` }}
       >
         <div className="text-2xl mb-2">🎸</div>
-        <p className="font-semibold mb-1">Bandsintown Events</p>
+        <p className="font-semibold mb-1">{t('widget.bandsintown.title')}</p>
         <p className="text-xs opacity-70">
-          Configure artist name &amp; App ID to display upcoming shows.
+          {t('widget.bandsintown.configureHint')}
         </p>
       </div>
     )

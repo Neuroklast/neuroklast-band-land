@@ -140,7 +140,7 @@ export default function WidgetImportDialog({
           {/* Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-primary text-lg tracking-widest uppercase">
-              ▸ {t('store.importWidgets')}
+              {t('store.importWidgets')}
             </h2>
             <CyberCloseButton onClick={handleClose} />
           </div>
@@ -230,7 +230,7 @@ export default function WidgetImportDialog({
 
               {/* Warnings */}
               {validation.warnings.map((w, i) => (
-                <div key={i} className="flex items-start gap-2 text-yellow-400 text-xs">
+                <div key={i} className="flex items-start gap-2 text-status-warning text-xs">
                   <Warning size={14} className="shrink-0 mt-0.5" />
                   <span>{w}</span>
                 </div>
@@ -252,10 +252,10 @@ export default function WidgetImportDialog({
                 <div className="flex flex-col gap-1">
                   <p className="text-xs text-muted-foreground">{t('store.importNewWidgets')}:</p>
                   {newWidgets.map((w) => (
-                    <div key={w.id} className="flex items-center gap-2 text-xs text-green-400">
+                    <div key={w.id} className="flex items-center gap-2 text-xs text-status-success">
                       <CheckCircle size={12} />
                       <span>{w.name}</span>
-                      <span className="text-muted-foreground/50">v{w.version}</span>
+                      <span className="text-muted-foreground/50">{t('widgetImport.versionPrefix')}{w.version}</span>
                     </div>
                   ))}
                 </div>
@@ -265,8 +265,8 @@ export default function WidgetImportDialog({
 
           {/* Step 3: Conflict resolution */}
           {conflicts.length > 0 && (
-            <div className="border border-yellow-500/30 bg-background/40 p-4 flex flex-col gap-3">
-              <p className="text-yellow-400 text-xs tracking-wider uppercase">{t('store.importStep3')}</p>
+            <div className="border border-status-warning-em/30 bg-background/40 p-4 flex flex-col gap-3">
+              <p className="text-status-warning text-xs tracking-wider uppercase">{t('store.importStep3')}</p>
               <div className="flex flex-col gap-3">
                 {conflicts.map((conflict) => {
                   const resolution = resolutions[conflict.id]
@@ -288,8 +288,8 @@ export default function WidgetImportDialog({
                           onClick={() => setResolution(conflict.id, 'replace')}
                           className={`flex-1 text-xs py-1.5 px-2 border transition-colors rounded ${
                             resolution === 'replace'
-                              ? 'border-yellow-500 bg-yellow-500/15 text-yellow-400'
-                              : 'border-primary/20 text-muted-foreground hover:border-yellow-500/40'
+                              ? 'border-status-warning-em bg-status-warning-em/15 text-status-warning'
+                              : 'border-primary/20 text-muted-foreground hover:border-status-warning-em/40'
                           }`}
                         >
                           {t('store.conflictReplace')}
@@ -300,7 +300,7 @@ export default function WidgetImportDialog({
                 })}
               </div>
               {unresolvedConflicts.length > 0 && (
-                <p className="text-xs text-yellow-400/70">
+                <p className="text-xs text-status-warning/70">
                   {t('store.conflictUnresolved').replace('{0}', String(unresolvedConflicts.length))}
                 </p>
               )}

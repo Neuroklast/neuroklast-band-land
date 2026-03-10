@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Plus, X } from '@phosphor-icons/react'
 import type { Biography, Member } from '@/lib/types'
 import { toDirectImageUrl } from '@/lib/image-cache'
+import { useLocale } from '@/hooks/use-locale'
 
 interface BiographyEditDialogProps {
   open: boolean
@@ -18,6 +19,7 @@ interface BiographyEditDialogProps {
 const normalizeMember = (m: string | Member): Member => typeof m === 'string' ? { name: m } : m
 
 export default function BiographyEditDialog({ open, onOpenChange, biography, onSave }: BiographyEditDialogProps) {
+  const { t } = useLocale()
   const [story, setStory] = useState(biography.story)
   const [founded, setFounded] = useState(biography.founded || '')
   const [members, setMembers] = useState<Member[]>((biography.members || []).map(normalizeMember))
@@ -86,12 +88,12 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Biography</DialogTitle>
+          <DialogTitle>{t('bioEdit.editTitle')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label htmlFor="story">Band Story</Label>
+            <Label htmlFor="story">{t('bioEdit.bandStory')}</Label>
             <Textarea
               id="story"
               value={story}
@@ -102,7 +104,7 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="founded">Founded (Year)</Label>
+            <Label htmlFor="founded">{t('bioEdit.foundedYear')}</Label>
             <Input
               id="founded"
               type="text"
@@ -113,7 +115,7 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
           </div>
 
           <div className="space-y-2">
-            <Label>Members</Label>
+            <Label>{t('bioEdit.members')}</Label>
             <div className="space-y-4">
               {members.map((member, index) => (
                 <div key={index} className="border border-border rounded-md p-3 space-y-2">
@@ -181,7 +183,7 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
           </div>
 
           <div className="space-y-2">
-            <Label>Achievements</Label>
+            <Label>{t('bioEdit.achievements')}</Label>
             <div className="space-y-2">
               {achievements.map((achievement, index) => (
                 <div key={index} className="flex gap-2 items-center">
@@ -211,7 +213,7 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
           </div>
 
           <div className="space-y-2">
-            <Label>Collabs</Label>
+            <Label>{t('bioEdit.collabs')}</Label>
             <div className="space-y-2">
               {collabs.map((collab, index) => (
                 <div key={index} className="flex gap-2 items-center">
@@ -243,9 +245,9 @@ export default function BiographyEditDialog({ open, onOpenChange, biography, onS
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

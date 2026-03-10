@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { LinkSimple, LinkBreak, CheckCircle, XCircle, ArrowsClockwise, Clock } from '@phosphor-icons/react'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ProviderStatus {
   connected: boolean
@@ -35,12 +36,12 @@ interface OAuthConnectionsDialogProps {
 const PROVIDER_META: Record<string, { label: string; color: string; hint: string }> = {
   spotify: {
     label: 'Spotify',
-    color: 'text-green-400',
+    color: 'text-status-success',
     hint: 'Requires SPOTIFY_CLIENT_ID + SPOTIFY_CLIENT_SECRET env vars.',
   },
   'google-drive': {
     label: 'Google Drive',
-    color: 'text-blue-400',
+    color: 'text-status-info',
     hint: 'Requires GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET env vars.',
   },
 }
@@ -52,6 +53,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
   const [connectingProvider, setConnectingProvider] = useState<string | null>(null)
   const [disconnectingProvider, setDisconnectingProvider] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useLocale()
 
   const fetchStatus = useCallback(async () => {
     setLoading(true)
@@ -169,7 +171,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-primary/30">
           <div className="flex items-center gap-2 text-primary text-xs uppercase tracking-widest">
-            <LinkSimple size={14} weight="bold" /> OAuth Connections
+            <LinkSimple size={14} weight="bold" /> {t('oauth.title')}
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -186,14 +188,14 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
 
         <div className="px-4 py-3 space-y-4 overflow-y-auto max-h-[70vh]">
           {error && (
-            <div className="text-[10px] font-mono text-red-400 bg-red-400/10 border border-red-400/30 px-3 py-2">
+            <div className="text-[10px] font-mono text-status-error bg-status-error/10 border border-status-error/30 px-3 py-2">
               ⚠ {error}
             </div>
           )}
 
           {/* Provider cards */}
           <div className="space-y-3">
-            <div className="text-[10px] text-primary/50 uppercase tracking-wider">Connected Accounts</div>
+            <div className="text-[10px] text-primary/50 uppercase tracking-wider">{t('oauth.connectedAccounts')}</div>
             {Object.entries(PROVIDER_META).map(([key, meta]) => {
               const status = statuses[key as keyof OAuthStatuses]
               const isConnecting = connectingProvider === key
@@ -207,7 +209,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {status?.connected ? (
-                        <CheckCircle size={14} className="text-green-400 shrink-0" />
+                        <CheckCircle size={14} className="text-status-success shrink-0" />
                       ) : (
                         <XCircle size={14} className="text-primary/30 shrink-0" />
                       )}
@@ -221,7 +223,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                         variant="outline"
                         disabled={isDisconnecting}
                         onClick={() => handleDisconnect(key)}
-                        className="text-[10px] font-mono border-red-400/40 text-red-400/80 hover:text-red-400 hover:border-red-400 gap-1 h-6 px-2"
+                        className="text-[10px] font-mono border-status-error/40 text-status-error/80 hover:text-status-error hover:border-status-error gap-1 h-6 px-2"
                       >
                         <LinkBreak size={11} />
                         {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
@@ -243,18 +245,18 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                     <div className="pl-5 space-y-0.5">
                       {status.displayName && (
                         <div className="text-[10px] text-foreground/70">
-                          <span className="text-primary/40">NAME: </span>
+                          <span className="text-primary/40">{t('oauth.nameLabel')}</span>
                           {status.displayName}
                         </div>
                       )}
                       {status.email && (
                         <div className="text-[10px] text-foreground/70">
-                          <span className="text-primary/40">EMAIL: </span>
+                          <span className="text-primary/40">{t('oauth.emailLabel')}</span>
                           {status.email}
                         </div>
                       )}
                       <div className="text-[10px] text-foreground/50">
-                        <span className="text-primary/40">CONNECTED: </span>
+                        <span className="text-primary/40">{t('oauth.connectedLabel')}</span>
                         {formatDate(status.connectedAt)}
                       </div>
                     </div>
@@ -271,10 +273,10 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
           {/* Auth log */}
           <div className="space-y-2">
             <div className="text-[10px] text-primary/50 uppercase tracking-wider flex items-center gap-1">
-              <Clock size={10} /> Auth Log
+              <Clock size={10} /> {t('oauth.authLog')}
             </div>
             {logs.length === 0 ? (
-              <div className="text-[10px] text-primary/20 py-2">No auth events recorded yet.</div>
+              <div className="text-[10px] text-primary/20 py-2">{t('oauth.noAuthEvents')}</div>
             ) : (
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {logs.slice(0, 20).map((entry, i) => (
@@ -283,7 +285,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                     className="text-[9px] font-mono flex items-start gap-2 py-0.5 border-b border-primary/5 last:border-0"
                   >
                     <span
-                      className={`shrink-0 mt-0.5 ${entry.success ? 'text-green-400/70' : 'text-red-400/70'}`}
+                      className={`shrink-0 mt-0.5 ${entry.success ? 'text-status-success/70' : 'text-status-error/70'}`}
                     >
                       {entry.success ? '✓' : '✗'}
                     </span>
@@ -297,7 +299,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                         <span className="text-foreground/40"> · {entry.displayName}</span>
                       )}
                       {!entry.success && entry.reason && (
-                        <span className="text-red-400/60"> · {entry.reason}</span>
+                        <span className="text-status-error/60"> · {entry.reason}</span>
                       )}
                     </div>
                     <span className="text-primary/20 shrink-0 whitespace-nowrap">
@@ -318,7 +320,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
             onClick={onClose}
             className="text-xs font-mono text-primary/50 hover:text-primary"
           >
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </motion.div>

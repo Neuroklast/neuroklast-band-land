@@ -201,9 +201,9 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
   }, [] as { name: string; value: number }[]) || []
 
   const getSeverityIcon = (severity: string) => {
-    if (severity === 'high') return <Warning size={18} className="text-red-400" weight="bold" />
-    if (severity === 'medium') return <Warning size={18} className="text-orange-400" />
-    return <Warning size={18} className="text-yellow-400" />
+    if (severity === 'high') return <Warning size={18} className="text-status-error" weight="bold" />
+    if (severity === 'medium') return <Warning size={18} className="text-status-alert" />
+    return <Warning size={18} className="text-status-warning" />
   }
 
   return (
@@ -260,8 +260,8 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
               )}
 
               {error && (
-                <div className="border border-red-500/30 bg-red-500/10 p-4 text-center">
-                  <p className="font-mono text-[12px] text-red-400">{L('profile.failedToLoad')}: {error}</p>
+                <div className="border border-status-error-em/30 bg-status-error-em/10 p-4 text-center">
+                  <p className="font-mono text-[12px] text-status-error">{L('profile.failedToLoad')}: {error}</p>
                 </div>
               )}
 
@@ -412,7 +412,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {/* Category breakdown — horizontal CSS bars */}
                       <div className="space-y-2">
-                        <p className="font-mono text-[10px] text-primary/50 uppercase mb-2">{L('profile.topUserAgents')} by category</p>
+                        <p className="font-mono text-[10px] text-primary/50 uppercase mb-2">{L('profile.topUserAgentsByCategory')}</p>
                         {uaCategoryData.length === 0 ? (
                           <p className="font-mono text-[10px] text-primary/30 text-center py-4">—</p>
                         ) : (
@@ -451,10 +451,10 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                                   {ua.userAgent}
                                 </p>
                                 <span className={`inline-block mt-1 px-1.5 py-0.5 text-[8px] font-mono rounded ${
-                                  ua.category === 'attack_tool' ? 'bg-red-500/20 text-red-400' :
-                                  ua.category === 'bot' ? 'bg-orange-500/20 text-orange-400' :
-                                  ua.category === 'script' ? 'bg-yellow-500/20 text-yellow-400' :
-                                  'bg-blue-500/20 text-blue-400'
+                                  ua.category === 'attack_tool' ? 'bg-status-error-em/20 text-status-error' :
+                                  ua.category === 'bot' ? 'bg-status-alert-em/20 text-status-alert' :
+                                  ua.category === 'script' ? 'bg-status-warning-em/20 text-status-warning' :
+                                  'bg-status-info-em/20 text-status-info'
                                 }`}>
                                   {ua.category}
                                 </span>
@@ -524,17 +524,17 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                             </p>
                           )}
                           <div className="grid grid-cols-3 gap-2 mt-2">
-                            <div className="border border-red-500/20 bg-red-500/5 p-2 text-center">
-                              <p className="text-red-400 text-lg font-bold">{blocked.length}</p>
-                              <p className="text-[9px] text-red-400/60 uppercase">{L('profile.blocked')}</p>
+                            <div className="border border-status-error-em/20 bg-status-error-em/5 p-2 text-center">
+                              <p className="text-status-error text-lg font-bold">{blocked.length}</p>
+                              <p className="text-[9px] text-status-error/60 uppercase">{L('profile.blocked')}</p>
                             </div>
-                            <div className="border border-orange-500/20 bg-orange-500/5 p-2 text-center">
-                              <p className="text-orange-400 text-lg font-bold">{tarpitted.length}</p>
-                              <p className="text-[9px] text-orange-400/60 uppercase">{L('profile.tarpitted')}</p>
+                            <div className="border border-status-alert-em/20 bg-status-alert-em/5 p-2 text-center">
+                              <p className="text-status-alert text-lg font-bold">{tarpitted.length}</p>
+                              <p className="text-[9px] text-status-alert/60 uppercase">{L('profile.tarpitted')}</p>
                             </div>
-                            <div className="border border-yellow-500/20 bg-yellow-500/5 p-2 text-center">
-                              <p className="text-yellow-400 text-lg font-bold">{warned.length}</p>
-                              <p className="text-[9px] text-yellow-400/60 uppercase">{L('profile.warned')}</p>
+                            <div className="border border-status-warning-em/20 bg-status-warning-em/5 p-2 text-center">
+                              <p className="text-status-warning text-lg font-bold">{warned.length}</p>
+                              <p className="text-[9px] text-status-warning/60 uppercase">{L('profile.warned')}</p>
                             </div>
                           </div>
                           <p className="text-[10px] text-foreground/40 mt-2">
@@ -561,7 +561,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                               <span className="font-mono text-[10px] text-primary/60">
                                 {formatTime(entry.timestamp)}
                               </span>
-                              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">
+                              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-status-error-em/20 text-status-error rounded">
                                 {entry.event === 'js' ? 'JS FINGERPRINT' : entry.event === 'img' ? 'TRACKING PIXEL' : (entry.event || 'CALLBACK').toUpperCase()}
                               </span>
                             </div>
@@ -589,7 +589,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                               </div>
                               {entry.acceptLanguage && (
                                 <div className="col-span-2">
-                                  <p className="font-mono text-[9px] text-primary/40">Accept-Language</p>
+                                  <p className="font-mono text-[9px] text-primary/40">{L('profile.acceptLanguage')}</p>
                                   <p className="font-mono text-[10px] text-foreground/80">{entry.acceptLanguage}</p>
                                 </div>
                               )}
@@ -597,12 +597,12 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
 
                             {entry.jsFingerprint && (
                               <div className="border-t border-primary/10 pt-2 mt-2">
-                                <p className="font-mono text-[9px] text-red-400/70 uppercase mb-1">{L('profile.jsFingerprint')}</p>
+                                <p className="font-mono text-[9px] text-status-error/70 uppercase mb-1">{L('profile.jsFingerprint')}</p>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
                                   {entry.jsFingerprint.realIp && (
                                     <div>
                                       <p className="font-mono text-[9px] text-primary/40">{L('profile.realIp')}</p>
-                                      <p className="font-mono text-[10px] text-red-400 font-bold truncate" title={entry.jsFingerprint.realIp}>{entry.jsFingerprint.realIp}</p>
+                                      <p className="font-mono text-[10px] text-status-error font-bold truncate" title={entry.jsFingerprint.realIp}>{entry.jsFingerprint.realIp}</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.timezone && (
@@ -626,7 +626,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                                   {entry.jsFingerprint.screenWidth != null && entry.jsFingerprint.screenHeight != null && (
                                     <div>
                                       <p className="font-mono text-[9px] text-primary/40">{L('profile.screen')}</p>
-                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.screenWidth}×{entry.jsFingerprint.screenHeight} ({entry.jsFingerprint.colorDepth || '?'}bit)</p>
+                                      <p className="font-mono text-[10px] text-foreground/80">{entry.jsFingerprint.screenWidth}{L('profile.screenSeparator')}{entry.jsFingerprint.screenHeight} ({entry.jsFingerprint.colorDepth || '?'}{L('profile.bitSuffix')})</p>
                                     </div>
                                   )}
                                   {entry.jsFingerprint.cores != null && (

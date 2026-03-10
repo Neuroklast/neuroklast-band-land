@@ -90,7 +90,7 @@ export default function ConfigExportDialog({ open, onClose, config }: ConfigExpo
           {/* Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-primary text-lg tracking-widest uppercase">
-              ▸ {t('export.title')}
+              {t('export.title')}
             </h2>
             <CyberCloseButton onClick={onClose} />
           </div>

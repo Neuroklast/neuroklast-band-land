@@ -196,7 +196,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
       transition={{ duration: 0.2 }}
     >
       <div className="text-[10px] text-primary/50 tracking-wider mb-2">
-        {'>'} FILE DATA // {file.name.toUpperCase()}
+        {'>'} {t('media.fileDataPrefix')} {file.name.toUpperCase()}
       </div>
 
       {/* YouTube embed */}
@@ -217,7 +217,7 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
 
         {file.folder && (
           <div className="text-xs font-mono text-foreground/50">
-            <span className="text-primary/40">FOLDER:</span> /{file.folder.toUpperCase()}
+            <span className="text-primary/40">{t('media.folderLabel')}</span> /{file.folder.toUpperCase()}
           </div>
         )}
 
@@ -323,7 +323,7 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
             </Button>
           </div>
           <div>
-            <Label className="text-[10px]">Download URL</Label>
+            <Label className="text-[10px]">{t('media.downloadUrl')}</Label>
             <Input
               value={file.url}
               onChange={(e) => updateFile(idx, { url: e.target.value })}
@@ -333,7 +333,7 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px]">Folder (optional)</Label>
+              <Label className="text-[10px]">{t('media.folderOptional')}</Label>
               <Input
                 value={file.folder || ''}
                 onChange={(e) => updateFile(idx, { folder: e.target.value || undefined })}
@@ -342,20 +342,20 @@ function MediaEditPanel({ files, onUpdate }: { files: MediaFile[]; onUpdate: (fi
               />
             </div>
             <div>
-              <Label className="text-[10px]">Type</Label>
+              <Label className="text-[10px]">{t('common.type')}</Label>
               <select
                 value={file.type || ''}
                 onChange={(e) => updateFile(idx, { type: (e.target.value || undefined) as MediaFile['type'] })}
                 className="flex w-full rounded-sm border border-input bg-transparent px-3 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-8"
               >
-                <option value="">Download</option>
-                <option value="audio">Audio</option>
-                <option value="youtube">YouTube</option>
+                <option value="">{t('media.downloadType')}</option>
+                <option value="audio">{t('media.audioType')}</option>
+                <option value="youtube">{t('media.youtubeType')}</option>
               </select>
             </div>
           </div>
           <div>
-            <Label className="text-[10px]">Description (optional)</Label>
+            <Label className="text-[10px]">{t('media.descriptionOptional')}</Label>
             <Input
               value={file.description || ''}
               onChange={(e) => updateFile(idx, { description: e.target.value || undefined })}
@@ -532,7 +532,7 @@ export default function MediaSection({ mediaFiles = [], editMode, onUpdate, sect
                   onClick={() => { triggerTransition(); setOverlayOpen(true) }}
                 >
                   <PencilSimple size={16} />
-                  <span className="hidden md:inline">Manage</span>
+                  <span className="hidden md:inline">{t('media.manage')}</span>
                 </Button>
               </div>
             )}
