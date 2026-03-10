@@ -48,10 +48,10 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
   onDelete: () => void
   onSelect: () => void
 }) {
+  const { t } = useLocale()
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState(friend)
   const [_hovered, setHovered] = useState(false)
-  const { t } = useLocale()
 
   const handleSave = () => {
     // Convert Google Drive URLs to wsrv.nl URLs before saving
