@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
+import { useLocale } from '@/hooks/use-locale'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -184,6 +185,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function SetupWizard({ onComplete, onSetAdminPassword, initialConfig }: SetupWizardProps) {
+  const { t } = useLocale()
   const [showActivation] = useState(() => needsActivationStep())
   const STEPS = getSteps(showActivation)
 
@@ -486,21 +488,21 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           <div className="space-y-2">
             <div className="text-4xl mb-2">🔑</div>
             <h1 className="text-2xl font-mono font-bold text-primary tracking-tight">
-              ACTIVATION KEY
+              {t('setup.activationKeyTitle')}
             </h1>
             <p className="text-muted-foreground font-mono text-sm leading-relaxed">
-              Enter your activation key to get started.
+              {t('setup.activationKeyDesc')}
             </p>
           </div>
 
           {activationValid ? (
             <div className="flex items-center justify-center gap-2 text-status-success font-mono text-sm">
-              <Check size={16} weight="bold" /> Key activated!
+              <Check size={16} weight="bold" /> {t('setup.keyActivated')}
             </div>
           ) : (
             <div className="space-y-3 text-left">
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs">Activation Key</Label>
+                <Label className="font-mono text-xs">{t('setup.activationKeyLabel')}</Label>
                 <Input
                   value={activationKeyInput}
                   onChange={(e) => { setActivationKeyInput(e.target.value); setActivationError('') }}
@@ -524,14 +526,14 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
               </Button>
 
               <p className="text-xs text-center text-muted-foreground font-mono">
-                No key yet?{' '}
+                {t('setup.noKeyYet')}{' '}
                 <a
                   href="https://neuroklast.net/contact"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  Contact Neuroklast →
+                  {t('setup.contactNeuroklast')}
                 </a>
               </p>
             </div>
@@ -547,15 +549,15 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           <div className="space-y-6 text-center">
             <div className="space-y-2">
               <p className="font-mono text-[10px] text-primary/60 tracking-[0.3em] uppercase">
-                Band Land Template
+                {t('setup.bandLandTemplate')}
               </p>
               <h1 className="text-3xl font-mono font-bold text-primary tracking-tight">
-                SETUP WIZARD
+                {t('setup.title')}
               </h1>
               <p className="text-muted-foreground font-mono text-sm leading-relaxed">
-                Welcome. This wizard will help you configure your site in a few steps.
+                {t('setup.welcomeMessage')}
                 <br />
-                You can always change everything later from the admin panel.
+                {t('setup.changeSettingsLater')}
               </p>
             </div>
             <div className="border border-primary/20 rounded p-4 bg-primary/5 text-left space-y-2">
@@ -580,7 +582,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                 </p>
                 {!allRequiredSet(envStatus) && (
                   <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-                    Some required variables are missing. Set them in your Vercel project settings or <code className="text-primary">.env</code> file for full functionality.
+                    {t('setup.envMissingVars')}
                   </p>
                 )}
                 <div className="space-y-1">
@@ -592,7 +594,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                       }
                       <span className={envStatus[v.key] ? 'text-muted-foreground' : v.required ? 'text-foreground' : 'text-muted-foreground'}>
                         {v.label}
-                        {!v.required && <span className="text-muted-foreground/60 ml-1">(optional)</span>}
+                        {!v.required && <span className="text-muted-foreground/60 ml-1">{t('setup.optionalTag')}</span>}
                       </span>
                     </div>
                   ))}
@@ -601,7 +603,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             )}
 
             <Button onClick={goNext} className="font-mono tracking-wider gap-2 w-full">
-              START SETUP
+              {t('setup.startSetup')}
               <ArrowRight size={16} />
             </Button>
           </div>
@@ -612,9 +614,9 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
         return (
           <div className="space-y-4">
             <div className="space-y-1">
-              <h2 className="text-xl font-mono font-bold text-primary tracking-tight">SITE TYPE</h2>
+              <h2 className="text-xl font-mono font-bold text-primary tracking-tight">{t('setup.siteTypeTitle')}</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                What kind of site are you creating?
+                {t('setup.siteTypeDesc')}
               </p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -649,9 +651,9 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
         return (
           <div className="space-y-4">
             <div className="space-y-1">
-              <h2 className="text-xl font-mono font-bold text-primary tracking-tight">BASIC INFO</h2>
+              <h2 className="text-xl font-mono font-bold text-primary tracking-tight">{t('setup.basicInfoTitle')}</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Tell us about your site.
+                {t('setup.basicInfoDesc')}
               </p>
             </div>
             <div className="space-y-3">
@@ -711,10 +713,10 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">
-                THEME WÄHLEN
+                {t('setup.themeTitle')}
               </h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Choose a theme. Preview changes live as you hover.
+                {t('setup.themeDesc')}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -767,7 +769,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">COLORS</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Fine-tune your color palette. Contrast is checked automatically.
+                {t('setup.colorsDesc')}
               </p>
             </div>
             <div className="space-y-2">
@@ -786,7 +788,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
               >
                 {passesAA ? <CheckCircle size={16} /> : <Warning size={16} />}
                 <span>
-                  Contrast ratio: {ratio.toFixed(1)}:1
+                  {t('setup.contrastRatio').replace('{0}', ratio.toFixed(1))}
                   {passesAA ? ' — WCAG AA ✓' : ' — Below WCAG AA (4.5:1 recommended)'}
                 </span>
               </div>
@@ -826,7 +828,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
               ))}
             </select>
             <p className="font-mono text-[10px] text-muted-foreground mt-1" style={{ fontFamily: value }}>
-              Preview: The quick brown fox jumps over the lazy dog — 0123456789
+              {t('setup.fontPreview')}
             </p>
           </Field>
         )
@@ -835,7 +837,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">FONTS</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Choose fonts for your site. Changes preview live.
+                {t('setup.fontsDesc')}
               </p>
             </div>
             <div className="space-y-3">
@@ -875,10 +877,10 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">
-                LOGO &amp; ASSETS
+                {t('setup.logoAssetsTitle')}
               </h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Upload or link your logo and social preview image.
+                {t('setup.logoAssetsDesc')}
               </p>
             </div>
             <div className="space-y-3">
@@ -896,7 +898,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                     onClick={() => logoInputRef.current?.click()}
                     className="font-mono text-xs shrink-0"
                   >
-                    Upload
+                    {t('setup.upload')}
                   </Button>
                 </div>
                 <input
@@ -923,7 +925,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                       }}
                     />
                     <p className="mt-1 font-mono text-[10px] text-destructive/70 hidden">
-                      Bild konnte nicht geladen werden
+                      {t('setup.imageLoadError')}
                     </p>
                   </div>
                 )}
@@ -957,7 +959,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">SECTIONS</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Choose which sections to show, their order, and custom labels.
+                {t('setup.sectionsDesc')}
               </p>
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
@@ -1032,10 +1034,10 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">
-                SOCIAL LINKS
+                {t('setup.socialLinksTitle')}
               </h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Add your social media profiles. All fields are optional.
+                {t('setup.socialLinksDesc')}
               </p>
             </div>
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -1064,7 +1066,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">LEGAL</h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Impressum / legal notice &amp; privacy policy.
+                {t('setup.legalDesc')}
               </p>
             </div>
             <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
@@ -1113,8 +1115,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
             </div>
             <div className="border border-primary/10 rounded p-3 bg-primary/5">
               <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-                ⚠️ This data will be shown in the legal notice (Impressum) of your site. By German
-                law (§ 5 TMG) a legally responsible person must be named. You can edit this later.
+                {t('setup.legalDisclaimer')}
               </p>
             </div>
             <NavigationButtons onBack={goBack} onNext={goNext} />
@@ -1127,10 +1128,10 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
           <div className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-mono font-bold text-primary tracking-tight">
-                ADMIN PASSWORD
+                {t('setup.adminPasswordTitle')}
               </h2>
               <p className="font-mono text-xs text-muted-foreground">
-                Set a password to protect the admin panel. Minimum 8 characters.
+                {t('setup.adminPasswordDesc')}
               </p>
             </div>
             <div className="space-y-3">
@@ -1184,7 +1185,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                 onClick={handlePasswordNext}
                 className="font-mono text-xs gap-1 flex-1"
               >
-                FINISH SETUP
+                {t('setup.finishSetup')}
                 <Check size={14} />
               </Button>
             </div>
@@ -1200,12 +1201,12 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
                 <Check size={32} weight="bold" className="text-primary" />
               </div>
               <h2 className="text-2xl font-mono font-bold text-primary tracking-tight">
-                SETUP COMPLETE
+                {t('setup.setupComplete')}
               </h2>
               <p className="text-muted-foreground font-mono text-sm">
-                Your site has been configured.
+                {t('setup.siteConfigured')}
                 <br />
-                You can always adjust settings from the admin panel.
+                {t('setup.adjustSettingsLater')}
               </p>
             </div>
             <Button
@@ -1213,7 +1214,7 @@ export default function SetupWizard({ onComplete, onSetAdminPassword, initialCon
               className="font-mono tracking-wider gap-2 w-full"
             >
               <Globe size={16} />
-              GO TO SITE
+              {t('setup.goToSite')}
             </Button>
           </div>
         )
