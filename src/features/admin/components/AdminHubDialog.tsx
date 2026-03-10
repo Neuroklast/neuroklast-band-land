@@ -74,8 +74,8 @@ export default function AdminHubDialog({
 
   const tabs = [
     { id: 'content', label: t('hub.content') || 'Content', icon: Article },
-    { id: 'design', label: t('hub.appearance') || 'Design System', icon: Palette },
-    { id: 'store', label: t('hub.themeStore') || 'Store & Apps', icon: Storefront },
+    { id: 'design', label: t('hub.appearance') || 'Design & Theme', icon: Palette },
+    { id: 'store', label: t('hub.store') || 'Store & Apps', icon: Storefront },
     { id: 'system', label: t('hub.system') || 'System & Security', icon: ShieldChevron },
   ] as const
 
@@ -84,114 +84,114 @@ export default function AdminHubDialog({
   const storeItems = [
     {
       icon: Palette,
-      label: 'Theme Store',
-      description: 'Install premium themes',
+      label: t('hub.storeThemes') || 'Theme Store',
+      description: t('hub.storeThemesDesc') || 'Install premium themes',
       action: () => { onClose(); onOpenDialog('store') },
     },
     {
       icon: Sliders,
-      label: 'Widget Store',
-      description: 'Add new widgets to the site',
-      action: () => { onClose(); onOpenDialog('store') }, // Assuming 'plugins' maps to widgets in dialog manager
+      label: t('hub.storeWidgets') || 'Widget Store',
+      description: t('hub.storeWidgetsDesc') || 'Add new widgets to the site',
+      action: () => { onClose(); onOpenDialog('store') },
     },
   ]
 
   const systemItems = [
     {
       icon: UploadSimple,
-      label: 'Export Configuration',
+      label: t('hub.exportConfig') || 'Export Configuration',
       action: () => { onClose(); onExportData() },
     },
     {
       icon: DownloadSimple,
-      label: 'Import Configuration',
+      label: t('hub.importConfig') || 'Import Configuration',
       action: () => { onClose(); onImportFile() },
     },
     {
       icon: Globe,
-      label: 'Sync Configuration URL',
+      label: t('hub.syncUrl') || 'Sync Configuration URL',
       action: () => { onClose(); onImportUrl() },
     },
     {
       icon: GearSix,
-      label: 'JSON Configuration Editor',
+      label: t('hub.configEditor') || 'JSON Configuration Editor',
       action: () => { onClose(); onOpenDialog('config') },
     },
     {
       icon: Terminal,
-      label: 'Terminal Console',
+      label: t('hub.terminal') || 'Terminal Console',
       action: () => { onClose(); onOpenDialog('terminal') },
     },
     {
       icon: SpeakerHigh,
-      label: 'Audio System',
+      label: t('hub.audio') || 'Audio System',
       action: () => { onClose(); onOpenDialog('sound') },
     },
     {
       icon: ChartBar,
-      label: 'Analytics Dashboard',
+      label: t('hub.analytics') || 'Analytics Dashboard',
       action: () => { onClose(); onOpenDialog('analytics') },
     },
     {
       icon: ShieldWarning,
-      label: 'Security Logs',
+      label: t('hub.securityLogs') || 'Security Logs',
       action: () => { onClose(); onOpenDialog('security-log') },
     },
     {
       icon: ShieldCheck,
-      label: 'Security Settings',
+      label: t('hub.securitySettings') || 'Security Settings',
       action: () => { onClose(); onOpenDialog('security-settings') },
     },
     {
       icon: Prohibit,
-      label: 'Blocklist Manager',
+      label: t('hub.blocklist') || 'Blocklist Manager',
       action: () => { onClose(); onOpenDialog('blocklist') },
     },
     {
       icon: UserCircle,
-      label: 'Attacker Profiles',
+      label: t('hub.attackerProfiles') || 'Attacker Profiles',
       action: () => { onClose(); onOpenDialog('attacker-profiles') },
     },
     {
       icon: EnvelopeSimple,
-      label: 'Inbox',
+      label: t('hub.inbox') || 'Inbox',
       action: () => { onClose(); onOpenDialog('inbox') },
     },
     {
       icon: UsersThree,
-      label: 'Subscribers',
+      label: t('hub.subscribers') || 'Subscribers',
       action: () => { onClose(); onOpenDialog('subscribers') },
     },
     {
       icon: MegaphoneSimple,
-      label: 'Marketing Settings',
+      label: t('hub.marketing') || 'Marketing Settings',
       action: () => { onClose(); onOpenDialog('marketing') },
     },
     {
       icon: LinkSimple,
-      label: 'OAuth Connections',
+      label: t('hub.oauth') || 'OAuth Connections',
       action: () => { onClose(); onOpenDialog('oauth') },
     },
     ...(isPrimary
       ? [
           {
             icon: Key,
-            label: 'Key Manager',
-            description: 'Manage activation keys',
+            label: t('hub.keyManager') || 'Key Manager',
+            description: t('hub.keyManagerDesc') || 'Manage activation keys',
             action: () => { onClose(); onOpenDialog('keys') },
           },
         ]
       : []),
     {
       icon: Lock,
-      label: 'Change Password',
+      label: t('hub.changePassword') || 'Change Password',
       action: () => { onClose(); onChangePassword() },
     },
     ...(onResetSetup
       ? [
           {
             icon: ArrowCounterClockwise,
-            label: 'Reset Setup',
+            label: t('hub.resetSetup') || 'Reset Setup',
             action: () => { onClose(); onResetSetup?.() },
           },
         ]
@@ -200,7 +200,7 @@ export default function AdminHubDialog({
       ? [
           {
             icon: SignOut,
-            label: 'Logout',
+            label: t('hub.logout') || 'Logout',
             action: () => { onClose(); onLogout?.() },
           },
         ]
@@ -251,7 +251,7 @@ export default function AdminHubDialog({
                 <div className="flex items-center gap-2 px-6 py-5 border-b border-border/50">
                   <Lightning size={20} weight="fill" className="text-primary" />
                   <h2 className="text-sm font-mono font-bold tracking-widest text-foreground uppercase">
-                    Admin Hub
+                    {t('hub.title') || 'Admin Hub'}
                   </h2>
                 </div>
                 <div className="flex-1 overflow-y-auto py-4">
@@ -307,14 +307,14 @@ export default function AdminHubDialog({
                     {activeTab === 'design' && (
                       <div className="col-span-1 md:col-span-2 space-y-4">
                         <p className="text-sm text-muted-foreground mb-4">
-                          Launch the Theme Customizer to visually edit your site's layout, fonts, colors, and visual effects side-by-side with your content.
+                          {t('hub.designDesc') || 'Launch the Theme Customizer to visually edit your site\'s layout, fonts, colors, and visual effects side-by-side with your content.'}
                         </p>
                         <button
                           onClick={() => setShowCustomizer(true)}
                           className="w-full md:w-auto flex items-center justify-center gap-3 px-6 py-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-mono text-sm tracking-wider uppercase shadow-lg shadow-primary/20 transition-all active:scale-95"
                         >
                           <Sliders size={20} weight="bold" />
-                          Launch Design Customizer
+                          {t('hub.launchCustomizer') || 'Launch Design Customizer'}
                         </button>
                       </div>
                     )}

@@ -91,3 +91,15 @@ export function DefaultPageLayout({ children, className }: { children: React.Rea
   return <div className={className}>{children}</div>
 }
 DefaultPageLayout.displayName = 'DefaultPageLayout'
+
+// ─── Content-section default slots (slots 16–24) ────────────────────────────
+
+export { default as DefaultGigsSection } from '@/components/DefaultGigsSectionSlot'
+export { default as DefaultReleasesSection } from '@/components/DefaultReleasesSectionSlot'
+export { default as DefaultBiographySection } from '@/components/DefaultBiographySectionSlot'
+export { default as DefaultNewsSection } from '@/components/DefaultNewsSectionSlot'
+export { default as DefaultMediaSection } from '@/components/DefaultMediaSectionSlot'
+export { default as DefaultGallerySection } from '@/components/DefaultGallerySectionSlot'
+export { default as DefaultSocialSection } from '@/components/DefaultSocialSectionSlot'
+export { default as DefaultContactSection } from '@/components/DefaultContactSectionSlot'
+export { default as DefaultPartnersSection } from '@/components/DefaultPartnersSectionSlot'

@@ -69,6 +69,15 @@ export function useSiteConfig(): UseSiteConfigReturn {
         features: partial.features
           ? { ...base.features, ...partial.features }
           : base.features,
+        themeSettings: partial.themeSettings
+          ? { ...base.themeSettings, ...partial.themeSettings }
+          : base.themeSettings,
+        contactSettings: partial.contactSettings
+          ? { ...base.contactSettings, ...partial.contactSettings }
+          : base.contactSettings,
+        newsletterSettings: partial.newsletterSettings
+          ? { ...base.newsletterSettings, ...partial.newsletterSettings }
+          : base.newsletterSettings,
       }
     })
   }

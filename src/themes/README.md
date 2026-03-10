@@ -1,6 +1,6 @@
 # Themes System
 
-This directory contains all theme packages for the Neuroklast Band Land site template. Each theme is a self-contained directory that can override default UI slots, provide background effects, custom card styles, section dividers, and scoped CSS.
+This directory contains all theme packages for the Neuroklast Band Land site template. Each theme is a self-contained directory that can override default UI slots, provide background effects, custom card styles, section dividers, content-section overrides, and scoped CSS.
 
 ---
 
@@ -9,15 +9,26 @@ This directory contains all theme packages for the Neuroklast Band Land site tem
 ```
 src/themes/
 ├── index.ts                  # Barrel – exports all registered themes
-├── cyberpunk/                # Example full theme
-│   ├── index.ts              # Theme definition + preset
-│   ├── BackgroundEffects.tsx # Optional custom background
-│   ├── Card.tsx              # Optional custom card component
-│   ├── Hero.tsx              # Optional custom hero section
-│   ├── SectionDivider.tsx    # Optional section divider
-│   └── styles.css            # Scoped CSS ([data-theme="cyberpunk"] selectors)
-├── minimal/
-│   └── ...
+├── default-slots.tsx         # Default fallback components for all 24 slots
+├── primitives/               # Shared UI primitives (ThemeCard, ThemeSectionDivider)
+├── neuroklast-classic/       # Exclusive Neuroklast theme
+│   ├── index.ts
+│   ├── Hero.tsx
+│   ├── Navigation.tsx
+│   ├── BackgroundEffects.tsx
+│   ├── LoadingScreen.tsx
+│   ├── Footer.tsx
+│   └── styles.css
+├── nebula-noir-theme/        # Free Art Deco / cosmic theme
+│   ├── index.ts
+│   ├── Hero.tsx, Card.tsx, ...
+│   └── styles.css
+├── glitch-noir/              # Free minimal dark techno theme
+│   ├── index.ts
+│   └── styles.css
+├── zardonic/                 # Exclusive industrial cyberpunk theme
+│   ├── index.ts
+│   └── styles.css
 └── README.md                 # This file
 ```
 
@@ -30,19 +41,53 @@ src/themes/
 | `full`   | Provides custom slot components (Navigation, Hero, etc.) + effects/CSS    |
 | `preset` | Color/font-only override – no custom components, relies on CSS variables  |
 
+## Access Levels
+
+| Access      | Description                                              |
+| ----------- | -------------------------------------------------------- |
+| `free`      | Available to everyone                                    |
+| `exclusive` | Locked to a specific site via `exclusiveFor`             |
+| `premium`   | Requires a Pro license                                   |
+
 ---
 
-## Slot System
+## Slot System (24 Slots)
 
-Themes can override three named UI slots used in `App.tsx`:
+Themes can override any of the 24 named UI slots. If a theme does not provide a slot, the default fallback from `default-slots.tsx` is used automatically.
 
-| Slot             | Props interface          | Description                                |
-| ---------------- | ------------------------ | ------------------------------------------ |
-| `Navigation`     | `NavigationSlotProps`    | Top navigation bar                         |
-| `LoadingScreen`  | `LoadingScreenSlotProps` | Full-screen intro / boot animation         |
-| `OverlayModal`   | `OverlayModalSlotProps`  | Full-screen modal for news/impressum, etc. |
+### Core Slots (1–15)
 
-If a theme does not export a slot, the default slot component from `src/components/` is used.
+| Slot               | Props Interface            | Description                                |
+| ------------------ | -------------------------- | ------------------------------------------ |
+| `Hero`             | `HeroSlotProps`            | Main hero section                          |
+| `Navigation`       | `NavigationSlotProps`      | Top navigation bar                         |
+| `LoadingScreen`    | `LoadingScreenSlotProps`   | Full-screen intro / boot animation         |
+| `SectionDivider`   | `SectionDividerSlotProps`  | Visual divider between sections            |
+| `Card`             | `CardSlotProps`            | Card component for content                 |
+| `BackgroundEffects`| `BackgroundEffectsSlotProps`| Background visual effects                 |
+| `Footer`           | `FooterSlotProps`          | Footer component                           |
+| `OverlayModal`     | `OverlayModalSlotProps`    | Full-screen modal overlay                  |
+| `SectionHeading`   | `SectionHeadingSlotProps`  | Section title component                    |
+| `OverlayTransition`| `OverlayTransitionSlotProps`| Overlay transition effects                |
+| `ItemCard`         | `ItemCardSlotProps`        | Individual item card                       |
+| `CookieBanner`     | `CookieBannerSlotProps`    | Cookie consent banner                      |
+| `ScrollReveal`     | `ScrollRevealSlotProps`    | Scroll-triggered animations                |
+| `HoverEffect`      | `HoverEffectSlotProps`     | Hover interaction wrapper                  |
+| `PageLayout`       | `PageLayoutSlotProps`      | Page layout wrapper                        |
+
+### Content-Section Slots (16–24)
+
+| Slot               | Props Interface              | Description                              |
+| ------------------ | ---------------------------- | ---------------------------------------- |
+| `GigsSection`      | `GigsSectionSlotProps`       | Upcoming gigs listing                    |
+| `ReleasesSection`  | `ReleasesSectionSlotProps`   | Music releases / discography             |
+| `BiographySection` | `BiographySectionSlotProps`  | Band biography & members                 |
+| `NewsSection`      | `NewsSectionSlotProps`       | News feed                                |
+| `MediaSection`     | `MediaSectionSlotProps`      | Media files (audio, video)               |
+| `GallerySection`   | `GallerySectionSlotProps`    | Image gallery                            |
+| `SocialSection`    | `SocialSectionSlotProps`     | Social media links                       |
+| `ContactSection`   | `ContactSectionSlotProps`    | Contact form                             |
+| `PartnersSection`  | `PartnersSectionSlotProps`   | Partners & friends                       |
 
 ---
 
@@ -58,26 +103,35 @@ src/themes/my-theme/
 
 ```ts
 import type { ThemePackage } from '@/lib/types'
-import { DesignPreset } from '@/lib/design-presets'
 
 export const myTheme: ThemePackage = {
   id: 'my-theme',
   name: 'My Theme',
   description: 'A brief description.',
+  author: 'Your Name',
   version: '1.0.0',
-
-  // Optional: override CSS preset (colors, fonts, radius)
-  preset: DesignPreset.Cyberpunk, // or define a custom one
-
-  // Optional: override UI slots
-  slots: {
-    // Navigation: MyNavigation,
-    // LoadingScreen: MyLoadingScreen,
-    // OverlayModal: MyOverlayModal,
+  access: 'free',
+  layout: {
+    heroVariant: 'default',
+    loadingScreen: 'minimal',
   },
+  typography: {
+    heading: "'Inter', sans-serif",
+    body: "'Inter', sans-serif",
+    mono: "'Fira Code', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+  effects: {},
+  colorPresets: [],
+  defaultPresetId: 'default',
+  customizability: { customColors: true, customFonts: true, adjustEffects: true },
 
-  // Optional: custom background component
-  // BackgroundEffects: MyBackgroundEffects,
+  // Override any slots — omitted slots use defaults automatically
+  slots: {
+    // Hero: MyHero,
+    // GigsSection: MyGigsSection,
+  },
 }
 ```
 
@@ -102,7 +156,7 @@ Add your theme to `src/themes/index.ts`:
 export { myTheme } from './my-theme'
 ```
 
-And register it in `src/lib/theme-registry.ts` by adding an entry to `THEME_CATALOG`.
+Add it to the `builtInThemes` array, and add an entry to `THEME_CATALOG` in `src/lib/theme-registry.ts`.
 
 ---
 
@@ -110,9 +164,34 @@ And register it in `src/lib/theme-registry.ts` by adding an entry to `THEME_CATA
 
 `src/lib/theme-registry.ts` is the source of truth for:
 
+- **Theme registration** — `registerTheme()` stores a `ThemePackage`
+- **Slot resolution** — `resolveSlots()` fills in defaults for missing slots (all 24)
+- **`useThemeSlots()`** hook — returns resolved slot components for the active preset
+- **`THEME_CATALOG`** — metadata array for the theme selector UI
 - **License status** (`free`, `premium`, `locked`) per theme
-- **License key prefix** for locked themes (e.g., `ZARDONIC-`)
-- **`useThemeSlots()`** hook – returns resolved slot components for the active preset
+
+---
+
+## Content-Section Slot Props
+
+Content-section slots receive display data and an optional `editMode` flag. The slot props interfaces are defined in `src/lib/types.ts`:
+
+```ts
+// Example: GigsSectionSlotProps
+interface GigsSectionSlotProps {
+  gigs: Gig[]
+  onGigClick?: (gig: Gig) => void
+  sectionLabels?: SectionLabels
+  dataLoaded?: boolean
+  editMode?: boolean
+  fontSizes?: FontSizeSettings
+  onUpdate?: (gigs: Gig[]) => void
+  onFontSizeChange?: (key: keyof FontSizeSettings, value: string) => void
+  onLabelChange?: (key: keyof SectionLabels, value: string) => void
+}
+```
+
+The default slot components in `src/themes/default-slots.tsx` delegate to the existing section components in `src/components/`.
 
 ---
 
@@ -122,27 +201,10 @@ Themes override CSS custom properties defined in `src/index.css`. Key variables:
 
 | Variable           | Purpose                         |
 | ------------------ | ------------------------------- |
-| `--color-primary`  | Primary accent colour           |
-| `--color-bg`       | Page background                 |
-| `--color-fg`       | Foreground / text               |
-| `--font-display`   | Display / heading font family   |
-| `--font-body`      | Body text font family           |
+| `--primary`        | Primary accent colour           |
+| `--background`     | Page background                 |
+| `--foreground`     | Foreground / text               |
+| `--font-heading`   | Display / heading font family   |
+| `--font-sans`      | Body text font family           |
 | `--font-mono`      | Monospace font family           |
-| `--radius-md`      | Default border-radius           |
-
----
-
-## Hero Slot Props
-
-All theme Hero components must accept `HeroSlotProps`:
-
-```ts
-interface HeroSlotProps {
-  name: string
-  genres: string[]
-  editMode: boolean
-  onEdit: () => void
-  logoUrl?: string
-  titleImageUrl?: string
-}
-```
+| `--radius`         | Default border-radius           |
