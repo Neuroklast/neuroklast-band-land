@@ -5,8 +5,14 @@
  * These are pure unit tests (no DOM/React rendering needed) that test the
  * routing logic and component export structure.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import type { WidgetPlugin } from '@/lib/types'
+
+// Mock the useLocale hook so widget components can be called without a
+// LocaleProvider context tree.
+vi.mock('@/hooks/use-locale', () => ({
+  useLocale: () => ({ locale: 'en', setLocale: () => {}, t: (key: string) => key }),
+}))
 
 // Verify the index re-exports are present
 import {
