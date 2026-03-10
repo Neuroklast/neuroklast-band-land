@@ -12,18 +12,18 @@ describe('useKV', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns undefined initially and then the default value when API returns nothing', async () => {
+  it('returns the default value immediately and keeps it when API returns nothing', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ value: null }), { status: 200 })
     )
 
     const { result } = renderHook(() => useKV('test-key', { foo: 'bar' }))
 
-    // Initially undefined and not loaded
-    expect(result.current[0]).toBeUndefined()
+    // Default value is available immediately (before async load completes)
+    expect(result.current[0]).toEqual({ foo: 'bar' })
     expect(result.current[2]).toBe(false)
 
-    // After loading
+    // After loading (API returned null → default persists)
     await waitFor(() => expect(result.current[2]).toBe(true))
     expect(result.current[0]).toEqual({ foo: 'bar' })
   })

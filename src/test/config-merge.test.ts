@@ -5,6 +5,7 @@
  * into the existing themeSettings instead of replacing the entire object.
  */
 import { describe, it, expect } from 'vitest'
+import type { ThemeSettings } from '@/lib/types'
 
 // We need to test the merge logic directly. The updateConfig function
 // is inside useSiteConfig which uses useKV. We'll extract the merge logic
@@ -73,7 +74,7 @@ describe('updateConfig themeSettings merge', () => {
   })
 
   it('handles full themeSettings update correctly', () => {
-    const base = {
+    const base: { themeSettings: ThemeSettings } = {
       themeSettings: {
         primary: 'oklch(0.50 0.22 25)',
         accent: 'oklch(0.60 0.25 30)',
@@ -81,7 +82,7 @@ describe('updateConfig themeSettings merge', () => {
       },
     }
 
-    const partial = {
+    const partial: { themeSettings: ThemeSettings } = {
       themeSettings: {
         primary: 'oklch(0.70 0.15 200)',
         accent: 'oklch(0.80 0.10 180)',
