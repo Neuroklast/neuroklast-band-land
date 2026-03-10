@@ -265,6 +265,7 @@ function ClickTable({ points }: { points: HeatmapPoint[] }) {
 }
 
 export default function StatsDashboard({ open, onClose, domain = '' }: StatsDashboardProps) {
+  const { t } = useLocale()
   const [analytics, setAnalytics] = useState<SiteAnalytics | null>(null)
   const [heatmapPoints, setHeatmapPoints] = useState<HeatmapPoint[]>([])
   const [dataSource, setDataSource] = useState<'server' | 'local'>('server')
@@ -372,7 +373,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">
-                  SITE ANALYTICS // MARKETING DASHBOARD
+                  {t('stats.siteAnalyticsDashboard')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -480,15 +481,15 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       {stats.last30Days.length > 0 && (
                         <div className="space-y-4">
                           <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                            DAILY ACTIVITY // LAST {stats.last30Days.length} DAYS
+                            {t('stats.dailyActivityDays').replace('{0}', String(stats.last30Days.length))}
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="border border-primary/10 p-3 space-y-2">
-                              <p className="text-[9px] font-mono text-primary/40">PAGE VIEWS</p>
+                              <p className="text-[9px] font-mono text-primary/40">{t('stats.pageViews')}</p>
                               <MiniBarChart data={stats.last30Days} dataKey="pageViews" color="bg-primary" />
                             </div>
                             <div className="border border-primary/10 p-3 space-y-2">
-                              <p className="text-[9px] font-mono text-primary/40">SECTION VIEWS</p>
+                              <p className="text-[9px] font-mono text-primary/40">{t('stats.sectionViews')}</p>
                               <MiniBarChart data={stats.last30Days} dataKey="sectionViews" color="bg-accent" />
                             </div>
                             <div className="border border-primary/10 p-3 space-y-2">
@@ -502,7 +503,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       {/* Trend line chart */}
                       {stats.last30Days.length > 0 && (
                         <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
-                          <p className="text-[10px] font-mono text-primary/60 uppercase">Activity Trends (Last 30 Days)</p>
+                          <p className="text-[10px] font-mono text-primary/60 uppercase">{t('stats.activityTrends30Days')}</p>
                           <ResponsiveContainer width="100%" height={220}>
                             <LineChart data={stats.last30Days}>
                               <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--primary) 10%, transparent)" />
@@ -544,7 +545,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {/* Referrers */}
                         <div className="space-y-3">
                           <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                            TRAFFIC SOURCES
+                            {t('stats.trafficSources')}
                           </h3>
                           <TopList items={analytics.referrers} limit={10} />
                         </div>
@@ -560,12 +561,12 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                                 {device === 'mobile' ? <DeviceMobile size={16} className="text-primary/60" /> : <Desktop size={16} className="text-primary/60" />}
                                 <div>
                                   <p className="text-xs font-mono text-foreground/80 capitalize">{device}</p>
-                                  <p className="text-[9px] font-mono text-primary/40">{count} visits</p>
+                                  <p className="text-[9px] font-mono text-primary/40">{t('stats.visits').replace('{0}', String(count))}</p>
                                 </div>
                               </div>
                             ))}
                             {Object.keys(analytics.devices).length === 0 && (
-                              <p className="text-[10px] text-primary/30 font-mono">NO DATA YET</p>
+                              <p className="text-[10px] text-primary/30 font-mono">{t('stats.noDataYet')}</p>
                             )}
                           </div>
                         </div>
@@ -574,7 +575,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {analytics.browsers && Object.keys(analytics.browsers).length > 0 && (
                           <div className="space-y-3">
                             <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                              <Browser size={12} className="inline mr-1" />BROWSERS
+                              <Browser size={12} className="inline mr-1" />{t('stats.browsers')}
                             </h3>
                             <TopList items={analytics.browsers} limit={10} />
                           </div>
@@ -584,7 +585,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {analytics.screenResolutions && Object.keys(analytics.screenResolutions).length > 0 && (
                           <div className="space-y-3">
                             <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                              <Monitor size={12} className="inline mr-1" />SCREEN RESOLUTIONS
+                              <Monitor size={12} className="inline mr-1" />{t('stats.screenResolutions')}
                             </h3>
                             <TopList items={analytics.screenResolutions} limit={10} />
                           </div>
@@ -594,7 +595,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {analytics.landingPages && Object.keys(analytics.landingPages).length > 0 && (
                           <div className="space-y-3">
                             <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                              LANDING PAGES
+                              {t('stats.landingPages')}
                             </h3>
                             <TopList items={analytics.landingPages} limit={10} />
                           </div>
@@ -604,7 +605,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       {/* Device distribution pie chart */}
                       {Object.keys(analytics.devices).length > 0 && (
                         <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
-                          <p className="text-[10px] font-mono text-primary/60 uppercase">Device Distribution</p>
+                          <p className="text-[10px] font-mono text-primary/60 uppercase">{t('stats.deviceDistribution')}</p>
                           <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                               <Pie
@@ -643,7 +644,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {analytics.utmSources && Object.keys(analytics.utmSources).length > 0 && (
                           <div className="space-y-3">
                             <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                              <Globe size={12} className="inline mr-1" />UTM SOURCES
+                              <Globe size={12} className="inline mr-1" />{t('stats.utmSources')}
                             </h3>
                             <TopList items={analytics.utmSources} limit={10} />
                           </div>
@@ -652,7 +653,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {analytics.utmMediums && Object.keys(analytics.utmMediums).length > 0 && (
                           <div className="space-y-3">
                             <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                              UTM MEDIUMS
+                              {t('stats.utmMediums')}
                             </h3>
                             <TopList items={analytics.utmMediums} limit={10} />
                           </div>
@@ -661,7 +662,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {analytics.utmCampaigns && Object.keys(analytics.utmCampaigns).length > 0 && (
                           <div className="space-y-3">
                             <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                              UTM CAMPAIGNS
+                              {t('stats.utmCampaigns')}
                             </h3>
                             <TopList items={analytics.utmCampaigns} limit={10} />
                           </div>
@@ -672,7 +673,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       {analytics.hourlyVisits && Object.keys(analytics.hourlyVisits).length > 0 ? (
                         <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
                           <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                            BESTE POSTING-ZEITEN
+                            {t('stats.bestPostingTimes')}
                           </h3>
                           {(() => {
                             const hourlyData = Array.from({ length: 24 }, (_, h) => ({
@@ -699,8 +700,8 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                                 </ResponsiveContainer>
                                 {bestTimes.length > 0 && (
                                   <div className="space-y-1 text-[10px] font-mono text-foreground/60">
-                                    <p>Beste Posting-Zeiten: {bestTimes.join(', ')} Uhr (UTC)</p>
-                                    <p className="text-primary/50">→ Poste auf Instagram/Facebook ca. 30 Minuten vor dem Peak für maximale Reichweite</p>
+                                    <p>{t('stats.bestPostingTimesResult').replace('{0}', bestTimes.join(', '))}</p>
+                                    <p className="text-primary/50">{t('stats.postingTip')}</p>
                                   </div>
                                 )}
                               </>
@@ -709,8 +710,8 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         </div>
                       ) : (
                         <div className="border border-primary/20 bg-black/30 p-4">
-                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider mb-2">BESTE POSTING-ZEITEN</h3>
-                          <p className="text-[10px] font-mono text-primary/30">Noch nicht genug Daten (min. 7 Tage)</p>
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider mb-2">{t('stats.bestPostingTimes')}</h3>
+                          <p className="text-[10px] font-mono text-primary/30">{t('stats.notEnoughData')}</p>
                         </div>
                       )}
                     </>
@@ -721,7 +722,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {/* Section views */}
                         <div className="space-y-3">
                           <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                            TOP SECTIONS
+                            {t('stats.topSections')}
                           </h3>
                           <TopList items={analytics.sectionViews} limit={10} />
                         </div>
@@ -729,7 +730,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                         {/* Interactions */}
                         <div className="space-y-3">
                           <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                            TOP INTERACTIONS
+                            {t('stats.topInteractions')}
                           </h3>
                           <TopList items={analytics.interactions} limit={10} />
                         </div>
@@ -738,7 +739,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       {/* Weekly comparison bar chart */}
                       {stats.last7Days.length > 0 && (
                         <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
-                          <p className="text-[10px] font-mono text-primary/60 uppercase">Weekly Comparison (Last 7 Days)</p>
+                          <p className="text-[10px] font-mono text-primary/60 uppercase">{t('stats.weeklyComparison7Days')}</p>
                           <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={stats.last7Days}>
                               <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--primary) 10%, transparent)" />
@@ -774,7 +775,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       {/* Social click tracking */}
                       <div className="space-y-3 md:col-span-2">
                         <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          SOCIAL KLICK-TRACKING
+                          {t('stats.socialClickTracking')}
                         </h3>
                         {(() => {
                           const socialData = Object.fromEntries(
@@ -783,7 +784,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                               .map(([k, v]) => [k.replace('social_click_', ''), v])
                           )
                           if (Object.keys(socialData).length === 0) {
-                            return <p className="text-[10px] text-primary/30 font-mono">Noch keine Social-Klicks getrackt</p>
+                            return <p className="text-[10px] text-primary/30 font-mono">{t('stats.noSocialClicks')}</p>
                           }
                           return <TopList items={socialData} limit={10} />
                         })()}
@@ -794,17 +795,17 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                     <>
                       <div className="space-y-3">
                         <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          CLICK HEATMAP // {heatmapPoints.length} POINTS
+                          {t('stats.clickHeatmapPoints').replace('{0}', String(heatmapPoints.length))}
                         </h3>
                         <p className="text-[9px] font-mono text-primary/30">
-                          Shows where users click on the page. Red areas = more clicks. X axis = horizontal position, Y axis = vertical scroll position.
+                          {t('stats.heatmapDescription')}
                         </p>
                         <HeatmapCanvas points={heatmapPoints} />
                       </div>
 
                       <div className="space-y-3">
                         <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">
-                          CLICKS BY ELEMENT TYPE
+                          {t('stats.clicksByElementType')}
                         </h3>
                         <ClickTable points={heatmapPoints} />
                       </div>
@@ -816,10 +817,10 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                     <>
                       {/* UTM Link Generator */}
                       <div className="border border-primary/20 bg-black/30 p-4 space-y-4">
-                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">UTM LINK GENERATOR</h3>
+                        <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">{t('stats.utmLinkGenerator')}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-primary/50">Base URL *</label>
+                            <label className="text-[10px] font-mono text-primary/50">{t('stats.baseUrl')}</label>
                             <input
                               type="url"
                               value={utmBase}
@@ -829,7 +830,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-primary/50">utm_source *</label>
+                            <label className="text-[10px] font-mono text-primary/50">{t('stats.utmSourceLabel')}</label>
                             <input
                               type="text"
                               value={utmSource}
@@ -839,7 +840,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-primary/50">utm_medium</label>
+                            <label className="text-[10px] font-mono text-primary/50">{t('stats.utmMediumLabel')}</label>
                             <input
                               type="text"
                               value={utmMedium}
@@ -849,7 +850,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-primary/50">utm_campaign</label>
+                            <label className="text-[10px] font-mono text-primary/50">{t('stats.utmCampaignLabel')}</label>
                             <input
                               type="text"
                               value={utmCampaign}
@@ -859,7 +860,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-primary/50">utm_content</label>
+                            <label className="text-[10px] font-mono text-primary/50">{t('stats.utmContentLabel')}</label>
                             <input
                               type="text"
                               value={utmContent}
@@ -869,7 +870,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-primary/50">utm_term</label>
+                            <label className="text-[10px] font-mono text-primary/50">{t('stats.utmTermLabel')}</label>
                             <input
                               type="text"
                               value={utmTerm}
@@ -880,7 +881,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-primary/50">GENERIERTER LINK</label>
+                          <label className="text-[10px] font-mono text-primary/50">{t('stats.generatedLink')}</label>
                           <textarea
                             readOnly
                             value={generatedUrl}
@@ -908,14 +909,14 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                               KOPIEREN
                             </button>
                           </div>
-                          <p className="text-[9px] font-mono text-primary/30">Tipp: Nutze einen QR-Code-Generator für Flyer/Merch</p>
+                          <p className="text-[9px] font-mono text-primary/30">{t('stats.qrCodeTip')}</p>
                         </div>
                       </div>
 
                       {/* Gespeicherte Kampagnen */}
                       <div className="border border-primary/20 bg-black/30 p-4 space-y-3">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">GESPEICHERTE KAMPAGNEN</h3>
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">{t('stats.savedCampaigns')}</h3>
                           {utmHistory.length > 0 && (
                             <button
                               onClick={() => {
@@ -924,12 +925,12 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                               }}
                               className="text-[9px] font-mono text-destructive/60 hover:text-destructive transition-colors"
                             >
-                              Verlauf löschen
+                              {t('stats.deleteHistory')}
                             </button>
                           )}
                         </div>
                         {utmHistory.length === 0 ? (
-                          <p className="text-[10px] text-primary/30 font-mono">Noch keine Kampagnen gespeichert</p>
+                          <p className="text-[10px] text-primary/30 font-mono">{t('stats.noCampaignsSaved')}</p>
                         ) : (
                           <div className="space-y-2">
                             {utmHistory.map((entry, i) => (
@@ -953,30 +954,30 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
                       {/* UTM Performance */}
                       {analytics && (
                         <div className="border border-primary/20 bg-black/30 p-4 space-y-4">
-                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">KAMPAGNEN-PERFORMANCE (Live)</h3>
+                          <h3 className="text-[10px] font-mono text-primary/50 tracking-wider">{t('stats.campaignPerformanceLive')}</h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {analytics.utmSources && Object.keys(analytics.utmSources).length > 0 && (
                               <div className="space-y-2">
-                                <p className="text-[9px] font-mono text-primary/40 uppercase">UTM Sources</p>
+                                <p className="text-[9px] font-mono text-primary/40 uppercase">{t('stats.utmSourcesLabel')}</p>
                                 <TopList items={analytics.utmSources} limit={10} />
                               </div>
                             )}
                             {analytics.utmMediums && Object.keys(analytics.utmMediums).length > 0 && (
                               <div className="space-y-2">
-                                <p className="text-[9px] font-mono text-primary/40 uppercase">UTM Mediums</p>
+                                <p className="text-[9px] font-mono text-primary/40 uppercase">{t('stats.utmMediumsLabel')}</p>
                                 <TopList items={analytics.utmMediums} limit={10} />
                               </div>
                             )}
                             {analytics.utmCampaigns && Object.keys(analytics.utmCampaigns).length > 0 && (
                               <div className="space-y-2">
-                                <p className="text-[9px] font-mono text-primary/40 uppercase">UTM Campaigns</p>
+                                <p className="text-[9px] font-mono text-primary/40 uppercase">{t('stats.utmCampaignsLabel')}</p>
                                 <TopList items={analytics.utmCampaigns} limit={10} />
                               </div>
                             )}
                             {(!analytics.utmSources || Object.keys(analytics.utmSources).length === 0) &&
                              (!analytics.utmMediums || Object.keys(analytics.utmMediums).length === 0) &&
                              (!analytics.utmCampaigns || Object.keys(analytics.utmCampaigns).length === 0) && (
-                              <p className="text-[10px] text-primary/30 font-mono md:col-span-3">Noch keine UTM-Daten vorhanden</p>
+                              <p className="text-[10px] text-primary/30 font-mono md:col-span-3">{t('stats.noUtmData')}</p>
                             )}
                           </div>
                         </div>
@@ -989,7 +990,7 @@ export default function StatsDashboard({ open, onClose, domain = '' }: StatsDash
               {/* Footer */}
               <div className="flex items-center gap-2 text-[9px] text-primary/40 pt-2 border-t border-primary/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
-                <span>ANALYTICS MODULE ACTIVE</span>
+                <span>{t('stats.analyticsModuleActive')}</span>
                 <span className="ml-auto">
                   {dataSource === 'server' ? 'Data from persistent server storage' : 'Data stored locally in browser'}
                 </span>
