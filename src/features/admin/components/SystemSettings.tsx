@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { SiteConfig } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface SystemSettingsProps {
   data: SiteConfig
@@ -10,6 +11,7 @@ interface SystemSettingsProps {
 
 export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
   const [activeTab, setActiveTab] = useState<'integrations' | 'general'>('integrations')
+  const { t } = useLocale()
 
   const handleIntegrationChange = (field: string, value: string) => {
     const currentIntegrations = (data.configOverrides?.integrations as Record<string, string>) || {}
@@ -58,14 +60,14 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
 
           {activeTab === 'integrations' && (
             <div className="space-y-6">
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">Integrations & APIs</h3>
+              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">{t('systemSettings.integrationsTitle')}</h3>
               <p className="text-xs text-muted-foreground font-mono">
-                Configure your API keys here. These will be stored securely.
+                {t('systemSettings.integrationsDesc')}
               </p>
 
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label>Bandsintown App ID</Label>
+                  <Label>{t('systemSettings.bandsintownAppId')}</Label>
                   <Input
                     value={integrations.bandsintownAppId || ''}
                     onChange={e => handleIntegrationChange('bandsintownAppId', e.target.value)}
@@ -73,7 +75,7 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Spotify Client ID</Label>
+                  <Label>{t('systemSettings.spotifyClientId')}</Label>
                   <Input
                     value={integrations.spotifyClientId || ''}
                     onChange={e => handleIntegrationChange('spotifyClientId', e.target.value)}
@@ -81,7 +83,7 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>YouTube API Key</Label>
+                  <Label>{t('systemSettings.youtubeApiKey')}</Label>
                   <Input
                     value={integrations.youtubeApiKey || ''}
                     onChange={e => handleIntegrationChange('youtubeApiKey', e.target.value)}
@@ -94,11 +96,11 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
 
           {activeTab === 'general' && (
             <div className="space-y-6">
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">General Settings</h3>
+              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">{t('systemSettings.generalTitle')}</h3>
 
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label>Google Analytics Measurement ID</Label>
+                  <Label>{t('systemSettings.googleAnalyticsId')}</Label>
                   <Input
                     value={(generalSettings.googleAnalyticsId as string) || ''}
                     onChange={e => handleGeneralChange('googleAnalyticsId', e.target.value)}
@@ -107,7 +109,7 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
                 </div>
 
                 <div className="space-y-2 pt-4">
-                  <Label>Facebook Pixel ID</Label>
+                  <Label>{t('systemSettings.facebookPixelId')}</Label>
                   <Input
                     value={(generalSettings.facebookPixelId as string) || ''}
                     onChange={e => handleGeneralChange('facebookPixelId', e.target.value)}
@@ -117,8 +119,8 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
 
                 <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
                   <div className="space-y-0.5">
-                    <Label className="text-base">Maintenance Mode</Label>
-                    <p className="text-xs text-muted-foreground">Show a "Coming Soon" page to visitors.</p>
+                    <Label className="text-base">{t('systemSettings.maintenanceMode')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('systemSettings.maintenanceDesc')}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -133,8 +135,8 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
 
                 <div className="flex items-center justify-between pt-4">
                   <div className="space-y-0.5">
-                    <Label className="text-base">Require Cookie Consent</Label>
-                    <p className="text-xs text-muted-foreground">Enforce opt-in for external scripts (e.g. YouTube).</p>
+                    <Label className="text-base">{t('systemSettings.cookieConsent')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('systemSettings.cookieConsentDesc')}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input

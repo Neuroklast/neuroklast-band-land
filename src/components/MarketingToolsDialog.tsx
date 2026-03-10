@@ -7,6 +7,7 @@ import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { Megaphone, Envelope, LinkSimple, Copy, Check, FloppyDisk } from '@phosphor-icons/react'
 import type { NewsletterSettings, ContactSettings } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface MarketingToolsDialogProps {
   open: boolean
@@ -43,6 +44,7 @@ export default function MarketingToolsDialog({
   const [utmCampaign, setUtmCampaign] = useState('')
   const [copied, setCopied] = useState(false)
   const prevOpen = useRef(false)
+  const { t } = useLocale()
 
   useEffect(() => {
     if (open && !prevOpen.current) {
@@ -74,11 +76,11 @@ export default function MarketingToolsDialog({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const tabBtn = (t: Tab, icon: React.ReactNode, label: string) => (
+  const tabBtn = (tabKey: Tab, icon: React.ReactNode, label: string) => (
     <button
-      onClick={() => setTab(t)}
+      onClick={() => setTab(tabKey)}
       className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider border rounded transition-colors ${
-        tab === t ? 'bg-primary/20 border-primary text-primary' : 'border-primary/20 text-primary/40 hover:text-primary/70'
+        tab === tabKey ? 'bg-primary/20 border-primary text-primary' : 'border-primary/20 text-primary/40 hover:text-primary/70'
       }`}
     >
       {icon} {label}
@@ -107,7 +109,7 @@ export default function MarketingToolsDialog({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-primary/30">
           <div className="flex items-center gap-2 text-primary text-xs uppercase tracking-widest">
-            <Megaphone size={14} weight="bold" /> Marketing Tools
+            <Megaphone size={14} weight="bold" /> {t('marketing.title')}
           </div>
           <CyberCloseButton onClick={onClose} label="CLOSE" />
         </div>
@@ -128,23 +130,23 @@ export default function MarketingToolsDialog({
             <div className="space-y-3">
               {toggle('Enabled', !!nl.enabled, v => setNl({ ...nl, enabled: v }))}
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Title</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('common.title')}</Label>
                 <Input className={inputCls} value={nl.title ?? ''} onChange={e => setNl({ ...nl, title: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Description</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('common.description')}</Label>
                 <Input className={inputCls} value={nl.description ?? ''} onChange={e => setNl({ ...nl, description: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Placeholder Text</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.placeholderText')}</Label>
                 <Input className={inputCls} value={nl.placeholder ?? ''} onChange={e => setNl({ ...nl, placeholder: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Button Text</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.buttonText')}</Label>
                 <Input className={inputCls} value={nl.buttonText ?? ''} onChange={e => setNl({ ...nl, buttonText: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] text-primary/60 uppercase">Provider</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.provider')}</Label>
                 <div className="flex gap-1.5">
                   {(['none', 'mailchimp', 'brevo'] as const).map(p => (
                     <button
@@ -166,7 +168,7 @@ export default function MarketingToolsDialog({
               </div>
               <div className="pt-2">
                 <Button size="sm" onClick={() => { onSaveNewsletter(nl); onClose() }} className="gap-1.5 text-xs font-mono">
-                  <FloppyDisk size={13} /> Save Newsletter
+                  <FloppyDisk size={13} /> {t('marketing.saveNewsletter')}
                 </Button>
               </div>
             </div>
@@ -179,24 +181,24 @@ export default function MarketingToolsDialog({
               {toggle('Show Section', !!ct.showSection, v => setCt({ ...ct, showSection: v }))}
               <div className="h-px bg-primary/10" />
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Title</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('common.title')}</Label>
                 <Input className={inputCls} value={ct.title ?? ''} onChange={e => setCt({ ...ct, title: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Description</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('common.description')}</Label>
                 <Input className={inputCls} value={ct.description ?? ''} onChange={e => setCt({ ...ct, description: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Email Forward To</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.emailForwardTo')}</Label>
                 <Input className={inputCls} type="email" value={ct.emailForwardTo ?? ''} onChange={e => setCt({ ...ct, emailForwardTo: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Success Message</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.successMessage')}</Label>
                 <Input className={inputCls} value={ct.successMessage ?? ''} onChange={e => setCt({ ...ct, successMessage: e.target.value })} />
               </div>
               <div className="pt-2">
                 <Button size="sm" onClick={() => { onSaveContact(ct); onClose() }} className="gap-1.5 text-xs font-mono">
-                  <FloppyDisk size={13} /> Save Contact
+                  <FloppyDisk size={13} /> {t('marketing.saveContact')}
                 </Button>
               </div>
             </div>
@@ -206,24 +208,24 @@ export default function MarketingToolsDialog({
           {tab === 'utm' && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Base URL</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.baseUrl')}</Label>
                 <Input className={inputCls} value={utmBase} onChange={e => setUtmBase(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Source</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('common.source')}</Label>
                 <Input className={inputCls} placeholder="e.g. facebook, instagram" value={utmSource} onChange={e => setUtmSource(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Medium</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.medium')}</Label>
                 <Input className={inputCls} placeholder="e.g. social, email" value={utmMedium} onChange={e => setUtmMedium(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Campaign</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.campaign')}</Label>
                 <Input className={inputCls} placeholder="e.g. spring2025" value={utmCampaign} onChange={e => setUtmCampaign(e.target.value)} />
               </div>
               <div className="h-px bg-primary/10" />
               <div className="space-y-1">
-                <Label className="text-[10px] text-primary/60 uppercase">Generated URL</Label>
+                <Label className="text-[10px] text-primary/60 uppercase">{t('marketing.generatedUrl')}</Label>
                 <div className="flex gap-2">
                   <Input className={inputCls + ' flex-1'} value={generatedUrl} readOnly />
                   <Button size="sm" variant="outline" onClick={handleCopy} className="gap-1.5 text-xs font-mono border-primary/30 shrink-0">
@@ -239,7 +241,7 @@ export default function MarketingToolsDialog({
         {/* Footer */}
         <div className="border-t border-primary/20 bg-primary/5 px-4 py-2 flex justify-end">
           <Button size="sm" variant="ghost" onClick={onClose} className="text-xs font-mono text-primary/50 hover:text-primary">
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </motion.div>

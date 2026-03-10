@@ -401,7 +401,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                       <div className="h-10 bg-primary/10 border-b border-primary/30 flex items-center justify-between px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                          <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">RELEASE // {release.title.toUpperCase()}</span>
+                          <span className="font-mono text-[10px] text-primary/70 tracking-wider uppercase">{t('releasesSection.releasePrefix')} {release.title.toUpperCase()}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -444,7 +444,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                               <Button size="sm" variant="outline" asChild className="border-primary/30 hover:bg-primary/10">
                                 <a href={release.streamingLinks.spotify} target="_blank" rel="noopener noreferrer">
                                   <SpotifyLogo size={18} weight="fill" className="mr-1" />
-                                  <span className="text-xs">Spotify</span>
+                                  <span className="text-xs">{t('releasesSection.spotify')}</span>
                                 </a>
                               </Button>
                             )}
@@ -452,7 +452,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                               <Button size="sm" variant="outline" asChild className="border-primary/30 hover:bg-primary/10">
                                 <a href={release.streamingLinks.soundcloud} target="_blank" rel="noopener noreferrer">
                                   <SoundcloudLogo size={18} weight="fill" className="mr-1" />
-                                  <span className="text-xs">SoundCloud</span>
+                                  <span className="text-xs">{t('releasesSection.soundcloud')}</span>
                                 </a>
                               </Button>
                             )}
@@ -460,7 +460,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                               <Button size="sm" variant="outline" asChild className="border-primary/30 hover:bg-primary/10">
                                 <a href={release.streamingLinks.youtube} target="_blank" rel="noopener noreferrer">
                                   <YoutubeLogo size={18} weight="fill" className="mr-1" />
-                                  <span className="text-xs">YouTube</span>
+                                  <span className="text-xs">{t('releasesSection.youtube')}</span>
                                 </a>
                               </Button>
                             )}
@@ -468,7 +468,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                               <Button size="sm" variant="outline" asChild className="border-primary/30 hover:bg-primary/10">
                                 <a href={release.streamingLinks.bandcamp} target="_blank" rel="noopener noreferrer">
                                   <MusicNote size={18} weight="fill" className="mr-1" />
-                                  <span className="text-xs">Bandcamp</span>
+                                  <span className="text-xs">{t('releasesSection.bandcamp')}</span>
                                 </a>
                               </Button>
                             )}
@@ -543,7 +543,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                             onClick={(e) => { e.stopPropagation(); setEditingRelease(release) }}
                             className="flex-1 border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
                           >
-                            Edit
+                            {t('common.edit')}
                           </Button>
                           <Button
                             variant="destructive"
@@ -590,7 +590,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <Button variant="outline" size="sm" onClick={() => setEditingRelease(release)} className="border-primary/30">
-                        Edit
+                        {t('common.edit')}
                       </Button>
                       <Button variant="destructive" size="sm" onClick={() => handleDelete(release.id)}>
                         <Trash size={16} />

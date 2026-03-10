@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { LinkSimple, LinkBreak, CheckCircle, XCircle, ArrowsClockwise, Clock } from '@phosphor-icons/react'
+import { useLocale } from '@/hooks/use-locale'
 
 interface ProviderStatus {
   connected: boolean
@@ -52,6 +53,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
   const [connectingProvider, setConnectingProvider] = useState<string | null>(null)
   const [disconnectingProvider, setDisconnectingProvider] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useLocale()
 
   const fetchStatus = useCallback(async () => {
     setLoading(true)
@@ -169,7 +171,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-primary/30">
           <div className="flex items-center gap-2 text-primary text-xs uppercase tracking-widest">
-            <LinkSimple size={14} weight="bold" /> OAuth Connections
+            <LinkSimple size={14} weight="bold" /> {t('oauth.title')}
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -193,7 +195,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
 
           {/* Provider cards */}
           <div className="space-y-3">
-            <div className="text-[10px] text-primary/50 uppercase tracking-wider">Connected Accounts</div>
+            <div className="text-[10px] text-primary/50 uppercase tracking-wider">{t('oauth.connectedAccounts')}</div>
             {Object.entries(PROVIDER_META).map(([key, meta]) => {
               const status = statuses[key as keyof OAuthStatuses]
               const isConnecting = connectingProvider === key
@@ -243,18 +245,18 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
                     <div className="pl-5 space-y-0.5">
                       {status.displayName && (
                         <div className="text-[10px] text-foreground/70">
-                          <span className="text-primary/40">NAME: </span>
+                          <span className="text-primary/40">{t('oauth.nameLabel')}</span>
                           {status.displayName}
                         </div>
                       )}
                       {status.email && (
                         <div className="text-[10px] text-foreground/70">
-                          <span className="text-primary/40">EMAIL: </span>
+                          <span className="text-primary/40">{t('oauth.emailLabel')}</span>
                           {status.email}
                         </div>
                       )}
                       <div className="text-[10px] text-foreground/50">
-                        <span className="text-primary/40">CONNECTED: </span>
+                        <span className="text-primary/40">{t('oauth.connectedLabel')}</span>
                         {formatDate(status.connectedAt)}
                       </div>
                     </div>
@@ -271,10 +273,10 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
           {/* Auth log */}
           <div className="space-y-2">
             <div className="text-[10px] text-primary/50 uppercase tracking-wider flex items-center gap-1">
-              <Clock size={10} /> Auth Log
+              <Clock size={10} /> {t('oauth.authLog')}
             </div>
             {logs.length === 0 ? (
-              <div className="text-[10px] text-primary/20 py-2">No auth events recorded yet.</div>
+              <div className="text-[10px] text-primary/20 py-2">{t('oauth.noAuthEvents')}</div>
             ) : (
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {logs.slice(0, 20).map((entry, i) => (
@@ -318,7 +320,7 @@ export default function OAuthConnectionsDialog({ open, onClose }: OAuthConnectio
             onClick={onClose}
             className="text-xs font-mono text-primary/50 hover:text-primary"
           >
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </motion.div>
