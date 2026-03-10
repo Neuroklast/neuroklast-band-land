@@ -13,7 +13,7 @@ import { useState, useRef, useMemo } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { ChromaticText } from '@/components/ChromaticText'
 import type { Friend, SectionLabels } from '@/lib/types'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { buildFriendDataLines } from '@/lib/profile-data'
 import {

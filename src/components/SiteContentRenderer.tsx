@@ -44,7 +44,7 @@ export default function SiteContentRenderer({
   defaultData,
   isOwner,
   siteConfigLoaded,
-  vis,
+  vis: _vis,
   onUpdate,
   onFontSizeChange,
   onLabelChange,

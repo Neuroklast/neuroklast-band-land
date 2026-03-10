@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { ReactNode, useState } from 'react'
 
+const BLOCK_CHAR = '█'
+
 interface CardProps {
   children: ReactNode
 }
@@ -49,7 +51,7 @@ export default function Card({ children }: CardProps) {
         <div className="absolute bottom-2 right-2 w-1 h-1 bg-muted-foreground/30" />
 
         <div className="absolute bottom-2 left-2 text-muted-foreground font-mono text-xs opacity-20 flex items-center gap-1">
-          <span className="glitch-noir-flicker">█</span>
+          <span className="glitch-noir-flicker">{BLOCK_CHAR}</span>
           <span>{'[DATA]'}</span>
         </div>
       </div>

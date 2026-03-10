@@ -4,7 +4,7 @@
  * and backward-compatible t() function behavior.
  */
 import { describe, it, expect, beforeAll } from 'vitest'
-import { t, type Locale } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
 import { t as secT, tip as secTip, LOCALES } from '@/lib/i18n-security'
 import i18n from '@/lib/i18n-config'
 import fs from 'fs'

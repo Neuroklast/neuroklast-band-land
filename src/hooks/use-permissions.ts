@@ -1,7 +1,7 @@
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 export function usePermissions() {
-  const { isOwner } = useAdminAuth()
+  useAdminAuth()
 
   const IS_PRIMARY = window.location.hostname === 'neuroklast.net'
 

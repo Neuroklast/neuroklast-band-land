@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Users, Trash, DownloadSimple, CircleNotch } from '@phosphor-icons/react'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface Subscriber {
   email: string

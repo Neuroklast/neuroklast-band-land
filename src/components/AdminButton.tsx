@@ -21,7 +21,7 @@ import ConfigImportDialog from '@/components/ConfigImportDialog'
 import type { AdminDialog, SiteConfig } from '@/lib/types'
 import type { ImportValidationResult } from '@/lib/config-export'
 import { validateImport } from '@/lib/config-export'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import { toast } from 'sonner'
 import {
   INITIAL_SYNC_DELAY_MS,
@@ -53,8 +53,8 @@ function toDriveJsonUrl(url: string): string {
 }
 
 export default function AdminButton({
-  hasPassword,
-  onChangePassword,
+  hasPassword: _hasPassword,
+  onChangePassword: _onChangePassword,
   onSetPassword,
   onLogout,
   onResetSetup,

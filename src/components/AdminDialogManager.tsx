@@ -120,8 +120,8 @@ export default function AdminDialogManager({
   onSaveContact,
   themeAccessOverrides,
   onSaveThemeAccessOverrides,
-  siteConfig,
-  onUpdateSiteConfig,
+  siteConfig: _siteConfig,
+  onUpdateSiteConfig: _onUpdateSiteConfig,
   sections,
   onSaveSections,
 }: AdminDialogManagerProps) {

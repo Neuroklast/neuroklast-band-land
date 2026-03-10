@@ -13,7 +13,7 @@ import {
   type WidgetConflictResolution,
   type WidgetImportValidationResult,
 } from '@/lib/config-export'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface WidgetImportDialogProps {
   open: boolean

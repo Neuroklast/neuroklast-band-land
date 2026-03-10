@@ -1,6 +1,4 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { List, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 

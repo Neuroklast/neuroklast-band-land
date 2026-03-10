@@ -5,6 +5,10 @@ import { CaretDown } from '@phosphor-icons/react'
 import type { HeroSlotProps } from '@/lib/types'
 import './styles.css'
 
+const FREQ_TEXT = 'FREQ::432Hz'
+const MODE_CRIMSON_TEXT = 'MODE::CRIMSON'
+const SIGNAL_ACTIVE_TEXT = 'SIGNAL::ACTIVE'
+
 export default function NeuroklastClassicHero({
   name,
   genres,
@@ -102,7 +106,7 @@ export default function NeuroklastClassicHero({
                 />
                 <span>ONLINE</span>
               </div>
-              <div className="text-primary/40">FREQ::432Hz</div>
+              <div className="text-primary/40">{FREQ_TEXT}</div>
             </div>
           </div>
         </div>
@@ -111,8 +115,8 @@ export default function NeuroklastClassicHero({
         <div className="absolute bottom-8 right-8 hidden lg:block">
           <div className="p-3 bg-black/40 backdrop-blur-sm border border-primary/20">
             <div className="font-mono text-[9px] text-primary/70 text-right space-y-1">
-              <div>MODE::CRIMSON</div>
-              <div>SIGNAL::ACTIVE</div>
+              <div>{MODE_CRIMSON_TEXT}</div>
+              <div>{SIGNAL_ACTIVE_TEXT}</div>
             </div>
           </div>
         </div>

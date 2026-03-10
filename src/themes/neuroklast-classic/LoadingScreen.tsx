@@ -3,6 +3,8 @@ import { useEffect, useState, useRef } from 'react'
 import type { LoadingScreenSlotProps } from '@/lib/types'
 import logoImage from '@/assets/images/baphomet no text.svg'
 
+const BOOT_SEQUENCE_TEXT = 'NEUROKLAST // BOOT SEQUENCE'
+
 const HACKING_TEXTS = [
   '> INITIALIZING NEURAL INTERFACE...',
   '> LOADING CORE MODULES...',
@@ -169,7 +171,7 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
           animate={{ opacity: [0.2, 0.4, 0.2] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          NEUROKLAST // BOOT SEQUENCE
+          {BOOT_SEQUENCE_TEXT}
         </motion.div>
       </div>
     </motion.div>

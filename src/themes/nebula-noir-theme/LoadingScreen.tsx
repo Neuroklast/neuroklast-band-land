@@ -5,8 +5,12 @@ const logoSvg = ""
 import type { LoadingScreenSlotProps } from '@/lib/types'
 type LoadingScreenProps = LoadingScreenSlotProps;
 
+const MOON_SYMBOL = '☾'
+const NEBULA_NOIR_TITLE = 'Nebula Noir'
+const NEBULA_NOIR_SUBTITLE = 'Cosmic Art Deco Goth'
+const LOADING_TEXT = 'LOADING'
+
 export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const duration = 2500;
   const [progress, setProgress] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
 
@@ -28,7 +32,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
     }, 16)
 
     return () => clearInterval(interval)
-  }, [2500, onComplete])
+  }, [onComplete])
 
   return (
     <AnimatePresence>
@@ -225,7 +229,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 animate={{ opacity: 0.7, scale: 1 }}
                 transition={{ duration: 0.4, delay: 1.1 }}
               >
-                ☾
+                {MOON_SYMBOL}
               </motion.text>
               <motion.text
                 x="calc(100vw - 80px)"
@@ -235,7 +239,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 animate={{ opacity: 0.7, scale: 1 }}
                 transition={{ duration: 0.4, delay: 1.1 }}
               >
-                ☾
+                {MOON_SYMBOL}
               </motion.text>
               <motion.text
                 x="calc(100vw - 80px)"
@@ -245,7 +249,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 animate={{ opacity: 0.7, scale: 1 }}
                 transition={{ duration: 0.4, delay: 1.1 }}
               >
-                ☾
+                {MOON_SYMBOL}
               </motion.text>
               <motion.text
                 x="60"
@@ -255,7 +259,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 animate={{ opacity: 0.7, scale: 1 }}
                 transition={{ duration: 0.4, delay: 1.1 }}
               >
-                ☾
+                {MOON_SYMBOL}
               </motion.text>
             </g>
           </svg>
@@ -295,7 +299,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                     className="text-2xl tracking-[0.4em] uppercase spark-theme-bioshock-glow"
                     style={{ fontFamily: "'Poiret One', cursive" }}
                   >
-                    Nebula Noir
+                    {NEBULA_NOIR_TITLE}
                   </h1>
                   <div className="w-16 h-[1px] bg-gradient-to-l from-transparent to-foreground" />
                 </motion.div>
@@ -306,7 +310,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                   transition={{ duration: 0.6, delay: 1.2 }}
                   className="text-xs tracking-[0.3em] text-muted-foreground uppercase"
                 >
-                  Cosmic Art Deco Goth
+                  {NEBULA_NOIR_SUBTITLE}
                 </motion.p>
 
                 <motion.div
@@ -341,7 +345,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                     transition={{ duration: 0.5, delay: 1.6 }}
                     className="flex items-center justify-between w-80 mx-auto text-xs tracking-[0.2em] text-muted-foreground"
                   >
-                    <span>LOADING</span>
+                    <span>{LOADING_TEXT}</span>
                     <span className="spark-theme-bioshock-glow">{Math.round(progress)}%</span>
                   </motion.div>
                 </motion.div>

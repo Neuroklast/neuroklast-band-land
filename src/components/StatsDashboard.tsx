@@ -6,6 +6,7 @@ import CyberCloseButton from '@/components/CyberCloseButton'
 import { loadServerAnalytics, loadHeatmapData, resetAnalytics, loadAnalytics } from '@/lib/analytics'
 import type { SiteAnalytics, DailyStats, HeatmapPoint } from '@/lib/analytics'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useLocale } from '@/hooks/use-locale'
 import {
   LineChart,
   Line,
@@ -84,12 +85,13 @@ function StatCard({ icon: Icon, label, value, sublabel }: { icon: React.Componen
 
 /** Top items list */
 function TopList({ items, limit = 5 }: { items: Record<string, number>; limit?: number }) {
+  const { t } = useLocale()
   const sorted = Object.entries(items)
     .sort(([, a], [, b]) => b - a)
     .slice(0, limit)
 
   if (sorted.length === 0) {
-    return <p className="text-[10px] text-primary/30 font-mono">NO DATA YET</p>
+    return <p className="text-[10px] text-primary/30 font-mono">{t('stats.noDataYet')}</p>
   }
 
   const max = sorted[0][1]
@@ -113,6 +115,7 @@ function TopList({ items, limit = 5 }: { items: Record<string, number>; limit?: 
 
 /** Heatmap canvas visualization — uses full available width with 16:9 aspect ratio */
 function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
+  const { t } = useLocale()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -189,7 +192,7 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
   }, [draw])
 
   if (points.length === 0) {
-    return <p className="text-[10px] text-primary/30 font-mono">NO HEATMAP DATA YET</p>
+    return <p className="text-[10px] text-primary/30 font-mono">{t('stats.noHeatmapDataYet')}</p>
   }
 
   return (
@@ -201,13 +204,13 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
       <div className="flex items-center gap-4 text-[9px] font-mono text-primary/40">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-full" style={{ background: 'radial-gradient(rgba(255,0,0,0.6), rgba(255,0,0,0))' }} />
-          <span>HIGH ACTIVITY</span>
+          <span>{t('stats.highActivity')}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-full" style={{ background: 'radial-gradient(rgba(255,0,0,0.2), rgba(255,0,0,0))' }} />
-          <span>LOW ACTIVITY</span>
+          <span>{t('stats.lowActivity')}</span>
         </div>
-        <span className="ml-auto">X/Y = viewport position ratio</span>
+        <span className="ml-auto">{t('stats.viewportPositionRatio')}</span>
       </div>
     </div>
   )
@@ -215,6 +218,7 @@ function HeatmapCanvas({ points }: { points: HeatmapPoint[] }) {
 
 /** Table showing click counts per component/element */
 function ClickTable({ points }: { points: HeatmapPoint[] }) {
+  const { t } = useLocale()
   const elementCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const p of points) {
@@ -226,7 +230,7 @@ function ClickTable({ points }: { points: HeatmapPoint[] }) {
   }, [points])
 
   if (elementCounts.length === 0) {
-    return <p className="text-[10px] text-primary/30 font-mono">NO CLICK DATA YET</p>
+    return <p className="text-[10px] text-primary/30 font-mono">{t('stats.noClickDataYet')}</p>
   }
 
   const total = elementCounts.reduce((sum, [, c]) => sum + c, 0)

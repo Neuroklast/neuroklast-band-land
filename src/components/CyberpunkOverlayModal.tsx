@@ -8,7 +8,8 @@ import MemberContent from '@/components/overlay-content/MemberContent'
 import ReleaseContent from '@/components/overlay-content/ReleaseContent'
 import GigContent from '@/components/overlay-content/GigContent'
 import ImpressumContent from '@/components/overlay-content/ImpressumContent'
-import NewsContent, { formatNewsDate } from '@/components/overlay-content/NewsContent'
+import NewsContent from '@/components/overlay-content/NewsContent'
+import { formatNewsDate } from '@/lib/news-utils'
 import FriendContent from '@/components/overlay-content/FriendContent'
 
 interface CyberpunkOverlayModalProps {
