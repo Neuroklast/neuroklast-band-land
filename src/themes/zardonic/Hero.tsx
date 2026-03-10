@@ -5,6 +5,9 @@ const logoImage = ""
 import type { HeroSlotProps } from '@/lib/types'
 type HeroProps = HeroSlotProps;
 
+const LISTEN_NOW_TEXT = 'Listen Now'
+const TOUR_DATES_TEXT = 'Tour Dates'
+
 export default function Hero({ name, logoUrl }: HeroProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden zardonic-theme-scanline-effect">
@@ -55,7 +58,7 @@ export default function Hero({ name, logoUrl }: HeroProps) {
             size="lg"
             className="uppercase font-mono zardonic-theme-hover-glitch zardonic-theme-hover-noise relative zardonic-theme-cyber-border"
           >
-            <span className="zardonic-theme-hover-chromatic">Listen Now</span>
+            <span className="zardonic-theme-hover-chromatic">{LISTEN_NOW_TEXT}</span>
           </Button>
           <Button
             onClick={() => (() => {})()}
@@ -63,7 +66,7 @@ export default function Hero({ name, logoUrl }: HeroProps) {
             variant="outline"
             className="uppercase font-mono zardonic-theme-hover-glitch zardonic-theme-hover-noise relative zardonic-theme-cyber-border"
           >
-            <span className="zardonic-theme-hover-chromatic">Tour Dates</span>
+            <span className="zardonic-theme-hover-chromatic">{TOUR_DATES_TEXT}</span>
           </Button>
         </motion.div>
       </motion.div>

@@ -4,7 +4,7 @@
  * Verifies that calling updateConfig({ themeSettings: partial }) merges
  * into the existing themeSettings instead of replacing the entire object.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
 // We need to test the merge logic directly. The updateConfig function
 // is inside useSiteConfig which uses useKV. We'll extract the merge logic

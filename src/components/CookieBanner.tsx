@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 export default function CookieBanner() {
   const { t } = useLocale()

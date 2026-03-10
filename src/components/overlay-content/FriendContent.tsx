@@ -6,7 +6,7 @@ import type { Friend, SectionLabels } from '@/lib/types'
 import { CONSOLE_TYPING_SPEED_MS, CONSOLE_LINE_DELAY_MS } from '@/lib/config'
 import { buildFriendDataLines } from '@/lib/profile-data'
 
-export const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: Icon; label: string }[] = [
+const friendSocialIcons: { key: keyof NonNullable<Friend['socials']>; icon: Icon; label: string }[] = [
   { key: 'instagram', icon: InstagramLogo, label: 'Instagram' },
   { key: 'facebook', icon: FacebookLogo, label: 'Facebook' },
   { key: 'spotify', icon: SpotifyLogo, label: 'Spotify' },

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { LockSimple, ArrowUp } from '@phosphor-icons/react'
 import type { SocialLinks } from '@/lib/types'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface FooterProps {
   socialLinks: SocialLinks

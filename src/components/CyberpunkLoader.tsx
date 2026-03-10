@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState, useRef, startTransition, lazy, Suspense } from 'react'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import logoImage from '@/assets/images/baphomet no text.svg'
 import {
   LOADER_PROGRESS_INCREMENT_MULTIPLIER,

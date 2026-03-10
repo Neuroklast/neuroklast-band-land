@@ -12,7 +12,7 @@ import { format, isPast } from 'date-fns'
 import { toast } from 'sonner'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
 import { useTrackSection } from '@/hooks/use-track-section'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface GigsSectionProps {
   gigs: Gig[]

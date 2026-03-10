@@ -4,7 +4,7 @@
  * Validates the key against `/api/admin/validate-theme-key` and, on success,
  * calls `onUnlocked` so the parent can activate the theme.
  */
-import { useState, startTransition, useEffect, useRef } from 'react'
+import { useState, startTransition, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { X, Lock, Key, CheckCircle } from '@phosphor-icons/react'
@@ -41,6 +41,13 @@ export default function ThemeLicenseDialog({
     return () => { if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current) }
   }, [])
 
+  const handleClose = useCallback(() => {
+    if (loading) return
+    setKeyValue('')
+    setValidated(false)
+    onClose()
+  }, [loading, onClose])
+
   useEffect(() => {
     if (open && isThemeUnlocked(themeId)) {
       setValidated(true)
@@ -51,14 +58,7 @@ export default function ThemeLicenseDialog({
     } else if (open) {
       setValidated(false)
     }
-  }, [open, themeId, isThemeUnlocked, onUnlocked])
-
-  const handleClose = () => {
-    if (loading) return
-    setKeyValue('')
-    setValidated(false)
-    onClose()
-  }
+  }, [open, themeId, isThemeUnlocked, onUnlocked, handleClose])
 
   const handleSubmit = async () => {
     if (!keyValue.trim()) return

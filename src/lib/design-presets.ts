@@ -42,19 +42,11 @@ export const neuroklastClassicPreset: DesignPreset = {
   },
 }
 
-export const builtInPresets: DesignPreset[] = [
-  neuroklastClassicPreset,
-]
-
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   'neuroklast-classic': neuroklastClassicPreset,
 }
 
 export const PRESET_IDS = Object.keys(DESIGN_PRESETS) as (keyof typeof DESIGN_PRESETS)[]
-
-export function getPreset(id: string): DesignPreset | undefined {
-  return DESIGN_PRESETS[id]
-}
 
 export function presetToThemeSettings(preset: DesignPreset): ThemeSettings {
   return {

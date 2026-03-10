@@ -5,7 +5,7 @@ import { List, X, ShoppingCart } from '@phosphor-icons/react'
 import type { NavigationSlotProps } from '@/lib/types'
 type NavigationProps = NavigationSlotProps;
 
-export default function Navigation({ items, siteName }: NavigationProps) {
+export default function Navigation({ items, siteName: _siteName }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (

@@ -35,7 +35,7 @@ import { useThemeSlots } from '@/lib/theme-registry'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────

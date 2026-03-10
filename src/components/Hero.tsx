@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CaretDown } from '@phosphor-icons/react'
 import logoPng from '@/assets/images/baphomet no text.svg'
 import titlePng from '@/assets/images/titel.png'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import {
   HERO_LOGO_GLITCH_PROBABILITY,
   HERO_LOGO_GLITCH_DURATION_MS,

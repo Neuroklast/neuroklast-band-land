@@ -1,14 +1,7 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
+import { useEffect, useState, useCallback, type ReactNode } from 'react'
 import { type Locale, t as translate } from '@/lib/i18n'
 import i18n from '@/lib/i18n-config'
-
-interface LocaleContextValue {
-  locale: Locale
-  setLocale: (locale: Locale) => void
-  t: (key: string) => string
-}
-
-const LocaleContext = createContext<LocaleContextValue | null>(null)
+import { LocaleContext } from '@/hooks/use-locale'
 
 const STORAGE_KEY = 'zd-locale'
 
@@ -92,10 +85,4 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       {children}
     </LocaleContext>
   )
-}
-
-export function useLocale(): LocaleContextValue {
-  const ctx = useContext(LocaleContext)
-  if (!ctx) throw new Error('useLocale must be used within a LocaleProvider')
-  return ctx
 }

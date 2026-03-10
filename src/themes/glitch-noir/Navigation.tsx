@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { List, X } from '@phosphor-icons/react'
 
+const NAV_LOGO_TEXT = 'NK://SYS'
+
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -18,11 +20,11 @@ export default function Navigation() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="text-foreground font-mono text-sm tracking-widest">
-            NK://SYS
+            {NAV_LOGO_TEXT}
           </div>
 
           <div className="hidden md:flex gap-8">
-            {navItems.map((item, i) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}

@@ -1,4 +1,4 @@
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Folder, File, DownloadSimple, Plus, Trash, PencilSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'

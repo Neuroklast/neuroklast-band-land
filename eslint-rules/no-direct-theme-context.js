@@ -22,7 +22,7 @@ export default {
     const filename = context.filename || context.getFilename();
     const basename = filename.split('/').pop();
 
-    if (basename === 'ThemeContext.tsx') {
+    if (basename === 'ThemeContext.tsx' || basename === 'use-theme-engine.ts') {
       return {};
     }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { trackNewsletterSignup } from '@/lib/analytics'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 
 interface NewsletterWidgetProps {
   enabled?: boolean

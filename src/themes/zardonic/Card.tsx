@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Card as ShadcnCard } from '@/components/ui/card'
 import { ReactNode } from 'react'
 

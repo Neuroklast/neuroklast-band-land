@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, act } from '@testing-library/react'
-import { ThemeProvider, useThemeEngine } from '@/contexts/ThemeContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { useThemeEngine } from '@/hooks/use-theme-engine'
 import type { ThemeSettings } from '@/lib/types'
 
 // ── Helper: renders a component that exposes context values ─────────────────

@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { ChromaticText } from '@/components/ChromaticText'
 import { useState, useRef, useEffect } from 'react'
 import { useTypingEffect } from '@/hooks/use-typing-effect'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/hooks/use-locale'
 import type { ContactSettings, SectionLabels } from '@/lib/types'
 import {
   TITLE_TYPING_SPEED_MS,

@@ -6,7 +6,6 @@ import type { HeroSlotProps } from '@/lib/types'
 type HeroProps = HeroSlotProps;
 
 export default function Hero({ name, genres }: HeroProps) {
-  const tagline = genres?.[0];
   const heroRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
