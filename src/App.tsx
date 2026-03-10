@@ -33,6 +33,7 @@ import { validateActivationKey } from '@/lib/activation'
 import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
 import { useThemeSlots } from '@/lib/theme-registry'
+import { isPrimaryInstance } from '@/lib/primary-check'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
@@ -122,7 +123,8 @@ function App() {
   const [selectedAttackerIp, setSelectedAttackerIp] = useState('')
   /** Tells AdminButton to auto-open the hub when the admin logs in. */
   const [openAdminHubOnMount, setOpenAdminHubOnMount] = useState(false)
-  const isPrimary = import.meta.env.VITE_IS_PRIMARY === 'true'
+  // SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
+  const isPrimary = isPrimaryInstance()
   const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
   /** Track the previous isOwner value to detect transitions (visitor → admin). */
   const prevIsOwnerRef = useRef(false)
