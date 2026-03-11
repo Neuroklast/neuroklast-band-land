@@ -36,11 +36,11 @@ interface VercelLikeRequest {
 }
 
 interface VercelLikeResponse {
-  setHeader(key: string, value: string | number): this
-  status(code: number): this
-  json(data: unknown): this
-  end(): this
-  send(data: unknown): this
+  setHeader(key: string, value: string | number): VercelLikeResponse
+  status(code: number): VercelLikeResponse
+  json(data: unknown): VercelLikeResponse
+  end(): VercelLikeResponse
+  send(data: unknown): VercelLikeResponse
 }
 
 interface CanaryDocument {

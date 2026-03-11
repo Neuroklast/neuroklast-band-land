@@ -20,10 +20,10 @@ interface VercelRequest {
 }
 
 interface VercelResponse {
-  setHeader(key: string, value: string): this
-  status(code: number): this
-  send(data: unknown): this
-  end(): this
+  setHeader(key: string, value: string): VercelResponse
+  status(code: number): VercelResponse
+  send(data: unknown): VercelResponse
+  end(): VercelResponse
 }
 
 interface OgMeta {

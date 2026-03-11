@@ -25,9 +25,9 @@ interface VercelLikeRequest {
 }
 
 interface VercelLikeResponse {
-  setHeader(key: string, value: string): this
-  status(code: number): this
-  json(data: unknown): this
+  setHeader(key: string, value: string): VercelLikeResponse
+  status(code: number): VercelLikeResponse
+  json(data: unknown): VercelLikeResponse
 }
 
 interface SecuritySettings {

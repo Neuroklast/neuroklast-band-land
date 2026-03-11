@@ -25,7 +25,7 @@ interface VercelLikeRequest {
 }
 
 interface VercelLikeResponse {
-  setHeader(key: string, value: string): this
+  setHeader(key: string, value: string): VercelLikeResponse
 }
 
 interface FakeServerHeader {

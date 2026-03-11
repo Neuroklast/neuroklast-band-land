@@ -2,9 +2,9 @@ import { createGzip } from 'node:zlib'
 import { Readable } from 'node:stream'
 
 interface VercelLikeResponse {
-  setHeader(key: string, value: string | number): this
-  status(code: number): this
-  send(data: unknown): this
+  setHeader(key: string, value: string | number): VercelLikeResponse
+  status(code: number): VercelLikeResponse
+  send(data: unknown): VercelLikeResponse
 }
 
 // 10 MB of null bytes, gzip-compressed at maximum compression

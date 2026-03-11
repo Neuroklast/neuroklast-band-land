@@ -42,9 +42,9 @@ interface VercelLikeRequest {
 
 /** Minimal shape of a Vercel serverless response used by this module. */
 interface VercelLikeResponse {
-  setHeader(name: string, value: string): this
-  status(code: number): this
-  json(data: unknown): this
+  setHeader(name: string, value: string): VercelLikeResponse
+  status(code: number): VercelLikeResponse
+  json(data: unknown): VercelLikeResponse
 }
 
 // ─── IP utilities ─────────────────────────────────────────────────────────────

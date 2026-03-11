@@ -12,10 +12,10 @@ interface VercelRequest {
 }
 
 interface VercelResponse {
-  setHeader(key: string, value: string): this
-  status(code: number): this
-  json(data: unknown): this
-  end(): this
+  setHeader(key: string, value: string): VercelResponse
+  status(code: number): VercelResponse
+  json(data: unknown): VercelResponse
+  end(): VercelResponse
 }
 
 interface AnalyticsMeta {
