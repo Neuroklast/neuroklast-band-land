@@ -168,9 +168,11 @@
 
 html {
   font-size: calc(1rem * var(--font-size-factor, 1));
+  background-color: var(--background);
 }
 
 body {
+  background-color: var(--background);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;

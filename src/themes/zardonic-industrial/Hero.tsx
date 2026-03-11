@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-const logoImage = ""
 
 import type { HeroSlotProps } from '@/lib/types'
 type HeroProps = HeroSlotProps;
@@ -28,18 +27,18 @@ export default function Hero({ name, logoUrl }: HeroProps) {
         >
           <div className="relative mx-auto w-fit zardonic-theme-hero-logo-glitch">
             <img
-              src={logoUrl || logoImage}
+              src={logoUrl || ''}
               alt={name || "ZARDONIC"}
               className="h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 zardonic-theme-hover-chromatic-image"
             />
             <img
-              src={logoUrl || logoImage}
+              src={logoUrl || ''}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 zardonic-theme-hero-logo-r"
             />
             <img
-              src={logoUrl || logoImage}
+              src={logoUrl || ''}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 zardonic-theme-hero-logo-b"
@@ -54,14 +53,12 @@ export default function Hero({ name, logoUrl }: HeroProps) {
           className="mt-12 flex gap-4 justify-center flex-wrap"
         >
           <Button
-            onClick={() => (() => {})()}
             size="lg"
             className="uppercase font-mono zardonic-theme-hover-glitch zardonic-theme-hover-noise relative zardonic-theme-cyber-border"
           >
             <span className="zardonic-theme-hover-chromatic">{LISTEN_NOW_TEXT}</span>
           </Button>
           <Button
-            onClick={() => (() => {})()}
             size="lg"
             variant="outline"
             className="uppercase font-mono zardonic-theme-hover-glitch zardonic-theme-hover-noise relative zardonic-theme-cyber-border"

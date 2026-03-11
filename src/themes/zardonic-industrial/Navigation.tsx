@@ -64,7 +64,7 @@ export default function Navigation({ siteName, items }: NavigationProps) {
               {items.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => () => { window.location.hash = item.id; setMobileMenuOpen(false); }}
+                  onClick={() => { window.location.hash = item.id; setMobileMenuOpen(false); }}
                   className="text-left text-sm uppercase tracking-wide hover:text-primary transition-colors font-mono"
                 >
                   {item.label}

@@ -33,7 +33,7 @@ import {
   DefaultContactSection,
   DefaultPartnersSection,
 } from '@/themes/default-slots'
-import { builtInThemes, neuroklastClassicTheme, darkMinimalTheme } from '@/themes'
+import { builtInThemes, neuroklastClassicTheme, glitchNoirTheme } from '@/themes'
 import type { ThemeDefinition, ThemeLicenseStatus } from './types'
 import type { LicenseTier } from './activation'
 import {
@@ -66,9 +66,9 @@ export function getActiveTheme(themeId?: string): ThemePackage {
     const found = _registry.get(themeId)
     if (found) return found
   }
-  // dark-minimal is the default free theme for all users.
+  // glitch-noir is the default free theme for all users.
   // neuroklast-classic is exclusive to Neuroklast and must not be the public default.
-  const fallback = _registry.get('dark-minimal') ?? _registry.get('neuroklast-classic') ?? Array.from(_registry.values())[0]
+  const fallback = _registry.get('glitch-noir') ?? _registry.get('neuroklast-classic') ?? Array.from(_registry.values())[0]
   if (!fallback) throw new Error('Theme registry is empty — no themes have been registered')
   return fallback
 }
@@ -112,19 +112,19 @@ for (const theme of builtInThemes) {
   registerTheme(theme)
 }
 
-export { neuroklastClassicTheme, darkMinimalTheme }
+export { neuroklastClassicTheme, glitchNoirTheme }
 
 export const THEME_CATALOG: ThemeDefinition[] = [
   {
-    id: 'dark-minimal',
-    name: 'Dark Minimal',
-    description: 'A clean, simple dark theme with white text. The default starting point for any band site.',
+    id: 'glitch-noir',
+    name: 'Glitch Noir',
+    description: 'A minimal dark techno theme with clean aesthetics',
     licenseStatus: 'free',
     theme: {
-      activePreset: 'dark-minimal',
+      activePreset: 'glitch-noir',
     },
     author: 'Neuroklast',
-    tags: ['dark', 'minimal', 'simple', 'default'],
+    tags: ['dark', 'minimal', 'techno'],
     themeType: 'full',
   },
   {
@@ -142,40 +142,29 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     themeType: 'full',
   },
   {
-    id: 'nebula-noir-theme',
-    name: 'Nebula Noir - Cosmic Art Deco Goth',
-    description: 'Dark, elegant theme inspired by Art Deco geometry, cosmic aesthetics, and gothic sensibilities with subtle CRT effects',
-    licenseStatus: 'free',
-    theme: {
-      activePreset: 'nebula-noir-theme',
-    },
-    author: 'Nebula Noir',
-    tags: ['dark', 'elegant', 'art-deco', 'cosmic'],
-    themeType: 'full',
-  },
-  {
-    id: 'glitch-noir',
-    name: 'Glitch Noir',
-    description: 'A minimal dark techno theme with clean aesthetics',
-    licenseStatus: 'free',
-    theme: {
-      activePreset: 'glitch-noir',
-    },
-    author: 'Neuroklast',
-    tags: ['dark', 'minimal', 'techno'],
-    themeType: 'full',
-  },
-  {
-    id: 'zardonic-theme',
-    name: 'Zardonic Cyberpunk Theme',
-    description: 'Industrial dark cyberpunk theme — exclusive to Zardonic',
+    id: 'zardonic-industrial',
+    name: 'Zardonic Industrial',
+    description: 'Industrial dark cyberpunk theme — premium',
     licenseStatus: 'locked',
     licenseKeyPrefix: 'ZARDONIC-',
     theme: {
-      activePreset: 'zardonic-theme',
+      activePreset: 'zardonic-industrial',
     },
     author: 'Neuroklast',
-    tags: ['dark', 'industrial', 'cyberpunk', 'exclusive'],
+    tags: ['dark', 'industrial', 'cyberpunk', 'premium'],
+    themeType: 'full',
+  },
+  {
+    id: 'umbrella-corp',
+    name: 'Umbrella Corp',
+    description: 'Biohazard tactical theme with military-grade aesthetics — premium',
+    licenseStatus: 'locked',
+    licenseKeyPrefix: 'UMBRELLA-',
+    theme: {
+      activePreset: 'umbrella-corp',
+    },
+    author: 'Neuroklast',
+    tags: ['dark', 'biohazard', 'military', 'premium'],
     themeType: 'full',
   },
 ]

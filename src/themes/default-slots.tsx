@@ -5,9 +5,27 @@
 
 import type React from 'react'
 import { motion } from 'framer-motion'
+import type { HeroSlotProps } from '@/lib/types'
 
-export function DefaultHero() {
-  return null
+export function DefaultHero({ name, genres }: HeroSlotProps) {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center bg-background px-6">
+      <div className="text-center">
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground mb-4">
+          {name}
+        </h1>
+        {genres && genres.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {genres.map((genre) => (
+              <span key={genre} className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
+                {genre}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  )
 }
 DefaultHero.displayName = 'DefaultHero'
 

@@ -1,9 +1,7 @@
 import { Card as ShadcnCard } from '@/components/ui/card'
-import { ReactNode } from 'react'
+import type { CardSlotProps } from '@/lib/types'
 
-interface CardProps {
-  children: ReactNode
-  className?: string
+interface CardProps extends CardSlotProps {
   onClick?: () => void
   dataLabel?: string
   hoverable?: boolean
@@ -16,7 +14,7 @@ export default function Card({
   onClick,
   dataLabel,
   hoverable = true,
-  scanEffect = false
+  scanEffect = false,
 }: CardProps) {
   return (
     <ShadcnCard

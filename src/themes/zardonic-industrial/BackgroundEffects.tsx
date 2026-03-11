@@ -1,6 +1,8 @@
-export default function BackgroundEffects() {
+import type { BackgroundEffectsSlotProps } from '@/lib/types'
+
+export default function BackgroundEffects({ className }: BackgroundEffectsSlotProps) {
   return (
-    <>
+    <div className={className}>
       <div className="zardonic-theme-crt-overlay" />
       <div className="zardonic-theme-crt-vignette" />
       <div className="zardonic-theme-full-page-noise zardonic-theme-periodic-noise-glitch" />
@@ -12,6 +14,6 @@ export default function BackgroundEffects() {
         <div className="zardonic-theme-circuit-node" style={{ top: '40%', right: '15%' }} />
         <div className="zardonic-theme-circuit-node" style={{ bottom: '30%', left: '145px' }} />
       </div>
-    </>
+    </div>
   )
 }
