@@ -150,6 +150,9 @@ function applyCSSVars(root: HTMLElement, theme: ThemeSettings) {
  *   used for `data-theme` — `layoutTheme` is always authoritative.
  */
 export function applyThemeToDocument(layoutTheme: string, settings: ThemeSettings) {
+  // Clear old theme properties first so stale values from the previous theme
+  // don't bleed through if the new theme omits certain properties.
+  resetThemeDOM()
   const root = document.documentElement
   if (layoutTheme) {
     root.setAttribute('data-theme', layoutTheme)
@@ -157,6 +160,10 @@ export function applyThemeToDocument(layoutTheme: string, settings: ThemeSetting
     root.removeAttribute('data-theme')
   }
   applyCSSVars(root, settings)
+  // Force the background change to be immediately visible on both html and body.
+  if (settings.background) {
+    document.body.style.backgroundColor = settings.background
+  }
 }
 
 /** Apply theme CSS variables to <html> element */
@@ -167,6 +174,10 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
     return
   }
 
+  // Clear old theme properties first so stale values from the previous theme
+  // don't bleed through if the new theme omits certain properties.
+  resetThemeDOM()
+
   // Always update data-theme attribute so theme-scoped CSS selectors ([data-theme="…"]) match
   if (theme.activePreset) {
     root.setAttribute('data-theme', theme.activePreset)
@@ -175,6 +186,10 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
   }
 
   applyCSSVars(root, theme)
+  // Force the background change to be immediately visible on both html and body.
+  if (theme.background) {
+    document.body.style.backgroundColor = theme.background
+  }
 }
 
 /** Reset all custom CSS variables set by theme */

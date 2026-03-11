@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import type { HeroSlotProps } from '@/lib/types'
 
 const BLOCK_CHAR = '█'
 const FREQUENCY_TEXT = 'FREQUENCY: 136.5 Hz'
 const BPM_TEXT = 'BPM: 138'
 const DOWN_ARROW = '▼'
-const BAND_NAME = 'NEUROKLAST'
 const LIVE_TEXT = 'LIVE'
 const BULLET = '•'
 
@@ -17,7 +17,7 @@ const SIGNAL_STATES = [
   '[NEURAL_LINK_ESTABLISHED]'
 ]
 
-export default function Hero() {
+export default function Hero({ name, genres, logoUrl, titleImageUrl }: HeroSlotProps) {
   const [glitchActive, setGlitchActive] = useState(false)
   const [signalText, setSignalText] = useState(SIGNAL_STATES[0])
 
@@ -39,6 +39,8 @@ export default function Hero() {
     return () => clearInterval(interval)
   }, [])
 
+  const displayName = name || 'NEUROKLAST'
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
       <div className="glitch-noir-scanline-overlay" />
@@ -55,22 +57,58 @@ export default function Hero() {
         transition={{ duration: 1.5 }}
         className="relative z-10 text-center px-6"
       >
+        {logoUrl && (
+          <motion.div
+            className="flex justify-center mb-8"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+          >
+            <img
+              src={logoUrl}
+              alt={`${displayName} Logo`}
+              className="h-24 md:h-36 w-auto object-contain"
+            />
+          </motion.div>
+        )}
+
         <div className={`relative ${glitchActive ? 'glitch-noir-glitch-text' : ''}`}>
           <div className="absolute -inset-4 opacity-20">
             <div className="text-7xl md:text-9xl font-bold tracking-tighter text-accent font-mono blur-sm">
-              {BAND_NAME}
+              {titleImageUrl ? '' : displayName}
             </div>
           </div>
 
-          <h1 className="relative text-7xl md:text-9xl font-bold tracking-tighter mb-6 text-foreground font-mono">
-            {BAND_NAME}
-          </h1>
+          {titleImageUrl ? (
+            <motion.div
+              className="flex justify-center mb-6"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <img src={titleImageUrl} alt={displayName} className="w-full max-w-xs sm:max-w-md md:max-w-2xl h-auto" />
+            </motion.div>
+          ) : (
+            <h1 className="relative text-7xl md:text-9xl font-bold tracking-tighter mb-6 text-foreground font-mono">
+              {displayName}
+            </h1>
+          )}
           
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="h-px w-12 bg-accent/50" />
             <div className="h-1 w-1 bg-accent glitch-noir-pulse" />
             <div className="h-px w-12 bg-accent/50" />
           </div>
+
+          {genres && genres.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              {genres.map((genre) => (
+                <span key={genre} className="font-mono text-xs text-muted-foreground/70 uppercase tracking-widest border border-muted-foreground/20 px-2 py-0.5">
+                  {genre}
+                </span>
+              ))}
+            </div>
+          )}
           
           <div className="relative overflow-hidden">
             <motion.p 
