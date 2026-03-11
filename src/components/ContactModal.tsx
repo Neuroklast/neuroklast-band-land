@@ -73,12 +73,10 @@ export default function ContactModal({ open, onClose, contactSettings, sectionLa
               </div>
 
               {/* Content: reuse existing ContactSection */}
-              <div className="p-0">
-                <ContactSection
-                  contactSettings={contactSettings}
-                  sectionLabels={sectionLabels}
-                />
-              </div>
+              <ContactSection
+                contactSettings={contactSettings}
+                sectionLabels={sectionLabels}
+              />
             </motion.div>
           </div>
         </motion.div>

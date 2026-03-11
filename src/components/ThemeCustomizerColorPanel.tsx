@@ -69,7 +69,7 @@ export default function ThemeCustomizerColorPanel({ themeSettings, activeTheme, 
     const name = savePresetName.trim()
     if (!name) return
     const newPreset: ColorPreset = {
-      id: `custom-${Date.now()}`,
+      id: crypto.randomUUID(),
       name,
       description: 'Custom preset',
       colors: {

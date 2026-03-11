@@ -63,7 +63,7 @@ function HeroButtonEditor({ buttons, onChange }: { buttons: HeroButton[]; onChan
   const { t } = useLocale()
 
   function addButton() {
-    onChange([...buttons, { id: `btn-${Date.now()}`, label: 'Explore', action: 'scroll', scrollTarget: 'releases', variant: 'default' }])
+    onChange([...buttons, { id: crypto.randomUUID(), label: 'Explore', action: 'scroll', scrollTarget: 'releases', variant: 'default' }])
   }
 
   function removeButton(id: string) {

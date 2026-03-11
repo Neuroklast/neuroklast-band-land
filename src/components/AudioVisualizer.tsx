@@ -54,6 +54,13 @@ export default function AudioVisualizer() {
     const handleVisibility = () => { isVisible.current = !document.hidden }
     document.addEventListener('visibilitychange', handleVisibility)
 
+    // Cache the primary color and refresh it when the theme attribute changes
+    let cachedPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '0.50 0.22 25'
+    const themeObserver = new MutationObserver(() => {
+      cachedPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '0.50 0.22 25'
+    })
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] })
+
     let time = 0
 
     const animate = (now: number) => {
@@ -96,7 +103,7 @@ export default function AudioVisualizer() {
         const x = i * barWidth + bar.glitchOffset
         const height = bar.height * (canvas.height * VISUALIZER_HEIGHT_SCALE)
         
-        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '0.50 0.22 25'
+        const primaryColor = cachedPrimaryColor
         const gradient = ctx.createLinearGradient(x, centerY - height, x, centerY + height)
         gradient.addColorStop(0, `oklch(${primaryColor} / 0.05)`)
         gradient.addColorStop(0.5, `oklch(${primaryColor} / 0.15)`)
@@ -123,6 +130,7 @@ export default function AudioVisualizer() {
     return () => {
       window.removeEventListener('resize', resize)
       document.removeEventListener('visibilitychange', handleVisibility)
+      themeObserver.disconnect()
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
