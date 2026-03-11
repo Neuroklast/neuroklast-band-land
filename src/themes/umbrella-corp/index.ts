@@ -5,6 +5,7 @@ import BackgroundEffects from './BackgroundEffects'
 import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
 import Footer from './Footer'
+import OverlayModal from './OverlayModal'
 import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
@@ -76,7 +77,7 @@ export const umbrellaCorpTheme: ThemePackage = {
       },
     },
   ],
-  defaultPresetId: 'default',
+  defaultPresetId: 'umbrella-biohazard',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   defaultModalAnimation: 'systemBoot',
   supportedModalAnimations: ['circuitBreak', 'systemBoot', 'glitchScan', 'dataStream', 'neuralJackIn', 'hologramMaterialize', 'matrixDecode', 'ringLink', 'none', 'random'],
@@ -103,6 +104,7 @@ export const umbrellaCorpTheme: ThemePackage = {
     SectionDivider,
     LoadingScreen,
     Footer,
+    OverlayModal,
   },
 }
 

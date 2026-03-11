@@ -123,3 +123,27 @@
   );
   pointer-events: none;
 }
+
+
+/* ── Overlay Modal chrome ─────────────────────────────────────────────────── */
+
+.neuroklast-classic-overlay-modal {
+  --modal-glow-color: var(--color-primary, oklch(0.50 0.22 25));
+}
+
+.neuroklast-classic-overlay-modal [data-cyberpunk-modal] {
+  border-color: var(--modal-glow-color);
+  box-shadow:
+    0 0 8px var(--modal-glow-color),
+    inset 0 0 8px color-mix(in oklch, var(--modal-glow-color), transparent 85%);
+}
+
+.neuroklast-classic-overlay-modal [data-cyberpunk-modal-backdrop] {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+}

@@ -285,3 +285,15 @@ a:hover .glitch-noir-nav-underline {
   );
   animation: glitch-noir-signal-scan 3s linear infinite;
 }
+
+/* ── Overlay Modal chrome ─────────────────────────────────────────────────── */
+
+.glitch-noir-overlay-modal [data-cyberpunk-modal] {
+  border-color: var(--color-primary, oklch(0.85 0 0));
+  border-width: 1px;
+  box-shadow: none;
+}
+
+.glitch-noir-overlay-modal [data-cyberpunk-modal-backdrop] {
+  background-color: rgba(0, 0, 0, 0.85);
+}

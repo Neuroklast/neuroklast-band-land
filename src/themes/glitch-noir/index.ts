@@ -4,6 +4,7 @@ import Card from './Card'
 import BackgroundEffects from './BackgroundEffects'
 import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
+import OverlayModal from './OverlayModal'
 import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
@@ -73,7 +74,7 @@ export const glitchNoirTheme: ThemePackage = {
       },
     },
   ],
-  defaultPresetId: 'default',
+  defaultPresetId: 'glitch-noir-monochrome',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   id: 'glitch-noir',
   name: 'Glitch Noir',
@@ -87,6 +88,7 @@ export const glitchNoirTheme: ThemePackage = {
     Card,
     BackgroundEffects,
     SectionDivider,
-    LoadingScreen
+    LoadingScreen,
+    OverlayModal,
   }
 }

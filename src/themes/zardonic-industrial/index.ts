@@ -5,6 +5,7 @@ import BackgroundEffects from './BackgroundEffects'
 import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
 import Footer from './Footer'
+import OverlayModal from './OverlayModal'
 import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
@@ -76,7 +77,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
       },
     },
   ],
-  defaultPresetId: 'default',
+  defaultPresetId: 'zardonic-ember',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   defaultModalAnimation: 'circuitBreak',
   supportedModalAnimations: ['circuitBreak', 'systemBoot', 'glitchScan', 'dataStream', 'hologramMaterialize', 'matrixDecode', 'ringLink', 'random'],
@@ -103,6 +104,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
     SectionDivider,
     LoadingScreen,
     Footer,
+    OverlayModal,
   },
 }
 
