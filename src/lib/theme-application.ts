@@ -32,6 +32,7 @@ export const FONT_OPTIONS = [
 
 /** Load Google Fonts by injecting a stylesheet link */
 export const loadedFonts = new Set<string>()
+export const loadedFontLinks = new Map<string, HTMLLinkElement>()
 export function loadGoogleFont(fontLabel: string) {
   if (loadedFonts.has(fontLabel)) return
   loadedFonts.add(fontLabel)
@@ -40,6 +41,21 @@ export function loadGoogleFont(fontLabel: string) {
   link.rel = 'stylesheet'
   link.href = `https://fonts.googleapis.com/css2?family=${family}:wght@400;500;700&display=swap`
   document.head.appendChild(link)
+  loadedFontLinks.set(fontLabel, link)
+}
+
+/**
+ * Remove Google Font <link> tags for fonts that are no longer in use.
+ * Call this after a theme change with the set of currently active font labels.
+ */
+export function unloadUnusedGoogleFonts(activeFontLabels: Set<string>) {
+  for (const [label, linkEl] of loadedFontLinks) {
+    if (!activeFontLabels.has(label)) {
+      linkEl.remove()
+      loadedFontLinks.delete(label)
+      loadedFonts.delete(label)
+    }
+  }
 }
 
 /** Pre-load all Google Fonts for preview */
@@ -137,6 +153,18 @@ function applyCSSVars(root: HTMLElement, theme: ThemeSettings) {
   }
 }
 
+/** Collect the set of Google Font labels currently active in a theme. */
+function collectActiveFonts(theme: ThemeSettings): Set<string> {
+  const active = new Set<string>()
+  for (const key of ['fontHeading', 'fontBody', 'fontMono'] as const) {
+    const val = theme[key]
+    if (!val) continue
+    const match = FONT_OPTIONS.find(f => f.value === val)
+    if (match?.google) active.add(match.label)
+  }
+  return active
+}
+
 /**
  * Apply the layout theme AND color/font settings to the document in a single pass.
  *
@@ -160,6 +188,7 @@ export function applyThemeToDocument(layoutTheme: string, settings: ThemeSetting
     root.removeAttribute('data-theme')
   }
   applyCSSVars(root, settings)
+  unloadUnusedGoogleFonts(collectActiveFonts(settings))
   // Force the background change to be immediately visible on both html and body.
   if (settings.background) {
     document.body.style.backgroundColor = settings.background
@@ -186,6 +215,7 @@ export function applyThemeToDOM(theme: ThemeSettings | undefined) {
   }
 
   applyCSSVars(root, theme)
+  unloadUnusedGoogleFonts(collectActiveFonts(theme))
   // Force the background change to be immediately visible on both html and body.
   if (theme.background) {
     document.body.style.backgroundColor = theme.background

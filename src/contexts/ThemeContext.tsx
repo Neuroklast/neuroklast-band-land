@@ -61,12 +61,14 @@ export function ThemeProvider({
       // 1. Immediate DOM update — no flicker
       applyThemeToDOM(settings)
 
-      // 2. Synchronous localStorage write — survives page reload
-      try {
-        localStorage.setItem(THEME_CACHE_KEY, JSON.stringify(settings))
-      } catch {
-        // ignore
-      }
+      // 2. Deferred localStorage write — runs after the current JavaScript task, off the critical path
+      queueMicrotask(() => {
+        try {
+          localStorage.setItem(THEME_CACHE_KEY, JSON.stringify(settings))
+        } catch {
+          // ignore
+        }
+      })
 
       // 3. Propagate to persistent config (useKV → Vercel KV / localStorage)
       onChangeTheme(settings)
