@@ -14,18 +14,28 @@ vi.mock('../../api/_ratelimit.ts', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(true),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
+// Local interface for mock — relaxed return types for test compatibility
+interface VercelResponse {
+  setHeader(key: string, value: string): this
+  status(code: number): this
+  json(data: unknown): this
+  end(): this
+}
+
+type Res = VercelResponse & { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn> }
 
 function mockRes(): Res {
-  const res: Res = {
+  const res = {
     status: vi.fn(),
     json: vi.fn(),
     end: vi.fn(),
+    setHeader: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   res.end.mockReturnValue(res)
-  return res
+  res.setHeader.mockReturnValue(res)
+  return res as Res
 }
 
 const { default: handler } = await import('../../api/terminal.js')
@@ -48,39 +58,39 @@ describe('Terminal API handler', () => {
 
   it('OPTIONS returns 200', async () => {
     const res = mockRes()
-    await handler({ method: 'OPTIONS', body: {}, headers: {} }, res)
+    await handler({ method: 'OPTIONS', body: {}, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.end).toHaveBeenCalled()
   })
 
   it('returns 405 for GET', async () => {
     const res = mockRes()
-    await handler({ method: 'GET', body: {}, headers: {} }, res)
+    await handler({ method: 'GET', body: {}, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(405)
   })
 
   it('returns 400 when body is missing', async () => {
     const res = mockRes()
-    await handler({ method: 'POST', body: null, headers: {} }, res)
+    await handler({ method: 'POST', body: null, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(400)
   })
 
   it('returns 400 when command is missing', async () => {
     const res = mockRes()
-    await handler({ method: 'POST', body: {}, headers: {} }, res)
+    await handler({ method: 'POST', body: {}, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(400)
   })
 
   it('returns 400 for invalid command format (spaces)', async () => {
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'my command' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'my command' }, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(400)
   })
 
   it('returns matching command output', async () => {
     mockKvGet.mockResolvedValue(BAND_DATA_WITH_COMMANDS)
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res as VercelResponse)
     expect(res.json).toHaveBeenCalledWith({
       found: true,
       output: ['STATUS: ACTIVE', 'LEVEL: CLASSIFIED'],
@@ -92,7 +102,7 @@ describe('Terminal API handler', () => {
   it('returns file info when command has fileUrl', async () => {
     mockKvGet.mockResolvedValue(BAND_DATA_WITH_COMMANDS)
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'secret' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'secret' }, headers: {} }, res as VercelResponse)
     expect(res.json).toHaveBeenCalledWith({
       found: true,
       output: ['DECRYPTING...'],
@@ -104,14 +114,14 @@ describe('Terminal API handler', () => {
   it('returns found: false for unknown command', async () => {
     mockKvGet.mockResolvedValue(BAND_DATA_WITH_COMMANDS)
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'nonexistent' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'nonexistent' }, headers: {} }, res as VercelResponse)
     expect(res.json).toHaveBeenCalledWith({ found: false })
   })
 
   it('help returns only names and descriptions, not outputs', async () => {
     mockKvGet.mockResolvedValue(BAND_DATA_WITH_COMMANDS)
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'help' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'help' }, headers: {} }, res as VercelResponse)
     const response = res.json.mock.calls[0][0]
     expect(response.found).toBe(true)
     expect(response.listing).toHaveLength(2)
@@ -125,14 +135,14 @@ describe('Terminal API handler', () => {
   it('returns found: false when band-data has no terminalCommands', async () => {
     mockKvGet.mockResolvedValue({ name: 'Test Band' })
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res as VercelResponse)
     expect(res.json).toHaveBeenCalledWith({ found: false })
   })
 
   it('returns found: false when band-data is null', async () => {
     mockKvGet.mockResolvedValue(null)
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res as VercelResponse)
     expect(res.json).toHaveBeenCalledWith({ found: false })
   })
 
@@ -140,7 +150,7 @@ describe('Terminal API handler', () => {
     delete process.env.KV_REST_API_URL
     delete process.env.KV_REST_API_TOKEN
     const res = mockRes()
-    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(503)
   })
 
@@ -148,7 +158,7 @@ describe('Terminal API handler', () => {
     mockKvGet.mockRejectedValue(new Error('KV failure'))
     const res = mockRes()
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res)
+    await handler({ method: 'POST', body: { command: 'status' }, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(500)
     consoleSpy.mockRestore()
   })
