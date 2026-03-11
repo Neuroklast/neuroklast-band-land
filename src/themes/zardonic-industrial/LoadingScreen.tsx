@@ -30,7 +30,6 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
         if (prev >= 100) {
           clearInterval(progressInterval)
           clearInterval(textInterval)
-          setTimeout(() => onComplete(), 200)
           return 100
         }
         return prev + 2
@@ -41,7 +40,18 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
       clearInterval(textInterval)
       clearInterval(progressInterval)
     }
-  }, [onComplete])
+  }, [])
+
+  useEffect(() => {
+    if (progress >= 100) {
+      const t = setTimeout(() => {
+        if (onComplete) {
+          onComplete()
+        }
+      }, 200)
+      return () => clearTimeout(t)
+    }
+  }, [progress, onComplete])
 
   return (
     <motion.div
