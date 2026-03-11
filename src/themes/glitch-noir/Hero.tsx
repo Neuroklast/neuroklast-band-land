@@ -20,7 +20,7 @@ const SIGNAL_STATES = [
 ]
 
 const DEFAULT_BUTTONS: HeroButton[] = [
-  { id: 'explore', label: 'EXPLORE', action: 'scroll', scrollTarget: 'releases', variant: 'outline' },
+  { id: 'explore', label: 'EXPLORE', action: 'scroll', scrollTarget: 'news', variant: 'outline' },
 ]
 
 function handleHeroButton(btn: HeroButton, onContactModalOpen?: () => void) {

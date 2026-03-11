@@ -1,4 +1,5 @@
 import { useSiteConfig } from '@/hooks/use-site-config'
+import { resolveSections, getEnabledSectionIds } from '@/lib/sections'
 import { useEffect, useRef, useState, useMemo, startTransition, lazy, Suspense } from 'react'
 import { useAdminDialogState } from '@/hooks/use-admin-dialog-state'
 import { useAppKeyboardShortcuts } from '@/hooks/use-app-keyboard-shortcuts'
@@ -230,6 +231,7 @@ function App() {
   const data = useMemo(() => ({ ...defaultSiteConfig, ...config }), [config])
   const _precacheUrls = useMemo(() => collectImageUrls(data), [data])
   const vis = useMemo(() => data.sectionVisibility || {}, [data.sectionVisibility])
+  const activeSectionIds = useMemo(() => getEnabledSectionIds(resolveSections(data)), [data])
   // ── DOM side effects ─────────────────────────────────────────────────────────
   useEffect(() => { applyConfigOverrides(data.configOverrides) }, [data.configOverrides])
   // Theme DOM application is handled by ThemeProvider (see JSX below)
@@ -320,8 +322,10 @@ function App() {
               { label: data.sectionLabels?.gigs || 'Gigs', id: 'gigs' },
               { label: data.sectionLabels?.releases || 'Releases', id: 'releases' },
               { label: data.sectionLabels?.media || 'Media', id: 'media' },
-              { label: data.sectionLabels?.connect || 'Connect', id: 'social' }
-            ].filter(item => item.id === 'hero' || vis[item.id as keyof typeof vis] !== false)}
+              { label: data.sectionLabels?.connect || 'Connect', id: 'social' },
+              { label: data.sectionLabels?.contact || 'Contact', id: 'contact' },
+              { label: data.sectionLabels?.partnersAndFriends || 'Partners', id: 'partners' },
+            ].filter(item => item.id === 'hero' || (activeSectionIds.includes(item.id) && vis[item.id as keyof typeof vis] !== false))}
           />
           <motion.div className="min-h-screen bg-background text-foreground overflow-x-hidden relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
             {vis.audioVisualizer !== false && <AudioVisualizer />}

@@ -5,6 +5,7 @@ import NeuroklastClassicLoadingScreen from './LoadingScreen'
 import NeuroklastClassicHero from './Hero'
 import NeuroklastClassicNavigation from './Navigation'
 import NeuroklastClassicFooter from './Footer'
+import NeuroklastClassicOverlayModal from './OverlayModal'
 
 export const neuroklastClassicTheme: ThemePackage = {
   id: 'neuroklast-classic',
@@ -50,7 +51,7 @@ export const neuroklastClassicTheme: ThemePackage = {
   animationsEnabled: true,
   colorPresets: [
     {
-      id: 'crimson',
+      id: 'neuroklast-classic-crimson',
       name: 'Crimson',
       description: 'Neuroklast signature crimson',
       colors: {
@@ -95,7 +96,7 @@ export const neuroklastClassicTheme: ThemePackage = {
       },
     },
   ],
-  defaultPresetId: 'crimson',
+  defaultPresetId: 'neuroklast-classic-crimson',
   defaultColors: {
     primary: 'oklch(0.50 0.22 25)',
     accent: 'oklch(0.60 0.24 25)',
@@ -129,5 +130,6 @@ export const neuroklastClassicTheme: ThemePackage = {
     Hero: NeuroklastClassicHero,
     Navigation: NeuroklastClassicNavigation,
     Footer: NeuroklastClassicFooter,
+    OverlayModal: NeuroklastClassicOverlayModal,
   },
 }

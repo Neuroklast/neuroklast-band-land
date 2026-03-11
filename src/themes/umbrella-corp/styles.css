@@ -213,3 +213,20 @@
     animation: none;
   }
 }
+
+/* ── Overlay Modal chrome ─────────────────────────────────────────────────── */
+
+.umbrella-corp-overlay-modal {
+  --modal-glow-color: var(--color-primary, oklch(0.70 0.20 145));
+}
+
+.umbrella-corp-overlay-modal [data-cyberpunk-modal] {
+  border-color: var(--modal-glow-color);
+  box-shadow:
+    0 0 6px var(--modal-glow-color),
+    inset 0 0 6px color-mix(in oklch, var(--modal-glow-color), transparent 88%);
+}
+
+.umbrella-corp-overlay-modal [data-cyberpunk-modal-backdrop] {
+  background-color: rgba(0, 0, 0, 0.90);
+}

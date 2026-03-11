@@ -6,7 +6,7 @@ import type { HeroSlotProps, HeroButton } from '@/lib/types'
 type HeroProps = HeroSlotProps;
 
 const DEFAULT_BUTTONS: HeroButton[] = [
-  { id: 'explore', label: 'Explore', action: 'scroll', scrollTarget: 'releases', variant: 'default' },
+  { id: 'explore', label: 'Explore', action: 'scroll', scrollTarget: 'news', variant: 'default' },
 ]
 
 function handleHeroButton(btn: HeroButton, onContactModalOpen?: () => void) {
