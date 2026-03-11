@@ -33,7 +33,7 @@ import LicenseStatusBadge from '@/components/LicenseStatusBadge'
 import { validateActivationKey } from '@/lib/activation'
 import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
-import { useThemeSlots } from '@/lib/theme-registry'
+import { useThemeSlots, getTheme } from '@/lib/theme-registry'
 import { isPrimaryInstance } from '@/lib/primary-check'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
@@ -450,6 +450,8 @@ function App() {
           setCyberpunkOverlay(null)
         }}
         sectionLabels={data.sectionLabels}
+        themeSettings={config.themeSettings}
+        activeThemePkg={getTheme(config.themeSettings?.activePreset ?? '')}
       />
     </ThemeProvider>
   )

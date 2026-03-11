@@ -1,6 +1,6 @@
 import { Label } from '@/components/ui/label'
 import { Eye, EyeSlash, ArrowUp, ArrowDown } from '@phosphor-icons/react'
-import type { ThemeSettings, SectionVisibility, SectionConfig } from '@/lib/types'
+import type { ThemeSettings, SectionVisibility, SectionConfig, ThemePackage } from '@/lib/types'
 import { reorderSections, toggleSection } from '@/lib/sections'
 import { SECTION_LABELS, SECTION_DISPLAY_NAMES } from '@/lib/theme-customizer-utils'
 import { useLocale } from '@/hooks/use-locale'
@@ -12,7 +12,15 @@ interface SectionsPanelProps {
   onToggleVisibility: (key: keyof SectionVisibility) => void
   layoutDraft: SectionConfig[]
   onUpdateLayout: (sections: SectionConfig[]) => void
+  activeThemePkg?: ThemePackage
 }
+
+const HERO_STYLE_OPTIONS: Array<{ value: NonNullable<ThemeSettings['heroStyle']>; label: string }> = [
+  { value: 'default', label: 'Default' },
+  { value: 'glitch-parallax', label: 'Glitch Parallax' },
+  { value: 'chromatic-hover', label: 'Chromatic Hover' },
+  { value: 'minimal', label: 'Minimal' },
+]
 
 export default function ThemeCustomizerSectionsPanel({
   themeSettings,
@@ -21,6 +29,7 @@ export default function ThemeCustomizerSectionsPanel({
   onToggleVisibility,
   layoutDraft,
   onUpdateLayout,
+  activeThemePkg,
 }: SectionsPanelProps) {
   const { t } = useLocale()
 
@@ -46,6 +55,25 @@ export default function ThemeCustomizerSectionsPanel({
           <div className="w-16 h-10 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(themeSettings.borderRadius ?? 0.125) * 16}px` }} />
           <div className="w-20 h-8 border border-primary/40 bg-primary/10" style={{ borderRadius: `${(themeSettings.borderRadius ?? 0.125) * 16}px` }} />
         </div>
+      </div>
+
+      <div className="border-t border-border pt-4 space-y-2">
+        <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider">{t('theme.heroStyle') || 'HERO STYLE'}</p>
+        {activeThemePkg?.layout.heroVariant && (
+          <p className="font-mono text-[9px] text-muted-foreground/50">
+            {t('theme.themeDefault') || 'Theme default'}: <span className="text-primary/60">{activeThemePkg.layout.heroVariant}</span>
+          </p>
+        )}
+        <select
+          value={themeSettings.heroStyle ?? ''}
+          onChange={e => onPatchTheme({ heroStyle: (e.target.value as ThemeSettings['heroStyle']) || undefined })}
+          className="w-full font-mono text-xs bg-card border border-primary/30 rounded px-2 py-1.5 text-foreground/90 cursor-pointer focus:outline-none focus:border-primary/60"
+        >
+          <option value="">{t('theme.themeDefault') || 'Theme default'}</option>
+          {HERO_STYLE_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </div>
 
       <div className="border-t border-border pt-4">

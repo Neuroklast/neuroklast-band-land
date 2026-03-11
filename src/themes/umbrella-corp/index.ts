@@ -32,6 +32,8 @@ export const umbrellaCorpTheme: ThemePackage = {
   colorPresets: [],
   defaultPresetId: 'default',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
+  defaultModalAnimation: 'systemBoot',
+  supportedModalAnimations: ['circuitBreak', 'systemBoot', 'glitchScan', 'dataStream', 'neuralJackIn', 'hologramMaterialize', 'matrixDecode', 'ringLink', 'none', 'random'],
   defaultColors: {
     primary: 'oklch(0.70 0.20 145)',
     accent: 'oklch(0.60 0.18 145)',

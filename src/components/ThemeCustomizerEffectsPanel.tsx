@@ -5,6 +5,7 @@ import type { ThemeSettings } from '@/lib/types'
 import type { ThemePackage } from '@/lib/types'
 import { getAnimationEnabled, getAnimationIntensity, setAnimationEnabled, setAnimationIntensity } from '@/lib/theme-customizer-utils'
 import { useLocale } from '@/hooks/use-locale'
+import { getAllOverlayAnimations, NONE_OVERLAY_ANIMATION } from '@/lib/overlay-animations'
 
 interface EffectsPanelProps {
   themeSettings: ThemeSettings
@@ -19,10 +20,33 @@ const GLOBAL_EFFECTS = [
   { id: 'noise' as const, labelKey: 'theme.noise' },
 ]
 
+const LOADING_SCREEN_OPTIONS: Array<{ value: ThemeSettings['loadingScreenType']; label: string }> = [
+  { value: 'cyberpunk', label: 'Cyberpunk' },
+  { value: 'code-rain', label: 'Code Rain' },
+  { value: '3d-model', label: '3D Model' },
+  { value: 'minimal', label: 'Minimal' },
+]
+
 export default function ThemeCustomizerEffectsPanel({ themeSettings, activeTheme, activeThemePkg, onUpdate }: EffectsPanelProps) {
   const { t } = useLocale()
   const activeAnimations = activeThemePkg?.animations ?? []
   const hasCustomConfig = !!activeThemePkg?.customConfigSchema
+
+  const allOverlayAnimations = getAllOverlayAnimations()
+  const supported = activeThemePkg?.supportedModalAnimations
+  const visibleAnimations = supported && supported.length > 0
+    ? allOverlayAnimations.filter(a => (supported as string[]).includes(a.name))
+    : allOverlayAnimations
+  const themeDefaultAnim = activeThemePkg?.defaultModalAnimation
+
+  const currentAnimStyle = themeSettings.overlayAnimationStyle ?? 'random'
+  const currentSpeed = themeSettings.overlayAnimationSpeed ?? 1
+
+  const animOptions: Array<{ value: ThemeSettings['overlayAnimationStyle']; label: string; description?: string }> = [
+    { value: 'random', label: t('theme.animRandom') || 'Random', description: t('theme.animRandomDesc') || 'A different animation each time' },
+    { value: 'none', label: t('theme.animNone') || 'None', description: NONE_OVERLAY_ANIMATION.loaderLabel || 'Instant, no effect' },
+    ...visibleAnimations.map(a => ({ value: a.name as ThemeSettings['overlayAnimationStyle'], label: a.loaderLabel, description: a.name })),
+  ]
 
   return (
     <div className="space-y-4">
@@ -71,6 +95,71 @@ export default function ThemeCustomizerEffectsPanel({ themeSettings, activeTheme
             </div>
           )
         })}
+      </div>
+
+      {/* Loading Screen Type */}
+      <div className="space-y-2 border border-primary/20 p-3 bg-primary/5 rounded">
+        <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">{t('theme.loadingScreenType') || 'LOADING SCREEN TYPE'}</p>
+        {activeThemePkg?.layout.loadingScreen && (
+          <p className="font-mono text-[9px] text-muted-foreground/50 mb-2">
+            {t('theme.themeDefault') || 'Theme default'}: <span className="text-primary/60">{activeThemePkg.layout.loadingScreen}</span>
+          </p>
+        )}
+        <select
+          value={themeSettings.loadingScreenType ?? ''}
+          onChange={e => onUpdate({ ...themeSettings, loadingScreenType: (e.target.value as ThemeSettings['loadingScreenType']) || undefined })}
+          className="w-full font-mono text-xs bg-card border border-primary/30 rounded px-2 py-1.5 text-foreground/90 cursor-pointer focus:outline-none focus:border-primary/60"
+        >
+          <option value="">{t('theme.themeDefault') || 'Theme default'}</option>
+          {LOADING_SCREEN_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value ?? ''}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Modal Animation Picker */}
+      <div className="space-y-2 border border-primary/20 p-3 bg-primary/5 rounded">
+        <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider mb-2">{t('theme.modalAnimation') || 'MODAL ANIMATION'}</p>
+        <div className="space-y-1">
+          {animOptions.map(opt => {
+            const isSelected = currentAnimStyle === opt.value
+            const isThemeDefault = opt.value === themeDefaultAnim
+            return (
+              <button
+                key={opt.value}
+                onClick={() => onUpdate({ ...themeSettings, overlayAnimationStyle: opt.value })}
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-left transition-colors border ${isSelected ? 'border-primary/60 bg-primary/10 text-primary' : 'border-primary/10 bg-transparent text-foreground/70 hover:border-primary/30 hover:bg-primary/5'}`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-mono text-xs truncate">{opt.label}</span>
+                  {opt.description && opt.value !== 'random' && opt.value !== 'none' && (
+                    <span className="font-mono text-[9px] text-muted-foreground/50 truncate">{opt.description}</span>
+                  )}
+                </div>
+                {isThemeDefault && (
+                  <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-primary/20 text-primary/80 flex-shrink-0 ml-2">{t('theme.themeDefault') || 'Default'}</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Animation Speed Slider */}
+      <div className="space-y-2 border border-primary/20 p-3 bg-primary/5 rounded">
+        <div className="flex items-center justify-between mb-1">
+          <p className="font-mono text-[10px] text-muted-foreground/80 uppercase tracking-wider">{t('theme.animationSpeed') || 'ANIMATION SPEED'}</p>
+          <span className="font-mono text-[10px] text-primary/70">{currentSpeed.toFixed(2)}×</span>
+        </div>
+        <input
+          type="range" min="0.25" max="3" step="0.25"
+          value={currentSpeed}
+          onChange={e => onUpdate({ ...themeSettings, overlayAnimationSpeed: parseFloat(e.target.value) })}
+          className="w-full h-1.5 appearance-none bg-primary/20 rounded cursor-pointer accent-primary"
+        />
+        <div className="flex justify-between text-[9px] text-muted-foreground/40 font-mono mt-1">
+          <span>0.25× {t('theme.slow') || 'SLOW'}</span><span>{t('theme.fast') || 'FAST'} 3×</span>
+        </div>
       </div>
 
       {!activeTheme ? (

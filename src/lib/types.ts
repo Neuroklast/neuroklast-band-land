@@ -191,7 +191,13 @@ export interface ThemeSettings {
   /** Hero section visual style */
   heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
   /** Overlay open/close animation variant (random if omitted) */
-  overlayAnimationStyle?: 'circuitBreak' | 'systemBoot' | 'glitchScan' | 'dataStream' | 'neuralJackIn' | 'hologramMaterialize' | 'matrixDecode' | 'ringLink' | 'none'
+  overlayAnimationStyle?: 'circuitBreak' | 'systemBoot' | 'glitchScan' | 'dataStream' | 'neuralJackIn' | 'hologramMaterialize' | 'matrixDecode' | 'ringLink' | 'none' | 'random'
+  /** Overlay animation speed factor (0.25 = very slow, 1.0 = normal, 3.0 = very fast; default 1.0) */
+  overlayAnimationSpeed?: number
+  /** Custom loading/boot sequence messages shown in the loading screen */
+  loadingMessages?: string[]
+  /** Custom modal loading texts shown during the overlay reveal phase */
+  modalLoadingMessages?: string[]
   /** Global animations toggle */
   animationsEnabled?: boolean
   // Extended optional color overrides (mirrors DesignPreset extended colors)
@@ -616,6 +622,8 @@ export interface OverlayModalSlotProps {
   overlay: { type: 'member' | 'gig' | 'release' | 'news' | 'friend' | 'impressum' | 'datenschutz'; data: unknown } | null
   onClose: () => void
   sectionLabels?: SectionLabels
+  themeSettings?: ThemeSettings
+  activeThemePkg?: ThemePackage
 }
 
 export interface SectionHeadingSlotProps {
@@ -865,6 +873,12 @@ export interface ThemePackage {
     id: string
     label: string
   }[]
+
+  /** Default modal animation for this theme. Falls back to 'random' if omitted. */
+  defaultModalAnimation?: 'circuitBreak' | 'systemBoot' | 'glitchScan' | 'dataStream' | 'neuralJackIn' | 'hologramMaterialize' | 'matrixDecode' | 'ringLink' | 'none' | 'random'
+
+  /** Which modal animations this theme supports/recommends (subset of all). If empty/undefined, all are available. */
+  supportedModalAnimations?: Array<'circuitBreak' | 'systemBoot' | 'glitchScan' | 'dataStream' | 'neuralJackIn' | 'hologramMaterialize' | 'matrixDecode' | 'ringLink' | 'none' | 'random'>
 
   // Customizability
   customizability: ThemeCustomizability

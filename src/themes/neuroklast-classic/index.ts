@@ -91,6 +91,8 @@ export const neuroklastClassicTheme: ThemePackage = {
     { id: 'particles', label: 'Background Particles', defaultEnabled: true },
   ],
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
+  defaultModalAnimation: 'neuralJackIn',
+  supportedModalAnimations: ['circuitBreak', 'systemBoot', 'glitchScan', 'dataStream', 'neuralJackIn', 'hologramMaterialize', 'matrixDecode', 'ringLink', 'random'],
   slots: {
     BackgroundEffects: NeuroklastClassicBackgroundEffects,
     LoadingScreen: NeuroklastClassicLoadingScreen,
