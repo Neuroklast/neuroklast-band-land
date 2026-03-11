@@ -15,6 +15,7 @@ import ThemeCustomizerTypographyPanel from '@/components/ThemeCustomizerTypograp
 import ThemeCustomizerEffectsPanel from '@/components/ThemeCustomizerEffectsPanel'
 import ThemeCustomizerSectionsPanel from '@/components/ThemeCustomizerSectionsPanel'
 import ThemeCustomizerThemePanel from '@/components/ThemeCustomizerThemePanel'
+import ThemeCustomizerTextsPanel from '@/components/ThemeCustomizerTextsPanel'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { applyThemeToDOM, resetThemeDOM }
@@ -108,10 +109,11 @@ export default function ThemeCustomizerDialog({
 
                 <div className="px-4 pb-4">
                   <Tabs defaultValue="colors" onValueChange={v => { if (v === 'typography') loadAllGoogleFonts() }}>
-                    <TabsList className="w-full grid grid-cols-4 bg-muted/50">
+                    <TabsList className="w-full grid grid-cols-5 bg-muted/50">
                       <TabsTrigger value="colors" className="font-mono text-[10px] sm:text-xs">🎨 Colors</TabsTrigger>
                       <TabsTrigger value="typography" className="font-mono text-[10px] sm:text-xs">🔤 Fonts</TabsTrigger>
                       <TabsTrigger value="effects" className="font-mono text-[10px] sm:text-xs">✨ Effects</TabsTrigger>
+                      <TabsTrigger value="texts" className="font-mono text-[10px] sm:text-xs">📝 Texts</TabsTrigger>
                       <TabsTrigger value="layout" className="font-mono text-[10px] sm:text-xs">📐 Layout</TabsTrigger>
                     </TabsList>
                     <div className="mt-4">
@@ -140,6 +142,12 @@ export default function ThemeCustomizerDialog({
                           onUpdate={updateThemeSettings}
                         />
                       </TabsContent>
+                      <TabsContent value="texts">
+                        <ThemeCustomizerTextsPanel
+                          themeSettings={previewConfig.themeSettings}
+                          onPatchTheme={patch}
+                        />
+                      </TabsContent>
                       <TabsContent value="layout">
                         <ThemeCustomizerSectionsPanel
                           themeSettings={previewConfig.themeSettings}
@@ -148,6 +156,7 @@ export default function ThemeCustomizerDialog({
                           onToggleVisibility={toggleVisibility}
                           layoutDraft={layoutDraft}
                           onUpdateLayout={updateLayoutDraft}
+                          activeThemePkg={activeThemePkg}
                         />
                       </TabsContent>
                     </div>

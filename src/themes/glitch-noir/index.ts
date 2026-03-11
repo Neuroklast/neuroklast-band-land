@@ -31,6 +31,8 @@ export const glitchNoirTheme: ThemePackage = {
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   id: 'glitch-noir',
   name: 'Glitch Noir',
+  defaultModalAnimation: 'glitchScan',
+  supportedModalAnimations: ['circuitBreak', 'systemBoot', 'glitchScan', 'dataStream', 'neuralJackIn', 'hologramMaterialize', 'matrixDecode', 'ringLink', 'random'],
   // colors: {
 
   slots: {

@@ -214,3 +214,22 @@ export const NONE_OVERLAY_ANIMATION: OverlayAnimation = {
 export function getAllOverlayAnimations(): OverlayAnimation[] {
   return overlayAnimations
 }
+
+/**
+ * Apply a speed factor to an animation's transition durations.
+ * speed > 1 = faster (shorter duration), speed < 1 = slower (longer duration).
+ * Only `duration` is scaled; `delay` is intentionally left unchanged.
+ */
+export function applySpeedFactor(animation: OverlayAnimation, speed: number): OverlayAnimation {
+  if (!speed || speed === 1) return animation
+  const factor = 1 / Math.max(0.01, speed)
+  const scaleTransition = (t: Transition | undefined): Transition | undefined => {
+    if (!t || t.duration === undefined) return t
+    return { ...t, duration: t.duration * factor }
+  }
+  return {
+    ...animation,
+    backdrop: { ...animation.backdrop, transition: scaleTransition(animation.backdrop.transition) },
+    modal: { ...animation.modal, transition: scaleTransition(animation.modal.transition) },
+  }
+}

@@ -18,6 +18,8 @@ interface CyberpunkLoaderProps {
   precacheUrls?: string[]
   siteName?: string
   loadingScreenType?: ThemeSettings['loadingScreenType']
+  /** Custom loading messages. Falls back to the built-in list if not provided. */
+  loadingMessages?: string[]
 }
 
 const hackingTexts = [
@@ -59,9 +61,10 @@ const codeFragments = [
   'export NK_MODE=ACTIVATED',
 ]
 
-export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], siteName = '', loadingScreenType }: CyberpunkLoaderProps) {
+export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], siteName = '', loadingScreenType, loadingMessages }: CyberpunkLoaderProps) {
+  const activeHackingTexts = loadingMessages?.length ? loadingMessages : hackingTexts
   const [progress, setProgress] = useState(0)
-  const [hackingText, setHackingText] = useState(hackingTexts[0])
+  const [hackingText, setHackingText] = useState(activeHackingTexts[0])
   const [cachingDone, setCachingDone] = useState(precacheUrls.length === 0)
   const onCompleteRef = useRef(onLoadComplete)
   useEffect(() => {
@@ -112,9 +115,9 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
     const interval = setInterval(() => {
       setProgress((prev) => {
         const newProgress = prev + Math.random() * LOADER_PROGRESS_INCREMENT_MULTIPLIER
-        const progressIndex = Math.floor((newProgress / 100) * hackingTexts.length)
-        if (progressIndex < hackingTexts.length) {
-          setHackingText(hackingTexts[progressIndex])
+        const progressIndex = Math.floor((newProgress / 100) * activeHackingTexts.length)
+        if (progressIndex < activeHackingTexts.length) {
+          setHackingText(activeHackingTexts[progressIndex])
         }
         if (prev >= 100) {
           clearInterval(interval)
@@ -125,7 +128,7 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
     }, LOADER_PROGRESS_INTERVAL_MS)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [activeHackingTexts])
 
   // Complete when both progress animation and background caching are done
   useEffect(() => {

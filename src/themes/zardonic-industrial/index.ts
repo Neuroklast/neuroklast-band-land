@@ -32,6 +32,8 @@ export const zardonicIndustrialTheme: ThemePackage = {
   colorPresets: [],
   defaultPresetId: 'default',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
+  defaultModalAnimation: 'circuitBreak',
+  supportedModalAnimations: ['circuitBreak', 'systemBoot', 'glitchScan', 'dataStream', 'hologramMaterialize', 'matrixDecode', 'ringLink', 'random'],
   defaultColors: {
     primary: 'oklch(0.65 0.25 30)',
     accent: 'oklch(0.55 0.20 200)',
