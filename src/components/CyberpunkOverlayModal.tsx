@@ -61,7 +61,7 @@ export default function CyberpunkOverlayModal({
           <div className="min-h-full flex items-center justify-center p-4 md:p-6">
             <motion.div
               key="cyberpunk-overlay-modal"
-              className="w-full max-w-3xl bg-card border border-primary/40 relative"
+              className="w-full max-w-3xl bg-card border border-primary/40 relative theme-overlay-modal-chrome"
               initial={animation.modal.initial as Target}
               animate={animation.modal.animate as TargetAndTransition}
               exit={animation.modal.exit as TargetAndTransition}

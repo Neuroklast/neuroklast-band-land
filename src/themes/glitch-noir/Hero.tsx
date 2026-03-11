@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import type { HeroSlotProps } from '@/lib/types'
+import { Button } from '@/components/ui/button'
+import { CaretDown } from '@phosphor-icons/react'
+import type { HeroSlotProps, HeroButton } from '@/lib/types'
 
 const BLOCK_CHAR = '█'
 const FREQUENCY_TEXT = 'FREQUENCY: 136.5 Hz'
@@ -17,9 +19,25 @@ const SIGNAL_STATES = [
   '[NEURAL_LINK_ESTABLISHED]'
 ]
 
-export default function Hero({ name, genres, logoUrl, titleImageUrl }: HeroSlotProps) {
+const DEFAULT_BUTTONS: HeroButton[] = [
+  { id: 'explore', label: 'EXPLORE', action: 'scroll', scrollTarget: 'releases', variant: 'outline' },
+]
+
+function handleHeroButton(btn: HeroButton, onContactModalOpen?: () => void) {
+  if (btn.action === 'scroll') {
+    const el = document.getElementById(btn.scrollTarget || '')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  } else if (btn.action === 'url' && btn.url) {
+    window.open(btn.url, btn.openInNewTab !== false ? '_blank' : '_self', 'noopener,noreferrer')
+  } else if (btn.action === 'contact-modal') {
+    onContactModalOpen?.()
+  }
+}
+
+export default function Hero({ name, genres, logoUrl, titleImageUrl, heroButtons, onContactModalOpen }: HeroSlotProps) {
   const [glitchActive, setGlitchActive] = useState(false)
   const [signalText, setSignalText] = useState(SIGNAL_STATES[0])
+  const buttons = heroButtons && heroButtons.length > 0 ? heroButtons : DEFAULT_BUTTONS
 
   useEffect(() => {
     const textInterval = setInterval(() => {
@@ -146,6 +164,27 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl }: HeroSlotP
           <span>{BULLET}</span>
           <span className="glitch-noir-flicker">{LIVE_TEXT}</span>
         </div>
+
+        {buttons.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="mt-10 flex gap-4 justify-center flex-wrap"
+          >
+            {buttons.map((btn, idx) => (
+              <Button
+                key={btn.id}
+                variant={btn.variant ?? (idx === 0 ? 'outline' : 'default')}
+                onClick={() => handleHeroButton(btn, onContactModalOpen)}
+                className="font-mono tracking-wider"
+              >
+                {btn.label}
+                {btn.action === 'scroll' && <CaretDown className="ml-2" size={14} />}
+              </Button>
+            ))}
+          </motion.div>
+        )}
       </motion.div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground font-mono text-xs">
@@ -159,3 +198,4 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl }: HeroSlotP
     </section>
   )
 }
+

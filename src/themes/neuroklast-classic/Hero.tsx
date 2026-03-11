@@ -2,22 +2,41 @@ import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaretDown } from '@phosphor-icons/react'
-import type { HeroSlotProps } from '@/lib/types'
+import type { HeroSlotProps, HeroButton } from '@/lib/types'
 import './styles.css'
 
 const FREQ_TEXT = 'FREQ::432Hz'
 const MODE_CRIMSON_TEXT = 'MODE::CRIMSON'
 const SIGNAL_ACTIVE_TEXT = 'SIGNAL::ACTIVE'
 
+const DEFAULT_BUTTONS: HeroButton[] = [
+  { id: 'initialize', label: 'INITIALIZE', action: 'scroll', scrollTarget: 'news', variant: 'outline' },
+]
+
+function handleHeroButton(btn: HeroButton, onContactModalOpen?: () => void) {
+  if (btn.action === 'scroll') {
+    const el = document.getElementById(btn.scrollTarget || '')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
+    }
+  } else if (btn.action === 'url' && btn.url) {
+    window.open(btn.url, btn.openInNewTab !== false ? '_blank' : '_self', 'noopener,noreferrer')
+  } else if (btn.action === 'contact-modal') {
+    onContactModalOpen?.()
+  }
+}
+
 export default function NeuroklastClassicHero({
   name,
   genres,
   logoUrl,
   titleImageUrl,
+  heroButtons,
+  onContactModalOpen,
 }: HeroSlotProps) {
-  const scrollToNext = () => {
-    window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
-  }
+  const buttons = heroButtons && heroButtons.length > 0 ? heroButtons : DEFAULT_BUTTONS
 
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
@@ -207,25 +226,31 @@ export default function NeuroklastClassicHero({
           ))}
         </motion.div>
 
-        {/* CTA button */}
+        {/* CTA buttons */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.7 }}
+          className="flex gap-3 flex-wrap justify-center"
         >
-          <Button
-            onClick={scrollToNext}
-            variant="outline"
-            className="group border-primary/50 text-foreground/90 hover:bg-primary/5 hover:border-primary hover:shadow-[0_0_15px_var(--primary)] active:bg-primary/10 active:scale-95 px-8 py-6 md:px-10 md:py-7 text-sm md:text-base font-mono tracking-[0.12em] transition-all touch-manipulation"
-          >
-            INITIALIZE
-            <motion.div
-              animate={{ y: [0, 4, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          {buttons.map((btn, idx) => (
+            <Button
+              key={btn.id}
+              onClick={() => handleHeroButton(btn, onContactModalOpen)}
+              variant={btn.variant ?? (idx === 0 ? 'outline' : 'default')}
+              className="group border-primary/50 text-foreground/90 hover:bg-primary/5 hover:border-primary hover:shadow-[0_0_15px_var(--primary)] active:bg-primary/10 active:scale-95 px-8 py-6 md:px-10 md:py-7 text-sm md:text-base font-mono tracking-[0.12em] transition-all touch-manipulation"
             >
-              <CaretDown className="ml-2" size={16} />
-            </motion.div>
-          </Button>
+              {btn.label}
+              {btn.action === 'scroll' && (
+                <motion.div
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <CaretDown className="ml-2" size={16} />
+                </motion.div>
+              )}
+            </Button>
+          ))}
         </motion.div>
       </div>
 
@@ -250,3 +275,4 @@ export default function NeuroklastClassicHero({
 }
 
 NeuroklastClassicHero.displayName = 'NeuroklastClassicHero'
+

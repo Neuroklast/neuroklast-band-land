@@ -223,6 +223,10 @@ export interface ThemeSettings {
   ringColor?: string
   /** Hover accent color (default: derived from accent) */
   hoverColor?: string
+  /** Configurable hero section buttons */
+  heroButtons?: HeroButton[]
+  /** User-created custom color presets (persisted in site config) */
+  customColorPresets?: ColorPreset[]
 }
 
 /** Individual overlay effect configuration */
@@ -567,6 +571,25 @@ export interface ColorPreset {
 }
 
 /** Props for theme slot components */
+export interface HeroButton {
+  /** Unique stable key */
+  id: string
+  /** Button label text */
+  label: string
+  /** Action: scroll to a section, open a URL, or trigger the contact modal */
+  action: 'scroll' | 'url' | 'contact-modal'
+  /** For action='scroll': section id to scroll to */
+  scrollTarget?: string
+  /** For action='url': the URL to open */
+  url?: string
+  /** Whether to open URL in new tab (default: true) */
+  openInNewTab?: boolean
+  /** Visual variant passed to the Button component */
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary'
+  /** Icon name from @phosphor-icons/react (optional) */
+  icon?: string
+}
+
 export interface HeroSlotProps {
   name: string
   genres: string[]
@@ -575,6 +598,8 @@ export interface HeroSlotProps {
   logoUrl?: string
   titleImageUrl?: string
   heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
+  heroButtons?: HeroButton[]
+  onContactModalOpen?: () => void
 }
 
 export interface NavigationSlotProps {

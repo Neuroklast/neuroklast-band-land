@@ -1,77 +1,90 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { List, X } from '@phosphor-icons/react'
+import type { NavigationSlotProps } from '@/lib/types'
 
 const NAV_LOGO_TEXT = 'NK://SYS'
+const NAV_HEIGHT_PX = 72
 
-export default function Navigation() {
+export default function Navigation({ siteName, items, onNavigate }: NavigationSlotProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const navItems = [
-    { label: 'ENTRY', href: '#hero' },
-    { label: 'RELEASES', href: '#releases' },
-    { label: 'EVENTS', href: '#events' },
-    { label: 'ANALYZER', href: '#visualizer' },
-    { label: 'TRANSMISSION', href: '#contact' }
-  ]
+  const scrollToSection = (id: string) => {
+    setIsOpen(false)
+    if (onNavigate) {
+      onNavigate(id)
+    } else {
+      const element = document.getElementById(id)
+      if (element) {
+        const top = element.getBoundingClientRect().top + window.scrollY - NAV_HEIGHT_PX
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+    }
+  }
 
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="text-foreground font-mono text-sm tracking-widest">
-            {NAV_LOGO_TEXT}
-          </div>
+          <button
+            onClick={() => scrollToSection('hero')}
+            className="text-foreground font-mono text-sm tracking-widest hover:text-primary transition-colors"
+          >
+            {siteName || NAV_LOGO_TEXT}
+          </button>
 
           <div className="hidden md:flex gap-8">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
+            {items.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
                 className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm tracking-wider relative group"
               >
                 <span className="glitch-noir-nav-underline">[</span>
                 {item.label}
                 <span className="glitch-noir-nav-underline">]</span>
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-accent group-hover:w-full transition-all duration-300" />
-              </a>
+              </button>
             ))}
           </div>
 
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden text-foreground"
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
           >
             {isOpen ? <X size={24} /> : <List size={24} />}
           </button>
         </div>
       </nav>
 
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, x: '100%' }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: '100%' }}
-          className="fixed inset-0 z-40 bg-background md:hidden"
-        >
-          <div className="glitch-noir-scanline-overlay" />
-          <div className="flex flex-col items-center justify-center h-full gap-8">
-            {navItems.map((item, i) => (
-              <motion.a
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="text-foreground font-mono text-2xl tracking-widest hover:text-accent transition-colors"
-              >
-                {'>'} {item.label}
-              </motion.a>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            className="fixed inset-0 z-40 bg-background md:hidden"
+          >
+            <div className="glitch-noir-scanline-overlay" />
+            <div className="flex flex-col items-center justify-center h-full gap-8">
+              {items.map((item, i) => (
+                <motion.button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="text-foreground font-mono text-2xl tracking-widest hover:text-accent transition-colors"
+                >
+                  {'>'} {item.label}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
+

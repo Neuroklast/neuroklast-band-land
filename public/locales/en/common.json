@@ -1169,5 +1169,15 @@
   "common.sectionMedia": "Media",
   "common.sectionSocial": "Social",
   "common.sectionContact": "Contact",
-  "common.sectionPartners": "Partners & Friends"
+  "common.sectionPartners": "Partners & Friends",
+  "contact.modalTitle": "CONTACT // SEND MESSAGE",
+  "contact.closeModal": "Close contact form",
+  "theme.heroButtons": "HERO BUTTONS",
+  "theme.heroButtonsDesc": "Configure the action buttons displayed under the hero image. Leave empty for theme defaults.",
+  "theme.addHeroButton": "Add Button",
+  "theme.heroButtonLabel": "Label",
+  "theme.heroButtonScrollTarget": "Section ID (e.g. releases)",
+  "themeCustomizer.saveAsCustomPreset": "Save as Custom Preset",
+  "themeCustomizer.customPresetsLabel": "Custom",
+  "themeCustomizer.presetNamePlaceholder": "Preset name…"
 }

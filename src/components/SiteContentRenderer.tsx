@@ -7,7 +7,7 @@
  * All content-section components are resolved via the theme slot mechanism,
  * allowing themes to override any section with their own implementation.
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useThemeSlots } from '@/lib/theme-registry'
 import { useCachedImage } from '@/hooks/useCachedImage'
@@ -17,6 +17,7 @@ import NewsletterWidget from '@/components/NewsletterWidget'
 import { WidgetRenderer } from '@/components/widgets'
 import { getActiveWidgets } from '@/lib/widget-plugins'
 import { resolveSections, getEnabledSectionIds } from '@/lib/sections'
+import ContactModal from '@/components/ContactModal'
 import type { SiteConfig, FontSizeSettings, SectionLabels, SectionVisibility } from '@/lib/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ export default function SiteContentRenderer({
   onShowImpressum,
   onShowDatenschutz,
 }: SiteContentRendererProps) {
+  const [contactModalOpen, setContactModalOpen] = useState(false)
   const safeSocialLinks = data.socialLinks || defaultData.socialLinks
   const {
     BackgroundEffects: ThemeBackgroundEffects,
@@ -94,8 +96,17 @@ export default function SiteContentRenderer({
           logoUrl={cachedLogoUrl || undefined}
           titleImageUrl={cachedTitleImageUrl || undefined}
           heroStyle={data.themeSettings?.heroStyle}
+          heroButtons={data.themeSettings?.heroButtons}
+          onContactModalOpen={() => setContactModalOpen(true)}
         />
       </SectionErrorBoundary>
+
+      <ContactModal
+        open={contactModalOpen}
+        onClose={() => setContactModalOpen(false)}
+        contactSettings={data.contactSettings}
+        sectionLabels={data.sectionLabels}
+      />
 
       <main id="main-content" className="relative">
         <SectionGuard sectionId="news" activeSectionIds={activeSectionIds} delay={0.7} label="News">

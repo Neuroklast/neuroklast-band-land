@@ -321,7 +321,7 @@ function App() {
               { label: data.sectionLabels?.releases || 'Releases', id: 'releases' },
               { label: data.sectionLabels?.media || 'Media', id: 'media' },
               { label: data.sectionLabels?.connect || 'Connect', id: 'social' }
-            ]}
+            ].filter(item => item.id === 'hero' || vis[item.id as keyof typeof vis] !== false)}
           />
           <motion.div className="min-h-screen bg-background text-foreground overflow-x-hidden relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
             {vis.audioVisualizer !== false && <AudioVisualizer />}
