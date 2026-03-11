@@ -3,21 +3,8 @@ import { List, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 import type { NavigationSlotProps } from '@/lib/types'
 
-export default function Navigation({ siteName, items, onNavigate }: NavigationSlotProps) {
+export default function Navigation({ siteName, items }: NavigationSlotProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  const handleNavigation = (id: string) => {
-    setMobileMenuOpen(false)
-    if (onNavigate) {
-      onNavigate(id)
-    } else {
-      const element = document.getElementById(id)
-      if (element) {
-        const top = element.getBoundingClientRect().top + window.scrollY - 64
-        window.scrollTo({ top, behavior: 'smooth' })
-      }
-    }
-  }
 
   return (
     <motion.nav
@@ -38,7 +25,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationSl
           {items.map((item) => (
             <button
               key={item.label}
-              onClick={() => handleNavigation(item.id)}
+              onClick={() => { window.location.hash = item.id }}
               className="text-sm uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors font-mono umbrella-corp-nav-item"
             >
               {item.label}
@@ -67,7 +54,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationSl
               {items.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => handleNavigation(item.id)}
+                  onClick={() => { window.location.hash = item.id; setMobileMenuOpen(false) }}
                   className="text-left text-sm uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors font-mono"
                 >
                   {item.label}

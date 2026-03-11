@@ -202,6 +202,15 @@ export default function AdminHubDialog({
           },
         ]
       : []),
+    ...(onLogout
+      ? [
+          {
+            icon: SignOut,
+            label: t('hub.logout') || 'Logout',
+            action: () => { onClose(); onLogout?.() },
+          },
+        ]
+      : []),
   ]
 
   // If the user wants the customizer, we unmount the hub and let the customizer run.
@@ -242,29 +251,17 @@ export default function AdminHubDialog({
             exit={{ scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-card border border-border rounded-lg w-full max-w-4xl flex flex-col md:flex-row overflow-hidden min-h-[600px] max-h-[85vh]">
+            <div className="bg-card border border-border rounded-lg w-full max-w-4xl flex overflow-hidden min-h-[600px] max-h-[85vh]">
               {/* Sidebar Tabs */}
-              <div className="w-full md:w-64 bg-muted/20 border-b md:border-b-0 md:border-r border-border flex flex-col shrink-0">
-                <div className="flex items-center justify-between md:justify-start gap-2 px-4 md:px-6 py-4 md:py-5 border-b border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Lightning size={20} weight="fill" className="text-primary" />
-                    <h2 className="text-sm font-mono font-bold tracking-widest text-foreground uppercase">
-                      {t('hub.title') || 'Admin Hub'}
-                    </h2>
-                  </div>
-                  {/* Close button for mobile inside the header */}
-                  <button
-                    onClick={onClose}
-                    className="md:hidden text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors p-1"
-                    aria-label={t('common.close')}
-                  >
-                    <X size={20} weight="bold" />
-                  </button>
+              <div className="w-64 bg-muted/20 border-r border-border flex flex-col">
+                <div className="flex items-center gap-2 px-6 py-5 border-b border-border/50">
+                  <Lightning size={20} weight="fill" className="text-primary" />
+                  <h2 className="text-sm font-mono font-bold tracking-widest text-foreground uppercase">
+                    {t('hub.title') || 'Admin Hub'}
+                  </h2>
                 </div>
-
-                {/* Horizontal scroll on mobile, vertical on desktop */}
-                <div className="overflow-x-auto md:overflow-y-auto flex-none md:flex-1 py-2 md:py-4 flex flex-row md:flex-col items-center md:items-stretch">
-                  <div className="flex md:flex-col gap-1 px-3 min-w-max md:min-w-0 flex-1">
+                <div className="flex-1 overflow-y-auto py-4">
+                  <div className="space-y-1 px-3">
                     {tabs.map((tab) => {
                       const IconComponent = tab.icon
                       const isActive = activeTab === tab.id
@@ -272,50 +269,24 @@ export default function AdminHubDialog({
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id)}
-                          className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:py-3 rounded-md text-left transition-colors font-mono text-xs uppercase tracking-wider ${
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-mono text-xs uppercase tracking-wider ${
                             isActive
                               ? 'bg-primary/10 text-primary font-bold'
                               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                           }`}
                         >
-                          <IconComponent size={18} className={isActive ? 'text-primary' : 'text-muted-foreground/70 shrink-0'} />
-                          <span className="whitespace-nowrap">{tab.label}</span>
+                          <IconComponent size={18} className={isActive ? 'text-primary' : 'text-muted-foreground/70'} />
+                          {tab.label}
                         </button>
                       )
                     })}
-
-                    {/* Mobile logout inside horizontal scroll, integrated with tabs */}
-                    {onLogout && (
-                      <div className="md:hidden flex items-center pl-2 ml-2 border-l border-border/50">
-                        <button
-                          onClick={() => { onClose(); onLogout?.() }}
-                          className="flex items-center gap-2 px-3 py-2 rounded-md text-left transition-colors font-mono text-xs uppercase tracking-wider text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <SignOut size={18} className="shrink-0" />
-                          <span className="whitespace-nowrap">{t('hub.logout') || 'Logout'}</span>
-                        </button>
-                      </div>
-                    )}
                   </div>
-                </div>
-
-                {/* Account / Bottom Actions for Desktop */}
-                <div className="hidden md:block p-4 mt-auto border-t border-border/50">
-                  {onLogout && (
-                    <button
-                      onClick={() => { onClose(); onLogout?.() }}
-                      className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-mono text-xs uppercase tracking-wider text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <SignOut size={18} className="shrink-0" />
-                      <span className="whitespace-nowrap">{t('hub.logout') || 'Logout'}</span>
-                    </button>
-                  )}
                 </div>
               </div>
 
               {/* Main Content Area */}
-              <div className="flex-1 flex flex-col relative bg-card overflow-hidden">
-                <div className="hidden md:block absolute top-4 right-4 z-10">
+              <div className="flex-1 flex flex-col relative bg-card">
+                <div className="absolute top-4 right-4 z-10">
                   <button
                     onClick={onClose}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors p-2"
