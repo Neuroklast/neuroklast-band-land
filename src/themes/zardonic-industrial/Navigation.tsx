@@ -5,12 +5,21 @@ import { useState } from 'react'
 import type { NavigationSlotProps } from '@/lib/types'
 type NavigationProps = NavigationSlotProps;
 
-export default function Navigation({ siteName, items }: NavigationProps) {
+export default function Navigation({ siteName, items, onNavigate }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-
-
-
+  const handleNavigation = (id: string) => {
+    setMobileMenuOpen(false)
+    if (onNavigate) {
+      onNavigate(id)
+    } else {
+      const element = document.getElementById(id)
+      if (element) {
+        const top = element.getBoundingClientRect().top + window.scrollY - 64
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+    }
+  }
 
   return (
     <motion.nav
@@ -32,7 +41,7 @@ export default function Navigation({ siteName, items }: NavigationProps) {
           {items.map((item) => (
             <button
               key={item.label}
-              onClick={() => window.location.hash = item.id}
+              onClick={() => handleNavigation(item.id)}
               className="text-sm uppercase tracking-wide hover:text-primary transition-colors font-mono zardonic-theme-hover-chromatic zardonic-theme-hover-glitch"
             >
               {item.label}
@@ -64,7 +73,7 @@ export default function Navigation({ siteName, items }: NavigationProps) {
               {items.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => { window.location.hash = item.id; setMobileMenuOpen(false); }}
+                  onClick={() => handleNavigation(item.id)}
                   className="text-left text-sm uppercase tracking-wide hover:text-primary transition-colors font-mono"
                 >
                   {item.label}
