@@ -62,15 +62,19 @@ describe('validateActivationKey', () => {
   })
 
   it('returns invalid when VITE_ACTIVATION_KEY is not set', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', ''); vi.stubEnv('VITE_IS_PRIMARY', 'false')
+    vi.stubEnv('VITE_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()
     expect(result.valid).toBe(false)
     expect(result.error).toMatch(/no activation key/i)
   })
 
-  it('bypasses validation when VITE_IS_PRIMARY is true', async () => {
-    vi.stubEnv('VITE_IS_PRIMARY', 'true')
+  it('bypasses validation when hostname is neuroklast.net', async () => {
+    Object.defineProperty(window, 'location', {
+      value: { hostname: 'neuroklast.net' },
+      writable: true,
+      configurable: true,
+    })
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const { validateActivationKey } = await import('@/lib/activation')
@@ -79,8 +83,12 @@ describe('validateActivationKey', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
-  it('does not bypass validation when VITE_IS_PRIMARY is not true', async () => {
-    vi.stubEnv('VITE_IS_PRIMARY', 'false')
+  it('does not bypass validation when hostname is not neuroklast.net', async () => {
+    Object.defineProperty(window, 'location', {
+      value: { hostname: 'other-tenant.vercel.app' },
+      writable: true,
+      configurable: true,
+    })
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()

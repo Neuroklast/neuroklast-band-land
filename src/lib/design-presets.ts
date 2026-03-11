@@ -42,8 +42,33 @@ export const neuroklastClassicPreset: DesignPreset = {
   },
 }
 
+export const minimalDarkPreset: DesignPreset = {
+  id: 'minimal-dark',
+  name: 'Minimal Dark',
+  description: 'A minimal dark techno theme with clean aesthetics',
+  colors: {
+    primary: 'oklch(0.95 0 0)',
+    accent: 'oklch(0.7 0 0)',
+    background: 'oklch(0.08 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    card: 'oklch(0.12 0 0)',
+    cardForeground: 'oklch(0.95 0 0)',
+    border: 'oklch(0.25 0 0)',
+    mutedForeground: 'oklch(0.6 0 0)',
+    secondary: 'oklch(0.15 0 0)',
+  },
+  fonts: {
+    heading: "'JetBrains Mono', monospace",
+    body: "'JetBrains Mono', monospace",
+    mono: "'JetBrains Mono', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+}
+
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   'neuroklast-classic': neuroklastClassicPreset,
+  'minimal-dark': minimalDarkPreset,
 }
 
 export const PRESET_IDS = Object.keys(DESIGN_PRESETS) as (keyof typeof DESIGN_PRESETS)[]

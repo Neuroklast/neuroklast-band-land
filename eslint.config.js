@@ -40,6 +40,23 @@ export default tseslint.config(
       ],
       'band-land/no-direct-localstorage': 'error',
       'band-land/no-direct-theme-context': 'error',
+      'band-land/require-dialog-props': 'warn',
+      'band-land/no-hardcoded-color-values': 'warn',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSAsExpression > TSAsExpression',
+          message:
+            'Double type-cast "as unknown as" is banned. If TypeScript complains, fix the architecture — do not suppress the type error.',
+        },
+        {
+          // warn-level: CustomEvent is allowed in theme-engine internals (neuroklast_theme_config_update)
+          // but must never be used for React component state propagation.
+          selector: "NewExpression[callee.name='CustomEvent']",
+          message:
+            'new CustomEvent() must not be used for React component communication. Use props, context, or TanStack Query instead.',
+        },
+      ],
     },
   },
 )

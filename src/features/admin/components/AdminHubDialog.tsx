@@ -92,13 +92,13 @@ export default function AdminHubDialog({
       icon: Palette,
       label: t('hub.storeThemes') || 'Theme Store',
       description: t('hub.storeThemesDesc') || 'Install premium themes',
-      action: () => { onClose(); onOpenDialog('store') },
+      action: () => { onClose(); onOpenDialog('store-themes') },
     },
     {
       icon: Sliders,
       label: t('hub.storeWidgets') || 'Widget Store',
       description: t('hub.storeWidgetsDesc') || 'Add new widgets to the site',
-      action: () => { onClose(); onOpenDialog('store') },
+      action: () => { onClose(); onOpenDialog('store-widgets') },
     },
   ]
 
@@ -225,10 +225,10 @@ export default function AdminHubDialog({
             setShowCustomizer(false)
             onClose()
           }}
-          themeSettings={{} as unknown as SiteConfig["themeSettings"]} // The customizer will use the global hook state or be passed properly in AdminButton if we lift state up
-          onSaveTheme={(ts) => { window.dispatchEvent(new CustomEvent('save-theme-event', { detail: ts })) }}
-          sectionVisibility={{} as unknown as SiteConfig["sectionVisibility"]}
-          onSaveSectionVisibility={(vs) => { window.dispatchEvent(new CustomEvent('save-visibility-event', { detail: vs })) }}
+          themeSettings={siteConfig?.themeSettings}
+          onSaveTheme={(ts) => onUpdateSiteConfig?.('themeSettings', ts)}
+          sectionVisibility={siteConfig?.sectionVisibility}
+          onSaveSectionVisibility={(vs) => onUpdateSiteConfig?.('sectionVisibility', vs)}
         />
       </Suspense>
     )
@@ -290,7 +290,7 @@ export default function AdminHubDialog({
                   <button
                     onClick={onClose}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors p-2"
-                    aria-label="Close"
+                    aria-label={t('common.close')}
                   >
                     <X size={20} weight="bold" />
                   </button>

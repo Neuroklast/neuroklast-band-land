@@ -10,6 +10,7 @@ import type { SoundSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 
 interface SoundSettingsDialogProps {
+  open: boolean
   settings?: SoundSettings
   onSave: (settings: SoundSettings) => void
   onClose: () => void

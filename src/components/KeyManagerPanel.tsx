@@ -1,7 +1,7 @@
 /**
  * KeyManagerPanel — Admin UI for managing activation keys.
  *
- * Only visible when VITE_IS_PRIMARY === 'true'.
+ * Only visible on the primary instance (hostname: neuroklast.net).
  * Shows a list of keys (name, tier, created-at) and allows:
  * - Generating new keys with name + tier
  * - Revoking existing keys (by revokeId — never exposes the key value)
@@ -33,8 +33,10 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import QRCode from 'qrcode'
+import { isPrimaryInstance } from '@/lib/primary-check'
 
-const IS_PRIMARY = import.meta.env.VITE_IS_PRIMARY === 'true'
+// SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
+const IS_PRIMARY = isPrimaryInstance()
 
 interface KeyEntry {
   name: string

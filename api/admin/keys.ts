@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto'
 import { kv } from '@vercel/kv'
 import { validateSession } from '../auth.js'
+import { isPrimaryHost } from '../_primary-check.js'
 
 // Minimal inline types so we avoid the vulnerable @vercel/node package
 interface VercelRequest {
@@ -36,7 +37,7 @@ const FALLBACK_KEY_ENTRY = {
  * POST → Generate a new activation key (returns the key value once, plus a revokeId)
  * DELETE → Revoke a key by its revokeId (a separate identifier, never the key itself)
  *
- * Only available on the primary deployment (VITE_IS_PRIMARY=true).
+ * Only available on the primary deployment (hostname: neuroklast.net).
  * Requires a valid admin session (cookie-based).
  *
  * Key security: The actual activation key value is ONLY returned on creation.
@@ -45,8 +46,9 @@ const FALLBACK_KEY_ENTRY = {
  * requests.  A mapping from revokeId → key is stored in KV.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Only available on primary instance
-  if (process.env.VITE_IS_PRIMARY !== 'true') {
+  // Only available on primary instance.
+  // SECURITY: host-header check; env vars like VITE_IS_PRIMARY must never be used here.
+  if (!isPrimaryHost(req.headers.host as string | undefined)) {
     return res.status(403).json({ error: 'Key manager only available on primary deployment' })
   }
 

@@ -101,6 +101,61 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
   }
 
   // --- Releases ---
+  const syncItunesMutation = useMutation({
+    mutationFn: async ({ artistName }: { artistName: string }) => {
+      const encoded = encodeURIComponent(artistName)
+      const response = await fetch(`https://itunes.apple.com/search?term=${encoded}&entity=album,single,ep&limit=50&media=music`)
+      if (!response.ok) {
+        throw new Error(`iTunes API returned ${response.status}`)
+      }
+      const result = await response.json()
+      if (!Array.isArray(result.results)) {
+        throw new Error('Invalid response format from iTunes')
+      }
+      return result.results
+    },
+    onSuccess: (results) => {
+      interface ItunesResult {
+        collectionId: number
+        collectionName: string
+        releaseDate: string
+        collectionType: string
+        artworkUrl100?: string
+        collectionViewUrl?: string
+      }
+      const syncedReleases: Release[] = (results as ItunesResult[]).map(item => ({
+        id: `itunes-${item.collectionId}`,
+        title: item.collectionName,
+        releaseDate: item.releaseDate?.split('T')[0] || '',
+        type: item.collectionType?.toLowerCase() === 'album' ? 'album' : 'single',
+        artwork: item.artworkUrl100?.replace('100x100', '600x600'),
+        streamingLinks: item.collectionViewUrl ? { appleMusic: item.collectionViewUrl } : {},
+      }))
+      if (syncedReleases.length > 0) {
+        const manualReleases = (data.releases || []).filter(r => !r.id.startsWith('itunes-'))
+        onUpdate('releases', [...manualReleases, ...syncedReleases])
+        toast.success(t('releases.syncSuccess').replace('{0}', String(syncedReleases.length)) || `Synced ${syncedReleases.length} releases from iTunes`)
+      } else {
+        toast.info(t('releases.syncNone') || 'No releases found on iTunes for this artist.')
+      }
+    },
+    onError: (error) => {
+      console.error('iTunes sync error:', error)
+      toast.error(t('releases.syncError') || 'Failed to sync releases', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      })
+    }
+  })
+
+  const handleSyncItunes = () => {
+    const artistName = data.siteName
+    if (!artistName) {
+      toast.error(t('releases.syncMissingName') || 'Please set your Band Name first (Content > Band Info).')
+      return
+    }
+    syncItunesMutation.mutate({ artistName })
+  }
+
   const handleAddRelease = () => {
     const newRelease: Release = {
       id: Date.now().toString(),
@@ -339,7 +394,19 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b border-border pb-2">
                 <h3 className="font-mono font-bold text-lg text-primary">{t('content.releaseManager') || 'Release Manager'}</h3>
-                <Button onClick={handleAddRelease} size="sm" className="gap-2"><Plus size={16} /> {t('releases.addRelease') || 'Add Release'}</Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={handleSyncItunes}
+                    disabled={syncItunesMutation.isPending}
+                  >
+                    {syncItunesMutation.isPending ? <Spinner className="animate-spin" size={16} /> : null}
+                    {syncItunesMutation.isPending ? (t('content.syncing') || 'Syncing...') : (t('content.syncItunes') || 'Sync via iTunes')}
+                  </Button>
+                  <Button onClick={handleAddRelease} size="sm" className="gap-2"><Plus size={16} /> {t('releases.addRelease') || 'Add Release'}</Button>
+                </div>
               </div>
 
               {(!data.releases || data.releases.length === 0) ? (
@@ -398,11 +465,13 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
               <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2 mt-8">{t('content.seoIdentity') || 'SEO & Identity'}</h3>
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label>{t('content.metaTitle') || 'Global Meta Title'}</Label>
+                  <Label>{t('content.tabTitle') || 'Browser Tab Title'}</Label>
                   <Input
                     value={data.seo?.title || ''}
                     onChange={e => onUpdate('seo', { ...data.seo, title: e.target.value })}
+                    placeholder={data.tagline ? `${data.siteName} – ${data.tagline}` : data.siteName || ''}
                   />
+                  <p className="text-xs text-muted-foreground">{t('content.tabTitleHint') || 'Overrides the browser tab title. Leave blank to use Band Name + Slogan.'}</p>
                 </div>
                 <div className="space-y-2">
                   <Label>{t('content.metaDescription') || 'Global Meta Description'}</Label>

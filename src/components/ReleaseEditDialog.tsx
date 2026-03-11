@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { useLocale } from '@/hooks/use-locale'
 
 interface ReleaseEditDialogProps {
+  open: boolean
   release: Release | null
   onSave: (release: Release) => void
   onClose: () => void

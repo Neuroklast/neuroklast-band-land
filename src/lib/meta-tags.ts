@@ -79,9 +79,8 @@ export function generateMetaTags(config: SiteConfig): MetaTagSet {
   const themeColor =
     config.themeSettings?.background ?? DEFAULT_THEME_COLOR
 
-  const ogTitle = config.tagline
-    ? `${siteName} – ${config.tagline}`
-    : siteName
+  const ogTitle = config.seo?.title?.trim()
+    || (config.tagline ? `${siteName} – ${config.tagline}` : siteName)
 
   const jsonLdObj = buildMusicGroupJsonLd(config)
 

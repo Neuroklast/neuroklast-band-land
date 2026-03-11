@@ -6,6 +6,7 @@
  * The result is cached in sessionStorage for the duration of the browser session
  * to avoid repeated network calls on every page refresh.
  */
+import { isPrimaryInstance } from '@/lib/primary-check'
 
 export type LicenseTier = 'free' | 'premium' | 'agency'
 
@@ -58,16 +59,16 @@ function setCachedResult(result: ActivationResult): void {
 /**
  * Validate the deployment's activation key against the central Neuroklast API.
  *
- * - If `VITE_IS_PRIMARY` is `"true"`, the deployment is the official Neuroklast
- *   instance and validation is bypassed (always valid).
+ * - If the current hostname is `neuroklast.net` (primary instance), validation is bypassed (always valid).
  * - If no key is configured (`VITE_ACTIVATION_KEY` is empty), returns invalid.
  * - Caches the result in sessionStorage for the current browser session.
  * - If the remote API is unreachable, fails closed (returns invalid) to prevent
  *   unactivated deployments from running silently.
  */
 export async function validateActivationKey(): Promise<ActivationResult> {
-  // Primary instance (own deployment) — always valid, no key required
-  if (import.meta.env.VITE_IS_PRIMARY === 'true') {
+  // Primary instance (master deployment on neuroklast.net) — always valid, no key required.
+  // SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
+  if (isPrimaryInstance()) {
     const result: ActivationResult = { valid: true, tier: 'agency', features: [] }
     return result
   }

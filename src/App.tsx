@@ -24,6 +24,7 @@ import type {
   OverlayModalSlotProps,
 } from '@/lib/types'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
+import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
 import ActivationLockScreen from '@/components/ActivationLockScreen'
@@ -32,6 +33,7 @@ import { validateActivationKey } from '@/lib/activation'
 import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
 import { useThemeSlots } from '@/lib/theme-registry'
+import { isPrimaryInstance } from '@/lib/primary-check'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
@@ -121,12 +123,20 @@ function App() {
   const [selectedAttackerIp, setSelectedAttackerIp] = useState('')
   /** Tells AdminButton to auto-open the hub when the admin logs in. */
   const [openAdminHubOnMount, setOpenAdminHubOnMount] = useState(false)
-  const isPrimary = import.meta.env.VITE_IS_PRIMARY === 'true'
+  // SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
+  const isPrimary = isPrimaryInstance()
   const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
   /** Track the previous isOwner value to detect transitions (visitor → admin). */
   const prevIsOwnerRef = useRef(false)
 
   useCRTEffects()
+
+  // ── Meta tags / browser tab title ───────────────────────────────────────────
+  useEffect(() => {
+    if (siteConfigLoaded) {
+      applyMetaTags(generateMetaTags(config))
+    }
+  }, [config, siteConfigLoaded])
 
   // ── Analytics ───────────────────────────────────────────────────────────────
   useEffect(() => { validateActivationKey().then(setActivationResult) }, [])
@@ -287,10 +297,10 @@ function App() {
         <SecretTerminal isOpen={activeDialog === 'secret-terminal'} onClose={() => setActiveDialog(null)} customCommands={data.terminalCommands || []} secretCode={data.secretCode} siteName={data.siteName} editMode={isOwner} onSaveCommands={(tc) => updateConfig({ terminalCommands: tc })} onSaveSecretCode={(sc) => updateConfig({ secretCode: sc })} />
       </Suspense>
       <Suspense fallback={null}>
-        <ImpressumWindow isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={isOwner} onSave={(impressum) => updateConfig({ impressum })} />
+        <ImpressumWindow open={impressumOpen} onClose={() => setImpressumOpen(false)} impressum={data.impressum} editMode={isOwner} onSave={(impressum) => updateConfig({ impressum })} />
       </Suspense>
       <Suspense fallback={null}>
-        <DatenschutzWindow isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
+        <DatenschutzWindow open={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
       </Suspense>
       <CookieBanner />
       {vis.scanline !== false && <MovingScanline />}

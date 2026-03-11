@@ -3,7 +3,8 @@ import CyberModalBackdrop from '@/components/CyberModalBackdrop'
 import { Warning, Globe, User, ChartLine, List, Shield, Fingerprint } from '@phosphor-icons/react'
 import CyberCloseButton from '@/components/CyberCloseButton'
 import { useState, useEffect } from 'react'
-import { t, tip, type Locale, LOCALES } from '@/lib/i18n-security'
+import { t, tip } from '@/lib/i18n-security'
+import { useLocale } from '@/hooks/use-locale'
 
 interface AttackerProfileDialogProps {
   open: boolean
@@ -120,7 +121,7 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [locale, setLocale] = useState<Locale>('en')
+  const { locale } = useLocale()
   const L = (key: string) => t(key, locale)
   const LT = (key: string) => tip(key, locale)
 
@@ -232,20 +233,6 @@ export default function AttackerProfileDialog({ open, onClose, hashedIp }: Attac
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex border border-primary/20">
-                  {LOCALES.map(loc => (
-                    <button
-                      key={loc.value}
-                      onClick={() => setLocale(loc.value)}
-                      className={`px-2 py-0.5 text-[9px] font-mono transition-colors ${
-                        locale === loc.value ? 'bg-primary/30 text-primary' : 'text-primary/40 hover:text-primary/70'
-                      }`}
-                      title={loc.value === 'en' ? 'English' : 'Deutsch'}
-                    >
-                      {loc.label}
-                    </button>
-                  ))}
-                </div>
                 <CyberCloseButton onClick={onClose} label={L('sec.close')} />
               </div>
             </div>
