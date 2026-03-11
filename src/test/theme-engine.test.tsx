@@ -122,7 +122,7 @@ describe('useThemeEngine', () => {
     expect(captured!.activePreset).toBe('cyberpunk')
   })
 
-  it('setThemeSettings calls onChangeTheme and applies to DOM atomically', () => {
+  it('setThemeSettings calls onChangeTheme and applies to DOM atomically', async () => {
     const onChangeTheme = vi.fn()
     let captured: ReturnType<typeof useThemeEngine> | null = null
 
@@ -134,7 +134,7 @@ describe('useThemeEngine', () => {
 
     const newSettings: ThemeSettings = { activePreset: 'neon', primary: 'green' }
 
-    act(() => {
+    await act(async () => {
       captured!.setThemeSettings(newSettings)
     })
 
@@ -142,7 +142,7 @@ describe('useThemeEngine', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('neon')
     expect(document.documentElement.style.getPropertyValue('--primary')).toBe('green')
 
-    // localStorage updated
+    // localStorage updated (deferred via queueMicrotask, flushed by async act)
     const cached = JSON.parse(localStorage.getItem('nk-theme-cache')!)
     expect(cached.activePreset).toBe('neon')
 

@@ -1,5 +1,7 @@
 import { useSiteConfig } from '@/hooks/use-site-config'
 import { useEffect, useRef, useState, useMemo, startTransition, lazy, Suspense } from 'react'
+import { useAdminDialogState } from '@/hooks/use-admin-dialog-state'
+import { useAppKeyboardShortcuts } from '@/hooks/use-app-keyboard-shortcuts'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -20,7 +22,6 @@ import type {
   SoundSettings,
   ThemeSettings,
   SectionVisibility,
-  AdminDialog,
   OverlayModalSlotProps,
 } from '@/lib/types'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
@@ -115,23 +116,24 @@ function App() {
   const [themeTransitioning, setThemeTransitioning] = useState(false)
   const prevActivePresetRef = useRef<string | undefined>(undefined)
   const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)
-  const [activeDialog, setActiveDialog] = useState<AdminDialog>(null)
-  const [showLoginDialog, setShowLoginDialog] = useState(false)
-  const [showSetupDialog, setShowSetupDialog] = useState(false)
-  const [showBandInfoEdit, setShowBandInfoEdit] = useState(false)
-  const [impressumOpen, setImpressumOpen] = useState(false)
-  const [datenschutzOpen, setDatenschutzOpen] = useState(false)
-  const [showAttackerProfile, setShowAttackerProfile] = useState(false)
-  const [selectedAttackerIp, setSelectedAttackerIp] = useState('')
-  /** Tells AdminButton to auto-open the hub when the admin logs in. */
-  const [openAdminHubOnMount, setOpenAdminHubOnMount] = useState(false)
+  const {
+    activeDialog, setActiveDialog,
+    showLoginDialog, setShowLoginDialog,
+    showSetupDialog, setShowSetupDialog,
+    showBandInfoEdit, setShowBandInfoEdit,
+    impressumOpen, setImpressumOpen,
+    datenschutzOpen, setDatenschutzOpen,
+    showAttackerProfile, setShowAttackerProfile,
+    selectedAttackerIp, setSelectedAttackerIp,
+    openAdminHubOnMount, setOpenAdminHubOnMount,
+  } = useAdminDialogState()
   // SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
   const isPrimary = isPrimaryInstance()
   const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
-  /** Track the previous isOwner value to detect transitions (visitor → admin). */
-  const prevIsOwnerRef = useRef(false)
 
   useCRTEffects()
+
+  useAppKeyboardShortcuts({ isOwner, setShowLoginDialog, setOpenAdminHubOnMount })
 
   // ── Theme transition loading screen ─────────────────────────────────────────
   // When the active theme preset changes (after initial load), show the new
@@ -167,50 +169,6 @@ function App() {
     document.addEventListener('click', handleClick)
     return () => document.removeEventListener('click', handleClick)
   }, [])
-
-  // ── #admin hash → open login dialog ─────────────────────────────────────────
-  useEffect(() => {
-    const handleAdminHash = () => {
-      if (window.location.hash === '#admin') {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search)
-        if (isOwner) {
-          // Already authenticated — open the dashboard immediately
-          setOpenAdminHubOnMount(true)
-        } else {
-          setShowLoginDialog(true)
-        }
-      }
-    }
-    // Check once on mount
-    handleAdminHash()
-    window.addEventListener('hashchange', handleAdminHash)
-    return () => window.removeEventListener('hashchange', handleAdminHash)
-  }, [isOwner])
-
-  // ── CMD+K / CTRL+K → open login dialog or dashboard ─────────────────────────
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        if (isOwner) {
-          setOpenAdminHubOnMount(true)
-        } else {
-          setShowLoginDialog(true)
-        }
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOwner])
-
-  // ── Auto-open dashboard after login ─────────────────────────────────────────
-  useEffect(() => {
-    if (isOwner && !prevIsOwnerRef.current) {
-      // Admin just logged in — flag the hub to auto-open
-      setOpenAdminHubOnMount(true)
-    }
-    prevIsOwnerRef.current = isOwner
-  }, [isOwner])
 
   // ── Theme import from URL hash ────────────────────────────────────────────────
   const configAtMountRef = useRef(config)
