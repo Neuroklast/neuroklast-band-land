@@ -36,7 +36,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { key } = req.body || {}
 
-  const host = [req.headers?.host].flat()[0] ?? ''
+  const forwardedHost = req.headers['x-forwarded-host']
+  const hostHeader = req.headers.host
+  const rawHost = Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost || Array.isArray(hostHeader) ? hostHeader[0] : hostHeader || ''
+  const host = typeof rawHost === 'string' ? rawHost : ''
   const IS_PRIMARY = host.includes('neuroklast.net')
 
   if (IS_PRIMARY) {

@@ -6,6 +6,7 @@ export const BLOCK_INDEX_KEY = 'nk-blocked-index'
 export const BLOCK_TTL = 604800 // 7 days default
 
 export async function blockIp(hashedIp, reason = 'manual', ttlSeconds = BLOCK_TTL) {
+  if (typeof hashedIp !== 'string') return
   const entry = { hashedIp, reason, blockedAt: new Date().toISOString(), autoBlocked: false }
   await kv.set(`${BLOCK_PREFIX}${hashedIp}`, entry, { ex: ttlSeconds })
   // Keep an index of all blocked IPs for the admin UI
@@ -14,6 +15,7 @@ export async function blockIp(hashedIp, reason = 'manual', ttlSeconds = BLOCK_TT
 }
 
 export async function unblockIp(hashedIp) {
+  if (typeof hashedIp !== 'string') return
   await kv.del(`${BLOCK_PREFIX}${hashedIp}`)
   await kv.srem(BLOCK_INDEX_KEY, hashedIp)
   console.error('[HARD BLOCK REMOVED]', JSON.stringify({ hashedIp }))
@@ -23,6 +25,7 @@ export async function isHardBlocked(req) {
   try {
     const ip = getClientIp(req)
     const hashedIp = hashIp(ip)
+    if (typeof hashedIp !== 'string') return false
     const entry = await kv.get(`${BLOCK_PREFIX}${hashedIp}`)
     return !!entry
   } catch {
