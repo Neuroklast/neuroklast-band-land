@@ -12,6 +12,7 @@ import { nebulaNoirTheme } from './nebula-noir-theme'
 import { glitchNoirTheme } from './glitch-noir'
 import { zardonicTheme } from './zardonic'
 import { darkMinimalTheme } from './dark-minimal'
+import { minimalDarkTheme } from './minimal-dark'
 
 export const builtInThemes: ThemePackage[] = [
   darkMinimalTheme,       // default free theme — listed first
@@ -19,4 +20,5 @@ export const builtInThemes: ThemePackage[] = [
   nebulaNoirTheme,
   glitchNoirTheme,
   zardonicTheme,
+  minimalDarkTheme,
 ]

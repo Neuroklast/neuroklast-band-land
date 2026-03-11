@@ -262,7 +262,7 @@ describe('validateThemePackage — warnings', () => {
     // Provide a non-recommended slot only
     function Dummy() { return null }
     const errors = validateThemePackage(validTheme({
-      slots: { Card: Dummy as unknown as ThemePackage['slots']['Card'] },
+      slots: { Card: Dummy as  ThemePackage['slots']['Card'] },
     }))
     expect(errors.some(e => e.field === 'slots' && e.severity === 'warning')).toBe(true)
   })
@@ -270,7 +270,7 @@ describe('validateThemePackage — warnings', () => {
   it('does NOT warn about slots when at least one recommended slot is provided', () => {
     function Dummy() { return null }
     const errors = validateThemePackage(validTheme({
-      slots: { Hero: Dummy as unknown as ThemePackage['slots']['Hero'] },
+      slots: { Hero: Dummy as  ThemePackage['slots']['Hero'] },
     }))
     expect(errors.filter(e => e.field === 'slots' && e.severity === 'warning')).toHaveLength(0)
   })
