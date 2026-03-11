@@ -112,6 +112,8 @@ function App() {
   const { cyberpunkOverlay, setCyberpunkOverlay } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
   const { Navigation: ThemeNavigation, LoadingScreen: ThemeLoadingScreen, OverlayModal: ThemeOverlayModal } = useThemeSlots(config.themeSettings?.activePreset)
   const [loading, setLoading] = useState(true)
+  const [themeTransitioning, setThemeTransitioning] = useState(false)
+  const prevActivePresetRef = useRef<string | undefined>(undefined)
   const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)
   const [activeDialog, setActiveDialog] = useState<AdminDialog>(null)
   const [showLoginDialog, setShowLoginDialog] = useState(false)
@@ -130,6 +132,25 @@ function App() {
   const prevIsOwnerRef = useRef(false)
 
   useCRTEffects()
+
+  // ── Theme transition loading screen ─────────────────────────────────────────
+  // When the active theme preset changes (after initial load), show the new
+  // theme's LoadingScreen before revealing the page with the new theme applied.
+  useEffect(() => {
+    const currentPreset = config.themeSettings?.activePreset
+    if (prevActivePresetRef.current === undefined) {
+      // First render — just record the preset, don't trigger a transition
+      prevActivePresetRef.current = currentPreset
+      return
+    }
+    if (currentPreset !== prevActivePresetRef.current && !loading) {
+      prevActivePresetRef.current = currentPreset
+      setThemeTransitioning(true)
+    } else {
+      prevActivePresetRef.current = currentPreset
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.themeSettings?.activePreset])
 
   // ── Meta tags / browser tab title ───────────────────────────────────────────
   useEffect(() => {
@@ -317,6 +338,15 @@ function App() {
           ) : (
             <div className="fixed inset-0 z-[9999] bg-background" />
           )
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {themeTransitioning && (
+          <ThemeLoadingScreen
+            onComplete={() => {
+              setThemeTransitioning(false)
+            }}
+          />
         )}
       </AnimatePresence>
 
