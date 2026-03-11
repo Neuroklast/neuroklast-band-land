@@ -787,3 +787,280 @@
   border: 1px solid var(--border);
   white-space: nowrap;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THEME IDENTITY — Per-theme gallery, modal, buttons, dividers
+   All rules are scoped to [data-theme="..."] to prevent leaking.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Gallery items ──────────────────────────────────────────────────── */
+
+/* neuroklast-classic: HUD corner brackets + angled clip + glow on hover */
+[data-theme="neuroklast-classic"] .theme-gallery-item {
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+[data-theme="neuroklast-classic"] .theme-gallery-item::before,
+[data-theme="neuroklast-classic"] .theme-gallery-item::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+[data-theme="neuroklast-classic"] .theme-gallery-item::before {
+  top: 0; left: 0;
+  width: 10px; height: 10px;
+  border-top: 1.5px solid var(--primary);
+  border-left: 1.5px solid var(--primary);
+}
+[data-theme="neuroklast-classic"] .theme-gallery-item::after {
+  bottom: 0; right: 0;
+  width: 10px; height: 10px;
+  border-bottom: 1.5px solid var(--primary);
+  border-right: 1.5px solid var(--primary);
+}
+[data-theme="neuroklast-classic"] .theme-gallery-item:hover {
+  box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 40%, transparent);
+  filter: drop-shadow(0 0 6px var(--primary));
+}
+/* Scanline overlay on hover — uses ::after since ::before is reserved for the top-left corner bracket */
+[data-theme="neuroklast-classic"] .theme-gallery-item:hover::after {
+  inset: 0;
+  width: 100%; height: 100%;
+  border: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    color-mix(in oklch, var(--primary) 6%, transparent) 2px,
+    color-mix(in oklch, var(--primary) 6%, transparent) 4px
+  );
+  z-index: 3;
+}
+
+/* glitch-noir: greyscale → color reveal on hover */
+[data-theme="glitch-noir"] .theme-gallery-item {
+  filter: grayscale(1);
+  transition: filter 0.4s ease, border-color 0.3s ease;
+  border: 1px solid var(--border);
+}
+[data-theme="glitch-noir"] .theme-gallery-item:hover {
+  filter: grayscale(0);
+  border-color: var(--accent);
+}
+
+/* zardonic-industrial: heavy industrial border + diagonal stripe overlay */
+[data-theme="zardonic-industrial"] .theme-gallery-item {
+  position: relative;
+  border: 2px solid color-mix(in oklch, var(--primary) 50%, transparent);
+  outline: 1px solid color-mix(in oklch, var(--primary) 20%, transparent);
+  outline-offset: -4px;
+  overflow: hidden;
+}
+[data-theme="zardonic-industrial"] .theme-gallery-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    color-mix(in oklch, var(--primary) 5%, transparent) 8px,
+    color-mix(in oklch, var(--primary) 5%, transparent) 10px
+  );
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+[data-theme="zardonic-industrial"] .theme-gallery-item:hover::before {
+  opacity: 1;
+}
+[data-theme="zardonic-industrial"] .theme-gallery-item:hover {
+  border-color: var(--primary);
+}
+
+/* umbrella-corp: hexagonal clip-path + biohazard glow + tactical grid */
+[data-theme="umbrella-corp"] .theme-gallery-item {
+  position: relative;
+  clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+  overflow: hidden;
+}
+[data-theme="umbrella-corp"] .theme-gallery-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    color-mix(in oklch, var(--primary) 8%, transparent) 1px,
+    transparent 1px
+  ), linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 8%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+[data-theme="umbrella-corp"] .theme-gallery-item:hover::before {
+  opacity: 1;
+}
+[data-theme="umbrella-corp"] .theme-gallery-item:hover {
+  box-shadow: 0 0 16px color-mix(in oklch, var(--primary) 50%, transparent);
+}
+
+/* ── Overlay modal chrome ────────────────────────────────────────────── */
+
+[data-theme="neuroklast-classic"] .theme-overlay-modal-chrome {
+  box-shadow: 0 0 60px color-mix(in oklch, var(--primary) 25%, transparent),
+              0 0 120px color-mix(in oklch, var(--primary) 10%, transparent);
+}
+
+[data-theme="glitch-noir"] .theme-overlay-modal-chrome {
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+[data-theme="zardonic-industrial"] .theme-overlay-modal-chrome {
+  border: 2px solid color-mix(in oklch, var(--primary) 60%, transparent);
+  outline: 1px solid color-mix(in oklch, var(--primary) 20%, transparent);
+  outline-offset: -4px;
+}
+
+[data-theme="umbrella-corp"] .theme-overlay-modal-chrome {
+  border-color: color-mix(in oklch, var(--primary) 60%, transparent);
+  box-shadow: 0 0 30px color-mix(in oklch, var(--primary) 30%, transparent);
+}
+
+/* ── Section dividers ───────────────────────────────────────────────── */
+
+/* neuroklast-classic: animated circuit trace across the screen */
+[data-theme="neuroklast-classic"] .theme-divider {
+  position: relative;
+  height: 2px;
+  background: transparent;
+  overflow: visible;
+}
+[data-theme="neuroklast-classic"] .theme-divider::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--primary) 40%, transparent) 20%,
+    var(--primary) 50%,
+    color-mix(in oklch, var(--primary) 40%, transparent) 80%,
+    transparent 100%
+  );
+  animation: nk-circuit-trace 4s ease infinite;
+}
+@keyframes nk-circuit-trace {
+  0%, 100% { opacity: 0.2; transform: scaleX(0.3) translateX(-60%); }
+  50% { opacity: 0.8; transform: scaleX(1) translateX(0); }
+}
+
+/* glitch-noir: single thin line that flickers once */
+[data-theme="glitch-noir"] .theme-divider {
+  height: 1px;
+  background: var(--border);
+  opacity: 0.4;
+  animation: glitch-noir-flicker-once 3s steps(1) infinite;
+}
+@keyframes glitch-noir-flicker-once {
+  0%, 90%, 100% { opacity: 0.4; }
+  92% { opacity: 0.9; }
+  94% { opacity: 0.1; }
+  96% { opacity: 0.7; }
+}
+
+/* zardonic-industrial: double line with center ornament */
+[data-theme="zardonic-industrial"] .theme-divider {
+  position: relative;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+[data-theme="zardonic-industrial"] .theme-divider::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 2px;
+  height: 1px;
+  background: color-mix(in oklch, var(--primary) 30%, transparent);
+}
+[data-theme="zardonic-industrial"] .theme-divider::after {
+  content: '═══ // ═══';
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  color: color-mix(in oklch, var(--primary) 60%, transparent);
+  letter-spacing: 0.15em;
+  background: var(--background);
+  padding: 0 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* umbrella-corp: horizontal bar with biohazard symbol */
+[data-theme="umbrella-corp"] .theme-divider {
+  position: relative;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+[data-theme="umbrella-corp"] .theme-divider::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 2px;
+  background: color-mix(in oklch, var(--primary) 20%, transparent);
+}
+[data-theme="umbrella-corp"] .theme-divider::after {
+  content: '⚠ // ⚠';
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  color: color-mix(in oklch, var(--primary) 70%, transparent);
+  letter-spacing: 0.2em;
+  background: var(--background);
+  padding: 0 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Button treatments ──────────────────────────────────────────────── */
+
+/* neuroklast-classic: angled corner cut */
+[data-theme="neuroklast-classic"] .theme-btn-primary,
+[data-theme="neuroklast-classic"] button[class*="bg-primary"] {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.1em;
+}
+
+/* glitch-noir: clean, no radius, minimal border */
+[data-theme="glitch-noir"] button:not([class*="rounded-full"]):not([class*="rounded-lg"]) {
+  border-radius: 0 !important;
+}
+
+/* zardonic-industrial: thick border, heavy weight */
+[data-theme="zardonic-industrial"] .theme-btn-primary,
+[data-theme="zardonic-industrial"] button[class*="bg-primary"] {
+  border-width: 2px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* umbrella-corp: rounded tactical button */
+[data-theme="umbrella-corp"] .theme-btn-primary,
+[data-theme="umbrella-corp"] button[class*="bg-primary"] {
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: var(--font-mono, monospace);
+}

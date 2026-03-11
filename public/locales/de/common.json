@@ -1169,5 +1169,15 @@
   "common.sectionMedia": "Medien",
   "common.sectionSocial": "Social",
   "common.sectionContact": "Kontakt",
-  "common.sectionPartners": "Partner & Freunde"
+  "common.sectionPartners": "Partner & Freunde",
+  "contact.modalTitle": "KONTAKT // NACHRICHT SENDEN",
+  "contact.closeModal": "Kontaktformular schließen",
+  "theme.heroButtons": "HERO-BUTTONS",
+  "theme.heroButtonsDesc": "Konfiguriere die Aktionsschaltflächen unter dem Hero-Bild. Leer lassen für Theme-Standard.",
+  "theme.addHeroButton": "Button hinzufügen",
+  "theme.heroButtonLabel": "Bezeichnung",
+  "theme.heroButtonScrollTarget": "Abschnitts-ID (z.B. releases)",
+  "themeCustomizer.saveAsCustomPreset": "Als benutzerdefiniertes Preset speichern",
+  "themeCustomizer.customPresetsLabel": "Benutzerdefiniert",
+  "themeCustomizer.presetNamePlaceholder": "Preset-Name…"
 }

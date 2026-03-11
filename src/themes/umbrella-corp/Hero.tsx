@@ -1,11 +1,26 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import type { HeroSlotProps } from '@/lib/types'
+import { CaretDown } from '@phosphor-icons/react'
+import type { HeroSlotProps, HeroButton } from '@/lib/types'
 
-const LISTEN_NOW_TEXT = 'Listen Now'
-const TOUR_DATES_TEXT = 'Tour Dates'
+const DEFAULT_BUTTONS: HeroButton[] = [
+  { id: 'explore', label: 'Explore', action: 'scroll', scrollTarget: 'releases', variant: 'default' },
+]
 
-export default function Hero({ name, logoUrl }: HeroSlotProps) {
+function handleHeroButton(btn: HeroButton, onContactModalOpen?: () => void) {
+  if (btn.action === 'scroll') {
+    const el = document.getElementById(btn.scrollTarget || '')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  } else if (btn.action === 'url' && btn.url) {
+    window.open(btn.url, btn.openInNewTab !== false ? '_blank' : '_self', 'noopener,noreferrer')
+  } else if (btn.action === 'contact-modal') {
+    onContactModalOpen?.()
+  }
+}
+
+export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }: HeroSlotProps) {
+  const buttons = heroButtons && heroButtons.length > 0 ? heroButtons : DEFAULT_BUTTONS
+
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       <div className="absolute inset-0 bg-background" />
@@ -45,27 +60,29 @@ export default function Hero({ name, logoUrl }: HeroSlotProps) {
           </motion.h1>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          className="mt-10 flex gap-4 justify-center flex-wrap"
-        >
-          <Button
-            size="lg"
-            className="uppercase font-mono tracking-wider umbrella-corp-card"
+        {buttons.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="mt-10 flex gap-4 justify-center flex-wrap"
           >
-            {LISTEN_NOW_TEXT}
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="uppercase font-mono tracking-wider umbrella-corp-card"
-          >
-            {TOUR_DATES_TEXT}
-          </Button>
-        </motion.div>
+            {buttons.map((btn, idx) => (
+              <Button
+                key={btn.id}
+                size="lg"
+                variant={btn.variant ?? (idx === 0 ? 'default' : 'outline')}
+                onClick={() => handleHeroButton(btn, onContactModalOpen)}
+                className="uppercase font-mono tracking-wider umbrella-corp-card"
+              >
+                {btn.label}
+                {btn.action === 'scroll' && idx === 0 && <CaretDown className="ml-2" size={16} />}
+              </Button>
+            ))}
+          </motion.div>
+        )}
       </motion.div>
     </section>
   )
 }
+

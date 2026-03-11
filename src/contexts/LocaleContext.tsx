@@ -6,6 +6,14 @@ import { LocaleContext } from '@/hooks/use-locale'
 const STORAGE_KEY = 'zd-locale'
 
 function detectLocale(): Locale {
+  // Check URL path first — /de or /de/ prefix triggers German
+  try {
+    const pathname = window.location.pathname
+    if (pathname === '/de' || pathname.startsWith('/de/')) return 'de'
+  } catch {
+    // window unavailable (SSR)
+  }
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored === 'en' || stored === 'de') return stored

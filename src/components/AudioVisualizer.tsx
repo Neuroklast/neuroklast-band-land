@@ -54,6 +54,13 @@ export default function AudioVisualizer() {
     const handleVisibility = () => { isVisible.current = !document.hidden }
     document.addEventListener('visibilitychange', handleVisibility)
 
+    // Cache the primary color and refresh it when the theme attribute changes
+    let cachedPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '0.50 0.22 25'
+    const themeObserver = new MutationObserver(() => {
+      cachedPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '0.50 0.22 25'
+    })
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] })
+
     let time = 0
 
     const animate = (now: number) => {
@@ -96,16 +103,17 @@ export default function AudioVisualizer() {
         const x = i * barWidth + bar.glitchOffset
         const height = bar.height * (canvas.height * VISUALIZER_HEIGHT_SCALE)
         
+        const primaryColor = cachedPrimaryColor
         const gradient = ctx.createLinearGradient(x, centerY - height, x, centerY + height)
-        gradient.addColorStop(0, 'oklch(0.50 0.22 25 / 0.05)')
-        gradient.addColorStop(0.5, 'oklch(0.50 0.22 25 / 0.15)')
-        gradient.addColorStop(1, 'oklch(0.50 0.22 25 / 0.05)')
+        gradient.addColorStop(0, `oklch(${primaryColor} / 0.05)`)
+        gradient.addColorStop(0.5, `oklch(${primaryColor} / 0.15)`)
+        gradient.addColorStop(1, `oklch(${primaryColor} / 0.05)`)
 
         ctx.fillStyle = gradient
         ctx.fillRect(x, centerY - height, barWidth - 2, height * 2)
 
         if (bar.glitchTime > 0 && Math.random() < 0.5) {
-          ctx.fillStyle = 'oklch(0.60 0.24 25 / 0.3)'
+          ctx.fillStyle = `oklch(${primaryColor} / 0.3)`
           ctx.fillRect(x + (Math.random() - 0.5) * 15, centerY - height, barWidth - 2, height * 2)
         }
       })
@@ -122,6 +130,7 @@ export default function AudioVisualizer() {
     return () => {
       window.removeEventListener('resize', resize)
       document.removeEventListener('visibilitychange', handleVisibility)
+      themeObserver.disconnect()
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
@@ -131,7 +140,7 @@ export default function AudioVisualizer() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[1] opacity-40 mix-blend-screen blur-[1px]"
+      className="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-screen blur-[1px]"
     />
   )
 }
