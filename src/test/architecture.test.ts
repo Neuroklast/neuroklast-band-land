@@ -20,18 +20,16 @@ import { RECOMMENDED_THEME_SLOTS } from '@/lib/component-contracts'
 import type { ThemePackage } from '@/lib/types'
 
 // ─── Import all built-in themes directly (not via registry) ──────────────────
-import { darkMinimalTheme }      from '@/themes/dark-minimal'
 import { neuroklastClassicTheme } from '@/themes/neuroklast-classic'
-import { nebulaNoirTheme }        from '@/themes/nebula-noir-theme'
 import { glitchNoirTheme }        from '@/themes/glitch-noir'
-import { zardonicTheme }          from '@/themes/zardonic'
+import { zardonicIndustrialTheme } from '@/themes/zardonic-industrial'
+import { umbrellaCorpTheme }      from '@/themes/umbrella-corp'
 
 const ALL_BUILT_IN_THEMES: ThemePackage[] = [
-  darkMinimalTheme,
-  neuroklastClassicTheme,
-  nebulaNoirTheme,
   glitchNoirTheme,
-  zardonicTheme,
+  neuroklastClassicTheme,
+  zardonicIndustrialTheme,
+  umbrellaCorpTheme,
 ]
 
 // ─── Helper: build a fully-valid minimal theme for negative testing ───────────
@@ -127,20 +125,19 @@ describe('Built-in themes — assertThemeValid passes with no fatal errors', () 
 // ─── 2. Theme catalog integrity ───────────────────────────────────────────────
 
 describe('THEME_CATALOG integrity', () => {
-  it('contains all 5 built-in themes (including dark-minimal)', async () => {
+  it('contains all 4 built-in themes', async () => {
     const { THEME_CATALOG } = await import('@/lib/theme-registry')
     const ids = THEME_CATALOG.map(t => t.id)
-    expect(ids).toContain('dark-minimal')
-    expect(ids).toContain('neuroklast-classic')
-    expect(ids).toContain('nebula-noir-theme')
     expect(ids).toContain('glitch-noir')
-    expect(ids).toContain('zardonic-theme')
-    expect(THEME_CATALOG).toHaveLength(5)
+    expect(ids).toContain('neuroklast-classic')
+    expect(ids).toContain('zardonic-industrial')
+    expect(ids).toContain('umbrella-corp')
+    expect(THEME_CATALOG).toHaveLength(4)
   })
 
-  it('dark-minimal is listed first (it is the default free theme)', async () => {
+  it('glitch-noir is listed first (it is the default free theme)', async () => {
     const { THEME_CATALOG } = await import('@/lib/theme-registry')
-    expect(THEME_CATALOG[0].id).toBe('dark-minimal')
+    expect(THEME_CATALOG[0].id).toBe('glitch-noir')
   })
 
   it('all catalog entries have id, name, description, author, tags', async () => {
@@ -158,15 +155,15 @@ describe('THEME_CATALOG integrity', () => {
 // ─── 3. Default theme ─────────────────────────────────────────────────────────
 
 describe('Default theme resolution', () => {
-  it('getActiveTheme() with no argument returns dark-minimal', async () => {
+  it('getActiveTheme() with no argument returns glitch-noir', async () => {
     const { getActiveTheme } = await import('@/lib/theme-registry')
     const theme = getActiveTheme()
-    expect(theme.id).toBe('dark-minimal')
+    expect(theme.id).toBe('glitch-noir')
   })
 
-  it('getActiveTheme("dark-minimal") returns dark-minimal', async () => {
+  it('getActiveTheme("glitch-noir") returns glitch-noir', async () => {
     const { getActiveTheme } = await import('@/lib/theme-registry')
-    expect(getActiveTheme('dark-minimal').id).toBe('dark-minimal')
+    expect(getActiveTheme('glitch-noir').id).toBe('glitch-noir')
   })
 
   it('neuroklast-classic is exclusive — not the public default', () => {
@@ -174,8 +171,8 @@ describe('Default theme resolution', () => {
     expect(neuroklastClassicTheme.exclusiveFor).toBe('neuroklast')
   })
 
-  it('dark-minimal is free access', () => {
-    expect(darkMinimalTheme.access).toBe('free')
+  it('glitch-noir is free access', () => {
+    expect(glitchNoirTheme.access).toBe('free')
   })
 })
 
@@ -283,7 +280,7 @@ describe('assertThemeValid', () => {
   })
 
   it('does not throw for warnings-only themes (e.g. empty slots)', () => {
-    // dark-minimal has empty slots — warning is expected, not an error
+    // A theme with empty slots triggers warnings, not errors — that's acceptable
     expect(() => assertThemeValid(validTheme({ slots: {} }))).not.toThrow()
   })
 
