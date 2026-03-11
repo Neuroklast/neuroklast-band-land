@@ -213,8 +213,8 @@ describe('validateThemePackage — required field errors', () => {
   })
 
   it('reports error for invalid access value', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const errors = validateThemePackage(validTheme({ access: 'unknown' as any }))
+    // @ts-expect-error — intentionally passing invalid access value to test validator
+    const errors = validateThemePackage(validTheme({ access: 'unknown' }))
     expect(errors.some(e => e.field === 'access' && e.severity === 'error')).toBe(true)
   })
 
@@ -229,20 +229,17 @@ describe('validateThemePackage — required field errors', () => {
   })
 
   it('reports error when layout is missing', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const errors = validateThemePackage(validTheme({ layout: undefined as any }))
+    const errors = validateThemePackage(validTheme({ layout: undefined }))
     expect(errors.some(e => e.field === 'layout' && e.severity === 'error')).toBe(true)
   })
 
   it('reports error when typography is missing', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const errors = validateThemePackage(validTheme({ typography: undefined as any }))
+    const errors = validateThemePackage(validTheme({ typography: undefined }))
     expect(errors.some(e => e.field === 'typography' && e.severity === 'error')).toBe(true)
   })
 
   it('reports error when customizability is missing', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const errors = validateThemePackage(validTheme({ customizability: undefined as any }))
+    const errors = validateThemePackage(validTheme({ customizability: undefined }))
     expect(errors.some(e => e.field === 'customizability' && e.severity === 'error')).toBe(true)
   })
 })
@@ -262,7 +259,7 @@ describe('validateThemePackage — warnings', () => {
     // Provide a non-recommended slot only
     function Dummy() { return null }
     const errors = validateThemePackage(validTheme({
-      slots: { Card: Dummy as  ThemePackage['slots']['Card'] },
+      slots: { Card: Dummy as ThemePackage['slots']['Card'] },
     }))
     expect(errors.some(e => e.field === 'slots' && e.severity === 'warning')).toBe(true)
   })
@@ -270,7 +267,7 @@ describe('validateThemePackage — warnings', () => {
   it('does NOT warn about slots when at least one recommended slot is provided', () => {
     function Dummy() { return null }
     const errors = validateThemePackage(validTheme({
-      slots: { Hero: Dummy as  ThemePackage['slots']['Hero'] },
+      slots: { Hero: Dummy as ThemePackage['slots']['Hero'] },
     }))
     expect(errors.filter(e => e.field === 'slots' && e.severity === 'warning')).toHaveLength(0)
   })
