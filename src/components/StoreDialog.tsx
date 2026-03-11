@@ -85,13 +85,16 @@ interface StoreItemCardProps {
   onUpdate?: () => void
 }
 
-function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure, onUpdate }: StoreItemCardProps) {
+function StoreItemCard({ item, licenseTier, onInstall, onUninstall, onToggle, onApplyTheme, onConfigure, onUpdate }: StoreItemCardProps) {
   const { t } = useLocale()
-  const { canUsePremiumThemes, canUsePremiumWidgets } = usePermissions()
   const isWidget = item.type === 'widget'
   const isTheme = item.type === 'theme'
 
-  const isPremiumLocked = item.license === 'premium' && (isWidget ? !canUsePremiumWidgets() : !canUsePremiumThemes())
+  // Replace hook-based checks with the passed licenseTier parameter to respect the actual gate
+  const isPremiumLocked = item.license === 'premium' && (
+    (isWidget && licenseTier !== 'pro') ||
+    (isTheme && licenseTier !== 'pro')
+  )
 
   return (
     <motion.div
@@ -233,13 +236,13 @@ function StoreItemCard({ item, licenseTier: _licenseTier, onInstall, onUninstall
             {isPremiumLocked ? (
               <><Lock size={12} /> {t('store.proRequired')}</>
             ) : (
-              <><Palette size={14} /> {t('store.apply')}</>
+              <><Palette size={14} /> {t('store.applyPreset', 'Apply Preset')}</>
             )}
           </Button>
         )}
         {isTheme && item.enabled && (
           <span className="text-xs font-mono text-status-success flex items-center gap-1">
-            <Check size={14} /> {t('store.applied')}
+            <Check size={14} /> {t('store.presetApplied', 'Preset Active')}
           </span>
         )}
         {isWidget && item.installed && (
