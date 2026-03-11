@@ -47,7 +47,7 @@ const _registry: Map<string, ThemePackage> = new Map()
 export function registerTheme(theme: ThemePackage): void {
   // Validate in development and test environments to catch incomplete themes early.
   // This is a no-op in production (import.meta.env.PROD) to avoid startup overhead.
-  if (typeof import.meta !== 'undefined' && !(import.meta as  Record<string, Record<string, unknown>>).env?.PROD) {
+  if (!import.meta.env.PROD) {
     assertThemeValid(theme)
   }
   _registry.set(theme.id, theme)
