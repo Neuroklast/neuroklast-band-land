@@ -280,7 +280,14 @@ export default function AdminButton({
           open={showPasswordDialog}
           onOpenChange={setShowPasswordDialog}
           mode='setup'
-          onSetPassword={async (pw) => { await onSetPassword(pw); setShowPasswordDialog(false) }}
+          onSetPassword={async (pw) => {
+            if (hasPassword) {
+              await onChangePassword(pw)
+            } else {
+              await onSetPassword(pw)
+            }
+            setShowPasswordDialog(false)
+          }}
         />
       )}
 

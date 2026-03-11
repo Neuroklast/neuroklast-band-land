@@ -27,12 +27,11 @@ interface GigsSectionProps {
   onUpdate?: (gigs: Gig[]) => void
 }
 
-export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, dataLoaded, sectionLabels, onLabelChange, onGigClick }: GigsSectionProps) {
+export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFontSizeChange, sectionLabels, onLabelChange, onGigClick }: GigsSectionProps) {
   const { t } = useLocale()
   const [editingGig, setEditingGig] = useState<Gig | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const [showAllGigs, setShowAllGigs] = useState(false)
   const [highlightedGigId, setHighlightedGigId] = useState<string | null>(null)
@@ -58,14 +57,6 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
 
     return () => clearInterval(interval)
   }, [])
-
-  useEffect(() => {
-    if (!hasLoadedOnce && dataLoaded) {
-      loadGigsFromAPI(true)
-      setHasLoadedOnce(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataLoaded])
 
   // Deep-link: highlight and scroll to a specific gig when page loads with #gigs/{id}
   const handleGigDeepLink = useCallback((hash: string) => {
@@ -116,8 +107,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
       } else if (!isAutoLoad) {
         toast.info('No upcoming concerts found at this time')
       }
-    } catch (error) {
-      console.error('Failed to load gigs:', error)
+    } catch {
       if (!isAutoLoad) {
         toast.error('Failed to load upcoming gigs')
       }
@@ -207,15 +197,17 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
                 {showAllGigs ? t('gigs.showUpcoming') : t('gigs.showAll')}
               </Button>
             )}
-            <Button
-              onClick={() => loadGigsFromAPI(false)}
-              disabled={isLoading}
-              variant="outline"
-              className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
-            >
-              <ArrowsClockwise className={`${isLoading ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
-              <span className="hidden md:inline">{isLoading ? t('gigs.loading') : t('gigs.refresh')}</span>
-            </Button>
+            {editMode && (
+              <Button
+                onClick={() => loadGigsFromAPI(false)}
+                disabled={isLoading}
+                variant="outline"
+                className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
+              >
+                <ArrowsClockwise className={`${isLoading ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
+                <span className="hidden md:inline">{isLoading ? t('gigs.loading') : t('gigs.refresh')}</span>
+              </Button>
+            )}
             {editMode && (
               <Button
                 onClick={() => setIsAdding(true)}
