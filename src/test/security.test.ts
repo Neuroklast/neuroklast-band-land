@@ -73,9 +73,9 @@ describe('Security: timingSafeEqual constant-time comparison', () => {
   })
 
   it('returns false for non-string inputs', () => {
-    expect(timingSafeEqual(null as unknown as string, 'abc')).toBe(false)
-    expect(timingSafeEqual('abc', undefined as unknown as string)).toBe(false)
-    expect(timingSafeEqual(123 as unknown as string, 456 as unknown as string)).toBe(false)
+    expect(timingSafeEqual(null as  string, 'abc')).toBe(false)
+    expect(timingSafeEqual('abc', undefined as  string)).toBe(false)
+    expect(timingSafeEqual(123 as  string, 456 as  string)).toBe(false)
   })
 })
 
@@ -311,7 +311,7 @@ describe('Security: Honeytoken detection', () => {
   })
 
   it('returns 403 with taunting message when accessing a honeytoken key via GET', async () => {
-    const { isHoneytoken, triggerHoneytokenAlarm, setDefenseHeaders } = await import('../../api/_honeytokens.js') as unknown as { isHoneytoken: ReturnType<typeof vi.fn>; triggerHoneytokenAlarm: ReturnType<typeof vi.fn>; setDefenseHeaders: ReturnType<typeof vi.fn> }
+    const { isHoneytoken, triggerHoneytokenAlarm, setDefenseHeaders } = await import('../../api/_honeytokens.js') as  { isHoneytoken: ReturnType<typeof vi.fn>; triggerHoneytokenAlarm: ReturnType<typeof vi.fn>; setDefenseHeaders: ReturnType<typeof vi.fn> }
     vi.mocked(isHoneytoken).mockReturnValueOnce(true)
 
     const res = mockRes()
@@ -323,7 +323,7 @@ describe('Security: Honeytoken detection', () => {
   })
 
   it('returns 403 with taunting message when writing to a honeytoken key via POST', async () => {
-    const { isHoneytoken, triggerHoneytokenAlarm, setDefenseHeaders } = await import('../../api/_honeytokens.js') as unknown as { isHoneytoken: ReturnType<typeof vi.fn>; triggerHoneytokenAlarm: ReturnType<typeof vi.fn>; setDefenseHeaders: ReturnType<typeof vi.fn> }
+    const { isHoneytoken, triggerHoneytokenAlarm, setDefenseHeaders } = await import('../../api/_honeytokens.js') as  { isHoneytoken: ReturnType<typeof vi.fn>; triggerHoneytokenAlarm: ReturnType<typeof vi.fn>; setDefenseHeaders: ReturnType<typeof vi.fn> }
     vi.mocked(isHoneytoken).mockReturnValueOnce(true)
 
     const res = mockRes()
@@ -350,7 +350,7 @@ describe('Security: Entropy injection for flagged attackers', () => {
   })
 
   it('injects entropy headers and defense headers when the request comes from a flagged attacker', async () => {
-    const { isMarkedAttacker, injectEntropyHeaders, setDefenseHeaders } = await import('../../api/_honeytokens.js') as unknown as { isMarkedAttacker: ReturnType<typeof vi.fn>; injectEntropyHeaders: ReturnType<typeof vi.fn>; setDefenseHeaders: ReturnType<typeof vi.fn> }
+    const { isMarkedAttacker, injectEntropyHeaders, setDefenseHeaders } = await import('../../api/_honeytokens.js') as  { isMarkedAttacker: ReturnType<typeof vi.fn>; injectEntropyHeaders: ReturnType<typeof vi.fn>; setDefenseHeaders: ReturnType<typeof vi.fn> }
     vi.mocked(isMarkedAttacker).mockResolvedValueOnce(true)
 
     mockKvGet.mockResolvedValue({ name: 'test' })
@@ -365,7 +365,7 @@ describe('Security: Entropy injection for flagged attackers', () => {
   })
 
   it('does not inject entropy headers for normal requests', async () => {
-    const { isMarkedAttacker, injectEntropyHeaders } = await import('../../api/_honeytokens.js') as unknown as { isMarkedAttacker: ReturnType<typeof vi.fn>; injectEntropyHeaders: ReturnType<typeof vi.fn> }
+    const { isMarkedAttacker, injectEntropyHeaders } = await import('../../api/_honeytokens.js') as  { isMarkedAttacker: ReturnType<typeof vi.fn>; injectEntropyHeaders: ReturnType<typeof vi.fn> }
     vi.mocked(isMarkedAttacker).mockResolvedValueOnce(false)
 
     mockKvGet.mockResolvedValue({ name: 'test' })

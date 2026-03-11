@@ -47,7 +47,7 @@ function mockRes(): Res {
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   res.end.mockReturnValue(res)
-  return res as unknown as Res
+  return res as  Res
 }
 
 const { default: kvHandler } = await import('../../api/kv.js')

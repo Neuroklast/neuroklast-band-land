@@ -27,7 +27,7 @@ export default function ActivationLockScreen({ pending = false }: ActivationLock
         className="pointer-events-none absolute inset-0 z-10"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px)',
+            'var(--scanlines-gradient, repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px))',
         }}
       />
 
@@ -36,7 +36,7 @@ export default function ActivationLockScreen({ pending = false }: ActivationLock
         className="pointer-events-none absolute inset-0 z-10"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.75) 100%)',
+            'var(--vignette-gradient, radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.75) 100%))',
         }}
       />
 

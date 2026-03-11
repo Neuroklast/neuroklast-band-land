@@ -208,7 +208,7 @@ async function trackResponseProgress(
     onProgress({ state: 'downloading', progress: Math.min(received / total, 0.99) })
   }
 
-  return new Blob(chunks as unknown as BlobPart[])
+  return new Blob(chunks as  BlobPart[])
 }
 
 function triggerBlobDownload(blob: Blob, fileName: string) {

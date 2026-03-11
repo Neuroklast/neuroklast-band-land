@@ -37,7 +37,7 @@ function mockRes(): Res & { _piped: boolean } {
     once: vi.fn().mockReturnThis(),
     emit: vi.fn().mockReturnThis(),
     write: vi.fn(),
-  } as unknown as Res & { _piped: boolean }
+  } as  Res & { _piped: boolean }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   return res

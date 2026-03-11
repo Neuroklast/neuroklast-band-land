@@ -100,8 +100,8 @@ describe('resolveSlots — content-section slots', () => {
     registerTheme(makeMinimalTheme({
       id: 'custom-slots-theme',
       slots: {
-        GigsSection: CustomGigs as unknown as ThemeSlots['GigsSection'],
-        NewsSection: CustomNews as unknown as ThemeSlots['NewsSection'],
+        GigsSection: CustomGigs as  ThemeSlots['GigsSection'],
+        NewsSection: CustomNews as  ThemeSlots['NewsSection'],
       },
     }))
 

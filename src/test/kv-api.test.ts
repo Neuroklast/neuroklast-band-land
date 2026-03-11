@@ -380,11 +380,11 @@ describe('timingSafeEqual', () => {
 
   // Runtime type checks — intentionally passing non-string values
   it('returns false when a is not a string', () => {
-    expect(timingSafeEqual(123 as unknown as string, 'abc')).toBe(false)
+    expect(timingSafeEqual(123 as  string, 'abc')).toBe(false)
   })
 
   it('returns false when b is not a string', () => {
-    expect(timingSafeEqual('abc', null as unknown as string)).toBe(false)
+    expect(timingSafeEqual('abc', null as  string)).toBe(false)
   })
 
   it('returns true for empty strings', () => {

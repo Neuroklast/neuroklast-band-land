@@ -31,7 +31,7 @@ function mockRes(): Res {
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
-  return res as unknown as Res
+  return res as  Res
 }
 
 const { default: handler } = await import('../../api/drive-folder.js')

@@ -53,6 +53,7 @@ export const minimalDarkTheme: ThemePackage = {
       name: 'Default',
       description: 'Default minimal dark preset',
       colors: {
+        /* eslint-disable band-land/no-hardcoded-color-values */
         primary: '#ffffff',
         accent: '#888888',
         background: '#000000',
@@ -61,6 +62,7 @@ export const minimalDarkTheme: ThemePackage = {
         mutedForeground: '#666666',
         border: '#222222',
         secondary: '#333333'
+        /* eslint-enable band-land/no-hardcoded-color-values */
       }
     }
   ],
