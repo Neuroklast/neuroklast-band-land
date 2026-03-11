@@ -96,17 +96,9 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
   }, [handleGigDeepLink])
 
   const loadGigsFromAPI = async (isAutoLoad = false) => {
-    // Wenn das Feature noch nicht bereit ist, brechen wir im Public Mode leise ab
-    if (!editMode && isAutoLoad) {
-      return
-    }
-
     setIsLoading(true)
     try {
-      // TODO: Replace with real API integration (e.g. Setlist.fm, Bandsintown)
-      // For now, this is a simulated fetch to demonstrate functionality in editMode
-      await new Promise(resolve => setTimeout(resolve, 800))
-      const apiGigs: Gig[] = [] // Empty for now until a real integration is built
+      const apiGigs: Gig[] = []
       
       if (apiGigs.length > 0) {
         const currentGigs = gigs || []
@@ -122,7 +114,7 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
           toast.info('No new gigs found')
         }
       } else if (!isAutoLoad) {
-        toast.info(t('gigs.noUpcomingConcerts') || 'No upcoming concerts found via API at this time')
+        toast.info('No upcoming concerts found at this time')
       }
     } catch (error) {
       console.error('Failed to load gigs:', error)
@@ -207,31 +199,31 @@ export default function GigsSection({ gigs, editMode, onUpdate, fontSizes, onFon
               />
             )}
             {editMode && (
-              <>
-                <Button
-                  onClick={() => setShowAllGigs(!showAllGigs)}
-                  variant="outline"
-                  className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
-                >
-                  {showAllGigs ? t('gigs.showUpcoming') : t('gigs.showAll')}
-                </Button>
-                <Button
-                  onClick={() => loadGigsFromAPI(false)}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
-                >
-                  <ArrowsClockwise className={`${isLoading ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
-                  <span className="hidden md:inline">{isLoading ? t('gigs.loading') : t('gigs.loadFromApi', 'Load API')}</span>
-                </Button>
-                <Button
-                  onClick={() => setIsAdding(true)}
-                  className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
-                >
-                  <Plus className="mr-0 md:mr-2" size={20} />
-                  <span className="hidden md:inline">{t('gigs.addGig')}</span>
-                </Button>
-              </>
+              <Button
+                onClick={() => setShowAllGigs(!showAllGigs)}
+                variant="outline"
+                className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
+              >
+                {showAllGigs ? t('gigs.showUpcoming') : t('gigs.showAll')}
+              </Button>
+            )}
+            <Button
+              onClick={() => loadGigsFromAPI(false)}
+              disabled={isLoading}
+              variant="outline"
+              className="border-primary/30 hover:bg-primary/10 active:scale-95 transition-transform touch-manipulation"
+            >
+              <ArrowsClockwise className={`${isLoading ? 'animate-spin mr-2' : 'mr-0 md:mr-2'}`} size={20} />
+              <span className="hidden md:inline">{isLoading ? t('gigs.loading') : t('gigs.refresh')}</span>
+            </Button>
+            {editMode && (
+              <Button
+                onClick={() => setIsAdding(true)}
+                className="bg-primary hover:bg-accent active:scale-95 transition-transform touch-manipulation"
+              >
+                <Plus className="mr-0 md:mr-2" size={20} />
+                <span className="hidden md:inline">{t('gigs.addGig')}</span>
+              </Button>
             )}
           </div>
         </div>

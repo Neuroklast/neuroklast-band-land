@@ -145,7 +145,7 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     id: 'zardonic-industrial',
     name: 'Zardonic Industrial',
     description: 'Industrial dark cyberpunk theme — premium',
-    licenseStatus: 'preview',
+    licenseStatus: 'locked',
     licenseKeyPrefix: 'ZARDONIC-',
     theme: {
       activePreset: 'zardonic-industrial',
@@ -158,7 +158,7 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     id: 'umbrella-corp',
     name: 'Umbrella Corp',
     description: 'Biohazard tactical theme with military-grade aesthetics — premium',
-    licenseStatus: 'preview',
+    licenseStatus: 'locked',
     licenseKeyPrefix: 'UMBRELLA-',
     theme: {
       activePreset: 'umbrella-corp',

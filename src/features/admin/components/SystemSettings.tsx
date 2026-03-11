@@ -10,7 +10,7 @@ interface SystemSettingsProps {
 }
 
 export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
-  const [activeTab, setActiveTab] = useState<'integrations' | 'general' | 'security'>('integrations')
+  const [activeTab, setActiveTab] = useState<'integrations' | 'general'>('integrations')
   const { t } = useLocale()
 
   const handleIntegrationChange = (field: string, value: string) => {
@@ -35,7 +35,6 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
   const tabs = [
     { id: 'integrations', label: t('systemSettings.tabIntegrations') },
     { id: 'general', label: t('systemSettings.tabGeneral') },
-    { id: 'security', label: t('systemSettings.tabSecurity', 'Security') },
   ] as const
 
   return (
@@ -149,26 +148,6 @@ export function SystemSettings({ data, onUpdate }: SystemSettingsProps) {
                     <div className="w-11 h-6 bg-secondary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-status-neutral-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'security' && (
-            <div className="space-y-6">
-              <h3 className="font-mono font-bold text-lg text-primary border-b border-border pb-2">{t('systemSettings.securityTitle', 'Security Module Admin')}</h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                Launch the advanced Security Settings panel to configure Honeytokens, Rate Limiting, Tarpits, Session Binding, and more.
-              </p>
-              <div className="mt-4 p-4 border border-primary/20 rounded bg-primary/5">
-                <button
-                  onClick={() => {
-                    const event = new CustomEvent('open-security-settings')
-                    window.dispatchEvent(event)
-                  }}
-                  className="w-full md:w-auto px-6 py-3 bg-primary text-primary-foreground font-mono font-bold uppercase tracking-wider rounded hover:bg-primary/90 transition-colors"
-                >
-                  {t('systemSettings.openSecurityDialog', 'Launch Security Settings')}
-                </button>
               </div>
             </div>
           )}

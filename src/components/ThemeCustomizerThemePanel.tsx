@@ -32,8 +32,6 @@ export default function ThemeCustomizerThemePanel({
         {THEME_CATALOG.map(themeDefn => {
           const effectiveStatus = themeAccessOverrides?.[themeDefn.id] ?? themeDefn.licenseStatus
           const isUnlocked = effectiveStatus === 'free' || effectiveStatus === 'licensed' || unlockedThemeIds.includes(themeDefn.id)
-          const isPreviewMode = effectiveStatus === 'preview'
-          const canSelect = isUnlocked || isPreviewMode
           const isActive = activeTheme === themeDefn.id
           const themePkg = getTheme(themeDefn.id)
           return (
@@ -50,26 +48,23 @@ export default function ThemeCustomizerThemePanel({
                       <div className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" style={{ background: themePkg.defaultColors.background }} />
                     </div>
                   )}
-                  <div className="font-mono text-xs text-foreground font-semibold">
-                    {themeDefn.name}
-                    {isPreviewMode && !isActive && <span className="ml-2 text-[9px] px-1 py-0.5 rounded bg-status-info-em/20 text-status-info border border-status-info-em/30">PREVIEW</span>}
-                  </div>
+                  <div className="font-mono text-xs text-foreground font-semibold">{themeDefn.name}</div>
                   <div className="font-mono text-[9px] text-muted-foreground/70 mt-0.5 leading-tight">{themeDefn.description}</div>
                 </div>
                 <Button
                   size="sm"
-                  variant={isActive ? 'default' : isPreviewMode ? 'secondary' : 'outline'}
+                  variant={isActive ? 'default' : 'outline'}
                   className="text-xs h-7 flex-shrink-0"
                   onClick={() => {
-                    if (!canSelect) {
+                    if (!isUnlocked) {
                       onLicenseRequired(themeDefn.id, themeDefn.name, themeDefn.licenseKeyPrefix)
                       return
                     }
                     onThemeSelect(themeDefn.id)
                   }}
                 >
-                  {!canSelect && <Lock size={10} className="mr-1" />}
-                  {isActive ? 'Active' : isPreviewMode ? 'Preview' : canSelect ? 'Select' : 'Unlock'}
+                  {!isUnlocked && <Lock size={10} className="mr-1" />}
+                  {isActive ? 'Active' : isUnlocked ? 'Select' : 'Unlock'}
                 </Button>
               </div>
             </div>
