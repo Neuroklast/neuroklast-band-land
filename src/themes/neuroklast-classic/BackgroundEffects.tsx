@@ -1,6 +1,6 @@
 import './styles.css'
-import { useEffect, useState, useRef } from 'react'
 import type { BackgroundEffectsSlotProps, HudTexts } from '@/lib/types'
+import { useNeuroklastBackgroundState } from '@/hooks/use-neuroklast-bg-state'
 
 const NK_PRIMARY_FALLBACK = 'oklch(0.50 0.22 25)'
 
@@ -23,27 +23,7 @@ interface NeuroklastBgProps {
 }
 
 function NeuroklastHudBackground({ siteName = '', hudTexts }: NeuroklastBgProps) {
-  const [time, setTime] = useState(new Date())
-  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
-  const [sessionId] = useState(() => `ID: NK-${Date.now().toString().slice(-6)}`)
-
-  useEffect(() => {
-    const tick = () => setTime(new Date())
-    intervalRef.current = setInterval(tick, 1000)
-    const handleVisibility = () => {
-      if (document.hidden) {
-        clearInterval(intervalRef.current)
-      } else {
-        setTime(new Date())
-        intervalRef.current = setInterval(tick, 1000)
-      }
-    }
-    document.addEventListener('visibilitychange', handleVisibility)
-    return () => {
-      clearInterval(intervalRef.current)
-      document.removeEventListener('visibilitychange', handleVisibility)
-    }
-  }, [])
+  const { time, sessionId } = useNeuroklastBackgroundState()
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ contain: 'layout' }}>
