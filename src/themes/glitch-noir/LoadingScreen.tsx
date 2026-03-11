@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import type { LoadingScreenSlotProps } from '@/lib/types'
 
 const NK_BOOT_TEXT = 'NK://BOOT'
 const LOADING_SEQUENCE_LABEL = '[LOADING_SEQUENCE]'
@@ -16,7 +17,7 @@ const BOOT_SEQUENCE = [
   '/// NEUROKLAST_ONLINE ///'
 ]
 
-export default function LoadingScreen() {
+export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   const [progress, setProgress] = useState(0)
   const [messages, setMessages] = useState<string[]>([])
   const [noiseLevel, setNoiseLevel] = useState(0)
@@ -34,6 +35,17 @@ export default function LoadingScreen() {
 
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (progress >= 100) {
+      const t = setTimeout(() => {
+        if (onComplete) {
+          onComplete()
+        }
+      }, 200)
+      return () => clearTimeout(t)
+    }
+  }, [progress, onComplete])
 
   useEffect(() => {
     const noiseInterval = setInterval(() => {

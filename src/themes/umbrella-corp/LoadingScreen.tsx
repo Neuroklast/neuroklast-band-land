@@ -22,7 +22,6 @@ export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
         if (prev >= 100) {
           clearInterval(progressTimer)
           clearInterval(lineTimer)
-          setTimeout(() => onComplete(), 200)
           return 100
         }
         return prev + 2
@@ -33,7 +32,18 @@ export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
       clearInterval(lineTimer)
       clearInterval(progressTimer)
     }
-  }, [onComplete])
+  }, [])
+
+  useEffect(() => {
+    if (progress >= 100) {
+      const t = setTimeout(() => {
+        if (onComplete) {
+          onComplete()
+        }
+      }, 200)
+      return () => clearTimeout(t)
+    }
+  }, [progress, onComplete])
 
   return (
     <motion.div
