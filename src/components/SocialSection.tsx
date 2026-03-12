@@ -16,14 +16,18 @@ import {
   SECTION_GLITCH_DURATION_MS,
   SECTION_GLITCH_INTERVAL_MS,
 } from '@/lib/config'
-
-import instagramIcon from '@/assets/images/icons/instagram.png'
-import facebookIcon from '@/assets/images/icons/facebook.png'
-import spotifyIcon from '@/assets/images/icons/spotify.png'
-import soundcloudIcon from '@/assets/images/icons/soundcloud.png'
-import youtubeIcon from '@/assets/images/icons/youtube.png'
-import bandcampIcon from '@/assets/images/icons/bandcamp.png'
-import linkIcon from '@/assets/images/icons/link.png'
+import {
+  InstagramLogo,
+  FacebookLogo,
+  SpotifyLogo,
+  SoundcloudLogo,
+  YoutubeLogo,
+  TiktokLogo,
+  TwitterLogo,
+  LinkSimple,
+  MusicNote,
+} from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 
 interface SocialSectionProps {
   socialLinks: SocialLinks
@@ -35,19 +39,19 @@ interface SocialSectionProps {
   onUpdate?: (socialLinks: SocialLinks) => void
 }
 
-const socialPlatforms = [
-  { key: 'instagram' as keyof SocialLinks, icon: instagramIcon, label: 'Instagram' },
-  { key: 'facebook' as keyof SocialLinks, icon: facebookIcon, label: 'Facebook' },
-  { key: 'spotify' as keyof SocialLinks, icon: spotifyIcon, label: 'Spotify' },
-  { key: 'soundcloud' as keyof SocialLinks, icon: soundcloudIcon, label: 'SoundCloud' },
-  { key: 'youtube' as keyof SocialLinks, icon: youtubeIcon, label: 'YouTube' },
-  { key: 'tiktok' as keyof SocialLinks, icon: linkIcon, label: 'TikTok' },
-  { key: 'twitter' as keyof SocialLinks, icon: linkIcon, label: 'Twitter' },
-  { key: 'linktr' as keyof SocialLinks, icon: linkIcon, label: 'Linktree' },
-  { key: 'bandcamp' as keyof SocialLinks, icon: bandcampIcon, label: 'Bandcamp' }
+const socialPlatforms: Array<{ key: keyof SocialLinks; IconComponent: Icon; label: string }> = [
+  { key: 'instagram', IconComponent: InstagramLogo, label: 'Instagram' },
+  { key: 'facebook', IconComponent: FacebookLogo, label: 'Facebook' },
+  { key: 'spotify', IconComponent: SpotifyLogo, label: 'Spotify' },
+  { key: 'soundcloud', IconComponent: SoundcloudLogo, label: 'SoundCloud' },
+  { key: 'youtube', IconComponent: YoutubeLogo, label: 'YouTube' },
+  { key: 'tiktok', IconComponent: TiktokLogo, label: 'TikTok' },
+  { key: 'twitter', IconComponent: TwitterLogo, label: 'Twitter' },
+  { key: 'linktr', IconComponent: LinkSimple, label: 'Linktree' },
+  { key: 'bandcamp', IconComponent: MusicNote, label: 'Bandcamp' },
 ]
 
-function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconSrc: string; url?: string; label: string; index: number; isInView: boolean; onClick?: () => void }) {
+function SocialButton({ IconComponent, url, label, index, isInView, onClick }: { IconComponent: Icon; url?: string; label: string; index: number; isInView: boolean; onClick?: () => void }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -76,21 +80,13 @@ function SocialButton({ iconSrc, url, label, index, isInView, onClick }: { iconS
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-primary/0 group-active:bg-primary/10 transition-colors duration-100 pointer-events-none" />
           <div className="relative z-10 transition-all">
-            {/*
-              ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
-              nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
-              Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
-            */}
-            <div style={{
-              filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))`
-            }}>
-              <img
-                src={iconSrc}
-                alt={label}
-                className="w-16 h-16 md:w-20 md:h-20 object-contain group-hover:scale-110 group-active:scale-125 transition-transform duration-200 select-none"
-                draggable={false}
-              />
-            </div>
+            {/* SVG icon inherits currentColor from the primary CSS variable via text-primary */}
+            <IconComponent
+              size={72}
+              weight="light"
+              className="text-primary group-hover:scale-110 group-active:scale-125 transition-transform duration-200"
+              style={{ filter: 'drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))' }}
+            />
           </div>
           <span className="text-xs md:text-sm font-medium tracking-wider uppercase relative z-10 font-mono">{label}</span>
         </a>
@@ -175,12 +171,12 @@ export default function SocialSection({ socialLinks, editMode, onUpdate, fontSiz
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        <div className="social-grid">
           {activePlatforms.map((platform, index) => {
             const url = safeSocialLinks[platform.key]
 
             return (
-              <SocialButton key={platform.key} iconSrc={platform.icon} url={url} label={platform.label} index={index} isInView={isInView} onClick={() => trackSocialClick(platform.key, url || '')} />
+              <SocialButton key={platform.key} IconComponent={platform.IconComponent} url={url} label={platform.label} index={index} isInView={isInView} onClick={() => trackSocialClick(platform.key, url || '')} />
             )
           })}
         </div>

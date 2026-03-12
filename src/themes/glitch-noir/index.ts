@@ -27,6 +27,10 @@ export const glitchNoirTheme: ThemePackage = {
   borderRadius: 0,
   animationsEnabled: true,
   effects: {},
+  gridLayout: {
+    columns: 'repeat(auto-fill, minmax(160px, 1fr))',
+    gap: '1.5rem',
+  },
   colorPresets: [
     {
       id: 'glitch-noir-monochrome',

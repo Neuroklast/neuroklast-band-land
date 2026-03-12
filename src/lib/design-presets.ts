@@ -66,9 +66,84 @@ export const minimalDarkPreset: DesignPreset = {
   animationsEnabled: true,
 }
 
+/** Glitch Noir — monochrome dark minimal aesthetic */
+export const glitchNoirPreset: DesignPreset = {
+  id: 'glitch-noir',
+  name: 'Glitch Noir',
+  description: 'Minimal dark techno — near-black background, high-contrast light foreground',
+  colors: {
+    primary: 'oklch(0.85 0 0)',
+    accent: 'oklch(0.70 0 0)',
+    background: 'oklch(0.05 0 0)',
+    card: 'oklch(0.08 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.55 0 0)',
+    border: 'oklch(0.20 0 0)',
+    secondary: 'oklch(0.12 0 0)',
+  },
+  fonts: {
+    heading: "'Inter', sans-serif",
+    body: "'Inter', sans-serif",
+    mono: "'Fira Code', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+}
+
+/** Umbrella Corp — biohazard military dark theme */
+export const umbrellaCorpPreset: DesignPreset = {
+  id: 'umbrella-corp',
+  name: 'Umbrella Corp',
+  description: 'Biohazard tactical — near-black field with high-contrast biohazard green',
+  colors: {
+    primary: 'oklch(0.70 0.20 145)',
+    accent: 'oklch(0.60 0.18 145)',
+    background: 'oklch(0.05 0 0)',
+    card: 'oklch(0.09 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.50 0 0)',
+    border: 'oklch(0.18 0 0)',
+    secondary: 'oklch(0.12 0 0)',
+  },
+  fonts: {
+    heading: "'Rajdhani', sans-serif",
+    body: "'Rajdhani', sans-serif",
+    mono: "'Share Tech Mono', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+}
+
+/** Zardonic Industrial — ember orange on near-black industrial theme */
+export const zardonicIndustrialPreset: DesignPreset = {
+  id: 'zardonic-industrial',
+  name: 'Zardonic Industrial',
+  description: 'Industrial dark — near-black surface with high-contrast ember orange',
+  colors: {
+    primary: 'oklch(0.65 0.25 30)',
+    accent: 'oklch(0.55 0.22 30)',
+    background: 'oklch(0.05 0.01 0)',
+    card: 'oklch(0.09 0.01 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.55 0 0)',
+    border: 'oklch(0.18 0.01 0)',
+    secondary: 'oklch(0.12 0.01 0)',
+  },
+  fonts: {
+    heading: "'Orbitron', sans-serif",
+    body: "'Share Tech Mono', monospace",
+    mono: "'Share Tech Mono', monospace",
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+}
+
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   'neuroklast-classic': neuroklastClassicPreset,
   'minimal-dark': minimalDarkPreset,
+  'glitch-noir': glitchNoirPreset,
+  'umbrella-corp': umbrellaCorpPreset,
+  'zardonic-industrial': zardonicIndustrialPreset,
 }
 
 export const PRESET_IDS = Object.keys(DESIGN_PRESETS) as (keyof typeof DESIGN_PRESETS)[]

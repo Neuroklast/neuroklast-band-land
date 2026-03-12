@@ -1,10 +1,45 @@
 import { useState, useEffect, useCallback, useRef, startTransition } from 'react'
 import { toast } from 'sonner'
 import type { ThemeSettings, SectionVisibility, SectionConfig } from '@/lib/types'
-import { THEME_CATALOG } from '@/lib/theme-registry'
+import { THEME_CATALOG, getTheme } from '@/lib/theme-registry'
 import { applyThemeToDocument, resetThemeDOM, applyThemeDefaults } from '@/lib/theme-application'
 import { resolveSections, normalizeSections } from '@/lib/sections'
 import { useKV } from '@/hooks/use-kv'
+
+/**
+ * Resolve the full color settings for a given theme settings object.
+ * If ALL individual color properties are absent but `activePreset` is set,
+ * look up the preset in the theme package and fill in the missing values.
+ * This guarantees the color picker always reflects the active palette.
+ */
+function resolveColorsFromPreset(settings: ThemeSettings): ThemeSettings {
+  const hasAllColors = Boolean(
+    settings.primary &&
+    settings.background &&
+    settings.foreground &&
+    settings.card &&
+    settings.mutedForeground,
+  )
+  if (hasAllColors) return settings
+  const themeId = settings.activePreset
+  if (!themeId) return settings
+  const pkg = getTheme(themeId)
+  if (!pkg) return settings
+  // Use the defaultPresetId to find the first matching preset, or fall back to the first one.
+  const preset = pkg.colorPresets.find(p => p.id === pkg.defaultPresetId) ?? pkg.colorPresets[0]
+  if (!preset) return settings
+  return {
+    ...settings,
+    primary: settings.primary ?? preset.colors.primary,
+    accent: settings.accent ?? preset.colors.accent,
+    background: settings.background ?? preset.colors.background,
+    card: settings.card ?? preset.colors.card,
+    foreground: settings.foreground ?? preset.colors.foreground,
+    mutedForeground: settings.mutedForeground ?? preset.colors.mutedForeground,
+    border: settings.border ?? preset.colors.border,
+    secondary: settings.secondary ?? preset.colors.secondary,
+  }
+}
 
 export interface PreviewConfig {
   theme: string
@@ -28,7 +63,7 @@ export function useThemeCustomizer({
 }: UseThemeCustomizerOptions) {
   const [previewConfig, setPreviewConfig] = useState<PreviewConfig>(() => ({
     theme: themeSettings?.activePreset || '',
-    themeSettings: themeSettings || {},
+    themeSettings: resolveColorsFromPreset(themeSettings || {}),
   }))
   const [visDraft, setVisDraft] = useState<SectionVisibility>(sectionVisibility || {})
   const [layoutDraft, setLayoutDraft] = useState<SectionConfig[]>(() =>
@@ -41,7 +76,7 @@ export function useThemeCustomizer({
   useEffect(() => {
     if (open && !prevOpenRef.current) {
       startTransition(() => {
-        setPreviewConfig({ theme: themeSettings?.activePreset || '', themeSettings: themeSettings || {} })
+        setPreviewConfig({ theme: themeSettings?.activePreset || '', themeSettings: resolveColorsFromPreset(themeSettings || {}) })
         setVisDraft(sectionVisibility || {})
         setLayoutDraft(normalizeSections(resolveSections(sections ? { sections } : {})))
         setHasEdits(false)

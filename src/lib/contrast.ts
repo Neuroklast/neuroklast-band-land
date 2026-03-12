@@ -73,3 +73,70 @@ export function contrastRatioFromRgb(
   const l2 = relativeLuminance(c2.r, c2.g, c2.b)
   return contrastRatio(l1, l2)
 }
+
+// ─── Preset-level contrast validation ───────────────────────────────────────
+
+/** Minimum color subset required for preset contrast validation */
+export interface PresetColorSubset {
+  foreground: string
+  background: string
+  card: string
+  mutedForeground: string
+}
+
+/** Result of a single contrast pair check */
+export interface ContrastCheckResult {
+  pair: string
+  ratio: number | null
+  passes: boolean
+  skipped: boolean
+}
+
+/** Full result of validating a preset against WCAG AA thresholds */
+export interface PresetContrastReport {
+  /**
+   * `true`  — all pairs that could be evaluated meet WCAG AA.
+   * `false` — at least one pair fails.
+   * `null`  — every pair was skipped (browser cannot resolve the color format).
+   */
+  passes: boolean | null
+  details: ContrastCheckResult[]
+}
+
+/**
+ * Validate the foreground/background contrast ratios of a design preset
+ * against WCAG AA thresholds (DIN EN ISO 9241 / DIN ISO 25010 usability).
+ *
+ * - `foreground` on `background` ≥ 4.5 : 1 (normal text)
+ * - `foreground` on `card`       ≥ 4.5 : 1 (normal text on card surface)
+ * - `mutedForeground` on `background` ≥ 3.0 : 1 (large / secondary text)
+ *
+ * Returns `passes: null` when running without a full CSS engine (e.g. jsdom
+ * with oklch colors) so callers can distinguish "not verifiable" from "fails".
+ */
+export function validatePresetContrast(colors: PresetColorSubset): PresetContrastReport {
+  const pairs: Array<{ label: string; fg: string; bg: string; largeText: boolean }> = [
+    { label: 'foreground/background', fg: colors.foreground, bg: colors.background, largeText: false },
+    { label: 'foreground/card', fg: colors.foreground, bg: colors.card, largeText: false },
+    { label: 'mutedForeground/background', fg: colors.mutedForeground, bg: colors.background, largeText: true },
+  ]
+
+  const details: ContrastCheckResult[] = pairs.map(({ label, fg, bg, largeText }) => {
+    const ratio = getContrastRatio(fg, bg)
+    if (ratio === null) {
+      return { pair: label, ratio: null, passes: true, skipped: true }
+    }
+    return {
+      pair: label,
+      ratio,
+      passes: meetsWcagAA(ratio, largeText),
+      skipped: false,
+    }
+  })
+
+  const evaluated = details.filter(d => !d.skipped)
+  if (evaluated.length === 0) return { passes: null, details }
+
+  const allPass = evaluated.every(d => d.passes)
+  return { passes: allPass, details }
+}

@@ -238,7 +238,18 @@ export function resetThemeDOM() {
     '--overlay-moving-scanline', '--input', '--hover-color',
   ]
   props.forEach(p => root.style.removeProperty(p))
+  // Also clear the body background so the old theme color doesn't bleed through.
+  document.body.style.removeProperty('background-color')
 }
+
+/**
+ * Alias for `resetThemeDOM` — strips all theme-related CSS custom properties,
+ * the `data-theme` attribute, and any body background colour that was applied
+ * by a previous call to `applyThemeToDOM` / `applyThemeToDocument`.
+ *
+ * Call this before applying a new theme to guarantee a clean slate.
+ */
+export const clearThemeFromDOM = resetThemeDOM
 
 /**
  * Build a ThemeSettings object from a theme's default colors and fonts.

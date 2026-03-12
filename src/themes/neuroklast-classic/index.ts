@@ -49,6 +49,10 @@ export const neuroklastClassicTheme: ThemePackage = {
   },
   borderRadius: 0.125,
   animationsEnabled: true,
+  gridLayout: {
+    columns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gap: '1.25rem',
+  },
   colorPresets: [
     {
       id: 'neuroklast-classic-crimson',
