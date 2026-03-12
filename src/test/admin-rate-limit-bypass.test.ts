@@ -51,7 +51,7 @@ vi.mock('../../api/_blocklist.js', () => ({
   getAllBlockedIps: vi.fn().mockResolvedValue([]),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn> }
+type Res = { status: ReturnType<typeof vi.fn> & ((code: number) => Res); json: ReturnType<typeof vi.fn> & ((data: unknown) => Res); end: ReturnType<typeof vi.fn> & (() => Res); setHeader: ReturnType<typeof vi.fn> & ((key: string, value: string) => Res); send: ReturnType<typeof vi.fn> & ((body?: unknown) => Res) }
 
 function mockRes(): Res {
   const res: Res = {

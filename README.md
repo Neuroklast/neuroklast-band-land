@@ -21,7 +21,7 @@
 - **Design System vs. Presets** — Strict architectural separation: "Themes" strictly define structural layouts (DOM/clip-paths), while "Presets" define color palettes and typography.
 - **Data Integrations** — Built-in Bandsintown API syncing via React Query, alongside structured release management.
 - **Secure Architecture** — Client-bundle code splitting for Admin views (`React.lazy`), React Query for data fetching, and strict Hostname-based license bypass for master-instances (neuroklast.net).
-- **Design Presets** — Seven bundled themes (Cyberpunk, Minimal, Elegant, Neon, Retro, Zardonic, Neuroklast Classic) with one-line activation
+- **Design Themes** — Four bundled themes (Glitch Noir, Neuroklast Classic, Zardonic Industrial, Umbrella Corp) with one-line activation
 - **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
 - **Flexible Sections** — Enable/disable and reorder any section without touching code
 - **SEO & Open Graph** — Title, description, OG tags, Twitter cards, JSON-LD, and canonical URLs generated automatically from config
@@ -217,16 +217,19 @@ Themes are organized as self-contained modules under `src/themes/`. Each theme i
 ```
 src/themes/
   index.ts              ← barrel export + builtInThemes array
-  default-slots.ts      ← fallback slot components (Hero, Nav, Footer, …)
-  cyberpunk.ts          ← ThemePackage definition
-  minimal.ts
-  elegant.ts
-  neon.ts
-  retro.ts
-  neuroklast-classic.ts
-  zardonic/
-    index.ts            ← ThemePackage definition
-    LoadingScreen.tsx   ← custom slot component
+  default-slots.tsx     ← fallback slot components (Hero, Nav, Footer, …)
+  neuroklast-classic/   ← ThemePackage + custom slot components
+    index.ts
+    Hero.tsx, Navigation.tsx, BackgroundEffects.tsx, …
+  glitch-noir/          ← ThemePackage + custom Hero + scoped CSS
+    index.ts
+    Hero.tsx, styles.css
+  zardonic-industrial/  ← ThemePackage + custom Navigation + scoped CSS
+    index.ts
+    Navigation.tsx, styles.css
+  umbrella-corp/        ← ThemePackage + custom slot components
+    index.ts
+    Hero.tsx, Navigation.tsx, …
 
 src/lib/
   theme-registry.ts     ← registry logic (auto-registers all builtInThemes)
@@ -514,14 +517,11 @@ src/
     i18n.ts               # English translations
  themes/                    # Modular theme packages
     index.ts              # Barrel export + builtInThemes array
-    default-slots.ts      # Default slot stubs (Hero, Nav, Footer, …)
-    cyberpunk.ts          # Cyberpunk theme
-    minimal.ts            # Minimal theme
-    elegant.ts            # Elegant theme
-    neon.ts               # Neon theme
-    retro.ts              # Retro theme
-    neuroklast-classic.ts # Neuroklast Classic theme
-    zardonic/  # Zardonic theme + custom LoadingScreen
+    default-slots.tsx     # Default slot stubs (Hero, Nav, Footer, …)
+    neuroklast-classic/   # Neuroklast Classic theme + custom components
+    glitch-noir/          # Glitch Noir theme + custom Hero
+    zardonic-industrial/  # Zardonic Industrial theme + custom Navigation
+    umbrella-corp/        # Umbrella Corp theme + custom components
  components/                # React components
     widgets/              # Pluggable widget components
     ui/                   # shadcn/ui base components

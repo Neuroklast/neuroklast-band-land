@@ -53,8 +53,8 @@ function toDriveJsonUrl(url: string): string {
 }
 
 export default function AdminButton({
-  hasPassword: _hasPassword,
-  onChangePassword: _onChangePassword,
+  hasPassword,
+  onChangePassword,
   onSetPassword,
   onLogout,
   onResetSetup,
@@ -140,7 +140,6 @@ export default function AdminButton({
         openImportDialog(parsed, url)
       }
     } catch (err) {
-      console.error('URL import error:', err)
       if (!silent) toast.error('Failed to import data from URL')
     } finally {
       setIsImporting(false)
@@ -281,7 +280,14 @@ export default function AdminButton({
           open={showPasswordDialog}
           onOpenChange={setShowPasswordDialog}
           mode='setup'
-          onSetPassword={async (pw) => { await onSetPassword(pw); setShowPasswordDialog(false) }}
+          onSetPassword={async (pw) => {
+            if (hasPassword) {
+              await onChangePassword(pw)
+            } else {
+              await onSetPassword(pw)
+            }
+            setShowPasswordDialog(false)
+          }}
         />
       )}
 

@@ -19,16 +19,16 @@ src/themes/
 │   ├── LoadingScreen.tsx
 │   ├── Footer.tsx
 │   └── styles.css
-├── nebula-noir-theme/        # Free Art Deco / cosmic theme
-│   ├── index.ts
-│   ├── Hero.tsx, Card.tsx, ...
-│   └── styles.css
 ├── glitch-noir/              # Free minimal dark techno theme
 │   ├── index.ts
+│   ├── Hero.tsx
 │   └── styles.css
-├── zardonic/                 # Exclusive industrial cyberpunk theme
+├── zardonic-industrial/      # Exclusive industrial cyberpunk theme
 │   ├── index.ts
+│   ├── Navigation.tsx
 │   └── styles.css
+├── umbrella-corp/            # Exclusive corporate horror theme
+│   └── index.ts
 └── README.md                 # This file
 ```
 

@@ -3,11 +3,13 @@
  *
  * Config: { imageCount?: number }
  *
- * The images are taken from the site's galleryImages config. The `imageCount`
- * config key controls how many photos to show (default: 6).
+ * Shows a photo grid placeholder until an Instagram connection is configured
+ * via the site's OAuth settings. The `imageCount` config key controls how many
+ * placeholder cells to display (default: 6).
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
+import { InstagramLogo } from '@phosphor-icons/react'
 
 interface InstagramFeedConfig {
   imageCount?: number
@@ -40,9 +42,9 @@ export default function InstagramFeedWidget({ widget, themeSettings }: Instagram
           <div
             key={i}
             style={{ borderRadius: `${radiusPx}px`, aspectRatio: '1' }}
-            className="bg-card/50 border border-primary/10 flex items-center justify-center text-muted-foreground text-xs"
+            className="bg-card/50 border border-primary/10 flex items-center justify-center"
           >
-            <span className="opacity-30 text-[10px]">#{i + 1}</span>
+            <InstagramLogo size={20} className="text-muted-foreground opacity-20" />
           </div>
         ))}
       </div>
