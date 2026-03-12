@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { isPrimaryHost } from './_primary-check.js'
 
 // Minimal inline types so we avoid the vulnerable @vercel/node package
 interface VercelRequest {
@@ -37,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { key } = req.body || {}
 
   const host = [req.headers?.host].flat()[0] ?? ''
-  const IS_PRIMARY = host.includes('neuroklast.net')
+  const IS_PRIMARY = isPrimaryHost(host)
 
   if (IS_PRIMARY) {
     return res.status(200).json({ valid: true, tier: 'agency', features: [], assignedThemes: [] })
@@ -84,7 +85,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     console.error('[validate-key] KV error:', error)
     // Bei KV-Fehler: fail open für eigene Instanz, fail closed für alle anderen
-    const isPrimary = IS_PRIMARY
-    return res.status(200).json({ valid: isPrimary, error: 'Service temporarily unavailable' })
+    return res.status(200).json({ valid: IS_PRIMARY, error: 'Service temporarily unavailable' })
   }
 }

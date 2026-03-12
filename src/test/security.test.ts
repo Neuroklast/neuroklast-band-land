@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv
@@ -31,7 +31,7 @@ vi.mock('../../api/auth.js', () => ({
   validateSession: mockValidateSession,
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn> }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res>; send: Mock<(data: unknown) => Res> }
 
 function mockRes(): Res {
   const res: Res = {

@@ -2,6 +2,9 @@ import { kv } from '@vercel/kv'
 import { createHash } from 'node:crypto'
 import { applyRateLimit } from './_ratelimit.js'
 
+/** Same regex as api/contact.ts — matches user@domain.tld */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 interface VercelRequest {
   method?: string
   body?: Record<string, unknown>
@@ -57,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     if (!allowed) return
 
     const { email } = req.body || {}
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
+    if (!email || typeof email !== 'string' || !EMAIL_RE.test(email.trim()) || email.trim().length > 254) {
       res.status(400).json({ error: 'Valid email required' })
       return
     }
@@ -129,7 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const { email, source } = req.body || {}
 
-  if (!email || typeof email !== 'string' || !email.includes('@')) {
+  if (!email || typeof email !== 'string' || !EMAIL_RE.test(email.trim()) || email.trim().length > 254) {
     res.status(400).json({ error: 'Valid email required' })
     return
   }

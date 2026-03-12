@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv — must be declared before importing modules
@@ -29,6 +29,26 @@ const {
   setDefenseHeaders,
   serveFingerprintPixel,
 } = await import('../../api/_honeytokens.js')
+
+// ---------------------------------------------------------------------------
+// Helper to create a mock VercelLikeResponse
+type Res = {
+  setHeader: Mock<(key: string, value: string) => Res>
+  status: Mock<(code: number) => Res>
+  json: Mock<(data: unknown) => Res>
+  end: Mock<() => Res>
+  send: Mock<(data: unknown) => Res>
+}
+
+function mockRes(headerSpy?: (k: string, v: string) => void): Res {
+  const res = {} as Res
+  res.setHeader = vi.fn((k: string, v: string) => { headerSpy?.(k, v); return res }) as Res['setHeader']
+  res.status = vi.fn(() => res) as Res['status']
+  res.json = vi.fn(() => res) as Res['json']
+  res.end = vi.fn(() => res) as Res['end']
+  res.send = vi.fn(() => res) as Res['send']
+  return res
+}
 
 // ---------------------------------------------------------------------------
 describe('Entropy Injection: markAttacker', () => {
@@ -74,7 +94,7 @@ describe('Entropy Injection: isMarkedAttacker', () => {
 describe('Entropy Injection: injectEntropyHeaders', () => {
   it('injects 200 random headers by default', () => {
     const headers: Record<string, string> = {}
-    const res = { setHeader: vi.fn((k: string, v: string) => { headers[k] = v }) }
+    const res = mockRes((k, v) => { headers[k] = v })
     injectEntropyHeaders(res)
     expect(res.setHeader).toHaveBeenCalledTimes(200)
     // Check naming pattern
@@ -83,14 +103,14 @@ describe('Entropy Injection: injectEntropyHeaders', () => {
   })
 
   it('injects configurable number of headers', () => {
-    const res = { setHeader: vi.fn() }
+    const res = mockRes()
     injectEntropyHeaders(res, 10)
     expect(res.setHeader).toHaveBeenCalledTimes(10)
   })
 
   it('generates hex values of expected length (32 hex chars = 16 bytes)', () => {
     const values: string[] = []
-    const res = { setHeader: vi.fn((_k: string, v: string) => { values.push(v) }) }
+    const res = mockRes((_k, v) => { values.push(v) })
     injectEntropyHeaders(res, 5)
     for (const val of values) {
       expect(val).toMatch(/^[0-9a-f]{32}$/)
@@ -99,7 +119,7 @@ describe('Entropy Injection: injectEntropyHeaders', () => {
 
   it('generates unique values across headers', () => {
     const values: string[] = []
-    const res = { setHeader: vi.fn((_k: string, v: string) => { values.push(v) }) }
+    const res = mockRes((_k, v) => { values.push(v) })
     injectEntropyHeaders(res, 50)
     const unique = new Set(values)
     // Cryptographically random — extremely unlikely to have duplicates
@@ -150,7 +170,7 @@ describe('Taunting messages: TAUNT_MESSAGES and getRandomTaunt', () => {
 // ---------------------------------------------------------------------------
 describe('Defense headers: setDefenseHeaders', () => {
   it('sets X-Neural-Defense, X-Netrunner-Status, and X-Warning headers', () => {
-    const res = { setHeader: vi.fn() }
+    const res = mockRes()
     setDefenseHeaders(res)
     expect(res.setHeader).toHaveBeenCalledWith('X-Neural-Defense', 'Active. Target identified.')
     expect(res.setHeader).toHaveBeenCalledWith('X-Netrunner-Status', 'Nice try, but you\'re barking up the wrong tree.')
@@ -162,13 +182,7 @@ describe('Defense headers: setDefenseHeaders', () => {
 // ---------------------------------------------------------------------------
 describe('Fingerprint pixel: serveFingerprintPixel', () => {
   it('returns a 200 PNG response with fingerprinting headers', () => {
-    const res = {
-      setHeader: vi.fn(),
-      status: vi.fn(),
-      send: vi.fn(),
-    }
-    res.status.mockReturnValue(res)
-    res.send.mockReturnValue(res)
+    const res = mockRes()
 
     serveFingerprintPixel(res)
 
@@ -184,18 +198,12 @@ describe('Fingerprint pixel: serveFingerprintPixel', () => {
   })
 
   it('sends a valid PNG (starts with PNG magic bytes)', () => {
-    const res = {
-      setHeader: vi.fn(),
-      status: vi.fn(),
-      send: vi.fn(),
-    }
-    res.status.mockReturnValue(res)
-    res.send.mockReturnValue(res)
+    const res = mockRes()
 
     serveFingerprintPixel(res)
 
     expect(res.send).toHaveBeenCalledTimes(1)
-    const sentData: Buffer = res.send.mock.calls[0][0]
+    const sentData = res.send.mock.calls[0][0] as Buffer
     // PNG starts with \x89PNG
     expect(sentData[0]).toBe(0x89)
     expect(sentData[1]).toBe(0x50) // 'P'

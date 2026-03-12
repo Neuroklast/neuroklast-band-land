@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock rate limiter
@@ -17,12 +17,12 @@ vi.mock('../../api/_ratelimit.ts', () => ({
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-type SetHeader = ReturnType<typeof vi.fn>
 type Res = {
-  status: ReturnType<typeof vi.fn>
-  json: ReturnType<typeof vi.fn>
-  setHeader: SetHeader
-  end: ReturnType<typeof vi.fn>
+  status: Mock<(code: number) => Res>
+  json: Mock<(data: unknown) => Res>
+  setHeader: Mock<(key: string, value: string | number) => Res>
+  end: Mock<(data?: unknown) => Res>
+  write: Mock<(chunk: unknown) => boolean>
 }
 
 function mockRes(): Res & { _piped: boolean } {
@@ -31,12 +31,12 @@ function mockRes(): Res & { _piped: boolean } {
     json: vi.fn(),
     setHeader: vi.fn(),
     end: vi.fn(),
+    write: vi.fn(),
     _piped: false,
     // Simulate a writable stream for pipe()
     on: vi.fn().mockReturnThis(),
     once: vi.fn().mockReturnThis(),
     emit: vi.fn().mockReturnThis(),
-    write: vi.fn(),
   } as Res & { _piped: boolean }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)

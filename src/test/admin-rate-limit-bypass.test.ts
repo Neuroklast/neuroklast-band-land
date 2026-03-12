@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv
@@ -51,7 +51,7 @@ vi.mock('../../api/_blocklist.js', () => ({
   getAllBlockedIps: vi.fn().mockResolvedValue([]),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn> & ((code: number) => Res); json: ReturnType<typeof vi.fn> & ((data: unknown) => Res); end: ReturnType<typeof vi.fn> & (() => Res); setHeader: ReturnType<typeof vi.fn> & ((key: string, value: string) => Res); send: ReturnType<typeof vi.fn> & ((body?: unknown) => Res) }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res>; send: Mock<(body?: unknown) => Res> }
 
 function mockRes(): Res {
   const res: Res = {

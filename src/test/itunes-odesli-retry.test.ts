@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv
@@ -21,13 +21,14 @@ vi.mock('../../api/_fetch-retry.js', () => ({
   fetchWithRetry: (...args: unknown[]) => mockFetchWithRetry(...args),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res> }
 
 function mockRes(): Res {
-  const res: Res = { status: vi.fn(), json: vi.fn(), end: vi.fn() }
+  const res: Res = { status: vi.fn(), json: vi.fn(), end: vi.fn(), setHeader: vi.fn() }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   res.end.mockReturnValue(res)
+  res.setHeader.mockReturnValue(res)
   return res
 }
 
@@ -85,9 +86,9 @@ describe('iTunes handler – 429 retry via fetchWithRetry', () => {
 
     expect(mockFetchWithRetry).toHaveBeenCalledTimes(2)
     expect(res.status).toHaveBeenCalledWith(200)
-    const combined = res.json.mock.calls[0][0]
-    expect(combined.resultCount).toBe(2)
-    expect(combined.results).toHaveLength(2)
+    const combined = res.json.mock.calls[0][0] as Record<string, unknown>
+    expect((combined as { resultCount: number }).resultCount).toBe(2)
+    expect((combined as { results: unknown[] }).results).toHaveLength(2)
   })
 
   it('returns 500 after all retries are exhausted (fetchWithRetry returns non-ok)', async () => {

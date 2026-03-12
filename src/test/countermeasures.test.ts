@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv
@@ -43,7 +43,7 @@ vi.mock('../../api/_alerting.js', () => ({
   sendSecurityAlert: vi.fn().mockResolvedValue(undefined),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn> }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res>; send: Mock<(data: unknown) => Res> }
 
 function mockRes(): Res {
   const res: Res = {
@@ -150,7 +150,7 @@ describe('SQL Injection Backfire: detectSqlInjection', () => {
   it('handles null/undefined body gracefully', () => {
     expect(detectSqlInjection({
       query: {},
-      body: null,
+      body: undefined,
       url: '/',
       headers: {},
     })).toBe(false)
@@ -439,8 +439,8 @@ describe('Log Poisoning: generatePoisonedErrorBody', () => {
 
   it('includes fake credentials that look real', () => {
     const body = generatePoisonedErrorBody()
-    expect(body.debug.api_key).toMatch(/^sk_prod_/)
-    expect(body.debug.db_host).toContain('internal')
+    expect((body.debug as Record<string, unknown>).api_key).toMatch(/^sk_prod_/)
+    expect((body.debug as Record<string, unknown>).db_host).toContain('internal')
   })
 })
 
