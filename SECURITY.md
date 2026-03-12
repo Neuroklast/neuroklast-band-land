@@ -212,3 +212,37 @@ A state-of-the-art admin security center provides full visibility and control:
 7. **Regular Updates**: Keep dependencies up to date (Dependabot auto-merge is configured for patch and minor updates)
 8. **CSP Headers**: Configure Content Security Policy headers in production
 9. **Log Monitoring**: Monitor `[HONEYTOKEN ALERT]` entries in server logs for intrusion detection
+10. **Seed Honeytokens**: Call `GET /api/admin/seed-security` once after initial deployment to activate the honeytoken trap
+
+## ⚖️ Legal Notice — Unauthorized Access
+
+Unauthorized access to this system or its security test infrastructure is a criminal offense
+under applicable law including but not limited to:
+
+- **Germany:** §202a StGB (Ausspähen von Daten), §202b StGB (Abfangen von Daten), §303a StGB (Datenveränderung)
+- **EU:** Directive 2013/40/EU (Attacks against information systems)
+- **USA:** 18 U.S.C. § 1030 (Computer Fraud and Abuse Act)
+- **International:** Budapest Convention on Cybercrime (CETS No. 185)
+
+### Evidence Collection
+
+This system automatically collects and preserves forensic evidence of intrusion attempts:
+- Cryptographic hash of each attacker's IP address (GDPR-compliant — no raw IP stored)
+- Request fingerprint including User-Agent, HTTP headers, request path and timing
+- Canary document access events with JavaScript-derived browser fingerprints
+- Tamper-evident evidence hashes using SHA-256 (court-admissible audit trail)
+- Server-side timestamps in ISO 8601 UTC format
+- Country code and geographic metadata from Vercel headers (not personal data under GDPR Art. 4)
+
+All evidence is stored server-side and may be submitted to relevant law enforcement
+agencies or courts upon request. The SHA-256 IP hashes do not constitute personal data
+under GDPR Art. 4 when no reverse-mapping is maintained (BGH, Urt. v. 16.05.2017 – VI ZR 135/13).
+
+Forensic incident exports are available via `GET /api/security-incidents?format=forensic`
+(admin-only). Each incident entry includes a tamper-evident `evidenceHash` (SHA-256) covering
+all stored fields, allowing downstream verification that log entries have not been altered.
+
+### Reporting Malicious Access
+
+If you have observed malicious access or wish to submit an evidence report, contact
+the maintainers through GitHub Security Advisories.

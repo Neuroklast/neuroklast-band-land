@@ -69,6 +69,34 @@ export function getClientIp(req: VercelLikeRequest): string {
   return '127.0.0.1'
 }
 
+/**
+ * Extract Vercel-provided geographic metadata from request headers.
+ * Country codes and coordinates are not personal data under GDPR Art. 4,
+ * so they may be stored directly (no hashing required).
+ */
+export function getVercelGeoData(req: VercelLikeRequest): {
+  countryCode: string | null
+  region: string | null
+  city: string | null
+  lat: string | null
+  lon: string | null
+} {
+  const h = req.headers
+  const hStr = (name: string): string | null => {
+    const val = h[name]
+    if (typeof val === 'string') return val || null
+    if (Array.isArray(val)) return val[0] || null
+    return null
+  }
+  return {
+    countryCode: hStr('x-vercel-ip-country'),
+    region: hStr('x-vercel-ip-country-region'),
+    city: hStr('x-vercel-ip-city'),
+    lat: hStr('x-vercel-ip-latitude'),
+    lon: hStr('x-vercel-ip-longitude'),
+  }
+}
+
 // ─── Rate limiter ─────────────────────────────────────────────────────────────
 
 /**
