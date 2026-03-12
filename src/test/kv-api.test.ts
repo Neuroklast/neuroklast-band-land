@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv — must be declared before importing the handler
@@ -31,17 +31,21 @@ vi.mock('../../api/auth.js', () => ({
   validateSession: mockValidateSession,
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res>; send: Mock<(data: unknown) => Res> }
 
 function mockRes(): Res {
   const res: Res = {
     status: vi.fn(),
     json: vi.fn(),
     end: vi.fn(),
+    setHeader: vi.fn(),
+    send: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   res.end.mockReturnValue(res)
+  res.setHeader.mockReturnValue(res)
+  res.send.mockReturnValue(res)
   return res
 }
 
@@ -147,7 +151,8 @@ describe('KV API handler', () => {
       })
       const res = mockRes()
       await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
-      const returned = res.json.mock.calls[0][0].value
+      const result154 = res.json.mock.calls[0][0] as Record<string, Record<string, unknown>>
+      const returned = result154.value
       expect(returned.name).toBe('Test Band')
       expect(returned.terminalCommands).toBeUndefined()
     })
@@ -158,7 +163,8 @@ describe('KV API handler', () => {
       mockKvGet.mockResolvedValue({ name: 'Test Band', terminalCommands: commands })
       const res = mockRes()
       await handler({ method: 'GET', query: { key: 'band-data' }, body: {}, headers: {} }, res)
-      const returned = res.json.mock.calls[0][0].value
+      const result165 = res.json.mock.calls[0][0] as Record<string, Record<string, unknown>>
+      const returned = result165.value
       expect(returned.terminalCommands).toEqual(commands)
     })
   })
@@ -167,7 +173,7 @@ describe('KV API handler', () => {
   describe('POST', () => {
     it('returns 400 when body is missing', async () => {
       const res = mockRes()
-      await handler({ method: 'POST', query: {}, body: null, headers: {} }, res)
+      await handler({ method: 'POST', query: {}, body: undefined, headers: {} }, res)
       expect(res.status).toHaveBeenCalledWith(400)
     })
 

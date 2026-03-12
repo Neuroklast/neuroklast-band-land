@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock rate limiter
@@ -18,9 +18,10 @@ const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 interface Res {
-  status: ReturnType<typeof vi.fn> & ((code: number) => Res)
-  json: ReturnType<typeof vi.fn> & ((data: unknown) => Res)
-  setHeader: ReturnType<typeof vi.fn> & ((k: string, v: string) => Res)
+  status: Mock<(code: number) => Res>
+  json: Mock<(data: unknown) => Res>
+  setHeader: Mock<(k: string, v: string) => Res>
+  end: Mock<() => Res>
 }
 
 function mockRes(): Res {
@@ -28,9 +29,11 @@ function mockRes(): Res {
     status: vi.fn(),
     json: vi.fn(),
     setHeader: vi.fn(),
+    end: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
+  res.end.mockReturnValue(res)
   return res as Res
 }
 
@@ -107,7 +110,7 @@ describe('Drive folder API (Google Drive v3)', () => {
     await handler({ method: 'GET', query: { folderId: 'testFolder123' }, headers: {} }, res)
 
     expect(res.json).toHaveBeenCalledTimes(1)
-    const { images } = res.json.mock.calls[0][0]
+    const { images } = res.json.mock.calls[0][0] as { images: Array<Record<string, string>> }
     expect(images).toHaveLength(2)
 
     // Check structure
@@ -174,7 +177,7 @@ describe('Drive folder API (Google Drive v3)', () => {
     })
     const res = mockRes()
     await handler({ method: 'GET', query: { folderId: 'abc123' }, headers: {} }, res)
-    const { images } = res.json.mock.calls[0][0]
+    const { images } = res.json.mock.calls[0][0] as { images: Array<Record<string, string>> }
     expect(images[0].caption).toBe('my.photo')
   })
 

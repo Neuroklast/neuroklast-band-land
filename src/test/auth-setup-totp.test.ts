@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv — must be declared before importing the handler
@@ -31,7 +31,7 @@ vi.mock('../../api/_ratelimit.ts', () => ({
   getClientIp: vi.fn().mockReturnValue('1.2.3.4'),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn> }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res> }
 
 function mockRes(): Res {
   const res: Res = {
@@ -126,7 +126,7 @@ describe('Auth security: setup token protection', () => {
       headers: {},
     }, res)
 
-    const jsonData = res.json.mock.calls[0][0]
+    const jsonData = res.json.mock.calls[0][0] as Record<string, unknown>
     expect(jsonData.setupTokenRequired).toBe(true)
   })
 
@@ -139,7 +139,7 @@ describe('Auth security: setup token protection', () => {
       headers: {},
     }, res)
 
-    const jsonData = res.json.mock.calls[0][0]
+    const jsonData = res.json.mock.calls[0][0] as Record<string, unknown>
     expect(jsonData.setupTokenRequired).toBe(false)
   })
 })
@@ -162,7 +162,7 @@ describe('Auth security: TOTP 2FA', () => {
       headers: {},
     }, res)
 
-    const jsonData = res.json.mock.calls[0][0]
+    const jsonData = res.json.mock.calls[0][0] as Record<string, unknown>
     expect(jsonData.totpEnabled).toBe(false)
   })
 
@@ -178,7 +178,7 @@ describe('Auth security: TOTP 2FA', () => {
       headers: {},
     }, res)
 
-    const jsonData = res.json.mock.calls[0][0]
+    const jsonData = res.json.mock.calls[0][0] as Record<string, unknown>
     expect(jsonData.totpEnabled).toBe(true)
   })
 
@@ -213,7 +213,7 @@ describe('Auth security: TOTP 2FA', () => {
       headers: { cookie: 'nk-session=valid-token', 'user-agent': 'TestBrowser' },
     }, res)
 
-    const jsonData = res.json.mock.calls[0][0]
+    const jsonData = res.json.mock.calls[0][0] as Record<string, unknown>
     expect(jsonData.success).toBe(true)
     expect(jsonData.totpUri).toMatch(/^otpauth:\/\/totp\//)
     expect(jsonData.totpSecret).toBeDefined()
@@ -257,7 +257,7 @@ describe('Auth security: TOTP 2FA', () => {
     }, res)
 
     expect(res.status).toHaveBeenCalledWith(403)
-    const jsonData = res.json.mock.calls[0][0]
+    const jsonData = res.json.mock.calls[0][0] as Record<string, unknown>
     expect(jsonData.totpRequired).toBe(true)
   })
 

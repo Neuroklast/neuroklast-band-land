@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv — must be declared before importing the handler
@@ -18,7 +18,7 @@ vi.mock('../../api/_ratelimit.ts', () => ({
   getClientIp: vi.fn().mockReturnValue('1.2.3.4'),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn> }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res> }
 
 function mockRes(): Res {
   const res: Res = {
@@ -216,7 +216,7 @@ describe('Auth security: client fingerprint binding', () => {
       headers: { cookie: 'nk-session=valid-token', 'user-agent': 'DifferentBrowser' },
     }, res)
 
-    const jsonCall = res.json.mock.calls[0][0]
+    const jsonCall = res.json.mock.calls[0][0] as Record<string, unknown>
     // Session should be invalid due to fingerprint mismatch
     expect(jsonCall.authenticated).toBe(false)
   })

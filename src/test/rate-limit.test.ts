@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv — must be declared before importing the handler
@@ -36,17 +36,27 @@ vi.mock('../../api/_blocklist.js', () => ({
   isHardBlocked: vi.fn().mockResolvedValue(false),
 }))
 
-interface Res { status: (code: number) => Res; json: (data: unknown) => Res; end: () => void }
+interface Res {
+  status: Mock<(code: number) => Res>
+  json: Mock<(data: unknown) => Res>
+  end: Mock<() => Res>
+  setHeader: Mock<(key: string, value: string) => Res>
+  send: Mock<(data: unknown) => Res>
+}
 
 function mockRes(): Res {
   const res = {
     status: vi.fn(),
     json: vi.fn(),
     end: vi.fn(),
+    setHeader: vi.fn(),
+    send: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   res.end.mockReturnValue(res)
+  res.setHeader.mockReturnValue(res)
+  res.send.mockReturnValue(res)
   return res as Res
 }
 

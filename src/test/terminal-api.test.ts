@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv
@@ -22,7 +22,7 @@ interface VercelResponse {
   end(): this
 }
 
-type Res = VercelResponse & { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>; setHeader: ReturnType<typeof vi.fn> }
+type Res = VercelResponse & { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res> }
 
 function mockRes(): Res {
   const res = {
@@ -71,7 +71,7 @@ describe('Terminal API handler', () => {
 
   it('returns 400 when body is missing', async () => {
     const res = mockRes()
-    await handler({ method: 'POST', body: null, headers: {} }, res as VercelResponse)
+    await handler({ method: 'POST', body: undefined, headers: {} }, res as VercelResponse)
     expect(res.status).toHaveBeenCalledWith(400)
   })
 
@@ -122,7 +122,7 @@ describe('Terminal API handler', () => {
     mockKvGet.mockResolvedValue(BAND_DATA_WITH_COMMANDS)
     const res = mockRes()
     await handler({ method: 'POST', body: { command: 'help' }, headers: {} }, res as VercelResponse)
-    const response = res.json.mock.calls[0][0]
+    const response = res.json.mock.calls[0][0] as { found: boolean; listing: Array<Record<string, unknown>> }
     expect(response.found).toBe(true)
     expect(response.listing).toHaveLength(2)
     expect(response.listing[0]).toEqual({ name: 'status', description: 'System status' })

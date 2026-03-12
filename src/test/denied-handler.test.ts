@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv
@@ -29,9 +29,11 @@ vi.mock('../../api/_honeytokens.js', () => ({
 }))
 
 type Res = {
-  status: ReturnType<typeof vi.fn>
-  send: ReturnType<typeof vi.fn>
-  setHeader: ReturnType<typeof vi.fn>
+  status: Mock<(code: number) => Res>
+  send: Mock<(data: unknown) => Res>
+  setHeader: Mock<(key: string, value: string) => Res>
+  json: Mock<(data: unknown) => Res>
+  end: Mock<() => Res>
 }
 
 function mockRes(): Res {
@@ -39,9 +41,13 @@ function mockRes(): Res {
     status: vi.fn(),
     send: vi.fn(),
     setHeader: vi.fn(),
+    json: vi.fn(),
+    end: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.send.mockReturnValue(res)
+  res.json.mockReturnValue(res)
+  res.end.mockReturnValue(res)
   return res
 }
 

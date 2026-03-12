@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv — must be declared before importing the handler
@@ -28,11 +28,11 @@ vi.mock('../../api/auth.js', () => ({
 }))
 
 type Res = {
-  status: ReturnType<typeof vi.fn>
-  json: ReturnType<typeof vi.fn>
-  end: ReturnType<typeof vi.fn>
-  setHeader: ReturnType<typeof vi.fn>
-  send: ReturnType<typeof vi.fn>
+  status: Mock<(code: number) => Res>
+  json: Mock<(data: unknown) => Res>
+  end: Mock<() => Res>
+  setHeader: Mock<(key: string, value: string) => Res>
+  send: Mock<(data: unknown) => Res>
 }
 
 function mockRes(): Res {
@@ -252,7 +252,7 @@ describe('OAuth handler: GET authorize', () => {
       },
       res,
     )
-    const callArg = res.json.mock.calls[0][0]
+    const callArg = res.json.mock.calls[0][0] as Record<string, string>
     expect(callArg.authUrl).toContain('accounts.google.com')
     expect(callArg.authUrl).toContain('access_type=offline')
   })

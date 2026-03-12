@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest'
 
 // ---------------------------------------------------------------------------
 // Mock @vercel/kv — must be declared before importing the handler
@@ -27,17 +27,19 @@ vi.mock('../../api/auth.js', () => ({
   hashPassword: vi.fn().mockResolvedValue('scrypt:salt:hashedvalue'),
 }))
 
-type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
+type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res> }
 
 function mockRes(): Res {
   const res: Res = {
     status: vi.fn(),
     json: vi.fn(),
     end: vi.fn(),
+    setHeader: vi.fn(),
   }
   res.status.mockReturnValue(res)
   res.json.mockReturnValue(res)
   res.end.mockReturnValue(res)
+  res.setHeader.mockReturnValue(res)
   return res
 }
 
@@ -87,7 +89,7 @@ describe('Reset Password API handler', () => {
 
   it('returns 400 when body is missing', async () => {
     const res = mockRes()
-    await handler({ method: 'POST', query: {}, body: null, headers: {} }, res)
+    await handler({ method: 'POST', query: {}, body: undefined, headers: {} }, res)
     expect(res.status).toHaveBeenCalledWith(400)
   })
 
