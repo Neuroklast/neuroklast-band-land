@@ -30,6 +30,10 @@ export const zardonicIndustrialTheme: ThemePackage = {
   borderRadius: 0,
   animationsEnabled: true,
   effects: {},
+  gridLayout: {
+    columns: 'repeat(auto-fill, minmax(220px, 1fr))',
+    gap: '0.75rem',
+  },
   colorPresets: [
     {
       id: 'zardonic-ember',

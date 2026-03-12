@@ -1064,3 +1064,33 @@
   text-transform: uppercase;
   font-family: var(--font-mono, monospace);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SOCIAL GRID — per-theme tile grid overrides
+   Uses CSS auto-fill so hidden tiles leave no gaps (no explicit span rules).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Default: responsive uniform columns */
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.5rem;
+}
+
+/* neuroklast-classic: cyberpunk dense grid */
+[data-theme="neuroklast-classic"] .social-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+/* umbrella-corp: asymmetric tactical grid — wider tiles, tighter spacing */
+[data-theme="umbrella-corp"] .social-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* zardonic-industrial: heavy industrial grid — large tiles, very tight spacing */
+[data-theme="zardonic-industrial"] .social-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}

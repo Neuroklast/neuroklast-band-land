@@ -856,6 +856,18 @@ export interface ThemePackage {
     animationSettings?: AnimationSettings
   }
 
+  /**
+   * Grid layout configuration for this theme's tile/card grid.
+   * Drives [data-theme] CSS selectors in theme-slots.css.
+   * When absent the default social-grid CSS applies.
+   */
+  gridLayout?: {
+    /** CSS grid-template-columns for the social / tile grid */
+    columns: string
+    /** CSS gap for the tile grid */
+    gap: string
+  }
+
   // Geometry
   borderRadius: number
   animationsEnabled: boolean

@@ -30,6 +30,10 @@ export const umbrellaCorpTheme: ThemePackage = {
   borderRadius: 0,
   animationsEnabled: true,
   effects: {},
+  gridLayout: {
+    columns: 'repeat(auto-fill, minmax(180px, 1fr))',
+    gap: '1rem',
+  },
   colorPresets: [
     {
       id: 'umbrella-biohazard',
