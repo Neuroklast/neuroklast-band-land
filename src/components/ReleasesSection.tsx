@@ -486,7 +486,7 @@ export default function ReleasesSection({ releases, editMode, onUpdate, fontSize
             </CyberModalBackdrop>
 
             {/* Desktop: grid layout */}
-            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="release-grid hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {desktopReleases.map((release, index) => (
                 <motion.div
                   key={release.id}

@@ -100,7 +100,18 @@ export function useThemeCustomizer({
     const structuralPatch: Partial<ThemeSettings> = {}
     if (themeDef?.theme.heroStyle) structuralPatch.heroStyle = themeDef.theme.heroStyle
     if (themeDef?.theme.loadingScreenType) structuralPatch.loadingScreenType = themeDef.theme.loadingScreenType
-    setPreviewConfig(prev => ({ theme: themeId, themeSettings: { ...prev.themeSettings, ...structuralPatch } }))
+    // Apply the new theme's default colors so the old theme's colors don't bleed through.
+    const defaults = applyThemeDefaults(themeId)
+    setPreviewConfig(prev => ({
+      theme: themeId,
+      themeSettings: {
+        // Preserve only user-created custom presets across theme switches.
+        customColorPresets: prev.themeSettings.customColorPresets,
+        // New theme defaults override all previous color/font/effect settings.
+        ...defaults,
+        ...structuralPatch,
+      },
+    }))
     setHasEdits(true)
   }, [])
 

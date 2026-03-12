@@ -1094,3 +1094,78 @@
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.75rem;
 }
+
+/* glitch-noir: clean minimal grid — default values are already suitable */
+[data-theme="glitch-noir"] .social-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CONTENT GRIDS — per-theme overrides for release, gallery, partner grids
+   Added alongside Tailwind responsive classes; [data-theme] selectors have
+   higher effective specificity than @layer utilities and win cleanly.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Release grid ───────────────────────────────────────────────────── */
+[data-theme="neuroklast-classic"] .release-grid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+[data-theme="umbrella-corp"] .release-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+[data-theme="zardonic-industrial"] .release-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+[data-theme="glitch-noir"] .release-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ── Gallery grid ───────────────────────────────────────────────────── */
+[data-theme="neuroklast-classic"] .gallery-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+[data-theme="umbrella-corp"] .gallery-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+[data-theme="zardonic-industrial"] .gallery-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.5rem;
+}
+
+[data-theme="glitch-noir"] .gallery-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ── Partner grid ───────────────────────────────────────────────────── */
+[data-theme="neuroklast-classic"] .partner-grid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+[data-theme="umbrella-corp"] .partner-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+[data-theme="zardonic-industrial"] .partner-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+[data-theme="glitch-noir"] .partner-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
