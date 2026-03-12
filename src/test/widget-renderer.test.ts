@@ -14,6 +14,21 @@ vi.mock('@/hooks/use-locale', () => ({
   useLocale: () => ({ locale: 'en', setLocale: () => {}, t: (key: string) => key }),
 }))
 
+// Mock React hooks so components using useState/useEffect can be called
+// outside of a React rendering context (pure function call in tests).
+vi.mock('react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react')>()
+  return {
+    ...actual,
+    useState: <T>(initial: T | (() => T)): [T, (v: T) => void] => {
+      const value = typeof initial === 'function' ? (initial as () => T)() : initial
+      return [value, () => {}]
+    },
+    // No-op: effects are not executed outside React rendering context
+    useEffect: (_fn: () => void | (() => void), _deps?: unknown[]) => {},
+  }
+})
+
 // Verify the index re-exports are present
 import {
   BandsintownWidget,
@@ -304,12 +319,22 @@ describe('MerchStoreWidget', () => {
 })
 
 describe('AnalyticsWidget', () => {
-  it('renders demo stats without throwing', () => {
+  it('renders without throwing when config is empty', () => {
     const widget: WidgetPlugin = {
       id: 'analytics-dashboard', name: 'Analytics', description: '', category: 'analytics',
       version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
     }
     expect(() => AnalyticsWidget({ widget })).not.toThrow()
+  })
+
+  it('renders loading state (loading=true initially)', () => {
+    const widget: WidgetPlugin = {
+      id: 'analytics-dashboard', name: 'Analytics', description: '', category: 'analytics',
+      version: '1.0.0', installed: true, enabled: true, order: 0, config: {},
+    }
+    const result = AnalyticsWidget({ widget })
+    // Should return a React element (loading state or content)
+    expect(result).not.toBeNull()
   })
 })
 
@@ -346,6 +371,53 @@ describe('InstagramFeedWidget', () => {
       id: 'instagram-feed', name: 'Instagram Feed', description: '', category: 'social',
       version: '1.0.0', installed: true, enabled: true, order: 0,
       config: { imageCount: 9 },
+    }
+    expect(() => InstagramFeedWidget({ widget })).not.toThrow()
+  })
+
+  it('renders image grid when images array is configured', () => {
+    const widget: WidgetPlugin = {
+      id: 'instagram-feed', name: 'Instagram Feed', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: {
+        images: [
+          { url: 'https://example.com/photo1.jpg', link: 'https://instagram.com/p/abc', alt: 'Photo 1' },
+          { url: 'https://example.com/photo2.jpg', alt: 'Photo 2' },
+        ],
+      },
+    }
+    const result = InstagramFeedWidget({ widget })
+    expect(result).not.toBeNull()
+  })
+
+  it('renders CTA button when profileUrl is configured', () => {
+    const widget: WidgetPlugin = {
+      id: 'instagram-feed', name: 'Instagram Feed', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { profileUrl: 'https://www.instagram.com/testband' },
+    }
+    const result = InstagramFeedWidget({ widget })
+    expect(result).not.toBeNull()
+  })
+
+  it('renders embed iframe when embedCode is configured', () => {
+    const widget: WidgetPlugin = {
+      id: 'instagram-feed', name: 'Instagram Feed', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { embedCode: '<blockquote class="instagram-media">test</blockquote>' },
+    }
+    const result = InstagramFeedWidget({ widget })
+    expect(result).not.toBeNull()
+  })
+
+  it('renders image grid with profileUrl CTA when both are configured', () => {
+    const widget: WidgetPlugin = {
+      id: 'instagram-feed', name: 'Instagram Feed', description: '', category: 'social',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: {
+        images: [{ url: 'https://example.com/photo.jpg' }],
+        profileUrl: 'https://www.instagram.com/testband',
+      },
     }
     expect(() => InstagramFeedWidget({ widget })).not.toThrow()
   })
@@ -482,5 +554,15 @@ describe('SetlistFmWidget', () => {
       config: { artistMbid: '4b585938-f271-45e2-b19a-91215b125e38', artistName: 'Zardonic' },
     }
     expect(() => SetlistFmWidget({ widget })).not.toThrow()
+  })
+
+  it('renders without artistName when only MBID is set', () => {
+    const widget: WidgetPlugin = {
+      id: 'setlistfm-widget', name: 'Setlist.fm', description: '', category: 'events',
+      version: '1.0.0', installed: true, enabled: true, order: 0,
+      config: { artistMbid: '4b585938-f271-45e2-b19a-91215b125e38' },
+    }
+    const result = SetlistFmWidget({ widget })
+    expect(result).not.toBeNull()
   })
 })
