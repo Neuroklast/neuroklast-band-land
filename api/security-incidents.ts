@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { createHash } from 'node:crypto'
 import { applyRateLimit } from './_ratelimit.js'
 import { validateSession } from './auth.js'
 
@@ -29,6 +30,15 @@ interface VercelResponse {
 
 const isKVConfigured = (): boolean => {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+}
+
+/** Verify the evidenceHash field of a stored incident. */
+function verifyEvidenceHash(incident: Record<string, unknown>): boolean {
+  const storedHash = incident.evidenceHash
+  if (typeof storedHash !== 'string') return false
+  const { evidenceHash: _stripped, ...rest } = incident
+  const expected = createHash('sha256').update(JSON.stringify(rest)).digest('hex')
+  return storedHash === expected
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -62,6 +72,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         }
         return entry
       })
+
+      // Forensic export format — includes tamper-evidence verification
+      if (req.query?.format === 'forensic') {
+        let tamperedCount = 0
+        const verified = incidents.map((inc) => {
+          if (typeof inc !== 'object' || inc === null) return { incident: inc, verified: false }
+          const ok = verifyEvidenceHash(inc as Record<string, unknown>)
+          if (!ok) tamperedCount++
+          return { incident: inc, verified: ok }
+        })
+        res.json({
+          incidents: verified,
+          integrity: { verified: tamperedCount === 0, tamperedCount },
+          meta: {
+            exportedAt: new Date().toISOString(),
+            exportedBy: 'admin',
+            totalCount: incidents.length,
+            serverVersion: process.env.npm_package_version ?? 'unknown',
+          },
+        })
+        return
+      }
+
       res.json({ incidents })
       return
     }

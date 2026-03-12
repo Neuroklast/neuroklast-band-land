@@ -514,3 +514,39 @@ describe('Security: Zod input validation schemas', () => {
     })
   })
 })
+
+// ---------------------------------------------------------------------------
+describe('Security: serveZipBomb', () => {
+  it('sets Content-Type: application/zip', async () => {
+    const { serveZipBomb } = await import('../../api/_zipbomb.ts')
+    const res = mockRes()
+    await serveZipBomb(res)
+    expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'application/zip')
+  })
+
+  it('does NOT set Content-Encoding: gzip', async () => {
+    const { serveZipBomb } = await import('../../api/_zipbomb.ts')
+    const res = mockRes()
+    await serveZipBomb(res)
+    const calls = res.setHeader.mock.calls as [string, string][]
+    const encodingHeader = calls.find(([k]) => k.toLowerCase() === 'content-encoding')
+    expect(encodingHeader).toBeUndefined()
+  })
+
+  it('sets X-Content-Type-Options: nosniff', async () => {
+    const { serveZipBomb } = await import('../../api/_zipbomb.ts')
+    const res = mockRes()
+    await serveZipBomb(res)
+    expect(res.setHeader).toHaveBeenCalledWith('X-Content-Type-Options', 'nosniff')
+  })
+
+  it('sends a non-trivial buffer (compressed 10 MB payload)', async () => {
+    const { serveZipBomb } = await import('../../api/_zipbomb.ts')
+    const res = mockRes()
+    await serveZipBomb(res)
+    const sentBuffer = res.send.mock.calls[0][0] as Buffer
+    expect(Buffer.isBuffer(sentBuffer)).toBe(true)
+    // 10 MB of zeros gzip-compressed at level 9 fits in ~10 KB
+    expect(sentBuffer.length).toBeGreaterThan(1024)
+  })
+})

@@ -110,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       // Honeytoken detection — taunting response on GET.
       // Confrontational message lets the attacker know they've been caught.
       if (isHoneytoken(key)) {
-        await triggerHoneytokenAlarm(req, key)
+        await triggerHoneytokenAlarm(req, key, res)
         setDefenseHeaders(res)
         return res.status(403).json({
           error: 'ACCESS_DENIED',
@@ -179,7 +179,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
       // Honeytoken detection — taunting response on POST.
       if (isHoneytoken(key)) {
-        await triggerHoneytokenAlarm(req, key)
+        await triggerHoneytokenAlarm(req, key, res)
         setDefenseHeaders(res)
         return res.status(403).json({
           error: 'ACCESS_DENIED',

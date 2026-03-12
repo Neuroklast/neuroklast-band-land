@@ -63,6 +63,9 @@ interface CanaryTokenMetadata {
 interface SecuritySettings {
   alertingEnabled?: boolean
   canaryDocumentsEnabled?: boolean
+  canaryPhoneHomeOnOpen?: boolean
+  canaryCollectFingerprint?: boolean
+  canaryAlertOnCallback?: boolean
 }
 
 interface JsFingerprint {
@@ -153,12 +156,40 @@ export async function generateCanaryToken(req: VercelLikeRequest): Promise<strin
  *
  * The document looks like a legitimate admin page but contains:
  * - External image/script references to the canary callback endpoint
+ *   (only when `canaryPhoneHomeOnOpen` is enabled)
  * - JavaScript that collects browser fingerprint data
+ *   (only when `canaryCollectFingerprint` is enabled)
  * - WebRTC STUN request to discover real IP behind VPN/proxy
  * - Canvas fingerprinting for cross-session correlation
  */
-export function generateCanaryHtml(token: string, documentName: string): string {
+export function generateCanaryHtml(token: string, documentName: string, settings?: SecuritySettings): string {
   const callbackUrl = `/api/canary-callback?t=${token}`
+  const phoneHome = settings?.canaryPhoneHomeOnOpen !== false
+  const collectFingerprint = settings?.canaryCollectFingerprint !== false
+
+  const trackingPixel = phoneHome
+    ? `\n<img src="${callbackUrl}&e=img" width="1" height="1" style="position:absolute;left:-9999px" alt="">`
+    : ''
+
+  const fingerprintScript = collectFingerprint ? `\n<script>
+(function(){
+  var d={t:"${token}",ts:Date.now(),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
+    lang:navigator.language,plat:navigator.platform,cores:navigator.hardwareConcurrency||0,
+    mem:navigator.deviceMemory||0,sw:screen.width,sh:screen.height,cd:screen.colorDepth,
+    touch:'ontouchstart'in window};
+  try{var c=document.createElement('canvas');var g=c.getContext('2d');
+    g.textBaseline='top';g.font='14px Arial';g.fillText('fp',2,2);
+    d.cvs=c.toDataURL().slice(-32)}catch(e){}
+  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
+    r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
+    r.onicecandidate=function(e){if(e.candidate){
+      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
+      if(m){d.realIp=m[1];send()}}}}catch(e){}
+  function send(){var x=new XMLHttpRequest();x.open('POST',"${callbackUrl}&e=js");
+    x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(d))}
+  setTimeout(send,2000);
+})();
+</script>` : ''
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -187,27 +218,7 @@ th{background:#16213e;color:#e94560}
 <tr><td>Backup Encryption</td><td>AES-256-GCM</td></tr>
 </table>
 <p class="warn">⚠ This document is monitored. Unauthorized access will be logged and reported.</p>
-<p class="footer">Document ID: ${token} | Generated: ${new Date().toISOString()}</p>
-<img src="${callbackUrl}&e=img" width="1" height="1" style="position:absolute;left:-9999px" alt="">
-<script>
-(function(){
-  var d={t:"${token}",ts:Date.now(),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
-    lang:navigator.language,plat:navigator.platform,cores:navigator.hardwareConcurrency||0,
-    mem:navigator.deviceMemory||0,sw:screen.width,sh:screen.height,cd:screen.colorDepth,
-    touch:'ontouchstart'in window};
-  try{var c=document.createElement('canvas');var g=c.getContext('2d');
-    g.textBaseline='top';g.font='14px Arial';g.fillText('fp',2,2);
-    d.cvs=c.toDataURL().slice(-32)}catch(e){}
-  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
-    r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
-    r.onicecandidate=function(e){if(e.candidate){
-      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
-      if(m){d.realIp=m[1];send()}}}}catch(e){}
-  function send(){var x=new XMLHttpRequest();x.open('POST',"${callbackUrl}&e=js");
-    x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(d))}
-  setTimeout(send,2000);
-})();
-</script>
+<p class="footer">Document ID: ${token} | Generated: ${new Date().toISOString()}</p>${trackingPixel}${fingerprintScript}
 </body>
 </html>`
 }
@@ -341,7 +352,7 @@ export async function handleCanaryCallback(req: VercelLikeRequest, res: VercelLi
   // Send alert if enabled
   try {
     const settings = await kv.get<SecuritySettings>(KV_SETTINGS_KEY).catch(() => null)
-    if (settings?.alertingEnabled) {
+    if (settings?.alertingEnabled && settings?.canaryAlertOnCallback !== false) {
       await sendSecurityAlert({
         type: 'CANARY DOCUMENT OPENED',
         token,
@@ -375,8 +386,9 @@ export async function handleCanaryCallback(req: VercelLikeRequest, res: VercelLi
  */
 export async function serveCanaryDocument(req: VercelLikeRequest, res: VercelLikeResponse): Promise<boolean> {
   // Check if canary documents are enabled
+  let settings: SecuritySettings | null = null
   try {
-    const settings = await kv.get<SecuritySettings>(KV_SETTINGS_KEY).catch(() => null)
+    settings = await kv.get<SecuritySettings>(KV_SETTINGS_KEY).catch(() => null)
     if (!settings?.canaryDocumentsEnabled) return false
   } catch {
     return false
@@ -389,7 +401,7 @@ export async function serveCanaryDocument(req: VercelLikeRequest, res: VercelLik
 
   const [docName, docInfo] = matchedDoc
   const token = await generateCanaryToken(req)
-  const html = generateCanaryHtml(token, docName)
+  const html = generateCanaryHtml(token, docName, settings)
 
   res.setHeader('Content-Type', docInfo.contentType)
   res.setHeader('Content-Disposition', `inline; filename="${docName}"`)

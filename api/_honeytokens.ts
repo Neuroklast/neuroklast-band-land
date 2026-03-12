@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv'
-import { randomBytes } from 'node:crypto'
-import { getClientIp, hashIp } from './_ratelimit.js'
+import { randomBytes, createHash } from 'node:crypto'
+import { getClientIp, hashIp, getVercelGeoData } from './_ratelimit.js'
 import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
 import { sendSecurityAlert } from './_alerting.js'
 import { serveZipBomb } from './_zipbomb.js'
@@ -36,6 +36,33 @@ interface SecuritySettings {
   zipBombEnabled?: boolean
 }
 
+/**
+ * Filter request headers for forensic storage.
+ * Removes sensitive headers (cookie, authorization, api keys) to avoid
+ * storing credentials; all remaining values are coerced to a single string.
+ */
+function sanitizeHeaders(
+  headers: Record<string, string | string[] | undefined>,
+): Record<string, string> {
+  const BLOCKED = new Set(['cookie', 'authorization', 'x-auth-token', 'x-api-key'])
+  return Object.fromEntries(
+    Object.entries(headers)
+      .filter(([k]) => !BLOCKED.has(k.toLowerCase()))
+      .map(([k, v]) => [k, Array.isArray(v) ? v[0] : (v ?? '')]),
+  )
+}
+
+/**
+ * Compute a tamper-evident SHA-256 hash of an incident object.
+ * The hash covers all fields except `evidenceHash` itself, allowing
+ * downstream verifiers to confirm the entry has not been modified.
+ */
+export function computeEvidenceHash(
+  incident: Record<string, unknown>,
+): string {
+  return createHash('sha256').update(JSON.stringify(incident)).digest('hex')
+}
+
 /** Keys that serve as honeytokens.  Must never be used by real code. */
 export const HONEYTOKEN_KEYS = [
   'admin_backup',
@@ -61,13 +88,25 @@ export function isHoneytoken(key: string): boolean {
 export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string, res: VercelLikeResponse | null = null): Promise<void> {
   const ip = getClientIp(req)
   const hashedIp = hashIp(ip)
-  const entry = {
+  const detectedAt = new Date().toISOString()
+  const geo = getVercelGeoData(req)
+  const sanitizedHeaders = sanitizeHeaders(req.headers)
+
+  const baseEntry = {
     key,
-    method: req.method,
+    method: req.method ?? 'UNKNOWN',
     hashedIp,
     userAgent: (req.headers['user-agent'] as string || '').slice(0, 200),
-    timestamp: new Date().toISOString(),
+    timestamp: detectedAt,
+    detectedAt,
+    incidentClass: 'HONEYTOKEN_ACCESS' as const,
+    severity: 'CRITICAL' as const,
+    legalBasis: '§202a StGB — Unauthorized access to computer systems',
+    countryCode: geo.countryCode,
+    requestHeaders: sanitizedHeaders,
   }
+  const evidenceHash = computeEvidenceHash(baseEntry)
+  const entry = { ...baseEntry, evidenceHash }
 
   // Silent alarm — log to stderr (picked up by Vercel log drains / SIEM)
   console.error('[HONEYTOKEN ALERT]', JSON.stringify(entry))
@@ -106,9 +145,11 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
     // Profile recording failure must not block the response
   }
 
+  // Load settings once — used for both alerting and zip bomb checks below
+  const settings = await kv.get<SecuritySettings>('nk-security-settings').catch(() => null)
+
   // Send security alert if enabled
   try {
-    const settings = await kv.get<SecuritySettings>('nk-security-settings').catch(() => null)
     if (settings?.alertingEnabled) {
       await sendSecurityAlert({
         type: 'HONEYTOKEN ACCESS',
@@ -128,11 +169,8 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
 
   // Serve zip bomb if enabled and response object provided
   try {
-    if (res) {
-      const settings = await kv.get<SecuritySettings>('nk-security-settings').catch(() => null)
-      if (settings?.zipBombEnabled) {
-        await serveZipBomb(res)
-      }
+    if (res && settings?.zipBombEnabled) {
+      await serveZipBomb(res)
     }
   } catch {
     // Zip bomb failure must not block the response
