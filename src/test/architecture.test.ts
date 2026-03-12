@@ -17,6 +17,7 @@
 import { describe, it, expect } from 'vitest'
 import { validateThemePackage, assertThemeValid } from '@/lib/theme-validator'
 import { RECOMMENDED_THEME_SLOTS } from '@/lib/component-contracts'
+import { validateOklchPresetContrast } from '@/lib/color-contrast'
 import type { ThemePackage } from '@/lib/types'
 
 // ─── Import all built-in themes directly (not via registry) ──────────────────
@@ -473,5 +474,57 @@ describe('Default slot components — render without crashing', () => {
       expect(slots[name as keyof typeof slots], `${name} should be exported`).toBeDefined()
       expect(typeof slots[name as keyof typeof slots]).toBe('function')
     }
+  })
+})
+
+// ─── 10. Color contrast — all theme presets pass WCAG AA or are non-OKLCH ────
+
+describe('Color preset contrast — all built-in presets pass WCAG AA or are skipped', () => {
+  for (const theme of ALL_BUILT_IN_THEMES) {
+    for (const preset of theme.colorPresets) {
+      it(`${theme.id}/${preset.id}: foreground/background contrast ≥ 4.5 or non-OKLCH`, () => {
+        const report = validateOklchPresetContrast({
+          foreground: preset.colors.foreground,
+          background: preset.colors.background,
+          card: preset.colors.card,
+          mutedForeground: preset.colors.mutedForeground,
+        })
+        // passes=false means at least one evaluated pair fails — never acceptable.
+        // passes=null means colours are non-OKLCH (skipped) — acceptable.
+        // passes=true means all evaluated pairs meet WCAG AA — ideal.
+        expect(
+          report.passes,
+          `${theme.id}/${preset.id} has low-contrast pair(s): ` +
+          report.details
+            .filter(d => !d.skipped && !d.passes)
+            .map(d => `${d.pair} ratio=${d.ratio?.toFixed(2)}`)
+            .join(', '),
+        ).not.toBe(false)
+      })
+    }
+  }
+
+  it('validateOklchPresetContrast is exported from color-contrast.ts', () => {
+    expect(typeof validateOklchPresetContrast).toBe('function')
+  })
+
+  it('returns passes=true for high-contrast white on black', () => {
+    const result = validateOklchPresetContrast({
+      foreground: 'oklch(1 0 0)',
+      background: 'oklch(0 0 0)',
+      card: 'oklch(0.05 0 0)',
+      mutedForeground: 'oklch(0.55 0 0)',
+    })
+    expect(result.passes).toBe(true)
+  })
+
+  it('returns passes=false for low-contrast near-white on white', () => {
+    const result = validateOklchPresetContrast({
+      foreground: 'oklch(0.98 0 0)',
+      background: 'oklch(0.92 0 0)',
+      card: 'oklch(0.95 0 0)',
+      mutedForeground: 'oklch(0.85 0 0)',
+    })
+    expect(result.passes).toBe(false)
   })
 })

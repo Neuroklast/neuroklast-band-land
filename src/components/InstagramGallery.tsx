@@ -466,7 +466,7 @@ export default function InstagramGallery({ galleryImages = [], editMode, onUpdat
           )}
 
           {/* Desktop: grid layout */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="gallery-grid hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {photos.map((photo, index) => (
               <motion.div
                 key={photo.id}

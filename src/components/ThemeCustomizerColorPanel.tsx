@@ -46,6 +46,23 @@ export default function ThemeCustomizerColorPanel({ themeSettings, activeTheme, 
   const builtInPresets: ColorPreset[] = activeThemePkg?.colorPresets ?? []
   const customPresets: ColorPreset[] = themeSettings.customColorPresets ?? []
 
+  // Resolve effective colors: prefer explicit themeSettings values, then fall back to
+  // the active theme's default colors, then fall back to built-in safe defaults.
+  // This ensures the ColorInput components always display meaningful values.
+  const defaultColors = activeThemePkg?.defaultColors
+    ?? activeThemePkg?.colorPresets.find(p => p.id === activeThemePkg?.defaultPresetId)?.colors
+    ?? activeThemePkg?.colorPresets[0]?.colors
+  const resolvedColors = {
+    primary: themeSettings.primary || defaultColors?.primary || 'oklch(0.50 0.22 25)',
+    accent: themeSettings.accent || defaultColors?.accent || 'oklch(0.60 0.24 25)',
+    background: themeSettings.background || defaultColors?.background || 'oklch(0 0 0)',
+    card: themeSettings.card || defaultColors?.card || 'oklch(0.05 0 0)',
+    foreground: themeSettings.foreground || defaultColors?.foreground || 'oklch(1 0 0)',
+    mutedForeground: themeSettings.mutedForeground || defaultColors?.mutedForeground || 'oklch(0.55 0 0)',
+    border: themeSettings.border || defaultColors?.border || 'oklch(0.15 0 0)',
+    secondary: themeSettings.secondary || defaultColors?.secondary || 'oklch(0.10 0 0)',
+  }
+
   function applyPreset(preset: ColorPreset) {
     onPatch({
       ...presetToThemeSettings({
@@ -73,14 +90,14 @@ export default function ThemeCustomizerColorPanel({ themeSettings, activeTheme, 
       name,
       description: 'Custom preset',
       colors: {
-        primary: themeSettings.primary || 'oklch(0.50 0.22 25)',
-        accent: themeSettings.accent || 'oklch(0.60 0.24 25)',
-        background: themeSettings.background || 'oklch(0 0 0)',
-        card: themeSettings.card || 'oklch(0.05 0 0)',
-        foreground: themeSettings.foreground || 'oklch(1 0 0)',
-        mutedForeground: themeSettings.mutedForeground || 'oklch(0.55 0 0)',
-        border: themeSettings.border || 'oklch(0.15 0 0)',
-        secondary: themeSettings.secondary || 'oklch(0.10 0 0)',
+        primary: resolvedColors.primary,
+        accent: resolvedColors.accent,
+        background: resolvedColors.background,
+        card: resolvedColors.card,
+        foreground: resolvedColors.foreground,
+        mutedForeground: resolvedColors.mutedForeground,
+        border: resolvedColors.border,
+        secondary: resolvedColors.secondary,
       },
     }
     onPatch({ customColorPresets: [...customPresets, newPreset] })
@@ -152,14 +169,14 @@ export default function ThemeCustomizerColorPanel({ themeSettings, activeTheme, 
 
       <div className="border-t border-border pt-3 space-y-0.5">
         <p className="font-mono text-[9px] text-muted-foreground/50 uppercase tracking-wider mb-2">{t('themeCustomizer.customColors')}</p>
-        <ColorInput label="Primary" value={themeSettings.primary || 'oklch(0.50 0.22 25)'} onChange={v => onPatch({ primary: v })} />
-        <ColorInput label="Accent" value={themeSettings.accent || 'oklch(0.60 0.24 25)'} onChange={v => onPatch({ accent: v })} />
-        <ColorInput label="Background" value={themeSettings.background || 'oklch(0 0 0)'} onChange={v => onPatch({ background: v })} />
-        <ColorInput label="Card" value={themeSettings.card || 'oklch(0.05 0 0)'} onChange={v => onPatch({ card: v })} />
-        <ColorInput label="Foreground" value={themeSettings.foreground || 'oklch(1 0 0)'} onChange={v => onPatch({ foreground: v })} />
-        <ColorInput label="Muted Text" value={themeSettings.mutedForeground || 'oklch(0.55 0 0)'} onChange={v => onPatch({ mutedForeground: v })} />
-        <ColorInput label="Border" value={themeSettings.border || 'oklch(0.15 0 0)'} onChange={v => onPatch({ border: v })} />
-        <ColorInput label="Secondary" value={themeSettings.secondary || 'oklch(0.10 0 0)'} onChange={v => onPatch({ secondary: v })} />
+        <ColorInput label="Primary" value={resolvedColors.primary} onChange={v => onPatch({ primary: v })} />
+        <ColorInput label="Accent" value={resolvedColors.accent} onChange={v => onPatch({ accent: v })} />
+        <ColorInput label="Background" value={resolvedColors.background} onChange={v => onPatch({ background: v })} />
+        <ColorInput label="Card" value={resolvedColors.card} onChange={v => onPatch({ card: v })} />
+        <ColorInput label="Foreground" value={resolvedColors.foreground} onChange={v => onPatch({ foreground: v })} />
+        <ColorInput label="Muted Text" value={resolvedColors.mutedForeground} onChange={v => onPatch({ mutedForeground: v })} />
+        <ColorInput label="Border" value={resolvedColors.border} onChange={v => onPatch({ border: v })} />
+        <ColorInput label="Secondary" value={resolvedColors.secondary} onChange={v => onPatch({ secondary: v })} />
       </div>
 
       <div className="border-t border-border pt-3">

@@ -9,10 +9,12 @@
  *    reported as "not verifiable" (oklch not resolved in jsdom) — never
  *    as an explicit failure (R4 / R6).
  * 4. All registered ThemePackages declare a gridLayout configuration (R1 / R6).
+ * 5. applyThemeDefaults returns the new theme's colors for a clean switch (R5).
+ * 6. Grid layout CSS selectors exist for all 4 built-in themes (R1).
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { applyThemeToDOM, resetThemeDOM, clearThemeFromDOM } from '@/lib/theme-application'
+import { applyThemeToDOM, resetThemeDOM, clearThemeFromDOM, applyThemeDefaults, applyThemeToDocument } from '@/lib/theme-application'
 import { validatePresetContrast } from '@/lib/contrast'
 import { DESIGN_PRESETS } from '@/lib/design-presets'
 import { getAllThemes } from '@/lib/theme-registry'
@@ -188,5 +190,59 @@ describe('all registered themes have gridLayout config', () => {
       expect(typeof theme.gridLayout?.columns).toBe('string')
       expect(typeof theme.gridLayout?.gap).toBe('string')
     }
+  })
+})
+
+describe('applyThemeDefaults — new theme colors on theme switch', () => {
+  it('returns the new theme defaultColors when theme has them', () => {
+    const defaults = applyThemeDefaults('neuroklast-classic')
+    expect(defaults.primary).toBeDefined()
+    expect(defaults.background).toBeDefined()
+    expect(defaults.foreground).toBeDefined()
+    expect(defaults.activePreset).toBe('neuroklast-classic')
+  })
+
+  it('returns the new theme defaultColors for umbrella-corp', () => {
+    const defaults = applyThemeDefaults('umbrella-corp')
+    expect(defaults.primary).toBeDefined()
+    expect(defaults.background).toBeDefined()
+    expect(defaults.activePreset).toBe('umbrella-corp')
+  })
+
+  it('returns the new theme defaultColors for zardonic-industrial', () => {
+    const defaults = applyThemeDefaults('zardonic-industrial')
+    expect(defaults.primary).toBeDefined()
+    expect(defaults.background).toBeDefined()
+    expect(defaults.activePreset).toBe('zardonic-industrial')
+  })
+
+  it('returns empty object for unknown themes (no crash)', () => {
+    const defaults = applyThemeDefaults('unknown-theme')
+    // Unknown theme → empty object (no crash, just no data)
+    expect(defaults).toEqual({})
+  })
+
+  it('neuroklast-classic and umbrella-corp have different primary colors', () => {
+    const classic = applyThemeDefaults('neuroklast-classic')
+    const umbrella = applyThemeDefaults('umbrella-corp')
+    expect(classic.primary).not.toBe(umbrella.primary)
+  })
+
+  it('switching from theme A to B via applyThemeToDocument sets B data-theme, not A', () => {
+    const classicDefaults = applyThemeDefaults('neuroklast-classic')
+    const umbrellaDefaults = applyThemeDefaults('umbrella-corp')
+
+    applyThemeToDocument('neuroklast-classic', { ...classicDefaults })
+    expect(document.documentElement.getAttribute('data-theme')).toBe('neuroklast-classic')
+
+    applyThemeToDocument('umbrella-corp', { ...umbrellaDefaults })
+    expect(document.documentElement.getAttribute('data-theme')).toBe('umbrella-corp')
+
+    // Verify the primary color from umbrella-corp is now active (not classic's crimson).
+    // Both themes define defaultColors with different primaries, so this assertion is reliable.
+    expect(document.documentElement.style.getPropertyValue('--primary')).toBe(umbrellaDefaults.primary)
+    expect(document.documentElement.style.getPropertyValue('--primary')).not.toBe(classicDefaults.primary)
+
+    resetThemeDOM()
   })
 })
