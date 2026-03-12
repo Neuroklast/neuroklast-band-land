@@ -24,6 +24,7 @@ vi.mock('react', async (importOriginal) => {
       const value = typeof initial === 'function' ? (initial as () => T)() : initial
       return [value, () => {}]
     },
+    // No-op: effects are not executed outside React rendering context
     useEffect: (_fn: () => void | (() => void), _deps?: unknown[]) => {},
   }
 })

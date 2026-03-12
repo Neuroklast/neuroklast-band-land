@@ -53,8 +53,10 @@ export default function AnalyticsWidget({ widget, themeSettings }: AnalyticsWidg
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
 
-  // Suppress unused-variable warning while keeping the prop in the signature
-  void widget
+  // Suppress unused-variable warning while keeping the prop in the signature.
+  // `widget.config` is intentionally not read here — the analytics data is
+  // fetched from the API and the widget config has no user-configurable options.
+  void widget.config
 
   const [analytics, setAnalytics] = useState<SiteAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
