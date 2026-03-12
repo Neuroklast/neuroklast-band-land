@@ -33,6 +33,7 @@ const SoundSettingsDialog = lazy(() => import('@/components/SoundSettingsDialog'
 const ContactInboxDialog = lazy(() => import('@/components/ContactInboxDialog'))
 const SubscriberListDialog = lazy(() => import('@/components/SubscriberListDialog'))
 const MarketingToolsDialog = lazy(() => import('@/components/MarketingToolsDialog'))
+const ActivityLogDialog = lazy(() => import('@/components/ActivityLogDialog'))
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -150,6 +151,14 @@ export default function AdminDialogManager({
           open={activeDialog === 'analytics'}
           onClose={() => setActiveDialog(null)}
           domain={domain}
+        />
+      </LazyBoundary>
+
+      <LazyBoundary name="ActivityLogDialog">
+        <ActivityLogDialog
+          key={activeDialog === 'activity-log' ? 'open' : 'closed'}
+          open={activeDialog === 'activity-log'}
+          onClose={() => setActiveDialog(null)}
         />
       </LazyBoundary>
 

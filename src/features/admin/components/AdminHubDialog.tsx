@@ -26,7 +26,8 @@ import {
   SignOut,
   Article,
   Storefront,
-  ShieldChevron
+  ClockClockwise,
+  ChatCircleText,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { useLocale } from '@/hooks/use-locale'
@@ -59,7 +60,7 @@ interface AdminHubDialogProps {
   onUpdateSiteConfig?: (key: keyof SiteConfig, value: unknown) => void
 }
 
-type TabKey = 'content' | 'design' | 'store' | 'system'
+type TabKey = 'content' | 'design' | 'store' | 'communication' | 'analytics-logs' | 'security' | 'system'
 
 export default function AdminHubDialog({
   open,
@@ -80,14 +81,17 @@ export default function AdminHubDialog({
   // For the customizer we mount it when the design tab is active.
   const [showCustomizer, setShowCustomizer] = useState(false)
 
-  const tabs = [
+  const tabs: { id: TabKey; label: string; icon: Icon }[] = [
     { id: 'content', label: t('hub.content') || 'Content', icon: Article },
     { id: 'design', label: t('hub.appearance') || 'Design & Theme', icon: Palette },
     { id: 'store', label: t('hub.store') || 'Store & Apps', icon: Storefront },
-    { id: 'system', label: t('hub.system') || 'System & Security', icon: ShieldChevron },
-  ] as const
+    { id: 'communication', label: t('hub.communication') || 'Communication', icon: ChatCircleText },
+    { id: 'analytics-logs', label: t('hub.analyticsLogs') || 'Analytics & Logs', icon: ChartBar },
+    { id: 'security', label: t('hub.security') || 'Security', icon: ShieldCheck },
+    { id: 'system', label: t('hub.system') || 'System', icon: GearSix },
+  ]
 
-  const storeItems = [
+  const storeItems: HubItemData[] = [
     {
       icon: Palette,
       label: t('hub.storeThemes') || 'Theme Store',
@@ -102,81 +106,111 @@ export default function AdminHubDialog({
     },
   ]
 
-  const systemItems = [
-    {
-      icon: UploadSimple,
-      label: t('hub.exportConfig') || 'Export Configuration',
-      action: () => { onClose(); onExportData() },
-    },
-    {
-      icon: DownloadSimple,
-      label: t('hub.importConfig') || 'Import Configuration',
-      action: () => { onClose(); onImportFile() },
-    },
-    {
-      icon: Globe,
-      label: t('hub.syncUrl') || 'Sync Configuration URL',
-      action: () => { onClose(); onImportUrl() },
-    },
-    {
-      icon: GearSix,
-      label: t('hub.configEditor') || 'JSON Configuration Editor',
-      action: () => { onClose(); onOpenDialog('config') },
-    },
-    {
-      icon: Terminal,
-      label: t('hub.terminal') || 'Terminal Console',
-      action: () => { onClose(); onOpenDialog('terminal') },
-    },
-    {
-      icon: SpeakerHigh,
-      label: t('hub.audio') || 'Audio System',
-      action: () => { onClose(); onOpenDialog('sound') },
-    },
-    {
-      icon: ChartBar,
-      label: t('hub.analytics') || 'Analytics Dashboard',
-      action: () => { onClose(); onOpenDialog('analytics') },
-    },
-    {
-      icon: ShieldWarning,
-      label: t('hub.securityLogs') || 'Security Logs',
-      action: () => { onClose(); onOpenDialog('security-log') },
-    },
-    {
-      icon: ShieldCheck,
-      label: t('hub.securitySettings') || 'Security Settings',
-      action: () => { onClose(); onOpenDialog('security-settings') },
-    },
-    {
-      icon: Prohibit,
-      label: t('hub.blocklist') || 'Blocklist Manager',
-      action: () => { onClose(); onOpenDialog('blocklist') },
-    },
-    {
-      icon: UserCircle,
-      label: t('hub.attackerProfiles') || 'Attacker Profiles',
-      action: () => { onClose(); onOpenDialog('attacker-profiles') },
-    },
+  const communicationItems: HubItemData[] = [
     {
       icon: EnvelopeSimple,
       label: t('hub.inbox') || 'Inbox',
+      description: t('hub.inboxDesc') || 'Read and manage contact messages',
       action: () => { onClose(); onOpenDialog('inbox') },
     },
     {
       icon: UsersThree,
       label: t('hub.subscribers') || 'Subscribers',
+      description: t('hub.subscribersDesc') || 'Manage newsletter subscribers',
       action: () => { onClose(); onOpenDialog('subscribers') },
     },
     {
       icon: MegaphoneSimple,
       label: t('hub.marketing') || 'Marketing Settings',
+      description: t('hub.marketingDesc') || 'Newsletter and campaign settings',
       action: () => { onClose(); onOpenDialog('marketing') },
+    },
+  ]
+
+  const analyticsItems: HubItemData[] = [
+    {
+      icon: ChartBar,
+      label: t('hub.analytics') || 'Analytics Dashboard',
+      description: t('hub.analyticsDesc') || 'Visitor statistics and engagement',
+      action: () => { onClose(); onOpenDialog('analytics') },
+    },
+    {
+      icon: ClockClockwise,
+      label: t('hub.activityLog') || 'Activity Log',
+      description: t('hub.activityLogDesc') || 'Audit log of admin actions',
+      action: () => { onClose(); onOpenDialog('activity-log') },
+    },
+  ]
+
+  const securityItems: HubItemData[] = [
+    {
+      icon: ShieldCheck,
+      label: t('hub.securitySettings') || 'Security Settings',
+      description: t('hub.securitySettingsDesc') || 'Configure rate limiting and protection',
+      action: () => { onClose(); onOpenDialog('security-settings') },
+    },
+    {
+      icon: ShieldWarning,
+      label: t('hub.securityLogs') || 'Security Logs',
+      description: t('hub.securityLogsDesc') || 'View blocked requests and incidents',
+      action: () => { onClose(); onOpenDialog('security-log') },
+    },
+    {
+      icon: Prohibit,
+      label: t('hub.blocklist') || 'Blocklist Manager',
+      description: t('hub.blocklistDesc') || 'Manage blocked IPs and patterns',
+      action: () => { onClose(); onOpenDialog('blocklist') },
+    },
+    {
+      icon: UserCircle,
+      label: t('hub.attackerProfiles') || 'Attacker Profiles',
+      description: t('hub.attackerProfilesDesc') || 'Detailed attacker intelligence',
+      action: () => { onClose(); onOpenDialog('attacker-profiles') },
     },
     {
       icon: LinkSimple,
       label: t('hub.oauth') || 'OAuth Connections',
+      description: t('hub.oauthDesc') || 'Manage third-party authentication',
       action: () => { onClose(); onOpenDialog('oauth') },
+    },
+  ]
+
+  const systemItems: HubItemData[] = [
+    {
+      icon: UploadSimple,
+      label: t('hub.exportConfig') || 'Export Configuration',
+      description: t('hub.exportConfigDesc') || 'Download site config as JSON',
+      action: () => { onClose(); onExportData() },
+    },
+    {
+      icon: DownloadSimple,
+      label: t('hub.importConfig') || 'Import Configuration',
+      description: t('hub.importConfigDesc') || 'Restore config from a JSON file',
+      action: () => { onClose(); onImportFile() },
+    },
+    {
+      icon: Globe,
+      label: t('hub.syncUrl') || 'Sync Configuration URL',
+      description: t('hub.syncUrlDesc') || 'Pull config from a remote URL',
+      action: () => { onClose(); onImportUrl() },
+    },
+    {
+      icon: GearSix,
+      label: t('hub.configEditor') || 'JSON Configuration Editor',
+      description: t('hub.configEditorDesc') || 'Advanced raw config editing',
+      action: () => { onClose(); onOpenDialog('config') },
+    },
+    {
+      icon: Terminal,
+      label: t('hub.terminal') || 'Terminal Console',
+      description: t('hub.terminalDesc') || 'Manage terminal commands and morse code',
+      action: () => { onClose(); onOpenDialog('terminal') },
+    },
+    {
+      icon: SpeakerHigh,
+      label: t('hub.audio') || 'Audio System',
+      description: t('hub.audioDesc') || 'Configure ambient sound and effects',
+      action: () => { onClose(); onOpenDialog('sound') },
     },
     ...(isPrimary
       ? [
@@ -191,6 +225,7 @@ export default function AdminHubDialog({
     {
       icon: Lock,
       label: t('hub.changePassword') || 'Change Password',
+      description: t('hub.changePasswordDesc') || 'Update admin login password',
       action: () => { onClose(); onChangePassword() },
     },
     ...(onResetSetup
@@ -198,11 +233,21 @@ export default function AdminHubDialog({
           {
             icon: ArrowCounterClockwise,
             label: t('hub.resetSetup') || 'Reset Setup',
+            description: t('hub.resetSetupDesc') || 'Wipe all settings and restart',
             action: () => { onClose(); onResetSetup?.() },
           },
         ]
       : []),
   ]
+
+  // Tab content mapping for list-based tabs
+  const tabItems: Partial<Record<TabKey, HubItemData[]>> = {
+    store: storeItems,
+    communication: communicationItems,
+    'analytics-logs': analyticsItems,
+    security: securityItems,
+    system: systemItems,
+  }
 
   // If the user wants the customizer, we unmount the hub and let the customizer run.
   // We don't want to completely embed the customizer into this modal because it needs
@@ -327,7 +372,7 @@ export default function AdminHubDialog({
 
                 <div className="flex-1 overflow-y-auto p-8">
                   <h3 className="text-lg font-mono font-bold text-foreground mb-6 pb-2 border-b border-border/50 uppercase tracking-widest">
-                    {tabs.find((t) => t.id === activeTab)?.label}
+                    {tabs.find((tab) => tab.id === activeTab)?.label}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -354,11 +399,8 @@ export default function AdminHubDialog({
                       </div>
                     )}
 
-                    {activeTab === 'store' &&
-                      storeItems.map((item) => <HubItem key={item.label} item={item} />)}
-
-                    {activeTab === 'system' &&
-                      systemItems.map((item) => <HubItem key={item.label} item={item} />)}
+                    {activeTab in tabItems &&
+                      tabItems[activeTab]?.map((item) => <HubItem key={item.label} item={item} />)}
                   </div>
                 </div>
               </div>

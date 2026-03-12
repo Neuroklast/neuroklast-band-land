@@ -16,6 +16,7 @@ const APPROVED_FILES = [
   'use-activation-key.ts',
   'use-sound.ts',
   'analytics.ts',
+  'activity-log.ts',
 ];
 
 /** @type {import('eslint').Rule.RuleModule} */
