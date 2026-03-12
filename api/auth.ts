@@ -167,8 +167,11 @@ function generateTotpSecret(): { secret: string; uri: string } {
 /**
  * Verify a TOTP code against the stored secret.
  * Allows ±1 period window (30 s each side) to handle clock skew.
+ * Returns the validated delta (time step offset) or null if invalid.
+ * The delta must be checked by the caller against the used-codes store
+ * to prevent replay attacks.
  */
-function verifyTotpCode(secret: string, code: string): boolean {
+function getTotpDelta(secret: string, code: string): number | null {
   const totp = new OTPAuth.TOTP({
     issuer: TOTP_ISSUER,
     label: 'admin',
@@ -178,8 +181,35 @@ function verifyTotpCode(secret: string, code: string): boolean {
     secret: OTPAuth.Secret.fromBase32(secret),
   })
   // delta === null means invalid; otherwise returns the time step offset
-  const delta = totp.validate({ token: code, window: 1 })
-  return delta !== null
+  return totp.validate({ token: code, window: 1 })
+}
+
+/**
+ * Verify a TOTP code and guard against replay attacks.
+ * Checks validity then atomically marks the time-step as used in KV
+ * for the full validity window (90 s) so the same code cannot be reused.
+ */
+async function verifyTotpCodeOnce(secret: string, code: string): Promise<boolean> {
+  const delta = getTotpDelta(secret, code)
+  if (delta === null) return false
+
+  // Derive the canonical counter value (absolute time step) for this code.
+  // Using Math.floor(Date.now() / 1000 / 30) + delta gives the exact step
+  // that produced this code, making the used-key deterministic regardless
+  // of which step in the ±1 window matched.
+  const step = Math.floor(Date.now() / 1000 / 30) + delta
+  const usedKey = `totp-used:${step}`
+
+  // NX (set if not exists) + 90-second TTL — if the key already exists the
+  // code was already used within this window and we reject it.
+  try {
+    const set = await kv.set(usedKey, 1, { ex: 90, nx: true })
+    // @vercel/kv returns 'OK' on success and null when NX prevents the write
+    return set !== null
+  } catch {
+    // KV failure: fail closed — reject the code to prevent replay via KV outage
+    return false
+  }
 }
 
 /**
@@ -282,7 +312,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           return res.status(400).json({ error: 'No pending TOTP enrollment. Start setup first.' })
         }
 
-        if (!verifyTotpCode(pendingSecret, parsed.data.code)) {
+        if (!(await verifyTotpCodeOnce(pendingSecret, parsed.data.code))) {
           return res.status(403).json({ error: 'Invalid TOTP code. Please try again.' })
         }
 
@@ -316,7 +346,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         const totpSecret = await kv.get<string>(TOTP_KEY)
         if (!totpSecret) return res.status(400).json({ error: 'TOTP is not enabled' })
 
-        if (!verifyTotpCode(totpSecret, parsed.data.code)) {
+        if (!(await verifyTotpCodeOnce(totpSecret, parsed.data.code))) {
           return res.status(403).json({ error: 'Invalid TOTP code' })
         }
 
@@ -386,7 +416,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           if (!loginData.totpCode) {
             return res.status(403).json({ error: 'TOTP code required', totpRequired: true })
           }
-          if (!verifyTotpCode(totpSecret, loginData.totpCode)) {
+          if (!(await verifyTotpCodeOnce(totpSecret, loginData.totpCode))) {
             return res.status(403).json({ error: 'Invalid TOTP code', totpRequired: true })
           }
         }

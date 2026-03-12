@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { applyRateLimit } from '../_ratelimit.js'
 import { validateSession } from '../auth.js'
+import { isPrimaryHost } from '../_primary-check.js'
 import { z } from 'zod'
 
 // Minimal inline types so we avoid the vulnerable @vercel/node package
@@ -72,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const normalizedKey = licenseKey.trim().toUpperCase()
 
   const host = req.headers.host || ''
-  const IS_PRIMARY = host.includes('neuroklast.net')
+  const IS_PRIMARY = isPrimaryHost(typeof host === 'string' ? host : host[0])
 
   if (IS_PRIMARY) {
     return res.status(200).json({ valid: true, themeId })
