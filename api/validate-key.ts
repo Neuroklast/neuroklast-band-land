@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { key } = req.body || {}
 
-  const host = [req.headers?.host].flat()[0] ?? ''
+  const host = [req.headers?.['host']].flat()[0] ?? ''
   const IS_PRIMARY = isPrimaryHost(host)
 
   if (IS_PRIMARY) {
