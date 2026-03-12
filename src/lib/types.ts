@@ -523,6 +523,7 @@ export type AdminDialog =
   | 'terminal'
   | 'secret-terminal'
   | 'analytics'
+  | 'activity-log'
   | 'security-log'
   | 'security-settings'
   | 'blocklist'
