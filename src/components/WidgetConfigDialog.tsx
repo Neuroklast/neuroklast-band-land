@@ -172,7 +172,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
           <div className="text-sm text-muted-foreground font-mono py-4 text-center">
             <ChartBar size={24} className="text-primary/60 mx-auto mb-2" />
             <p className="font-semibold mb-1">{t('widgetConfig.analyticsTitle')}</p>
-            <p className="text-xs opacity-70">{t('widgetConfig.analyticsNoConfig')}</p>
+            <p className="text-xs opacity-70">{t('widgetConfig.analyticsInfo')}</p>
           </div>
         )
 
@@ -216,16 +216,48 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
 
       case 'instagram-feed':
         return (
-          <Field label="Number of Photos" hint="How many photos to display in the grid (1–24)">
-            <Input
-              type="number"
-              min={1}
-              max={24}
-              value={String(config.imageCount ?? 6)}
-              onChange={(e) => set('imageCount', parseInt(e.target.value, 10) || 6)}
-              className="bg-secondary border-input text-sm"
-            />
-          </Field>
+          <>
+            <Field
+              label="Profile URL"
+              hint="Instagram profile URL — shows a 'View on Instagram' button"
+            >
+              <Input
+                value={String(config.profileUrl ?? '')}
+                onChange={(e) => set('profileUrl', e.target.value)}
+                placeholder="https://www.instagram.com/yourhandle"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field
+              label="Embed Code"
+              hint="Paste an Instagram embed snippet to render it directly"
+            >
+              <textarea
+                value={String(config.embedCode ?? '')}
+                onChange={(e) => set('embedCode', e.target.value)}
+                rows={4}
+                className="w-full bg-secondary border border-input rounded px-3 py-2 text-xs font-mono text-foreground resize-y"
+                spellCheck={false}
+                placeholder='<blockquote class="instagram-media" …>'
+              />
+            </Field>
+            <Field
+              label="Number of Placeholders"
+              hint="How many placeholder cells to show when no images are configured (1–24)"
+            >
+              <Input
+                type="number"
+                min={1}
+                max={24}
+                value={String(config.imageCount ?? 6)}
+                onChange={(e) => set('imageCount', parseInt(e.target.value, 10) || 6)}
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <p className="text-[10px] text-muted-foreground">
+              Configure either a Profile URL, an embed code, or add images via the widget's JSON config field.
+            </p>
+          </>
         )
 
       case 'soundcloud-player':

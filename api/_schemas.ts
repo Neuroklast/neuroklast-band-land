@@ -159,6 +159,21 @@ export const imageProxyQuerySchema = z.object({
   url: z.string().min(1, 'url parameter is required').max(2000),
 })
 
+// ─── Setlist.fm API ───────────────────────────────────────────────────────────
+
+/** GET /api/setlistfm — query params */
+export const setlistfmQuerySchema = z.object({
+  mbid: z
+    .string()
+    .min(1, 'mbid parameter is required')
+    .regex(/^[a-f0-9-]{36}$/, 'Invalid MBID format — must be a 36-character UUID'),
+  p: z
+    .string()
+    .optional()
+    .transform((v) => (v ? parseInt(v, 10) : 1))
+    .pipe(z.number().int().min(1).max(100)),
+})
+
 // ─── Terminal API ─────────────────────────────────────────────────────────────
 
 /** POST /api/terminal */
