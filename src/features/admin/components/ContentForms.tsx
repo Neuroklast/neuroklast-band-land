@@ -7,6 +7,7 @@ import type { SiteConfig, Gig, Release, NewsItem } from '@/lib/types'
 import { toast } from 'sonner'
 import { useMutation } from '@tanstack/react-query'
 import { useLocale } from '@/hooks/use-locale'
+import { fetchITunesReleases } from '@/lib/itunes'
 
 interface ContentFormsProps {
   data: SiteConfig
@@ -102,39 +103,12 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
 
   // --- Releases ---
   const syncItunesMutation = useMutation({
-    mutationFn: async ({ artistName }: { artistName: string }) => {
-      const encoded = encodeURIComponent(artistName)
-      const response = await fetch(`https://itunes.apple.com/search?term=${encoded}&entity=album,single,ep&limit=50&media=music`)
-      if (!response.ok) {
-        throw new Error(`iTunes API returned ${response.status}`)
-      }
-      const result = await response.json()
-      if (!Array.isArray(result.results)) {
-        throw new Error('Invalid response format from iTunes')
-      }
-      return result.results
-    },
-    onSuccess: (results) => {
-      interface ItunesResult {
-        collectionId: number
-        collectionName: string
-        releaseDate: string
-        collectionType: string
-        artworkUrl100?: string
-        collectionViewUrl?: string
-      }
-      const syncedReleases: Release[] = (results as ItunesResult[]).map(item => ({
-        id: `itunes-${item.collectionId}`,
-        title: item.collectionName,
-        releaseDate: item.releaseDate?.split('T')[0] || '',
-        type: item.collectionType?.toLowerCase() === 'album' ? 'album' : 'single',
-        artwork: item.artworkUrl100?.replace('100x100', '600x600'),
-        streamingLinks: item.collectionViewUrl ? { appleMusic: item.collectionViewUrl } : {},
-      }))
-      if (syncedReleases.length > 0) {
+    mutationFn: ({ artistName }: { artistName: string }) => fetchITunesReleases(artistName),
+    onSuccess: (releases) => {
+      if (releases.length > 0) {
         const manualReleases = (data.releases || []).filter(r => !r.id.startsWith('itunes-'))
-        onUpdate('releases', [...manualReleases, ...syncedReleases])
-        toast.success(t('releases.syncSuccess').replace('{0}', String(syncedReleases.length)) || `Synced ${syncedReleases.length} releases from iTunes`)
+        onUpdate('releases', [...manualReleases, ...releases])
+        toast.success(t('releases.syncSuccess').replace('{0}', String(releases.length)) || `Synced ${releases.length} releases from iTunes`)
       } else {
         toast.info(t('releases.syncNone') || 'No releases found on iTunes for this artist.')
       }
