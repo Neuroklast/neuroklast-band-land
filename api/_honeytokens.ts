@@ -85,7 +85,11 @@ export function isHoneytoken(key: string): boolean {
  * can review intrusion attempts.  Also logs to stderr for server-side
  * monitoring (e.g. Vercel log drain → SIEM).
  */
-export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string, res: VercelLikeResponse | null = null): Promise<void> {
+/**
+ * Returns `true` when a response was already sent (e.g. zip bomb),
+ * so callers know they must not attempt to send a second response.
+ */
+export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string, res: VercelLikeResponse | null = null): Promise<boolean> {
   const ip = getClientIp(req)
   const hashedIp = hashIp(ip)
   const detectedAt = new Date().toISOString()
@@ -168,13 +172,17 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
   }
 
   // Serve zip bomb if enabled and response object provided
+  let responseSent = false
   try {
     if (res && settings?.zipBombEnabled) {
       await serveZipBomb(res)
+      responseSent = true
     }
   } catch {
     // Zip bomb failure must not block the response
   }
+
+  return responseSent
 }
 
 /** KV prefix and TTL for flagged attacker IPs */
