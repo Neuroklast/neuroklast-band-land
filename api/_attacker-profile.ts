@@ -31,6 +31,8 @@ export interface IncidentData {
   event?: string
   url?: string
   countermeasure?: string
+  /** Detected pattern name for backfire modules (e.g. 'ETC_PASSWD', 'UNION_SELECT'). */
+  pattern?: string | null
 }
 
 interface ThreatScoreHistoryEntry {
