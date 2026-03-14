@@ -10,6 +10,9 @@ import { detectSqlInjection, handleSqlInjectionBackfire } from './_sql-backfire.
 import { serveCanaryDocument, generateCanaryToken } from './_canary-documents.js'
 import { applyLogPoisoning } from './_log-poisoning.js'
 import { logSecurityEvent } from './_security-logger.js'
+import { detectAndLogScanner } from './_scanner-detection.js'
+import { handlePathTraversalBackfire } from './_path-traversal.js'
+import { handleProbeBackfire } from './_probe-detection.js'
 
 /**
  * Handles requests to paths listed as Disallow in robots.txt.
@@ -39,8 +42,15 @@ interface SecuritySettings {
   canaryDocumentsEnabled?: boolean
 }
 
-const DELAY_MIN_MS = 3000
-const DELAY_MAX_MS = 8000
+const DELAY_MIN_MS = 2000
+const DELAY_MAX_MS = 6000
+/** Adaptive tarpit ceiling based on threat level. */
+const DELAY_CAPS: Record<string, number> = {
+  BLOCK: 30000,
+  TARPIT: 15000,
+  WARN: 8000,
+  CLEAN: 6000,
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -145,7 +155,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const path = (req.query?._src as string) || req.url || '/'
   const ua = (req.headers['user-agent'] as string || '').slice(0, 200)
 
-  // SQL Injection Backfire — respond with poisoned data if SQL injection detected
+  // ── Layer 1: Scanner identification ────────────────────────────────────────
+  // Runs first so the multiplier is available for all subsequent threat score increments.
+  let scannerMultiplier = 1
+  try {
+    const scannerProfile = await detectAndLogScanner(req, hashedIp, ua)
+    scannerMultiplier = scannerProfile.threatMultiplier
+  } catch { /* scanner detection failure must not block the response */ }
+
+  // ── Layer 2: SQL Injection Backfire ─────────────────────────────────────────
   try {
     if (detectSqlInjection(req)) {
       const backfireResult = await handleSqlInjectionBackfire(req, res)
@@ -153,21 +171,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
   } catch { /* backfire failure must not block the response */ }
 
-  // Canary Documents — serve trackable decoy files from tarpit directories
+  // ── Layer 3: Path Traversal / LFI Backfire ──────────────────────────────────
+  try {
+    const traversalResult = await handlePathTraversalBackfire(req, res)
+    if (traversalResult) return
+  } catch { /* traversal backfire failure must not block the response */ }
+
+  // ── Layer 4: Probe Backfire (XSS / SSTI / SSRF / CMDi / XXE) ───────────────
+  try {
+    const probeResult = await handleProbeBackfire(req, res)
+    if (probeResult) return
+  } catch { /* probe backfire failure must not block the response */ }
+
+  // ── Layer 5: Canary Documents ───────────────────────────────────────────────
   try {
     const canaryResult = await serveCanaryDocument(req, res)
     if (canaryResult) return
   } catch { /* canary failure must not block the response */ }
 
-  // Increment threat score — pass UA for richer log context
+  // ── Layer 6: Threat Score Increment (with scanner multiplier) ───────────────
   let threatResult = { score: 0, level: 'CLEAN' }
   try {
-    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points, ua)
+    const basePoints = THREAT_REASONS.ROBOTS_VIOLATION.points
+    const scaledPoints = Math.round(basePoints * scannerMultiplier)
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, scaledPoints, ua)
   } catch {
     // Threat scoring failure must not block the response
   }
 
-  // Determine which countermeasure to apply based on per-rule settings
+  // ── Layer 7: Countermeasure selection ───────────────────────────────────────
   let countermeasure = 'LOGGED'
   let settings: SecuritySettings | null = null
   try {
@@ -202,7 +234,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     // Persistence failure must not block the response
   }
 
-  // Unified structured security log (replaces ad-hoc console.error)
+  // Unified structured security log
   const severity = threatResult.level === 'BLOCK' ? 'critical' : threatResult.level === 'TARPIT' ? 'high' : threatResult.level === 'WARN' ? 'warn' : 'info'
   await logSecurityEvent({
     event: 'ACCESS_VIOLATION',
@@ -214,6 +246,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     countermeasure,
     threatScore: threatResult.score,
     threatLevel: threatResult.level,
+    details: { scannerMultiplier },
   })
 
   // Flag this IP — subsequent requests to any endpoint will receive noise
@@ -235,8 +268,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     // Profile recording failure must not block the response
   }
 
-  // Defensive delay — limits scanner throughput
-  const ms = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS)
+  // ── Layer 8: Adaptive tarpit delay ─────────────────────────────────────────
+  // Delay scales with threat level: BLOCK ≤ 30s, TARPIT ≤ 15s, WARN ≤ 8s, else ≤ 6s
+  const cap = DELAY_CAPS[threatResult.level] ?? DELAY_CAPS.CLEAN
+  // Ensure cap is never less than DELAY_MIN_MS to avoid a negative random range
+  const upperBound = Math.max(DELAY_MIN_MS, Math.min(DELAY_MAX_MS, cap))
+  const ms = DELAY_MIN_MS + Math.random() * (upperBound - DELAY_MIN_MS)
   await sleep(ms)
 
   // Serve zip bomb if applicable per rule settings

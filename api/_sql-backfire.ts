@@ -84,6 +84,27 @@ export function detectSqlInjection(req: VercelLikeRequest): boolean {
 }
 
 /**
+ * ReDoS (Regular Expression Denial of Service) payloads.
+ *
+ * These strings are embedded in response bodies alongside the SQL backfire
+ * payloads.  Automated scanning tools that use regex to parse HTTP responses
+ * for SQL error patterns can experience catastrophic backtracking when their
+ * patterns are applied to these inputs.
+ *
+ * The strings are harmless to browsers and legitimate clients — they are just
+ * long sequences of characters that do not render visibly.
+ */
+const REDOS_PAYLOADS = [
+  // Targets (a+)+ style regexes in Python/Perl SQL error parsers
+  "'OR" + " 1".repeat(80) + "=1'",
+  // Triggers catastrophic backtracking in (a*b*)* patterns
+  "'" + "a".repeat(60) + "'" + "a".repeat(60) + "'",
+  // Long quote-delimited string that breaks naive SQL tokenisers
+  "'" + " OR ".repeat(40) + "'1'='1",
+  // Causes exponential backtracking in nested quantifier regexes
+  "1" + " UNION ALL SELECT".repeat(20) + " NULL--",
+]
+/**
  * Backfire payloads — SQL statements designed to corrupt the scanner's
  * local analysis database.  These are embedded in HTTP response bodies
  * and headers.  A legitimate browser ignores them; an automated tool
@@ -91,7 +112,6 @@ export function detectSqlInjection(req: VercelLikeRequest): boolean {
  * database.
  */
 const BACKFIRE_PAYLOADS = [
-  // Drop common scanner tables
   "'; DROP TABLE IF EXISTS scan_results; --",
   "'; DROP TABLE IF EXISTS vulnerabilities; --",
   "'; DROP TABLE IF EXISTS sessions CASCADE; --",
@@ -129,16 +149,20 @@ export function setBackfireHeaders(res: VercelLikeResponse): void {
  */
 export function generateBackfireBody(): Record<string, unknown> {
   const shuffled = [...BACKFIRE_PAYLOADS].sort(() => Math.random() - 0.5)
+  const redos = REDOS_PAYLOADS[Math.floor(Math.random() * REDOS_PAYLOADS.length)]
   return {
     error: 'Database error',
     message: shuffled[0],
     details: shuffled.slice(1, 4),
     query: shuffled[4] || BACKFIRE_PAYLOADS[0],
-    stack: `Error: ${shuffled[0]}\n    at Query.execute (${shuffled[1]})\n    at Connection.query (${shuffled[2]})`,
+    // ReDoS payload — causes catastrophic backtracking in scanner regex engines
+    trace: `Error: ${redos}\n    at Query.execute (${shuffled[1]})\n    at Connection.query (${shuffled[2]})`,
     debug: {
       last_query: shuffled[3] || BACKFIRE_PAYLOADS[3],
       db_version: "PostgreSQL 15.2'; DROP TABLE IF EXISTS vulnerabilities; --",
       tables: ['users', 'sessions', 'scan_results', 'admin_backup'],
+      // Second ReDoS payload in a field scanners often parse deeply
+      raw_error: redos,
     },
   }
 }

@@ -28,6 +28,17 @@ vi.mock('../../api/_honeytokens.js', () => ({
   setDefenseHeaders: mockSetDefenseHeaders,
 }))
 
+// Mock new countermeasure modules — they have their own tests
+vi.mock('../../api/_scanner-detection.js', () => ({
+  detectAndLogScanner: vi.fn().mockResolvedValue({ detected: false, toolName: null, category: null, confidence: 'low', threatMultiplier: 1, signals: [] }),
+}))
+vi.mock('../../api/_path-traversal.js', () => ({
+  handlePathTraversalBackfire: vi.fn().mockResolvedValue(false),
+}))
+vi.mock('../../api/_probe-detection.js', () => ({
+  handleProbeBackfire: vi.fn().mockResolvedValue(false),
+}))
+
 type Res = {
   status: Mock<(code: number) => Res>
   send: Mock<(data: unknown) => Res>
