@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { getClientIp, hashIp } from './_ratelimit.js'
 import { recordIncident } from './_attacker-profile.js'
+import { logSecurityEvent } from './_security-logger.js'
 
 /**
  * SQL Injection Backfire — counter-offensive defense module.
@@ -34,55 +35,52 @@ interface SecuritySettings {
   sqlBackfireEnabled?: boolean
 }
 
-/** Common SQL injection probe patterns */
-const SQL_INJECTION_PATTERNS = [
-  /(?:UNION\s+(?:ALL\s+)?SELECT)/i,
-  /(?:'\s*OR\s+['"]?\d)/i,
-  /(?:;\s*DROP\s+TABLE)/i,
-  /(?:;\s*DELETE\s+FROM)/i,
-  /(?:'\s*;\s*--)/i,
-  /(?:SLEEP\s*\(\d+\))/i,
-  /(?:BENCHMARK\s*\()/i,
-  /(?:WAITFOR\s+DELAY)/i,
-  /(?:pg_sleep\s*\()/i,
-  /(?:LOAD_FILE\s*\()/i,
-  /(?:INTO\s+(?:OUT|DUMP)FILE)/i,
-  /(?:information_schema)/i,
-  /(?:sys\.database)/i,
-  /(?:0x[0-9a-f]{8,})/i,
-  /(?:CHAR\s*\(\s*\d+(?:\s*,\s*\d+)*\s*\))/i,
+/** Named SQL injection probe patterns — name is logged for admin visibility */
+const SQL_INJECTION_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
+  { name: 'UNION_SELECT',      pattern: /(?:UNION\s+(?:ALL\s+)?SELECT)/i },
+  { name: 'OR_TAUTOLOGY',      pattern: /(?:'\s*OR\s+['"]?\d)/i },
+  { name: 'DROP_TABLE',        pattern: /(?:;\s*DROP\s+TABLE)/i },
+  { name: 'DELETE_FROM',       pattern: /(?:;\s*DELETE\s+FROM)/i },
+  { name: 'COMMENT_TERMINATE', pattern: /(?:'\s*;\s*--)/i },
+  { name: 'TIME_SLEEP',        pattern: /(?:SLEEP\s*\(\d+\))/i },
+  { name: 'BENCHMARK',         pattern: /(?:BENCHMARK\s*\()/i },
+  { name: 'WAITFOR_DELAY',     pattern: /(?:WAITFOR\s+DELAY)/i },
+  { name: 'PG_SLEEP',          pattern: /(?:pg_sleep\s*\()/i },
+  { name: 'LOAD_FILE',         pattern: /(?:LOAD_FILE\s*\()/i },
+  { name: 'INTO_OUTFILE',      pattern: /(?:INTO\s+(?:OUT|DUMP)FILE)/i },
+  { name: 'INFORMATION_SCHEMA', pattern: /(?:information_schema)/i },
+  { name: 'SYS_DATABASE',      pattern: /(?:sys\.database)/i },
+  { name: 'HEX_ENCODING',      pattern: /(?:0x[0-9a-f]{8,})/i },
+  { name: 'CHAR_ENCODING',     pattern: /(?:CHAR\s*\(\s*\d+(?:\s*,\s*\d+)*\s*\))/i },
 ]
 
-/**
- * Detect SQL injection attempts in request parameters.
- * Returns true if any query param, body field, or header contains SQL patterns.
- */
-export function detectSqlInjection(req: VercelLikeRequest): boolean {
+/** Return the name of the first SQL injection pattern that matches any source, or null. */
+function detectSqlInjectionPattern(req: VercelLikeRequest): string | null {
   const sources: string[] = []
-
-  // Check query parameters
   if (req.query) {
     sources.push(...Object.values(req.query).filter((v): v is string => typeof v === 'string'))
   }
-
-  // Check request body string fields
   if (req.body && typeof req.body === 'object') {
     sources.push(...Object.values(req.body).filter((v): v is string => typeof v === 'string'))
   }
-
-  // Check URL path
   if (req.url) sources.push(req.url)
-
-  // Check cookie header (scanners sometimes inject SQL via cookies)
   const cookie = req.headers?.cookie
   if (typeof cookie === 'string') sources.push(cookie)
 
   for (const value of sources) {
-    for (const pattern of SQL_INJECTION_PATTERNS) {
-      if (pattern.test(value)) return true
+    for (const { name, pattern } of SQL_INJECTION_PATTERNS) {
+      if (pattern.test(value)) return name
     }
   }
-  return false
+  return null
+}
+
+/**
+ * Detect SQL injection attempts in request parameters.
+ * Returns the matched pattern name when found, or null for clean requests.
+ */
+export function detectSqlInjection(req: VercelLikeRequest): boolean {
+  return detectSqlInjectionPattern(req) !== null
 }
 
 /**
@@ -152,6 +150,9 @@ export function generateBackfireBody(): Record<string, unknown> {
 export async function handleSqlInjectionBackfire(req: VercelLikeRequest, res: VercelLikeResponse): Promise<boolean> {
   const ip = getClientIp(req)
   const hashedIp = hashIp(ip)
+  const userAgent = (req.headers?.['user-agent'] as string || '').slice(0, 200)
+  const timestamp = new Date().toISOString()
+  const detectedPattern = detectSqlInjectionPattern(req)
 
   // Check if backfire is enabled
   try {
@@ -161,26 +162,30 @@ export async function handleSqlInjectionBackfire(req: VercelLikeRequest, res: Ve
     return false
   }
 
-  // Record the incident
+  // Record the incident in attacker profile
   try {
     await recordIncident(hashedIp, {
       type: 'sql_injection_backfire',
       method: req.method,
       url: req.url,
-      userAgent: (req.headers?.['user-agent'] as string || '').slice(0, 200),
-      timestamp: new Date().toISOString(),
+      userAgent,
+      timestamp,
     })
   } catch {
     // Recording failure must not block the response
   }
 
-  // Log for SIEM
-  console.error('[SQL BACKFIRE]', JSON.stringify({
+  // Unified structured log
+  await logSecurityEvent({
+    event: 'SQL_INJECTION_BACKFIRE',
+    severity: 'high',
     hashedIp,
+    userAgent,
     method: req.method,
     url: req.url,
-    timestamp: new Date().toISOString(),
-  }))
+    countermeasure: 'SQL_BACKFIRE',
+    details: { detectedPattern },
+  })
 
   // Send the backfire response
   setBackfireHeaders(res)

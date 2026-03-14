@@ -111,14 +111,30 @@ export default async function middleware(request: Request): Promise<Response | u
     // ── 1. Circuit Breaker ──────────────────────────────────────────
     const isUnderAttack = await kv.get('nk_under_attack')
     if (isUnderAttack) {
+      console.error('[SECURITY:CIRCUIT_BREAKER_ACTIVE]', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: 'CIRCUIT_BREAKER_ACTIVE',
+        severity: 'critical',
+        url: request.url,
+        method: request.method,
+      }))
       return new Response(null, { status: 429 })
     }
 
     // ── 2. Hard-Blocked IP Gate ─────────────────────────────────────
     const ip = getClientIp(request)
     const hashedIp = await hashIp(ip)
-    const isBlocked = await kv.get(`nk-blocked:${hashedIp}`)
-    if (isBlocked) {
+    const blockEntry = await kv.get(`nk-blocked:${hashedIp}`)
+    if (blockEntry) {
+      console.error('[SECURITY:HARD_BLOCK_REJECTED]', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: 'HARD_BLOCK_REJECTED',
+        severity: 'high',
+        hashedIp,
+        url: request.url,
+        method: request.method,
+        userAgent: (request.headers.get('user-agent') || '').slice(0, 200),
+      }))
       return new Response(null, { status: 403 })
     }
 
@@ -135,6 +151,15 @@ export default async function middleware(request: Request): Promise<Response | u
 
     if (currentRequests > THRESHOLD) {
       await kv.set('nk_under_attack', true, { ex: COOLDOWN_SECONDS })
+      console.error('[SECURITY:CIRCUIT_BREAKER_TRIPPED]', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: 'CIRCUIT_BREAKER_TRIPPED',
+        severity: 'critical',
+        requestCount: currentRequests,
+        threshold: THRESHOLD,
+        cooldownSeconds: COOLDOWN_SECONDS,
+        url: request.url,
+      }))
       return new Response(null, { status: 429 })
     }
 

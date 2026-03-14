@@ -5,9 +5,11 @@ import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 // ---------------------------------------------------------------------------
 const mockKvGet = vi.fn()
 const mockKvSet = vi.fn()
+const mockKvLpush = vi.fn()
+const mockKvLtrim = vi.fn()
 
 vi.mock('@vercel/kv', () => ({
-  kv: { get: mockKvGet, set: mockKvSet },
+  kv: { get: mockKvGet, set: mockKvSet, lpush: mockKvLpush, ltrim: mockKvLtrim },
 }))
 
 // Mock rate limiter — always allow requests in tests
@@ -18,7 +20,7 @@ vi.mock('../../api/_ratelimit.ts', () => ({
 // Mock honeytokens — disable in tests
 vi.mock('../../api/_honeytokens.js', () => ({
   isHoneytoken: vi.fn().mockReturnValue(false),
-  triggerHoneytokenAlarm: vi.fn().mockResolvedValue(undefined),
+  triggerHoneytokenAlarm: vi.fn().mockResolvedValue(false),
   isMarkedAttacker: vi.fn().mockResolvedValue(false),
   injectEntropyHeaders: vi.fn(),
   getRandomTaunt: vi.fn().mockReturnValue('Nice try, mf. Your IP hash is now a permanent resident in our blacklist.'),
@@ -29,6 +31,16 @@ vi.mock('../../api/_honeytokens.js', () => ({
 const mockValidateSession = vi.fn().mockResolvedValue(false)
 vi.mock('../../api/auth.js', () => ({
   validateSession: mockValidateSession,
+}))
+
+// Mock blocklist — never hard-block in tests
+vi.mock('../../api/_blocklist.js', () => ({
+  isHardBlocked: vi.fn().mockResolvedValue(false),
+}))
+
+// Mock unified security logger — prevents real KV writes during tests
+vi.mock('../../api/_security-logger.js', () => ({
+  logSecurityEvent: vi.fn().mockResolvedValue(undefined),
 }))
 
 type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res>; send: Mock<(data: unknown) => Res> }
@@ -316,6 +328,8 @@ describe('Security: Honeytoken detection', () => {
     const triggerHoneytokenAlarm = vi.mocked(mod.triggerHoneytokenAlarm)
     const setDefenseHeaders = vi.mocked(mod.setDefenseHeaders)
     isHoneytoken.mockReturnValueOnce(true)
+    // Default: triggerHoneytokenAlarm returns false (no zip bomb — 403 must follow)
+    triggerHoneytokenAlarm.mockResolvedValueOnce(false)
 
     const res = mockRes()
     await kvHandler({ method: 'GET', query: { key: 'admin_backup' }, body: {}, headers: {} }, res)
@@ -325,12 +339,31 @@ describe('Security: Honeytoken detection', () => {
     expect(setDefenseHeaders).toHaveBeenCalledWith(res)
   })
 
+  it('does NOT send 403 when zip bomb was already sent (prevents double-response)', async () => {
+    const mod = await import('../../api/_honeytokens.js')
+    const isHoneytoken = vi.mocked(mod.isHoneytoken)
+    const triggerHoneytokenAlarm = vi.mocked(mod.triggerHoneytokenAlarm)
+    const setDefenseHeaders = vi.mocked(mod.setDefenseHeaders)
+    isHoneytoken.mockReturnValueOnce(true)
+    // Simulate zip bomb already sent: triggerHoneytokenAlarm returns true
+    triggerHoneytokenAlarm.mockResolvedValueOnce(true)
+
+    const res = mockRes()
+    await kvHandler({ method: 'GET', query: { key: 'admin_backup' }, body: {}, headers: {} }, res)
+    // No 403 should be sent after zip bomb
+    expect(res.status).not.toHaveBeenCalledWith(403)
+    expect(res.json).not.toHaveBeenCalled()
+    expect(setDefenseHeaders).not.toHaveBeenCalled()
+    expect(triggerHoneytokenAlarm).toHaveBeenCalled()
+  })
+
   it('returns 403 with taunting message when writing to a honeytoken key via POST', async () => {
     const mod = await import('../../api/_honeytokens.js')
     const isHoneytoken = vi.mocked(mod.isHoneytoken)
     const triggerHoneytokenAlarm = vi.mocked(mod.triggerHoneytokenAlarm)
     const setDefenseHeaders = vi.mocked(mod.setDefenseHeaders)
     isHoneytoken.mockReturnValueOnce(true)
+    triggerHoneytokenAlarm.mockResolvedValueOnce(false)
 
     const res = mockRes()
     await kvHandler({
@@ -343,6 +376,20 @@ describe('Security: Honeytoken detection', () => {
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'ACCESS_DENIED', message: expect.any(String) }))
     expect(triggerHoneytokenAlarm).toHaveBeenCalled()
     expect(setDefenseHeaders).toHaveBeenCalledWith(res)
+    expect(mockKvSet).not.toHaveBeenCalled()
+  })
+
+  it('does NOT send 403 on POST when zip bomb was already sent', async () => {
+    const mod = await import('../../api/_honeytokens.js')
+    const isHoneytoken = vi.mocked(mod.isHoneytoken)
+    const triggerHoneytokenAlarm = vi.mocked(mod.triggerHoneytokenAlarm)
+    isHoneytoken.mockReturnValueOnce(true)
+    triggerHoneytokenAlarm.mockResolvedValueOnce(true)
+
+    const res = mockRes()
+    await kvHandler({ method: 'POST', query: {}, body: { key: 'admin_backup', value: 'evil' }, headers: {} }, res)
+    expect(res.status).not.toHaveBeenCalledWith(403)
+    expect(res.json).not.toHaveBeenCalled()
     expect(mockKvSet).not.toHaveBeenCalled()
   })
 })

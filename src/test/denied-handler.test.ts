@@ -146,8 +146,9 @@ describe('Denied handler: robots.txt access violation response', () => {
       { method: 'POST', query: { _src: '/phpmyadmin/index.php' }, headers: {}, url: '/api/denied' },
       res,
     )
+    // Unified security logger emits [SECURITY:ACCESS_VIOLATION] with full JSON
     expect(consoleSpy).toHaveBeenCalledWith(
-      '[ACCESS VIOLATION]',
+      '[SECURITY:ACCESS_VIOLATION]',
       expect.stringContaining('/phpmyadmin/index.php'),
     )
     consoleSpy.mockRestore()

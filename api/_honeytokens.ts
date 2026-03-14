@@ -5,6 +5,7 @@ import { incrementThreatScore, THREAT_REASONS } from './_threat-score.js'
 import { sendSecurityAlert } from './_alerting.js'
 import { serveZipBomb } from './_zipbomb.js'
 import { recordIncident } from './_attacker-profile.js'
+import { logSecurityEvent } from './_security-logger.js'
 
 /**
  * Honeytokens — decoy records planted in the database.
@@ -95,12 +96,14 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
   const detectedAt = new Date().toISOString()
   const geo = getVercelGeoData(req)
   const sanitizedHeaders = sanitizeHeaders(req.headers)
+  const userAgent = (req.headers['user-agent'] as string || '').slice(0, 200)
+  const method = req.method ?? 'UNKNOWN'
 
   const baseEntry = {
     key,
-    method: req.method ?? 'UNKNOWN',
+    method,
     hashedIp,
-    userAgent: (req.headers['user-agent'] as string || '').slice(0, 200),
+    userAgent,
     timestamp: detectedAt,
     detectedAt,
     incidentClass: 'HONEYTOKEN_ACCESS' as const,
@@ -112,10 +115,7 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
   const evidenceHash = computeEvidenceHash(baseEntry)
   const entry = { ...baseEntry, evidenceHash }
 
-  // Silent alarm — log to stderr (picked up by Vercel log drains / SIEM)
-  console.error('[HONEYTOKEN ALERT]', JSON.stringify(entry))
-
-  // Persist to KV for the admin dashboard (fire-and-forget, capped list)
+  // Persist to KV for the legacy security-incidents admin view (capped list)
   try {
     await kv.lpush('nk-honeytoken-alerts', JSON.stringify(entry))
     await kv.ltrim('nk-honeytoken-alerts', 0, 499) // keep last 500 alerts
@@ -129,7 +129,7 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
   // Increment threat score
   let threatResult = { score: 0, level: 'CLEAN' }
   try {
-    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.HONEYTOKEN_ACCESS.reason, THREAT_REASONS.HONEYTOKEN_ACCESS.points)
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.HONEYTOKEN_ACCESS.reason, THREAT_REASONS.HONEYTOKEN_ACCESS.points, userAgent)
   } catch {
     // Threat scoring failure must not block the response
   }
@@ -139,17 +139,17 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
     await recordIncident(hashedIp, {
       type: 'honeytoken_access',
       key,
-      method: req.method,
-      userAgent: entry.userAgent,
+      method,
+      userAgent,
       threatScore: threatResult.score,
       threatLevel: threatResult.level,
-      timestamp: entry.timestamp
+      timestamp: detectedAt,
     })
   } catch {
     // Profile recording failure must not block the response
   }
 
-  // Load settings once — used for both alerting and zip bomb checks below
+  // Load settings once — used for alerting and zip bomb checks below
   const settings = await kv.get<SecuritySettings>('nk-security-settings').catch(() => null)
 
   // Send security alert if enabled
@@ -158,10 +158,10 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
       await sendSecurityAlert({
         type: 'HONEYTOKEN ACCESS',
         key,
-        method: req.method,
+        method,
         hashedIp,
-        userAgent: entry.userAgent,
-        timestamp: entry.timestamp,
+        userAgent,
+        timestamp: detectedAt,
         threatScore: threatResult.score,
         threatLevel: threatResult.level,
         severity: 'critical',
@@ -181,6 +181,24 @@ export async function triggerHoneytokenAlarm(req: VercelLikeRequest, key: string
   } catch {
     // Zip bomb failure must not block the response
   }
+
+  // Unified structured log — written last so threatResult is available
+  await logSecurityEvent({
+    event: 'HONEYTOKEN_ACCESS',
+    severity: 'critical',
+    hashedIp,
+    userAgent,
+    method,
+    geo: { countryCode: geo.countryCode, region: geo.region, city: geo.city },
+    countermeasure: responseSent ? 'ZIP_BOMB' : 'TAUNT_403',
+    threatScore: threatResult.score,
+    threatLevel: threatResult.level,
+    details: {
+      key,
+      evidenceHash,
+      legalBasis: baseEntry.legalBasis,
+    },
+  })
 
   return responseSent
 }

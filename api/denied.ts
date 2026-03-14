@@ -9,6 +9,7 @@ import { recordIncident } from './_attacker-profile.js'
 import { detectSqlInjection, handleSqlInjectionBackfire } from './_sql-backfire.js'
 import { serveCanaryDocument, generateCanaryToken } from './_canary-documents.js'
 import { applyLogPoisoning } from './_log-poisoning.js'
+import { logSecurityEvent } from './_security-logger.js'
 
 /**
  * Handles requests to paths listed as Disallow in robots.txt.
@@ -77,29 +78,18 @@ function renderErrorPage(path: string, canaryToken: string | null): string {
   const links = pickLinks()
   const padding = randomBytes(3072).toString('base64')
   const callbackUrl = canaryToken ? `/api/canary-callback?t=${canaryToken}` : ''
+
+  // Tracking pixel — fires on page load even without JavaScript.
+  // Allowed by `img-src 'self'` in the Content-Security-Policy.
   const canaryPixel = canaryToken
     ? `\n<img src="${callbackUrl}&e=img" width="1" height="1" style="position:absolute;left:-9999px" alt="">`
     : ''
+
+  // Fingerprinting script — loaded as an external same-origin resource so
+  // it is permitted by `script-src 'self'` in the CSP.  Inline `<script>`
+  // blocks would be rejected by browsers enforcing the policy.
   const canaryScript = canaryToken
-    ? `\n<script>
-(function(){
-  var d={t:"${canaryToken}",ts:Date.now(),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
-    lang:navigator.language,plat:navigator.platform,cores:navigator.hardwareConcurrency||0,
-    mem:navigator.deviceMemory||0,sw:screen.width,sh:screen.height,cd:screen.colorDepth,
-    touch:'ontouchstart'in window};
-  try{var c=document.createElement('canvas');var g=c.getContext('2d');
-    g.textBaseline='top';g.font='14px Arial';g.fillText('fp',2,2);
-    d.cvs=c.toDataURL().slice(-32)}catch(e){}
-  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
-    r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
-    r.onicecandidate=function(e){if(e.candidate){
-      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
-      if(m){d.realIp=m[1];send()}}}}catch(e){}
-  function send(){var x=new XMLHttpRequest();x.open('POST',"${callbackUrl}&e=js");
-    x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(d))}
-  setTimeout(send,2000);
-})();
-</script>`
+    ? `\n<script src="/api/canary-script?t=${canaryToken}"></script>`
     : ''
   return `<!DOCTYPE html>
 <html lang="en">
@@ -169,10 +159,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     if (canaryResult) return
   } catch { /* canary failure must not block the response */ }
 
-  // Increment threat score
+  // Increment threat score — pass UA for richer log context
   let threatResult = { score: 0, level: 'CLEAN' }
   try {
-    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points)
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points, ua)
   } catch {
     // Threat scoring failure must not block the response
   }
@@ -193,7 +183,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     countermeasure = 'TARPITTED'
   }
 
-  // Record the access violation — includes countermeasure info for tracking
   const entry = {
     key: `robots:${path}`,
     method: req.method,
@@ -205,15 +194,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     countermeasure,
   }
 
-  console.error('[ACCESS VIOLATION]', JSON.stringify(entry))
-
-  // Persist alongside other security alerts for unified monitoring
+  // Persist to legacy KV list for backward compatibility with security-incidents view
   try {
     await kv.lpush('nk-honeytoken-alerts', JSON.stringify(entry))
     await kv.ltrim('nk-honeytoken-alerts', 0, 499)
   } catch {
     // Persistence failure must not block the response
   }
+
+  // Unified structured security log (replaces ad-hoc console.error)
+  const severity = threatResult.level === 'BLOCK' ? 'critical' : threatResult.level === 'TARPIT' ? 'high' : threatResult.level === 'WARN' ? 'warn' : 'info'
+  await logSecurityEvent({
+    event: 'ACCESS_VIOLATION',
+    severity,
+    hashedIp,
+    userAgent: ua,
+    method: req.method,
+    url: path,
+    countermeasure,
+    threatScore: threatResult.score,
+    threatLevel: threatResult.level,
+  })
 
   // Flag this IP — subsequent requests to any endpoint will receive noise
   await markAttacker(hashedIp)

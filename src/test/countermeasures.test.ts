@@ -24,9 +24,10 @@ vi.mock('../../api/_ratelimit.ts', () => ({
   hashIp: vi.fn().mockReturnValue('abc123hashedip'),
 }))
 
-// Mock attacker profile
+// Mock attacker profile — includes addForensicData used by canary callbacks
 vi.mock('../../api/_attacker-profile.js', () => ({
   recordIncident: vi.fn().mockResolvedValue(undefined),
+  addForensicData: vi.fn().mockResolvedValue(undefined),
 }))
 
 // Mock threat score
@@ -42,6 +43,9 @@ vi.mock('../../api/_threat-score.js', () => ({
 vi.mock('../../api/_alerting.js', () => ({
   sendSecurityAlert: vi.fn().mockResolvedValue(undefined),
 }))
+// NOTE: _security-logger.js is NOT mocked here — it uses the mocked @vercel/kv above,
+// so it is safe to let the real module run. This allows the logger tests at the bottom
+// of this file to verify the real KV write behaviour.
 
 type Res = { status: Mock<(code: number) => Res>; json: Mock<(data: unknown) => Res>; end: Mock<() => Res>; setHeader: Mock<(key: string, value: string) => Res>; send: Mock<(data: unknown) => Res> }
 
@@ -277,7 +281,9 @@ describe('Canary Documents: generateCanaryHtml', () => {
     expect(html).toContain('CONFIDENTIAL')
     expect(html).toContain('abc123def456abc123def456abc123de')
     expect(html).toContain('/api/canary-callback')
-    expect(html).toContain('<script>')
+    // External script tag (CSP-compliant — no inline <script>)
+    expect(html).toContain('<script src=')
+    expect(html).toContain('/api/canary-script?t=abc123def456abc123def456abc123de')
     expect(html).toContain('<img src=')
   })
 
@@ -287,17 +293,23 @@ describe('Canary Documents: generateCanaryHtml', () => {
     expect(html).toContain('&lt;script&gt;')
   })
 
-  it('includes WebRTC STUN for real IP discovery', () => {
+  it('uses external canary-script endpoint (CSP-safe, no inline scripts)', () => {
     const html = generateCanaryHtml('token123token123token123token123', 'doc')
-    expect(html).toContain('RTCPeerConnection')
-    expect(html).toContain('stun:stun.l.google.com')
+    // Must NOT have inline fingerprinting code
+    expect(html).not.toContain('RTCPeerConnection')
+    expect(html).not.toContain('navigator.platform')
+    // Must have external script reference
+    expect(html).toContain('<script src="/api/canary-script?t=token123token123token123token123">')
   })
 
-  it('includes browser fingerprinting code', () => {
-    const html = generateCanaryHtml('token123token123token123token123', 'doc')
-    expect(html).toContain('navigator.platform')
-    expect(html).toContain('screen.width')
-    expect(html).toContain('hardwareConcurrency')
+  it('omits fingerprint script when canaryCollectFingerprint is false', () => {
+    const html = generateCanaryHtml('token123token123token123token123', 'doc', { canaryCollectFingerprint: false })
+    expect(html).not.toContain('<script src=')
+  })
+
+  it('omits tracking pixel when canaryPhoneHomeOnOpen is false', () => {
+    const html = generateCanaryHtml('token123token123token123token123', 'doc', { canaryPhoneHomeOnOpen: false })
+    expect(html).not.toContain('<img src=')
   })
 })
 
@@ -545,5 +557,138 @@ describe('Security Settings: JSON config exportability', () => {
     expect(json).toContain('sqlBackfireOnScannerDetection')
     expect(json).toContain('canaryPhoneHomeOnOpen')
     expect(json).toContain('logPoisonFakeHeaders')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Canary Script Endpoint Tests
+// ---------------------------------------------------------------------------
+const { default: canaryScriptHandler } = await import('../../api/canary-script.js')
+
+describe('Canary Script: external fingerprint script endpoint', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('returns 404 for missing token', async () => {
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'GET', query: {}, headers: {} }, res)
+    expect(res.status).toHaveBeenCalledWith(404)
+  })
+
+  it('returns 404 for invalid token format', async () => {
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'GET', query: { t: 'invalid!token' }, headers: {} }, res)
+    expect(res.status).toHaveBeenCalledWith(404)
+  })
+
+  it('returns 404 when token does not exist in KV', async () => {
+    mockKvGet.mockResolvedValue(null)
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'GET', query: { t: 'a'.repeat(32) }, headers: {} }, res)
+    expect(res.status).toHaveBeenCalledWith(404)
+  })
+
+  it('returns valid JavaScript for a known token', async () => {
+    mockKvGet.mockResolvedValue({ hashedIp: 'abc123', documentPath: '/admin/backup' })
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'GET', query: { t: 'a'.repeat(32) }, headers: {} }, res)
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'application/javascript; charset=utf-8')
+    const script = res.send.mock.calls[0][0] as string
+    expect(typeof script).toBe('string')
+    expect(script).toContain('(function(){')
+    expect(script).toContain('/api/canary-callback')
+    expect(script).toContain('a'.repeat(32))
+  })
+
+  it('script contains WebRTC STUN for real IP discovery', async () => {
+    mockKvGet.mockResolvedValue({ hashedIp: 'abc123' })
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'GET', query: { t: 'b'.repeat(32) }, headers: {} }, res)
+    const script = res.send.mock.calls[0][0] as string
+    expect(script).toContain('RTCPeerConnection')
+    expect(script).toContain('stun:stun.l.google.com')
+  })
+
+  it('script contains browser fingerprinting code', async () => {
+    mockKvGet.mockResolvedValue({ hashedIp: 'abc123' })
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'GET', query: { t: 'c'.repeat(32) }, headers: {} }, res)
+    const script = res.send.mock.calls[0][0] as string
+    expect(script).toContain('navigator.platform')
+    expect(script).toContain('screen.width')
+    expect(script).toContain('hardwareConcurrency')
+  })
+
+  it('sets no-cache headers to prevent script caching', async () => {
+    mockKvGet.mockResolvedValue({ hashedIp: 'abc123' })
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'GET', query: { t: 'd'.repeat(32) }, headers: {} }, res)
+    expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store, no-cache, must-revalidate')
+  })
+
+  it('rejects non-GET methods', async () => {
+    const res = mockRes()
+    await canaryScriptHandler({ method: 'POST', query: {}, headers: {} }, res)
+    expect(res.status).toHaveBeenCalledWith(405)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Unified Security Logger Tests
+// ---------------------------------------------------------------------------
+describe('Security Logger: logSecurityEvent', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('writes a structured entry to KV', async () => {
+    const { logSecurityEvent } = await import('../../api/_security-logger.js')
+    mockKvLpush.mockResolvedValue(1)
+    mockKvLtrim.mockResolvedValue('OK')
+    await logSecurityEvent({
+      event: 'TEST_EVENT',
+      severity: 'warn',
+      hashedIp: 'testhash',
+      userAgent: 'TestAgent/1.0',
+      countermeasure: 'TEST',
+    })
+    expect(mockKvLpush).toHaveBeenCalledWith('nk-security-log', expect.stringContaining('"event":"TEST_EVENT"'))
+  })
+
+  it('log entry contains all required fields', async () => {
+    const { logSecurityEvent } = await import('../../api/_security-logger.js')
+    mockKvLpush.mockResolvedValue(1)
+    mockKvLtrim.mockResolvedValue('OK')
+    await logSecurityEvent({
+      event: 'HONEYTOKEN_ACCESS',
+      severity: 'critical',
+      hashedIp: 'abc123',
+      userAgent: 'sqlmap/1.6',
+      method: 'GET',
+      url: '/api/kv?key=admin_backup',
+      countermeasure: 'TAUNT_403',
+      threatScore: 5,
+      threatLevel: 'WARN',
+      details: { key: 'admin_backup' },
+    })
+    const written = mockKvLpush.mock.calls[0][1] as string
+    const parsed = JSON.parse(written) as Record<string, unknown>
+    expect(parsed).toHaveProperty('id')
+    expect(parsed).toHaveProperty('timestamp')
+    expect(parsed).toHaveProperty('event', 'HONEYTOKEN_ACCESS')
+    expect(parsed).toHaveProperty('severity', 'critical')
+    expect(parsed).toHaveProperty('hashedIp', 'abc123')
+    expect(parsed).toHaveProperty('countermeasure', 'TAUNT_403')
+    expect(parsed).toHaveProperty('threatScore', 5)
+    expect(parsed).toHaveProperty('details')
+  })
+
+  it('KV failure does not throw', async () => {
+    const { logSecurityEvent } = await import('../../api/_security-logger.js')
+    mockKvLpush.mockRejectedValue(new Error('KV unavailable'))
+    await expect(logSecurityEvent({
+      event: 'TEST',
+      severity: 'info',
+      hashedIp: 'hash',
+      userAgent: '',
+    })).resolves.not.toThrow()
   })
 })

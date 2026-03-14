@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { getClientIp, hashIp } from './_ratelimit.js'
 import { recordIncident } from './_attacker-profile.js'
+import { logSecurityEvent } from './_security-logger.js'
 
 /**
  * Log Poisoning — inject deceptive data into responses that corrupts
@@ -163,6 +164,17 @@ export async function applyLogPoisoning(req: VercelLikeRequest, res: VercelLikeR
 
   // Inject poisoned headers
   injectLogPoisonHeaders(res)
+
+  // Unified structured log — previously this function had zero logging
+  await logSecurityEvent({
+    event: 'LOG_POISONING_APPLIED',
+    severity: 'info',
+    hashedIp,
+    userAgent: (req.headers?.['user-agent'] as string || '').slice(0, 200),
+    method: req.method,
+    url: req.url,
+    countermeasure: 'LOG_POISON',
+  })
 
   return true
 }
