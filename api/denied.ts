@@ -9,6 +9,10 @@ import { recordIncident } from './_attacker-profile.js'
 import { detectSqlInjection, handleSqlInjectionBackfire } from './_sql-backfire.js'
 import { serveCanaryDocument, generateCanaryToken } from './_canary-documents.js'
 import { applyLogPoisoning } from './_log-poisoning.js'
+import { logSecurityEvent } from './_security-logger.js'
+import { detectAndLogScanner } from './_scanner-detection.js'
+import { handlePathTraversalBackfire } from './_path-traversal.js'
+import { handleProbeBackfire } from './_probe-detection.js'
 
 /**
  * Handles requests to paths listed as Disallow in robots.txt.
@@ -38,8 +42,15 @@ interface SecuritySettings {
   canaryDocumentsEnabled?: boolean
 }
 
-const DELAY_MIN_MS = 3000
-const DELAY_MAX_MS = 8000
+const DELAY_MIN_MS = 2000
+const DELAY_MAX_MS = 6000
+/** Adaptive tarpit ceiling based on threat level. */
+const DELAY_CAPS: Record<string, number> = {
+  BLOCK: 30000,
+  TARPIT: 15000,
+  WARN: 8000,
+  CLEAN: 6000,
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -77,29 +88,18 @@ function renderErrorPage(path: string, canaryToken: string | null): string {
   const links = pickLinks()
   const padding = randomBytes(3072).toString('base64')
   const callbackUrl = canaryToken ? `/api/canary-callback?t=${canaryToken}` : ''
+
+  // Tracking pixel — fires on page load even without JavaScript.
+  // Allowed by `img-src 'self'` in the Content-Security-Policy.
   const canaryPixel = canaryToken
     ? `\n<img src="${callbackUrl}&e=img" width="1" height="1" style="position:absolute;left:-9999px" alt="">`
     : ''
+
+  // Fingerprinting script — loaded as an external same-origin resource so
+  // it is permitted by `script-src 'self'` in the CSP.  Inline `<script>`
+  // blocks would be rejected by browsers enforcing the policy.
   const canaryScript = canaryToken
-    ? `\n<script>
-(function(){
-  var d={t:"${canaryToken}",ts:Date.now(),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
-    lang:navigator.language,plat:navigator.platform,cores:navigator.hardwareConcurrency||0,
-    mem:navigator.deviceMemory||0,sw:screen.width,sh:screen.height,cd:screen.colorDepth,
-    touch:'ontouchstart'in window};
-  try{var c=document.createElement('canvas');var g=c.getContext('2d');
-    g.textBaseline='top';g.font='14px Arial';g.fillText('fp',2,2);
-    d.cvs=c.toDataURL().slice(-32)}catch(e){}
-  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
-    r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
-    r.onicecandidate=function(e){if(e.candidate){
-      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
-      if(m){d.realIp=m[1];send()}}}}catch(e){}
-  function send(){var x=new XMLHttpRequest();x.open('POST',"${callbackUrl}&e=js");
-    x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(d))}
-  setTimeout(send,2000);
-})();
-</script>`
+    ? `\n<script src="/api/canary-script?t=${canaryToken}"></script>`
     : ''
   return `<!DOCTYPE html>
 <html lang="en">
@@ -155,7 +155,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const path = (req.query?._src as string) || req.url || '/'
   const ua = (req.headers['user-agent'] as string || '').slice(0, 200)
 
-  // SQL Injection Backfire — respond with poisoned data if SQL injection detected
+  // ── Layer 1: Scanner identification ────────────────────────────────────────
+  // Runs first so the multiplier is available for all subsequent threat score increments.
+  let scannerMultiplier = 1
+  try {
+    const scannerProfile = await detectAndLogScanner(req, hashedIp, ua)
+    scannerMultiplier = scannerProfile.threatMultiplier
+  } catch { /* scanner detection failure must not block the response */ }
+
+  // ── Layer 2: SQL Injection Backfire ─────────────────────────────────────────
   try {
     if (detectSqlInjection(req)) {
       const backfireResult = await handleSqlInjectionBackfire(req, res)
@@ -163,21 +171,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
   } catch { /* backfire failure must not block the response */ }
 
-  // Canary Documents — serve trackable decoy files from tarpit directories
+  // ── Layer 3: Path Traversal / LFI Backfire ──────────────────────────────────
+  try {
+    const traversalResult = await handlePathTraversalBackfire(req, res)
+    if (traversalResult) return
+  } catch { /* traversal backfire failure must not block the response */ }
+
+  // ── Layer 4: Probe Backfire (XSS / SSTI / SSRF / CMDi / XXE) ───────────────
+  try {
+    const probeResult = await handleProbeBackfire(req, res)
+    if (probeResult) return
+  } catch { /* probe backfire failure must not block the response */ }
+
+  // ── Layer 5: Canary Documents ───────────────────────────────────────────────
   try {
     const canaryResult = await serveCanaryDocument(req, res)
     if (canaryResult) return
   } catch { /* canary failure must not block the response */ }
 
-  // Increment threat score
+  // ── Layer 6: Threat Score Increment (with scanner multiplier) ───────────────
   let threatResult = { score: 0, level: 'CLEAN' }
   try {
-    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, THREAT_REASONS.ROBOTS_VIOLATION.points)
+    const basePoints = THREAT_REASONS.ROBOTS_VIOLATION.points
+    const scaledPoints = Math.round(basePoints * scannerMultiplier)
+    threatResult = await incrementThreatScore(hashedIp, THREAT_REASONS.ROBOTS_VIOLATION.reason, scaledPoints, ua)
   } catch {
     // Threat scoring failure must not block the response
   }
 
-  // Determine which countermeasure to apply based on per-rule settings
+  // ── Layer 7: Countermeasure selection ───────────────────────────────────────
   let countermeasure = 'LOGGED'
   let settings: SecuritySettings | null = null
   try {
@@ -193,7 +215,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     countermeasure = 'TARPITTED'
   }
 
-  // Record the access violation — includes countermeasure info for tracking
   const entry = {
     key: `robots:${path}`,
     method: req.method,
@@ -205,15 +226,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     countermeasure,
   }
 
-  console.error('[ACCESS VIOLATION]', JSON.stringify(entry))
-
-  // Persist alongside other security alerts for unified monitoring
+  // Persist to legacy KV list for backward compatibility with security-incidents view
   try {
     await kv.lpush('nk-honeytoken-alerts', JSON.stringify(entry))
     await kv.ltrim('nk-honeytoken-alerts', 0, 499)
   } catch {
     // Persistence failure must not block the response
   }
+
+  // Unified structured security log
+  const severity = threatResult.level === 'BLOCK' ? 'critical' : threatResult.level === 'TARPIT' ? 'high' : threatResult.level === 'WARN' ? 'warn' : 'info'
+  await logSecurityEvent({
+    event: 'ACCESS_VIOLATION',
+    severity,
+    hashedIp,
+    userAgent: ua,
+    method: req.method,
+    url: path,
+    countermeasure,
+    threatScore: threatResult.score,
+    threatLevel: threatResult.level,
+    details: { scannerMultiplier },
+  })
 
   // Flag this IP — subsequent requests to any endpoint will receive noise
   await markAttacker(hashedIp)
@@ -234,8 +268,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     // Profile recording failure must not block the response
   }
 
-  // Defensive delay — limits scanner throughput
-  const ms = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS)
+  // ── Layer 8: Adaptive tarpit delay ─────────────────────────────────────────
+  // Delay scales with threat level: BLOCK ≤ 30s, TARPIT ≤ 15s, WARN ≤ 8s, else ≤ 6s
+  const cap = DELAY_CAPS[threatResult.level] ?? DELAY_CAPS.CLEAN
+  // Ensure cap is never less than DELAY_MIN_MS to avoid a negative random range
+  const upperBound = Math.max(DELAY_MIN_MS, Math.min(DELAY_MAX_MS, cap))
+  const ms = DELAY_MIN_MS + Math.random() * (upperBound - DELAY_MIN_MS)
   await sleep(ms)
 
   // Serve zip bomb if applicable per rule settings

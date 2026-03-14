@@ -61,6 +61,14 @@ export interface SecuritySettings {
   logPoisonFakeHeaders: boolean
   logPoisonTerminalEscape: boolean
   logPoisonFakePaths: boolean
+  // Scanner Detection
+  scannerDetectionEnabled: boolean
+  // Path Traversal Backfire
+  pathTraversalBackfireEnabled: boolean
+  pathTraversalServeFakeFiles: boolean
+  // Probe Detection & Backfire (XSS / SSTI / SSRF / CMDi / XXE)
+  probeDetectionEnabled: boolean
+  probeBackfireEnabled: boolean
   // Alert channels — configurable (overrides env vars when set)
   discordWebhookUrl: string
   alertEmail: string
@@ -121,6 +129,14 @@ export const DEFAULT_SETTINGS: SecuritySettings = {
   logPoisonFakeHeaders: true,
   logPoisonTerminalEscape: true,
   logPoisonFakePaths: true,
+  // Scanner Detection — ON by default (zero false positive rate, only flags known tools)
+  scannerDetectionEnabled: true,
+  // Path Traversal Backfire — OFF until explicitly enabled (serves fake sensitive files)
+  pathTraversalBackfireEnabled: false,
+  pathTraversalServeFakeFiles: true,
+  // Probe Detection & Backfire — Detection ON, backfire OFF by default
+  probeDetectionEnabled: true,
+  probeBackfireEnabled: false,
   // Alert channels — configurable
   discordWebhookUrl: '',
   alertEmail: '',
@@ -1031,6 +1047,76 @@ export default function SecuritySettingsDialog({ open, onClose }: SecuritySettin
                       </div>
                     </div>
                   )}
+
+                  {/* Scanner Detection */}
+                  <div className="border border-primary/20 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Detective size={14} className="text-primary/60" />
+                      <span className="text-[11px] font-mono text-primary/60 uppercase tracking-wider">{L('sections.scannerDetection') || 'Scanner Detection'}</span>
+                    </div>
+                    <div className="space-y-2 pl-4">
+                      <ToggleRow
+                        label={L('settings.scannerDetection') || 'Scanner & Tool Identification'}
+                        description={L('settings.scannerDetectionDesc') || 'Identify 50+ attack tools (sqlmap, nikto, ffuf, nuclei…) by UA + behavioral signals. Applies threat multiplier (×2–×3) to known tools and logs SCANNER_DETECTED.'}
+                        checked={settings.scannerDetectionEnabled}
+                        onChange={(v) => update('scannerDetectionEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Path Traversal Backfire */}
+                  <div className="border border-primary/20 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText size={14} className="text-primary/60" />
+                      <span className="text-[11px] font-mono text-primary/60 uppercase tracking-wider">{L('sections.pathTraversal') || 'Path Traversal Backfire'}</span>
+                    </div>
+                    <div className="space-y-2 pl-4">
+                      <ToggleRow
+                        label={L('settings.pathTraversalBackfire') || 'LFI / Path Traversal Backfire'}
+                        description={L('settings.pathTraversalBackfireDesc') || 'Detect ../  %2e%2e  /etc/passwd  .env  wp-config.php and similar probes.'}
+                        checked={settings.pathTraversalBackfireEnabled}
+                        onChange={(v) => update('pathTraversalBackfireEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        label={L('rules.pathTraversalServeFakeFiles') || 'Serve Fake Files with Canary Tokens'}
+                        description={L('rules.pathTraversalServeFakeFilesDesc') || 'Respond with convincing fake /etc/passwd, .env, wp-config.php files containing embedded canary tokens. Wastes attacker time and triggers alerts if credentials are used.'}
+                        checked={settings.pathTraversalServeFakeFiles}
+                        onChange={(v) => update('pathTraversalServeFakeFiles', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Probe Detection */}
+                  <div className="border border-primary/20 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Bug size={14} className="text-primary/60" />
+                      <span className="text-[11px] font-mono text-primary/60 uppercase tracking-wider">{L('sections.probeDetection') || 'Probe Detection'}</span>
+                    </div>
+                    <div className="space-y-2 pl-4">
+                      <ToggleRow
+                        label={L('settings.probeDetection') || 'XSS / SSTI / SSRF / CMDi / XXE Detection'}
+                        description={L('settings.probeDetectionDesc') || 'Detect offensive probes in request parameters. Logs PROBE_BACKFIRE events with probe type and pattern.'}
+                        checked={settings.probeDetectionEnabled}
+                        onChange={(v) => update('probeDetectionEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                      <ToggleRow
+                        label={L('rules.probeBackfire') || 'Active Probe Backfire'}
+                        description={L('rules.probeBackfireDesc') || 'Respond with type-specific backfire: XSS → reflected false-positive, SSTI → evaluated-looking output, SSRF → fake AWS metadata, CMDi → fake shell output, XXE → deeply-nested XML bomb.'}
+                        checked={settings.probeBackfireEnabled}
+                        onChange={(v) => update('probeBackfireEnabled', v)}
+                        statusActive={L('settings.active')}
+                        statusDisabled={L('settings.disabled')}
+                      />
+                    </div>
+                  </div>
 
                   {/* Actions */}
                   <div className="flex gap-3 pt-2">

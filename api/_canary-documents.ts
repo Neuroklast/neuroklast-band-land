@@ -4,6 +4,7 @@ import { getClientIp, hashIp } from './_ratelimit.js'
 import { recordIncident, addForensicData } from './_attacker-profile.js'
 import { incrementThreatScore } from './_threat-score.js'
 import { sendSecurityAlert } from './_alerting.js'
+import { logSecurityEvent } from './_security-logger.js'
 
 /**
  * Canary Documents — trackable decoy files placed in tarpit directories.
@@ -167,29 +168,18 @@ export function generateCanaryHtml(token: string, documentName: string, settings
   const phoneHome = settings?.canaryPhoneHomeOnOpen !== false
   const collectFingerprint = settings?.canaryCollectFingerprint !== false
 
+  // Tracking pixel — fires on page load, works even without JavaScript.
+  // Allowed by `img-src 'self'` in the Content-Security-Policy.
   const trackingPixel = phoneHome
     ? `\n<img src="${callbackUrl}&e=img" width="1" height="1" style="position:absolute;left:-9999px" alt="">`
     : ''
 
-  const fingerprintScript = collectFingerprint ? `\n<script>
-(function(){
-  var d={t:"${token}",ts:Date.now(),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
-    lang:navigator.language,plat:navigator.platform,cores:navigator.hardwareConcurrency||0,
-    mem:navigator.deviceMemory||0,sw:screen.width,sh:screen.height,cd:screen.colorDepth,
-    touch:'ontouchstart'in window};
-  try{var c=document.createElement('canvas');var g=c.getContext('2d');
-    g.textBaseline='top';g.font='14px Arial';g.fillText('fp',2,2);
-    d.cvs=c.toDataURL().slice(-32)}catch(e){}
-  try{var r=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.services.mozilla.com'}]});
-    r.createDataChannel('');r.createOffer().then(function(o){r.setLocalDescription(o)});
-    r.onicecandidate=function(e){if(e.candidate){
-      var m=e.candidate.candidate.match(/([0-9]{1,3}(\\.[0-9]{1,3}){3})/);
-      if(m){d.realIp=m[1];send()}}}}catch(e){}
-  function send(){var x=new XMLHttpRequest();x.open('POST',"${callbackUrl}&e=js");
-    x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(d))}
-  setTimeout(send,2000);
-})();
-</script>` : ''
+  // Fingerprinting script — loaded as an external same-origin resource so
+  // it is permitted by `script-src 'self'` in the CSP.  Inline `<script>`
+  // blocks would be rejected by browsers enforcing the policy.
+  const fingerprintScript = collectFingerprint
+    ? `\n<script src="/api/canary-script?t=${token}"></script>`
+    : ''
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -303,23 +293,15 @@ export async function handleCanaryCallback(req: VercelLikeRequest, res: VercelLi
     } catch { /* ignore */ }
   }
 
-  // Persist canary alert
+  // Persist canary alert (legacy list for canary-alerts admin endpoint)
   try {
     await kv.lpush(CANARY_ALERTS_KEY, JSON.stringify(fingerprint))
     await kv.ltrim(CANARY_ALERTS_KEY, 0, 499)
   } catch { /* ignore */ }
 
-  // Log for SIEM
-  console.error('[CANARY CALLBACK]', JSON.stringify({
-    token,
-    hashedIp,
-    event: fingerprint.event,
-    timestamp: fingerprint.timestamp,
-  }))
-
-  // Increment threat score
+  // Increment threat score — pass UA for richer log context
   try {
-    await incrementThreatScore(hashedIp, 'canary_document_opened', 5)
+    await incrementThreatScore(hashedIp, 'canary_document_opened', 5, fingerprint.userAgent)
   } catch { /* ignore */ }
 
   // Record incident
@@ -366,6 +348,24 @@ export async function handleCanaryCallback(req: VercelLikeRequest, res: VercelLi
     }
   } catch { /* ignore */ }
 
+  // Unified structured log — full fingerprint detail for SIEM and admin dashboard
+  await logSecurityEvent({
+    event: 'CANARY_CALLBACK',
+    severity: 'high',
+    hashedIp,
+    userAgent: fingerprint.userAgent,
+    method: req.method,
+    countermeasure: 'CANARY_FINGERPRINTED',
+    details: {
+      token,
+      callbackEvent: fingerprint.event,
+      documentPath: fingerprint.documentPath,
+      downloaderIp: fingerprint.downloaderIp,
+      acceptLanguage: fingerprint.acceptLanguage,
+      jsFingerprint: fingerprint.jsFingerprint,
+    },
+  })
+
   // Return a 1x1 transparent pixel for image callbacks, or 204 for JS callbacks
   if (req.query?.e === 'img') {
     const pixel = Buffer.from(
@@ -402,6 +402,20 @@ export async function serveCanaryDocument(req: VercelLikeRequest, res: VercelLik
   const [docName, docInfo] = matchedDoc
   const token = await generateCanaryToken(req)
   const html = generateCanaryHtml(token, docName, settings)
+
+  // Unified structured log for when a canary document is served to an attacker
+  const ip = getClientIp(req)
+  const hashedIp = hashIp(ip)
+  await logSecurityEvent({
+    event: 'CANARY_DOCUMENT_SERVED',
+    severity: 'high',
+    hashedIp,
+    userAgent: (req.headers?.['user-agent'] as string || '').slice(0, 200),
+    method: req.method,
+    url: path,
+    countermeasure: 'CANARY_TRAP',
+    details: { documentName: docName, documentPath: docInfo.path, token },
+  })
 
   res.setHeader('Content-Type', docInfo.contentType)
   res.setHeader('Content-Disposition', `inline; filename="${docName}"`)

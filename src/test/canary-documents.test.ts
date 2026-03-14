@@ -121,13 +121,13 @@ describe('Canary Documents: generateCanaryHtml', () => {
 
   it('includes fingerprint script when canaryCollectFingerprint is true', () => {
     const html = generateCanaryHtml('aabbcc', 'test', { canaryCollectFingerprint: true, canaryDocumentsEnabled: true })
-    expect(html).toContain('<script>')
-    expect(html).toContain('navigator.language')
+    // CSP-safe external script (no inline <script>) — fingerprinting code is in canary-script endpoint
+    expect(html).toContain('<script src="/api/canary-script?t=aabbcc">')
   })
 
   it('includes fingerprint script by default (missing settings)', () => {
     const html = generateCanaryHtml('aabbcc', 'test')
-    expect(html).toContain('<script>')
+    expect(html).toContain('<script src=')
   })
 
   it('omits fingerprint script when canaryCollectFingerprint is false', () => {

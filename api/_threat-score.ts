@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { getClientIp, hashIp } from './_ratelimit.js'
+import { logSecurityEvent } from './_security-logger.js'
 
 const KV_SETTINGS_KEY = 'nk-security-settings'
 const THREAT_SCORE_PREFIX = 'nk-threat:'
@@ -102,12 +103,16 @@ export function classifyThreatLevel(score: number, thresholds: ThreatThresholds 
   return 'CLEAN'
 }
 
-export async function incrementThreatScore(hashedIp: string, reason: string, points: number): Promise<ThreatScoreResult> {
+export async function incrementThreatScore(hashedIp: string, reason: string, points: number, userAgent = ''): Promise<ThreatScoreResult> {
   try {
     const key = `${THREAT_SCORE_PREFIX}${hashedIp}`
+    // Read previous score to detect level transitions
+    const prevRaw = await kv.get(key)
+    const prevScore = Number(prevRaw ?? 0)
     const score = await kv.incrby(key, points)
     await kv.expire(key, THREAT_SCORE_TTL)
     const thresholds = await getEffectiveThresholds()
+    const prevLevel = classifyThreatLevel(prevScore, thresholds)
     const level = classifyThreatLevel(score, thresholds)
 
     // Auto-escalate to hard block if threshold exceeded
@@ -118,8 +123,20 @@ export async function incrementThreatScore(hashedIp: string, reason: string, poi
         blockedAt: new Date().toISOString(),
         autoBlocked: true,
       }, { ex: BLOCK_TTL })
-      console.error('[AUTO BLOCK]', JSON.stringify({ hashedIp, reason, score }))
     }
+
+    // Log every threat score update with full context (unified logger handles stderr + KV)
+    const severity = level === 'BLOCK' ? 'critical' : level === 'TARPIT' ? 'high' : level === 'WARN' ? 'warn' : 'info'
+    await logSecurityEvent({
+      event: level !== prevLevel ? 'THREAT_LEVEL_ESCALATED' : 'THREAT_SCORE_UPDATED',
+      severity,
+      hashedIp,
+      userAgent,
+      countermeasure: level === 'BLOCK' ? 'AUTO_BLOCK' : undefined,
+      threatScore: score,
+      threatLevel: level,
+      details: { reason, points, previousScore: prevScore, previousLevel: prevLevel },
+    })
 
     return { score, level, reason }
   } catch {
