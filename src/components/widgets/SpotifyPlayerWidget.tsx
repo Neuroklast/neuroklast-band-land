@@ -1,7 +1,9 @@
 /**
  * SpotifyPlayerWidget — Spotify iFrame embed.
  *
- * Config: { uri: string, type: 'playlist' | 'album' | 'track' }
+ * Config: { uri: string, type: 'playlist' | 'album' | 'track', theme?: 'dark' | 'light', height?: number }
+ *
+ * `height` defaults to 352 (full player). Use 152 for a compact single-track bar.
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
@@ -10,6 +12,7 @@ interface SpotifyConfig {
   uri?: string
   type?: 'playlist' | 'album' | 'track'
   theme?: 'dark' | 'light'
+  height?: number
 }
 
 interface SpotifyPlayerWidgetProps {
@@ -22,6 +25,7 @@ export default function SpotifyPlayerWidget({ widget, themeSettings }: SpotifyPl
   const config = (widget.config ?? {}) as SpotifyConfig
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
+  const height = typeof config.height === 'number' && config.height > 0 ? config.height : 352
 
   if (!config.uri) {
     return (
@@ -53,7 +57,7 @@ export default function SpotifyPlayerWidget({ widget, themeSettings }: SpotifyPl
         style={{ borderRadius: `${radiusPx}px` }}
         src={embedUrl}
         width="100%"
-        height="352"
+        height={height}
         frameBorder="0"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"

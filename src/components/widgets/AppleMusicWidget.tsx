@@ -1,17 +1,20 @@
 /**
  * AppleMusicWidget — Embeds an Apple Music player via the official embed URL.
  *
- * Config: { embedUrl: string }
+ * Config: { embedUrl: string, height?: number }
  *
  * Obtain the embed URL from the Apple Music "Share → Embed" option on any
  * song, album, or playlist.  It looks like:
  *   https://embed.music.apple.com/us/album/…
+ *
+ * `height` defaults to 175 (single track bar). Use 450 for a full playlist view.
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 
 interface AppleMusicConfig {
   embedUrl?: string
+  height?: number
 }
 
 interface AppleMusicWidgetProps {
@@ -24,6 +27,7 @@ export default function AppleMusicWidget({ widget, themeSettings }: AppleMusicWi
   const config = (widget.config ?? {}) as AppleMusicConfig
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
+  const height = typeof config.height === 'number' && config.height > 0 ? config.height : 175
 
   if (!config.embedUrl) {
     return (
@@ -42,7 +46,7 @@ export default function AppleMusicWidget({ widget, themeSettings }: AppleMusicWi
       <iframe
         allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
         frameBorder="0"
-        height="175"
+        height={height}
         style={{
           width: '100%',
           maxWidth: '660px',

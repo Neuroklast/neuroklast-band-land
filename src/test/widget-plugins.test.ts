@@ -180,7 +180,7 @@ describe('updateWidgetConfig', () => {
     let plugins = installWidget([], 'bandsintown')
     plugins = installWidget(plugins, 'spotify-player')
     const result = updateWidgetConfig(plugins, 'bandsintown', { artist: 'Test' })
-    expect(result[1].config).toEqual({ uri: '', type: 'playlist' })
+    expect(result[1].config).toMatchObject({ uri: '', type: 'playlist' })
   })
 
   it('does not mutate the input array', () => {

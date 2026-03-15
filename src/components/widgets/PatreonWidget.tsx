@@ -16,13 +16,18 @@ interface PatreonWidgetProps {
   themeSettings?: ThemeSettings
 }
 
-export default function PatreonWidget({ widget }: PatreonWidgetProps) {
+export default function PatreonWidget({ widget, themeSettings }: PatreonWidgetProps) {
   const { t } = useLocale()
   const config = (widget.config ?? {}) as PatreonConfig
+  const borderRadius = themeSettings?.borderRadius ?? 0.125
+  const radiusPx = Math.round(borderRadius * 16)
 
   if (!config.pageUrl) {
     return (
-      <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
+      <div
+        className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30"
+        style={{ borderRadius: `${radiusPx}px` }}
+      >
         <div className="text-2xl mb-2">🎨</div>
         <p className="font-semibold mb-1">{t('widget.patreon.title')}</p>
         <p className="text-xs opacity-70">
@@ -35,7 +40,10 @@ export default function PatreonWidget({ widget }: PatreonWidgetProps) {
   const name = config.creatorName || 'our Patreon'
 
   return (
-    <div className="border border-primary/20 bg-card/30 p-6 text-center font-mono space-y-3">
+    <div
+      className="border border-primary/20 bg-card/30 p-6 text-center font-mono space-y-3"
+      style={{ borderRadius: `${radiusPx}px` }}
+    >
       <div className="text-3xl">🎨</div>
       <h3 className="text-sm font-bold tracking-wider text-primary uppercase">
         {t('widget.patreon.supportTitle')}
@@ -48,6 +56,7 @@ export default function PatreonWidget({ widget }: PatreonWidgetProps) {
         target="_blank"
         rel="noopener noreferrer"
         className="inline-block mt-2 px-5 py-2 bg-[#ff424d]/20 border border-[#ff424d]/50 text-[#ff424d] text-xs font-mono tracking-wider hover:bg-[#ff424d]/30 transition-colors"
+        style={{ borderRadius: `${radiusPx}px` }}
       >
         {t('widget.patreon.becomePatron')}
       </a>

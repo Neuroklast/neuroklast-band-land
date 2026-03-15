@@ -1221,5 +1221,11 @@
   "widgetConfig.layoutCompact": "Compact",
   "widgetConfig.showTicketLinks": "Show ticket links",
   "widgetConfig.showVenueDetails": "Show venue & location details",
-  "widgetConfig.showPastDates": "Include past dates"
+  "widgetConfig.showPastDates": "Include past dates",
+  "widgetConfig.playerHeight": "Height (px)",
+  "widgetConfig.widgetHeight": "Height (px)",
+  "widgetConfig.autoplay": "Autoplay",
+  "widgetConfig.startTime": "Start Time (seconds)",
+  "widgetConfig.showVisualPlayer": "Full visual player (larger, shows artwork)",
+  "widgetConfig.spotifyUri": "Spotify URI"
 }

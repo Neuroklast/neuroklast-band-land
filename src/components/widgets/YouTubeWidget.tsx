@@ -1,7 +1,7 @@
 /**
  * YouTubeWidget — Responsive YouTube iFrame embed.
  *
- * Config: { videoId?: string, playlistId?: string }
+ * Config: { videoId?: string, playlistId?: string, autoplay?: boolean, startTime?: number }
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
@@ -9,6 +9,8 @@ import { useLocale } from '@/hooks/use-locale'
 interface YouTubeConfig {
   videoId?: string
   playlistId?: string
+  autoplay?: boolean
+  startTime?: number
 }
 
 interface YouTubeWidgetProps {
@@ -36,11 +38,16 @@ export default function YouTubeWidget({ widget, themeSettings }: YouTubeWidgetPr
     )
   }
 
+  const autoplay = config.autoplay ? 1 : 0
+  const startParam = typeof config.startTime === 'number' && config.startTime > 0
+    ? `&start=${config.startTime}`
+    : ''
+
   let embedUrl: string
   if (config.videoId) {
-    embedUrl = `https://www.youtube.com/embed/${config.videoId}`
+    embedUrl = `https://www.youtube.com/embed/${config.videoId}?autoplay=${autoplay}${startParam}`
   } else {
-    embedUrl = `https://www.youtube.com/embed/videoseries?list=${config.playlistId}`
+    embedUrl = `https://www.youtube.com/embed/videoseries?list=${config.playlistId}&autoplay=${autoplay}`
   }
 
   return (
