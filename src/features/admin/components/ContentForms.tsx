@@ -30,23 +30,34 @@ export function ContentForms({ data, onUpdate }: ContentFormsProps) {
   // --- Gigs ---
   const syncBandsintownMutation = useMutation({
     mutationFn: async ({ appId, artistName }: { appId: string; artistName: string }) => {
-      const response = await fetch(`https://rest.bandsintown.com/artists/${encodeURIComponent(artistName)}/events?app_id=${encodeURIComponent(appId)}`)
+      const params = new URLSearchParams({ artist: artistName, app_id: appId })
+      const response = await fetch(`/api/bandsintown?${params.toString()}`)
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`)
       }
-      const events = await response.json()
-      if (!Array.isArray(events)) {
+      const data = await response.json() as { events?: unknown[]; error?: string }
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      if (!Array.isArray(data.events)) {
         throw new Error('Invalid response format from Bandsintown')
       }
-      return events
+      return data.events
     },
     onSuccess: (events) => {
-      const syncedGigs: Gig[] = events.map(event => ({
+      interface BitEvent {
+        id: string
+        datetime: string
+        url: string
+        venue?: { name?: string; city?: string; country?: string }
+        offers?: Array<{ type?: string; url?: string }>
+      }
+      const syncedGigs: Gig[] = (events as BitEvent[]).map(event => ({
         id: `bit-${event.id}`,
         date: event.datetime,
         venue: event.venue?.name || 'Unknown Venue',
         location: `${event.venue?.city || ''}, ${event.venue?.country || ''}`.replace(/^, | , $/g, ''),
-        ticketUrl: event.offers?.find((o: { type?: string; url?: string }) => o.type === 'Tickets')?.url || event.url,
+        ticketUrl: event.offers?.find((o) => o.type === 'Tickets')?.url || event.url,
         status: 'confirmed'
       }))
 

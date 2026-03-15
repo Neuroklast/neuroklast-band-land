@@ -1209,5 +1209,17 @@
   "hub.terminalDesc": "Terminal-Befehle und Morsecode verwalten",
   "hub.audioDesc": "Umgebungsgeräusche und Effekte konfigurieren",
   "hub.changePasswordDesc": "Admin-Login-Passwort ändern",
-  "hub.resetSetupDesc": "Alle Einstellungen löschen und neu starten"
+  "hub.resetSetupDesc": "Alle Einstellungen löschen und neu starten",
+  "widget.bandsintown.noEvents": "Keine bevorstehenden Shows gefunden.",
+  "widget.bandsintown.fetchError": "Events von Bandsintown konnten nicht geladen werden.",
+  "widget.bandsintown.viewOnBandsintown": "Auf Bandsintown ansehen →",
+  "widget.bandsintown.allShows": "Alle Shows →",
+  "widget.bandsintown.details": "DETAILS",
+  "widgetConfig.displayLimit": "Anzahl Events",
+  "widgetConfig.layout": "Layout",
+  "widgetConfig.layoutList": "Vollständige Liste",
+  "widgetConfig.layoutCompact": "Kompakt",
+  "widgetConfig.showTicketLinks": "Ticket-Links anzeigen",
+  "widgetConfig.showVenueDetails": "Venue & Ort anzeigen",
+  "widgetConfig.showPastDates": "Vergangene Dates einschließen"
 }

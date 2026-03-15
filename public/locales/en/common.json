@@ -1209,5 +1209,17 @@
   "hub.terminalDesc": "Manage terminal commands and morse code",
   "hub.audioDesc": "Configure ambient sound and effects",
   "hub.changePasswordDesc": "Update admin login password",
-  "hub.resetSetupDesc": "Wipe all settings and restart"
+  "hub.resetSetupDesc": "Wipe all settings and restart",
+  "widget.bandsintown.noEvents": "No upcoming shows found.",
+  "widget.bandsintown.fetchError": "Failed to load events from Bandsintown.",
+  "widget.bandsintown.viewOnBandsintown": "View on Bandsintown →",
+  "widget.bandsintown.allShows": "All shows →",
+  "widget.bandsintown.details": "DETAILS",
+  "widgetConfig.displayLimit": "Events to Show",
+  "widgetConfig.layout": "Layout",
+  "widgetConfig.layoutList": "Full List",
+  "widgetConfig.layoutCompact": "Compact",
+  "widgetConfig.showTicketLinks": "Show ticket links",
+  "widgetConfig.showVenueDetails": "Show venue & location details",
+  "widgetConfig.showPastDates": "Include past dates"
 }

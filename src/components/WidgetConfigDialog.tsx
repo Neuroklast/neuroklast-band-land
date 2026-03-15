@@ -64,7 +64,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       case 'bandsintown':
         return (
           <>
-            <Field label="Artist Name" hint="e.g. Zardonic">
+            <Field label={t('widgetConfig.artistName') || 'Artist Name'} hint="e.g. Zardonic">
               <Input
                 value={String(config.artist ?? '')}
                 onChange={(e) => set('artist', e.target.value)}
@@ -72,7 +72,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
-            <Field label="App ID" hint="Your Bandsintown App ID">
+            <Field label={t('widgetConfig.appId') || 'App ID'} hint="Your Bandsintown App ID">
               <Input
                 value={String(config.appId ?? '')}
                 onChange={(e) => set('appId', e.target.value)}
@@ -80,6 +80,55 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
+            <Field label={t('widgetConfig.displayLimit') || 'Events to Show'} hint="1–20 events">
+              <Input
+                type="number"
+                min={1}
+                max={20}
+                value={String(config.displayLimit ?? 5)}
+                onChange={(e) => set('displayLimit', parseInt(e.target.value, 10) || 5)}
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label={t('widgetConfig.layout') || 'Layout'}>
+              <select
+                value={String(config.layout ?? 'list')}
+                onChange={(e) => set('layout', e.target.value)}
+                className="w-full bg-secondary border border-input rounded px-3 py-2 text-sm font-mono text-foreground"
+              >
+                <option value="list">{t('widgetConfig.layoutList') || 'Full List'}</option>
+                <option value="compact">{t('widgetConfig.layoutCompact') || 'Compact'}</option>
+              </select>
+            </Field>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.showTicketLinks !== false}
+                  onChange={(e) => set('showTicketLinks', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.showTicketLinks') || 'Show ticket links'}
+              </label>
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.showVenueDetails !== false}
+                  onChange={(e) => set('showVenueDetails', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.showVenueDetails') || 'Show venue & location details'}
+              </label>
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.showPastDates)}
+                  onChange={(e) => set('showPastDates', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.showPastDates') || 'Include past dates'}
+              </label>
+            </div>
           </>
         )
 

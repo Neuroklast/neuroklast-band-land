@@ -159,6 +159,20 @@ export const imageProxyQuerySchema = z.object({
   url: z.string().min(1, 'url parameter is required').max(2000),
 })
 
+// ─── Bandsintown API ──────────────────────────────────────────────────────────
+
+/** GET /api/bandsintown — query params */
+export const bandsintownQuerySchema = z.object({
+  artist: z.string().min(1, 'artist is required').max(200),
+  app_id: z.string().min(1, 'app_id is required').max(200),
+  /** Optional: include past events. Accepts 'true'/'false' string. Default: false */
+  include_past: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true')
+    .default(false),
+})
+
 // ─── Setlist.fm API ───────────────────────────────────────────────────────────
 
 /** GET /api/setlistfm — query params */

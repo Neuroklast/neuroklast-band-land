@@ -80,7 +80,7 @@ describe('installWidget', () => {
 
   it('copies default config from the catalog entry', () => {
     const result = installWidget([], 'bandsintown')
-    expect(result[0].config).toEqual({ artist: '', appId: '' })
+    expect(result[0].config).toMatchObject({ artist: '', appId: '', displayLimit: 5, layout: 'list' })
   })
 
   it('does not duplicate if already installed', () => {
