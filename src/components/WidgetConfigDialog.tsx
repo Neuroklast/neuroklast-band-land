@@ -64,7 +64,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       case 'bandsintown':
         return (
           <>
-            <Field label="Artist Name" hint="e.g. Zardonic">
+            <Field label={t('widgetConfig.artistName') || 'Artist Name'} hint="e.g. Zardonic">
               <Input
                 value={String(config.artist ?? '')}
                 onChange={(e) => set('artist', e.target.value)}
@@ -72,7 +72,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
-            <Field label="App ID" hint="Your Bandsintown App ID">
+            <Field label={t('widgetConfig.appId') || 'App ID'} hint="Your Bandsintown App ID">
               <Input
                 value={String(config.appId ?? '')}
                 onChange={(e) => set('appId', e.target.value)}
@@ -80,13 +80,62 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
+            <Field label={t('widgetConfig.displayLimit') || 'Events to Show'} hint="1–20 events">
+              <Input
+                type="number"
+                min={1}
+                max={20}
+                value={String(config.displayLimit ?? 5)}
+                onChange={(e) => set('displayLimit', parseInt(e.target.value, 10) || 5)}
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label={t('widgetConfig.layout') || 'Layout'}>
+              <select
+                value={String(config.layout ?? 'list')}
+                onChange={(e) => set('layout', e.target.value)}
+                className="w-full bg-secondary border border-input rounded px-3 py-2 text-sm font-mono text-foreground"
+              >
+                <option value="list">{t('widgetConfig.layoutList') || 'Full List'}</option>
+                <option value="compact">{t('widgetConfig.layoutCompact') || 'Compact'}</option>
+              </select>
+            </Field>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.showTicketLinks !== false}
+                  onChange={(e) => set('showTicketLinks', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.showTicketLinks') || 'Show ticket links'}
+              </label>
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.showVenueDetails !== false}
+                  onChange={(e) => set('showVenueDetails', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.showVenueDetails') || 'Show venue & location details'}
+              </label>
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.showPastDates)}
+                  onChange={(e) => set('showPastDates', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.showPastDates') || 'Include past dates'}
+              </label>
+            </div>
           </>
         )
 
       case 'spotify-player':
         return (
           <>
-            <Field label="Spotify URI" hint='e.g. spotify:playlist:37i9dQZF1DX… or a plain ID'>
+            <Field label={t('widgetConfig.spotifyUri') || 'Spotify URI'} hint='e.g. spotify:playlist:37i9dQZF1DX… or a plain ID'>
               <Input
                 value={String(config.uri ?? '')}
                 onChange={(e) => set('uri', e.target.value)}
@@ -94,7 +143,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
-            <Field label="Type">
+            <Field label={t('widgetConfig.typeLabel') || 'Type'}>
               <select
                 value={String(config.type ?? 'playlist')}
                 onChange={(e) => set('type', e.target.value)}
@@ -105,7 +154,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 <option value="track">{t('widgetConfig.track')}</option>
               </select>
             </Field>
-            <Field label="Player Theme">
+            <Field label={t('widgetConfig.playerTheme') || 'Player Theme'}>
               <select
                 value={String(config.theme ?? 'dark')}
                 onChange={(e) => set('theme', e.target.value)}
@@ -115,13 +164,23 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 <option value="light">{t('widgetConfig.lightMode')}</option>
               </select>
             </Field>
+            <Field label={t('widgetConfig.playerHeight') || 'Height (px)'} hint="152 for compact bar, 352 for full player">
+              <Input
+                type="number"
+                min={80}
+                max={800}
+                value={String(config.height ?? 352)}
+                onChange={(e) => set('height', parseInt(e.target.value, 10) || 352)}
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
           </>
         )
 
       case 'youtube-embed':
         return (
           <>
-            <Field label="Video ID" hint="YouTube video ID (e.g. dQw4w9WgXcQ)">
+            <Field label={t('widgetConfig.videoId') || 'Video ID'} hint="YouTube video ID (e.g. dQw4w9WgXcQ)">
               <Input
                 value={String(config.videoId ?? '')}
                 onChange={(e) => set('videoId', e.target.value)}
@@ -129,7 +188,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
-            <Field label="Playlist ID" hint="YouTube playlist ID (optional)">
+            <Field label={t('widgetConfig.playlistId') || 'Playlist ID'} hint="YouTube playlist ID (optional)">
               <Input
                 value={String(config.playlistId ?? '')}
                 onChange={(e) => set('playlistId', e.target.value)}
@@ -137,6 +196,24 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
+            <Field label={t('widgetConfig.startTime') || 'Start Time (seconds)'} hint="Start video at this offset (0 = beginning)">
+              <Input
+                type="number"
+                min={0}
+                value={String(config.startTime ?? 0)}
+                onChange={(e) => set('startTime', parseInt(e.target.value, 10) || 0)}
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(config.autoplay)}
+                onChange={(e) => set('autoplay', e.target.checked)}
+                className="accent-primary"
+              />
+              {t('widgetConfig.autoplay') || 'Autoplay (requires user interaction on most browsers)'}
+            </label>
           </>
         )
 
@@ -263,7 +340,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       case 'soundcloud-player':
         return (
           <>
-            <Field label="SoundCloud URL" hint="Track, playlist, or artist page URL">
+            <Field label={t('widgetConfig.soundcloudUrl') || 'SoundCloud URL'} hint="Track, playlist, or artist page URL">
               <Input
                 value={String(config.url ?? '')}
                 onChange={(e) => set('url', e.target.value)}
@@ -271,7 +348,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
-            <Field label="Accent Colour" hint="Player accent colour (hex, e.g. #ff5500)">
+            <Field label={t('widgetConfig.accentColour') || 'Accent Colour'} hint="Player accent colour (hex, e.g. #ff5500)">
               <Input
                 value={String(config.color ?? '#ff5500')}
                 onChange={(e) => set('color', e.target.value)}
@@ -279,19 +356,51 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.autoPlay)}
+                  onChange={(e) => set('autoPlay', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.autoplay') || 'Autoplay'}
+              </label>
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.showVisualPlayer)}
+                  onChange={(e) => set('showVisualPlayer', e.target.checked)}
+                  className="accent-primary"
+                />
+                {t('widgetConfig.showVisualPlayer') || 'Full visual player (larger, shows artwork)'}
+              </label>
+            </div>
           </>
         )
 
       case 'apple-music-player':
         return (
-          <Field label="Apple Music Embed URL" hint='From Share → Embed on Apple Music (starts with https://embed.music.apple.com/…)'>
-            <Input
-              value={String(config.embedUrl ?? '')}
-              onChange={(e) => set('embedUrl', e.target.value)}
-              placeholder="https://embed.music.apple.com/us/album/…"
-              className="bg-secondary border-input text-sm"
-            />
-          </Field>
+          <>
+            <Field label={t('widgetConfig.appleMusicEmbedUrl') || 'Apple Music Embed URL'} hint='From Share → Embed on Apple Music (starts with https://embed.music.apple.com/…)'>
+              <Input
+                value={String(config.embedUrl ?? '')}
+                onChange={(e) => set('embedUrl', e.target.value)}
+                placeholder="https://embed.music.apple.com/us/album/…"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label={t('widgetConfig.playerHeight') || 'Height (px)'} hint="175 for single track bar, 450 for full playlist">
+              <Input
+                type="number"
+                min={80}
+                max={800}
+                value={String(config.height ?? 175)}
+                onChange={(e) => set('height', parseInt(e.target.value, 10) || 175)}
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+          </>
         )
 
       case 'custom-html':
@@ -330,7 +439,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       case 'discord-widget':
         return (
           <>
-            <Field label="Server ID" hint="Found in Discord Server Settings → Widget">
+            <Field label={t('widgetConfig.serverId') || 'Server ID'} hint="Found in Discord Server Settings → Widget">
               <Input
                 value={String(config.serverId ?? '')}
                 onChange={(e) => set('serverId', e.target.value)}
@@ -338,7 +447,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
-            <Field label="Theme">
+            <Field label={t('widgetConfig.typeLabel') || 'Theme'}>
               <select
                 value={String(config.theme ?? 'dark')}
                 onChange={(e) => set('theme', e.target.value)}
@@ -347,6 +456,16 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 <option value="dark">{t('widgetConfig.dark')}</option>
                 <option value="light">{t('widgetConfig.light')}</option>
               </select>
+            </Field>
+            <Field label={t('widgetConfig.widgetHeight') || 'Height (px)'} hint="Default 500px">
+              <Input
+                type="number"
+                min={200}
+                max={1000}
+                value={String(config.height ?? 500)}
+                onChange={(e) => set('height', parseInt(e.target.value, 10) || 500)}
+                className="bg-secondary border-input text-sm"
+              />
             </Field>
           </>
         )
@@ -376,7 +495,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       case 'eventbrite-widget':
         return (
           <>
-            <Field label="Organiser ID" hint="Your Eventbrite organiser ID (from your organiser page URL)">
+            <Field label={t('widgetConfig.organiserId') || 'Organiser ID'} hint="Your Eventbrite organiser ID (from your organiser page URL)">
               <Input
                 value={String(config.organizerId ?? '')}
                 onChange={(e) => set('organizerId', e.target.value)}
@@ -384,11 +503,21 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
                 className="bg-secondary border-input text-sm"
               />
             </Field>
-            <Field label="Event ID (optional)" hint="Leave blank to show all events for the organiser">
+            <Field label={t('widgetConfig.eventId') || 'Event ID (optional)'} hint="Leave blank to show all events for the organiser">
               <Input
                 value={String(config.eventId ?? '')}
                 onChange={(e) => set('eventId', e.target.value)}
                 placeholder="987654321"
+                className="bg-secondary border-input text-sm"
+              />
+            </Field>
+            <Field label={t('widgetConfig.widgetHeight') || 'Height (px)'} hint="Default 500px">
+              <Input
+                type="number"
+                min={200}
+                max={1200}
+                value={String(config.height ?? 500)}
+                onChange={(e) => set('height', parseInt(e.target.value, 10) || 500)}
                 className="bg-secondary border-input text-sm"
               />
             </Field>

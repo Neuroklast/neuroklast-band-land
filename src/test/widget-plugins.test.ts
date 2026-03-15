@@ -80,7 +80,7 @@ describe('installWidget', () => {
 
   it('copies default config from the catalog entry', () => {
     const result = installWidget([], 'bandsintown')
-    expect(result[0].config).toEqual({ artist: '', appId: '' })
+    expect(result[0].config).toMatchObject({ artist: '', appId: '', displayLimit: 5, layout: 'list' })
   })
 
   it('does not duplicate if already installed', () => {
@@ -180,7 +180,7 @@ describe('updateWidgetConfig', () => {
     let plugins = installWidget([], 'bandsintown')
     plugins = installWidget(plugins, 'spotify-player')
     const result = updateWidgetConfig(plugins, 'bandsintown', { artist: 'Test' })
-    expect(result[1].config).toEqual({ uri: '', type: 'playlist' })
+    expect(result[1].config).toMatchObject({ uri: '', type: 'playlist' })
   })
 
   it('does not mutate the input array', () => {

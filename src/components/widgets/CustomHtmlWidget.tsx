@@ -21,16 +21,21 @@ interface CustomHtmlWidgetProps {
   themeSettings?: ThemeSettings
 }
 
-export default function CustomHtmlWidget({ widget }: CustomHtmlWidgetProps) {
+export default function CustomHtmlWidget({ widget, themeSettings }: CustomHtmlWidgetProps) {
   const { t } = useLocale()
   const config = (widget.config ?? {}) as CustomHtmlConfig
+  const borderRadius = themeSettings?.borderRadius ?? 0.125
+  const radiusPx = Math.round(borderRadius * 16)
   const html = config.html ?? ''
   const title = config.title ?? 'Custom Embed'
   const height = typeof config.height === 'number' && config.height > 0 ? config.height : 400
 
   if (!html.trim()) {
     return (
-      <div className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30">
+      <div
+        className="border border-primary/20 rounded p-6 text-center font-mono text-sm text-muted-foreground bg-card/30"
+        style={{ borderRadius: `${radiusPx}px` }}
+      >
         <div className="text-2xl mb-2">📄</div>
         <p className="font-semibold mb-1">{t('widget.customHtml.title')}</p>
         <p className="text-xs opacity-70">
@@ -41,7 +46,7 @@ export default function CustomHtmlWidget({ widget }: CustomHtmlWidgetProps) {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden" style={{ borderRadius: `${radiusPx}px` }}>
       <iframe
         srcDoc={html}
         title={title}
