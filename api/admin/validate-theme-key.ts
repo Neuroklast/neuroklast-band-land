@@ -72,8 +72,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { themeId, licenseKey } = parseResult.data
   const normalizedKey = licenseKey.trim().toUpperCase()
 
-  const host = req.headers.host || ''
-  const IS_PRIMARY = isPrimaryHost(typeof host === 'string' ? host : host[0])
+  const host = [req.headers?.host].flat()[0] ?? ''
+  const IS_PRIMARY = isPrimaryHost(host)
 
   if (IS_PRIMARY) {
     return res.status(200).json({ valid: true, themeId })

@@ -45,6 +45,8 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
               src={logoUrl || ''}
               alt={name || "ZARDONIC"}
               className="h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 zardonic-theme-hover-chromatic-image"
+              fetchPriority="high"
+              loading="eager"
             />
             <img
               src={logoUrl || ''}

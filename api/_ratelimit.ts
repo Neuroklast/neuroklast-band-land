@@ -63,8 +63,12 @@ export function hashIp(ip: string): string {
  */
 export function getClientIp(req: VercelLikeRequest): string {
   const forwarded = req.headers['x-forwarded-for']
-  if (typeof forwarded === 'string') {
-    return forwarded.split(',')[0].trim()
+  const forwardedStr = Array.isArray(forwarded) ? forwarded[0] : forwarded
+  if (typeof forwardedStr === 'string' && forwardedStr.trim().length > 0) {
+    const parts = forwardedStr.split(',')
+    // Security protocol: proxy environments append their IPs to x-forwarded-for,
+    // so we extract the right-most IP to prevent client IP spoofing bypasses.
+    return parts[parts.length - 1].trim() || '127.0.0.1'
   }
   return '127.0.0.1'
 }

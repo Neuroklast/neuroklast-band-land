@@ -8,20 +8,22 @@
  */
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
-import BandsintownWidget from './BandsintownWidget'
-import SpotifyPlayerWidget from './SpotifyPlayerWidget'
-import YouTubeWidget from './YouTubeWidget'
-import MerchStoreWidget from './MerchStoreWidget'
-import AnalyticsWidget from './AnalyticsWidget'
-import NewsletterPluginWidget from './NewsletterPluginWidget'
-import InstagramFeedWidget from './InstagramFeedWidget'
-import SoundCloudWidget from './SoundCloudWidget'
-import AppleMusicWidget from './AppleMusicWidget'
-import CustomHtmlWidget from './CustomHtmlWidget'
-import DiscordWidget from './DiscordWidget'
-import PatreonWidget from './PatreonWidget'
-import EventbriteWidget from './EventbriteWidget'
-import SetlistFmWidget from './SetlistFmWidget'
+import {
+  BandsintownWidget,
+  SpotifyPlayerWidget,
+  YouTubeWidget,
+  MerchStoreWidget,
+  AnalyticsWidget,
+  NewsletterPluginWidget,
+  InstagramFeedWidget,
+  SoundCloudWidget,
+  AppleMusicWidget,
+  CustomHtmlWidget,
+  DiscordWidget,
+  PatreonWidget,
+  EventbriteWidget,
+  SetlistFmWidget
+} from './index'
 
 interface WidgetRendererProps {
   widget: WidgetPlugin
