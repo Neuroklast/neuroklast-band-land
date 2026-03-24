@@ -86,6 +86,8 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroButtons
               src={logoUrl}
               alt={`${displayName} Logo`}
               className="h-24 md:h-36 w-auto object-contain"
+              fetchPriority="high"
+              loading="eager"
             />
           </motion.div>
         )}
@@ -104,7 +106,7 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroButtons
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <img src={titleImageUrl} alt={displayName} className="w-full max-w-xs sm:max-w-md md:max-w-2xl h-auto" />
+              <img src={titleImageUrl} alt={displayName} className="w-full max-w-xs sm:max-w-md md:max-w-2xl h-auto" fetchPriority="high" loading="eager" />
             </motion.div>
           ) : (
             <h1 className="relative text-7xl md:text-9xl font-bold tracking-tighter mb-6 text-foreground font-mono">

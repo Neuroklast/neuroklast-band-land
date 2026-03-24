@@ -12,7 +12,6 @@
  *
  * Events are fetched via the /api/bandsintown proxy to avoid CSP/CORS issues.
  */
-import { useState, useEffect } from 'react'
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 
@@ -26,12 +25,7 @@ interface BandsintownConfig {
   showVenueDetails?: boolean
 }
 
-interface BandsintownWidgetProps {
-  widget: WidgetPlugin
-  themeSettings?: ThemeSettings
-}
-
-interface BandsintownEvent {
+export interface BandsintownEvent {
   id: string
   url: string
   datetime: string
@@ -44,6 +38,14 @@ interface BandsintownEvent {
     region?: string
     country: string
   }
+}
+
+interface BandsintownWidgetProps {
+  widget: WidgetPlugin
+  themeSettings?: ThemeSettings
+  events: BandsintownEvent[]
+  loading: boolean
+  error: string | null
 }
 
 /** Format an ISO datetime string to a localised short date. */
@@ -59,7 +61,7 @@ function formatEventDate(raw: string): string {
   }
 }
 
-export default function BandsintownWidget({ widget, themeSettings }: BandsintownWidgetProps) {
+export default function BandsintownWidget({ widget, themeSettings, events, loading, error }: BandsintownWidgetProps) {
   const { t } = useLocale()
   const config = (widget.config ?? {}) as BandsintownConfig
   const primary = themeSettings?.primary ?? 'oklch(0.50 0.22 25)'
@@ -70,46 +72,6 @@ export default function BandsintownWidget({ widget, themeSettings }: Bandsintown
   const layout = config.layout ?? 'list'
   const showTicketLinks = config.showTicketLinks !== false
   const showVenueDetails = config.showVenueDetails !== false
-
-  const [events, setEvents] = useState<BandsintownEvent[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!config.artist || !config.appId) return
-
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-
-    async function fetchEvents() {
-      try {
-        const params = new URLSearchParams({
-          artist: config.artist!,
-          app_id: config.appId!,
-        })
-        if (config.showPastDates) params.set('include_past', 'true')
-
-        const res = await fetch(`/api/bandsintown?${params.toString()}`)
-        const data = (await res.json()) as { events?: BandsintownEvent[]; error?: string }
-
-        if (!cancelled) {
-          if (data.error) {
-            setError(data.error)
-          } else {
-            setEvents((data.events ?? []).slice(0, displayLimit))
-          }
-        }
-      } catch {
-        if (!cancelled) setError(t('widget.bandsintown.fetchError') || 'Failed to load events')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    fetchEvents()
-    return () => { cancelled = true }
-  }, [config.artist, config.appId, config.showPastDates, displayLimit, t])
 
   // ── Unconfigured ──────────────────────────────────────────────────────────
   if (!config.artist || !config.appId) {

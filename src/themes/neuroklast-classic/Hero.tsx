@@ -160,6 +160,8 @@ export default function NeuroklastClassicHero({
                 src={logoUrl}
                 alt={`${name} Logo`}
                 className="w-[18rem] h-auto sm:w-[22rem] md:w-[26rem] lg:w-[30rem]"
+                fetchPriority="high"
+                loading="eager"
               />
             </div>
           </motion.div>
@@ -187,6 +189,8 @@ export default function NeuroklastClassicHero({
                 src={titleImageUrl}
                 alt={name}
                 className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto"
+                fetchPriority="high"
+                loading="eager"
               />
             </div>
           ) : (
