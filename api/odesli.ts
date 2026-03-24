@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   try {
     const response = await fetchWithRetry(
-      `https://api.song.link/v1-alpha.1/links?url=${encodeURIComponent(url)}&userCountry=DE`
+      `https://api.song.link/v1-alpha.1/links?url=${encodeURIComponent(url)}&userCountry=US`
     )
 
     if (!response.ok) {

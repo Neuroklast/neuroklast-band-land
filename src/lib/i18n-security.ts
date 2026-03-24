@@ -471,5 +471,4 @@ export function tip(key: string, locale: Locale): string | undefined {
 /** Get all available locales */
 export const LOCALES: { value: Locale; label: string }[] = [
   { value: 'en', label: 'EN' },
-  { value: 'de', label: 'DE' },
 ]

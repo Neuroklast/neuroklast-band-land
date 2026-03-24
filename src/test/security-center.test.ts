@@ -102,17 +102,15 @@ describe('i18n-security: tip() tooltip lookup', () => {
 
 // ---------------------------------------------------------------------------
 describe('i18n-security: LOCALES', () => {
-  it('has en and de locales', () => {
-    expect(LOCALES).toHaveLength(2)
+  it('has only en locale', () => {
+    expect(LOCALES).toHaveLength(1)
     expect(LOCALES.map(l => l.value)).toContain('en')
-    expect(LOCALES.map(l => l.value)).toContain('de')
+    expect(LOCALES.map(l => l.value)).not.toContain('de')
   })
 
   it('has labels for each locale', () => {
     const en = LOCALES.find(l => l.value === 'en')
     expect(en?.label).toBe('EN')
-    const de = LOCALES.find(l => l.value === 'de')
-    expect(de?.label).toBe('DE')
   })
 })
 

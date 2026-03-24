@@ -6,22 +6,6 @@ import { LocaleContext } from '@/hooks/use-locale'
 const STORAGE_KEY = 'zd-locale'
 
 function detectLocale(): Locale {
-  // Check URL path first — /de or /de/ prefix triggers German
-  try {
-    const pathname = window.location.pathname
-    if (pathname === '/de' || pathname.startsWith('/de/')) return 'de'
-  } catch {
-    // window unavailable (SSR)
-  }
-
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'en' || stored === 'de') return stored
-  } catch {
-    // localStorage unavailable
-  }
-
-  // Default to English — users can switch to German via the language picker
   return 'en'
 }
 
@@ -30,24 +14,6 @@ function detectLocale(): Locale {
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(detectLocale)
-
-  // On mount, re-apply stored preference if it was set since initial render.
-  // Wrapped in setTimeout to avoid synchronous setState in effect (react-hooks/set-state-in-effect).
-  useEffect(() => {
-    let cancelled = false
-    const timer = setTimeout(() => {
-      if (cancelled) return
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY)
-        if (stored === 'en' || stored === 'de') {
-          setLocaleState(stored as Locale)
-        }
-      } catch {
-        // localStorage unavailable
-      }
-    }, 0)
-    return () => { cancelled = true; clearTimeout(timer) }
-  }, [])
 
   // Sync i18next language with locale state
   useEffect(() => {
