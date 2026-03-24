@@ -101,7 +101,7 @@ function fmtDate(iso: string | undefined): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (isNaN(d.getTime())) return iso
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 /**
@@ -162,7 +162,7 @@ function buildHTML(origin: string, meta: OgMeta, siteName: string): string {
   const redirect = `${origin}/${meta.hash}`
 
   return `<!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <title>${title}</title>

@@ -171,30 +171,22 @@ This website contains links to external websites (e.g. Spotify, YouTube, Instagr
 export default function DatenschutzWindow({ open, onClose, datenschutz, impressumName, editMode, onSave }: DatenschutzWindowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState('')
-  const [lang, setLang] = useState<'de' | 'en'>('de')
-  const [editLang, setEditLang] = useState<'de' | 'en'>('de')
 
-  const tl = (key: string, l: Locale = lang) => i18nT(key, l)
+  const tl = (key: string, l: Locale = 'en') => i18nT(key, l)
 
-  const defaultText = lang === 'de' ? defaultTextDE : defaultTextEN
+  const defaultText = defaultTextEN
 
-  const displayText = (lang === 'de' ? datenschutz?.customText : datenschutz?.customTextEn) || defaultText.replace(
-    lang === 'de'
-      ? 'Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website entnehmen Sie bitte dem Impressum.'
-      : 'The party responsible for data processing on this website can be found in the imprint.',
+  const displayText = (datenschutz?.customTextEn) || defaultText.replace(
+    'The party responsible for data processing on this website can be found in the imprint.',
     impressumName
-      ? lang === 'de'
-        ? `Verantwortlich für die Datenverarbeitung auf dieser Website ist: ${impressumName}. Weitere Angaben entnehmen Sie bitte dem Impressum.`
-        : `The party responsible for data processing on this website is: ${impressumName}. Further details can be found in the imprint.`
-      : lang === 'de'
-        ? 'Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website entnehmen Sie bitte dem Impressum.'
-        : 'The party responsible for data processing on this website can be found in the imprint.'
+      ? `The party responsible for data processing on this website is: ${impressumName}. Further details can be found in the imprint.`
+      : 'The party responsible for data processing on this website can be found in the imprint.'
   )
 
   useEffect(() => {
     if (open) {
       startTransition(() => {
-        setEditText(datenschutz?.customText || defaultTextDE)
+        setEditText(datenschutz?.customTextEn || defaultTextEN)
         setIsEditing(false)
       })
     }
@@ -209,25 +201,17 @@ export default function DatenschutzWindow({ open, onClose, datenschutz, impressu
     return () => window.removeEventListener('keydown', handleKey)
   }, [open, onClose])
 
-  // Update the edit text when switching language in edit mode
+  // Update the edit text when entering edit mode
   useEffect(() => {
     if (isEditing) {
       startTransition(() => {
-        if (editLang === 'de') {
-          setEditText(datenschutz?.customText || defaultTextDE)
-        } else {
-          setEditText(datenschutz?.customTextEn || defaultTextEN)
-        }
+        setEditText(datenschutz?.customTextEn || defaultTextEN)
       })
     }
-  }, [editLang, isEditing, datenschutz])
+  }, [isEditing, datenschutz])
 
   const handleSave = () => {
-    if (editLang === 'de') {
-      onSave?.({ ...datenschutz, customText: editText })
-    } else {
-      onSave?.({ ...datenschutz, customTextEn: editText })
-    }
+    onSave?.({ ...datenschutz, customTextEn: editText })
     setIsEditing(false)
   }
 
@@ -274,47 +258,15 @@ export default function DatenschutzWindow({ open, onClose, datenschutz, impressu
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-xs text-primary uppercase tracking-wider">
-                  {isEditing ? (lang === 'de' ? tl('datenschutz.titleEdit', 'de') : tl('datenschutz.titleEdit', 'en')) : (lang === 'de' ? tl('datenschutz.title', 'de') : tl('datenschutz.title', 'en'))}
+                  {isEditing ? tl('datenschutz.titleEdit', 'en') : tl('datenschutz.title', 'en')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                {!isEditing && (
-                  <div className="flex border border-primary/30 overflow-hidden">
-                    <button
-                      onClick={() => setLang('de')}
-                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${lang === 'de' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
-                    >
-                      DE
-                    </button>
-                    <button
-                      onClick={() => setLang('en')}
-                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${lang === 'en' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
-                    >
-                      EN
-                    </button>
-                  </div>
-                )}
-                {isEditing && (
-                  <div className="flex border border-primary/30 overflow-hidden">
-                    <button
-                      onClick={() => setEditLang('de')}
-                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${editLang === 'de' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
-                    >
-                      DE
-                    </button>
-                    <button
-                      onClick={() => setEditLang('en')}
-                      className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${editLang === 'en' ? 'bg-primary/20 text-primary' : 'text-primary/50 hover:text-primary/80'}`}
-                    >
-                      EN
-                    </button>
-                  </div>
-                )}
                 {editMode && onSave && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-primary hover:text-accent transition-colors"
-                    title={lang === 'de' ? tl('datenschutz.editTooltip', 'de') : tl('datenschutz.editTooltip', 'en')}
+                    title={tl('datenschutz.editTooltip', 'en')}
                   >
                     <PencilSimple size={18} />
                   </button>
@@ -330,13 +282,10 @@ export default function DatenschutzWindow({ open, onClose, datenschutz, impressu
               {isEditing ? (
                 <div className="space-y-4">
                   <p className="text-xs text-primary/60 font-mono">
-                    {editLang === 'de' ? tl('datenschutz.editingDe', 'de') : tl('datenschutz.editingEn', 'en')}
+                    {tl('datenschutz.editingEn', 'en')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {editLang === 'de'
-                      ? tl('datenschutz.instructions', 'de')
-                      : tl('datenschutz.instructions', 'en')
-                    }
+                    {tl('datenschutz.instructions', 'en')}
                   </p>
                   <textarea
                     value={editText}
@@ -344,8 +293,8 @@ export default function DatenschutzWindow({ open, onClose, datenschutz, impressu
                     className="w-full h-[50vh] bg-background border border-border rounded-sm p-4 text-xs font-mono text-foreground/90 resize-none focus:outline-none focus:border-primary/50"
                   />
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>{editLang === 'de' ? tl('datenschutz.cancel', 'de') : tl('datenschutz.cancel', 'en')}</Button>
-                    <Button onClick={handleSave}>{editLang === 'de' ? tl('datenschutz.save', 'de') : tl('datenschutz.save', 'en')}</Button>
+                    <Button variant="outline" onClick={() => setIsEditing(false)}>{tl('datenschutz.cancel', 'en')}</Button>
+                    <Button onClick={handleSave}>{tl('datenschutz.save', 'en')}</Button>
                   </div>
                 </div>
               ) : (

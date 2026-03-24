@@ -65,9 +65,9 @@ describe('JSON dictionary files', () => {
 // ── i18next Configuration ───────────────────────────────────────────
 
 describe('i18next configuration', () => {
-  it('supports en and de languages', () => {
+  it('supports en language only', () => {
     expect(i18n.options.supportedLngs).toContain('en')
-    expect(i18n.options.supportedLngs).toContain('de')
+    expect(i18n.options.supportedLngs).not.toContain('de')
   })
 
   it('uses en as fallback language', () => {
@@ -95,22 +95,13 @@ describe('t() function (common namespace)', () => {
     expect(t('cookie.accept', 'en')).toBe('ACCEPT')
   })
 
-  it('returns German translation for common keys', () => {
-    expect(t('footer.section', 'de')).toBe('FOOTER_BEREICH')
-    expect(t('nav.home', 'de')).toBe('STARTSEITE')
-    expect(t('cookie.accept', 'de')).toBe('AKZEPTIEREN')
-  })
-
   it('returns the key itself for unknown keys', () => {
     expect(t('nonexistent.key', 'en')).toBe('nonexistent.key')
-    expect(t('nonexistent.key', 'de')).toBe('nonexistent.key')
   })
 
   it('resolves admin namespace keys', () => {
     expect(t('impressum.editTitle', 'en')).toBe('Edit legal notice')
-    expect(t('impressum.editTitle', 'de')).toBe('Impressum bearbeiten')
     expect(t('export.close', 'en')).toBe('Close')
-    expect(t('export.close', 'de')).toBe('Schließen')
   })
 })
 
@@ -120,11 +111,6 @@ describe('security t() function', () => {
   it('returns English translation for security keys', () => {
     expect(secT('sec.title', 'en')).toBe('SECURITY CENTER')
     expect(secT('sec.total', 'en')).toBe('Total')
-  })
-
-  it('returns German translation for security keys', () => {
-    expect(secT('sec.title', 'de')).toBe('SICHERHEITSZENTRALE')
-    expect(secT('sec.total', 'de')).toBe('Gesamt')
   })
 
   it('returns key for unknown security keys', () => {
@@ -143,10 +129,9 @@ describe('security tip() function', () => {
 })
 
 describe('security LOCALES constant', () => {
-  it('exports en and de locales', () => {
+  it('exports only en locale', () => {
     expect(LOCALES).toEqual([
       { value: 'en', label: 'EN' },
-      { value: 'de', label: 'DE' },
     ])
   })
 })

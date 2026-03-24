@@ -83,7 +83,7 @@ async function sendEmailNotification({ name, email, subject, message }: { name: 
   if (!apiKey || !toEmail) return
 
   try {
-    await fetch('https://api.brevo.com/v3/smtp/email', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'accept': 'application/json',
@@ -98,6 +98,10 @@ async function sendEmailNotification({ name, email, subject, message }: { name: 
         htmlContent: `<p><strong>From:</strong> ${name} &lt;${email}&gt;</p><p><strong>Subject:</strong> ${subject}</p><p>${message.replace(/\n/g, '<br>')}</p>`,
       }),
     })
+    if (!response.ok) {
+      const body = await response.text()
+      console.error(`Brevo API error ${response.status}:`, body)
+    }
   } catch (err) {
     console.error('Failed to send contact email notification:', err)
   }
@@ -189,8 +193,8 @@ async function handlePost(req: VercelRequest, res: VercelResponse): Promise<void
     }
   }
 
-  // Fire-and-forget email notification
-  sendEmailNotification({ name, email, subject, message })
+  // Send email notification (awaited so Vercel does not kill the request before fetch completes)
+  await sendEmailNotification({ name, email, subject, message })
 
   res.status(200).json({ success: true })
 }
