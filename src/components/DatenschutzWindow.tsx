@@ -176,6 +176,8 @@ export default function DatenschutzWindow({ open, onClose, datenschutz, impressu
 
   const defaultText = defaultTextEN
 
+  // Site is English-only: display and edit the English version (customTextEn).
+  // Legacy customText (German) is preserved in the data model but not shown.
   const displayText = (datenschutz?.customTextEn) || defaultText.replace(
     'The party responsible for data processing on this website can be found in the imprint.',
     impressumName
