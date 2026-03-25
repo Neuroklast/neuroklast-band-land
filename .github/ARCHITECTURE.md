@@ -126,3 +126,69 @@ and its tests — out of scope for this refactoring.
 
 - No changes to `font-loader.ts` or its tests.
 - Minor duplication of `<link>` injection logic (acceptable at this scale).
+
+---
+
+## ADR-004: SecuritySettingsDialog Decomposed into BFF Hook + Tab Components
+
+**Date:** 2026-03-25
+**Status:** Accepted
+
+### Context
+
+`SecuritySettingsDialog.tsx` was 1 155 lines, mixing:
+- `SecuritySettings` TypeScript interface
+- `DEFAULT_SETTINGS` constant
+- Three primitive UI components (`ToggleRow`, `SliderRow`, `TextInputRow`)
+- Business logic: `fetch('/api/security-settings')`, save, reset, JSON export
+- JSX for four tab panels (modules, parameters, rules, countermeasures)
+- JSX for always-visible scanner/path/probe detection sections
+
+The problem statement (BFF / Backend for Frontend) highlighted that security
+defaults must be authoritative on the server, not defined in a UI component.
+Having `DEFAULT_SETTINGS` in a React component blurs the client/server boundary
+and signals "security logic in the frontend" to developers who inherit the code.
+
+Additionally, the file violated the 300-line SRP rule from the project's architecture
+standards (ISO/IEC 25010 – Maintainability §8.5.1).
+
+### Decision
+
+Decompose into:
+
+| File | Lines | Responsibility |
+|------|-------|----------------|
+| `src/lib/security-settings-types.ts` | ~165 | `SecuritySettings` type + `DEFAULT_SECURITY_SETTINGS` |
+| `src/hooks/use-security-settings.ts` | ~200 | API fetch/save + derived state (BFF client) |
+| `src/components/security-settings/SecuritySettingsPrimitives.tsx` | ~200 | Stateless `ToggleRow`, `SliderRow`, `TextInputRow` |
+| `src/components/security-settings/tabs/ModulesTab.tsx` | ~130 | Modules toggle panel |
+| `src/components/security-settings/tabs/ParametersTab.tsx` | ~175 | Sliders + alert channels |
+| `src/components/security-settings/tabs/RulesTab.tsx` | ~140 | Tarpit / zip-bomb rule toggles |
+| `src/components/security-settings/tabs/CountermeasuresTab.tsx` | ~290 | Countermeasures + detection panels + action bar + footer |
+| `src/components/SecuritySettingsDialog.tsx` | ~244 | Dialog chrome + tab routing only |
+
+`DEFAULT_SECURITY_SETTINGS` is re-exported from `SecuritySettingsDialog.tsx` as
+`DEFAULT_SETTINGS` for backward compatibility with existing test imports.
+
+The actual authoritative server defaults remain in `api/security-settings.ts`
+(unchanged). The client-side defaults in `src/lib/security-settings-types.ts`
+are used only as:
+1. A UI placeholder while the API response loads (avoid blank flash).
+2. A reset target when the admin clicks "Reset to Defaults".
+
+All security enforcement remains exclusively server-side in the `api/` directory.
+
+### Consequences
+
+**Positive:**
+- No single file exceeds 300 lines; each has a single responsibility.
+- `useSecuritySettings` is independently testable without rendering the dialog.
+- `SecuritySettings` type can be imported from a types module, not a UI file.
+- The BFF pattern is explicit: the hook is the boundary; the UI is stateless relative to the API.
+
+**Negative:**
+- More files to navigate (mitigated by the directory structure `security-settings/tabs/`).
+- `DEFAULT_SETTINGS` re-export adds minor indirection for test imports.
+
+**Zero visual change:** All DOM elements, CSS classes, and Framer Motion transitions
+are preserved byte-for-byte relative to the original rendering.

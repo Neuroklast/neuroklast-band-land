@@ -68,7 +68,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   ADR-003) documenting the Setup Wizard refactoring rationale, alternatives considered,
   and trade-offs.
 
+- **`src/lib/security-settings-types.ts`** — New canonical module for the
+  `SecuritySettings` TypeScript interface and `DEFAULT_SECURITY_SETTINGS` constant.
+  Extracted from `SecuritySettingsDialog.tsx` to give type definitions a proper home
+  outside a UI component (BFF boundary separation).
+
+- **`src/hooks/use-security-settings.ts`** — New BFF client hook encapsulating all
+  `/api/security-settings` fetch and save logic. Exports typed `SecuritySettingsState`,
+  `SecuritySettingsActions`, and the derived `activeModules` count. Constants
+  `TOTAL_MODULES`, `SECURITY_LEVEL_HIGH_THRESHOLD`, and `SECURITY_LEVEL_MEDIUM_THRESHOLD`
+  are exported for independent use in tests and other consumers.
+
+- **`src/components/security-settings/SecuritySettingsPrimitives.tsx`** — Stateless
+  `ToggleRow`, `SliderRow`, and `TextInputRow` primitives, extracted from the dialog.
+
+- **`src/components/security-settings/tabs/ModulesTab.tsx`** — Security module
+  toggle panel (11 modules + Under Attack Mode emergency toggle).
+
+- **`src/components/security-settings/tabs/ParametersTab.tsx`** — Numeric slider
+  parameters for thresholds, timing, and threat-reason points; text inputs for alert
+  channel configuration (Discord webhook, email).
+
+- **`src/components/security-settings/tabs/RulesTab.tsx`** — Conditional trigger
+  rules for tarpit and zip-bomb countermeasures.
+
+- **`src/components/security-settings/tabs/CountermeasuresTab.tsx`** — Offensive
+  countermeasure panels (SQL Backfire, Canary Documents, Log Poisoning), always-visible
+  detection panels (Scanner, Path Traversal, Probe), action button bar, and footer.
+
+- **`.github/ARCHITECTURE.md`** — ADR-004 added: documents the SecuritySettingsDialog
+  BFF decomposition decision, module table, and trade-offs.
+
 ### Changed
+
+- **`src/components/SecuritySettingsDialog.tsx`** — Reduced from **1 155 lines** to
+  **244 lines**. The component is now a thin orchestration layer: it delegates all state
+  and API communication to `useSecuritySettings`, and renders the dialog chrome plus tab
+  routing. `SecuritySettings` type and `DEFAULT_SETTINGS` are re-exported from this file
+  for backward compatibility with existing test imports. Visual output is **identical**
+  to the previous version — same DOM elements, same CSS classes, same animations.
 
 - **`src/components/SetupWizard.tsx`** — Reduced from **1 342 lines** to **370 lines**.
   The component is now a thin orchestration layer: it calls `useSetupWizard`, maps the
