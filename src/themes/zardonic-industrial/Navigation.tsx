@@ -1,15 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { List, X } from '@phosphor-icons/react'
-import { useState } from 'react'
 
 import type { NavigationSlotProps } from '@/lib/types'
-type NavigationProps = NavigationSlotProps;
 
-export default function Navigation({ siteName, items, onNavigate }: NavigationProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+interface ZardonicNavigationProps extends NavigationSlotProps {
+  mobileMenuOpen?: boolean
+  setMobileMenuOpen?: (open: boolean) => void
+}
 
+export default function Navigation({ siteName, items, onNavigate, mobileMenuOpen = false, setMobileMenuOpen }: ZardonicNavigationProps) {
   const handleNavigation = (id: string) => {
-    setMobileMenuOpen(false)
+    if (setMobileMenuOpen) setMobileMenuOpen(false)
     if (onNavigate) {
       onNavigate(id)
     } else {
@@ -54,7 +55,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationPr
 
           <button
             className="md:hidden text-foreground"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <List className="w-6 h-6" />}
           </button>

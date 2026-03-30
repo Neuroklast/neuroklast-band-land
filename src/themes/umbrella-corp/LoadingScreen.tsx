@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
 import type { LoadingScreenSlotProps } from '@/lib/types'
 
 const BOOT_LINES = [
@@ -8,43 +7,12 @@ const BOOT_LINES = [
   '> ACCESS GRANTED',
 ]
 
-export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
-  const [progress, setProgress] = useState(0)
-  const [lineIndex, setLineIndex] = useState(0)
+interface UmbrellaLoadingProps extends LoadingScreenSlotProps {
+  progress?: number
+  lineIndex?: number
+}
 
-  useEffect(() => {
-    const lineTimer = setInterval(() => {
-      setLineIndex((prev) => Math.min(prev + 1, BOOT_LINES.length - 1))
-    }, 500)
-
-    const progressTimer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressTimer)
-          clearInterval(lineTimer)
-          return 100
-        }
-        return prev + 2
-      })
-    }, 30)
-
-    return () => {
-      clearInterval(lineTimer)
-      clearInterval(progressTimer)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (progress >= 100) {
-      const t = setTimeout(() => {
-        if (onComplete) {
-          onComplete()
-        }
-      }, 200)
-      return () => clearTimeout(t)
-    }
-  }, [progress, onComplete])
-
+export default function LoadingScreen({ progress = 0, lineIndex = 0 }: UmbrellaLoadingProps) {
   return (
     <motion.div
       initial={{ opacity: 1 }}

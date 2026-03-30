@@ -1,58 +1,14 @@
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
-
 import type { LoadingScreenSlotProps } from '@/lib/types'
-type LoadingScreenProps = LoadingScreenSlotProps;
 
 const TRIANGLE_CHAR = '▸'
 
-const LOADING_TEXTS = [
-  '> ACCESSING PROFILE...',
-  '> DECRYPTING DATA...',
-  '> IDENTITY VERIFIED',
-]
+interface ZardonicLoadingProps extends LoadingScreenSlotProps {
+  progress?: number
+  loadingText?: string
+}
 
-export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const [loadingText, setLoadingText] = useState(LOADING_TEXTS[0])
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    let textIdx = 0
-    const textInterval = setInterval(() => {
-      textIdx += 1
-      if (textIdx < LOADING_TEXTS.length) {
-        setLoadingText(LOADING_TEXTS[textIdx])
-      }
-    }, 500)
-
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval)
-          clearInterval(textInterval)
-          return 100
-        }
-        return prev + 2
-      })
-    }, 30)
-
-    return () => {
-      clearInterval(textInterval)
-      clearInterval(progressInterval)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (progress >= 100) {
-      const t = setTimeout(() => {
-        if (onComplete) {
-          onComplete()
-        }
-      }, 200)
-      return () => clearTimeout(t)
-    }
-  }, [progress, onComplete])
-
+export default function LoadingScreen({ progress = 0, loadingText = '> ACCESSING PROFILE...' }: ZardonicLoadingProps) {
   return (
     <motion.div
       initial={{ opacity: 1 }}

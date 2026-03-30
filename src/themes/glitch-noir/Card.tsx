@@ -1,15 +1,14 @@
 import { motion } from 'framer-motion'
-import { ReactNode, useState } from 'react'
+import { ReactNode } from 'react'
 
 const BLOCK_CHAR = '█'
 
 interface CardProps {
   children: ReactNode
+  isHovered?: boolean
 }
 
-export default function Card({ children }: CardProps) {
-  const [isHovered, setIsHovered] = useState(false)
-
+export default function Card({ children, isHovered }: CardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -17,8 +16,6 @@ export default function Card({ children }: CardProps) {
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
       className="group relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="absolute inset-0 bg-accent/5 translate-x-1 translate-y-1 transition-transform group-hover:translate-x-2 group-hover:translate-y-2" />
 

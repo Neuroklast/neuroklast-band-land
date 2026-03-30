@@ -1,9 +1,9 @@
 import './styles.css'
 import type { ThemePackage } from '@/lib/types'
-import NeuroklastClassicBackgroundEffects from './BackgroundEffects'
-import NeuroklastClassicLoadingScreen from './LoadingScreen'
+import NeuroklastClassicBackgroundEffects from '../../components/themes/NeuroklastBackgroundContainer'
+import NeuroklastClassicLoadingScreen from '../../components/themes/NeuroklastLoadingContainer'
 import NeuroklastClassicHero from './Hero'
-import NeuroklastClassicNavigation from './Navigation'
+import NeuroklastClassicNavigation from '../../components/themes/NeuroklastNavigationContainer'
 import NeuroklastClassicFooter from './Footer'
 import NeuroklastClassicOverlayModal from './OverlayModal'
 

@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState, useRef } from 'react'
 import type { LoadingScreenSlotProps } from '@/lib/types'
 import logoImage from '@/assets/images/baphomet no text.svg'
 
@@ -45,27 +44,11 @@ const codeRainParams = Array.from({ length: 20 }, (_, i) => ({
   translateX: -200 + i * 50,
 }))
 
-export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingScreenSlotProps) {
-  const [progress, setProgress] = useState(0)
-  const onCompleteRef = useRef(onComplete)
-  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
+interface NeuroklastLoadingProps extends LoadingScreenSlotProps {
+  progress?: number
+}
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) { clearInterval(interval); return 100 }
-        return Math.min(prev + 2, 100)
-      })
-    }, 50)
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    if (progress >= 100) {
-      const t = setTimeout(() => onCompleteRef.current(), 500)
-      return () => clearTimeout(t)
-    }
-  }, [progress])
+export default function NeuroklastClassicLoadingScreen({ progress = 0 }: NeuroklastLoadingProps) {
 
   const hackingText = HACKING_TEXTS[Math.min(
     Math.floor(progress / 100 * HACKING_TEXTS.length),

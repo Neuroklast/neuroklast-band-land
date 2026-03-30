@@ -47,6 +47,8 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
               src={logoUrl}
               alt={name || 'Artist'}
               className="h-40 md:h-56 lg:h-72 w-auto object-contain"
+              loading="eager"
+              fetchPriority="high"
             />
           </motion.div>
         ) : (

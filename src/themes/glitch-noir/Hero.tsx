@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { CaretDown } from '@phosphor-icons/react'
 import type { HeroSlotProps, HeroButton } from '@/lib/types'
@@ -10,14 +9,6 @@ const BPM_TEXT = 'BPM: 138'
 const DOWN_ARROW = '▼'
 const LIVE_TEXT = 'LIVE'
 const BULLET = '•'
-
-const SIGNAL_STATES = [
-  '[SIGNAL_DETECTED]',
-  '[TRANSMISSION_ACTIVE]',
-  '[CARRIER_WAVE_LOCKED]',
-  '[FREQUENCY_SYNC]',
-  '[NEURAL_LINK_ESTABLISHED]'
-]
 
 const DEFAULT_BUTTONS: HeroButton[] = [
   { id: 'explore', label: 'EXPLORE', action: 'scroll', scrollTarget: 'news', variant: 'outline' },
@@ -34,28 +25,13 @@ function handleHeroButton(btn: HeroButton, onContactModalOpen?: () => void) {
   }
 }
 
-export default function Hero({ name, genres, logoUrl, titleImageUrl, heroButtons, onContactModalOpen }: HeroSlotProps) {
-  const [glitchActive, setGlitchActive] = useState(false)
-  const [signalText, setSignalText] = useState(SIGNAL_STATES[0])
+interface GlitchHeroProps extends HeroSlotProps {
+  glitchActive?: boolean
+  signalText?: string
+}
+
+export default function Hero({ name, genres, logoUrl, titleImageUrl, heroButtons, onContactModalOpen, glitchActive, signalText }: GlitchHeroProps) {
   const buttons = heroButtons && heroButtons.length > 0 ? heroButtons : DEFAULT_BUTTONS
-
-  useEffect(() => {
-    const textInterval = setInterval(() => {
-      setSignalText(SIGNAL_STATES[Math.floor(Math.random() * SIGNAL_STATES.length)])
-    }, 3500)
-    
-    return () => clearInterval(textInterval)
-  }, [])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
-        setGlitchActive(true)
-        setTimeout(() => setGlitchActive(false), Math.random() * 150 + 50)
-      }
-    }, 2500)
-    return () => clearInterval(interval)
-  }, [])
 
   const displayName = name || 'NEUROKLAST'
 
@@ -86,6 +62,8 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroButtons
               src={logoUrl}
               alt={`${displayName} Logo`}
               className="h-24 md:h-36 w-auto object-contain"
+              loading="eager"
+              fetchPriority="high"
             />
           </motion.div>
         )}
@@ -104,7 +82,7 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroButtons
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <img src={titleImageUrl} alt={displayName} className="w-full max-w-xs sm:max-w-md md:max-w-2xl h-auto" />
+              <img src={titleImageUrl} alt={displayName} className="w-full max-w-xs sm:max-w-md md:max-w-2xl h-auto" loading="eager" fetchPriority="high" />
             </motion.div>
           ) : (
             <h1 className="relative text-7xl md:text-9xl font-bold tracking-tighter mb-6 text-foreground font-mono">
