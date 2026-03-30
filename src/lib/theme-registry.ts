@@ -167,6 +167,18 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     tags: ['dark', 'biohazard', 'military', 'premium'],
     themeType: 'full',
   },
+  {
+    id: 'minimal-dark',
+    name: 'Minimal Dark',
+    description: 'Synthesized minimal dark theme',
+    licenseStatus: 'free',
+    theme: {
+      activePreset: 'minimal-dark-default',
+    },
+    author: 'System',
+    tags: ['dark', 'minimal'],
+    themeType: 'full',
+  },
 ]
 
 export interface ThemeCatalogRegistry {

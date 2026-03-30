@@ -1,16 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
 import { List, X } from '@phosphor-icons/react'
 import type { NavigationSlotProps } from '@/lib/types'
 
 const NAV_LOGO_TEXT = 'NK://SYS'
 const NAV_HEIGHT_PX = 72
 
-export default function Navigation({ siteName, items, onNavigate }: NavigationSlotProps) {
-  const [isOpen, setIsOpen] = useState(false)
+interface GlitchNavigationProps extends NavigationSlotProps {
+  isOpen?: boolean
+  setIsOpen?: (isOpen: boolean) => void
+}
 
+export default function Navigation({ siteName, items, onNavigate, isOpen = false, setIsOpen }: GlitchNavigationProps) {
   const scrollToSection = (id: string) => {
-    setIsOpen(false)
+    if (setIsOpen) setIsOpen(false)
     if (onNavigate) {
       onNavigate(id)
     } else {
@@ -49,7 +51,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationSl
           </div>
 
           <button
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => setIsOpen && setIsOpen(!isOpen)}
             className="md:hidden text-foreground"
             aria-label={isOpen ? 'Close menu' : 'Open menu'}
           >

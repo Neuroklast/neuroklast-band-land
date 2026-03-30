@@ -1,13 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { List, X } from '@phosphor-icons/react'
-import { useState } from 'react'
 import type { NavigationSlotProps } from '@/lib/types'
 
-export default function Navigation({ siteName, items, onNavigate }: NavigationSlotProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+interface UmbrellaNavigationProps extends NavigationSlotProps {
+  mobileMenuOpen?: boolean
+  setMobileMenuOpen?: (open: boolean) => void
+}
 
+export default function Navigation({ siteName, items, onNavigate, mobileMenuOpen = false, setMobileMenuOpen }: UmbrellaNavigationProps) {
   const handleNavigation = (id: string) => {
-    setMobileMenuOpen(false)
+    if (setMobileMenuOpen) setMobileMenuOpen(false)
     if (onNavigate) {
       onNavigate(id)
     } else {
@@ -48,7 +50,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationSl
 
         <button
           className="md:hidden text-foreground"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={() => setMobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen)}
           aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <List className="w-6 h-6" />}

@@ -1,17 +1,7 @@
 import './styles.css'
-import { useEffect, useState, useRef } from 'react'
 import type { BackgroundEffectsSlotProps, HudTexts } from '@/lib/types'
 
 const NK_PRIMARY_FALLBACK = 'oklch(0.50 0.22 25)'
-
-function formatTime(date: Date) {
-  return date.toLocaleTimeString('en-US', {
-    hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
-}
 
 const GLITCH_BLOCKS = [0, 1, 2, 3, 4]
 const PARTICLES = [0, 1, 2, 3, 4, 5, 6, 7]
@@ -20,31 +10,11 @@ const RINGS = [0, 1, 2]
 interface NeuroklastBgProps {
   siteName?: string
   hudTexts?: HudTexts
+  timeString?: string
+  sessionId?: string
 }
 
-function NeuroklastHudBackground({ siteName = '', hudTexts }: NeuroklastBgProps) {
-  const [time, setTime] = useState(new Date())
-  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
-  const [sessionId] = useState(() => `ID: NK-${Date.now().toString().slice(-6)}`)
-
-  useEffect(() => {
-    const tick = () => setTime(new Date())
-    intervalRef.current = setInterval(tick, 1000)
-    const handleVisibility = () => {
-      if (document.hidden) {
-        clearInterval(intervalRef.current)
-      } else {
-        setTime(new Date())
-        intervalRef.current = setInterval(tick, 1000)
-      }
-    }
-    document.addEventListener('visibilitychange', handleVisibility)
-    return () => {
-      clearInterval(intervalRef.current)
-      document.removeEventListener('visibilitychange', handleVisibility)
-    }
-  }, [])
-
+function NeuroklastHudBackground({ siteName = '', hudTexts, timeString = '00:00:00', sessionId = 'ID: NK-000000' }: NeuroklastBgProps) {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ contain: 'layout' }}>
       <div className="absolute inset-0 hud-grid-overlay" />
@@ -52,7 +22,7 @@ function NeuroklastHudBackground({ siteName = '', hudTexts }: NeuroklastBgProps)
       {/* HUD Data readouts */}
       <div className="absolute top-4 left-4 data-readout hidden md:block">
         <div className="mb-1">{hudTexts?.topLeft1 ?? 'SYSTEM: ONLINE'}</div>
-        <div>{hudTexts?.topLeft2 !== undefined ? hudTexts.topLeft2 : `TIME: ${formatTime(time)}`}</div>
+        <div>{hudTexts?.topLeft2 !== undefined ? hudTexts.topLeft2 : `TIME: ${timeString}`}</div>
         <div className="mt-1 flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" style={{ boxShadow: `0 0 6px var(--primary, ${NK_PRIMARY_FALLBACK})` }} />
           <span>{hudTexts?.topLeftStatus ?? 'ACTIVE'}</span>
@@ -179,11 +149,16 @@ function NeuroklastHudBackground({ siteName = '', hudTexts }: NeuroklastBgProps)
   )
 }
 
-export default function NeuroklastClassicBackgroundEffects({ className, siteName, hudTexts }: BackgroundEffectsSlotProps) {
+interface NeuroklastBgContainerProps extends BackgroundEffectsSlotProps {
+  timeString?: string
+  sessionId?: string
+}
+
+export default function NeuroklastClassicBackgroundEffects({ className, siteName, hudTexts, timeString, sessionId }: NeuroklastBgContainerProps) {
   return (
     <div className={`theme-bg ${className ?? ''}`} aria-hidden="true">
       <div className="theme-bg-overlay" />
-      <NeuroklastHudBackground siteName={siteName} hudTexts={hudTexts} />
+      <NeuroklastHudBackground siteName={siteName} hudTexts={hudTexts} timeString={timeString} sessionId={sessionId} />
     </div>
   )
 }

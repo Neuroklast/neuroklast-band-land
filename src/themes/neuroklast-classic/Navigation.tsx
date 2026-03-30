@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { List, X, MusicNote } from '@phosphor-icons/react'
@@ -8,31 +7,27 @@ import { LOCAL_TRACKS } from '@/lib/music-tracks'
 import './styles.css'
 
 const NAV_HEIGHT_PX = 64
-const GLITCH_PROBABILITY = 0.95
-const GLITCH_DURATION_MS = 300
-const GLITCH_INTERVAL_MS = 3000
+
+interface NeuroklastNavigationProps extends NavigationSlotProps {
+  isMobileMenuOpen?: boolean
+  setIsMobileMenuOpen?: (v: boolean) => void
+  glitch?: boolean
+  playerOpen?: boolean
+  setPlayerOpen?: (v: boolean | ((prev: boolean) => boolean)) => void
+}
 
 export default function NeuroklastClassicNavigation({
   items,
   siteName,
   onNavigate,
-}: NavigationSlotProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [glitch, setGlitch] = useState(false)
-  const [playerOpen, setPlayerOpen] = useState(false)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() > GLITCH_PROBABILITY) {
-        setGlitch(true)
-        setTimeout(() => setGlitch(false), GLITCH_DURATION_MS)
-      }
-    }, GLITCH_INTERVAL_MS)
-    return () => clearInterval(interval)
-  }, [])
-
+  isMobileMenuOpen = false,
+  setIsMobileMenuOpen,
+  glitch = false,
+  playerOpen = false,
+  setPlayerOpen,
+}: NeuroklastNavigationProps) {
   const handleNavigation = (id: string) => {
-    setIsMobileMenuOpen(false)
+    if (setIsMobileMenuOpen) setIsMobileMenuOpen(false)
     if (onNavigate) {
       onNavigate(id)
     } else {
@@ -79,7 +74,7 @@ export default function NeuroklastClassicNavigation({
               </button>
             ))}
             <button
-              onClick={() => setPlayerOpen(o => !o)}
+              onClick={() => setPlayerOpen && setPlayerOpen(o => !o)}
               className={`p-1 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
               title={playerOpen ? 'Close Player' : 'Open Player'}
             >
@@ -90,7 +85,7 @@ export default function NeuroklastClassicNavigation({
           {/* Mobile menu toggle */}
           <div className="flex items-center gap-2 md:hidden">
             <button
-              onClick={() => setPlayerOpen(o => !o)}
+              onClick={() => setPlayerOpen && setPlayerOpen(o => !o)}
               className={`p-2 transition-colors ${playerOpen ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
               title={playerOpen ? 'Close Player' : 'Open Player'}
             >
@@ -99,7 +94,7 @@ export default function NeuroklastClassicNavigation({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-foreground hover:text-primary"
             >
               {isMobileMenuOpen ? <X size={20} /> : <List size={20} />}
@@ -138,7 +133,7 @@ export default function NeuroklastClassicNavigation({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
             />
             <motion.div
               key="nk-mobile-panel"
