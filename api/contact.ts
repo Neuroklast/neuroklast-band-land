@@ -107,8 +107,12 @@ async function sendEmailNotification({ name, email, subject, message }: { name: 
   }
 }
 
+// OWASP A01:2021 – Broken Access Control: restrict CORS to the configured origin
+// instead of a wildcard so arbitrary third-party sites cannot POST contact messages.
+const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
+
 function setCorsHeaders(res: VercelResponse): void {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 }

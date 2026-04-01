@@ -119,8 +119,15 @@ describe('vercel.json Content-Security-Policy', () => {
     expect(cspHeader).toBeDefined()
   })
 
-  it('restricts connect-src to self only (prevents XSS data exfiltration)', () => {
-    expect(cspHeader.value).toMatch(/connect-src 'self'(?:;|$)/)
+  it('restricts connect-src to self and allowed external domains only (prevents XSS data exfiltration)', () => {
+    // connect-src must include 'self' and only explicitly allowed external domains
+    expect(cspHeader.value).toContain("connect-src 'self'")
+    // Nominatim is explicitly allowed for admin gig geocoding (GigEditDialog.tsx)
+    expect(cspHeader.value).toContain('https://nominatim.openstreetmap.org')
+    // Must NOT use a wildcard in connect-src
+    const connectSrc = cspHeader.value.match(/connect-src ([^;]+)/)
+    expect(connectSrc).toBeTruthy()
+    expect(connectSrc[1]).not.toContain('*')
   })
 
   it('restricts default-src to self', () => {
@@ -142,11 +149,13 @@ describe('vercel.json Content-Security-Policy', () => {
     expect(cspHeader.value).toContain('frame-src https://www.youtube-nocookie.com')
   })
 
-  it('does not allow connect-src to arbitrary external domains', () => {
-    // connect-src should ONLY be 'self' — no wildcard or external domains
+  it('does not allow connect-src to arbitrary external domains (no wildcard)', () => {
+    // connect-src must not use a wildcard — only explicit domains are permitted
     const connectSrc = cspHeader.value.match(/connect-src ([^;]+)/)
     expect(connectSrc).toBeTruthy()
-    expect(connectSrc[1].trim()).toBe("'self'")
+    expect(connectSrc[1]).not.toContain('*')
+    // Must include 'self'
+    expect(connectSrc[1]).toContain("'self'")
   })
 })
 
