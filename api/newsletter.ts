@@ -45,8 +45,12 @@ async function storeSubscriberLocally(email: string, source: string | undefined)
   }
 }
 
+// OWASP A01:2021 – Broken Access Control: restrict CORS to the configured origin
+// instead of a wildcard so arbitrary third-party sites cannot POST subscriptions.
+const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
+
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
   res.setHeader('Access-Control-Allow-Methods', 'POST, DELETE, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 

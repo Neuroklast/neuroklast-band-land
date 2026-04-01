@@ -195,11 +195,12 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }
             >
               <div className="relative">
                 {/*
-                  ALPHA-KANAL-GLOW: filter: drop-shadow() MUSS auf dem Wrapper-<div> sitzen,
-                  nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
-                  Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
+                  ALPHA-KANAL CHROMATIC ABERRATION: filter: drop-shadow() MUSS auf dem
+                  Wrapper-<div> sitzen, nicht auf dem <img> selbst. Nur so folgt der Effekt
+                  der transparenten Silhouette des Bildes. Kein statisches Glow — nur
+                  chromatische Aberration beim Hover (CSS-Klasse hero-logo-chromatic-hover).
                 */}
-                <div style={{ filter: 'drop-shadow(0 0 30px color-mix(in oklch, var(--primary) 60%, transparent))' }}>
+                <div className="hero-logo-chromatic-hover">
                   <img 
                     src={logoUrl ?? logoPng} 
                     alt={t('hero.logoAlt').replace('{0}', name)} 

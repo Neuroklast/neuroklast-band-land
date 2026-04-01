@@ -561,6 +561,18 @@ See [SECURITY.md](SECURITY.md) for responsible disclosure.
 
 ---
 
+## Project Documentation
+
+| Document | Description |
+|----------|-------------|
+| [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) | Current feature checklist, architecture overview, known issues |
+| [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md) | Session-based development log (newest first) |
+| [docs/LESSONS_LEARNED.md](docs/LESSONS_LEARNED.md) | Technical decisions, pitfalls, and lessons from each session |
+| [docs/AGENT_PROTOCOL.md](docs/AGENT_PROTOCOL.md) | Mandatory protocol for all coding agent sessions |
+| [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md) | Full OWASP security audit findings and fix status |
+
+---
+
 ## License
 
 **Source Available — not Open Source.**
