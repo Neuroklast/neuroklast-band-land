@@ -10,7 +10,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **`src/hooks/use-setup-wizard.ts`** — New custom hook encapsulating all Setup Wizard
+- **`src/base.css`** — CSS split: base styles, CSS reset, CSS variables (`:root`), and
+  theme foundations (`@theme`) extracted from `src/index.css` for faster initial parse.
+
+- **`src/animations.css`** — CSS split: all `@keyframes` definitions and animation
+  utility classes extracted from `src/index.css`. Imported after `base.css` to preserve
+  specificity order.
+
+- **`vite.config.ts` — `manualChunks`** — Vendor bundle splitting for long-term caching:
+  - `vendor-react`: react, react-dom, react-is
+  - `vendor-radix`: all @radix-ui packages
+  - `vendor-three`: three, @react-three/fiber, @react-three/drei
+  - `vendor-motion`: framer-motion
+  - `vendor-charts`: recharts
+  - `vendor-i18n`: i18next, react-i18next, i18next-browser-languagedetector, i18next-http-backend
+
+- **`vite.config.ts` — Brotli/Gzip compression** — `vite-plugin-compression2` added for
+  production builds: generates `.gz` (gzip) and `.br` (brotli) files alongside each
+  asset, reducing transfer sizes by ~30 %.
+
+- **`package.json`** — `vite-plugin-compression2` added as dev dependency.
+
+### Changed
+
+- **`src/App.tsx`** — Additional components converted to `React.lazy()` for code
+  splitting: `AdminButton`, `AdminLoginDialog`, `AudioVisualizer`, `OverlayEffectsLayer`,
+  `MovingScanline`, `SystemMonitorHUD`, `LicenseStatusBadge`. All wrapped in `<Suspense>`
+  with appropriate fallbacks (`null` for invisible elements, `<CyberSpinner />` for
+  blocking UI).
+
+- **`src/index.css`** — Reduced from 2028 lines to 4 `@import` statements; content moved
+  to `base.css` and `animations.css`. Rule order and specificity preserved.
+
+- **`src/ErrorFallback.tsx`** — Replaced `lucide-react` imports (`AlertTriangleIcon`,
+  `RefreshCwIcon`) with `@phosphor-icons/react` equivalents (`Warning`, `ArrowsClockwise`),
+  removing the duplicate icon library dependency from the bundle.
+
+
   state and business logic (previously embedded in `SetupWizard.tsx`). Exports typed
   interfaces `SetupWizardState`, `SetupWizardActions`, and `UseSetupWizardReturn`.
   Helper functions `needsActivationStep`, `toPreviewUrl`, `loadGoogleFont`, and

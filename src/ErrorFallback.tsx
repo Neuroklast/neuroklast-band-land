@@ -1,7 +1,7 @@
 import { Alert, AlertTitle, AlertDescription } from "./components/ui/alert";
 import { Button } from "./components/ui/button";
 
-import { AlertTriangleIcon, RefreshCwIcon } from "lucide-react";
+import { Warning, ArrowsClockwise } from "@phosphor-icons/react";
 import { useLocale } from "@/hooks/use-locale";
 
 export const ErrorFallback = ({ error, resetErrorBoundary }) => {
@@ -15,7 +15,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }) => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
-          <AlertTriangleIcon />
+          <Warning />
           <AlertTitle>{t('error.title')}</AlertTitle>
           <AlertDescription>
             {t('error.description')}</AlertDescription>
@@ -34,7 +34,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }) => {
           className="w-full"
           variant="outline"
         >
-          <RefreshCwIcon />
+          <ArrowsClockwise />
           {t('error.tryAgain')}
         </Button>
       </div>

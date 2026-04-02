@@ -6,14 +6,8 @@ import { useAppKeyboardShortcuts } from '@/hooks/use-app-keyboard-shortcuts'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import AdminButton from '@/components/AdminButton'
-import AdminLoginDialog from '@/components/AdminLoginDialog'
-import AudioVisualizer from '@/components/AudioVisualizer'
 import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
-import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
-import { MovingScanline } from '@/components/MovingScanline'
-import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import CyberSpinner from '@/components/CyberSpinner'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
 import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
@@ -30,7 +24,6 @@ import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
 import ActivationLockScreen from '@/components/ActivationLockScreen'
-import LicenseStatusBadge from '@/components/LicenseStatusBadge'
 import { validateActivationKey } from '@/lib/activation'
 import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
@@ -52,6 +45,13 @@ const AdminDialogManager = lazy(() => import('@/components/AdminDialogManager'))
 const ImpressumWindow = lazy(() => import('@/components/ImpressumWindow'))
 const DatenschutzWindow = lazy(() => import('@/components/DatenschutzWindow'))
 const BandInfoEditDialog = lazy(() => import('@/components/BandInfoEditDialog'))
+const AdminButton = lazy(() => import('@/components/AdminButton'))
+const AdminLoginDialog = lazy(() => import('@/components/AdminLoginDialog'))
+const AudioVisualizer = lazy(() => import('@/components/AudioVisualizer'))
+const OverlayEffectsLayer = lazy(() => import('@/components/OverlayEffectsLayer'))
+const MovingScanline = lazy(() => import('@/components/MovingScanline').then(m => ({ default: m.MovingScanline })))
+const SystemMonitorHUD = lazy(() => import('@/components/SystemMonitorHUD').then(m => ({ default: m.SystemMonitorHUD })))
+const LicenseStatusBadge = lazy(() => import('@/components/LicenseStatusBadge'))
 
 // ─── Default config ───────────────────────────────────────────────────────────
 
@@ -284,9 +284,9 @@ function App() {
         <DatenschutzWindow open={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} datenschutz={data.datenschutz} impressumName={data.impressum?.name} editMode={isOwner} onSave={(datenschutz) => updateConfig({ datenschutz })} />
       </Suspense>
       <CookieBanner />
-      {vis.scanline !== false && <MovingScanline />}
-      {vis.systemMonitor !== false && <SystemMonitorHUD />}
-      <OverlayEffectsLayer effects={data.themeSettings?.overlayEffects} />
+      {vis.scanline !== false && <Suspense fallback={null}><MovingScanline /></Suspense>}
+      {vis.systemMonitor !== false && <Suspense fallback={null}><SystemMonitorHUD /></Suspense>}
+      <Suspense fallback={null}><OverlayEffectsLayer effects={data.themeSettings?.overlayEffects} /></Suspense>
       <AnimatePresence>
         {loading && (
           siteConfigLoaded ? (
@@ -328,7 +328,7 @@ function App() {
             ].filter(item => item.id === 'hero' || (activeSectionIds.includes(item.id) && vis[item.id as keyof typeof vis] !== false))}
           />
           <motion.div className="min-h-screen bg-background text-foreground overflow-x-hidden relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-            {vis.audioVisualizer !== false && <AudioVisualizer />}
+            {vis.audioVisualizer !== false && <Suspense fallback={null}><AudioVisualizer /></Suspense>}
             <div className="fixed inset-0 pointer-events-none z-[100]"><div className="absolute inset-0 hud-scanline opacity-30" /></div>
             <Toaster position="top-right" />
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.4 }}>
@@ -359,24 +359,26 @@ function App() {
 
               {isOwner && (
                 <div className="flex items-center gap-2">
-                  {activationResult && (
-                    <LicenseStatusBadge valid={activationResult.valid} tier={activationResult.tier} />
-                  )}
-                  <AdminButton
-                    hasPassword={!needsSetup}
-                    onChangePassword={handleChangeAdminPassword}
-                    onSetPassword={handleSetAdminPassword}
-                    onLogout={handleAdminLogout}
-                    onResetSetup={() => {
-                      updateConfig({ setupComplete: false })
-                    }}
-                    siteConfig={data}
-                    onUpdateSiteConfig={(key, value) => updateConfig({ [key]: value })}
-                    onImportData={(imported) => setConfig(imported)}
-                    onOpenDialog={setActiveDialog}
-                    isPrimary={isPrimary}
-                    openHubOnMount={openAdminHubOnMount}
-                  />
+                  <Suspense fallback={null}>
+                    {activationResult && (
+                      <LicenseStatusBadge valid={activationResult.valid} tier={activationResult.tier} />
+                    )}
+                    <AdminButton
+                      hasPassword={!needsSetup}
+                      onChangePassword={handleChangeAdminPassword}
+                      onSetPassword={handleSetAdminPassword}
+                      onLogout={handleAdminLogout}
+                      onResetSetup={() => {
+                        updateConfig({ setupComplete: false })
+                      }}
+                      siteConfig={data}
+                      onUpdateSiteConfig={(key, value) => updateConfig({ [key]: value })}
+                      onImportData={(imported) => setConfig(imported)}
+                      onOpenDialog={setActiveDialog}
+                      isPrimary={isPrimary}
+                      openHubOnMount={openAdminHubOnMount}
+                    />
+                  </Suspense>
                 </div>
               )}
 
@@ -428,8 +430,10 @@ function App() {
         </>
       )}
 
-      <AdminLoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} mode="login" totpEnabled={totpEnabled} onLogin={handleAdminLogin} onSetPassword={handleSetAdminPassword} />
-      <AdminLoginDialog open={showSetupDialog} onOpenChange={setShowSetupDialog} mode="setup" setupTokenRequired={setupTokenRequired} onSetPassword={handleSetupAdminPassword} />
+      <Suspense fallback={null}>
+        <AdminLoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} mode="login" totpEnabled={totpEnabled} onLogin={handleAdminLogin} onSetPassword={handleSetAdminPassword} />
+        <AdminLoginDialog open={showSetupDialog} onOpenChange={setShowSetupDialog} mode="setup" setupTokenRequired={setupTokenRequired} onSetPassword={handleSetupAdminPassword} />
+      </Suspense>
       <Suspense fallback={null}>
         <BandInfoEditDialog
           open={showBandInfoEdit}
