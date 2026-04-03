@@ -6,6 +6,7 @@
 
 import type { ThemeSettings } from '@/lib/types'
 import { getTheme } from '@/lib/theme-registry'
+import { ensureContrast } from './color-utils'
 
 export const FONT_OPTIONS = [
   { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace", google: false },
@@ -83,10 +84,17 @@ export function applyOverlayEffectsToDOM(theme: ThemeSettings | undefined) {
 function applyCSSVars(root: HTMLElement, theme: ThemeSettings) {
   if (theme.primary) root.style.setProperty('--primary', theme.primary)
   if (theme.accent) root.style.setProperty('--accent', theme.accent)
-  if (theme.background) root.style.setProperty('--background', theme.background)
-  if (theme.card) root.style.setProperty('--card', theme.card)
-  if (theme.foreground) root.style.setProperty('--foreground', theme.foreground)
-  if (theme.mutedForeground) root.style.setProperty('--muted-foreground', theme.mutedForeground)
+
+  const background = theme.background
+  const card = theme.card
+  const foreground = theme.foreground && background ? ensureContrast(theme.foreground, background) : theme.foreground
+  const mutedForeground = theme.mutedForeground && background ? ensureContrast(theme.mutedForeground, background) : theme.mutedForeground
+  const primaryForeground = theme.primaryForeground && theme.primary ? ensureContrast(theme.primaryForeground, theme.primary) : theme.primaryForeground
+
+  if (background) root.style.setProperty('--background', background)
+  if (card) root.style.setProperty('--card', card)
+  if (foreground) root.style.setProperty('--foreground', foreground)
+  if (mutedForeground) root.style.setProperty('--muted-foreground', mutedForeground)
   if (theme.border) root.style.setProperty('--border', theme.border)
   if (theme.secondary) root.style.setProperty('--secondary', theme.secondary)
   if (theme.fontBody) root.style.setProperty('--font-sans', theme.fontBody)
@@ -95,6 +103,9 @@ function applyCSSVars(root: HTMLElement, theme: ThemeSettings) {
   if (theme.fontHeading) {
     root.style.setProperty('--font-heading', theme.fontHeading)
   }
+
+  // Hero Image Tint
+  root.style.setProperty('--hero-image-tint', theme.heroImageTint ? '1' : '0')
 
   // Border radius
   // We set both --radius (used by index.css @theme) and --radius-factor
@@ -132,7 +143,9 @@ function applyCSSVars(root: HTMLElement, theme: ThemeSettings) {
   }
 
   // Extended color overrides — applied after the derived values so they take precedence
-  if (theme.primaryForeground) root.style.setProperty('--primary-foreground', theme.primaryForeground)
+  if (primaryForeground) root.style.setProperty('--primary-foreground', primaryForeground)
+  else if (theme.primaryForeground) root.style.setProperty('--primary-foreground', theme.primaryForeground)
+
   if (theme.cardForeground) root.style.setProperty('--card-foreground', theme.cardForeground)
   if (theme.popoverColor) root.style.setProperty('--popover', theme.popoverColor)
   if (theme.popoverForeground) root.style.setProperty('--popover-foreground', theme.popoverForeground)
@@ -260,15 +273,20 @@ export function applyThemeDefaults(themeId: string): Partial<ThemeSettings> {
   const theme = getTheme(themeId)
   if (!theme) return {}
   const result: Partial<ThemeSettings> = { activePreset: themeId }
-  if (theme.defaultColors) {
-    result.primary = theme.defaultColors.primary
-    result.accent = theme.defaultColors.accent
-    result.background = theme.defaultColors.background
-    result.card = theme.defaultColors.card
-    result.foreground = theme.defaultColors.foreground
-    result.mutedForeground = theme.defaultColors.mutedForeground
-    result.border = theme.defaultColors.border
-    result.secondary = theme.defaultColors.secondary
+
+  const defaultColors = theme.defaultColors
+    ?? theme.colorPresets?.find(p => p.id === theme.defaultPresetId)?.colors
+    ?? theme.colorPresets?.[0]?.colors
+
+  if (defaultColors) {
+    result.primary = defaultColors.primary
+    result.accent = defaultColors.accent
+    result.background = defaultColors.background
+    result.card = defaultColors.card
+    result.foreground = defaultColors.foreground
+    result.mutedForeground = defaultColors.mutedForeground
+    result.border = defaultColors.border
+    result.secondary = defaultColors.secondary
   }
   if (theme.defaultFonts) {
     result.fontHeading = theme.defaultFonts.heading

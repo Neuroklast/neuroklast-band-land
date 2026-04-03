@@ -104,13 +104,14 @@ export function useThemeCustomizer({
     const defaults = applyThemeDefaults(themeId)
     setPreviewConfig(prev => ({
       theme: themeId,
-      themeSettings: {
+      themeSettings: resolveColorsFromPreset({
         // Preserve only user-created custom presets across theme switches.
         customColorPresets: prev.themeSettings.customColorPresets,
         // New theme defaults override all previous color/font/effect settings.
         ...defaults,
         ...structuralPatch,
-      },
+        activePreset: themeId,
+      }),
     }))
     setHasEdits(true)
   }, [])

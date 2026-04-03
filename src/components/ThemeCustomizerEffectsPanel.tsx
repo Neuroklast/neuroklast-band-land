@@ -67,6 +67,20 @@ export default function ThemeCustomizerEffectsPanel({ themeSettings, activeTheme
           </button>
         </div>
 
+        <div className="flex items-center justify-between border-b border-primary/10 pb-2">
+          <div>
+            <span className="font-mono text-xs text-foreground/90 block">Hero Image Tint</span>
+            <span className="font-mono text-[9px] text-muted-foreground/60">Colorizes the hero image with the primary theme color</span>
+          </div>
+          <button
+            onClick={() => onUpdate({ ...themeSettings, heroImageTint: !themeSettings.heroImageTint })}
+            className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-mono transition-colors ${themeSettings.heroImageTint ? 'text-primary bg-primary/10' : 'text-muted-foreground/40 bg-muted/20'}`}
+          >
+            {themeSettings.heroImageTint ? <Eye size={14} /> : <EyeSlash size={14} />}
+            {themeSettings.heroImageTint ? t('theme.on') : t('theme.off')}
+          </button>
+        </div>
+
         {GLOBAL_EFFECTS.map(effect => {
           const isEnabled = getAnimationEnabled(themeSettings, effect.id)
           const intensity = getAnimationIntensity(themeSettings, effect.id)

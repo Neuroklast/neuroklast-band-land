@@ -38,7 +38,7 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
       >
         {logoUrl ? (
           <motion.div
-            className="mb-8 relative mx-auto w-fit"
+            className="mb-8 relative mx-auto w-fit isolate"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
@@ -46,8 +46,9 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
             <img
               src={logoUrl}
               alt={name || 'Artist'}
-              className="h-40 md:h-56 lg:h-72 w-auto object-contain"
+              className="h-40 md:h-56 lg:h-72 w-auto object-contain relative z-10"
             />
+            <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
           </motion.div>
         ) : (
           <motion.h1

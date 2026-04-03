@@ -156,11 +156,14 @@ export default function NeuroklastClassicHero({
               Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
             */}
             <div style={{ filter: 'drop-shadow(0 0 20px var(--primary))' }}>
-              <img
-                src={logoUrl}
-                alt={`${name} Logo`}
-                className="w-[18rem] h-auto sm:w-[22rem] md:w-[26rem] lg:w-[30rem]"
-              />
+              <div className="relative isolate block w-fit mx-auto">
+                <img
+                  src={logoUrl}
+                  alt={`${name} Logo`}
+                  className="w-[18rem] h-auto sm:w-[22rem] md:w-[26rem] lg:w-[30rem] relative z-10"
+                />
+                <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+              </div>
             </div>
           </motion.div>
         )}
@@ -183,11 +186,14 @@ export default function NeuroklastClassicHero({
                   'drop-shadow(0 0 30px var(--primary)) drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 70%, transparent))',
               }}
             >
-              <img
-                src={titleImageUrl}
-                alt={name}
-                className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto"
-              />
+              <div className="relative isolate block w-full">
+                <img
+                  src={titleImageUrl}
+                  alt={name}
+                  className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto relative z-10"
+                />
+                <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+              </div>
             </div>
           ) : (
             <h1
