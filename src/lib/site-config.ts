@@ -2,9 +2,7 @@ import type { SiteConfig, SocialLinks, Gig, Release, Biography, TerminalCommand,
 
 export const TEMPLATE_VERSION = '2.0.0'
 
-export const DEFAULT_SECTION_ORDER = [
-  'news', 'biography', 'gallery', 'gigs', 'releases', 'media', 'social', 'partners', 'contact'
-]
+import { buildDefaultSections } from './sections'
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
   siteId: '',
@@ -16,7 +14,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   socialLinks: {},
   gigs: [],
   releases: [],
-  sectionOrder: DEFAULT_SECTION_ORDER,
+  sections: buildDefaultSections(),
   navigation: { showLanguageSwitcher: true, showAudioPlayer: true },
   footer: { copyrightText: '© {year} {siteName}', showAttribution: true },
   seo: {},
@@ -51,7 +49,7 @@ export function createSiteConfig(partial: Partial<SiteConfig>): SiteConfig {
     footer: { ...DEFAULT_SITE_CONFIG.footer, ...partial.footer },
     seo: { ...DEFAULT_SITE_CONFIG.seo, ...partial.seo },
     features: { ...DEFAULT_SITE_CONFIG.features, ...partial.features },
-    ...(partial.sections !== undefined ? { sections: partial.sections } : {}),
+    sections: partial.sections ?? DEFAULT_SITE_CONFIG.sections,
     ...(partial.fontConfig !== undefined ? { fontConfig: partial.fontConfig } : {}),
     ...(partial.widgetPlugins !== undefined ? { widgetPlugins: partial.widgetPlugins } : {}),
   }
@@ -90,7 +88,11 @@ export function migrateFromLegacyBandData(legacy: Record<string, unknown>): Site
     contactSettings: legacy.contactSettings as ContactSettings | undefined,
     terminalMorseCode: legacy.terminalMorseCode as string | undefined,
     animations: legacy.animations as AnimationSettings | undefined,
-    sections: legacy.sections as SectionConfig[] | undefined,
+    sections: legacy.sections
+      ? (legacy.sections as SectionConfig[])
+      : legacy.sectionOrder
+        ? (legacy.sectionOrder as string[]).map((id, index) => ({ id, enabled: true, order: index }))
+        : buildDefaultSections(),
     fontConfig: legacy.fontConfig as FontConfig | undefined,
     widgetPlugins: legacy.widgetPlugins as WidgetPlugin[] | undefined,
   })

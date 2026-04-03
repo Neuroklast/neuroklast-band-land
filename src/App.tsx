@@ -422,7 +422,7 @@ function App() {
                   siteConfig={data}
                   onUpdateSiteConfig={(key, value) => updateConfig({ [key]: value })}
                   sections={data.sections}
-                  onSaveSections={(sections) => updateConfig({ sections, sectionOrder: sections.map(s => s.id) })}
+                  onSaveSections={(sections) => updateConfig({ sections })}
                 />
               </Suspense>
             </motion.div>
