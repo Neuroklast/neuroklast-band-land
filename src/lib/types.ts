@@ -405,13 +405,6 @@ export interface SiteConfig {
   animations?: AnimationSettings
 
   // ─── NEW CONFIG FIELDS ───
-  /**
-   * Section display order – array of section IDs.
-   * @deprecated Use `sections` instead for full per-section control (enable/disable + ordering).
-   * Will be removed in a future version. Use `migrateSectionOrder()` from `src/lib/sections.ts`
-   * to convert this value to the new `SectionConfig[]` format.
-   */
-  sectionOrder: string[]
   /** Navigation configuration */
   navigation: NavigationConfig
   /** Footer configuration */
@@ -421,7 +414,7 @@ export interface SiteConfig {
   /** Feature flags */
   features: FeatureFlags
   /** Per-section enable/disable and ordering configuration */
-  sections?: SectionConfig[]
+  sections: SectionConfig[]
   /** Font loading configuration (Google Fonts + custom fonts) */
   fontConfig?: FontConfig
   /** Installed/configured widget plugins (#163) */
@@ -1019,7 +1012,7 @@ export interface FontConfig {
 
 /** Configuration for a single section */
 export interface SectionConfig {
-  /** Section identifier matching the keys in SectionVisibility / sectionOrder */
+  /** Section identifier matching the keys in SectionVisibility */
   id: string
   /** Whether this section is displayed */
   enabled: boolean

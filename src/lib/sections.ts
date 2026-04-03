@@ -17,12 +17,13 @@
  */
 
 import type { SectionConfig } from './types'
-import { DEFAULT_SECTION_ORDER } from './site-config'
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 /** All recognised section IDs, in default display order. */
-export const ALL_SECTION_IDS: readonly string[] = DEFAULT_SECTION_ORDER
+export const ALL_SECTION_IDS: readonly string[] = [
+  'news', 'biography', 'gallery', 'gigs', 'releases', 'media', 'social', 'partners', 'contact'
+]
 
 // ─── Core helpers ─────────────────────────────────────────────────────────────
 
@@ -59,45 +60,18 @@ export function normalizeSections(configs: SectionConfig[]): SectionConfig[] {
   return Array.from(configMap.values()).sort((a, b) => a.order - b.order)
 }
 
-// ─── Migration helpers ────────────────────────────────────────────────────────
-
-/**
- * Convert a legacy `sectionOrder` string array to the new `SectionConfig[]`
- * format.  Each section is enabled by default and ordered by its position
- * in the input array.
- *
- * Call this when migrating persisted configs that only have `sectionOrder`
- * (the deprecated field) and not the newer `sections` field.
- *
- * @example
- * const sections = migrateSectionOrder(config.sectionOrder)
- * updateConfig({ sections, sectionOrder: sections.map(s => s.id) })
- */
-export function migrateSectionOrder(sectionOrder: string[]): SectionConfig[] {
-  return sectionOrder.map((id, index) => ({
-    id,
-    enabled: true,
-    order: index,
-  }))
-}
-
 /**
  * Resolve the active section configuration from a partial `SiteConfig`.
  *
  * Resolution priority:
- * 1. Use `sections` if present and non-empty (current format).
- * 2. Fall back to `sectionOrder` via `migrateSectionOrder` (legacy format).
- * 3. If neither is present, return `buildDefaultSections()`.
+ * 1. Use `sections` if present and non-empty.
+ * 2. If neither is present, return `buildDefaultSections()`.
  */
 export function resolveSections(config: {
   sections?: SectionConfig[]
-  sectionOrder?: string[]
 }): SectionConfig[] {
   if (config.sections && config.sections.length > 0) {
     return normalizeSections(config.sections)
-  }
-  if (config.sectionOrder && config.sectionOrder.length > 0) {
-    return migrateSectionOrder(config.sectionOrder)
   }
   return buildDefaultSections()
 }
@@ -115,7 +89,6 @@ export function getEnabledSections(configs: SectionConfig[]): SectionConfig[] {
 
 /**
  * Return the IDs of all enabled sections in display order.
- * This is the format expected by `sectionOrder` in `SiteConfig`.
  */
 export function getEnabledSectionIds(configs: SectionConfig[]): string[] {
   return getEnabledSections(configs).map((s) => s.id)

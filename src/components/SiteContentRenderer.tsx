@@ -78,9 +78,8 @@ export default function SiteContentRenderer({
   const activeSectionIds = useMemo(
     () => getEnabledSectionIds(resolveSections({
       sections: data.sections,
-      sectionOrder: data.sectionOrder,
     })),
-    [data.sections, data.sectionOrder]
+    [data.sections]
   )
 
   return (
