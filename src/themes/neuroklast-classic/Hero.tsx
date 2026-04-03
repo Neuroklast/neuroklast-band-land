@@ -162,7 +162,7 @@ export default function NeuroklastClassicHero({
                   alt={`${name} Logo`}
                   className="w-[18rem] h-auto sm:w-[22rem] md:w-[26rem] lg:w-[30rem] relative z-10"
                 />
-                <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+                <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)', maskImage: `url(${logoUrl})`, maskSize: 'contain', maskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskImage: `url(${logoUrl})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center' }} />
               </div>
             </div>
           </motion.div>
@@ -192,7 +192,7 @@ export default function NeuroklastClassicHero({
                   alt={name}
                   className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto relative z-10"
                 />
-                <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+                <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)', maskImage: `url(${titleImageUrl})`, maskSize: 'contain', maskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskImage: `url(${titleImageUrl})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center' }} />
               </div>
             </div>
           ) : (
