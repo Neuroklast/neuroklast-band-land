@@ -10,6 +10,20 @@
 export function cssColorToRgb(color: string): { r: number; g: number; b: number } | null {
   if (typeof document === 'undefined') return null
   try {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1
+    canvas.height = 1
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (ctx) {
+      ctx.fillStyle = color
+      ctx.fillRect(0, 0, 1, 1)
+      const data = ctx.getImageData(0, 0, 1, 1).data
+      // If alpha is 0 and it wasn't explicitly transparent, the color might be invalid
+      // but canvas just leaves it black (0,0,0,0). For our purpose, returning the RGB is fine.
+      return { r: data[0], g: data[1], b: data[2] }
+    }
+
+    // Fallback if canvas is not available (e.g., in some test environments)
     const el = document.createElement('div')
     el.style.color = color
     document.body.appendChild(el)

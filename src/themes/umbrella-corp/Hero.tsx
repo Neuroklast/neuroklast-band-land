@@ -48,7 +48,7 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
               alt={name || 'Artist'}
               className="h-40 md:h-56 lg:h-72 w-auto object-contain relative z-10"
             />
-            <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+            <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)', maskImage: `url(${logoUrl})`, maskSize: 'contain', maskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskImage: `url(${logoUrl})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center' }} />
           </motion.div>
         ) : (
           <motion.h1
