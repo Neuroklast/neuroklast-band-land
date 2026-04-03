@@ -197,11 +197,14 @@ export default function HeroZardonic({
                 Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
               */}
               <div style={!glitchLogo ? { filter: 'drop-shadow(0 0 30px oklch(0.45 0.22 25 / 0.8))' } : undefined}>
-                <img
-                  src={logoUrl ?? logoPng}
-                  alt={`${name} Logo`}
-                  className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] ${glitchLogo ? 'red-glitch-element' : ''}`}
-                />
+                <div className="relative isolate block w-fit mx-auto">
+                  <img
+                    src={logoUrl ?? logoPng}
+                    alt={`${name} Logo`}
+                    className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10 ${glitchLogo ? 'red-glitch-element' : ''}`}
+                  />
+                  <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+                </div>
               </div>
               {/* CRT scanline overlay on logo */}
               <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
@@ -251,11 +254,14 @@ export default function HeroZardonic({
                 Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
               */}
               <div style={{ filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))` }}>
-                <img
-                  src={titleImageUrl ?? titlePng}
-                  alt={name}
-                  className={`w-full h-auto ${glitchTitle ? 'red-glitch-element' : ''}`}
-                />
+                <div className="relative isolate block w-full">
+                  <img
+                    src={titleImageUrl ?? titlePng}
+                    alt={name}
+                    className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
+                  />
+                  <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+                </div>
               </div>
               {/* CRT scanline + dot-matrix overlays */}
               <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>

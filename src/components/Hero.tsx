@@ -179,11 +179,14 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }
             </Suspense>
           ) : heroStyle === 'minimal' ? (
             /* Minimal — plain logo without effects */
-            <img
-              src={logoUrl ?? logoPng}
-              alt={t('hero.logoAlt').replace('{0}', name)}
-              className="w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]"
-            />
+            <div className="relative isolate block w-fit">
+              <img
+                src={logoUrl ?? logoPng}
+                alt={t('hero.logoAlt').replace('{0}', name)}
+                className="w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10"
+              />
+              <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+            </div>
           ) : (
             /* Default / chromatic-hover — original glitch + scanline overlay */
             <div 
@@ -201,11 +204,14 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }
                   chromatische Aberration beim Hover (CSS-Klasse hero-logo-chromatic-hover).
                 */}
                 <div className="hero-logo-chromatic-hover">
-                  <img 
-                    src={logoUrl ?? logoPng} 
-                    alt={t('hero.logoAlt').replace('{0}', name)} 
-                    className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem]`}
-                  />
+                  <div className="relative isolate block w-fit mx-auto">
+                    <img
+                      src={logoUrl ?? logoPng}
+                      alt={t('hero.logoAlt').replace('{0}', name)}
+                      className={`w-[20rem] h-auto sm:w-[24rem] md:w-[28rem] lg:w-[32rem] xl:w-[36rem] relative z-10`}
+                    />
+                    <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+                  </div>
                 </div>
                 <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                   <div 
@@ -253,11 +259,14 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }
                 Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
               */}
               <div style={{ filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))` }}>
-                <img 
-                  src={titleImageUrl ?? titlePng} 
-                  alt={t('hero.titleAlt').replace('{0}', name)} 
-                  className={`w-full h-auto`}
-                />
+                <div className="relative isolate block w-full">
+                  <img
+                    src={titleImageUrl ?? titlePng}
+                    alt={t('hero.titleAlt').replace('{0}', name)}
+                    className={`w-full h-auto relative z-10`}
+                  />
+                  <div className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 mix-blend-color" style={{ backgroundColor: 'var(--primary)', opacity: 'var(--hero-image-tint, 0)' }} />
+                </div>
               </div>
               <div className="absolute inset-0 pointer-events-none z-20" style={{ mixBlendMode: 'multiply' }}>
                 <div 

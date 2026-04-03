@@ -227,6 +227,8 @@ export interface ThemeSettings {
   heroButtons?: HeroButton[]
   /** User-created custom color presets (persisted in site config) */
   customColorPresets?: ColorPreset[]
+  /** Optional filter to tint the hero image with the primary color */
+  heroImageTint?: boolean
 }
 
 /** Individual overlay effect configuration */

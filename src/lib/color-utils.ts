@@ -29,6 +29,38 @@ export function oklchToHex(oklch: string): string {
  *
  * Falls back to `oklch(0.50 0.22 25)` when the color cannot be resolved.
  */
+/**
+ * Ensure a given foreground color is readable against a given background color.
+ * Works by parsing the lightness `L` value of `oklch(L C H)` strings.
+ * If the color cannot be parsed as OKLCH, returns the original color.
+ */
+export function ensureContrast(fgOklch: string, bgOklch: string): string {
+  const fgMatch = fgOklch.match(/oklch\(\s*([\d.]+)/)
+  const bgMatch = bgOklch.match(/oklch\(\s*([\d.]+)/)
+
+  if (fgMatch && bgMatch) {
+    const fgL = parseFloat(fgMatch[1])
+    const bgL = parseFloat(bgMatch[1])
+
+    // Background is light (L > 0.6)
+    if (bgL > 0.6) {
+      // Foreground is also light (L > 0.5) -> unreadable, make foreground dark
+      if (fgL > 0.5) {
+        return 'oklch(0.15 0 0)' // Dark
+      }
+    }
+    // Background is dark (L <= 0.6)
+    else {
+      // Foreground is also dark (L < 0.5) -> unreadable, make foreground light
+      if (fgL < 0.5) {
+        return 'oklch(0.95 0 0)' // Light
+      }
+    }
+  }
+
+  return fgOklch
+}
+
 export function hexToOklch(hex: string): string {
   const rgb = cssColorToRgb(hex)
   if (rgb) {

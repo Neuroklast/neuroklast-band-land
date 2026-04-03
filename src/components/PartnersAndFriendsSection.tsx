@@ -137,20 +137,20 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
 
   return (
     <Card
-      className="bg-card/50 border-border hover:border-primary/50 transition-all duration-300 overflow-hidden group hud-element hud-corner cursor-pointer"
+      className="bg-card/50 border-border hover:border-primary/50 transition-all duration-300 overflow-hidden group hud-element hud-corner cursor-pointer h-full"
       onClick={() => !editMode && onSelect()}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <span className="corner-bl"></span>
       <span className="corner-br"></span>
-      <div className="flex flex-col items-center gap-3 p-5">
+      <div className="flex flex-col items-center gap-3 p-5 h-full">
         {(friend.iconPhoto || friend.photo) ? (
           <div className={`relative w-24 h-24 aspect-square flex-shrink-0 overflow-hidden border border-primary/30 shadow-[0_0_15px_var(--primary-glow),0_0_30px_var(--primary-glow-dim)] bg-black`}>
             <ProgressiveImage
               src={friend.iconPhoto || friend.photo || ''}
               alt={friend.name}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
             />
             <div className="dot-matrix-photo" />
           </div>
@@ -159,7 +159,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
             <User size={32} className="text-muted-foreground/40" />
           </div>
         )}
-        <div className="text-center min-w-0 w-full">
+        <div className="text-center min-w-0 w-full flex-grow flex flex-col justify-start">
           <div className="flex items-center justify-center gap-2">
             <p className="text-sm font-bold line-clamp-1">{friend.name}</p>
             {editMode && (
@@ -298,10 +298,11 @@ export default function PartnersAndFriendsSection({ friends = [], editMode, onUp
           transition={{ duration: 0.6, delay: 0.2 }}
         />
 
-        <div className="partner-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="partner-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
           {displayFriends.map((friend, index) => (
             <motion.div
               key={friend.id}
+              className="h-full"
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
