@@ -7,9 +7,10 @@ const DATENSCHUTZ_TEXT = 'Datenschutz'
 const ADMIN_LOGIN_TEXT = '>:Admin_Login'
 
 export default function Footer({
-  socialLinks,
   siteName,
+  socialLinks,
   genres,
+  label,
   onAdminLogin,
   onImpressum,
   onDatenschutz,
@@ -54,7 +55,7 @@ export default function Footer({
               {socialEntries.map(([platform, url]) => (
                 <a
                   key={platform}
-                  href={url}
+                  href={url as string}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs font-mono text-muted-foreground hover:text-primary transition-colors capitalize tracking-wider zardonic-theme-hover-chromatic"

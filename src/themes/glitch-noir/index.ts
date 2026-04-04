@@ -5,6 +5,7 @@ import BackgroundEffects from './BackgroundEffects'
 import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
 import OverlayModal from './OverlayModal'
+import OverlayTransition from './OverlayTransition'
 import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
@@ -124,5 +125,6 @@ export const glitchNoirTheme: ThemePackage = {
     SectionDivider,
     LoadingScreen,
     OverlayModal,
+    OverlayTransition,
   }
 }

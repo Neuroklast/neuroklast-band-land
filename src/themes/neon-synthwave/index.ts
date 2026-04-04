@@ -3,6 +3,9 @@ import Navigation from './Navigation'
 import Card from './Card'
 import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
+import BackgroundEffects from './BackgroundEffects'
+import OverlayModal from './OverlayModal'
+import OverlayTransition from './OverlayTransition'
 import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
@@ -103,5 +106,8 @@ export const neonSynthwaveTheme: ThemePackage = {
     Card,
     SectionDivider,
     LoadingScreen,
+    BackgroundEffects,
+    OverlayModal,
+    OverlayTransition,
   },
 }

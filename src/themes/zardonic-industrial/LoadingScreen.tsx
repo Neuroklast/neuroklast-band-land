@@ -1,8 +1,6 @@
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
-
 import type { LoadingScreenSlotProps } from '@/lib/types'
-type LoadingScreenProps = LoadingScreenSlotProps;
 
 const TRIANGLE_CHAR = '▸'
 
@@ -12,7 +10,7 @@ const LOADING_TEXTS = [
   '> IDENTITY VERIFIED',
 ]
 
-export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
+export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   const [loadingText, setLoadingText] = useState(LOADING_TEXTS[0])
   const [progress, setProgress] = useState(0)
 
@@ -26,7 +24,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
     }, 500)
 
     const progressInterval = setInterval(() => {
-      setProgress((prev) => {
+      setProgress((prev: number) => {
         if (prev >= 100) {
           clearInterval(progressInterval)
           clearInterval(textInterval)
