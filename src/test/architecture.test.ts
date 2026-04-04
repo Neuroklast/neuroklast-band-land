@@ -126,14 +126,15 @@ describe('Built-in themes — assertThemeValid passes with no fatal errors', () 
 // ─── 2. Theme catalog integrity ───────────────────────────────────────────────
 
 describe('THEME_CATALOG integrity', () => {
-  it('contains all 4 built-in themes', async () => {
+  it('contains all 5 built-in themes', async () => {
     const { THEME_CATALOG } = await import('@/lib/theme-registry')
     const ids = THEME_CATALOG.map(t => t.id)
     expect(ids).toContain('glitch-noir')
     expect(ids).toContain('neuroklast-classic')
     expect(ids).toContain('zardonic-industrial')
     expect(ids).toContain('umbrella-corp')
-    expect(THEME_CATALOG).toHaveLength(4)
+    expect(ids).toContain('neon-synthwave')
+    expect(THEME_CATALOG).toHaveLength(5)
   })
 
   it('glitch-noir is listed first (it is the default free theme)', async () => {

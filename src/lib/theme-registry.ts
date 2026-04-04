@@ -167,6 +167,18 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     tags: ['dark', 'biohazard', 'military', 'premium'],
     themeType: 'full',
   },
+  {
+    id: 'neon-synthwave',
+    name: 'Neon Synthwave',
+    description: 'A vibrant retro 80s aesthetic with neon glows and synthwave grids',
+    licenseStatus: 'free',
+    theme: {
+      activePreset: 'synthwave-outrun',
+    },
+    author: 'Neuroklast',
+    tags: ['retro', '80s', 'neon', 'synthwave'],
+    themeType: 'full',
+  },
 ]
 
 export interface ThemeCatalogRegistry {
