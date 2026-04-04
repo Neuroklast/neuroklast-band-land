@@ -121,7 +121,7 @@ describe('resolveSlots — content-section slots', () => {
 })
 
 describe('THEME_CATALOG completeness', () => {
-  it('has entries for all 5 built-in themes', async () => {
+  it('has entries for all 6 built-in themes', async () => {
     const { THEME_CATALOG } = await import('@/lib/theme-registry')
     const ids = THEME_CATALOG.map(t => t.id)
     expect(ids).toContain('glitch-noir')
@@ -129,7 +129,8 @@ describe('THEME_CATALOG completeness', () => {
     expect(ids).toContain('zardonic-industrial')
     expect(ids).toContain('umbrella-corp')
     expect(ids).toContain('neon-synthwave')
-    expect(THEME_CATALOG).toHaveLength(5)
+    expect(ids).toContain('cyberpunk-os')
+    expect(THEME_CATALOG).toHaveLength(6)
   })
 })
 

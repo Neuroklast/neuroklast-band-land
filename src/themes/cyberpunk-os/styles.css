@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+/*
+  Theme: Cyberpunk OS
+  Characteristics: Terminal aesthetics, monospaced fonts, stark contrast, subtle glowing elements.
+*/
+[data-theme='cyberpunk-os'] {
+  --radius: 0px;
+
+  /* Strict monospace font preference */
+  --font-sans: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-serif: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Global background should always be deep dark for the OS vibe */
+  --background: oklch(0.15 0 0); /* Very dark gray/black */
+  --foreground: oklch(0.95 0 0);
+
+  /* Primary acts as the terminal prompt color (green, amber, cyan) */
+  --primary: var(--cyberpunk-primary, oklch(0.7 0.2 150)); /* Default to terminal green */
+  --primary-foreground: oklch(0.15 0 0);
+
+  /* Secondary / Accent for warnings or alternative text */
+  --secondary: oklch(0.2 0 0);
+  --secondary-foreground: oklch(0.9 0 0);
+
+  --accent: var(--cyberpunk-accent, oklch(0.6 0.2 30)); /* Default to an amber/red */
+  --accent-foreground: oklch(0.15 0 0);
+
+  --muted: oklch(0.25 0 0);
+  --muted-foreground: oklch(0.6 0 0);
+
+  --border: oklch(0.3 0 0);
+  --input: oklch(0.2 0 0);
+  --ring: var(--primary);
+
+  /* Scrollbar override for OS look */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+    border-left: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--primary);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+}
+
+/* Animations specific to this theme */
+@keyframes terminalBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-pulse {
+  animation: terminalBlink 1s step-end infinite;
+}
