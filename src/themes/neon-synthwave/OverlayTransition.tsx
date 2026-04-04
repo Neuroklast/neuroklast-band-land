@@ -7,8 +7,15 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
 
   // When show becomes true, animate in, then trigger onComplete midway, then animate out
   useEffect(() => {
+    let timer: NodeJS.Timeout
     if (show) {
-      setActive(true)
+      timer = setTimeout(() => setActive(true), 0)
+    }
+    return () => clearTimeout(timer)
+  }, [show])
+
+  useEffect(() => {
+    if (active && show) {
       const timer1 = setTimeout(() => {
         onComplete?.()
       }, 600) // Call onComplete when fully opaque
@@ -22,7 +29,7 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
         clearTimeout(timer2)
       }
     }
-  }, [show, onComplete])
+  }, [active, show, onComplete])
 
   return (
     <AnimatePresence>

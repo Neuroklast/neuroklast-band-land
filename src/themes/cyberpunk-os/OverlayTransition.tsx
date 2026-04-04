@@ -1,5 +1,4 @@
 import { type OverlayTransitionSlotProps } from '@/lib/types';
-import { ReactNode } from 'react';
 
 // Wrapper component to handle the children prop correctly
 export function CyberpunkOverlayTransition({ show, onComplete }: OverlayTransitionSlotProps) {

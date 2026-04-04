@@ -31,7 +31,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenSlotProps) {
     >
       <div className="text-center">
         <h2 className="font-heading text-4xl mb-8 text-primary uppercase tracking-[0.2em] animate-pulse" style={{ textShadow: 'var(--neon-glow)' }}>
-          INSERT COIN
+          {"INSERT COIN"}
         </h2>
 
         <div className="w-64 h-4 border-2 border-primary p-1 relative">

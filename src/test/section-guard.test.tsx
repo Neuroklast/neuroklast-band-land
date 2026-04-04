@@ -37,7 +37,7 @@ describe('SectionGuard', () => {
         delay={0.7}
         label="News"
       >
-        <div>News Content</div>
+        <div>{"News Content"}</div>
       </SectionGuard>,
     )
     expect(getByText('News Content')).toBeDefined()
@@ -51,7 +51,7 @@ describe('SectionGuard', () => {
         delay={0.7}
         label="News"
       >
-        <div>News Content</div>
+        <div>{"News Content"}</div>
       </SectionGuard>,
     )
     expect(container.innerHTML).toBe('')
@@ -65,7 +65,7 @@ describe('SectionGuard', () => {
         delay={0.7}
         label="News"
       >
-        <div>News Content</div>
+        <div>{"News Content"}</div>
       </SectionGuard>,
     )
     expect(container.innerHTML).toBe('')

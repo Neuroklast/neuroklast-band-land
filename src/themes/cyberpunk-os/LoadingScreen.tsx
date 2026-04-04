@@ -22,17 +22,24 @@ export function CyberpunkLoadingScreen({ onComplete }: LoadingScreenSlotProps) {
   }, []);
 
   useEffect(() => {
+    let timer1: NodeJS.Timeout;
+
     if (progress >= 100) {
-      setLogs(prev => [...prev, 'SYSTEM_READY.', 'EXECUTING_HANDSHAKE...']);
-      const timer = setTimeout(() => {
-        onComplete();
-      }, 800);
-      return () => clearTimeout(timer);
+      timer1 = setTimeout(() => {
+        setLogs(prev => [...prev, 'SYSTEM_READY.', 'EXECUTING_HANDSHAKE...']);
+        setTimeout(() => {
+          onComplete();
+        }, 800);
+      }, 0);
+    } else {
+       timer1 = setTimeout(() => {
+          if (progress > 30 && logs.length === 2) setLogs(prev => [...prev, 'MOUNTING_VIRTUAL_DRIVES...']);
+          if (progress > 60 && logs.length === 3) setLogs(prev => [...prev, 'BYPASSING_SECURITY_PROTOCOLS...']);
+          if (progress > 85 && logs.length === 4) setLogs(prev => [...prev, 'DECRYPTING_PAYLOAD...']);
+       }, 0);
     }
 
-    if (progress > 30 && logs.length === 2) setLogs(prev => [...prev, 'MOUNTING_VIRTUAL_DRIVES...']);
-    if (progress > 60 && logs.length === 3) setLogs(prev => [...prev, 'BYPASSING_SECURITY_PROTOCOLS...']);
-    if (progress > 85 && logs.length === 4) setLogs(prev => [...prev, 'DECRYPTING_PAYLOAD...']);
+    return () => clearTimeout(timer1);
   }, [progress, onComplete, logs.length]);
 
   return (
@@ -52,7 +59,7 @@ export function CyberpunkLoadingScreen({ onComplete }: LoadingScreenSlotProps) {
           />
         </div>
         <div className="mt-2 text-right text-xs">
-          MEM_ALLOC: {Math.min(progress, 100)}%
+          {"MEM_ALLOC: "}{Math.min(progress, 100)}{"%"}
         </div>
       </div>
     </div>

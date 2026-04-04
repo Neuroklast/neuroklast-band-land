@@ -7,13 +7,18 @@ import { X } from 'lucide-react'
 // using the built-in components from src/components/overlay-content, but we wrap
 // them in our custom synthwave themed container.
 import { MemberContent, GigContent, ReleaseContent, NewsContent, FriendContent, ImpressumContent } from '@/components/overlay-content'
+import type { Member, Gig, Release, NewsItem, Friend, Impressum } from '@/lib/types'
 
 export default function OverlayModal({ overlay, onClose, sectionLabels }: OverlayModalSlotProps) {
   // Use local state to render contents to allow animation out before setting overlay to null
   const [activeOverlay, setActiveOverlay] = useState(overlay)
 
   useEffect(() => {
-    if (overlay) setActiveOverlay(overlay)
+    let timer: NodeJS.Timeout
+    if (overlay) {
+      timer = setTimeout(() => setActiveOverlay(overlay), 0)
+    }
+    return () => clearTimeout(timer)
   }, [overlay])
 
   return (
@@ -41,7 +46,7 @@ export default function OverlayModal({ overlay, onClose, sectionLabels }: Overla
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             style={{
               borderColor: 'var(--primary)',
-              boxShadow: '0 0 30px rgba(var(--primary), 0.3), inset 0 0 20px rgba(var(--primary), 0.1)'
+              boxShadow: '0 0 30px rgba(var(--primary-rgb), 0.3), inset 0 0 20px rgba(var(--primary-rgb), 0.1)'
             }}
           >
             {/* Custom Close Button */}
@@ -54,12 +59,12 @@ export default function OverlayModal({ overlay, onClose, sectionLabels }: Overla
             </button>
 
             <div className="p-1 sm:p-4">
-              {activeOverlay.type === 'member' && <MemberContent member={activeOverlay.data as any} sectionLabels={sectionLabels} />}
-              {activeOverlay.type === 'gig' && <GigContent gig={activeOverlay.data as any} />}
-              {activeOverlay.type === 'release' && <ReleaseContent release={activeOverlay.data as any} />}
-              {activeOverlay.type === 'news' && <NewsContent item={activeOverlay.data as any} />}
-              {activeOverlay.type === 'friend' && <FriendContent friend={activeOverlay.data as any} sectionLabels={sectionLabels} />}
-              {['impressum', 'datenschutz'].includes(activeOverlay.type) && <ImpressumContent impressum={activeOverlay.data as any} />}
+              {activeOverlay.type === 'member' && <MemberContent member={activeOverlay.data as Member} sectionLabels={sectionLabels} />}
+              {activeOverlay.type === 'gig' && <GigContent gig={activeOverlay.data as Gig} />}
+              {activeOverlay.type === 'release' && <ReleaseContent release={activeOverlay.data as Release} />}
+              {activeOverlay.type === 'news' && <NewsContent item={activeOverlay.data as NewsItem} />}
+              {activeOverlay.type === 'friend' && <FriendContent friend={activeOverlay.data as Friend} sectionLabels={sectionLabels} />}
+              {['impressum', 'datenschutz'].includes(activeOverlay.type) && <ImpressumContent impressum={activeOverlay.data as Impressum} />}
             </div>
           </motion.div>
         </motion.div>

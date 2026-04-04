@@ -10,7 +10,6 @@ export default function Footer({
   siteName,
   socialLinks,
   genres,
-  label,
   onAdminLogin,
   onImpressum,
   onDatenschutz,

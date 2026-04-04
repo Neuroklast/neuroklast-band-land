@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button'
 import { ArrowDown } from 'lucide-react'
 import type { HeroSlotProps, HeroButton } from '@/lib/types'
 
-type HeroProps = HeroSlotProps;
-
 const DEFAULT_BUTTONS: HeroButton[] = [
   { id: 'explore', label: 'Explore', action: 'scroll', scrollTarget: 'news', variant: 'default' },
 ]

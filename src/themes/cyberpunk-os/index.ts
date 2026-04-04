@@ -55,14 +55,14 @@ export const cyberpunkOsTheme: ThemePackage = {
     adjustEffects: true
   },
   slots: {
-    Hero: CyberpunkHero as any,
-    Navigation: CyberpunkNavigation as any,
-    Card: CyberpunkCard as any,
-    SectionDivider: CyberpunkSectionDivider as any,
-    BackgroundEffects: CyberpunkBackgroundEffects as any,
-    OverlayModal: CyberpunkOverlayModal as any,
-    LoadingScreen: CyberpunkLoadingScreen as any,
-    Footer: CyberpunkFooter as any,
-    OverlayTransition: CyberpunkOverlayTransition as any
+    Hero: CyberpunkHero,
+    Navigation: CyberpunkNavigation,
+    Card: CyberpunkCard,
+    SectionDivider: CyberpunkSectionDivider,
+    BackgroundEffects: CyberpunkBackgroundEffects,
+    OverlayModal: CyberpunkOverlayModal,
+    LoadingScreen: CyberpunkLoadingScreen,
+    Footer: CyberpunkFooter,
+    OverlayTransition: CyberpunkOverlayTransition
   }
 };

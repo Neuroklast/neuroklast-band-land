@@ -28,7 +28,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationSl
     >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="umbrella-corp-data-label">SYS://</div>
+          <div className="umbrella-corp-data-label">{"SYS://"}</div>
           <span className="text-xl md:text-2xl font-bold tracking-tighter text-foreground uppercase font-mono">
             {siteName}
           </span>

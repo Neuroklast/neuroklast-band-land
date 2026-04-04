@@ -6,8 +6,15 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
   const [active, setActive] = useState(false)
 
   useEffect(() => {
+    let timer: NodeJS.Timeout
     if (show) {
-      setActive(true)
+      timer = setTimeout(() => setActive(true), 0)
+    }
+    return () => clearTimeout(timer)
+  }, [show])
+
+  useEffect(() => {
+    if (active && show) {
       const timer1 = setTimeout(() => {
         onComplete?.()
       }, 400)
@@ -21,7 +28,7 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
         clearTimeout(timer2)
       }
     }
-  }, [show, onComplete])
+  }, [active, show, onComplete])
 
   return (
     <AnimatePresence>

@@ -6,22 +6,35 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
   const [active, setActive] = useState(false)
 
   useEffect(() => {
+    let timer1: NodeJS.Timeout
+
     if (show) {
-      setActive(true)
-      const timer1 = setTimeout(() => {
+      // Defer setActive to avoid state update during render
+      timer1 = setTimeout(() => setActive(true), 0)
+    }
+
+    return () => clearTimeout(timer1)
+  }, [show])
+
+  useEffect(() => {
+    let timer1: NodeJS.Timeout
+    let timer2: NodeJS.Timeout
+
+    if (active && show) {
+      timer1 = setTimeout(() => {
         onComplete?.()
       }, 400) // Call onComplete mid-transition
 
-      const timer2 = setTimeout(() => {
+      timer2 = setTimeout(() => {
         setActive(false)
       }, 800) // End transition
-
-      return () => {
-        clearTimeout(timer1)
-        clearTimeout(timer2)
-      }
     }
-  }, [show, onComplete])
+
+    return () => {
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+    }
+  }, [active, show, onComplete])
 
   return (
     <AnimatePresence>
@@ -38,7 +51,7 @@ export default function OverlayTransition({ show, onComplete }: OverlayTransitio
               x: [0, -10, 10, -5, 0],
               filter: ['invert(0%)', 'invert(100%)', 'invert(0%)']
             }}
-            transition={{ duration: 0.8, ease: "steps(4)" as any }}
+            transition={{ duration: 0.8 }}
           />
         </motion.div>
       )}
