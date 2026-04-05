@@ -150,7 +150,7 @@ function FriendCard({ friend, editMode, onUpdate, onDelete, onSelect }: {
             <ProgressiveImage
               src={friend.iconPhoto || friend.photo || ''}
               alt={friend.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
             <div className="dot-matrix-photo" />
           </div>
