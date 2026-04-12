@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 2026-04-01  
+**Last updated:** 2026-04-12  
 **Status:** Active — Neuroklast band website (personal use)
 
 ---
@@ -61,6 +61,9 @@ The site is a production-deployed React SPA for the metal/electronic band **Neur
 - [x] Theme system with multiple presets
 - [x] i18n (English + German legal pages)
 - [ ] Accessibility panel / WCAG contrast enforcement in admin
+- [x] Schema-driven UI: `FIELD_REGISTRY`, `getFieldsForSchema()`, `<SchemaFormRenderer>` (2026-04-12)
+- [x] Strict tool calling: `AdminActionRegistry` with typed admin operations (2026-04-12)
+- [x] IoC contracts: `component-contracts.ts` base interfaces enforced project-wide (2026-04-12)
 
 ---
 

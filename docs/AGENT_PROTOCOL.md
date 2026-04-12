@@ -99,6 +99,33 @@ These MUST remain completely unchanged across all sessions:
 
 ---
 
+## Architectural Requirements (Enforced for All Sessions)
+
+The following are standing architectural requirements that MUST be respected in every session:
+
+### Schema-Driven UI
+- All admin forms MUST be driven by `FIELD_REGISTRY` metadata (`src/lib/field-registry.ts`)
+- No hardcoded `<Input>` / `<Label>` pairs for data that has a registered field definition
+- New content schemas MUST register their fields in `FIELD_REGISTRY` and expose them via `getFieldsForSchema()`
+- Use `<SchemaFormRenderer>` (`src/components/SchemaFormRenderer.tsx`) for all schema-driven forms
+
+### Inversion of Control (IoC)
+- UI components MUST receive all data and callbacks via props — no direct Context consumption inside leaf components
+- `EditableSectionProps<T>` and `AdminPanelProps<T>` from `src/lib/component-contracts.ts` are the canonical base interfaces
+- No component may import from `@/lib/site-config` or access global state directly unless it is a top-level container
+
+### Strict Tool Calling
+- Every admin write operation MUST be dispatched through `AdminActionRegistry` (`src/lib/admin-action-registry.ts`)
+- Direct `onUpdate` calls that bypass the registry are not permitted in new code
+- Every registered action must have an `id`, `description`, `schema`, and `execute` handler
+
+### Post-Run Hygiene (Mandatory)
+- After EVERY agent session, update `docs/AGENT_PROTOCOL.md` if any new patterns were established
+- After EVERY agent session, update `docs/DEVELOPMENT_LOG.md` with a session entry
+- After EVERY agent session, update `docs/PROJECT_STATUS.md` if feature status changed
+
+---
+
 ## Post-Session Checklist
 
 Before closing the session, update:
@@ -125,3 +152,6 @@ Before closing the session, update:
 | `src/lib/config.ts` | Global configuration constants |
 | `src/lib/types.ts` | Shared TypeScript types |
 | `docs/SECURITY_AUDIT.md` | Security audit findings and fix status |
+| `src/lib/field-registry.ts` | FieldMeta registry: maps schema keys to widget types and metadata |
+| `src/components/SchemaFormRenderer.tsx` | Generic schema-driven form renderer |
+| `src/lib/admin-action-registry.ts` | Typed admin action registry (strict tool calling) |
