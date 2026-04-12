@@ -112,15 +112,16 @@ export interface UpdateSiteNameInput {
 }
 
 function validateUpdateSiteName(input: unknown): UpdateSiteNameInput {
+  const obj = input as Record<string, unknown>
   if (
     typeof input !== 'object' ||
     input === null ||
-    typeof (input as Record<string, unknown>).siteName !== 'string' ||
-    (input as Record<string, unknown>).siteName === ''
+    typeof obj.siteName !== 'string' ||
+    obj.siteName === ''
   ) {
     throw new Error('update-site-name: siteName must be a non-empty string')
   }
-  return { siteName: (input as Record<string, unknown>).siteName as string }
+  return { siteName: obj.siteName }
 }
 
 registerAdminAction<UpdateSiteNameInput, Partial<SiteConfig>>({

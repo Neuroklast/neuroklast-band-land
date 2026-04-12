@@ -88,6 +88,13 @@ describe('getFieldsForSchema', () => {
     for (const f of basic) {
       expect(f.disclosure ?? 'basic').toBe('basic')
     }
+    // Verify advanced fields are excluded from the basic filter
+    const advancedOrExpert = all.filter(
+      (f) => f.disclosure === 'advanced' || f.disclosure === 'expert',
+    )
+    for (const f of advancedOrExpert) {
+      expect(basic.map((b) => b.key)).not.toContain(f.key)
+    }
   })
 
   it('returns readonly array (does not mutate registry)', () => {

@@ -208,9 +208,8 @@ function TagsField({ field, value, onChange, disabled, baseId }: FieldProps) {
         placeholder={field.placeholder ?? 'tag1, tag2, tag3'}
         disabled={disabled}
         onChange={(e) => {
-          const raw = e.target.value
-          const tags = raw.split(',').map((t) => t.trim()).filter(Boolean)
-          onChange(field.key, tags.length > 0 ? tags : raw)
+          const tags = e.target.value.split(',').map((t) => t.trim()).filter(Boolean)
+          onChange(field.key, tags)
         }}
       />
       {field.description && (
