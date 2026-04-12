@@ -235,6 +235,8 @@ function FieldWidget(props: FieldProps) {
       return <TagsField {...props} />
     case 'text':
     case 'url':
+      return <TextField {...props} />
+    // date and color use a plain text input for now (native browser type support)
     case 'date':
     case 'color':
     default:

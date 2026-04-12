@@ -16,6 +16,8 @@ const SELECT_FIELD: FieldMeta = {
 const TEXTAREA_FIELD: FieldMeta = { key: 'bio', label: 'Biography', widget: 'textarea', disclosure: 'basic' }
 const TAGS_FIELD: FieldMeta = { key: 'genres', label: 'Genres', widget: 'tags', disclosure: 'basic' }
 const ADVANCED_FIELD: FieldMeta = { key: 'secret', label: 'Secret', widget: 'text', disclosure: 'advanced' }
+const DATE_FIELD: FieldMeta = { key: 'releaseDate', label: 'Release Date', widget: 'date', disclosure: 'basic' }
+const COLOR_FIELD: FieldMeta = { key: 'accentColor', label: 'Accent Color', widget: 'color', disclosure: 'basic' }
 
 describe('SchemaFormRenderer', () => {
   it('renders nothing when fields list is empty', () => {
@@ -150,5 +152,31 @@ describe('SchemaFormRenderer', () => {
     )
     // Combobox is rendered by Radix Select
     expect(screen.getByRole('combobox')).toBeInTheDocument()
+  })
+
+  it('renders date widget as a text input (native type support)', () => {
+    render(
+      <SchemaFormRenderer
+        fields={[DATE_FIELD]}
+        values={{ releaseDate: '2024-11-01' }}
+        onChange={vi.fn()}
+      />
+    )
+    const input = screen.getByLabelText('Release Date')
+    expect(input.tagName).toBe('INPUT')
+    expect(screen.getByDisplayValue('2024-11-01')).toBeInTheDocument()
+  })
+
+  it('renders color widget as a text input (native type support)', () => {
+    render(
+      <SchemaFormRenderer
+        fields={[COLOR_FIELD]}
+        values={{ accentColor: '#ff0000' }}
+        onChange={vi.fn()}
+      />
+    )
+    const input = screen.getByLabelText('Accent Color')
+    expect(input.tagName).toBe('INPUT')
+    expect(screen.getByDisplayValue('#ff0000')).toBeInTheDocument()
   })
 })
