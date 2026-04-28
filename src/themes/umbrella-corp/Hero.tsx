@@ -43,8 +43,7 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <img
-              src={logoUrl}
+            <img src={logoUrl} fetchPriority="high" loading="eager"
               alt={name || 'Artist'}
               className="h-40 md:h-56 lg:h-72 w-auto object-contain relative z-10"
             />

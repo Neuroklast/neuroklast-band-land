@@ -157,8 +157,7 @@ export default function NeuroklastClassicHero({
             */}
             <div style={{ filter: 'drop-shadow(0 0 20px var(--primary))' }}>
               <div className="relative isolate block w-fit mx-auto">
-                <img
-                  src={logoUrl}
+                <img src={logoUrl} fetchPriority="high" loading="eager"
                   alt={`${name} Logo`}
                   className="w-[18rem] h-auto sm:w-[22rem] md:w-[26rem] lg:w-[30rem] relative z-10"
                 />
@@ -187,8 +186,7 @@ export default function NeuroklastClassicHero({
               }}
             >
               <div className="relative isolate block w-full">
-                <img
-                  src={titleImageUrl}
+                <img src={titleImageUrl} fetchPriority="high" loading="eager"
                   alt={name}
                   className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl h-auto relative z-10"
                 />

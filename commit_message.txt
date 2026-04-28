@@ -1,0 +1,10 @@
+System Maintenance & Architecture Enforcement
+
+- Updated missing package.json dependency checks.
+- Hardened API _ratelimit.ts to accurately extract client IP.
+- Fixed dangerouslySetInnerHTML to strictly use DOMPurify in News.
+- Migrated Widgets (Bandsintown, Analytics, SetlistFm) into FSD containers for strict component presentation separation.
+- Optimized hero loading images with fetchPriority="high" and loading="eager".
+- Applied React.memo to AudioVisualizer component.
+- Cleaned up leftover testing tools and unused imports.
+- TypeScript strict mode compliance and complete tests check.
