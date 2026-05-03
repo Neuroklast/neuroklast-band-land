@@ -33,6 +33,14 @@ const MAX_IMAGE_SIZE = 16 * 1024 * 1024 // 16 MB
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 30 // 30 days
 const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
 
+// Fail fast in production when ALLOWED_ORIGIN is not configured.
+if (!process.env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
+  throw new Error(
+    '[SECURITY] ALLOWED_ORIGIN environment variable is not set. ' +
+    'A specific origin is required in production to prevent cross-origin request forgery.',
+  )
+}
+
 const BLOCKED_HOST_PATTERNS = [
   /^localhost$/i, /^127\./, /^10\./, /^172\.(1[6-9]|2\d|3[01])\./, /^192\.168\./,
   /^0\./, /^169\.254\./, /^\[::1\]/, /^\[::ffff:/i, /^\[fe80:/i, /^\[fc/i, /^\[fd/i,

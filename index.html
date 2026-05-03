@@ -25,9 +25,10 @@
     <meta name="twitter:description" content="Official band website." />
     <meta name="twitter:image" content="/og-image.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&family=VT323&family=Press+Start+2P&family=Audiowide&family=Rajdhani:wght@400;500;700&family=Chakra+Petch:wght@400;500;700&family=Exo+2:wght@400;500;700&family=Tektur:wght@400;700&family=Oxanium:wght@400;500;700&family=Iceland&family=Michroma&family=Russo+One&family=Bruno+Ace&family=Electrolize&display=swap" />
+    <!-- Fonts are self-hosted via @fontsource packages (see src/main.tsx).
+         Google Fonts CDN links were removed to prevent IP data transfer to
+         Google on page load, which constitutes a GDPR violation (LG München I,
+         Az. 3 O 17493/20). All required typefaces are bundled in the build. -->
     <link href="/src/main.css" rel="stylesheet" />
     <script src="/theme-init.js"></script>
 </head>
@@ -35,7 +36,6 @@
 <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script src="/anti-inspect.js"></script>
 </body>
 
 </html>

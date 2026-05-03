@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { useCachedImage } from '@/hooks/useCachedImage'
+import { useCachedImage } from '@/hooks/use-cached-image'
 import * as imageCache from '@/lib/image-cache'
 
 describe('useCachedImage', () => {

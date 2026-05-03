@@ -49,6 +49,14 @@ async function storeSubscriberLocally(email: string, source: string | undefined)
 // instead of a wildcard so arbitrary third-party sites cannot POST subscriptions.
 const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
 
+// Fail fast in production when ALLOWED_ORIGIN is not configured.
+if (!process.env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
+  throw new Error(
+    '[SECURITY] ALLOWED_ORIGIN environment variable is not set. ' +
+    'A specific origin is required in production to prevent cross-origin request forgery.',
+  )
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
   res.setHeader('Access-Control-Allow-Methods', 'POST, DELETE, OPTIONS')

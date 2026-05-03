@@ -1,13 +1,14 @@
-import { useTheme } from "next-themes"
 import { CSSProperties } from "react"
 import { Toaster as Sonner, ToasterProps } from "sonner"
 
+// The app uses its own theme engine (ThemeContext / ThemeProvider) rather than
+// next-themes. Sonner is always rendered inside a dark cyberpunk environment,
+// so we pin the theme to "dark" and let our CSS custom properties handle
+// the actual colors via the --normal-bg / --normal-text / --normal-border overrides.
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme="dark"
       className="toaster group"
       style={
         {

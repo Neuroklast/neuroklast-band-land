@@ -29,6 +29,14 @@ interface VercelResponse {
 const MAX_IMAGE_SIZE = 16 * 1024 * 1024 // 16 MB
 const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
 
+// Fail fast in production when ALLOWED_ORIGIN is not configured.
+if (!process.env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
+  throw new Error(
+    '[SECURITY] ALLOWED_ORIGIN environment variable is not set. ' +
+    'A specific origin is required in production to prevent cross-origin request forgery.',
+  )
+}
+
 const NOISE_BRIGHTNESS_JITTER = 0.008
 const NOISE_SHARPEN_SIGMA = 0.4
 const NOISE_SHARPEN_M1 = 0

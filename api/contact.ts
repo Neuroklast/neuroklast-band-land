@@ -126,6 +126,16 @@ async function sendEmailNotification({ name, email, subject, message }: { name: 
 // instead of a wildcard so arbitrary third-party sites cannot POST contact messages.
 const CORS_ORIGIN = process.env.ALLOWED_ORIGIN || '*'
 
+// Fail fast in production when ALLOWED_ORIGIN is not configured.
+// A wildcard fallback on state-mutating endpoints enables cross-origin forgery
+// by any malicious website. Mirror the pattern used in api/_ratelimit.ts.
+if (!process.env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
+  throw new Error(
+    '[SECURITY] ALLOWED_ORIGIN environment variable is not set. ' +
+    'A specific origin is required in production to prevent cross-origin request forgery.',
+  )
+}
+
 function setCorsHeaders(res: VercelResponse): void {
   res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
