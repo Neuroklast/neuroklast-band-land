@@ -10,7 +10,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useThemeSlots } from '@/lib/theme-registry'
-import { useCachedImage } from '@/hooks/useCachedImage'
+import { useCachedImage } from '@/hooks/use-cached-image'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import SectionGuard from '@/components/SectionGuard'
 import NewsletterWidget from '@/components/NewsletterWidget'

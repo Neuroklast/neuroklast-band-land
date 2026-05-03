@@ -34,6 +34,7 @@ import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
 import { useLocale } from '@/hooks/use-locale'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { useKV } from '@/hooks/use-kv'
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────
 // These are only downloaded when an admin or specific user action requires them,
@@ -132,6 +133,10 @@ function App() {
   const isPrimary = isPrimaryInstance()
   const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
 
+  // ── Cookie consent — analytics are gated behind explicit user acceptance ────
+  // Reading from the same KV key as CookieBanner so both components share state.
+  const [cookieConsent, , cookieConsentLoaded] = useKV<string | null>('cookie-consent', null)
+
   useCRTEffects()
 
   useAppKeyboardShortcuts({ isOwner, setShowLoginDialog, setOpenAdminHubOnMount })
@@ -163,13 +168,20 @@ function App() {
   }, [config, siteConfigLoaded])
 
   // ── Analytics ───────────────────────────────────────────────────────────────
+  // GDPR: tracking starts only after the user explicitly accepts cookies.
+  // cookieConsentLoaded ensures we wait for the KV/localStorage read to finish
+  // before deciding — prevents false negatives on first render.
   useEffect(() => { validateActivationKey().then(setActivationResult) }, [])
-  useEffect(() => { trackPageView() }, [])
   useEffect(() => {
+    if (!cookieConsentLoaded || cookieConsent !== 'accepted') return
+    trackPageView()
+  }, [cookieConsentLoaded, cookieConsent])
+  useEffect(() => {
+    if (cookieConsent !== 'accepted') return
     const handleClick = (e: MouseEvent) => trackClick(e)
     document.addEventListener('click', handleClick)
     return () => document.removeEventListener('click', handleClick)
-  }, [])
+  }, [cookieConsent])
 
   // ── Theme import from URL hash ────────────────────────────────────────────────
   const configAtMountRef = useRef(config)

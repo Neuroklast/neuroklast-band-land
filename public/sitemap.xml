@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!--
+    The band website is a single-page application — all content lives at the
+    root URL. The sitemap is intentionally minimal: meta-tags (title, description,
+    JSON-LD) are applied dynamically from the site config, so search engines get
+    accurate structured data on the single URL they index.
+  -->
+  <url>
+    <loc>https://neuroklast.net/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
