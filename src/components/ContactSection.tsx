@@ -43,6 +43,7 @@ export default function ContactSection({
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
+  const [website, setWebsite] = useState('') // honeypot — must stay empty
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -74,7 +75,7 @@ export default function ContactSection({
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify({ name, email, subject, message, website }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -85,6 +86,7 @@ export default function ContactSection({
       setEmail('')
       setSubject('')
       setMessage('')
+      setWebsite('')
     } catch (err: unknown) {
       setStatus('error')
       setErrorMsg(err instanceof Error ? err.message : 'Unknown error')
@@ -205,6 +207,18 @@ export default function ContactSection({
                   className={`${inputClass} w-full resize-y`}
                 />
               </div>
+
+              {/* Honeypot — hidden from real users, traps bots */}
+              <input
+                type="text"
+                name="website"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                tabIndex={-1}
+                aria-hidden="true"
+                autoComplete="off"
+                style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
+              />
 
               {status === 'error' && (
                 <div className="flex items-center gap-2 text-status-error font-mono text-xs">
