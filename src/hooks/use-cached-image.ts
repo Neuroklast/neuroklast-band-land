@@ -57,4 +57,3 @@ export function useCachedImage(url: string | undefined): string {
   if (cached?.url === url) return cached.result
   return toDirectImageUrl(url)
 }
-
