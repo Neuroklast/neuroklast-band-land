@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { randomUUID } from 'node:crypto'
+import { Resend } from 'resend'
 import { applyRateLimit } from './_ratelimit.js'
 import { validateSession } from './auth.js'
 
@@ -54,8 +55,8 @@ interface ValidationResult {
 
 function validateContactInput(body: Record<string, unknown> | undefined): ValidationResult {
   const { name, email, subject, message } = body || {}
-  if (!name || typeof name !== 'string' || name.trim().length < 1 || name.trim().length > 100) {
-    return { error: 'Name is required and must be 1-100 characters.' }
+  if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 100) {
+    return { error: 'Name is required and must be 2-100 characters.' }
   }
   if (!email || typeof email !== 'string' || !EMAIL_RE.test(email.trim()) || email.trim().length > 254) {
     return { error: 'A valid email address is required.' }
@@ -63,8 +64,8 @@ function validateContactInput(body: Record<string, unknown> | undefined): Valida
   if (!subject || typeof subject !== 'string' || subject.trim().length < 1 || subject.trim().length > 200) {
     return { error: 'Subject is required and must be 1-200 characters.' }
   }
-  if (!message || typeof message !== 'string' || message.trim().length < 1 || message.trim().length > 5000) {
-    return { error: 'Message is required and must be 1-5000 characters.' }
+  if (!message || typeof message !== 'string' || message.trim().length < 10 || message.trim().length > 5000) {
+    return { error: 'Message is required and must be 10-5000 characters.' }
   }
   return {
     data: {
@@ -76,31 +77,45 @@ function validateContactInput(body: Record<string, unknown> | undefined): Valida
   }
 }
 
-/** Send email notification via Brevo transactional API */
+/** Send email notification via Resend.
+ *
+ * @param name    - HTML-escaped sender name
+ * @param email   - HTML-escaped sender email
+ * @param subject - HTML-escaped subject
+ * @param message - HTML-escaped message body (newlines are converted to <br>)
+ *
+ * All parameters MUST already be HTML-escaped by the caller (validateContactInput
+ * calls esc() on every field) to prevent XSS in the email HTML body.
+ */
 async function sendEmailNotification({ name, email, subject, message }: { name: string; email: string; subject: string; message: string }): Promise<void> {
-  const apiKey = process.env.BREVO_API_KEY
-  const toEmail = process.env.CONTACT_EMAIL_TO
-  if (!apiKey || !toEmail) return
+  const apiKey = process.env.RESEND_API_KEY
+  const fromEmail = process.env.CONTACT_FROM_EMAIL
+  const toEmail = process.env.CONTACT_TO_EMAIL
+  if (!apiKey || !toEmail || !fromEmail) return
+
+  const resend = new Resend(apiKey)
+
+  const htmlContent = `
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>E-Mail:</strong> ${email}</p>
+    <p><strong>Betreff:</strong> ${subject}</p>
+    <p><strong>Nachricht:</strong></p>
+    <p>${message.replace(/\n/g, '<br>')}</p>
+  `.trim()
+
+  const textContent = `Name: ${name}\nE-Mail: ${email}\nBetreff: ${subject}\n\nNachricht:\n${message}`
 
   try {
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'api-key': apiKey,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: process.env.SITE_NAME ? `${process.env.SITE_NAME} Contact Form` : 'Contact Form', email: toEmail },
-        to: [{ email: toEmail }],
-        replyTo: { name, email },
-        subject: `Contact Form: ${subject}`,
-        htmlContent: `<p><strong>From:</strong> ${name} &lt;${email}&gt;</p><p><strong>Subject:</strong> ${subject}</p><p>${message.replace(/\n/g, '<br>')}</p>`,
-      }),
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: [toEmail],
+      replyTo: email,
+      subject: `Neue Kontaktanfrage von ${name}`,
+      html: htmlContent,
+      text: textContent,
     })
-    if (!response.ok) {
-      const body = await response.text()
-      console.error(`Brevo API error ${response.status}:`, body)
+    if (error) {
+      console.error('Resend API error:', error)
     }
   } catch (err) {
     console.error('Failed to send contact email notification:', err)
@@ -164,6 +179,14 @@ async function handlePost(req: VercelRequest, res: VercelResponse): Promise<void
 
   const allowed = await applyRateLimit(req, res)
   if (!allowed) return
+
+  // Honeypot: bots fill hidden fields that real users never see
+  const website = req.body?.website
+  if (typeof website === 'string' && website.trim().length > 0) {
+    // Silently accept to avoid tipping off bots
+    res.status(200).json({ success: true })
+    return
+  }
 
   const parsed = validateContactInput(req.body)
   if (parsed.error) {
