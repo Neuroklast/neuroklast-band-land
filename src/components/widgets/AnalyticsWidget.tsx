@@ -8,13 +8,15 @@
  * Config: {}
  * Premium-Gate: Only available for pro tier or higher.
  */
-import { useState, useEffect } from 'react'
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 
-interface AnalyticsWidgetProps {
+export interface AnalyticsWidgetProps {
   widget: WidgetPlugin
   themeSettings?: ThemeSettings
+  analytics?: SiteAnalytics | null
+  loading?: boolean
+  isDemo?: boolean
 }
 
 interface DailyStats {
@@ -24,7 +26,7 @@ interface DailyStats {
   interactions: number
 }
 
-interface SiteAnalytics {
+export interface SiteAnalytics {
   totalPageViews: number
   totalSessions: number
   avgSessionDurationMs?: number
@@ -47,7 +49,9 @@ function formatRate(rate: number): string {
   return `${(rate * 100).toFixed(1)}%`
 }
 
-export default function AnalyticsWidget({ widget, themeSettings }: AnalyticsWidgetProps) {
+
+
+export default function AnalyticsWidget({ widget, themeSettings, analytics, loading, isDemo }: AnalyticsWidgetProps) {
   const { t } = useLocale()
   const primary = themeSettings?.primary ?? 'oklch(0.50 0.22 25)'
   const borderRadius = themeSettings?.borderRadius ?? 0.125
@@ -58,36 +62,6 @@ export default function AnalyticsWidget({ widget, themeSettings }: AnalyticsWidg
   // fetched from the API and the widget config has no user-configurable options.
   void widget.config
 
-  const [analytics, setAnalytics] = useState<SiteAnalytics | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [isDemo, setIsDemo] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function fetchAnalytics() {
-      try {
-        const res = await fetch('/api/analytics', { method: 'GET' })
-        if (!res.ok) {
-          // 503 = KV not configured; other errors = treat as unavailable
-          setIsDemo(true)
-          return
-        }
-        const data = (await res.json()) as SiteAnalytics
-        if (!cancelled) {
-          setAnalytics(data)
-          setIsDemo(false)
-        }
-      } catch {
-        if (!cancelled) setIsDemo(true)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    fetchAnalytics()
-    return () => { cancelled = true }
-  }, [])
 
   const cardStyle = {
     borderColor: `color-mix(in oklch, ${primary} 20%, transparent)`,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { getFrequencyData } from '@/lib/audio-context'
 import {
   VISUALIZER_BAR_COUNT,
@@ -15,7 +15,7 @@ import {
 /** Target ~20fps instead of 60fps to reduce GPU load */
 const FRAME_INTERVAL_MS = 50
 
-export default function AudioVisualizer() {
+const AudioVisualizer = React.memo(function AudioVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | undefined>(undefined)
   const lastFrameTime = useRef(0)
@@ -143,4 +143,6 @@ export default function AudioVisualizer() {
       className="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-screen blur-[1px]"
     />
   )
-}
+})
+
+export default AudioVisualizer

@@ -9,7 +9,6 @@
  * Real setlist data is loaded via the /api/setlistfm proxy endpoint.
  * Falls back to the Setlist.fm link when no API key is configured or on error.
  */
-import { useState, useEffect } from 'react'
 import type { WidgetPlugin, ThemeSettings } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 
@@ -18,9 +17,12 @@ interface SetlistFmConfig {
   artistName?: string
 }
 
-interface SetlistFmWidgetProps {
+export interface SetlistFmWidgetProps {
   widget: WidgetPlugin
   themeSettings?: ThemeSettings
+  setlists?: SetlistItem[]
+  loading?: boolean
+  apiUnavailable?: boolean
 }
 
 /** A single setlist entry as returned by the /api/setlistfm proxy. */
@@ -54,47 +56,12 @@ function formatSetlistDate(raw: string): string {
   }
 }
 
-export default function SetlistFmWidget({ widget, themeSettings }: SetlistFmWidgetProps) {
+export default function SetlistFmWidget({ widget, themeSettings, setlists = [], loading = false, apiUnavailable = false }: SetlistFmWidgetProps) {
   const { t } = useLocale()
   const config = (widget.config ?? {}) as SetlistFmConfig
   const borderRadius = themeSettings?.borderRadius ?? 0.125
   const radiusPx = Math.round(borderRadius * 16)
 
-  const [setlists, setSetlists] = useState<SetlistItem[]>([])
-  const [loading, setLoading] = useState(false)
-  const [apiUnavailable, setApiUnavailable] = useState(false)
-
-  useEffect(() => {
-    if (!config.artistMbid) return
-
-    let cancelled = false
-    setLoading(true)
-    setApiUnavailable(false)
-
-    async function fetchSetlists() {
-      try {
-        const res = await fetch(
-          `/api/setlistfm?mbid=${encodeURIComponent(config.artistMbid!)}`,
-        )
-        const data = (await res.json()) as { setlists: SetlistItem[]; error?: string }
-
-        if (!cancelled) {
-          if (data.error || !Array.isArray(data.setlists) || data.setlists.length === 0) {
-            setApiUnavailable(true)
-          } else {
-            setSetlists(data.setlists.slice(0, 5))
-          }
-        }
-      } catch {
-        if (!cancelled) setApiUnavailable(true)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    fetchSetlists()
-    return () => { cancelled = true }
-  }, [config.artistMbid])
 
   // ── Unconfigured ──────────────────────────────────────────────────────────
   if (!config.artistMbid) {

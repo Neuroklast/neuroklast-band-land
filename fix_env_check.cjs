@@ -1,4 +1,5 @@
-import { readFileSync } from 'fs'
+const fs = require('fs');
+let content = `import { readFileSync } from 'fs'
 import { join } from 'path'
 
 /**
@@ -48,3 +49,5 @@ export default function handler(req: VercelRequest, res: VercelResponse): void {
 
   res.status(200).json({ vars })
 }
+`
+fs.writeFileSync('api/env-check.ts', content);
