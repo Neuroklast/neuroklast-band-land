@@ -36,7 +36,7 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
     if (!showTotpInput) {
       setShowTotpInput(totpEnabled || false)
     }
-  }, [totpEnabled]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [totpEnabled, showTotpInput])
 
   // Countdown timer for rate-limit feedback
   useEffect(() => {
