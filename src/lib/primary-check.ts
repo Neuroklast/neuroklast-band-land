@@ -5,19 +5,46 @@
  * Never use environment variables (like VITE_IS_PRIMARY) for this check,
  * because tenants can set arbitrary env vars on their own deployments.
  * Detection must be based on the runtime hostname.
+ *
+ * Configuration:
+ * - Set VITE_PRIMARY_HOSTNAMES to a comma-separated list of hostnames that
+ *   should bypass activation (e.g. "my-band.com,www.my-band.com").
+ * - When VITE_PRIMARY_HOSTNAMES is not set, the legacy hardcoded Neuroklast
+ *   list is used for backward-compatibility.
+ * - When VITE_PRIMARY_HOSTNAMES is set to an empty string, NO hostname is
+ *   treated as primary (fully open-source mode).
  */
 
 /**
- * PRIMARY_HOSTNAMES — all hostnames that identify the master Neuroklast instance.
+ * LEGACY_PRIMARY_HOSTNAMES — fallback list used when VITE_PRIMARY_HOSTNAMES
+ * is not configured.  Keeps existing Neuroklast deployments working without
+ * any configuration change.
  */
-const PRIMARY_HOSTNAMES = [
+const LEGACY_PRIMARY_HOSTNAMES: string[] = [
   'neuroklast.net',
   'www.neuroklast.net',
   'neuroklast-band-land.vercel.app',
-] as const
+]
+
+/**
+ * Resolve the active primary hostname list at call time so that vi.stubEnv
+ * works correctly in tests (module-level consts are frozen at import time).
+ */
+function getPrimaryHostnames(): string[] {
+  const envVar = import.meta.env.VITE_PRIMARY_HOSTNAMES as string | undefined
+  // Env var not set at all → use legacy list for backward-compat
+  if (envVar === undefined) {
+    return [...LEGACY_PRIMARY_HOSTNAMES]
+  }
+  // Env var set (even to empty string) → use it exclusively
+  return envVar
+    .split(',')
+    .map(h => h.trim())
+    .filter(Boolean)
+}
 
 /** Client-side check: Is the current browser on the master instance? */
 export function isPrimaryInstance(): boolean {
   if (typeof window === 'undefined') return false
-  return (PRIMARY_HOSTNAMES as readonly string[]).includes(window.location.hostname)
+  return getPrimaryHostnames().includes(window.location.hostname)
 }

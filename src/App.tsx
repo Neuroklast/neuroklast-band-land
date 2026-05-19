@@ -23,9 +23,6 @@ import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
 import { generateMetaTags, applyMetaTags } from '@/lib/meta-tags'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
-import ActivationLockScreen from '@/components/ActivationLockScreen'
-import { validateActivationKey } from '@/lib/activation'
-import type { ActivationResult } from '@/lib/activation'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
 import { useThemeSlots, getTheme } from '@/lib/theme-registry'
 import { isPrimaryInstance } from '@/lib/primary-check'
@@ -52,7 +49,6 @@ const AudioVisualizer = lazy(() => import('@/components/AudioVisualizer'))
 const OverlayEffectsLayer = lazy(() => import('@/components/OverlayEffectsLayer'))
 const MovingScanline = lazy(() => import('@/components/MovingScanline').then(m => ({ default: m.MovingScanline })))
 const SystemMonitorHUD = lazy(() => import('@/components/SystemMonitorHUD').then(m => ({ default: m.SystemMonitorHUD })))
-const LicenseStatusBadge = lazy(() => import('@/components/LicenseStatusBadge'))
 
 // ─── Default config ───────────────────────────────────────────────────────────
 
@@ -117,7 +113,6 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [themeTransitioning, setThemeTransitioning] = useState(false)
   const prevActivePresetRef = useRef<string | undefined>(undefined)
-  const [activationResult, setActivationResult] = useState<ActivationResult | null>(null)
   const {
     activeDialog, setActiveDialog,
     showLoginDialog, setShowLoginDialog,
@@ -171,7 +166,6 @@ function App() {
   // GDPR: tracking starts only after the user explicitly accepts cookies.
   // cookieConsentLoaded ensures we wait for the KV/localStorage read to finish
   // before deciding — prevents false negatives on first render.
-  useEffect(() => { validateActivationKey().then(setActivationResult) }, [])
   useEffect(() => {
     if (!cookieConsentLoaded || cookieConsent !== 'accepted') return
     trackPageView()
@@ -216,12 +210,14 @@ function App() {
       startTransition(() => setActiveDialog('secret-terminal'))
       removeSearchParam('access-secret-terminal-NK-666')
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => {
     if (wantsSetup.current && needsSetup) {
       wantsSetup.current = false
       startTransition(() => setShowSetupDialog(true))
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [needsSetup])
 
   // Apply developer test data if active
@@ -271,8 +267,6 @@ function App() {
     trackInteraction('terminal_activated')
     toast.success('TERMINAL ACCESS GRANTED', { description: 'Secret code activated' })
   }
-
-  if (!activationResult?.valid) return <ActivationLockScreen pending={activationResult === null} />
 
   return (
     <ThemeProvider
@@ -372,9 +366,6 @@ function App() {
               {isOwner && (
                 <div className="flex items-center gap-2">
                   <Suspense fallback={null}>
-                    {activationResult && (
-                      <LicenseStatusBadge valid={activationResult.valid} tier={activationResult.tier} />
-                    )}
                     <AdminButton
                       hasPassword={!needsSetup}
                       onChangePassword={handleChangeAdminPassword}
@@ -424,7 +415,6 @@ function App() {
                   widgetPlugins={data.widgetPlugins ?? []}
                   onUpdatePlugins={(wp) => updateConfig({ widgetPlugins: wp })}
                   activePresetId={data.themeSettings?.activePreset}
-                  activationResult={activationResult}
                   newsletterSettings={data.newsletterSettings}
                   contactSettings={data.contactSettings}
                   onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })}

@@ -11,7 +11,7 @@ import { kv } from '@vercel/kv'
  *
  * 2. **Global Circuit Breaker** — counts ALL incoming requests in 10-second
  *    time windows.  When the count exceeds THRESHOLD (500) the system sets
- *    `nk_under_attack` in KV with a 5-minute TTL.  While that flag is set
+ *    `site_under_attack` in KV with a 5-minute TTL.  While that flag is set
  *    every single request is rejected (429, empty body).  After the TTL
  *    expires the flag auto-deletes and normal operation resumes.
  *
@@ -109,7 +109,7 @@ export default async function middleware(request: Request): Promise<Response | u
 
   try {
     // ── 1. Circuit Breaker ──────────────────────────────────────────
-    const isUnderAttack = await kv.get('nk_under_attack')
+    const isUnderAttack = await kv.get('site_under_attack')
     if (isUnderAttack) {
       console.error('[SECURITY:CIRCUIT_BREAKER_ACTIVE]', JSON.stringify({
         timestamp: new Date().toISOString(),
@@ -124,7 +124,7 @@ export default async function middleware(request: Request): Promise<Response | u
     // ── 2. Hard-Blocked IP Gate ─────────────────────────────────────
     const ip = getClientIp(request)
     const hashedIp = await hashIp(ip)
-    const blockEntry = await kv.get(`nk-blocked:${hashedIp}`)
+    const blockEntry = await kv.get(`site-blocked:${hashedIp}`)
     if (blockEntry) {
       console.error('[SECURITY:HARD_BLOCK_REJECTED]', JSON.stringify({
         timestamp: new Date().toISOString(),
@@ -140,7 +140,7 @@ export default async function middleware(request: Request): Promise<Response | u
 
     // ── 3. Global Rate Counter ──────────────────────────────────────
     const timeWindow = Math.floor(Date.now() / 10000)
-    const globalRateKey = `nk_global_rate_${timeWindow}`
+    const globalRateKey = `site_global_rate_${timeWindow}`
 
     const pipeline = kv.pipeline()
     pipeline.incr(globalRateKey)
@@ -150,7 +150,7 @@ export default async function middleware(request: Request): Promise<Response | u
     const currentRequests = results[0] as number
 
     if (currentRequests > THRESHOLD) {
-      await kv.set('nk_under_attack', true, { ex: COOLDOWN_SECONDS })
+      await kv.set('site_under_attack', true, { ex: COOLDOWN_SECONDS })
       console.error('[SECURITY:CIRCUIT_BREAKER_TRIPPED]', JSON.stringify({
         timestamp: new Date().toISOString(),
         event: 'CIRCUIT_BREAKER_TRIPPED',

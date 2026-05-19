@@ -5,7 +5,7 @@ import { logSecurityEvent } from './_security-logger.js'
 const KV_SETTINGS_KEY = 'nk-security-settings'
 const THREAT_SCORE_PREFIX = 'nk-threat:'
 const THREAT_SCORE_TTL = 3600 // 1 hour
-const BLOCK_PREFIX = 'nk-blocked:'
+const BLOCK_PREFIX = 'site-blocked:'
 const BLOCK_TTL = 604800 // 7 days
 
 /** Default threat level thresholds — can be overridden via security settings */

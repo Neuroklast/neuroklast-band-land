@@ -61,12 +61,12 @@ describe('validateActivationKey', () => {
     sessionStorage.clear()
   })
 
-  it('returns invalid when VITE_ACTIVATION_KEY is not set', async () => {
+  it('returns valid free-tier result when VITE_ACTIVATION_KEY is not set', async () => {
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()
-    expect(result.valid).toBe(false)
-    expect(result.error).toMatch(/no activation key/i)
+    expect(result.valid).toBe(true)
+    expect(result.tier).toBe('free')
   })
 
   it('bypasses validation when hostname is neuroklast.net', async () => {
@@ -83,7 +83,7 @@ describe('validateActivationKey', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
-  it('does not bypass validation when hostname is not neuroklast.net', async () => {
+  it('returns valid (free) when no key configured and hostname is not primary', async () => {
     Object.defineProperty(window, 'location', {
       value: { hostname: 'other-tenant.vercel.app' },
       writable: true,
@@ -92,17 +92,20 @@ describe('validateActivationKey', () => {
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()
-    expect(result.valid).toBe(false)
+    // Activation is now optional — no key means free tier, not locked out
+    expect(result.valid).toBe(true)
+    expect(result.tier).toBe('free')
   })
 
-  it('caches an invalid result in sessionStorage', async () => {
+  it('caches the free-tier result in sessionStorage when no key is configured', async () => {
     vi.stubEnv('VITE_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     await validateActivationKey()
     const cached = sessionStorage.getItem('nk-activation-result')
     expect(cached).not.toBeNull()
     const parsed = JSON.parse(cached!)
-    expect(parsed.valid).toBe(false)
+    expect(parsed.valid).toBe(true)
+    expect(parsed.tier).toBe('free')
   })
 
   it('returns cached result without making a network call', async () => {

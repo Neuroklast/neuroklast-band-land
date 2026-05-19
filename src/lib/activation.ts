@@ -80,7 +80,9 @@ export async function validateActivationKey(): Promise<ActivationResult> {
   const key = import.meta.env.VITE_ACTIVATION_KEY as string | undefined
 
   if (!key || key.trim() === '') {
-    const result: ActivationResult = { valid: false, error: 'No activation key configured' }
+    // No key configured — grant free-tier access so the template works
+    // out-of-the-box for any operator who hasn't purchased a key.
+    const result: ActivationResult = { valid: true, tier: 'free', features: [] }
     setCachedResult(result)
     return result
   }
