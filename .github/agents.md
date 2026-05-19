@@ -9,19 +9,25 @@ is changed to make it pass, then all 1 300+ existing tests are re-run.
 
 ## Context
 
-The codebase is a **Vite 7 + React 19 SPA** (no Next.js, no router).
+The codebase is a **Vite 7 + React 19 SPA** with **react-router-dom v7** for
+client-side routing.
 
-Problems identified before this refactor:
-- Activation/licensing system hard-wired to `neuroklast.net` blocks the app entirely
-  when `VITE_ACTIVATION_KEY` is not set, making the template unusable out-of-the-box.
-- Admin panel is a deeply nested dialog stack overlaid on the public band site —
-  no dedicated URL, no shareable link, impossible to deep-link.
-- Hardcoded hostnames (`neuroklast.net`, `neuroklast-band-land.vercel.app`) in both
-  client (`src/lib/primary-check.ts`) and server code (`api/_primary-check.ts`).
-- `KeyManagerPanel` (SaaS key-issuance UI) is bundled into every deployment even
-  though it only makes sense on the original Neuroklast production instance.
-- JS obfuscator in `vite.config.ts` bloats the bundle by up to 100 % and slows
-  mobile evaluation; it was disabled by default but cluttered the config.
+Routes:
+- `/` — public band site (`App.tsx`, pure presentational)
+- `/admin/*` — standalone admin panel (`AdminPage.tsx` behind `AdminRoute`)
+- `*` — catch-all redirect to `/`
+
+Problems identified before this refactor (all resolved):
+- ~~Activation/licensing system hard-wired to `neuroklast.net` blocks the app entirely
+  when `VITE_ACTIVATION_KEY` is not set, making the template unusable out-of-the-box.~~
+- ~~Admin panel is a deeply nested dialog stack overlaid on the public band site —
+  no dedicated URL, no shareable link, impossible to deep-link.~~
+- ~~Hardcoded hostnames (`neuroklast.net`, `neuroklast-band-land.vercel.app`) in both
+  client (`src/lib/primary-check.ts`) and server code (`api/_primary-check.ts`).~~
+- ~~`KeyManagerPanel` (SaaS key-issuance UI) is bundled into every deployment even
+  though it only makes sense on the original Neuroklast production instance.~~
+- ~~JS obfuscator in `vite.config.ts` bloats the bundle by up to 100 % and slows
+  mobile evaluation; it was disabled by default but cluttered the config.~~
 
 ---
 

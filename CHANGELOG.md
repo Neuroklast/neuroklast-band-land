@@ -10,7 +10,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **`src/base.css`** — CSS split: base styles, CSS reset, CSS variables (`:root`), and
+- **`react-router-dom` v7** — Client-side routing added to the SPA.
+  `src/main.tsx` wraps the tree in `<BrowserRouter>`.
+  `src/AppRouter.tsx` owns the `<Routes>` tree: `/` → band site,
+  `/admin/*` → admin panel, `*` → redirect to `/`.
+
+- **`src/pages/AdminPage.tsx`** — Standalone admin panel at `/admin`.
+  Renders `AdminLoginDialog` when unauthenticated and `AdminButton` +
+  `AdminDialogManager` when authenticated. Uses the same `useSiteConfig` hook
+  as the public site so changes are reflected immediately.
+
+- **`src/components/AdminRoute.tsx`** — Route-level auth boundary for `/admin`.
+
+- **`VITE_PRIMARY_HOSTNAMES` env var** — `src/lib/primary-check.ts` now reads
+  a comma-separated list of primary hostnames from this env var.  When unset,
+  falls back to the legacy hardcoded Neuroklast list for backward compatibility.
+
+- **`PRIMARY_HOSTNAMES` env var** — Same as above, server-side
+  (`api/_primary-check.ts`).
+
+### Changed
+
+- **`src/lib/activation.ts`** — `validateActivationKey()` returns
+  `{ valid: true, tier: 'free', features: [] }` when `VITE_ACTIVATION_KEY` is
+  not set.  Deployments without a key get a working free-tier result instead of
+  a lock screen.
+
+- **`src/hooks/use-activation-key.ts`** — When no key is configured, status is
+  set to `'valid'` immediately without an API call.  The parallel
+  `activation_status_cache` sessionStorage key was removed; caching is handled
+  exclusively through `nk-activation-result` in `activation.ts`.
+
+- **`src/App.tsx`** — `ActivationLockScreen` gate removed; `AdminButton`,
+  `AdminDialogManager`, and both `AdminLoginDialog` instances removed.  The
+  public band site is now a pure presentational page.  `useAppKeyboardShortcuts`
+  updated: `#admin` hash and `CMD+K` / `CTRL+K` now `navigate('/admin')`.
+
+- **`src/hooks/use-app-keyboard-shortcuts.ts`** — Signature simplified to
+  `{ isOwner }` only; `setShowLoginDialog` / `setOpenAdminHubOnMount` removed.
+  Uses `useNavigate` from react-router-dom.
+
+- **`middleware.ts`** — Hardcoded `neuroklast.net` references in log messages
+  replaced with generic `[SECURITY]` / `[MIDDLEWARE]` labels.
+
+- **`vite.config.ts`** — `javascript-obfuscator` plugin block removed entirely.
+
+### Removed
+
+- **`src/components/KeyManagerPanel.tsx`** — SaaS-only key-issuance panel deleted
+  from the client bundle.
+- **`key-manager` dialog case** in `AdminDialogManager.tsx`.
+- **`VITE_OBFUSCATE`** env var reference in `vite.config.ts`.
+- **`javascript-obfuscator`** from `devDependencies` in `package.json`.
+- **Activation lock screen** — `ActivationLockScreen` and `LicenseStatusBadge`
+  no longer imported or rendered by `App.tsx`.
+
+
   theme foundations (`@theme`) extracted from `src/index.css` for faster initial parse.
 
 - **`src/animations.css`** — CSS split: all `@keyframes` definitions and animation

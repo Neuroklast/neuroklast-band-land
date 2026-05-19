@@ -4,7 +4,68 @@ Entries are in **reverse chronological order** (newest first).
 
 ---
 
-## Session: 2026-04-02 — Comprehensive Performance Optimization
+## Session: 2026-05-19 — 10-Step Template Refactoring
+
+**Agent:** GitHub Copilot Coding Agent  
+**Branch:** `copilot/research-codebase-structure`
+
+### Objectives
+
+Complete the 10-step refactoring plan from `.github/agents.md` to turn the
+project into a clean, standalone band website template:
+
+1. Add react-router-dom routing infrastructure
+2. Create route structure (`/`, `/admin/*`, `*` → `/`)
+3. Remove ActivationLockScreen gate from App.tsx
+4. Generalise primary-hostname list (`VITE_PRIMARY_HOSTNAMES`)
+5. Make activation key optional (free-tier when unset)
+6. Remove KeyManagerPanel
+7. Simplify activation caching
+8. Standalone `/admin` page with route-level auth guard
+9. Make middleware.ts generic
+10. Remove JS obfuscator from vite.config.ts
+
+### What Was Done
+
+#### Steps 1–10 (all complete, test-driven)
+
+- Installed `react-router-dom` v7; wrapped app in `<BrowserRouter>`.
+- Created `src/AppRouter.tsx` with `/`, `/admin/*`, and catch-all routes.
+- Removed `ActivationLockScreen` gate, `LicenseStatusBadge`, and the
+  `validateActivationKey` effect from `App.tsx`.
+- `isPrimaryInstance()` now reads from `VITE_PRIMARY_HOSTNAMES` env var; falls
+  back to legacy list when unset.
+- `validateActivationKey()` returns `{ valid: true, tier: 'free' }` when
+  `VITE_ACTIVATION_KEY` is not set.
+- Deleted `src/components/KeyManagerPanel.tsx` and the `key-manager` dialog case.
+- Removed duplicate `activation_status_cache` sessionStorage key.
+- Created `src/pages/AdminPage.tsx` and `src/components/AdminRoute.tsx`;
+  removed `AdminButton`, `AdminDialogManager`, `AdminLoginDialog` from `App.tsx`.
+- Updated `useAppKeyboardShortcuts` to `navigate('/admin')` instead of opening
+  an inline login dialog.
+- Replaced hardcoded `neuroklast.net` log labels in `middleware.ts`.
+- Deleted `javascript-obfuscator` plugin and `devDependency`.
+
+#### Documentation Updates (this session)
+
+- `README.md` — removed activation-key requirement, obfuscation note, outdated
+  admin navigation; updated env vars table, tech stack, project structure, and
+  Admin Mode section; rewrote License section (no key required).
+- `docs/PROJECT_STATUS.md` — added refactoring status checklist, added routing
+  row to architecture table, added KV key migration note to known issues.
+- `CHANGELOG.md` — added [Unreleased] entry covering all 10 refactoring steps.
+- `.github/agents.md` — updated Context section to reflect that router is now
+  installed.
+
+### Test Results
+
+- **1 332 tests** passing (75 test files).
+- 33 new tests added across all 10 steps.
+- `npm run build` succeeds; CodeQL: 0 alerts.
+
+---
+
+
 
 **Agent:** GitHub Copilot Coding Agent
 **Branch:** `copilot/performance-optimization-band-land-project`
