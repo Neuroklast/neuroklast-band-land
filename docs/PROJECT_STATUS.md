@@ -1,13 +1,28 @@
 # Project Status
 
-**Last updated:** 2026-04-01  
-**Status:** Active — Neuroklast band website (personal use)
+**Last updated:** 2026-05-19  
+**Status:** Active — Band Land universal artist website template
 
 ---
 
 ## Current Development Status
 
-The site is a production-deployed React SPA for the metal/electronic band **Neuroklast**. It is built on React 19, Vite 7, Tailwind CSS v4, and Vercel serverless functions, and is live at [neuroklast-band-land.vercel.app](https://neuroklast-band-land.vercel.app).
+The project is a **Vite 7 + React 19 SPA** (with `react-router-dom` v7 for client-side routing) deployed as a universal artist/band website template. It is built on React 19, Vite 7, Tailwind CSS v4, and Vercel serverless functions.
+
+---
+
+## Refactoring Status (10-Step Plan)
+
+- [x] Step 1 — react-router-dom routing infrastructure (BrowserRouter, AppRouter.tsx)
+- [x] Step 2 — Route structure (`/`, `/admin/*`, `*` → `/`)
+- [x] Step 3 — Remove ActivationLockScreen gate from App.tsx
+- [x] Step 4 — Generalise primary-hostname list (`VITE_PRIMARY_HOSTNAMES` env var)
+- [x] Step 5 — Make activation key optional (free-tier when `VITE_ACTIVATION_KEY` unset)
+- [x] Step 6 — Remove KeyManagerPanel
+- [x] Step 7 — Simplify activation caching (single `nk-activation-result` key)
+- [x] Step 8 — Standalone `/admin` page with route-level auth guard; admin panel removed from App.tsx
+- [x] Step 9 — Make middleware.ts generic (no hardcoded hostnames in log messages)
+- [x] Step 10 — Remove JS obfuscator from vite.config.ts
 
 ---
 
@@ -32,6 +47,7 @@ The site is a production-deployed React SPA for the metal/electronic band **Neur
 - [ ] SEO improvements (meta tags exist but SSR/SSG not implemented)
 
 ### Admin & CMS
+- [x] Standalone `/admin` route (URL-based, shareable, deep-linkable)
 - [x] In-browser admin workspace (4-tab: Content, Design, Store, System)
 - [x] TOTP 2FA for admin login
 - [x] Admin setup wizard
@@ -69,6 +85,7 @@ The site is a production-deployed React SPA for the metal/electronic band **Neur
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, TypeScript, Vite 7, Tailwind CSS v4 |
+| Routing | react-router-dom v7 |
 | UI Components | shadcn/ui, Radix UI, Framer Motion |
 | State / Data | React Query (TanStack Query), Context API |
 | API / Backend | Vercel Serverless Functions (TypeScript) |
@@ -97,3 +114,4 @@ The site is a production-deployed React SPA for the metal/electronic band **Neur
 | `sectionOrder` deprecated config key | Low | Automated migration covers it but should be cleaned up |
 | No SSR/SSG | High (SEO) | SPA means crawlers see empty HTML; relevant if SEO matters |
 | iTunes API as primary music data source | Medium | Unreliable for non-Apple ecosystem; consider Musicbrainz or Spotify |
+| KV keys renamed (`nk_under_attack` → `site_under_attack`) | Low | Live KV entries under old prefix require a one-time migration on existing deployments |

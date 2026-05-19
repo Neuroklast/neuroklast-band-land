@@ -20,7 +20,6 @@ import {
   UsersThree,
   MegaphoneSimple,
   LinkSimple,
-  Key,
   Lock,
   ArrowCounterClockwise,
   SignOut,
@@ -72,7 +71,7 @@ export default function AdminHubDialog({
   onChangePassword,
   onLogout,
   onResetSetup,
-  isPrimary = false,
+  isPrimary: _isPrimary = false,
   siteConfig,
   onUpdateSiteConfig,
 }: AdminHubDialogProps) {
@@ -212,16 +211,6 @@ export default function AdminHubDialog({
       description: t('hub.audioDesc') || 'Configure ambient sound and effects',
       action: () => { onClose(); onOpenDialog('sound') },
     },
-    ...(isPrimary
-      ? [
-          {
-            icon: Key,
-            label: t('hub.keyManager') || 'Key Manager',
-            description: t('hub.keyManagerDesc') || 'Manage activation keys',
-            action: () => { onClose(); onOpenDialog('keys') },
-          },
-        ]
-      : []),
     {
       icon: Lock,
       label: t('hub.changePassword') || 'Change Password',

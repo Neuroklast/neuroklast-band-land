@@ -6,19 +6,31 @@
  * because tenants can set arbitrary env vars on their own deployments.
  * Detection must be based on the request Host header.
  *
- * NOTE: The PRIMARY_HOSTNAMES list is intentionally duplicated from src/lib/primary-check.ts.
- * API routes (api/) run as Node.js serverless functions and cannot import from src/
- * (which uses Vite/ESM path aliases and browser APIs). Keep both lists in sync.
+ * Configuration:
+ * - Set PRIMARY_HOSTNAMES to a comma-separated list of hostnames.
+ * - When not set the legacy hardcoded Neuroklast list is used (backward-compat).
+ * - When set to an empty string, NO hostname is treated as primary.
  */
 
 /**
- * PRIMARY_HOSTNAMES — all hostnames that identify the master Neuroklast instance.
+ * LEGACY_PRIMARY_HOSTNAMES — fallback when PRIMARY_HOSTNAMES env var is absent.
  */
-const PRIMARY_HOSTNAMES = [
+const LEGACY_PRIMARY_HOSTNAMES = [
   'neuroklast.net',
   'www.neuroklast.net',
   'neuroklast-band-land.vercel.app',
 ]
+
+function getPrimaryHostnames(): string[] {
+  const envVar = process.env.PRIMARY_HOSTNAMES
+  if (envVar === undefined) {
+    return LEGACY_PRIMARY_HOSTNAMES
+  }
+  return envVar
+    .split(',')
+    .map(h => h.trim())
+    .filter(Boolean)
+}
 
 /**
  * Server-side check: Is this request hitting the master instance?
@@ -29,5 +41,5 @@ const PRIMARY_HOSTNAMES = [
 export function isPrimaryHost(host: string | undefined): boolean {
   if (!host) return false
   const hostname = host.split(':')[0]
-  return PRIMARY_HOSTNAMES.includes(hostname)
+  return getPrimaryHostnames().includes(hostname)
 }

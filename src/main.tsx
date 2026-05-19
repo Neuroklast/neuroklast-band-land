@@ -1,8 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from "react-error-boundary";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter } from 'react-router-dom'
 
-import App from './App.tsx'
+import AppRouter from './AppRouter.tsx'
 import { ErrorFallback } from './ErrorFallback.tsx'
 import { LocaleProvider } from './contexts/LocaleContext'
 
@@ -27,11 +28,13 @@ const queryClient = new QueryClient({
 })
 
 createRoot(document.getElementById('root')!).render(
-  <QueryClientProvider client={queryClient}>
-    <LocaleProvider>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <App />
-      </ErrorBoundary>
-    </LocaleProvider>
-  </QueryClientProvider>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <LocaleProvider>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <AppRouter />
+        </ErrorBoundary>
+      </LocaleProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
 )

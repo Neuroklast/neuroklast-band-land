@@ -1,59 +1,47 @@
 import { useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface UseAppKeyboardShortcutsParams {
   isOwner: boolean
-  setShowLoginDialog: (v: boolean) => void
-  setOpenAdminHubOnMount: (v: boolean) => void
 }
 
 export function useAppKeyboardShortcuts({
   isOwner,
-  setShowLoginDialog,
-  setOpenAdminHubOnMount,
 }: UseAppKeyboardShortcutsParams): void {
+  const navigate = useNavigate()
   const prevIsOwnerRef = useRef(false)
 
-  // ── #admin hash → open login dialog ─────────────────────────────────────
+  // ── #admin hash → navigate to /admin ────────────────────────────────────
   useEffect(() => {
     const handleAdminHash = () => {
       if (window.location.hash === '#admin') {
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
-        if (isOwner) {
-          // Already authenticated — open the dashboard immediately
-          setOpenAdminHubOnMount(true)
-        } else {
-          setShowLoginDialog(true)
-        }
+        navigate('/admin')
       }
     }
     // Check once on mount
     handleAdminHash()
     window.addEventListener('hashchange', handleAdminHash)
     return () => window.removeEventListener('hashchange', handleAdminHash)
-  }, [isOwner, setShowLoginDialog, setOpenAdminHubOnMount])
+  }, [navigate])
 
-  // ── CMD+K / CTRL+K → open login dialog or dashboard ─────────────────────
+  // ── CMD+K / CTRL+K → navigate to /admin ─────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        if (isOwner) {
-          setOpenAdminHubOnMount(true)
-        } else {
-          setShowLoginDialog(true)
-        }
+        navigate('/admin')
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOwner, setShowLoginDialog, setOpenAdminHubOnMount])
+  }, [navigate])
 
-  // ── Auto-open dashboard after login ─────────────────────────────────────
+  // ── Auto-redirect to /admin after login ──────────────────────────────────
   useEffect(() => {
     if (isOwner && !prevIsOwnerRef.current) {
-      // Admin just logged in — flag the hub to auto-open
-      setOpenAdminHubOnMount(true)
+      navigate('/admin')
     }
     prevIsOwnerRef.current = isOwner
-  }, [isOwner, setOpenAdminHubOnMount])
+  }, [isOwner, navigate])
 }

@@ -20,7 +20,7 @@
 - **SaaS Admin Workspace** — A clean, 4-pillar dashboard (Content, Design, Store, System) without modal/dialog-hell. Content routing persists state, ensuring no data loss when switching tabs.
 - **Design System vs. Presets** — Strict architectural separation: "Themes" strictly define structural layouts (DOM/clip-paths), while "Presets" define color palettes and typography.
 - **Data Integrations** — Built-in Bandsintown API syncing via React Query, alongside structured release management.
-- **Secure Architecture** — Client-bundle code splitting for Admin views (`React.lazy`), React Query for data fetching, and strict Hostname-based license bypass for master-instances (neuroklast.net).
+- **Secure Architecture** — Client-bundle code splitting for Admin views (`React.lazy`), React Query for data fetching, and configurable primary-hostname bypass via `VITE_PRIMARY_HOSTNAMES`.
 - **Design Themes** — Four bundled themes (Glitch Noir, Neuroklast Classic, Zardonic Industrial, Umbrella Corp) with one-line activation
 - **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
 - **Flexible Sections** — Enable/disable and reorder any section without touching code
@@ -71,8 +71,8 @@ Pick your preferred platform and click the button — no CLI, no Git required:
 Build and run with Docker for self-hosted deployments:
 
 ```bash
-# Build the image (pass your activation key as a build arg)
-docker build --build-arg VITE_ACTIVATION_KEY=your-key -t band-land .
+# Build the image
+docker build -t band-land .
 
 # Run the container
 docker run -p 8080:80 band-land
@@ -460,10 +460,6 @@ npm run lint       # ESLint 10
 npm run preview    # Preview production build
 ```
 
-> **Obfuscation** — the production build includes optional JavaScript
-> obfuscation.  It is **off by default** (inflates bundle 30–100 %).
-> Enable with `VITE_OBFUSCATE=true npm run build`.
-
 ### Environment variables
 
 Copy `.env.example` to `.env` and fill in the values for local development. For production, set these in your platform's environment variables UI (Vercel → Settings → Environment Variables, Netlify → Site settings → Environment variables, Railway → Variables, Render → Environment).
@@ -473,7 +469,9 @@ Copy `.env.example` to `.env` and fill in the values for local development. For 
 | `ADMIN_SETUP_TOKEN` |  | One-time token to create the first admin password |
 | `KV_REST_API_URL` |  | Upstash Redis KV URL |
 | `KV_REST_API_TOKEN` |  | Upstash Redis KV token |
-| `VITE_ACTIVATION_KEY` |  | Activation key issued by Neuroklast (required to run the app) |
+| `VITE_ACTIVATION_KEY` | — | Optional activation key; omitting it gives a free-tier result automatically |
+| `VITE_PRIMARY_HOSTNAMES` | — | Comma-separated hostnames treated as the primary instance (e.g. `myband.de,www.myband.de`) |
+| `PRIMARY_HOSTNAMES` | — | Same as `VITE_PRIMARY_HOSTNAMES` but used server-side in the `api/` functions |
 | `RESEND_API_KEY` | — | Resend API key for contact-form email forwarding |
 
 The Setup Wizard checks for missing variables on first launch and shows which ones still need to be configured.
@@ -486,6 +484,7 @@ The Setup Wizard checks for missing variables on first launch and shows which on
 |-------|-----------|
 | Framework | React 19 + TypeScript |
 | Build | Vite 7 |
+| Routing | react-router-dom v7 |
 | Styling | Tailwind CSS v4 + oklch color system |
 | Animation | Framer Motion |
 | Components | shadcn/ui (Radix UI primitives) |
@@ -504,6 +503,9 @@ The Setup Wizard checks for missing variables on first launch and shows which on
 
 ```
 src/
+ AppRouter.tsx              # Route tree (/, /admin/*, 404 → /)
+ App.tsx                    # Public band site (pure SPA, no admin overlay)
+ main.tsx                   # Entry point — BrowserRouter wrapper
  lib/
     types.ts              # All TypeScript types (SiteConfig, ThemePackage, …)
     site-config.ts        # Defaults, createSiteConfig(), migrations
@@ -522,14 +524,16 @@ src/
     glitch-noir/          # Glitch Noir theme + custom Hero
     zardonic-industrial/  # Zardonic Industrial theme + custom Navigation
     umbrella-corp/        # Umbrella Corp theme + custom components
+ pages/
+    AdminPage.tsx         # Standalone admin panel at /admin
  components/                # React components
+    AdminRoute.tsx        # Auth boundary for /admin route
     widgets/              # Pluggable widget components
     ui/                   # shadcn/ui base components
  hooks/                     # Custom React hooks
  contexts/                  # React context providers
  styles/                    # Global CSS (theme variables, animations)
  test/                      # Vitest test files
- main.tsx                   # App entry point
 api/                          # Vercel serverless functions
 public/                       # Static assets
 ```
@@ -539,12 +543,14 @@ public/                       # Static assets
 ## Admin Mode
 
 1. Set the `ADMIN_SETUP_TOKEN` environment variable.
-2. Navigate to `?admin-setup` to create your admin password.
-3. Click the **edit button** (bottom-right corner) to enter edit mode.
+2. Navigate to `/admin` — the Setup Wizard will guide you through initial configuration (or the login form if already set up).
+3. Once authenticated, the Admin Hub opens automatically at `/admin`.
 4. All sections support inline editing: content, images, order, visibility.
 5. Changes persist automatically via Vercel KV.
 6. Export/import the full config as JSON for backup or migration.
 7. Enable TOTP two-factor authentication in admin settings.
+
+> **Keyboard shortcut:** `CMD+K` / `CTRL+K` navigates to `/admin` from anywhere on the site.
 
 ---
 
@@ -580,39 +586,6 @@ See [SECURITY.md](SECURITY.md) for responsible disclosure.
 This project is licensed under the [Business Source License 1.1](LICENSE).
 
 - The source code is publicly readable for learning purposes and AI assistants.
-- **Deployment requires an activation key.** Contact Neuroklast for access.
 - The license converts to MIT on **2030-03-03**.
 
-See the [Activation & Licensing](#activation--licensing) section below for details.
-
----
-
-## Activation & Licensing
-
-### How to get a key
-
-Contact Neuroklast to request an activation key:
-- Open an issue or discussion on this repository
-- Or reach out via the contact links on [neuroklast.net](https://neuroklast.net)
-
-### How to configure the key
-
-1. **Vercel (recommended):** Add `VITE_ACTIVATION_KEY=your-key` in your project's **Settings → Environment Variables**.
-2. **Netlify:** Add `VITE_ACTIVATION_KEY=your-key` in **Site settings → Environment variables**.
-3. **Railway:** Add `VITE_ACTIVATION_KEY=your-key` in the **Variables** tab of your service.
-4. **Render:** Add `VITE_ACTIVATION_KEY=your-key` in the **Environment** tab of your service.
-5. **Docker:** Pass `--build-arg VITE_ACTIVATION_KEY=your-key` when building the image.
-6. **Local development:** Add the line to your `.env` file.
-
-The app validates the key against the central Neuroklast API on startup. Without a valid key the app shows a lock screen and no content is displayed.
-
-### License tiers
-
-| Tier | Features |
-|------|----------|
-| **Free** | Base feature set |
-| **Pro** | Premium themes, widgets, analytics |
-| **Agency** | Everything in Pro + multi-site management |
-| **SaaS** | Everything in Agency + hosted/white-label deployments |
-
-The current tier is displayed in the admin toolbar when you are logged in.
+No activation key is required to run the app. Deployments that do not set `VITE_ACTIVATION_KEY` automatically receive a **free-tier** result and can use the full feature set.

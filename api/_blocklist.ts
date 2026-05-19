@@ -1,8 +1,8 @@
 import { kv } from '@vercel/kv'
 import { getClientIp, hashIp } from './_ratelimit.js'
 
-export const BLOCK_PREFIX = 'nk-blocked:'
-export const BLOCK_INDEX_KEY = 'nk-blocked-index'
+export const BLOCK_PREFIX = 'site-blocked:'
+export const BLOCK_INDEX_KEY = 'site-blocked-index'
 export const BLOCK_TTL = 604800 // 7 days default
 
 interface BlockEntry {

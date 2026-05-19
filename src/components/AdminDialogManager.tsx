@@ -10,10 +10,7 @@ import { lazy, Suspense } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import SectionErrorBoundary from '@/components/SectionErrorBoundary'
 import CyberSpinner from '@/components/CyberSpinner'
-import KeyManagerPanel from '@/components/KeyManagerPanel'
-import { useLocale } from '@/hooks/use-locale'
 import type { AdminDialog, SoundSettings, ThemeSettings, SectionVisibility, NewsletterSettings, ContactSettings, SiteConfig, SectionConfig } from '@/lib/types'
-import type { ActivationResult } from '@/lib/activation'
 import type { WidgetPlugin } from '@/lib/types'
 
 // ─── Lazy-loaded heavy admin components ──────────────────────────────────────
@@ -63,7 +60,6 @@ export interface AdminDialogManagerProps {
   widgetPlugins: WidgetPlugin[]
   onUpdatePlugins: (widgetPlugins: WidgetPlugin[]) => void
   activePresetId?: string
-  activationResult: ActivationResult | null
   newsletterSettings?: NewsletterSettings
   contactSettings?: ContactSettings
   onSaveNewsletter: (settings: NewsletterSettings) => void
@@ -115,7 +111,6 @@ export default function AdminDialogManager({
   widgetPlugins,
   onUpdatePlugins,
   activePresetId,
-  activationResult,
   newsletterSettings,
   contactSettings,
   onSaveNewsletter,
@@ -127,25 +122,8 @@ export default function AdminDialogManager({
   sections,
   onSaveSections,
 }: AdminDialogManagerProps) {
-  const { t } = useLocale()
   return (
     <>
-      {/* Key Manager — only on primary deployment, no lazy needed (lightweight) */}
-      {isPrimary && activeDialog === 'keys' && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto flex items-start justify-center p-4 pt-10">
-          <div className="bg-card border border-border rounded-lg w-full max-w-xl p-6 relative">
-            <button
-              onClick={() => setActiveDialog(null)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-              aria-label="Close"
-            >
-              {t('common.closeSymbol')}
-            </button>
-            <KeyManagerPanel />
-          </div>
-        </div>
-      )}
-
       <LazyBoundary name="StatsDashboard">
         <StatsDashboard
           open={activeDialog === 'analytics'}
@@ -247,7 +225,6 @@ export default function AdminDialogManager({
           onUpdatePlugins={onUpdatePlugins}
           activePresetId={activePresetId}
           onApplyTheme={(ts: ThemeSettings) => onSaveTheme(ts)}
-          licenseTier={activationResult?.tier}
           initialTab={activeDialog === 'store-themes' ? 'themes' : activeDialog === 'store-widgets' ? 'widgets' : 'all'}
         />
       </LazyBoundary>

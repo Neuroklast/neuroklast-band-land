@@ -240,13 +240,13 @@ describe('vercel.json sitemap-trap rewrite', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test: vite.config.ts imports vite-plugin-obfuscator
+// Test: vite.config.ts does NOT import javascript-obfuscator (removed in step 10)
 // ---------------------------------------------------------------------------
 
 describe('vite.config.ts obfuscator plugin', () => {
   const viteConfig = readFileSync(resolve(__dirname, '../../vite.config.ts'), 'utf-8')
 
-  it('imports javascript-obfuscator', () => {
-    expect(viteConfig).toContain("from 'javascript-obfuscator'")
+  it('does not import javascript-obfuscator (obfuscator removed)', () => {
+    expect(viteConfig).not.toContain("from 'javascript-obfuscator'")
   })
 })
