@@ -35,6 +35,7 @@ export default function KonamiListener({ onCodeActivated, customCode }: KonamiLi
         
         if (konamiIndex === code.length) {
           konamiIndex = 0
+          e.preventDefault()
           onCodeActivated()
         }
       } else {
