@@ -54,6 +54,7 @@ export async function hashPassword(password: string): Promise<string> {
 async function verifyPassword(password: string, stored: string): Promise<boolean> {
   if (!stored.startsWith('scrypt:')) {
     // Legacy SHA-256 format (will be migrated automatically on next login)
+    console.warn('[AUTH] Legacy SHA-256 password hash detected — will migrate to scrypt on next successful login')
     const hash = createHash('sha256').update(password).digest('hex')
     const a = Buffer.from(hash, 'utf8')
     const b = Buffer.from(stored, 'utf8')
@@ -218,7 +219,10 @@ async function verifyTotpCodeOnce(secret: string, code: string): Promise<boolean
  */
 function validateSetupToken(setupToken: unknown): boolean {
   const requiredToken = process.env.ADMIN_SETUP_TOKEN
-  if (!requiredToken) return true // No token configured — allow setup (backward-compatible)
+  if (!requiredToken) {
+    console.warn('[SECURITY] ADMIN_SETUP_TOKEN is not configured — admin setup is open to the first visitor. Set this env var to protect initial setup.')
+    return true // No token configured — allow setup (backward-compatible)
+  }
   if (!setupToken || typeof setupToken !== 'string') return false
   const a = Buffer.from(requiredToken, 'utf8')
   const b = Buffer.from(setupToken, 'utf8')
@@ -229,17 +233,19 @@ function validateSetupToken(setupToken: unknown): boolean {
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<unknown> {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  const allowed = await applyRateLimit(req, res)
-  if (!allowed) return
-
   if (!isKVConfigured()) {
     return res.status(503).json({ error: 'Service unavailable', message: 'KV storage is not configured.' })
   }
 
   try {
-    // GET — check auth status
+    // GET — check auth status; authenticated admins bypass rate limiting
+    // to prevent 429 errors from periodic session polling
     if (req.method === 'GET') {
       const authenticated = await validateSession(req)
+      if (!authenticated) {
+        const allowed = await applyRateLimit(req, res)
+        if (!allowed) return
+      }
       const storedHash = await kv.get<string>('admin-password-hash')
       const totpSecret = await kv.get<string>(TOTP_KEY)
       return res.json({
@@ -249,6 +255,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         setupTokenRequired: !!process.env.ADMIN_SETUP_TOKEN,
       })
     }
+
+    // POST / DELETE — apply rate limit before processing
+    const allowed = await applyRateLimit(req, res)
+    if (!allowed) return
 
     // POST — login, setup, change password, or TOTP management
     if (req.method === 'POST') {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { LockSimple, Eye, EyeSlash, Key, ShieldCheck } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useLocale } from '@/hooks/use-locale'
+import type { LoginResult } from '@/hooks/use-admin-auth'
 
 interface AdminLoginDialogProps {
   open: boolean
@@ -13,7 +14,7 @@ interface AdminLoginDialogProps {
   mode: 'login' | 'setup'
   totpEnabled?: boolean
   setupTokenRequired?: boolean
-  onLogin?: (password: string, totpCode?: string) => Promise<boolean | 'totp-required'>
+  onLogin?: (password: string, totpCode?: string) => Promise<LoginResult>
   onSetPassword: (password: string, setupToken?: string) => Promise<void>
 }
 
@@ -28,6 +29,21 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
   const [showTotpInput, setShowTotpInput] = useState(totpEnabled || false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [countdown, setCountdown] = useState(0)
+
+  // Sync showTotpInput when totpEnabled prop changes (only when not already in an active TOTP flow)
+  useEffect(() => {
+    if (!showTotpInput) {
+      setShowTotpInput(totpEnabled || false)
+    }
+  }, [totpEnabled]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Countdown timer for rate-limit feedback
+  useEffect(() => {
+    if (countdown <= 0) return
+    const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [countdown])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,21 +55,38 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
       const result = await onLogin!(password, showTotpInput ? totpCode : undefined)
       if (result === 'totp-required') {
         setShowTotpInput(true)
-        setError('Enter your authenticator code')
+        setError(t('adminLogin.enterTotpCode'))
+        return
+      }
+      if (result === 'rate-limited') {
+        setError(t('adminLogin.errorRateLimited'))
+        setCountdown(10)
+        return
+      }
+      if (result === 'invalid-credentials') {
+        setError(t('adminLogin.errorInvalidCredentials'))
+        return
+      }
+      if (result === 'server-error') {
+        setError(t('adminLogin.errorServer'))
+        return
+      }
+      if (result === 'network-error') {
+        setError(t('adminLogin.errorNetwork'))
         return
       }
       if (result) {
-        toast.success('ADMIN ACCESS GRANTED', {
-          description: 'Edit mode is now available'
+        toast.success(t('adminLogin.accessGranted'), {
+          description: t('adminLogin.accessGrantedDesc')
         })
         setPassword('')
         setTotpCode('')
         onOpenChange(false)
       } else {
-        setError('Invalid password')
+        setError(t('adminLogin.invalidPassword'))
       }
     } catch {
-      setError('Login failed')
+      setError(t('adminLogin.loginFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -77,8 +110,8 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
     setError('')
     try {
       await onSetPassword(password, setupTokenRequired ? setupToken : undefined)
-      toast.success('ADMIN PASSWORD SET', {
-        description: 'You can now use this password to access edit mode'
+      toast.success(t('adminLogin.passwordSet'), {
+        description: t('adminLogin.passwordSetDesc')
       })
       setPassword('')
       setConfirmPassword('')
@@ -212,9 +245,13 @@ export default function AdminLoginDialog({ open, onOpenChange, mode, totpEnabled
             <Button
               type="submit"
               className="bg-primary hover:bg-accent"
-              disabled={isLoading || !password.trim()}
+              disabled={isLoading || !password.trim() || countdown > 0}
             >
-              {isLoading ? t('common.processing') : isLoginMode ? t('adminLogin.login') : t('adminLogin.setPassword')}
+              {isLoading
+                ? t('common.processing')
+                : countdown > 0
+                  ? `${countdown}s`
+                  : isLoginMode ? t('adminLogin.login') : t('adminLogin.setPassword')}
             </Button>
           </DialogFooter>
         </form>

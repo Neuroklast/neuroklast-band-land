@@ -1,4 +1,8 @@
 import { useState, useEffect, useCallback, startTransition } from 'react'
+import { toast } from 'sonner'
+import { useLocale } from '@/hooks/use-locale'
+
+export type LoginResult = boolean | 'totp-required' | 'rate-limited' | 'invalid-credentials' | 'server-error' | 'network-error'
 
 export interface AdminAuthState {
   isOwner: boolean
@@ -8,7 +12,7 @@ export interface AdminAuthState {
 }
 
 export interface AdminAuthActions {
-  handleAdminLogin: (password: string, totpCode?: string) => Promise<boolean | 'totp-required'>
+  handleAdminLogin: (password: string, totpCode?: string) => Promise<LoginResult>
   handleAdminLogout: () => Promise<void>
   handleSetAdminPassword: (password: string, setupToken?: string) => Promise<void>
   handleSetupAdminPassword: (password: string, setupToken?: string) => Promise<void>
@@ -18,6 +22,7 @@ export interface AdminAuthActions {
 }
 
 export function useAdminAuth() {
+  const { t } = useLocale()
   const [isOwner, setIsOwner] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
   const [totpEnabled, setTotpEnabled] = useState(false)
@@ -50,7 +55,8 @@ export function useAdminAuth() {
         if (!res.ok) return
         const data = await res.json()
         if (!data.authenticated) {
-          window.location.reload()
+          toast.error(t('auth.sessionExpired'))
+          setTimeout(() => window.location.reload(), 1500)
         }
       } catch {
         // Network error — transient
@@ -59,7 +65,7 @@ export function useAdminAuth() {
     return () => clearInterval(intervalId)
   }, [isOwner])
 
-  const handleAdminLogin = useCallback(async (password: string, totpCode?: string): Promise<boolean | 'totp-required'> => {
+  const handleAdminLogin = useCallback(async (password: string, totpCode?: string): Promise<LoginResult> => {
     try {
       const body: Record<string, string> = { password }
       if (totpCode) body.totpCode = totpCode
@@ -77,10 +83,13 @@ export function useAdminAuth() {
         return true
       }
       const data = await res.json().catch(() => ({}))
-      if (data.totpRequired) return 'totp-required'
+      if (res.status === 429) return 'rate-limited'
+      if (res.status === 403 && data.totpRequired) return 'totp-required'
+      if (res.status === 401) return 'invalid-credentials'
+      if (res.status >= 500) return 'server-error'
       return false
     } catch {
-      return false
+      return 'network-error'
     }
   }, [])
 
