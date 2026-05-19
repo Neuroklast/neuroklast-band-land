@@ -1,7 +1,7 @@
 /**
  * Activation key validation for Band Land deployments.
  *
- * Each deployment must supply a VITE_ACTIVATION_KEY environment variable.
+ * Each deployment can optionally supply a NEXT_PUBLIC_ACTIVATION_KEY environment variable.
  * On app startup, the key is validated against the central Neuroklast API.
  * The result is cached in sessionStorage for the duration of the browser session
  * to avoid repeated network calls on every page refresh.
@@ -25,10 +25,10 @@ const SESSION_KEY = 'nk-activation-result'
  * Forks running on other Vercel instances call back to THIS URL so that
  * activation keys are always checked against the single source of truth.
  *
- * Override via VITE_ACTIVATION_API_URL for testing or staging environments.
+ * Override via NEXT_PUBLIC_ACTIVATION_API_URL for testing or staging environments.
  */
 const ACTIVATION_API_URL =
-  (import.meta.env.VITE_ACTIVATION_API_URL as string | undefined) ||
+  (process.env.NEXT_PUBLIC_ACTIVATION_API_URL as string | undefined) ||
   'https://neuroklast-band-land.vercel.app/api/validate-key'
 
 /**
@@ -60,14 +60,14 @@ function setCachedResult(result: ActivationResult): void {
  * Validate the deployment's activation key against the central Neuroklast API.
  *
  * - If the current hostname is `neuroklast.net` (primary instance), validation is bypassed (always valid).
- * - If no key is configured (`VITE_ACTIVATION_KEY` is empty), returns invalid.
+ * - If no key is configured (`NEXT_PUBLIC_ACTIVATION_KEY` is empty), returns a valid free-tier result.
  * - Caches the result in sessionStorage for the current browser session.
  * - If the remote API is unreachable, fails closed (returns invalid) to prevent
  *   unactivated deployments from running silently.
  */
 export async function validateActivationKey(): Promise<ActivationResult> {
   // Primary instance (master deployment on neuroklast.net) — always valid, no key required.
-  // SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
+  // SECURITY: hostname-based check; env vars like NEXT_PUBLIC_IS_PRIMARY must never be used here.
   if (isPrimaryInstance()) {
     const result: ActivationResult = { valid: true, tier: 'agency', features: [] }
     return result
@@ -77,7 +77,7 @@ export async function validateActivationKey(): Promise<ActivationResult> {
   const cached = getCachedResult()
   if (cached !== null) return cached
 
-  const key = import.meta.env.VITE_ACTIVATION_KEY as string | undefined
+  const key = process.env.NEXT_PUBLIC_ACTIVATION_KEY as string | undefined
 
   if (!key || key.trim() === '') {
     // No key configured — grant free-tier access so the template works

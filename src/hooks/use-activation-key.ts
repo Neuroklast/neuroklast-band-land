@@ -4,8 +4,8 @@ import { validateActivationKey } from '@/lib/activation'
 
 type ActivationStatus = 'loading' | 'valid' | 'invalid' | 'bypassed'
 
-const ACTIVATION_KEY = import.meta.env.VITE_ACTIVATION_KEY as string | undefined
-// SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
+const ACTIVATION_KEY = process.env.NEXT_PUBLIC_ACTIVATION_KEY as string | undefined
+// SECURITY: hostname-based check; env vars like NEXT_PUBLIC_IS_PRIMARY must never be used here.
 const IS_PRIMARY = isPrimaryInstance()
 
 /** localStorage key for a user-supplied activation key (from wizard or URL hash). */

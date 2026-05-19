@@ -2,7 +2,7 @@
  * Primary instance detection — server-side utility for API routes.
  *
  * SECURITY: This module is the ONLY source of truth for superadmin bypass in API routes.
- * Never use environment variables (like VITE_IS_PRIMARY) for this check,
+ * Never use environment variables (like NEXT_PUBLIC_IS_PRIMARY) for this check,
  * because tenants can set arbitrary env vars on their own deployments.
  * Detection must be based on the request Host header.
  *

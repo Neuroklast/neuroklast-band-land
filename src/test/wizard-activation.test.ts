@@ -69,7 +69,7 @@ describe('useActivationKey — localStorage fallback', () => {
       writable: true,
       configurable: true,
     })
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
 
     const { useActivationKey } = await import('@/hooks/use-activation-key')
     // Since this is a hook we test the exported logic indirectly
@@ -83,7 +83,7 @@ describe('useActivationKey — localStorage fallback', () => {
       writable: true,
       configurable: true,
     })
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
 
     // Pre-store a key in localStorage
     localStorage.setItem('nk-local-activation-key', 'stored-key-xyz')
@@ -121,7 +121,7 @@ describe('Wizard activation step conditions', () => {
   })
 
   it('needsActivationStep returns false when isPrimary flag is true', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
 
     // Dynamically test the logic (mirrors SetupWizard's needsActivationStep)
     function needsActivationStep(isPrimary: boolean, envKey: string, localKey: string | null): boolean {

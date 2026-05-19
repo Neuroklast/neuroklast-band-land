@@ -2,10 +2,10 @@
  * Step 4: Generalised primary-hostname detection.
  *
  * isPrimaryInstance() must:
- * - Return false by default when VITE_PRIMARY_HOSTNAMES is empty (no hostname is
+ * - Return false by default when NEXT_PUBLIC_PRIMARY_HOSTNAMES is empty (no hostname is
  *   treated as primary unless the operator explicitly opts in).
  * - Return true when the current hostname appears in the comma-separated
- *   VITE_PRIMARY_HOSTNAMES env var.
+ *   NEXT_PUBLIC_PRIMARY_HOSTNAMES env var.
  * - Still return true for the legacy hardcoded list when the env var is NOT set
  *   (backward-compat so existing Neuroklast deployments keep working).
  */
@@ -20,7 +20,7 @@ describe('isPrimaryInstance — env-var driven', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns true for neuroklast.net when VITE_PRIMARY_HOSTNAMES is NOT set (backward-compat)', async () => {
+  it('returns true for neuroklast.net when NEXT_PUBLIC_PRIMARY_HOSTNAMES is NOT set (backward-compat)', async () => {
     // Do not stub — test the default behavior (env var absent)
     Object.defineProperty(window, 'location', {
       value: { hostname: 'neuroklast.net' },
@@ -31,8 +31,8 @@ describe('isPrimaryInstance — env-var driven', () => {
     expect(isPrimaryInstance()).toBe(true)
   })
 
-  it('returns false for neuroklast.net when VITE_PRIMARY_HOSTNAMES is set to an empty string', async () => {
-    vi.stubEnv('VITE_PRIMARY_HOSTNAMES', '')
+  it('returns false for neuroklast.net when NEXT_PUBLIC_PRIMARY_HOSTNAMES is set to an empty string', async () => {
+    vi.stubEnv('NEXT_PUBLIC_PRIMARY_HOSTNAMES', '')
     Object.defineProperty(window, 'location', {
       value: { hostname: 'neuroklast.net' },
       writable: true,
@@ -42,8 +42,8 @@ describe('isPrimaryInstance — env-var driven', () => {
     expect(isPrimaryInstance()).toBe(false)
   })
 
-  it('returns true when hostname matches VITE_PRIMARY_HOSTNAMES (custom deployment)', async () => {
-    vi.stubEnv('VITE_PRIMARY_HOSTNAMES', 'my-band.com,www.my-band.com')
+  it('returns true when hostname matches NEXT_PUBLIC_PRIMARY_HOSTNAMES (custom deployment)', async () => {
+    vi.stubEnv('NEXT_PUBLIC_PRIMARY_HOSTNAMES', 'my-band.com,www.my-band.com')
     Object.defineProperty(window, 'location', {
       value: { hostname: 'my-band.com' },
       writable: true,
@@ -53,8 +53,8 @@ describe('isPrimaryInstance — env-var driven', () => {
     expect(isPrimaryInstance()).toBe(true)
   })
 
-  it('returns true when www hostname matches VITE_PRIMARY_HOSTNAMES', async () => {
-    vi.stubEnv('VITE_PRIMARY_HOSTNAMES', 'my-band.com,www.my-band.com')
+  it('returns true when www hostname matches NEXT_PUBLIC_PRIMARY_HOSTNAMES', async () => {
+    vi.stubEnv('NEXT_PUBLIC_PRIMARY_HOSTNAMES', 'my-band.com,www.my-band.com')
     Object.defineProperty(window, 'location', {
       value: { hostname: 'www.my-band.com' },
       writable: true,
@@ -64,8 +64,8 @@ describe('isPrimaryInstance — env-var driven', () => {
     expect(isPrimaryInstance()).toBe(true)
   })
 
-  it('returns false when hostname does NOT match VITE_PRIMARY_HOSTNAMES', async () => {
-    vi.stubEnv('VITE_PRIMARY_HOSTNAMES', 'my-band.com,www.my-band.com')
+  it('returns false when hostname does NOT match NEXT_PUBLIC_PRIMARY_HOSTNAMES', async () => {
+    vi.stubEnv('NEXT_PUBLIC_PRIMARY_HOSTNAMES', 'my-band.com,www.my-band.com')
     Object.defineProperty(window, 'location', {
       value: { hostname: 'other-band.vercel.app' },
       writable: true,
@@ -75,8 +75,8 @@ describe('isPrimaryInstance — env-var driven', () => {
     expect(isPrimaryInstance()).toBe(false)
   })
 
-  it('trims whitespace around entries in VITE_PRIMARY_HOSTNAMES', async () => {
-    vi.stubEnv('VITE_PRIMARY_HOSTNAMES', ' my-band.com , www.my-band.com ')
+  it('trims whitespace around entries in NEXT_PUBLIC_PRIMARY_HOSTNAMES', async () => {
+    vi.stubEnv('NEXT_PUBLIC_PRIMARY_HOSTNAMES', ' my-band.com , www.my-band.com ')
     Object.defineProperty(window, 'location', {
       value: { hostname: 'my-band.com' },
       writable: true,

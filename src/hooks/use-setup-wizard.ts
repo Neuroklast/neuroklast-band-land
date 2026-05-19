@@ -31,7 +31,7 @@ import type { SiteConfig, SectionConfig } from '@/lib/types'
 
 // ─── Environment ──────────────────────────────────────────────────────────────
 
-const VITE_ACTIVATION_KEY = import.meta.env.VITE_ACTIVATION_KEY as string | undefined
+const NEXT_PUBLIC_ACTIVATION_KEY = process.env.NEXT_PUBLIC_ACTIVATION_KEY as string | undefined
 
 /**
  * SECURITY: Hostname-based check prevents environment-variable spoofing.
@@ -40,7 +40,7 @@ const VITE_ACTIVATION_KEY = import.meta.env.VITE_ACTIVATION_KEY as string | unde
 const IS_PRIMARY = isPrimaryInstance()
 
 const VALIDATE_URL =
-  (import.meta.env.VITE_ACTIVATION_API_URL as string | undefined) ||
+  (process.env.NEXT_PUBLIC_ACTIVATION_API_URL as string | undefined) ||
   'https://neuroklast-band-land.vercel.app/api/validate-key'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -49,11 +49,11 @@ const VALIDATE_URL =
  * Returns `true` when the wizard must show the activation-key gate step.
  *
  * The gate is skipped for the primary (official) Neuroklast instance and for
- * deployments that embed the key via `VITE_ACTIVATION_KEY` at build time.
+ * deployments that embed the key via `NEXT_PUBLIC_ACTIVATION_KEY` at build time.
  */
 export function needsActivationStep(): boolean {
   if (IS_PRIMARY) return false
-  if (VITE_ACTIVATION_KEY?.trim()) return false
+  if (NEXT_PUBLIC_ACTIVATION_KEY?.trim()) return false
   if (getLocalActivationKey()?.trim()) return false
   return true
 }

@@ -1,7 +1,7 @@
 /**
  * Step 5: Activation key is optional.
  *
- * When VITE_ACTIVATION_KEY is not configured, validateActivationKey() must
+ * When NEXT_PUBLIC_ACTIVATION_KEY is not configured, validateActivationKey() must
  * return a valid free-tier result rather than blocking the app.  This lets
  * any operator run the band site without purchasing a key.
  */
@@ -18,8 +18,8 @@ describe('validateActivationKey — optional activation (step 5)', () => {
     sessionStorage.clear()
   })
 
-  it('returns valid free-tier result when VITE_ACTIVATION_KEY is not set', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+  it('returns valid free-tier result when NEXT_PUBLIC_ACTIVATION_KEY is not set', async () => {
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     // Ensure not on primary hostname so that bypass does not interfere
     Object.defineProperty(window, 'location', {
       value: { hostname: 'my-custom-band.vercel.app' },
@@ -33,7 +33,7 @@ describe('validateActivationKey — optional activation (step 5)', () => {
   })
 
   it('does not call the API when no key is configured', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     Object.defineProperty(window, 'location', {
       value: { hostname: 'my-custom-band.vercel.app' },
       writable: true,
@@ -46,7 +46,7 @@ describe('validateActivationKey — optional activation (step 5)', () => {
   })
 
   it('still validates against API when a key IS configured', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', 'a-real-key')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', 'a-real-key')
     Object.defineProperty(window, 'location', {
       value: { hostname: 'my-custom-band.vercel.app' },
       writable: true,

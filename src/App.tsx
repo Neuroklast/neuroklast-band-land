@@ -1,9 +1,11 @@
+'use client'
+
 import { useSiteConfig } from '@/hooks/use-site-config'
 import { resolveSections, getEnabledSectionIds } from '@/lib/sections'
 import { useEffect, useRef, useState, useMemo, startTransition, lazy, Suspense } from 'react'
 import { useAdminDialogState } from '@/hooks/use-admin-dialog-state'
 import { useAppKeyboardShortcuts } from '@/hooks/use-app-keyboard-shortcuts'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -101,7 +103,7 @@ function removeSearchParam(key: string): void {
 
 function App() {
   const { t } = useLocale()
-  const navigate = useNavigate()
+  const router = useRouter()
   const { config, updateConfig, setConfig, isLoaded: siteConfigLoaded } = useSiteConfig()
   const { isOwner, handleSetupAdminPassword } = useAdminAuth()
   const { cyberpunkOverlay, setCyberpunkOverlay } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
@@ -115,7 +117,7 @@ function App() {
     impressumOpen, setImpressumOpen,
     datenschutzOpen, setDatenschutzOpen,
   } = useAdminDialogState()
-  const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
+  const isDevTestMode = process.env.NEXT_PUBLIC_DEV_TEST_MODE === 'true'
 
   // ── Cookie consent — analytics are gated behind explicit user acceptance ────
   // Reading from the same KV key as CookieBanner so both components share state.
@@ -192,13 +194,13 @@ function App() {
     const p = new URLSearchParams(window.location.search)
     if (p.has('admin-setup')) {
       removeSearchParam('admin-setup')
-      navigate('/admin')
+      router.push('/admin')
     }
     if (p.has('access-secret-terminal-NK-666')) {
       startTransition(() => setActiveDialog('secret-terminal'))
       removeSearchParam('access-secret-terminal-NK-666')
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only; navigate is stable from useNavigate
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only; router is stable from useRouter
   }, [])
 
   // Apply developer test data if active
@@ -330,7 +332,7 @@ function App() {
                 onLabelChange={handleLabelChange}
                 onShowBandInfoEdit={() => setShowBandInfoEdit(true)}
                 onSetCyberpunkOverlay={setCyberpunkOverlay}
-              onShowLogin={() => navigate('/admin')}
+              onShowLogin={() => router.push('/admin')}
                 onShowImpressum={() => {
                   if (isOwner) {
                     setImpressumOpen(true)

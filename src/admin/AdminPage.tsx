@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * @file AdminPage.tsx
  *
@@ -45,9 +47,7 @@ const defaultSiteConfig = createSiteConfig({
 /**
  * AdminPage — always shown when navigating to /admin.
  *
- * Relies on AdminRoute to redirect unauthenticated visitors to / after the
- * login flow completes, so this page can always assume it has been reached
- * intentionally.
+ * This page is rendered by `app/admin/page.tsx` in the Next.js App Router.
  */
 export default function AdminPage() {
   const {

@@ -47,7 +47,7 @@ const FALLBACK_KEY_ENTRY = {
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only available on primary instance.
-  // SECURITY: host-header check; env vars like VITE_IS_PRIMARY must never be used here.
+  // SECURITY: host-header check; env vars like NEXT_PUBLIC_IS_PRIMARY must never be used here.
   if (!isPrimaryHost(req.headers.host as string | undefined)) {
     return res.status(403).json({ error: 'Key manager only available on primary deployment' })
   }

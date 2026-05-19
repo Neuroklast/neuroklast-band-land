@@ -261,7 +261,7 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }
               <div style={{ filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent))` }}>
                 <div className="relative isolate block w-full">
                   <img
-                    src={titleImageUrl ?? titlePng}
+                    src={titleImageUrl ?? (typeof titlePng === 'string' ? titlePng : titlePng.src)}
                     alt={t('hero.titleAlt').replace('{0}', name)}
                     className={`w-full h-auto relative z-10`}
                   />

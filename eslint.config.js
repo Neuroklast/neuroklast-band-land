@@ -7,7 +7,7 @@ import i18next from 'eslint-plugin-i18next'
 import bandLandPlugin from './eslint-rules/index.js'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'eslint-rules', 'src/_theme_inbox'] },
+  { ignores: ['dist', 'node_modules', 'eslint-rules', 'src/_theme_inbox', 'next-env.d.ts'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

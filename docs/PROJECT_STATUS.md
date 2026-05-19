@@ -7,7 +7,7 @@
 
 ## Current Development Status
 
-The project is a **Vite 7 + React 19 SPA** (with `react-router-dom` v7 for client-side routing) deployed as a universal artist/band website template. It is built on React 19, Vite 7, Tailwind CSS v4, and Vercel serverless functions.
+The project is a **Next.js 15 + React 19** app (App Router) deployed as a universal artist/band website template. It is built on React 19, Next.js 15, Tailwind CSS v4, and Vercel serverless functions.
 
 ---
 
@@ -16,8 +16,8 @@ The project is a **Vite 7 + React 19 SPA** (with `react-router-dom` v7 for clien
 - [x] Step 1 — react-router-dom routing infrastructure (BrowserRouter, AppRouter.tsx)
 - [x] Step 2 — Route structure (`/`, `/admin/*`, `*` → `/`)
 - [x] Step 3 — Remove ActivationLockScreen gate from App.tsx
-- [x] Step 4 — Generalise primary-hostname list (`VITE_PRIMARY_HOSTNAMES` env var)
-- [x] Step 5 — Make activation key optional (free-tier when `VITE_ACTIVATION_KEY` unset)
+- [x] Step 4 — Generalise primary-hostname list (`NEXT_PUBLIC_PRIMARY_HOSTNAMES` env var)
+- [x] Step 5 — Make activation key optional (free-tier when `NEXT_PUBLIC_ACTIVATION_KEY` unset)
 - [x] Step 6 — Remove KeyManagerPanel
 - [x] Step 7 — Simplify activation caching (single `nk-activation-result` key)
 - [x] Step 8 — Standalone `/admin` page with route-level auth guard; admin panel removed from App.tsx
@@ -84,8 +84,8 @@ The project is a **Vite 7 + React 19 SPA** (with `react-router-dom` v7 for clien
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19, TypeScript, Vite 7, Tailwind CSS v4 |
-| Routing | react-router-dom v7 |
+| Frontend | React 19, TypeScript, Next.js 15, Tailwind CSS v4 |
+| Routing | Next.js App Router (`app/`) |
 | UI Components | shadcn/ui, Radix UI, Framer Motion |
 | State / Data | React Query (TanStack Query), Context API |
 | API / Backend | Vercel Serverless Functions (TypeScript) |

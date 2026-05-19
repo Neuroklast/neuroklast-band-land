@@ -61,8 +61,8 @@ describe('validateActivationKey', () => {
     sessionStorage.clear()
   })
 
-  it('returns valid free-tier result when VITE_ACTIVATION_KEY is not set', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+  it('returns valid free-tier result when NEXT_PUBLIC_ACTIVATION_KEY is not set', async () => {
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()
     expect(result.valid).toBe(true)
@@ -75,7 +75,7 @@ describe('validateActivationKey', () => {
       writable: true,
       configurable: true,
     })
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()
@@ -89,7 +89,7 @@ describe('validateActivationKey', () => {
       writable: true,
       configurable: true,
     })
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     const result = await validateActivationKey()
     // Activation is now optional — no key means free tier, not locked out
@@ -98,7 +98,7 @@ describe('validateActivationKey', () => {
   })
 
   it('caches the free-tier result in sessionStorage when no key is configured', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     await validateActivationKey()
     const cached = sessionStorage.getItem('nk-activation-result')
@@ -122,7 +122,7 @@ describe('validateActivationKey', () => {
   })
 
   it('returns invalid when the API call fails (network error)', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', 'test-key-123')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', 'test-key-123')
     vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('Network error'))
 
     const { validateActivationKey } = await import('@/lib/activation')
@@ -133,7 +133,7 @@ describe('validateActivationKey', () => {
   })
 
   it('returns invalid when the API returns a non-ok status', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', 'test-key-123')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', 'test-key-123')
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response('{}', { status: 500 })
     )
@@ -145,7 +145,7 @@ describe('validateActivationKey', () => {
   })
 
   it('returns valid result from successful API call', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', 'valid-key-abc')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', 'valid-key-abc')
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify({ valid: true, tier: 'premium', features: ['premium-themes', 'premium-widgets'] }), {
         status: 200,
