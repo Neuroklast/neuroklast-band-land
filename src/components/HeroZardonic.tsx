@@ -256,7 +256,7 @@ export default function HeroZardonic({
               <div style={{ filter: `drop-shadow(2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(-2px 0 0 oklch(0.50 0.22 25 / 0.8)) drop-shadow(0 0 10px oklch(0.50 0.22 25 / 0.4))` }}>
                 <div className="relative isolate block w-full">
                   <img
-                    src={titleImageUrl ?? titlePng.src}
+                    src={titleImageUrl ?? (typeof titlePng === 'string' ? titlePng : titlePng.src)}
                     alt={name}
                     className={`w-full h-auto relative z-10 ${glitchTitle ? 'red-glitch-element' : ''}`}
                   />

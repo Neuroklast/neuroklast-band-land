@@ -51,6 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        {/* Initialize theme before hydration to avoid flash-of-wrong-theme on first paint. */}
         <Script src="/theme-init.js" strategy="beforeInteractive" />
         <div id="root">
           <Providers>{children}</Providers>
