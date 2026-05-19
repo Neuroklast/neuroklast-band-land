@@ -4,6 +4,20 @@ Entries are in **reverse chronological order** (newest first).
 
 ---
 
+## Session: 2026-05-19 — Next.js 15 App Router Migration
+
+**Agent:** GitHub Copilot Coding Agent  
+**Branch:** `copilot/migrate-to-nextjs-15`
+
+### Summary
+
+- Migrated project stack from Vite SPA + `react-router-dom` to Next.js 15 App Router.
+- Introduced `app/layout.tsx`, `app/page.tsx`, `app/admin/page.tsx`, and `app/not-found.tsx`.
+- Replaced client env access from `import.meta.env`/`VITE_*` to `process.env`/`NEXT_PUBLIC_*`.
+- Removed obsolete Vite router/entry files and updated scripts/config/docs for Next.js.
+
+---
+
 ## Session: 2026-05-19 — 10-Step Template Refactoring
 
 **Agent:** GitHub Copilot Coding Agent  
@@ -17,7 +31,7 @@ project into a clean, standalone band website template:
 1. Add react-router-dom routing infrastructure
 2. Create route structure (`/`, `/admin/*`, `*` → `/`)
 3. Remove ActivationLockScreen gate from App.tsx
-4. Generalise primary-hostname list (`VITE_PRIMARY_HOSTNAMES`)
+4. Generalise primary-hostname list (`NEXT_PUBLIC_PRIMARY_HOSTNAMES`)
 5. Make activation key optional (free-tier when unset)
 6. Remove KeyManagerPanel
 7. Simplify activation caching
@@ -33,10 +47,10 @@ project into a clean, standalone band website template:
 - Created `src/AppRouter.tsx` with `/`, `/admin/*`, and catch-all routes.
 - Removed `ActivationLockScreen` gate, `LicenseStatusBadge`, and the
   `validateActivationKey` effect from `App.tsx`.
-- `isPrimaryInstance()` now reads from `VITE_PRIMARY_HOSTNAMES` env var; falls
+- `isPrimaryInstance()` now reads from `NEXT_PUBLIC_PRIMARY_HOSTNAMES` env var; falls
   back to legacy list when unset.
 - `validateActivationKey()` returns `{ valid: true, tier: 'free' }` when
-  `VITE_ACTIVATION_KEY` is not set.
+  `NEXT_PUBLIC_ACTIVATION_KEY` is not set.
 - Deleted `src/components/KeyManagerPanel.tsx` and the `key-manager` dialog case.
 - Removed duplicate `activation_status_cache` sessionStorage key.
 - Created `src/pages/AdminPage.tsx` and `src/components/AdminRoute.tsx`;

@@ -19,7 +19,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/admin/:p*", "destination": "/api/denied?_src=/admin/:p*" },
     { "source": "/dashboard/:p*", "destination": "/api/denied?_src=/dashboard/:p*" },
     { "source": "/backup/:p*", "destination": "/api/denied?_src=/backup/:p*" },
     { "source": "/config/:p*", "destination": "/api/denied?_src=/config/:p*" },

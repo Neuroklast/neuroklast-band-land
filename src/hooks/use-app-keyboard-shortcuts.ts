@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 
 interface UseAppKeyboardShortcutsParams {
   isOwner: boolean
@@ -8,7 +8,7 @@ interface UseAppKeyboardShortcutsParams {
 export function useAppKeyboardShortcuts({
   isOwner,
 }: UseAppKeyboardShortcutsParams): void {
-  const navigate = useNavigate()
+  const router = useRouter()
   const prevIsOwnerRef = useRef(false)
 
   // ── #admin hash → navigate to /admin ────────────────────────────────────
@@ -16,32 +16,32 @@ export function useAppKeyboardShortcuts({
     const handleAdminHash = () => {
       if (window.location.hash === '#admin') {
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
-        navigate('/admin')
+        router.push('/admin')
       }
     }
     // Check once on mount
     handleAdminHash()
     window.addEventListener('hashchange', handleAdminHash)
     return () => window.removeEventListener('hashchange', handleAdminHash)
-  }, [navigate])
+  }, [router])
 
   // ── CMD+K / CTRL+K → navigate to /admin ─────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        navigate('/admin')
+        router.push('/admin')
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [navigate])
+  }, [router])
 
   // ── Auto-redirect to /admin after login ──────────────────────────────────
   useEffect(() => {
     if (isOwner && !prevIsOwnerRef.current) {
-      navigate('/admin')
+      router.push('/admin')
     }
     prevIsOwnerRef.current = isOwner
-  }, [isOwner, navigate])
+  }, [isOwner, router])
 }

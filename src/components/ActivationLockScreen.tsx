@@ -91,7 +91,7 @@ export default function ActivationLockScreen({ pending = false }: ActivationLock
             }}
           >
             <p>
-              <span style={{ color: '#ff2222' }}>{'VITE_ACTIVATION_KEY'}</span>{' '}{t('activation.keyMissingOrInvalid')}
+              <span style={{ color: '#ff2222' }}>{'NEXT_PUBLIC_ACTIVATION_KEY'}</span>{' '}{t('activation.keyMissingOrInvalid')}
             </p>
             <p className="mt-2">
               {t('activation.setKeyInstructions')}

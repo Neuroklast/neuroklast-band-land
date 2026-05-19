@@ -9,17 +9,16 @@ is changed to make it pass, then all 1 300+ existing tests are re-run.
 
 ## Context
 
-The codebase is a **Vite 7 + React 19 SPA** with **react-router-dom v7** for
-client-side routing.
+The codebase now runs on **Next.js 15 (App Router) + React 19**.
 
 Routes:
-- `/` — public band site (`App.tsx`, pure presentational)
-- `/admin/*` — standalone admin panel (`AdminPage.tsx` behind `AdminRoute`)
-- `*` — catch-all redirect to `/`
+- `/` — public band site (`app/page.tsx` -> `src/App.tsx`)
+- `/admin` — standalone admin panel (`app/admin/page.tsx` -> `src/pages/AdminPage.tsx`)
+- unmatched routes — `app/not-found.tsx`
 
 Problems identified before this refactor (all resolved):
 - ~~Activation/licensing system hard-wired to `neuroklast.net` blocks the app entirely
-  when `VITE_ACTIVATION_KEY` is not set, making the template unusable out-of-the-box.~~
+  when `NEXT_PUBLIC_ACTIVATION_KEY` is not set, making the template unusable out-of-the-box.~~
 - ~~Admin panel is a deeply nested dialog stack overlaid on the public band site —
   no dedicated URL, no shareable link, impossible to deep-link.~~
 - ~~Hardcoded hostnames (`neuroklast.net`, `neuroklast-band-land.vercel.app`) in both
@@ -55,7 +54,7 @@ Problems identified before this refactor (all resolved):
 - **Tests:** `App` renders site content without requiring a valid activation result.
 
 ### Step 4 — Generalise primary-hostname list
-- `src/lib/primary-check.ts`: read hostnames from `VITE_PRIMARY_HOSTNAMES` env var
+- `src/lib/primary-check.ts`: read hostnames from `NEXT_PUBLIC_PRIMARY_HOSTNAMES` env var
   (comma-separated).  When the env var is empty the list is empty — **no hostname is
   treated as primary by default**.
 - `api/_primary-check.ts`: same change using `PRIMARY_HOSTNAMES` env var (server-side).
@@ -65,7 +64,7 @@ Problems identified before this refactor (all resolved):
   is `neuroklast.net`; returns `true` when env var contains the current hostname.
 
 ### Step 5 — Make activation key optional
-- `src/lib/activation.ts`: when `VITE_ACTIVATION_KEY` is not set, return
+- `src/lib/activation.ts`: when `NEXT_PUBLIC_ACTIVATION_KEY` is not set, return
   `{ valid: true, tier: 'free', features: [] }` instead of `{ valid: false }`.
   Deployments that do not set the key get a valid free-tier result automatically.
 - `src/hooks/use-activation-key.ts`: same: if no key is configured, set status to
@@ -132,10 +131,10 @@ Problems identified before this refactor (all resolved):
 
 | Variable | Used by | Purpose |
 |---|---|---|
-| `VITE_PRIMARY_HOSTNAMES` | `src/lib/primary-check.ts` | Comma-separated list of hostnames that bypass activation (default: hardcoded Neuroklast list for backward-compat) |
+| `NEXT_PUBLIC_PRIMARY_HOSTNAMES` | `src/lib/primary-check.ts` | Comma-separated list of hostnames that bypass activation (default: hardcoded Neuroklast list for backward-compat) |
 | `PRIMARY_HOSTNAMES` | `api/_primary-check.ts` | Same, server-side |
-| `VITE_ACTIVATION_KEY` | `src/lib/activation.ts` | Deployment key; optional — free tier when absent |
-| `VITE_ACTIVATION_API_URL` | `src/lib/activation.ts` | Override validation endpoint URL |
+| `NEXT_PUBLIC_ACTIVATION_KEY` | `src/lib/activation.ts` | Deployment key; optional — free tier when absent |
+| `NEXT_PUBLIC_ACTIVATION_API_URL` | `src/lib/activation.ts` | Override validation endpoint URL |
 | `KV_REST_API_URL` | middleware, API routes | Upstash Redis REST URL |
 | `KV_REST_API_TOKEN` | middleware, API routes | Upstash Redis REST token |
 | `ADMIN_SETUP_TOKEN` | `api/auth.ts` | One-time token for first admin setup |

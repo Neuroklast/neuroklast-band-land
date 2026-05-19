@@ -1,56 +1,50 @@
 /**
- * Steps 1, 2 & 8: React Router set up, route structure created, standalone admin page.
+ * Next.js App Router migration sanity checks.
  *
  * Verifies at the source level:
- * - main.tsx wraps the app in BrowserRouter (react-router-dom)
- * - AppRouter.tsx exists and defines `/` and `/admin` routes
- * - AdminPage.tsx exists and uses useAdminAuth
- * - AdminRoute.tsx exists as a route-level auth guard
+ * - src/app/layout.tsx exists and provides global layout
+ * - src/app/page.tsx and src/app/admin/page.tsx exist for `/` and `/admin`
+ * - src/admin/AdminPage.tsx exists and uses useAdminAuth
+ * - src/app/not-found.tsx exists for 404 handling
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 
-const mainSrc = readFileSync(resolve(__dirname, '../main.tsx'), 'utf-8')
+const layoutSrc = readFileSync(resolve(__dirname, '../app/layout.tsx'), 'utf-8')
 
-describe('Step 1 — BrowserRouter in main.tsx', () => {
-  it('imports react-router-dom in main.tsx', () => {
-    expect(mainSrc).toContain('react-router-dom')
+describe('App Router root layout', () => {
+  it('layout.tsx exists', () => {
+    expect(existsSync(resolve(__dirname, '../app/layout.tsx'))).toBe(true)
   })
 
-  it('wraps the app in BrowserRouter', () => {
-    expect(mainSrc).toContain('BrowserRouter')
-  })
-})
-
-describe('Step 2 — AppRouter.tsx route structure', () => {
-  it('AppRouter.tsx exists', () => {
-    expect(existsSync(resolve(__dirname, '../AppRouter.tsx'))).toBe(true)
-  })
-
-  it('AppRouter defines a / route', () => {
-    const src = readFileSync(resolve(__dirname, '../AppRouter.tsx'), 'utf-8')
-    expect(src).toMatch(/path=['"]\/['"]/)
-  })
-
-  it('AppRouter defines an /admin route', () => {
-    const src = readFileSync(resolve(__dirname, '../AppRouter.tsx'), 'utf-8')
-    expect(src).toContain('/admin')
+  it('defines the root html shell', () => {
+    expect(layoutSrc).toContain('<html')
   })
 })
 
-describe('Step 8 — Standalone admin page', () => {
+describe('App Router route files', () => {
+  it('app/page.tsx exists for the home route', () => {
+    expect(existsSync(resolve(__dirname, '../app/page.tsx'))).toBe(true)
+  })
+
+  it('app/admin/page.tsx exists for the admin route', () => {
+    expect(existsSync(resolve(__dirname, '../app/admin/page.tsx'))).toBe(true)
+  })
+})
+
+describe('Standalone admin page', () => {
   it('AdminPage.tsx exists', () => {
-    expect(existsSync(resolve(__dirname, '../pages/AdminPage.tsx'))).toBe(true)
+    expect(existsSync(resolve(__dirname, '../admin/AdminPage.tsx'))).toBe(true)
   })
 
   it('AdminPage uses useAdminAuth', () => {
-    const src = readFileSync(resolve(__dirname, '../pages/AdminPage.tsx'), 'utf-8')
+    const src = readFileSync(resolve(__dirname, '../admin/AdminPage.tsx'), 'utf-8')
     expect(src).toContain('useAdminAuth')
   })
 
-  it('AdminRoute.tsx exists as auth guard', () => {
-    expect(existsSync(resolve(__dirname, '../components/AdminRoute.tsx'))).toBe(true)
+  it('app/not-found.tsx exists for 404 handling', () => {
+    expect(existsSync(resolve(__dirname, '../app/not-found.tsx'))).toBe(true)
   })
 })

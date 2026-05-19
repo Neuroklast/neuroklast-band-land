@@ -21,5 +21,5 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
-      - key: VITE_ACTIVATION_KEY
+      - key: NEXT_PUBLIC_ACTIVATION_KEY
         sync: false

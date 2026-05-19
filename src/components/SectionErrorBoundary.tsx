@@ -41,7 +41,7 @@ export default class SectionErrorBoundary extends Component<Props, State> {
           <span className="text-primary/40 text-[10px] uppercase">
             {this.props.sectionName ? `${this.props.sectionName} – ` : ''}{i18n.t('common.sectionUnavailable')}
           </span>
-          {import.meta.env.DEV && this.state.error && (
+          {process.env.NODE_ENV !== 'production' && this.state.error && (
             <pre className="text-[9px] text-primary/30 max-w-lg overflow-auto whitespace-pre-wrap">
               {this.state.error.message}
             </pre>

@@ -39,7 +39,7 @@ We release patches for security vulnerabilities for the latest version of the pr
 
 Deployment of Band Land requires a valid activation key (see [README — Activation & Licensing](README.md#-activation--licensing)):
 
-- The key is read from the `VITE_ACTIVATION_KEY` environment variable at build/runtime.
+- The key is read from the `NEXT_PUBLIC_ACTIVATION_KEY` environment variable at build/runtime.
 - On app startup the key is validated via a POST request to the central `api/validate-key` endpoint on the official Neuroklast deployment.
 - If no key is present or the key is invalid, the entire app is replaced by a fullscreen lock screen — no content, no admin access.
 - Validation results are cached in `sessionStorage` for the duration of the browser session to avoid repeated network calls.
@@ -190,7 +190,7 @@ A state-of-the-art admin security center provides full visibility and control:
 |---|---|---|
 | `KV_REST_API_URL` | Vercel KV endpoint | Yes |
 | `KV_REST_API_TOKEN` | Vercel KV auth token | Yes |
-| `VITE_ACTIVATION_KEY` | Deployment activation key (validated against central KV on app startup) | Yes |
+| `NEXT_PUBLIC_ACTIVATION_KEY` | Deployment activation key (validated against central KV on app startup) | Yes |
 | `RATE_LIMIT_SALT` | Secret salt for IP hashing (rate limiting). If unset, a random salt is generated per cold start — functional but not persistent across restarts | Recommended |
 | `ADMIN_SETUP_TOKEN` | One-time token required for initial admin password setup. Prevents unauthorized setup via URL guessing. | Recommended |
 | `ADMIN_RESET_EMAIL` | Email for password reset verification & security alerts | For reset & alerting |

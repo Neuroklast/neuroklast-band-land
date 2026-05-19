@@ -7,7 +7,7 @@ import { useLocale } from "@/hooks/use-locale";
 export const ErrorFallback = ({ error, resetErrorBoundary }) => {
   // When encountering an error in the development mode, rethrow it and don't display the boundary.
   // The parent UI will take care of showing a more helpful dialog.
-  if (import.meta.env.DEV) throw error;
+  if (process.env.NODE_ENV !== 'production') throw error;
 
   const { t } = useLocale();
 

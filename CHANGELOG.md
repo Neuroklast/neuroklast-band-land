@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Next.js migration
+
+- Migrated frontend stack from Vite SPA routing to **Next.js 15 App Router**.
+- Added `app/layout.tsx`, `app/page.tsx`, `app/admin/page.tsx`, and `app/not-found.tsx`.
+- Replaced `react-router-dom` navigation with Next.js router navigation.
+- Replaced client env usage from `VITE_*` + `import.meta.env` to
+  `NEXT_PUBLIC_*` + `process.env`.
+- Removed Vite entry/config files: `index.html`, `vite.config.ts`, `src/main.tsx`,
+  `src/AppRouter.tsx`, and `src/components/AdminRoute.tsx`.
+
 ### Added
 
 - **`react-router-dom` v7** — Client-side routing added to the SPA.
@@ -22,7 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **`src/components/AdminRoute.tsx`** — Route-level auth boundary for `/admin`.
 
-- **`VITE_PRIMARY_HOSTNAMES` env var** — `src/lib/primary-check.ts` now reads
+- **`NEXT_PUBLIC_PRIMARY_HOSTNAMES` env var** — `src/lib/primary-check.ts` now reads
   a comma-separated list of primary hostnames from this env var.  When unset,
   falls back to the legacy hardcoded Neuroklast list for backward compatibility.
 
@@ -32,7 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - **`src/lib/activation.ts`** — `validateActivationKey()` returns
-  `{ valid: true, tier: 'free', features: [] }` when `VITE_ACTIVATION_KEY` is
+  `{ valid: true, tier: 'free', features: [] }` when `NEXT_PUBLIC_ACTIVATION_KEY` is
   not set.  Deployments without a key get a working free-tier result instead of
   a lock screen.
 

@@ -160,30 +160,25 @@ describe('vercel.json Content-Security-Policy', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test: No inline scripts in index.html (prevents CSP violations)
+// Test: No inline scripts in app/layout.tsx (prevents CSP violations)
 // ---------------------------------------------------------------------------
 
-describe('index.html CSP compliance', () => {
-  const html = readFileSync(resolve(__dirname, '../../index.html'), 'utf-8')
+describe('app/layout.tsx CSP compliance', () => {
+  const layout = readFileSync(resolve(__dirname, '../app/layout.tsx'), 'utf-8')
 
   it('does not contain inline <script> blocks (CSP script-src self)', () => {
-    // Matches <script> tags that contain inline code (not just src references)
     const inlineScriptPattern = /<script(?![^>]*\bsrc\b)[^>]*>[^<]+<\/script>/gi
-    const matches = html.match(inlineScriptPattern)
+    const matches = layout.match(inlineScriptPattern)
     expect(matches).toBeNull()
   })
 
-  it('all script tags use src attribute for external loading', () => {
-    const scriptTags = html.match(/<script[^>]*>/gi) || []
-    for (const tag of scriptTags) {
-      expect(tag).toMatch(/\bsrc=/)
-    }
+  it('loads theme script via external src', () => {
+    expect(layout).toContain('<Script src="/theme-init.js"')
   })
 
-  it('does not contain inline event handlers on HTML elements', () => {
-    // Matches on* attributes like oncontextmenu, onclick, etc.
+  it('does not contain inline event handlers on JSX elements', () => {
     const inlineHandlerPattern = /\bon\w+\s*=\s*["']/gi
-    const matches = html.match(inlineHandlerPattern)
+    const matches = layout.match(inlineHandlerPattern)
     expect(matches).toBeNull()
   })
 })
@@ -240,13 +235,13 @@ describe('vercel.json sitemap-trap rewrite', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test: vite.config.ts does NOT import javascript-obfuscator (removed in step 10)
+// Test: next.config.ts does not reintroduce obfuscation tooling
 // ---------------------------------------------------------------------------
 
-describe('vite.config.ts obfuscator plugin', () => {
-  const viteConfig = readFileSync(resolve(__dirname, '../../vite.config.ts'), 'utf-8')
+describe('next.config.ts obfuscator check', () => {
+  const nextConfig = readFileSync(resolve(__dirname, '../../next.config.ts'), 'utf-8')
 
   it('does not import javascript-obfuscator (obfuscator removed)', () => {
-    expect(viteConfig).not.toContain("from 'javascript-obfuscator'")
+    expect(nextConfig).not.toContain("from 'javascript-obfuscator'")
   })
 })

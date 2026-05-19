@@ -8,7 +8,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-83%25-3178c6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?logo=tailwindcss&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-7-646cff?logo=vite&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white)
 ![License](https://img.shields.io/badge/License-BSL_1.1-orange)
 
 **Band Land** is a production-ready, fully configurable single-page website template for musicians, DJs, bands, artists, and labels. Everything — content, design, sections, fonts, and SEO — is driven by a single `SiteConfig` object. No hardcoded brand names, no design assumptions.
@@ -20,7 +20,7 @@
 - **SaaS Admin Workspace** — A clean, 4-pillar dashboard (Content, Design, Store, System) without modal/dialog-hell. Content routing persists state, ensuring no data loss when switching tabs.
 - **Design System vs. Presets** — Strict architectural separation: "Themes" strictly define structural layouts (DOM/clip-paths), while "Presets" define color palettes and typography.
 - **Data Integrations** — Built-in Bandsintown API syncing via React Query, alongside structured release management.
-- **Secure Architecture** — Client-bundle code splitting for Admin views (`React.lazy`), React Query for data fetching, and configurable primary-hostname bypass via `VITE_PRIMARY_HOSTNAMES`.
+- **Secure Architecture** — Client-bundle code splitting for Admin views (`React.lazy`), React Query for data fetching, and configurable primary-hostname bypass via `NEXT_PUBLIC_PRIMARY_HOSTNAMES`.
 - **Design Themes** — Four bundled themes (Glitch Noir, Neuroklast Classic, Zardonic Industrial, Umbrella Corp) with one-line activation
 - **Dynamic Font Loading** — Google Fonts and local fonts loaded on demand; zero layout shift
 - **Flexible Sections** — Enable/disable and reorder any section without touching code
@@ -59,7 +59,7 @@ Pick your preferred platform and click the button — no CLI, no Git required:
 | **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template?referralCode=neuroklast&template=https://github.com/Neuroklast/neuroklast-band-land) | ⚠️ Frontend only | Serves static build via `serve` |
 | **Render** | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Neuroklast/neuroklast-band-land) | ⚠️ Frontend only | Static site with SPA routing |
 
-> **Vercel** is the recommended platform because the serverless API functions (admin, analytics, security) run natively. Other platforms deploy the frontend SPA but require a separate backend or Vercel project for the API layer.
+> **Vercel** is the recommended platform because the serverless API functions (admin, analytics, security) run natively. Other platforms deploy the frontend and may require a separate backend or Vercel project for the API layer.
 
 #### After deploying
 
@@ -101,7 +101,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -451,13 +451,13 @@ const config = createSiteConfig({
 ## Development
 
 ```bash
-npm run dev        # Start dev server (port 5173)
-npm run build      # Full TypeScript check + production build
+npm run dev        # Start Next.js dev server (port 3000)
+npm run build      # Next.js production build
+npm run start      # Run built Next.js app
 npm run typecheck  # TypeScript type-check only (no emit) — useful in CI
 npm run test       # Run Vitest test suite
 npm run test:watch # Tests in watch mode
 npm run lint       # ESLint 10
-npm run preview    # Preview production build
 ```
 
 ### Environment variables
@@ -469,9 +469,9 @@ Copy `.env.example` to `.env` and fill in the values for local development. For 
 | `ADMIN_SETUP_TOKEN` |  | One-time token to create the first admin password |
 | `KV_REST_API_URL` |  | Upstash Redis KV URL |
 | `KV_REST_API_TOKEN` |  | Upstash Redis KV token |
-| `VITE_ACTIVATION_KEY` | — | Optional activation key; omitting it gives a free-tier result automatically |
-| `VITE_PRIMARY_HOSTNAMES` | — | Comma-separated hostnames treated as the primary instance (e.g. `myband.de,www.myband.de`) |
-| `PRIMARY_HOSTNAMES` | — | Same as `VITE_PRIMARY_HOSTNAMES` but used server-side in the `api/` functions |
+| `NEXT_PUBLIC_ACTIVATION_KEY` | — | Optional activation key; omitting it gives a free-tier result automatically |
+| `NEXT_PUBLIC_PRIMARY_HOSTNAMES` | — | Comma-separated hostnames treated as the primary instance (e.g. `myband.de,www.myband.de`) |
+| `PRIMARY_HOSTNAMES` | — | Same as `NEXT_PUBLIC_PRIMARY_HOSTNAMES` but used server-side in the `api/` functions |
 | `RESEND_API_KEY` | — | Resend API key for contact-form email forwarding |
 
 The Setup Wizard checks for missing variables on first launch and shows which ones still need to be configured.
@@ -482,9 +482,8 @@ The Setup Wizard checks for missing variables on first launch and shows which on
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | React 19 + TypeScript |
-| Build | Vite 7 |
-| Routing | react-router-dom v7 |
+| Framework | Next.js 15 App Router + React 19 + TypeScript |
+| Rendering/Routing | File-based routing (`app/`) |
 | Styling | Tailwind CSS v4 + oklch color system |
 | Animation | Framer Motion |
 | Components | shadcn/ui (Radix UI primitives) |
@@ -502,10 +501,13 @@ The Setup Wizard checks for missing variables on first launch and shows which on
 ## Project Structure
 
 ```
+app/
+ layout.tsx                 # Root layout, metadata, providers
+ page.tsx                   # Public band site route (/)
+ admin/page.tsx             # Standalone admin panel route (/admin)
+ not-found.tsx              # 404 page
 src/
- AppRouter.tsx              # Route tree (/, /admin/*, 404 → /)
- App.tsx                    # Public band site (pure SPA, no admin overlay)
- main.tsx                   # Entry point — BrowserRouter wrapper
+ App.tsx                    # Public band site client component
  lib/
     types.ts              # All TypeScript types (SiteConfig, ThemePackage, …)
     site-config.ts        # Defaults, createSiteConfig(), migrations
@@ -524,10 +526,9 @@ src/
     glitch-noir/          # Glitch Noir theme + custom Hero
     zardonic-industrial/  # Zardonic Industrial theme + custom Navigation
     umbrella-corp/        # Umbrella Corp theme + custom components
- pages/
-    AdminPage.tsx         # Standalone admin panel at /admin
- components/                # React components
-    AdminRoute.tsx        # Auth boundary for /admin route
+  admin/
+    AdminPage.tsx         # Standalone admin panel component used by /admin route
+  components/                # React components
     widgets/              # Pluggable widget components
     ui/                   # shadcn/ui base components
  hooks/                     # Custom React hooks
@@ -588,4 +589,4 @@ This project is licensed under the [Business Source License 1.1](LICENSE).
 - The source code is publicly readable for learning purposes and AI assistants.
 - The license converts to MIT on **2030-03-03**.
 
-No activation key is required to run the app. Deployments that do not set `VITE_ACTIVATION_KEY` automatically receive a **free-tier** result and can use the full feature set.
+No activation key is required to run the app. Deployments that do not set `NEXT_PUBLIC_ACTIVATION_KEY` automatically receive a **free-tier** result and can use the full feature set.

@@ -24,14 +24,14 @@ describe('Activation caching simplified (step 7)', () => {
   })
 
   it('does not write the legacy activation_status_cache key', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     await validateActivationKey()
     expect(sessionStorage.getItem('activation_status_cache')).toBeNull()
   })
 
   it('still writes nk-activation-result (canonical cache key)', async () => {
-    vi.stubEnv('VITE_ACTIVATION_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_ACTIVATION_KEY', '')
     const { validateActivationKey } = await import('@/lib/activation')
     await validateActivationKey()
     const raw = sessionStorage.getItem('nk-activation-result')
