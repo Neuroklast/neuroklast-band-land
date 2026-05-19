@@ -68,7 +68,6 @@ export default function AdminPage() {
   const {
     activeDialog, setActiveDialog,
     showLoginDialog, setShowLoginDialog,
-    setShowSetupDialog: _setShowSetupDialog,
     showAttackerProfile, setShowAttackerProfile,
     selectedAttackerIp, setSelectedAttackerIp,
     openAdminHubOnMount,

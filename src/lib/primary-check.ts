@@ -34,7 +34,7 @@ function getPrimaryHostnames(): string[] {
   const envVar = import.meta.env.VITE_PRIMARY_HOSTNAMES as string | undefined
   // Env var not set at all → use legacy list for backward-compat
   if (envVar === undefined) {
-    return [...LEGACY_PRIMARY_HOSTNAMES]
+    return LEGACY_PRIMARY_HOSTNAMES
   }
   // Env var set (even to empty string) → use it exclusively
   return envVar

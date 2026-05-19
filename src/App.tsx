@@ -3,6 +3,7 @@ import { resolveSections, getEnabledSectionIds } from '@/lib/sections'
 import { useEffect, useRef, useState, useMemo, startTransition, lazy, Suspense } from 'react'
 import { useAdminDialogState } from '@/hooks/use-admin-dialog-state'
 import { useAppKeyboardShortcuts } from '@/hooks/use-app-keyboard-shortcuts'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -10,13 +11,11 @@ import CookieBanner from '@/components/CookieBanner'
 import KonamiListener from '@/components/KonamiListener'
 import CyberSpinner from '@/components/CyberSpinner'
 import { useCRTEffects } from '@/hooks/use-crt-effects'
-import { trackPageView, trackInteraction, trackClick } from '@/lib/analytics'
+import { trackPageView, trackClick } from '@/lib/analytics'
 import type {
   FontSizeSettings,
   SectionLabels,
-  SoundSettings,
   ThemeSettings,
-  SectionVisibility,
   OverlayModalSlotProps,
 } from '@/lib/types'
 import { DEFAULT_LABEL, applyConfigOverrides } from '@/lib/config'
@@ -25,7 +24,6 @@ import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useOverlayState } from '@/hooks/use-overlay-state'
 import { getThemeFromUrlHash, mergeImportedConfig } from '@/lib/config-export'
 import { useThemeSlots, getTheme } from '@/lib/theme-registry'
-import { isPrimaryInstance } from '@/lib/primary-check'
 import SiteContentRenderer from '@/components/SiteContentRenderer'
 import { createSiteConfig } from '@/lib/site-config'
 import bandDataJson from '@/assets/documents/band-data.json'
@@ -39,12 +37,9 @@ import { useKV } from '@/hooks/use-kv'
 
 const SetupWizard = lazy(() => import('@/components/SetupWizard'))
 const SecretTerminal = lazy(() => import('@/components/SecretTerminal'))
-const AdminDialogManager = lazy(() => import('@/components/AdminDialogManager'))
 const ImpressumWindow = lazy(() => import('@/components/ImpressumWindow'))
 const DatenschutzWindow = lazy(() => import('@/components/DatenschutzWindow'))
 const BandInfoEditDialog = lazy(() => import('@/components/BandInfoEditDialog'))
-const AdminButton = lazy(() => import('@/components/AdminButton'))
-const AdminLoginDialog = lazy(() => import('@/components/AdminLoginDialog'))
 const AudioVisualizer = lazy(() => import('@/components/AudioVisualizer'))
 const OverlayEffectsLayer = lazy(() => import('@/components/OverlayEffectsLayer'))
 const MovingScanline = lazy(() => import('@/components/MovingScanline').then(m => ({ default: m.MovingScanline })))
@@ -106,8 +101,9 @@ function removeSearchParam(key: string): void {
 
 function App() {
   const { t } = useLocale()
+  const navigate = useNavigate()
   const { config, updateConfig, setConfig, isLoaded: siteConfigLoaded } = useSiteConfig()
-  const { isOwner, needsSetup, totpEnabled, setupTokenRequired, handleAdminLogin, handleAdminLogout, handleSetAdminPassword, handleSetupAdminPassword, handleChangeAdminPassword } = useAdminAuth()
+  const { isOwner, handleSetupAdminPassword } = useAdminAuth()
   const { cyberpunkOverlay, setCyberpunkOverlay } = useOverlayState(config.themeSettings?.overlayAnimationStyle)
   const { Navigation: ThemeNavigation, LoadingScreen: ThemeLoadingScreen, OverlayModal: ThemeOverlayModal } = useThemeSlots(config.themeSettings?.activePreset)
   const [loading, setLoading] = useState(true)
@@ -115,17 +111,10 @@ function App() {
   const prevActivePresetRef = useRef<string | undefined>(undefined)
   const {
     activeDialog, setActiveDialog,
-    showLoginDialog, setShowLoginDialog,
-    showSetupDialog, setShowSetupDialog,
     showBandInfoEdit, setShowBandInfoEdit,
     impressumOpen, setImpressumOpen,
     datenschutzOpen, setDatenschutzOpen,
-    showAttackerProfile, setShowAttackerProfile,
-    selectedAttackerIp, setSelectedAttackerIp,
-    openAdminHubOnMount, setOpenAdminHubOnMount,
   } = useAdminDialogState()
-  // SECURITY: hostname-based check; env vars like VITE_IS_PRIMARY must never be used here.
-  const isPrimary = isPrimaryInstance()
   const isDevTestMode = import.meta.env.VITE_DEV_TEST_MODE === 'true'
 
   // ── Cookie consent — analytics are gated behind explicit user acceptance ────
@@ -134,7 +123,7 @@ function App() {
 
   useCRTEffects()
 
-  useAppKeyboardShortcuts({ isOwner, setShowLoginDialog, setOpenAdminHubOnMount })
+  useAppKeyboardShortcuts({ isOwner })
 
   // ── Theme transition loading screen ─────────────────────────────────────────
   // When the active theme preset changes (after initial load), show the new
@@ -199,26 +188,18 @@ function App() {
   }, [])
 
   // ── Special URL params (parsed once on mount) ────────────────────────────────
-  const wantsSetup = useRef(false)
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
     if (p.has('admin-setup')) {
-      wantsSetup.current = true
       removeSearchParam('admin-setup')
+      navigate('/admin')
     }
     if (p.has('access-secret-terminal-NK-666')) {
       startTransition(() => setActiveDialog('secret-terminal'))
       removeSearchParam('access-secret-terminal-NK-666')
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only; navigate is stable from useNavigate
   }, [])
-  useEffect(() => {
-    if (wantsSetup.current && needsSetup) {
-      wantsSetup.current = false
-      startTransition(() => setShowSetupDialog(true))
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [needsSetup])
 
   // Apply developer test data if active
   useEffect(() => {
@@ -264,7 +245,6 @@ function App() {
 
   const handleTerminalActivation = () => {
     setActiveDialog('secret-terminal')
-    trackInteraction('terminal_activated')
     toast.success('TERMINAL ACCESS GRANTED', { description: 'Secret code activated' })
   }
 
@@ -350,7 +330,7 @@ function App() {
                 onLabelChange={handleLabelChange}
                 onShowBandInfoEdit={() => setShowBandInfoEdit(true)}
                 onSetCyberpunkOverlay={setCyberpunkOverlay}
-                onShowLogin={() => setShowLoginDialog(true)}
+              onShowLogin={() => navigate('/admin')}
                 onShowImpressum={() => {
                   if (isOwner) {
                     setImpressumOpen(true)
@@ -363,79 +343,11 @@ function App() {
                 onShowDatenschutz={() => setDatenschutzOpen(true)}
               />
 
-              {isOwner && (
-                <div className="flex items-center gap-2">
-                  <Suspense fallback={null}>
-                    <AdminButton
-                      hasPassword={!needsSetup}
-                      onChangePassword={handleChangeAdminPassword}
-                      onSetPassword={handleSetAdminPassword}
-                      onLogout={handleAdminLogout}
-                      onResetSetup={() => {
-                        updateConfig({ setupComplete: false })
-                      }}
-                      siteConfig={data}
-                      onUpdateSiteConfig={(key, value) => updateConfig({ [key]: value })}
-                      onImportData={(imported) => setConfig(imported)}
-                      onOpenDialog={setActiveDialog}
-                      isPrimary={isPrimary}
-                      openHubOnMount={openAdminHubOnMount}
-                    />
-                  </Suspense>
-                </div>
-              )}
-
-              <Suspense fallback={<CyberSpinner />}>
-                <AdminDialogManager
-                  activeDialog={activeDialog}
-                  setActiveDialog={setActiveDialog}
-                  showAttackerProfile={showAttackerProfile}
-                  setShowAttackerProfile={setShowAttackerProfile}
-                  selectedAttackerIp={selectedAttackerIp}
-                  setSelectedAttackerIp={setSelectedAttackerIp}
-                  isPrimary={isPrimary}
-                  domain={data.domain}
-                  configOverrides={data.configOverrides || {}}
-                  onSaveConfigOverrides={(co) => updateConfig({ configOverrides: co })}
-                  themeSettings={data.themeSettings}
-                  onSaveTheme={(ts: ThemeSettings) => updateConfig({ themeSettings: ts })}
-                  sectionVisibility={data.sectionVisibility}
-                  onSaveSectionVisibility={(sv: SectionVisibility) => updateConfig({ sectionVisibility: sv })}
-                  terminalCommands={data.terminalCommands || []}
-                  secretCode={data.secretCode}
-                  terminalMorseCode={data.terminalMorseCode}
-                  defaultMorseCode={defaultSiteConfig.terminalMorseCode || '...'}
-                  onSaveTerminal={(tc, sc, mc) => updateConfig({
-                    terminalCommands: tc,
-                    secretCode: sc,
-                    terminalMorseCode: mc?.trim() || defaultSiteConfig.terminalMorseCode || '...',
-                  })}
-                  soundSettings={data.soundSettings}
-                  onSaveSoundSettings={(ss: SoundSettings) => updateConfig({ soundSettings: ss })}
-                  widgetPlugins={data.widgetPlugins ?? []}
-                  onUpdatePlugins={(wp) => updateConfig({ widgetPlugins: wp })}
-                  activePresetId={data.themeSettings?.activePreset}
-                  newsletterSettings={data.newsletterSettings}
-                  contactSettings={data.contactSettings}
-                  onSaveNewsletter={(ns) => updateConfig({ newsletterSettings: ns })}
-                  onSaveContact={(cs) => updateConfig({ contactSettings: cs })}
-                  themeAccessOverrides={data.themeAccessOverrides}
-                  onSaveThemeAccessOverrides={(tao) => updateConfig({ themeAccessOverrides: tao })}
-                  siteConfig={data}
-                  onUpdateSiteConfig={(key, value) => updateConfig({ [key]: value })}
-                  sections={data.sections}
-                  onSaveSections={(sections) => updateConfig({ sections })}
-                />
-              </Suspense>
             </motion.div>
           </motion.div>
         </>
       )}
 
-      <Suspense fallback={null}>
-        <AdminLoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} mode="login" totpEnabled={totpEnabled} onLogin={handleAdminLogin} onSetPassword={handleSetAdminPassword} />
-        <AdminLoginDialog open={showSetupDialog} onOpenChange={setShowSetupDialog} mode="setup" setupTokenRequired={setupTokenRequired} onSetPassword={handleSetupAdminPassword} />
-      </Suspense>
       <Suspense fallback={null}>
         <BandInfoEditDialog
           open={showBandInfoEdit}
