@@ -63,7 +63,7 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, color-mix(in oklch, var(--primary) 5%, transparent) 0%, transparent 60%)' }} />
+
         
         <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-8" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style={{ color: 'var(--primary)' }}>
           <motion.polygon
@@ -258,7 +258,7 @@ export default function Hero({ name, genres, logoUrl, titleImageUrl, heroStyle }
                 nicht auf dem <img> selbst. Nur so folgt der Glow der transparenten
                 Silhouette des Bildes. Der Wrapper darf außerdem KEIN overflow:hidden haben.
               */}
-              <div style={{ filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(0 0 10px color-mix(in oklch, var(--primary) 40%, transparent))` }}>
+              <div style={{ filter: `drop-shadow(2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent)) drop-shadow(-2px 0 0 color-mix(in oklch, var(--primary) 80%, transparent))` }}>
                 <div className="relative isolate block w-full">
                   <img
                     src={titleImageUrl ?? titlePng}
