@@ -4,6 +4,63 @@ Entries are in **reverse chronological order** (newest first).
 
 ---
 
+## Session: 2026-04-12 — Schema-Driven UI, IoC, Strict Tool Calling
+
+**Agent:** GitHub Copilot Coding Agent  
+**Branch:** `copilot/schema-driven-ui-ioc-strict-tool-calling`
+
+### Objectives
+1. Update `docs/AGENT_PROTOCOL.md` with standing architectural requirements
+2. Build `src/lib/field-registry.ts` — schema-driven field metadata (FieldMeta, FIELD_REGISTRY)
+3. Build `src/components/SchemaFormRenderer.tsx` — generic IoC-compliant form renderer
+4. Build `src/lib/admin-action-registry.ts` — strict tool calling via AdminActionRegistry
+5. Write tests for all three new modules
+6. Update documentation
+
+### What Was Done
+
+#### AGENT_PROTOCOL.md
+- Added "Architectural Requirements" section with mandatory rules for Schema-Driven UI, IoC, and Strict Tool Calling
+- Added post-run hygiene requirements (update agent.md and docs after every session)
+- Added new key files to the reference table
+
+#### src/lib/field-registry.ts (new)
+- `FieldWidgetType` union type: text | textarea | number | boolean | url | date | select | tags | color
+- `FieldMeta` interface with progressive disclosure levels (basic | advanced | expert)
+- `SchemaName` union for all registered schemas
+- `FIELD_REGISTRY` with field definitions for 10 schemas: bandInfo, gig, release, biography, newsItem, socialLinks, seoSettings, navigationSettings, contactSettings, newsletterSettings
+- `getFieldsForSchema(schema, disclosure?)` — optional disclosure filter
+- `getFieldKeysForSchema(schema)` — key-only helper
+
+#### src/components/SchemaFormRenderer.tsx (new)
+- Pure IoC component — all data and callbacks injected via props
+- Renders correct widget per FieldMeta.widget type
+- Supports text, textarea, number, boolean (Switch), select (Radix), tags (comma-separated), url, date, color
+- Progressive disclosure: `maxDisclosure` prop (default: 'basic')
+- `disabled` prop disables all inputs
+- Uses `useId()` for accessible label associations
+
+#### src/lib/admin-action-registry.ts (new)
+- `AdminAction<TInput, TOutput>` interface with id, description, validate, execute
+- Module-level singleton registry via Map
+- `registerAdminAction()` — throws on duplicate ID
+- `executeAdminAction()` — validate → execute pipeline
+- `getRegisteredActionIds()`, `getAdminAction()` for diagnostics
+- `_clearAdminActionRegistryForTesting()` for test isolation
+- Built-in actions: `update-site-name`, `toggle-feature`
+
+### What Was Tested
+- `npm run typecheck` — 0 errors
+- `npm test` — all tests pass (1299 pre-existing + new tests for field-registry, SchemaFormRenderer, AdminActionRegistry)
+
+### Results
+- ✅ All objectives implemented
+- ✅ TypeScript strict: no `any` types
+- ✅ All pre-existing tests still pass
+- ✅ New modules covered by dedicated test files
+
+---
+
 ## Session: 2026-04-02 — Comprehensive Performance Optimization
 
 **Agent:** GitHub Copilot Coding Agent

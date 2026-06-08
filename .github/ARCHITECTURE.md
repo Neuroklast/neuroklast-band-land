@@ -192,3 +192,73 @@ All security enforcement remains exclusively server-side in the `api/` directory
 
 **Zero visual change:** All DOM elements, CSS classes, and Framer Motion transitions
 are preserved byte-for-byte relative to the original rendering.
+
+---
+
+## ADR-004: Schema-Driven UI with IoC and Strict Tool Calling
+
+**Date:** 2026-04-12  
+**Status:** Accepted  
+**Author:** Principal Software Architect
+
+### Context
+
+As the admin panel grew, two patterns began to emerge independently:
+
+1. **Manual form markup**: each edit dialog (`BandInfoEditDialog`, `GigEditDialog`, etc.)
+   hardcodes its own `<Input>` / `<Label>` / `<Textarea>` markup. This leads to UI inconsistency
+   and makes adding new fields expensive.
+
+2. **Untyped callbacks**: `onUpdate(key, value)` calls from admin panels pass `unknown` values
+   with no central enforcement of which operations are valid.
+
+The codebase already had partial schema-driven patterns (`ConfigMeta` in `config.ts`, 
+`component-contracts.ts` with typed interfaces), but no unified rendering layer.
+
+### Decision
+
+Introduce three coordinated layers:
+
+| Layer | File | Responsibility |
+|-------|------|----------------|
+| **Field Registry** | `src/lib/field-registry.ts` | Single source of truth for all admin form fields (`FieldMeta`, `FIELD_REGISTRY`) |
+| **Schema Form Renderer** | `src/components/SchemaFormRenderer.tsx` | Generic IoC-compliant renderer that maps `FieldMeta → React input widget` |
+| **Admin Action Registry** | `src/lib/admin-action-registry.ts` | Typed, validated admin operations; enforces strict tool calling |
+
+#### IoC rule
+`SchemaFormRenderer` reads no Context and holds no state. All data (`values`) and
+mutation callbacks (`onChange`) are injected via props. This makes it independently
+testable and reusable across any dialog.
+
+#### Strict tool calling rule
+Every admin write operation must be dispatched as a registered `AdminAction`.
+The registry validates inputs before execution, making the set of valid mutations
+explicit and auditable.
+
+#### Progressive disclosure
+`FieldMeta.disclosure` ('basic' | 'advanced' | 'expert') lets the renderer show
+the right level of complexity for the user's current context. `SchemaFormRenderer`
+accepts a `maxDisclosure` prop.
+
+### Consequences
+
+**Positive:**
+- Adding a new form field requires changing only `FIELD_REGISTRY` — no new JSX.
+- Admin mutations are typed end-to-end and centrally auditable.
+- `SchemaFormRenderer` is tested in isolation with zero mocking.
+- New edit dialogs can be built entirely from `getFieldsForSchema()` + `SchemaFormRenderer`.
+
+**Negative / Trade-offs:**
+- Existing edit dialogs (`BandInfoEditDialog`, `GigEditDialog`, etc.) are NOT migrated
+  in this PR. Migration is intentionally incremental to avoid a large, risky rewrite.
+- `AdminActionRegistry` is currently opt-in. Existing `onUpdate` callback patterns
+  are not broken, but new admin code must use the registry.
+
+### Alternatives Considered
+
+1. **Zod schema → UI mapping directly** — more powerful but requires generating
+   `FieldMeta` from Zod types. Deferred until Zod is used in the frontend (currently
+   only in `api/`).
+2. **React Hook Form + Zod resolver** — would require a library upgrade and larger
+   migration surface. The current solution uses only existing Radix/shadcn primitives.
+3. **Context-based form state** — rejected to preserve IoC purity.
