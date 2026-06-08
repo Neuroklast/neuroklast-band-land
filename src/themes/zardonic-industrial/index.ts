@@ -6,6 +6,7 @@ import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
 import Footer from './Footer'
 import OverlayModal from './OverlayModal'
+import OverlayTransition from './OverlayTransition'
 import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
@@ -139,6 +140,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
     LoadingScreen,
     Footer,
     OverlayModal,
+    OverlayTransition,
   },
 }
 

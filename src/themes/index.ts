@@ -2,6 +2,8 @@ export { neuroklastClassicTheme } from './neuroklast-classic'
 export { glitchNoirTheme } from './glitch-noir'
 export { zardonicIndustrialTheme } from './zardonic-industrial'
 export { umbrellaCorpTheme } from './umbrella-corp'
+export { neonSynthwaveTheme } from './neon-synthwave'
+export { cyberpunkOsTheme } from './cyberpunk-os'
 
 export * from './default-slots'
 
@@ -10,10 +12,14 @@ import { neuroklastClassicTheme } from './neuroklast-classic'
 import { glitchNoirTheme } from './glitch-noir'
 import { zardonicIndustrialTheme } from './zardonic-industrial'
 import { umbrellaCorpTheme } from './umbrella-corp'
+import { neonSynthwaveTheme } from './neon-synthwave'
+import { cyberpunkOsTheme } from './cyberpunk-os'
 
 export const builtInThemes: ThemePackage[] = [
   glitchNoirTheme,               // default free theme — listed first
   neuroklastClassicTheme,
   zardonicIndustrialTheme,
   umbrellaCorpTheme,
+  neonSynthwaveTheme,
+  cyberpunkOsTheme,
 ]

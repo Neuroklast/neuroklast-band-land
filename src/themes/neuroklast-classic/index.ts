@@ -6,6 +6,9 @@ import NeuroklastClassicHero from './Hero'
 import NeuroklastClassicNavigation from './Navigation'
 import NeuroklastClassicFooter from './Footer'
 import NeuroklastClassicOverlayModal from './OverlayModal'
+import NeuroklastClassicCard from './Card'
+import NeuroklastClassicSectionDivider from './SectionDivider'
+import NeuroklastClassicOverlayTransition from './OverlayTransition'
 
 export const neuroklastClassicTheme: ThemePackage = {
   id: 'neuroklast-classic',
@@ -165,5 +168,8 @@ export const neuroklastClassicTheme: ThemePackage = {
     Navigation: NeuroklastClassicNavigation,
     Footer: NeuroklastClassicFooter,
     OverlayModal: NeuroklastClassicOverlayModal,
+    Card: NeuroklastClassicCard,
+    SectionDivider: NeuroklastClassicSectionDivider,
+    OverlayTransition: NeuroklastClassicOverlayTransition,
   },
 }

@@ -167,6 +167,30 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     tags: ['dark', 'biohazard', 'military', 'premium'],
     themeType: 'full',
   },
+  {
+    id: 'neon-synthwave',
+    name: 'Neon Synthwave',
+    description: 'A vibrant retro 80s aesthetic with neon glows and synthwave grids',
+    licenseStatus: 'free',
+    theme: {
+      activePreset: 'synthwave-outrun',
+    },
+    author: 'Neuroklast',
+    tags: ['retro', '80s', 'neon', 'synthwave'],
+    themeType: 'full',
+  },
+  {
+    id: 'cyberpunk-os',
+    name: 'Cyberpunk OS',
+    description: 'A clean, dark, terminal-style OS interface with subtle glitches.',
+    licenseStatus: 'free',
+    theme: {
+      activePreset: 'netrunner-green',
+    },
+    author: 'Neuroklast',
+    tags: ['cyberpunk', 'os', 'terminal', 'dark'],
+    themeType: 'full',
+  },
 ]
 
 export interface ThemeCatalogRegistry {

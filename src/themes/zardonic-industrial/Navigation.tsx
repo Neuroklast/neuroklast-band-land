@@ -1,11 +1,9 @@
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { List, X } from '@phosphor-icons/react'
-import { useState } from 'react'
-
+import { Menu as List, X } from 'lucide-react'
 import type { NavigationSlotProps } from '@/lib/types'
-type NavigationProps = NavigationSlotProps;
 
-export default function Navigation({ siteName, items, onNavigate }: NavigationProps) {
+export default function Navigation({ siteName, items, onNavigate }: NavigationSlotProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleNavigation = (id: string) => {

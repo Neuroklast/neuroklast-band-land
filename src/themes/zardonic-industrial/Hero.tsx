@@ -1,9 +1,8 @@
+import React from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { CaretDown } from '@phosphor-icons/react'
+import { ArrowDown } from 'lucide-react'
 import type { HeroSlotProps, HeroButton } from '@/lib/types'
-
-type HeroProps = HeroSlotProps;
 
 const DEFAULT_BUTTONS: HeroButton[] = [
   { id: 'explore', label: 'Explore', action: 'scroll', scrollTarget: 'news', variant: 'default' },
@@ -20,7 +19,7 @@ function handleHeroButton(btn: HeroButton, onContactModalOpen?: () => void) {
   }
 }
 
-export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }: HeroProps) {
+export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }: HeroSlotProps) {
   const buttons = heroButtons && heroButtons.length > 0 ? heroButtons : DEFAULT_BUTTONS
 
   return (
@@ -72,12 +71,11 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
               <Button
                 key={btn.id}
                 size="lg"
-                variant={btn.variant ?? (idx === 0 ? 'default' : 'outline')}
                 onClick={() => handleHeroButton(btn, onContactModalOpen)}
                 className="uppercase font-mono zardonic-theme-hover-glitch zardonic-theme-hover-noise relative zardonic-theme-cyber-border"
               >
                 <span className="zardonic-theme-hover-chromatic">{btn.label}</span>
-                {btn.action === 'scroll' && idx === 0 && <CaretDown className="ml-2" size={16} />}
+                {btn.action === 'scroll' && idx === 0 && <ArrowDown className="ml-2" size={16} />}
               </Button>
             ))}
           </motion.div>

@@ -138,12 +138,37 @@ export const zardonicIndustrialPreset: DesignPreset = {
   animationsEnabled: true,
 }
 
+/** Cyberpunk OS — terminal green/amber */
+export const netrunnerGreenPreset: DesignPreset = {
+  id: 'netrunner-green',
+  name: 'Netrunner Green',
+  description: 'Classic OS terminal green with dark background',
+  colors: {
+    primary: 'oklch(0.7 0.2 150)', /* Green */
+    accent: 'oklch(0.6 0.2 30)',  /* Amber/Red */
+    background: 'oklch(0.15 0 0)',
+    card: 'oklch(0.15 0 0)',
+    foreground: 'oklch(0.95 0 0)',
+    mutedForeground: 'oklch(0.6 0 0)',
+    border: 'oklch(0.3 0 0)',
+    secondary: 'oklch(0.2 0 0)',
+  },
+  fonts: {
+    heading: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    body: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+  },
+  borderRadius: 0,
+  animationsEnabled: true,
+}
+
 export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   'neuroklast-classic': neuroklastClassicPreset,
   'minimal-dark': minimalDarkPreset,
   'glitch-noir': glitchNoirPreset,
   'umbrella-corp': umbrellaCorpPreset,
   'zardonic-industrial': zardonicIndustrialPreset,
+  'netrunner-green': netrunnerGreenPreset,
 }
 
 export const PRESET_IDS = Object.keys(DESIGN_PRESETS) as (keyof typeof DESIGN_PRESETS)[]
