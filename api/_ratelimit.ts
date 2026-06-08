@@ -64,7 +64,8 @@ export function hashIp(ip: string): string {
 export function getClientIp(req: VercelLikeRequest): string {
   const forwarded = req.headers['x-forwarded-for']
   if (typeof forwarded === 'string') {
-    return forwarded.split(',')[0].trim()
+    const parts = forwarded.split(',')
+    return parts[parts.length - 1].trim()
   }
   return '127.0.0.1'
 }

@@ -30,7 +30,9 @@ export default function handler(req: VercelRequest, res: VercelResponse): void {
     KV_REST_API_URL: !!process.env.KV_REST_API_URL,
     KV_REST_API_TOKEN: !!process.env.KV_REST_API_TOKEN,
     ADMIN_SETUP_TOKEN: !!process.env.ADMIN_SETUP_TOKEN,
+    VITE_ACTIVATION_KEY: !!process.env.VITE_ACTIVATION_KEY,
     RESEND_API_KEY: !!process.env.RESEND_API_KEY,
+    SETLISTFM_API_KEY: !!process.env.SETLISTFM_API_KEY,
   }
 
   res.status(200).json({ vars })
