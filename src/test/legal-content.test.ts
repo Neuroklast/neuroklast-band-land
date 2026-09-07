@@ -98,14 +98,15 @@ describe('buildPrivacyPolicySections', () => {
     expect(sections[0].paragraphs[0]).toBe('My custom policy')
   })
 
-  it('covers newsletter double opt-in, TDDDG, self-hosted fonts, analytics retention', () => {
+  it('covers no-newsletter, TDDDG, self-hosted fonts, analytics retention', () => {
     const sections = buildPrivacyPolicySections(parseLegalConfig(sampleConfig))
     const body = sections.map((s) => s.paragraphs.join(' ')).join(' ')
     expect(body).toMatch(/TDDDG|Telecommunications Digital Services/)
-    expect(body).toContain('double opt-in')
-    expect(body).toMatch(/unsubscribe/i)
+    expect(body).toMatch(/does not offer a newsletter/i)
+    expect(body).not.toContain('double opt-in')
     expect(sections.some((s) => s.id === 'news')).toBe(true)
     expect(body).toMatch(/self-hosted/i)
+    expect(body).toMatch(/JetBrains Mono/)
     expect(body).toMatch(/90 days/)
     expect(body).toMatch(/rate-limited/i)
   })
@@ -114,7 +115,7 @@ describe('buildPrivacyPolicySections', () => {
     const sections = buildPrivacyPolicySections(parseLegalConfig(sampleConfig), 'de')
     const body = sections.map((s) => s.paragraphs.join(' ')).join(' ')
     expect(body).toMatch(/Datenschutz|personenbezogenen/)
-    expect(body).toMatch(/self-hosted|next\/font|Orbitron/)
+    expect(body).toMatch(/self-hosted|next\/font|JetBrains Mono/)
     expect(sections.find((s) => s.id === 'rights')?.title).toMatch(/Rechte/)
   })
 })

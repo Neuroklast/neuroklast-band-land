@@ -14,6 +14,7 @@ const DEFAULT_BUTTONS: HeroButton[] = [
 
 export default function NeuroklastClassicHero({
   name,
+  tagline,
   genres,
   logoUrl,
   titleImageUrl,
@@ -109,23 +110,36 @@ export default function NeuroklastClassicHero({
           )}
         </motion.div>
 
-        <motion.div
-          className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8 md:mb-10 px-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          {(genres || []).map((genre, index) => (
-            <motion.div
-              key={genre}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.45 + index * 0.06 }}
-            >
-              <span className="nk-os-chip">{genre}</span>
-            </motion.div>
-          ))}
-        </motion.div>
+        {tagline ? (
+          <motion.p
+            className="mb-6 max-w-3xl px-4 text-center font-mono text-xs uppercase tracking-[0.22em] text-foreground/85 md:mb-8 md:text-sm lg:text-base lg:tracking-[0.28em]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            {tagline}
+          </motion.p>
+        ) : null}
+
+        {(genres || []).length > 0 ? (
+          <motion.div
+            className="mb-8 flex flex-wrap items-center justify-center gap-2 px-2 md:mb-10 md:gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.45 }}
+          >
+            {(genres || []).map((genre, index) => (
+              <motion.div
+                key={genre}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.5 + index * 0.06 }}
+              >
+                <span className="nk-os-chip">{genre}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : null}
 
         <motion.div
           initial={{ opacity: 0 }}

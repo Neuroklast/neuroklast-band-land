@@ -243,7 +243,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               }}
               data-theme-color="card card-foreground border"
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative max-w-4xl w-full bg-background/98 border border-primary/30 pointer-events-auto overflow-hidden max-h-[calc(100dvh-1.5rem)] md:max-h-[90vh] h-auto flex flex-col scanline-effect cyber-card rounded-[var(--radius)]"
+              className="relative flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/30 bg-background/98 pointer-events-auto scanline-effect cyber-card rounded-[var(--radius)] md:h-auto md:max-h-[90vh]"
               style={{ borderRadius: 'var(--radius)' } as React.CSSProperties}
               onClick={(e) => e.stopPropagation()}
             >
@@ -273,7 +273,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               </Button>
 
               {/* Content phases */}
-              <div className="relative overflow-y-auto flex-1 min-h-0 overscroll-contain">
+              <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y">
                 {overlayPhase === 'loading' && (
                   <div className="flex items-center justify-center min-h-[min(400px,50vh)]">
                     <motion.span className="progressive-loading-label text-primary font-mono text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

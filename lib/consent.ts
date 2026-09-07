@@ -13,7 +13,7 @@
 import { useState, useEffect } from 'react'
 
 /** Bump this whenever the privacy policy or processing purposes change materially */
-export const CONSENT_VERSION = 2
+export const CONSENT_VERSION = 3
 export const CONSENT_STORAGE_KEY = 'zd-cookie-consent'
 
 export interface ConsentPreferences {

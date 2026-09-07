@@ -752,6 +752,7 @@ export interface HeroButton {
 
 export interface HeroSlotProps {
   name: string
+  tagline?: string
   genres: string[]
   editMode?: boolean
   onEdit?: () => void

@@ -116,6 +116,7 @@ function buildLegalNoticeEn(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'The content and works on these pages created by the site operators are subject to German copyright law. Duplication, processing, distribution, and any form of exploitation beyond the scope of copyright law require the written consent of the respective author or creator.',
         'Downloads and copies of this page are only permitted for private, non-commercial use. Where content on this site was not created by the operator, third-party copyrights are respected and marked accordingly.',
+        'Further information on data processing is available in our Privacy Policy (/privacy-policy).',
       ],
     },
   ]
@@ -180,6 +181,7 @@ function buildLegalNoticeDe(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.',
         'Downloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet. Soweit die Inhalte auf dieser Seite nicht vom Betreiber erstellt wurden, werden die Urheberrechte Dritter beachtet und entsprechend gekennzeichnet.',
+        'Weitere Hinweise zur Datenverarbeitung finden Sie in der Datenschutzerklärung (/privacy-policy).',
       ],
     },
   ]
@@ -198,7 +200,7 @@ function buildPrivacyEn(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'The following information provides a simple overview of what happens to your personal data when you visit this website. Personal data is any data that can be used to identify you personally.',
         `Data processing on this website is carried out by the website operator: ${controller}.`,
-        'Some data is collected because you provide it to us (e.g. contact form or newsletter). Other data is recorded automatically by our IT systems when you visit the website (e.g. browser type, operating system, or time of access).',
+        'Some data is collected because you provide it to us (e.g. contact form). Other data is recorded automatically by our IT systems when you visit the website (e.g. browser type, operating system, or time of access).',
         'Optional analytics are only collected if you explicitly consent via the cookie banner. No third-party advertising or tracking cookies are used.',
       ],
     },
@@ -208,7 +210,7 @@ function buildPrivacyEn(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'This website is hosted by Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. When you visit our website, personal data such as your IP address may be processed on Vercel servers. This may involve transfers to the USA. See Vercel\'s privacy policy: https://vercel.com/legal/privacy-policy',
         'The legal basis is Art. 6(1)(f) GDPR (legitimate interest in reliable website presentation).',
-        'We use Supabase (database and authentication for the admin area), Cloudflare R2 (media storage), and Resend (contact form and newsletter email) as processors. Data processing agreements (DPAs) and storage regions should be configured in each provider dashboard. These providers process data only as necessary to operate the website.',
+        'We use Supabase (database and authentication for the admin area), Cloudflare R2 (media files; EU jurisdiction where configured), and Resend (transactional email for the contact form only — no mailing list) as processors. Data processing agreements (DPAs) and storage regions should be configured in each provider dashboard. These providers process data only as necessary to operate the website.',
       ],
     },
     {
@@ -238,7 +240,7 @@ function buildPrivacyEn(config: LegalConfig): LegalSection[] {
       title: '5. Contact form',
       paragraphs: [
         'When you submit our contact form, we process: name, email address, subject, and message.',
-        'Your message is transmitted to us by email via Resend (USA). We do not sell or share this data with third parties for marketing purposes. A privacy notice with a link to this policy is shown next to the form.',
+        'Your message is transmitted to us by email via Resend. We do not operate an inbox or ticket system on this website, and we do not store contact submissions in our database. We do not sell or share this data with third parties for marketing purposes. A privacy notice with a link to this policy is shown next to the form.',
         'Legal basis: Art. 6(1)(b) GDPR (pre-contractual communication) or Art. 6(1)(f) GDPR (legitimate interest in responding to inquiries).',
         'Data is deleted after your request has been processed, unless statutory retention obligations require longer storage.',
         'Public forms are rate-limited and protected against automated abuse (pseudonymised IP hashes may be stored briefly for security). Legal basis: Art. 6(1)(f) GDPR.',
@@ -246,11 +248,9 @@ function buildPrivacyEn(config: LegalConfig): LegalSection[] {
     },
     {
       id: 'newsletter',
-      title: '6. Newsletter',
+      title: '6. No newsletter',
       paragraphs: [
-        'If you subscribe to our newsletter, we store your email address in our Supabase database together with a record of your consent and the subscription timestamp. Subscription requires double opt-in: after signing up you receive a confirmation email via Resend; your address is only added to the active mailing list after you click the confirmation link.',
-        'Legal basis: Art. 6(1)(a) GDPR (consent). You may unsubscribe at any time using the unsubscribe link in any newsletter email or via /newsletter/unsubscribe on this website. Your data will be deleted upon unsubscription or upon request.',
-        'Confirmation and unsubscribe links use signed tokens. Newsletter forms are rate-limited to prevent abuse.',
+        'This website does not offer a newsletter, mailing list, or email subscription. Contact is handled only through the contact form (Resend email delivery). We do not store subscriber addresses.',
       ],
     },
     {
@@ -267,7 +267,7 @@ function buildPrivacyEn(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'To improve loading speed, images may be delivered via wsrv.nl (Images.weserv.nl). When your browser requests an image, wsrv.nl may temporarily process your IP address to deliver the content.',
         'wsrv.nl does not set tracking cookies. Legal basis: Art. 6(1)(f) GDPR (legitimate interest in fast image delivery). More information: https://wsrv.nl',
-        'Default website fonts (Orbitron, Share Tech Mono, Space Mono) are self-hosted with the site build (next/font). If the site operator selects additional typefaces in Appearance, those may be loaded from Google Fonts when applied. Legal basis for optional remote fonts: Art. 6(1)(f) GDPR (presentation of the website as configured by the operator).',
+        'Default website fonts (JetBrains Mono, Space Grotesk) are self-hosted with the site build (next/font). If the site operator selects additional typefaces in Appearance, those may be loaded from Google Fonts when applied. Legal basis for optional remote fonts: Art. 6(1)(f) GDPR (presentation of the website as configured by the operator).',
       ],
     },
     {
@@ -321,7 +321,7 @@ function buildPrivacyDe(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.',
         `Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber: ${controller}.`,
-        'Ein Teil der Daten wird erhoben, indem Sie uns diese mitteilen (z. B. Kontaktformular oder Newsletter). Andere Daten werden automatisch beim Besuch der Website durch unsere IT-Systeme erfasst (z. B. Browsertyp, Betriebssystem oder Uhrzeit des Seitenaufrufs).',
+        'Ein Teil der Daten wird erhoben, indem Sie uns diese mitteilen (z. B. Kontaktformular). Andere Daten werden automatisch beim Besuch der Website durch unsere IT-Systeme erfasst (z. B. Browsertyp, Betriebssystem oder Uhrzeit des Seitenaufrufs).',
         'Optionale Analyse-/Nutzungsdaten werden nur erhoben, wenn Sie im Cookie-Banner ausdrücklich zustimmen. Es werden keine Werbe- oder Tracking-Cookies Dritter eingesetzt.',
       ],
     },
@@ -331,7 +331,7 @@ function buildPrivacyDe(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Besuch der Website können personenbezogene Daten wie Ihre IP-Adresse auf Servern von Vercel verarbeitet werden; dies kann eine Übermittlung in die USA beinhalten. Datenschutzerklärung von Vercel: https://vercel.com/legal/privacy-policy',
         'Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer zuverlässigen Bereitstellung der Website).',
-        'Als weitere Auftragsverarbeiter nutzen wir Supabase (Datenbank und Admin-Authentifizierung), Cloudflare R2 (Medien) und Resend (E-Mail für Kontakt und Newsletter). Auftragsverarbeitungsverträge (AVV/DPA) und Speicherregionen sind in den jeweiligen Anbieter-Dashboards zu konfigurieren.',
+        'Als weitere Auftragsverarbeiter nutzen wir Supabase (Datenbank und Admin-Authentifizierung), Cloudflare R2 (Mediendateien; EU-Jurisdiction soweit konfiguriert) und Resend (nur transaktionale E-Mail für das Kontaktformular — keine Mailingliste). Auftragsverarbeitungsverträge (AVV/DPA) und Speicherregionen sind in den jeweiligen Anbieter-Dashboards zu konfigurieren.',
       ],
     },
     {
@@ -361,7 +361,7 @@ function buildPrivacyDe(config: LegalConfig): LegalSection[] {
       title: '5. Kontaktformular',
       paragraphs: [
         'Wenn Sie unser Kontaktformular nutzen, verarbeiten wir: Name, E-Mail-Adresse, Betreff und Nachricht.',
-        'Die Nachricht wird per E-Mail über Resend (USA) an uns übermittelt. Eine Weitergabe zu Marketingzwecken an Dritte findet nicht statt. Am Formular wird auf diese Datenschutzerklärung hingewiesen.',
+        'Die Nachricht wird per E-Mail über Resend an uns übermittelt. Es gibt kein Postfach- oder Ticketsystem auf der Website; Kontaktanfragen werden nicht in unserer Datenbank gespeichert. Eine Weitergabe zu Marketingzwecken an Dritte findet nicht statt. Am Formular wird auf diese Datenschutzerklärung hingewiesen.',
         'Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Kommunikation) oder Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Beantwortung von Anfragen).',
         'Die Daten werden nach abschließender Bearbeitung Ihrer Anfrage gelöscht, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.',
         'Formulare sind rate-limitiert; pseudonymisierte IP-Hashes können kurzzeitig zu Sicherheitszwecken gespeichert werden. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.',
@@ -369,11 +369,9 @@ function buildPrivacyDe(config: LegalConfig): LegalSection[] {
     },
     {
       id: 'newsletter',
-      title: '6. Newsletter',
+      title: '6. Kein Newsletter',
       paragraphs: [
-        'Bei Newsletter-Anmeldung speichern wir Ihre E-Mail-Adresse in unserer Supabase-Datenbank zusammen mit dem Einwilligungsnachweis und Zeitstempel. Es gilt Double-Opt-in: Nach der Anmeldung erhalten Sie eine Bestätigungs-E-Mail über Resend; erst nach Klick auf den Bestätigungslink wird die Adresse aktiv.',
-        'Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung). Abmeldung jederzeit über den Abmeldelink in der E-Mail oder über /newsletter/unsubscribe. Nach Abmeldung bzw. auf Anfrage werden die Daten gelöscht.',
-        'Bestätigungs- und Abmeldelinks nutzen signierte Tokens. Formulare sind rate-limitiert.',
+        'Diese Website bietet keinen Newsletter, keine Mailingliste und kein E-Mail-Abo. Kontakt erfolgt ausschließlich über das Kontaktformular (Zustellung per Resend). Es werden keine Abonnentenadressen gespeichert.',
       ],
     },
     {
@@ -390,7 +388,7 @@ function buildPrivacyDe(config: LegalConfig): LegalSection[] {
       paragraphs: [
         'Zur Performance-Optimierung können Bilder über wsrv.nl ausgeliefert werden. Dabei kann Ihre IP-Adresse kurzzeitig verarbeitet werden.',
         'wsrv.nl setzt keine Tracking-Cookies. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: https://wsrv.nl',
-        'Standard-Webfonts (Orbitron, Share Tech Mono, Space Mono) werden mit dem Website-Build self-hosted (next/font). Wählt der Betreiber unter Appearance weitere Schriften, können diese bei Anwendung von Google Fonts geladen werden. Rechtsgrundlage für optionale Remote-Fonts: Art. 6 Abs. 1 lit. f DSGVO (Darstellung der Website wie vom Betreiber konfiguriert).'
+        'Standard-Webfonts (JetBrains Mono, Space Grotesk) werden mit dem Website-Build self-hosted (next/font). Wählt der Betreiber unter Appearance weitere Schriften, können diese bei Anwendung von Google Fonts geladen werden. Rechtsgrundlage für optionale Remote-Fonts: Art. 6 Abs. 1 lit. f DSGVO (Darstellung der Website wie vom Betreiber konfiguriert).'
       ],
     },
     {
