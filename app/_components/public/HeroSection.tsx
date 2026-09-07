@@ -1,0 +1,333 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { m, useReducedMotion } from 'framer-motion'
+import { useLenisContext } from '@/contexts/LenisContext'
+import { useLocale } from '@/contexts/LocaleContext'
+
+import { DEFAULT_HERO_LOGO_URL } from '@/lib/hero-defaults'
+
+const HERO_CTA_CLASS =
+  'cyber-border relative inline-flex min-h-[44px] cursor-pointer items-center justify-center border-border bg-card/60 px-6 py-3 text-sm uppercase tracking-[0.3em] text-foreground backdrop-blur-sm transition-colors hover:bg-card/80'
+
+/** ~ total sequence length; HUD unmounts after this so nothing can re-layer. */
+const HERO_BOOT_MS = 1100
+
+/** Fraction of the stage that must be visible before the wordmark boot starts. */
+const HERO_BOOT_VISIBLE_RATIO = 0.2
+
+interface HeroSectionProps {
+  headline: string
+  logoImageUrl?: string
+  tagline?: string
+  ctaLabel?: string
+  ctaUrl?: string
+  backgroundImageUrl?: string
+  backgroundImageOpacity?: number
+  minHeight?: string
+  imageBlur?: number
+  paddingTop?: string
+  /**
+   * Wordmark width as % of the content column on desktop (md+).
+   * Height follows aspect ratio — no max-height cap.
+   */
+  logoWidthPercent?: number
+  /**
+   * Wordmark width as % of the content column on mobile (below md breakpoint).
+   * Defaults higher than desktop so a single desktop-tuned % is not tiny on phones.
+   */
+  logoWidthPercentMobile?: number
+  showTourDatesCta?: boolean
+  /**
+   * Short boot for the wordmark (scan, mini bar, LOADING label).
+   * Starts when the hero stage is in view — not a page-level loader.
+   * Default true. When false, logo shows immediately with no entrance gimmicks.
+   */
+  bootSequenceEnabled?: boolean
+}
+
+export function HeroSection({
+  headline,
+  logoImageUrl = DEFAULT_HERO_LOGO_URL,
+  tagline,
+  ctaLabel,
+  ctaUrl,
+  backgroundImageUrl,
+  backgroundImageOpacity = 0.35,
+  minHeight,
+  imageBlur,
+  paddingTop,
+  logoWidthPercent,
+  logoWidthPercentMobile,
+  showTourDatesCta = true,
+  bootSequenceEnabled = true,
+}: HeroSectionProps) {
+  const prefersReducedMotion = useReducedMotion()
+  const { scrollTo } = useLenisContext()
+  const { t } = useLocale()
+  const stageRef = useRef<HTMLDivElement>(null)
+  const ctaText = ctaLabel?.trim() || t('hero.listenNow')
+  const tourCtaText = t('hero.tourDates')
+
+  /**
+   * Boot is client + visibility-gated (idle → play → done).
+   * - idle: hold logo invisible until the stage is on-screen (no flash, no early play off-screen)
+   * - play: one-shot CSS entrance after first paint
+   * - done: static wordmark
+   * Not a page loader — only the hero wordmark.
+   * Skip path is derived (no sync setState in effect) for disabled / reduced-motion.
+   */
+  const skipBoot = !bootSequenceEnabled || Boolean(prefersReducedMotion)
+  const [visibilityBoot, setVisibilityBoot] = useState<'idle' | 'play' | 'done'>('idle')
+  const bootPhase: 'idle' | 'play' | 'done' = skipBoot ? 'done' : visibilityBoot
+
+  useEffect(() => {
+    if (skipBoot) return
+
+    const stage = stageRef.current
+    if (!stage) return
+
+    let cancelled = false
+    let endTimer = 0
+    let raf1 = 0
+    let raf2 = 0
+    let started = false
+
+    const startBoot = () => {
+      if (cancelled || started) return
+      started = true
+      // Double rAF: wait for first paint so the animation class attaches once, cleanly.
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          if (cancelled) return
+          setVisibilityBoot('play')
+          endTimer = window.setTimeout(() => {
+            if (!cancelled) setVisibilityBoot('done')
+          }, HERO_BOOT_MS)
+        })
+      })
+    }
+
+    // Start only when the hero stage is actually visible (homepage: fires immediately).
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio >= HERO_BOOT_VISIBLE_RATIO) {
+            startBoot()
+            observer.disconnect()
+            break
+          }
+        }
+      },
+      { root: null, rootMargin: '0px', threshold: [0, HERO_BOOT_VISIBLE_RATIO, 0.5, 1] },
+    )
+    observer.observe(stage)
+
+    return () => {
+      cancelled = true
+      observer.disconnect()
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+      window.clearTimeout(endTimer)
+    }
+  }, [skipBoot])
+
+  const playing = bootPhase === 'play'
+  /** Hide logo until client boot starts — prevents full logo flash then re-reveal (= “twice”). */
+  const pendingBoot = bootPhase === 'idle' && !skipBoot
+  /** Clamp width % of content column; height free (aspect ratio from image). */
+  const clampWidthPct = (n: number) => Math.min(100, Math.max(15, Math.round(n)))
+  const widthPct = clampWidthPct(
+    typeof logoWidthPercent === 'number' && Number.isFinite(logoWidthPercent) ? logoWidthPercent : 55,
+  )
+  /**
+   * Mobile needs its own %. Same desktop value looks tiny on a phone column.
+   * Unset → max(desktop, 90) so existing desktop-only configs still fill mobile width.
+   */
+  const widthPctMobile = clampWidthPct(
+    typeof logoWidthPercentMobile === 'number' && Number.isFinite(logoWidthPercentMobile)
+      ? logoWidthPercentMobile
+      : Math.max(widthPct, 90),
+  )
+  // Content waits for boot only while it is actually playing (not idle flash).
+  const contentDelay = playing ? 0.95 : pendingBoot ? 0.2 : 0
+
+  const sectionStyle: React.CSSProperties = {
+    zIndex: 'var(--z-content)',
+    minHeight: minHeight || undefined,
+    paddingTop: paddingTop || undefined,
+  }
+
+  const bgStyle: React.CSSProperties = {
+    backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : undefined,
+    filter: imageBlur ? `blur(${imageBlur}px)` : undefined,
+  }
+
+  /**
+   * Width-only size: CSS vars drive the box; img is width 100% / height auto.
+   * Mobile uses --hero-logo-width-mobile; desktop (md+) uses --hero-logo-width.
+   */
+  const stageStyle: React.CSSProperties = {
+    ['--hero-logo-width' as string]: `${widthPct}%`,
+    ['--hero-logo-width-mobile' as string]: `${widthPctMobile}%`,
+  }
+
+  return (
+    <section
+      className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20 scanline-effect"
+      style={sectionStyle}
+      data-theme-color="foreground primary"
+    >
+      {backgroundImageUrl && (
+        <m.div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          data-draft-target="hero-bg-image"
+          style={{
+            ...bgStyle,
+            opacity: backgroundImageOpacity,
+          }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
+          animate={{ opacity: backgroundImageOpacity }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.9, ease: [0.16, 1, 0.3, 1] }}
+          aria-hidden="true"
+        />
+      )}
+
+      <div className="absolute inset-0 noise-effect pointer-events-none" aria-hidden="true" />
+      <div className="nk-hero-hud pointer-events-none" aria-hidden="true">
+        <div className="nk-hero-hud__bracket nk-hero-hud__bracket--tl" />
+        <div className="nk-hero-hud__bracket nk-hero-hud__bracket--tr" />
+        <div className="nk-hero-hud__bracket nk-hero-hud__bracket--bl" />
+        <div className="nk-hero-hud__bracket nk-hero-hud__bracket--br" />
+        <div className="nk-hero-hud__readout nk-hero-hud__readout--tl">
+          <div>SYS://NEUROKLAST.CORE</div>
+          <div className="nk-hero-hud__online">
+            <span className="nk-hero-hud__dot" />
+            ONLINE
+          </div>
+          <div className="opacity-50">FREQ::432Hz</div>
+        </div>
+        <div className="nk-hero-hud__readout nk-hero-hud__readout--br">
+          <div>MODE::CRIMSON</div>
+          <div>SIGNAL::ACTIVE</div>
+        </div>
+      </div>
+
+      <div
+        className="relative mx-auto w-full px-card text-center"
+        style={{ zIndex: 'var(--z-content)' }}
+      >
+        {/*
+          Wordmark: width = admin % of content column, centered, aspect ratio preserved.
+          Boot HUD absolute under the box (no layout shift).
+        */}
+        <div
+          ref={stageRef}
+          className={[
+            'hero-logo-stage relative mx-auto mb-6 w-full max-w-full',
+            playing ? 'hero-logo-stage--booting' : '',
+            bootPhase === 'done' ? 'hero-logo-stage--done' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={stageStyle}
+        >
+          <div
+            className={[
+              'hero-logo-glitch',
+              pendingBoot ? 'hero-logo-boot--pending' : '',
+              playing ? 'hero-logo-boot' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {playing ? <span className="hero-logo-boot__scan" aria-hidden /> : null}
+            <img
+              src={logoImageUrl}
+              alt={headline}
+              data-draft-target="hero-logo"
+              className="hover-chromatic-image brightness-110"
+              fetchPriority="high"
+              decoding="async"
+              // Full-res src; CSS box scales for display (retina when source ≥ display×dpr)
+            />
+          </div>
+
+          {playing ? (
+            <div className="hero-boot-hud" aria-hidden="true">
+              <div className="hero-boot-hud__row">
+                <span className="hero-boot-hud__label">NK BOOT</span>
+                <span className="hero-boot-hud__pct">
+                  <span className="hero-boot-hud__pct-fill" />
+                </span>
+              </div>
+              <div className="hero-boot-hud__bar">
+                <span className="hero-boot-hud__bar-fill" />
+              </div>
+              <div className="hero-boot-hud__code">
+                <span className="hero-boot-hud__line hero-boot-hud__line--1">INITIALIZING NEURAL INTERFACE</span>
+                <span className="hero-boot-hud__line hero-boot-hud__line--2">SYSTEM ONLINE</span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mx-auto w-full max-w-6xl">
+        {tagline ? (
+          <m.p
+            initial={prefersReducedMotion || !bootSequenceEnabled ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{
+              delay: prefersReducedMotion || !bootSequenceEnabled ? 0 : contentDelay,
+              duration: prefersReducedMotion || !bootSequenceEnabled ? 0 : 0.35,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            className="mx-auto max-w-2xl text-sm uppercase tracking-[0.3em] text-muted-foreground md:text-base"
+            style={{ fontFamily: 'var(--font-mono, var(--font-body, monospace))' }}
+            data-draft-target="hero-tagline"
+          >
+            {tagline}
+          </m.p>
+        ) : null}
+
+        <m.div
+          initial={prefersReducedMotion || !bootSequenceEnabled ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{
+            delay: prefersReducedMotion || !bootSequenceEnabled ? 0 : contentDelay + 0.12,
+            duration: prefersReducedMotion || !bootSequenceEnabled ? 0 : 0.35,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          className="relative mt-12 flex flex-wrap justify-center gap-4"
+          style={{ zIndex: 'var(--z-local-top)', fontFamily: 'var(--font-mono, monospace)' }}
+        >
+          <a
+            href={ctaUrl || '#releases'}
+            data-draft-target="hero-cta-link"
+            onClick={(event) => {
+              event.preventDefault()
+              const id = (ctaUrl || '#releases').replace('#', '')
+              scrollTo(id, { offset: -60 })
+            }}
+            className={HERO_CTA_CLASS}
+          >
+            <span data-draft-target="hero-cta">{ctaText}</span>
+          </a>
+          {showTourDatesCta ? (
+            <a
+              href="#gigs"
+              onClick={(event) => {
+                event.preventDefault()
+                scrollTo('gigs', { offset: -60 })
+              }}
+              className={HERO_CTA_CLASS}
+            >
+              <span>{tourCtaText}</span>
+            </a>
+          ) : null}
+        </m.div>
+        </div>
+      </div>
+    </section>
+  )
+}

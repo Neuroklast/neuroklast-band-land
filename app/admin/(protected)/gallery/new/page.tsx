@@ -1,0 +1,63 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { saveGalleryImage } from '@/app/admin/_actions/gallery'
+import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
+import { useState } from 'react'
+
+export default function NewGalleryImagePage() {
+  const router = useRouter()
+  const [storagePath, setStoragePath] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!storagePath) {
+      setError('Please add an image first')
+      return
+    }
+    const formData = new FormData(e.currentTarget)
+    formData.set('storage_path', storagePath)
+    const result = await saveGalleryImage(formData)
+    if (result?.error) setError(result.error)
+    else router.push('/admin/gallery')
+  }
+
+  return (
+    <div className="max-w-lg">
+      <h1 className="text-xl font-bold mb-6">Upload Gallery Image</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <MediaSourcePicker
+          label="Image"
+          storagePrefix="gallery"
+          onResolved={(path) => {
+            setStoragePath(path)
+            setError(null)
+          }}
+          onError={(msg) => setError(msg)}
+        />
+        <div>
+          <label className="block text-sm text-zinc-300 mb-1">Alt Text (optional)</label>
+          <input
+            name="alt"
+            placeholder="Describe the image for accessibility"
+            className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-zinc-300 mb-1">Caption (optional)</label>
+          <input
+            name="caption"
+            placeholder="Optional caption"
+            className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none"
+          />
+        </div>
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+        <div className="flex gap-3">
+          <button type="submit" className="px-4 py-2 rounded bg-zinc-700 hover:bg-zinc-600 text-white text-sm transition-colors">Save Image</button>
+          <button type="button" onClick={() => router.back()} className="px-4 py-2 rounded bg-zinc-900 border border-zinc-700 text-zinc-300 text-sm hover:text-white transition-colors">Cancel</button>
+        </div>
+      </form>
+    </div>
+  )
+}

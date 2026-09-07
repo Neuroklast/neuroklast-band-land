@@ -1,0 +1,19 @@
+# NEUROKLAST
+
+## About
+
+NEUROKLAST is an industrial / electronic music project. Official site: https://neuroklast.net
+
+## Genres
+
+- Industrial
+- Electronic
+- Hybrid / crossover
+
+## Site
+
+Public pages: homepage sections (hero, news, biography, gallery, gigs, releases, media, social, partners, contact), legal notice, privacy policy.
+
+Contact is email-only via the website form (Resend). There is no newsletter.
+
+Content is edited in the admin CMS at /admin.

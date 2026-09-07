@@ -1,0 +1,47 @@
+@import 'tailwindcss';
+@config '../tailwind.config.js';
+@import "tw-animate-css";
+@import '../styles/theme.css';
+@import '../styles/tokens.css';
+@import '../styles/layers.css';
+@import '../styles/base.css';
+@import '../styles/effects.css';
+@import '../styles/components.css';
+@import '../styles/layout.css';
+@import '../styles/loading.css';
+
+@layer base {
+  * {
+    @apply border-border
+  }
+}
+
+/* ── CRT scanline overlay ───────────────────────────────────────────────────
+ * Applied to .scanline-layer which sits inside the fixed background stack,
+ * BELOW all foreground content. pointer-events:none ensures it never
+ * intercepts clicks. z-index: var(--z-bg-scanline) keeps it behind content.
+ */
+.scanline-layer {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ── Chromatic aberration on logo hover ─────────────────────────────────── */
+/* Generic (weak) fringe. Partner logos use .partner-logo-white / .partner-logo-native
+   in styles/effects.css for a stronger, cell-wide group-hover effect. */
+.chromatic-hover {
+  filter: none;
+  transition: filter 0.15s ease;
+}
+.chromatic-hover:hover {
+  filter:
+    drop-shadow(calc(1px * var(--chromatic-strength, 0.5)) 0 0 rgba(255, 0, 60, calc(0.6 * var(--chromatic-strength, 0.5) * 2)))
+    drop-shadow(calc(-1px * var(--chromatic-strength, 0.5)) 0 0 rgba(0, 220, 255, calc(0.6 * var(--chromatic-strength, 0.5) * 2)));
+}

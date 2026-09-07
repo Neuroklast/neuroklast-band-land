@@ -1,24 +1,5 @@
 import fs from "fs";
 
-/**
- * Tailwind CSS v4 + legacy config compatibility note
- * ---------------------------------------------------
- * This project uses the `@tailwindcss/vite` Vite plugin (Tailwind v4), which
- * primarily reads configuration from CSS `@theme` directives in `src/index.css`.
- *
- * However, this file is still consumed by the Tailwind v4 Vite plugin for:
- *   • `content` globs (template scanning)
- *   • CSS variable–based color palette (`neutral`, `accent`, etc.)
- *   • Custom screen breakpoints (`coarse`, `fine`, `pwa`)
- *   • Dynamic theme overrides loaded from `theme.json` at build time
- *   • `darkMode` selector configuration
- *
- * `@tailwindcss/postcss` is listed in devDependencies for tooling that
- * invokes PostCSS directly (e.g. standalone CLI, IDE plugins). If you are
- * using only the Vite dev server and `vite build`, the PostCSS plugin is not
- * required and can safely be ignored.
- */
-
 /** @type {import('tailwindcss').Config} */
 
 let theme = {};
@@ -37,11 +18,6 @@ const defaultTheme = {
     padding: "2rem",
   },
   extend: {
-    screens: {
-      coarse: { raw: "(pointer: coarse)" },
-      fine: { raw: "(pointer: fine)" },
-      pwa: { raw: "(display-mode: standalone)" },
-    },
     colors: {
       neutral: {
         1: "var(--color-neutral-1)",
@@ -110,15 +86,33 @@ const defaultTheme = {
         overlay: "var(--color-bg-overlay)",
       },
       "focus-ring": "var(--color-focus-ring)",
+      // ── Semantic color aliases ──────────────────────────────────────────────
+      // Use these in new components instead of raw palette values.
+      // Values map to --color-brand-* / --color-surface-* in styles/tokens.css.
+      "brand-primary": "var(--color-brand-primary)",
+      "brand-secondary": "var(--color-brand-secondary)",
+      "surface-base": "var(--color-surface-base)",
+      "surface-elevated": "var(--color-surface-elevated)",
     },
     borderRadius: {
-      DEFAULT: "var(--radius-md)",
       sm: "var(--radius-sm)",
       md: "var(--radius-md)",
       lg: "var(--radius-lg)",
       xl: "var(--radius-xl)",
       "2xl": "var(--radius-2xl)",
       full: "var(--radius-full)",
+    },
+    // ── Semantic typography scale ───────────────────────────────────────────
+    // Use text-hero / text-heading / text-body / text-body-sm in components.
+    // Values are fluid via clamp() — see styles/tokens.css --font-size-* vars.
+    fontSize: {
+      hero: ["var(--font-size-hero)", { lineHeight: "1.1" }],
+      heading: ["var(--font-size-heading)", { lineHeight: "1.2" }],
+      body: ["var(--font-size-body)", { lineHeight: "1.6" }],
+      "body-sm": ["var(--font-size-small)", { lineHeight: "1.5" }],
+    },
+    screens: {
+      xs: "480px",
     },
   },
   spacing: {
@@ -157,11 +151,27 @@ const defaultTheme = {
     72: "var(--size-72)",
     80: "var(--size-80)",
     96: "var(--size-96)",
+    // ── Semantic spacing scale ──────────────────────────────────────────────
+    // Use py-section, p-card, gap-inline in section components.
+    // Values are responsive — see styles/tokens.css --spacing-* vars.
+    section: "var(--spacing-section)",
+    card: "var(--spacing-card)",
+    inline: "var(--spacing-inline)",
   },
   darkMode: ["selector", '[data-appearance="dark"]'],
 }
 
 export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./hooks/**/*.{js,ts,jsx,tsx}",
+    "./lib/**/*.{js,ts,jsx,tsx}",
+    "./contexts/**/*.{js,ts,jsx,tsx}",
+    "./layouts/**/*.{js,ts,jsx,tsx}",
+    "./cms/**/*.{js,ts,jsx,tsx}",
+    "./services/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: { ...defaultTheme, ...theme },
 };

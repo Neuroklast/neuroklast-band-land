@@ -1,45 +1,43 @@
-import { describe, it, expect } from 'vitest'
-import { buildGoogleFontsUrl, FONT_CSS_VARS } from '@/lib/font-loader'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
+import {
+  extractGoogleFontName,
+  isPrivacySafeFontStack,
+  loadGoogleFont,
+  SELF_HOSTED_FONT_NAMES,
+} from '@/lib/font-loader'
 
-describe('buildGoogleFontsUrl', () => {
-  it('generates a valid Google Fonts v2 URL', () => {
-    const url = buildGoogleFontsUrl('Inter', ['400', '700'])
-    expect(url).toContain('fonts.googleapis.com/css2')
-    expect(url).toContain('family=Inter')
-    expect(url).toContain('400')
-    expect(url).toContain('700')
-    expect(url).toContain('display=swap')
+describe('font-loader', () => {
+  beforeEach(() => {
+    document.head.innerHTML = ''
   })
 
-  it('encodes spaces in family name', () => {
-    const url = buildGoogleFontsUrl('Playfair Display', ['400'])
-    expect(url).toContain('Playfair+Display')
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  it('includes italic variants when italic=true', () => {
-    const url = buildGoogleFontsUrl('Inter', ['400', '700'], true)
-    expect(url).toContain('ital,wght')
-    expect(url).toContain('0,400')
-    expect(url).toContain('1,400')
+  it('extracts first family name from stack', () => {
+    expect(extractGoogleFontName("'Orbitron', sans-serif")).toBe('Orbitron')
+    expect(extractGoogleFontName('system-ui')).toBeNull()
+    expect(extractGoogleFontName("var(--font-orbitron), 'Orbitron', sans-serif")).toBe('Orbitron')
   })
 
-  it('uses only wght axis when italic=false', () => {
-    const url = buildGoogleFontsUrl('Inter', ['400'])
-    expect(url).toContain('wght@400')
-    expect(url).not.toContain('ital')
+  it('treats self-hosted and system stacks as privacy-safe', () => {
+    expect(isPrivacySafeFontStack("'Orbitron', sans-serif")).toBe(true)
+    expect(isPrivacySafeFontStack('ui-monospace, monospace')).toBe(true)
+    expect(isPrivacySafeFontStack("'Rajdhani', sans-serif")).toBe(false)
+    expect(SELF_HOSTED_FONT_NAMES.has('Orbitron')).toBe(true)
   })
 
-  it('defaults to weights 400 and 700 when not supplied', () => {
-    const url = buildGoogleFontsUrl('Roboto')
-    expect(url).toContain('400')
-    expect(url).toContain('700')
+  it('does not inject Google CSS for self-hosted names', () => {
+    loadGoogleFont('Orbitron')
+    loadGoogleFont('Space Mono')
+    expect(document.querySelectorAll('link[href*="fonts.googleapis"]')).toHaveLength(0)
   })
-})
 
-describe('FONT_CSS_VARS', () => {
-  it('exports the three expected CSS variable names', () => {
-    expect(FONT_CSS_VARS.heading).toBe('--font-heading')
-    expect(FONT_CSS_VARS.body).toBe('--font-body')
-    expect(FONT_CSS_VARS.mono).toBe('--font-mono')
+  it('injects Google CSS once for admin-selected remote fonts (e.g. Inter for bio body)', () => {
+    loadGoogleFont('Inter')
+    loadGoogleFont('Inter')
+    const links = document.querySelectorAll('link[href*="fonts.googleapis"][href*="Inter"]')
+    expect(links.length).toBe(1)
   })
 })

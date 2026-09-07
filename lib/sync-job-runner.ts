@@ -1,0 +1,703 @@
+import { getApiSecret } from '@/lib/api-secrets'
+import {
+  fetchBandsintownEventsFromApi,
+  mapBandsintownEventToGigRow,
+  resolveBandsintownArtistName,
+  syncBandsintownGigsBatch,
+  type BandsintownGigRow,
+} from '@/lib/bandsintown-sync'
+import { buildItunesCatalogueImportItems } from '@/lib/itunes-sync'
+import { normalizeItunesArtistId } from '@/lib/release-external-ids'
+import {
+  parseCatalogueSyncConfig,
+  type CatalogueSyncConfig,
+} from '@/lib/catalogue-sync-config'
+import {
+  importCatalogueBatch,
+  type CatalogueImportItem,
+} from '@/lib/catalogue-import'
+import {
+  buildReleaseMatchIndex,
+  consolidateDuplicateReleases,
+  dedupeCatalogueImportItems,
+  type ReleaseConsolidationRow,
+  type ReleaseTitleMatchOptions,
+} from '@/lib/release-consolidation'
+import { fetchDiscogsArtistReleasesPage, searchDiscogsArtistId } from '@/lib/discogs-sync'
+import { cacheReleaseCoverToR2 } from '@/lib/release-cover-r2'
+import { runCatalogueEnrichmentBatch } from '@/lib/release-enrichment'
+import {
+  normalizeDiscogsArtistId,
+  normalizeSpotifyArtistId,
+} from '@/lib/release-external-ids'
+import { getSpotifyAccessToken } from '@/lib/spotify-client'
+import {
+  fetchSpotifyArtistAlbumsPage,
+  searchSpotifyArtistId,
+} from '@/lib/spotify-sync'
+import { createAdminClient } from '@/lib/supabaseAdmin'
+import {
+  getSyncJob,
+  updateSyncJob,
+  type SyncJobPayload,
+  type SyncJobProgress,
+  type SyncJobRow,
+  type SyncJobType,
+} from '@/lib/sync-jobs'
+
+const IMPORT_BATCH_SIZE = 8
+const ENRICH_BATCH_SIZE = 5
+
+const CATALOGUE_IMPORT_JOB_TYPES = new Set<SyncJobType>([
+  'itunes_sync',
+  'spotify_sync',
+  'discogs_sync',
+  'purge_and_sync_releases',
+])
+
+function shouldEnrichAfterCatalogueImport(type: SyncJobType): boolean {
+  return CATALOGUE_IMPORT_JOB_TYPES.has(type)
+}
+// A catalogue tick can span many network fetches + a full consolidation pass,
+// so 120s was far shorter than real work and let a second tick start mid-run.
+const PROCESSING_STALE_MS = 15 * 60 * 1000
+
+export interface AdvanceSyncJobResult {
+  job: SyncJobRow
+  done: boolean
+}
+
+async function loadCatalogueSyncConfig(): Promise<CatalogueSyncConfig> {
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('site_config')
+    .select('value')
+    .eq('key', 'catalogue_sync')
+    .maybeSingle()
+  return parseCatalogueSyncConfig(data?.value)
+}
+
+function mergeProgress(
+  current: SyncJobProgress,
+  delta: Partial<SyncJobProgress>,
+): SyncJobProgress {
+  return {
+    processed: delta.processed ?? current.processed,
+    total: delta.total !== undefined ? delta.total : current.total,
+    synced: current.synced + (delta.synced ?? 0),
+    updated: current.updated + (delta.updated ?? 0),
+    skipped: current.skipped + (delta.skipped ?? 0),
+    errors: [...current.errors, ...(delta.errors ?? [])],
+  }
+}
+
+async function resolveSpotifyArtistId(
+  config: CatalogueSyncConfig,
+  artistName: string,
+): Promise<string | null> {
+  const configuredId = normalizeSpotifyArtistId(config.spotifyArtistId)
+  if (configuredId) return configuredId
+  if (!artistName) return null
+  return searchSpotifyArtistId(artistName)
+}
+
+async function resolveDiscogsArtistId(
+  config: CatalogueSyncConfig,
+  artistName: string,
+): Promise<number | null> {
+  const configuredId = normalizeDiscogsArtistId(config.discogsArtistId)
+  if (configuredId) {
+    const parsed = Number.parseInt(configuredId, 10)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  if (!artistName) return null
+  return searchDiscogsArtistId(artistName)
+}
+
+async function initCataloguePayload(
+  source: 'spotify' | 'discogs' | 'itunes',
+  payload: SyncJobPayload,
+): Promise<SyncJobPayload> {
+  const config = await loadCatalogueSyncConfig()
+  const artistName = (payload.artistName?.trim() || config.artistName).trim()
+
+  if (source === 'spotify') {
+    const artistId =
+      payload.artistId != null
+        ? String(payload.artistId)
+        : await resolveSpotifyArtistId(config, artistName)
+    if (!artistId) throw new Error('Spotify artist ID or name not configured')
+    const token = await getSpotifyAccessToken()
+    if (!token) throw new Error('Spotify API credentials missing')
+    return { ...payload, source, artistName, artistId }
+  }
+
+  if (payload.artistId != null) return { ...payload, source }
+
+  const artistId = await resolveDiscogsArtistId(config, artistName)
+  if (!artistId) throw new Error('Discogs artist ID or name not configured')
+  const token = await getApiSecret('discogs_token')
+  if (!token) throw new Error('Discogs token missing')
+  return { ...payload, source, artistName, artistId }
+}
+
+async function tickItunesFetchPhase(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  const config = await loadCatalogueSyncConfig()
+  const artistName = (job.payload.artistName?.trim() || config.artistName).trim()
+  const itunesArtistId = normalizeItunesArtistId(config.itunesArtistId)
+
+  if (!artistName && !itunesArtistId) {
+    throw new Error('Configure an artist name or iTunes artist ID in Catalogue Sync settings')
+  }
+
+  const { items, errors } = await buildItunesCatalogueImportItems({ artistName, itunesArtistId })
+  const matchOptions = buildTitleMatchOptions(config)
+  const nextPayload: SyncJobPayload = {
+    ...job.payload,
+    source: 'itunes',
+    artistName,
+    stagedItems: dedupeCatalogueImportItems(items, matchOptions),
+    importCursor: 0,
+  }
+
+  const updated = await updateSyncJob(job.id, {
+    status: 'running',
+    phase: 'import',
+    payload: nextPayload,
+    progress: mergeProgress(job.progress, {
+      total: items.length,
+      processed: 0,
+      errors,
+    }),
+  })
+  return { job: updated, done: false }
+}
+
+async function tickFetchPhase(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  if (job.type === 'itunes_sync') {
+    return tickItunesFetchPhase(job)
+  }
+
+  const config = await loadCatalogueSyncConfig()
+  const matchOptions = buildTitleMatchOptions(config)
+  const payload = await initCataloguePayload(job.payload.source ?? 'spotify', job.payload)
+  const stagedItems: CatalogueImportItem[] = [...(payload.stagedItems ?? [])]
+
+  if (payload.source === 'discogs') {
+    const artistId = Number(payload.artistId)
+    const page = payload.fetchPage ?? 1
+    const pageResult = await fetchDiscogsArtistReleasesPage(artistId, page)
+    if (!pageResult.ok) {
+      throw new Error(`Discogs fetch failed on page ${page}`)
+    }
+
+    for (const item of pageResult.items) {
+      stagedItems.push({ externalId: item.discogs_id, metadata: item.metadata })
+    }
+
+    const fetchDone = page >= pageResult.totalPages
+    const nextPayload: SyncJobPayload = {
+      ...payload,
+      stagedItems,
+      fetchPage: fetchDone ? page : page + 1,
+      fetchTotalPages: pageResult.totalPages,
+      importCursor: payload.importCursor ?? 0,
+      existingIds: payload.existingIds,
+      displayOrderStart: payload.displayOrderStart,
+    }
+
+    if (fetchDone) {
+      nextPayload.stagedItems = dedupeCatalogueImportItems(stagedItems, matchOptions)
+      const updated = await updateSyncJob(job.id, {
+        status: 'running',
+        phase: 'import',
+        payload: nextPayload,
+        progress: mergeProgress(job.progress, {
+          total: nextPayload.stagedItems.length,
+          processed: nextPayload.stagedItems.length,
+        }),
+      })
+      return { job: updated, done: false }
+    }
+
+    const updated = await updateSyncJob(job.id, {
+      status: 'running',
+      phase: 'fetch',
+      payload: nextPayload,
+      progress: mergeProgress(job.progress, {
+        processed: stagedItems.length,
+        total: pageResult.totalPages * 100,
+      }),
+    })
+    return { job: updated, done: false }
+  }
+
+  const artistId = String(payload.artistId)
+  const pageResult = await fetchSpotifyArtistAlbumsPage(artistId, payload.fetchNextUrl ?? null)
+  if (!pageResult.ok) {
+    throw new Error(pageResult.error ?? 'Spotify album fetch failed')
+  }
+
+  for (const item of pageResult.items) {
+    stagedItems.push({ externalId: item.spotify_id, metadata: item.metadata })
+  }
+
+  const fetchDone = !pageResult.nextUrl
+  const nextPayload: SyncJobPayload = {
+    ...payload,
+    stagedItems,
+    fetchNextUrl: pageResult.nextUrl,
+    importCursor: payload.importCursor ?? 0,
+    existingIds: payload.existingIds,
+    displayOrderStart: payload.displayOrderStart,
+  }
+
+  if (fetchDone) {
+    nextPayload.stagedItems = dedupeCatalogueImportItems(stagedItems, matchOptions)
+    const updated = await updateSyncJob(job.id, {
+      status: 'running',
+      phase: 'import',
+      payload: nextPayload,
+      progress: mergeProgress(job.progress, {
+        total: nextPayload.stagedItems.length,
+        processed: nextPayload.stagedItems.length,
+      }),
+    })
+    return { job: updated, done: false }
+  }
+
+  const updated = await updateSyncJob(job.id, {
+    status: 'running',
+    phase: 'fetch',
+    payload: nextPayload,
+    progress: mergeProgress(job.progress, {
+      processed: stagedItems.length,
+    }),
+  })
+  return { job: updated, done: false }
+}
+
+function buildTitleMatchOptions(config: CatalogueSyncConfig): ReleaseTitleMatchOptions {
+  return { artistNames: [config.artistName] }
+}
+
+async function loadReleaseMatchIndex(
+  supabase: ReturnType<typeof createAdminClient>,
+  matchOptions?: ReleaseTitleMatchOptions,
+) {
+  const { data, error } = await supabase
+    .from('releases')
+    .select(
+      'id, title, type, release_date, description, artists, streaming_links, tracks, tracks_source, last_enriched_at, cover_storage_path, cover_url, display_order, active, manually_edited, itunes_id, spotify_id, discogs_id',
+    )
+
+  if (error) throw new Error(`Failed to load releases for duplicate matching: ${error.message}`)
+  return buildReleaseMatchIndex((data ?? []) as ReleaseConsolidationRow[], matchOptions)
+}
+
+async function loadExistingExternalIds(
+  supabase: ReturnType<typeof createAdminClient>,
+  idField: 'itunes_id' | 'spotify_id' | 'discogs_id',
+): Promise<Set<string>> {
+  const { data, error } = await supabase.from('releases').select(idField).not(idField, 'is', null)
+  if (error) throw new Error(`Failed to load existing ${idField} ids: ${error.message}`)
+  return new Set(
+    (data ?? [])
+      .map((row: Record<string, string | null>) => row[idField])
+      .filter((value: string | null | undefined): value is string => Boolean(value)),
+  )
+}
+
+async function runPostImportConsolidation(
+  supabase: ReturnType<typeof createAdminClient>,
+): Promise<{ updated: number; errors: string[] }> {
+  const result = await consolidateDuplicateReleases(supabase)
+  const errors = [...result.errors]
+  if (result.deleted > 0) {
+    errors.unshift(
+      `Consolidated ${result.deleted} duplicate release(s) across iTunes/Spotify/Discogs`,
+    )
+  }
+  return { updated: result.deleted, errors }
+}
+
+async function tickImportPhase(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  const payload = job.payload
+  const source =
+    payload.source ??
+    (job.type === 'discogs_sync' ? 'discogs' : job.type === 'itunes_sync' ? 'itunes' : 'spotify')
+  const idField =
+    source === 'discogs' ? 'discogs_id' : source === 'itunes' ? 'itunes_id' : 'spotify_id'
+  const items = payload.stagedItems ?? []
+  const cursor = payload.importCursor ?? 0
+
+  const supabase = createAdminClient()
+  const config = await loadCatalogueSyncConfig()
+  const matchOptions = buildTitleMatchOptions(config)
+  // Seed existingIds from the DB whenever the job doesn't carry one, so the
+  // import never re-inserts ids that already exist and stays correct when the
+  // job resumes across ticks. importCatalogueBatch mutates this Set in place
+  // with only the ids it actually handled, so a failed insert is not marked
+  // existing and stays retryable within the same run.
+  const existingIds = payload.existingIds
+    ? new Set(payload.existingIds)
+    : await loadExistingExternalIds(supabase, idField)
+  const releaseMatchIndex = await loadReleaseMatchIndex(supabase, matchOptions)
+
+  const batch = await importCatalogueBatch(supabase, {
+    source,
+    idField,
+    items,
+    cursor,
+    limit: IMPORT_BATCH_SIZE,
+    lightImport: true,
+    linkCrossSource: true,
+    matchOptions,
+    existingIds,
+    releaseMatchIndex,
+    displayOrderStart: payload.displayOrderStart,
+    cacheCover: (coverUrl, coverSource, externalId) =>
+      cacheReleaseCoverToR2(coverUrl, coverSource, externalId),
+  })
+
+  const nextPayload: SyncJobPayload = {
+    ...payload,
+    importCursor: batch.nextCursor,
+    existingIds: [...existingIds],
+    displayOrderStart: batch.nextDisplayOrder,
+  }
+
+  const nextProgress = mergeProgress(job.progress, {
+    processed: batch.nextCursor,
+    synced: batch.synced,
+    updated: batch.updated,
+    skipped: batch.skipped,
+    errors: batch.errors,
+    total: items.length,
+  })
+
+  if (!batch.done) {
+    const updated = await updateSyncJob(job.id, {
+      status: 'running',
+      phase: 'import',
+      payload: nextPayload,
+      progress: nextProgress,
+    })
+    return { job: updated, done: false }
+  }
+
+  const consolidation = await runPostImportConsolidation(supabase)
+  const progressAfterConsolidation = mergeProgress(nextProgress, {
+    updated: consolidation.updated,
+    errors: consolidation.errors,
+  })
+
+  if (shouldEnrichAfterCatalogueImport(job.type)) {
+    nextPayload.enrichCursor = 0
+    const updated = await updateSyncJob(job.id, {
+      status: 'running',
+      phase: 'enrich',
+      payload: nextPayload,
+      progress: progressAfterConsolidation,
+    })
+    return { job: updated, done: false }
+  }
+
+  const updated = await updateSyncJob(job.id, {
+    status: 'completed',
+    phase: 'import',
+    payload: nextPayload,
+    progress: progressAfterConsolidation,
+    completed_at: new Date().toISOString(),
+  })
+  return { job: updated, done: true }
+}
+
+async function tickEnrichPhase(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  const supabase = createAdminClient()
+  const config = await loadCatalogueSyncConfig()
+  const artistName = config.artistName || 'Neuroklast'
+  const cursor = job.payload.enrichCursor ?? 0
+
+  const batchResult = await runCatalogueEnrichmentBatch(supabase, {
+    artistName,
+    cursor,
+    limit: ENRICH_BATCH_SIZE,
+  })
+
+  const nextProgress = mergeProgress(job.progress, {
+    processed: batchResult.nextCursor,
+    total: batchResult.total,
+    synced: batchResult.enriched,
+    skipped: batchResult.skipped,
+    errors: batchResult.errors,
+  })
+
+  const nextPayload: SyncJobPayload = {
+    ...job.payload,
+    enrichCursor: batchResult.nextCursor,
+  }
+
+  if (!batchResult.done) {
+    const updated = await updateSyncJob(job.id, {
+      status: 'running',
+      phase: 'enrich',
+      payload: nextPayload,
+      progress: nextProgress,
+    })
+    return { job: updated, done: false }
+  }
+
+  const updated = await updateSyncJob(job.id, {
+    status: 'completed',
+    phase: 'enrich',
+    payload: nextPayload,
+    progress: nextProgress,
+    completed_at: new Date().toISOString(),
+  })
+  return { job: updated, done: true }
+}
+
+async function tickPurgeAndSyncReleases(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  const supabase = createAdminClient()
+  const { count, error } = await supabase.from('releases').delete({ count: 'exact' })
+
+  if (error) throw new Error(error.message)
+
+  const config = await loadCatalogueSyncConfig()
+  const artistName = config.artistName.trim()
+  const nextPayload: SyncJobPayload = {
+    source: 'spotify',
+    artistName,
+    stagedItems: [],
+    importCursor: 0,
+    purgeDeleted: count ?? 0,
+  }
+
+  const updated = await updateSyncJob(job.id, {
+    status: 'running',
+    phase: 'fetch',
+    payload: nextPayload,
+    progress: mergeProgress(job.progress, {
+      errors: [`Purged ${count ?? 0} release(s)`],
+    }),
+  })
+  return { job: updated, done: false }
+}
+
+async function tickBandsintownFetchPhase(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  const supabase = createAdminClient()
+  const apiKey = await getApiSecret('bandsintown_api_key')
+  if (!apiKey) throw new Error('Bandsintown API key is not configured')
+
+  const artistName = await resolveBandsintownArtistName(supabase)
+  const rawEvents = await fetchBandsintownEventsFromApi(artistName, apiKey, true)
+  const stagedGigs = rawEvents
+    .map(mapBandsintownEventToGigRow)
+    .filter((row): row is BandsintownGigRow => row !== null)
+
+  const updated = await updateSyncJob(job.id, {
+    status: 'running',
+    phase: 'import',
+    payload: {
+      ...job.payload,
+      artistName,
+      stagedGigs,
+      gigImportCursor: 0,
+    },
+    progress: mergeProgress(job.progress, {
+      total: stagedGigs.length,
+      processed: 0,
+    }),
+  })
+  return { job: updated, done: false }
+}
+
+async function tickBandsintownImportPhase(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  const supabase = createAdminClient()
+  const stagedGigs = job.payload.stagedGigs ?? []
+  const cursor = job.payload.gigImportCursor ?? 0
+  const batch = await syncBandsintownGigsBatch(supabase, stagedGigs, cursor)
+
+  const nextProgress = mergeProgress(job.progress, {
+    processed: batch.nextCursor,
+    total: stagedGigs.length,
+    synced: batch.synced,
+    updated: batch.updated,
+    skipped: batch.skipped,
+    errors: batch.errors,
+  })
+
+  const nextPayload: SyncJobPayload = {
+    ...job.payload,
+    gigImportCursor: batch.nextCursor,
+  }
+
+  if (!batch.done) {
+    const updated = await updateSyncJob(job.id, {
+      status: 'running',
+      phase: 'import',
+      payload: nextPayload,
+      progress: nextProgress,
+    })
+    return { job: updated, done: false }
+  }
+
+  const updated = await updateSyncJob(job.id, {
+    status: 'completed',
+    phase: 'import',
+    payload: nextPayload,
+    progress: nextProgress,
+    completed_at: new Date().toISOString(),
+  })
+  return { job: updated, done: true }
+}
+
+async function tickPurgeAndSyncGigs(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  const phase = job.phase ?? 'purge'
+  const supabase = createAdminClient()
+
+  if (phase === 'purge') {
+    const { count, error } = await supabase
+      .from('gigs')
+      .delete({ count: 'exact' })
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+
+    if (error) throw new Error(error.message)
+
+    const updated = await updateSyncJob(job.id, {
+      status: 'running',
+      phase: 'fetch',
+      payload: { ...job.payload, purgeDeleted: count ?? 0 },
+      progress: mergeProgress(job.progress, {
+        errors: [`Purged ${count ?? 0} gig(s)`],
+      }),
+    })
+    return { job: updated, done: false }
+  }
+
+  if (phase === 'fetch') {
+    return tickBandsintownFetchPhase(job)
+  }
+
+  return tickBandsintownImportPhase(job)
+}
+
+function isProcessingStale(payload: SyncJobPayload): boolean {
+  if (!payload.processing) return true
+  const since = payload.processingSince ?? 0
+  return Date.now() - since > PROCESSING_STALE_MS
+}
+
+/**
+ * Atomically claim a job tick. The conditional UPDATE only matches rows that
+ * are not freshly processing (never started, explicitly idle, or stale), so a
+ * second concurrent tick cannot start while the first is still running.
+ */
+async function acquireProcessingLock(job: SyncJobRow): Promise<SyncJobRow | null> {
+  if (!isProcessingStale(job.payload)) {
+    return null
+  }
+
+  const supabase = createAdminClient()
+  const staleCutoff = Date.now() - PROCESSING_STALE_MS
+  const { data, error } = await supabase
+    .from('sync_jobs')
+    .update({
+      payload: { ...job.payload, processing: true, processingSince: Date.now() },
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', job.id)
+    .or(
+      `payload->>processing.is.null,payload->>processing.eq.false,and(payload->>processing.eq.true,payload->>processingSince.lt.${staleCutoff})`,
+    )
+    .select('*')
+    .maybeSingle()
+
+  if (error) throw new Error(error.message)
+  return (data as SyncJobRow | null) ?? null
+}
+
+async function releaseProcessingLock(job: SyncJobRow): Promise<void> {
+  await updateSyncJob(job.id, {
+    payload: {
+      ...job.payload,
+      processing: false,
+      processingSince: undefined,
+    },
+  })
+}
+
+async function runSyncJobTick(current: SyncJobRow): Promise<AdvanceSyncJobResult> {
+  if (current.type === 'track_enrichment') {
+    return tickEnrichPhase(current)
+  }
+
+  if (current.type === 'bandsintown_sync') {
+    const phase = current.phase ?? 'fetch'
+    if (phase === 'fetch') return tickBandsintownFetchPhase(current)
+    return tickBandsintownImportPhase(current)
+  }
+
+  if (current.type === 'purge_and_sync_gigs') {
+    return tickPurgeAndSyncGigs(current)
+  }
+
+  if (current.type === 'purge_and_sync_releases' && (current.phase === 'purge' || !current.phase)) {
+    return tickPurgeAndSyncReleases(current)
+  }
+
+  const phase = current.phase ?? 'fetch'
+
+  if (phase === 'fetch') {
+    return tickFetchPhase(current)
+  }
+
+  if (phase === 'import') {
+    return tickImportPhase(current)
+  }
+
+  if (phase === 'enrich') {
+    return tickEnrichPhase(current)
+  }
+
+  throw new Error(`Unknown sync job phase: ${phase}`)
+}
+
+/** Process one chunk of a sync job. */
+export async function advanceSyncJob(jobId: string): Promise<AdvanceSyncJobResult> {
+  const job = await getSyncJob(jobId)
+  if (!job) throw new Error('Sync job not found')
+  if (job.status === 'cancelled' || job.status === 'completed' || job.status === 'failed') {
+    return { job, done: true }
+  }
+
+  const locked = await acquireProcessingLock(job)
+  if (!locked) {
+    return { job, done: false }
+  }
+
+  try {
+    if (locked.status === 'pending') {
+      await updateSyncJob(jobId, { status: 'running' })
+    }
+
+    const current = (await getSyncJob(jobId))!
+    const result = await runSyncJobTick(current)
+    await releaseProcessingLock(result.job)
+    return result
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Sync job failed'
+    const failed = await updateSyncJob(jobId, {
+      status: 'failed',
+      payload: {
+        ...job.payload,
+        processing: false,
+        processingSince: undefined,
+      },
+      progress: mergeProgress(job.progress, { errors: [message] }),
+      completed_at: new Date().toISOString(),
+    })
+    return { job: failed, done: true }
+  }
+}

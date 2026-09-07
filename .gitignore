@@ -13,6 +13,13 @@ dist-ssr
 *-dist
 *.local
 
+# Next.js
+.next/
+playwright-report/
+test-results/
+coverage/
+*.tsbuildinfo
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -35,3 +42,6 @@ pids
 
 # Leftover patch scripts from automated agents
 patch_*.cjs
+
+# Local classic-theme snapshot (not part of the Next.js app)
+_nk-classic-ref/
