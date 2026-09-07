@@ -59,6 +59,8 @@ async function downloadRemoteFile(url: string): Promise<{ bytes: Buffer; content
 }
 
 async function rehostMedia(url: string): Promise<ImportMediaEntry | null> {
+  // Never throw: if R2 is unavailable (missing bucket / creds) the import must
+  // still succeed, keeping the original external URL on the row instead.
   try {
     const image = await cacheRemoteImageToR2(url)
     if (image.ok && image.storagePath) {
@@ -71,22 +73,26 @@ async function rehostMedia(url: string): Promise<ImportMediaEntry | null> {
     // fall through to generic file download
   }
 
-  const file = await downloadRemoteFile(url)
-  if (!file) return null
-  const objectPath = await contentObjectKey({
-    prefix: 'imports',
-    data: file.bytes,
-    extension: file.extension,
-  })
-  const { objectPath: storedPath } = await uploadBufferToR2(
-    MEDIA_BUCKET,
-    objectPath,
-    file.bytes,
-    file.contentType,
-  )
-  return {
-    storagePath: storedPath,
-    contentHash: contentHashFromKey(storedPath) ?? '',
+  try {
+    const file = await downloadRemoteFile(url)
+    if (!file) return null
+    const objectPath = await contentObjectKey({
+      prefix: 'imports',
+      data: file.bytes,
+      extension: file.extension,
+    })
+    const { objectPath: storedPath } = await uploadBufferToR2(
+      MEDIA_BUCKET,
+      objectPath,
+      file.bytes,
+      file.contentType,
+    )
+    return {
+      storagePath: storedPath,
+      contentHash: contentHashFromKey(storedPath) ?? '',
+    }
+  } catch {
+    return null
   }
 }
 

@@ -1,28 +1,10 @@
 'use server'
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { requireAdmin } from '@/app/admin/_actions/auth'
 import { MEDIA_BUCKET } from '@/lib/constants'
-function buildR2Client(): S3Client {
-  const accountId = process.env.R2_ACCOUNT_ID
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
-
-  if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error('Missing R2 credentials: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY must be set')
-  }
-
-  return new S3Client({
-    region: 'auto',
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-    forcePathStyle: true,
-    // Cloudflare R2 does not support the AWS flexible CRC32 checksum that the
-    // SDK adds to presigned PutObject URLs by default; it breaks browser PUTs.
-    requestChecksumCalculation: 'WHEN_REQUIRED',
-  })
-}
+import { createR2S3Client } from '@/lib/r2-s3-client'
 
 function buildPublicUrl(objectPath: string): string {
   const host = process.env.R2_PUBLIC_HOST ?? ''
@@ -44,7 +26,7 @@ export async function createSignedUploadUrl(
   objectKey: string,
 ): Promise<{ url: string; objectPath: string; publicUrl: string }> {
   await requireAdmin()
-  const client = buildR2Client()
+  const client = createR2S3Client()
   const objectPath = objectKey.trim().replace(/^\/+/, '')
   if (!objectPath || objectPath.includes('..') || objectPath.includes('\\')) {
     throw new Error('Invalid storage path')
@@ -64,7 +46,7 @@ export async function uploadBufferToR2(
   contentType: string,
 ): Promise<{ publicUrl: string; objectPath: string }> {
   await requireAdmin()
-  const client = buildR2Client()
+  const client = createR2S3Client()
   await client.send(
     new PutObjectCommand({
       Bucket: bucket,
@@ -92,7 +74,7 @@ export async function deleteR2MediaObject(
   }
 
   try {
-    const client = buildR2Client()
+    const client = createR2S3Client()
     await client.send(
       new DeleteObjectCommand({
         Bucket: bucket,
