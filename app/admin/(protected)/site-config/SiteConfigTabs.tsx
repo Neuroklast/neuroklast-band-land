@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { HeroConfigEditor } from './HeroConfigEditor'
+import { LoadingScreenEditor } from './LoadingScreenEditor'
 import { BackgroundConfigEditor } from './BackgroundConfigEditor'
 import { AppearanceEditor } from './AppearanceEditor'
 import { SimpleTextConfigEditor } from './SimpleTextConfigEditor'
@@ -11,9 +12,9 @@ import { AdminPreviewPane } from '@/app/admin/_components/AdminPreviewPane'
 import { SectionsSortable } from '@/app/admin/(protected)/sections/SectionsSortable'
 import { parseSections, type SectionConfig } from '@/lib/site-config-sections'
 
-type TabId = 'hero' | 'background' | 'theme' | 'sections' | 'text' | 'advanced'
+type TabId = 'hero' | 'background' | 'theme' | 'sections' | 'text' | 'loader' | 'advanced'
 
-const VALID_TAB_IDS: TabId[] = ['hero', 'background', 'theme', 'sections', 'text', 'advanced']
+const VALID_TAB_IDS: TabId[] = ['hero', 'background', 'theme', 'sections', 'text', 'loader', 'advanced']
 
 function isTabId(value: string | null): value is TabId {
   return value !== null && (VALID_TAB_IDS as string[]).includes(value)
@@ -26,6 +27,7 @@ interface SiteConfigTabsProps {
   sectionsValue: unknown
   merchandiseValue: Record<string, unknown>
   footerValue: Record<string, unknown>
+  loadingScreenValue: Record<string, unknown>
   advancedConfigs: Array<{
     key: string
     label: string
@@ -39,6 +41,7 @@ const BASE_TABS: { id: TabId; label: string }[] = [
   { id: 'theme', label: 'Theme' },
   { id: 'background', label: 'Background' },
   { id: 'hero', label: 'Hero' },
+  { id: 'loader', label: 'Loader' },
   { id: 'sections', label: 'Sections' },
   { id: 'text', label: 'Site Text' },
 ]
@@ -50,6 +53,7 @@ export function SiteConfigTabs({
   sectionsValue,
   merchandiseValue,
   footerValue,
+  loadingScreenValue,
   advancedConfigs,
 }: SiteConfigTabsProps) {
   const router = useRouter()
@@ -106,6 +110,7 @@ export function SiteConfigTabs({
         </nav>
 
         {activeTab === 'hero' && <HeroConfigEditor currentValue={heroValue} />}
+        {activeTab === 'loader' && <LoadingScreenEditor currentValue={loadingScreenValue} />}
         {activeTab === 'background' && <BackgroundConfigEditor currentValue={bgValue} />}
         {activeTab === 'theme' && <AppearanceEditor currentValue={appearanceValue} />}
         {activeTab === 'sections' && (

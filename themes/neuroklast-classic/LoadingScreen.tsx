@@ -3,43 +3,7 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState, useRef } from 'react'
 import type { LoadingScreenSlotProps } from '@/lib/types'
-const logoImage = '/assets/images/baphomet.svg'
-
-const BOOT_SEQUENCE_TEXT = 'NEUROKLAST // BOOT SEQUENCE'
-
-const HACKING_TEXTS = [
-  '> INITIALIZING NEURAL INTERFACE...',
-  '> LOADING CORE MODULES...',
-  '> ESTABLISHING SECURE LINK...',
-  '> DECRYPTING DATASTREAM...',
-  '> COMPILING AUDIO ENGINE...',
-  '> SYNCING FREQUENCY MATRIX...',
-  '> ACTIVATING HUD OVERLAY...',
-  '> LOADING VISUAL CORTEX...',
-  '> PROCESSING SIGNAL CHAIN...',
-  '> CALIBRATING BPM RESONANCE...',
-  '> FINALIZING BOOT SEQUENCE...',
-  '> SYSTEM ONLINE // ACCESS GRANTED',
-]
-
-const CODE_FRAGMENTS = [
-  'fn init_neural() -> Result<()> {',
-  '  let freq = 150.0_f64;',
-  '  signal::process(bpm);',
-  '  audio.connect(output)?;',
-  '  hud.render(frame)?;',
-  'const NK = 0xFF2222;',
-  'mov eax, [neuro+0x1A]',
-  'jmp 0xDEADBEEF',
-  'syscall.exec("init")',
-  '  decrypt(stream, key);',
-  'KERNEL: audio_engine [OK]',
-  'SUBSYS: hud_display [OK]',
-  'NODE: freq_matrix v2.0.1',
-  'HASH: 0xA3F7B2C1D8E9',
-  '00110101 01001110 01001011',
-  'export NK_MODE=ACTIVATED',
-]
+import { parseLoadingScreenConfig } from '@/lib/loading-screen-config'
 
 const codeRainParams = Array.from({ length: 20 }, (_, i) => ({
   duration: 3 + (i % 5) * 0.6,
@@ -47,20 +11,22 @@ const codeRainParams = Array.from({ length: 20 }, (_, i) => ({
   translateX: -200 + i * 50,
 }))
 
-export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingScreenSlotProps) {
+export default function NeuroklastClassicLoadingScreen({ onComplete, config }: LoadingScreenSlotProps) {
+  const settings = parseLoadingScreenConfig(config)
   const [progress, setProgress] = useState(0)
   const onCompleteRef = useRef(onComplete)
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
   useEffect(() => {
+    const stepMs = Math.max(20, Math.round(settings.durationMs / 50))
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) { clearInterval(interval); return 100 }
         return Math.min(prev + 2, 100)
       })
-    }, 50)
+    }, stepMs)
     return () => clearInterval(interval)
-  }, [])
+  }, [settings.durationMs])
 
   useEffect(() => {
     if (progress >= 100) {
@@ -69,11 +35,11 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
     }
   }, [progress])
 
-  const hackingText = HACKING_TEXTS[Math.min(
-    Math.floor(progress / 100 * HACKING_TEXTS.length),
-    HACKING_TEXTS.length - 1,
+  const hackingText = settings.hackingTexts[Math.min(
+    Math.floor(progress / 100 * settings.hackingTexts.length),
+    settings.hackingTexts.length - 1,
   )]
-  const codeFragment = CODE_FRAGMENTS[Math.floor(progress / 100 * CODE_FRAGMENTS.length) % CODE_FRAGMENTS.length]
+  const codeFragment = settings.codeFragments[Math.floor(progress / 100 * settings.codeFragments.length) % settings.codeFragments.length]
 
   return (
     <motion.div
@@ -92,7 +58,7 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
               transition={{ duration: params.duration, repeat: Infinity, delay: params.delay }}
               style={{ transform: `translateX(${params.translateX}px)` }}
             >
-              {CODE_FRAGMENTS[i % CODE_FRAGMENTS.length]}
+              {settings.codeFragments[i % settings.codeFragments.length]}
             </motion.div>
           ))}
         </div>
@@ -117,8 +83,8 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
           }}
         >
           <img
-            src={logoImage}
-            alt="NEUROKLAST"
+            src={settings.logoUrl}
+            alt=""
             className="w-40 h-40 object-contain"
           />
         </motion.div>
@@ -173,7 +139,7 @@ export default function NeuroklastClassicLoadingScreen({ onComplete }: LoadingSc
           animate={{ opacity: [0.2, 0.4, 0.2] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          {BOOT_SEQUENCE_TEXT}
+          {settings.bootLabel}
         </motion.div>
       </div>
     </motion.div>

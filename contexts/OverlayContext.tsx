@@ -2,14 +2,8 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import type { CyberpunkOverlayState } from '@/lib/app-types'
-import type { MediaDownloadItem } from '@/lib/media-download'
 
-export type ExplorerOverlayState = {
-  type: 'explorer'
-  data: { items: MediaDownloadItem[] }
-}
-
-export type PublicOverlayState = CyberpunkOverlayState | ExplorerOverlayState
+export type PublicOverlayState = CyberpunkOverlayState
 
 interface OverlayContextValue {
   overlay: PublicOverlayState | null

@@ -46,7 +46,7 @@ describe('overlay host', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: /open archive/i }))
-    expect(screen.getByText(/initializing filesystem/i)).toBeInTheDocument()
+    expect(screen.getByTestId('overlay-type')).toHaveTextContent('explorer')
     expect(container.querySelector('#media')?.textContent).not.toMatch(/MEDIA EXPLORER/i)
   })
 

@@ -52,6 +52,15 @@ describe('getOverlaySessionKey', () => {
     expect(getOverlaySessionKey({ type: 'contact' })).toBe('contact')
   })
 
+  it('returns explorer key', () => {
+    expect(
+      getOverlaySessionKey({
+        type: 'explorer',
+        data: { items: [] },
+      }),
+    ).toBe('explorer')
+  })
+
   it('returns news-scoped key', () => {
     expect(
       getOverlaySessionKey({

@@ -22,6 +22,8 @@ import { ReleaseOverlayContent } from '@/components/overlays/ReleaseOverlayConte
 import { GalleryOverlayContent } from '@/components/overlays/GalleryOverlayContent'
 import { MediaOverlayContent } from '@/components/overlays/MediaOverlayContent'
 import { NewsOverlayContent } from '@/components/overlays/NewsOverlayContent'
+import { MediaExplorerBody } from '@/app/_components/public/MediaOverlay'
+import { toExplorerFiles } from '@/app/_components/public/MediaExplorer'
 import { useLenisContext } from '@/contexts/LenisContext'
 
 const OVERLAY_LOADING_TEXTS = [
@@ -70,7 +72,8 @@ function isDirectRevealType(type: string | undefined): boolean {
     type === 'gallery' ||
     type === 'media' ||
     type === 'news' ||
-    type === 'member'
+    type === 'member' ||
+    type === 'explorer'
   )
 }
 
@@ -222,7 +225,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
             animate={anim.modal.animate}
             exit={anim.modal.exit}
             transition={anim.modal.transition ?? { duration: 0.3 }}
-            className="fixed inset-0 flex items-end md:items-center justify-center p-0 md:p-8 pointer-events-none"
+            className="fixed inset-0 flex items-center justify-center p-3 md:p-8 pointer-events-none"
             style={{ zIndex: 'var(--z-overlay)', perspective: '1000px' } as React.CSSProperties}
           >
             <motion.div
@@ -240,7 +243,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               }}
               data-theme-color="card card-foreground border"
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative max-w-4xl w-full bg-background/98 border border-primary/30 pointer-events-auto overflow-hidden max-h-[100dvh] md:max-h-[90vh] h-[100dvh] md:h-auto flex flex-col scanline-effect cyber-card rounded-none md:rounded-[var(--radius)]"
+              className="relative max-w-4xl w-full bg-background/98 border border-primary/30 pointer-events-auto overflow-hidden max-h-[calc(100dvh-1.5rem)] md:max-h-[90vh] h-auto flex flex-col scanline-effect cyber-card rounded-[var(--radius)]"
               style={{ borderRadius: 'var(--radius)' } as React.CSSProperties}
               onClick={(e) => e.stopPropagation()}
             >
@@ -258,6 +261,16 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               {/* Scan lines */}
               <motion.div className="absolute top-0 left-0 right-0 h-1 bg-primary/20" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.4, delay: 0.1 }} style={{ transformOrigin: 'left' }} />
               <motion.div className="absolute bottom-0 left-0 right-0 h-1 bg-primary/20" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.4, delay: 0.15 }} style={{ transformOrigin: 'right' }} />
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-3 right-3 z-20 min-h-[44px] min-w-[44px] text-foreground hover:text-primary hover:bg-primary/10"
+                onClick={onClose}
+                aria-label="Close dialog"
+              >
+                <X className="w-6 h-6" />
+              </Button>
 
               {/* Content phases */}
               <div className="relative overflow-y-auto flex-1 min-h-0 overscroll-contain">
@@ -279,16 +292,6 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
 
                 {overlayPhase === 'revealed' && (
                   <div className="p-4 pt-14 md:p-12 md:pt-12">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-3 right-3 md:top-4 md:right-4 min-h-[44px] min-w-[44px] text-foreground hover:text-primary hover:bg-primary/10 z-10"
-                      onClick={onClose}
-                      aria-label="Close dialog"
-                    >
-                      <X className="w-6 h-6" />
-                    </Button>
-
                     <AnimatePresence mode="wait">
                       {overlayPhase === 'revealed' && (
                         <motion.div
@@ -346,6 +349,10 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
 
                           {overlay.type === 'news' && overlay.data && (
                             <NewsOverlayContent data={overlay.data} />
+                          )}
+
+                          {overlay.type === 'explorer' && overlay.data && (
+                            <MediaExplorerBody files={toExplorerFiles(overlay.data.items)} />
                           )}
                         </motion.div>
                       )}
