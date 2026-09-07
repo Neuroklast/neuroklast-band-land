@@ -44,7 +44,13 @@ export const revalidate = 60
 
 // ─── Type helpers ────────────────────────────────────────────────────────────
 interface SiteConfigRow { key: string; value: Record<string, unknown> }
-interface BioRow { content: string | null }
+interface BioRow { content: string | null; achievements: unknown; collabs: unknown }
+
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string' && item.trim() !== '')
+    : []
+}
 interface MemberRow {
   id: string
   name: string
@@ -164,7 +170,7 @@ async function fetchAll() {
     ] = await Promise.all([
       supabase.from('site_config').select('key, value'),
       // maybeSingle: empty bio table is not an error (single() would log PGRST116)
-      supabase.from('bio').select('content').limit(1).maybeSingle(),
+      supabase.from('bio').select('content, achievements, collabs').limit(1).maybeSingle(),
       supabase.from('members').select('id, name, role, bio, photo_storage_path, photo_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('gigs').select('id, title, venue, city, country, event_date, ticket_url, festival_name, description').eq('active', true).order('event_date', { ascending: true }),
       supabase.from('partners').select('id, name, url, logo_storage_path, logo_url, category, logo_white').eq('active', true).order('display_order', { ascending: true }),
@@ -204,6 +210,8 @@ async function fetchAll() {
     return {
       configRows: (configResult.data ?? []) as SiteConfigRow[],
       bio: normalizeBioContent((bioResult.data as BioRow | null)?.content),
+      bioAchievements: asStringArray((bioResult.data as BioRow | null)?.achievements),
+      bioCollabs: asStringArray((bioResult.data as BioRow | null)?.collabs),
       members: (memberResult.data ?? []) as MemberRow[],
       gigs: (gigResult.data ?? []) as GigRow[],
       releases: releaseRows,
@@ -221,6 +229,8 @@ async function fetchAll() {
     return {
       configRows: [] as SiteConfigRow[],
       bio: '',
+      bioAchievements: [] as string[],
+      bioCollabs: [] as string[],
       members: [] as MemberRow[],
       gigs: [] as GigRow[],
       releases: [] as ReleaseRow[],
@@ -260,7 +270,7 @@ export default async function HomePage({
   const { adminPreview } = await searchParams
   const isAdminPreview = adminPreview === '1'
   const {
-    configRows, bio, members, gigs, releases, partners,
+    configRows, bio, bioAchievements, bioCollabs, members, gigs, releases, partners,
     musicHighlights, merch, soundpacks, gallery, mediaDownloads, social, newsPosts,
   } = await fetchAllCached()
 
@@ -498,6 +508,8 @@ export default async function HomePage({
                   intro={section.intro}
                   bodyFontSize={typeof bioOverrides.bodyFontSize === 'string' ? bioOverrides.bodyFontSize : undefined}
                   readMoreMaxHeight={typeof bioOverrides.readMoreMaxHeight === 'string' ? bioOverrides.readMoreMaxHeight : undefined}
+                  achievements={bioAchievements}
+                  collabs={bioCollabs}
                   members={members.map((member) => ({
                     id: member.id,
                     name: member.name,

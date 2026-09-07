@@ -11,24 +11,45 @@ import { z } from 'zod'
 
 const partnerCategorySchema = z.enum(['credit', 'endorsement', 'partner', 'label', 'sponsor'])
 
+const socialsSchema = z
+  .record(z.string(), z.unknown())
+  .optional()
+  .default({})
+
 const partnerInputSchema = z.object({
   name: z.string().min(1),
   url: safeExternalUrlOptional.transform((v) => (v === '' ? null : v)),
   logo_storage_path: z.string().optional().nullable().or(z.literal('')).transform((v) => (v === '' ? null : v)),
   logo_url: safeExternalUrlOptional.transform((v) => (v === '' ? null : v)),
   category: partnerCategorySchema.optional().default('partner'),
+  description: z.string().optional().nullable().transform((v) => (v && v.trim() ? v : null)),
+  socials: socialsSchema,
   display_order: z.coerce.number().optional().default(0),
   active: z.coerce.boolean().optional(),
   logo_white: z.boolean().default(true),
 })
 
 function parseFormData(formData: FormData) {
+  const socialsRaw = formData.get('socials')
+  let socials: Record<string, unknown> = {}
+  if (typeof socialsRaw === 'string' && socialsRaw.trim()) {
+    try {
+      const parsed: unknown = JSON.parse(socialsRaw)
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        socials = parsed as Record<string, unknown>
+      }
+    } catch {
+      // ignore invalid JSON — keep empty
+    }
+  }
   return {
     name: formData.get('name'),
     url: formData.get('url') || null,
     logo_storage_path: formData.get('logo_storage_path') || null,
     logo_url: formData.get('logo_url') || null,
     category: formData.get('category') || 'partner',
+    description: formData.get('description') || null,
+    socials,
     display_order: formData.get('display_order') || 0,
     active: formData.get('active'),
     logo_white: formData.has('logo_white'),

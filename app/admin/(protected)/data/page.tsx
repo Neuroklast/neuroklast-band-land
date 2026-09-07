@@ -7,6 +7,7 @@ import { DataImportClient } from './DataImportClient'
 import { DataMaintenanceClient } from './DataMaintenanceClient'
 import { MediaHostRewriteClient } from './MediaHostRewriteClient'
 import { FactoryResetClient } from './FactoryResetClient'
+import { SiteConfigContentImportClient } from './SiteConfigContentImportClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -83,6 +84,7 @@ export default async function DataPage() {
         <MediaHostRewriteClient />
         <DataMaintenanceClient />
         <DataImportClient />
+        <SiteConfigContentImportClient />
         <FactoryResetClient />
       </div>
     </div>

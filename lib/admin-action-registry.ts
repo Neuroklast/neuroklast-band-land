@@ -594,7 +594,11 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
   update_bio: register({
     id: 'update_bio',
     label: 'Update Bio',
-    schema: z.object({ content: z.string() }),
+    schema: z.object({
+      content: z.string(),
+      achievements: z.array(z.string()).optional(),
+      collabs: z.array(z.string()).optional(),
+    }),
     minDisclosure: 'basic',
     execute({ content: _content }, { supabaseAdmin }) {
       if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }

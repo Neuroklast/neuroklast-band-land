@@ -23,9 +23,26 @@ interface BioSectionProps {
   bodyFontSize?: string
   readMoreMaxHeight?: string
   members?: PublicMember[]
+  /** Achievements list shown as a block inside the Biography section. */
+  achievements?: string[]
+  /** Collaborations list shown as a block inside the Biography section. */
+  collabs?: string[]
 }
 
-export function BioSection({ content, heading, intro, bodyFontSize, readMoreMaxHeight, members = [] }: BioSectionProps) {
+function asStringList(value: string[] | null | undefined): string[] {
+  return Array.isArray(value) ? value.filter((item) => typeof item === 'string' && item.trim()) : []
+}
+
+export function BioSection({
+  content,
+  heading,
+  intro,
+  bodyFontSize,
+  readMoreMaxHeight,
+  members = [],
+  achievements = [],
+  collabs = [],
+}: BioSectionProps) {
   const { t } = useLocale()
   const title = resolveSectionHeading(heading, 'bio', t)
   const [expanded, setExpanded] = useState(false)
@@ -85,6 +102,39 @@ export function BioSection({ content, heading, intro, bodyFontSize, readMoreMaxH
               </>
             )}
           </button>
+        </div>
+      ) : null}
+
+      {asStringList(achievements).length > 0 || asStringList(collabs).length > 0 ? (
+        <div className="mt-10 grid gap-8 sm:grid-cols-2">
+          {asStringList(achievements).length > 0 ? (
+            <div>
+              <h3 className="mb-4 font-mono text-sm uppercase tracking-[0.3em] text-primary">
+                {t('bio.achievements')}
+              </h3>
+              <ul className="space-y-2">
+                {asStringList(achievements).map((item) => (
+                  <li key={item} className="font-mono text-xs leading-relaxed text-muted-foreground">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {asStringList(collabs).length > 0 ? (
+            <div>
+              <h3 className="mb-4 font-mono text-sm uppercase tracking-[0.3em] text-primary">
+                {t('bio.collabs')}
+              </h3>
+              <ul className="flex flex-wrap gap-2">
+                {asStringList(collabs).map((item) => (
+                  <li key={item} className="cyber-border px-3 py-1 font-mono text-xs text-muted-foreground">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       ) : null}
 

@@ -12,7 +12,7 @@ export default async function EditNewsPage({
   const { data } = await supabase
     .from('news_posts')
     .select(
-      'id, title, slug, excerpt, body, cover_storage_path, cover_url, published_at, active, display_order',
+      'id, title, slug, excerpt, body, link, cover_storage_path, cover_url, published_at, active, display_order',
     )
     .eq('id', id)
     .maybeSingle()
@@ -42,6 +42,7 @@ export default async function EditNewsPage({
             slug: string
             excerpt: string | null
             body: string
+            link: string | null
             cover_storage_path: string | null
             cover_url: string | null
             published_at: string | null

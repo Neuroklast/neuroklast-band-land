@@ -52,6 +52,31 @@ export default function NewGigPage() {
           <label className="block text-sm text-zinc-300 mb-1">Ticket URL</label>
           <input name="ticket_url" type="url" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-zinc-300 mb-1">Gig type</label>
+            <select name="gig_type" defaultValue="dj" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none">
+              <option value="dj">DJ</option>
+              <option value="concert">Concert</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-zinc-300 mb-1">Status</label>
+            <select name="status" defaultValue="confirmed" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none">
+              <option value="confirmed">Confirmed</option>
+              <option value="announced">Announced</option>
+              <option value="canceled">Canceled</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm text-zinc-300 mb-1">Supporting artists (one per line)</label>
+          <textarea name="supporting_artists" rows={3} className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
+        </div>
+        <div>
+          <label className="block text-sm text-zinc-300 mb-1">Event links (JSON)</label>
+          <textarea name="event_links" rows={3} placeholder='{"facebook":"https://…"}' className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm font-mono focus:outline-none" />
+        </div>
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <div className="flex gap-3">
           <button type="submit" className="px-4 py-2 rounded bg-zinc-700 hover:bg-zinc-600 text-white text-sm transition-colors">Create Gig</button>

@@ -45,6 +45,13 @@ CREATE TABLE IF NOT EXISTS public.gigs (
   festival_name text,
   description text,
   bandsintown_id text,
+  gig_type text,
+  status text DEFAULT 'confirmed',
+  supporting_artists jsonb DEFAULT '[]',
+  event_links jsonb DEFAULT '{}',
+  photo_storage_path text,
+  photo_url text,
+  photo_content_hash text,
   active boolean DEFAULT true,
   created_at timestamptz DEFAULT now()
 );
@@ -65,6 +72,8 @@ CREATE TABLE IF NOT EXISTS public.gallery (
 CREATE TABLE IF NOT EXISTS public.bio (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   content text,
+  achievements jsonb DEFAULT '[]',
+  collabs jsonb DEFAULT '[]',
   updated_at timestamptz DEFAULT now()
 );
 
@@ -104,6 +113,8 @@ CREATE TABLE IF NOT EXISTS public.partners (
   logo_storage_path text,
   logo_url text,
   category text DEFAULT 'partner',
+  description text,
+  socials jsonb DEFAULT '{}',
   display_order integer DEFAULT 0,
   active boolean DEFAULT true,
   logo_white boolean DEFAULT true,
@@ -279,12 +290,24 @@ $$;
 ALTER TABLE public.partners ADD COLUMN IF NOT EXISTS logo_white boolean DEFAULT true;
 ALTER TABLE public.partners ALTER COLUMN logo_white SET DEFAULT true;
 UPDATE public.partners SET logo_white = true WHERE logo_white IS NULL;
+-- partners: friend/partner description + socials (from site-config-content import)
+ALTER TABLE public.partners ADD COLUMN IF NOT EXISTS description text;
+ALTER TABLE public.partners ADD COLUMN IF NOT EXISTS socials jsonb DEFAULT '{}';
 
 -- social_links
 ALTER TABLE public.social_links ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true;
 
 -- gigs (Bandsintown dedup)
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS bandsintown_id text;
+
+-- gigs: extra fields from the site-config-content import
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS gig_type text;
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS status text DEFAULT 'confirmed';
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS supporting_artists jsonb DEFAULT '[]';
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS event_links jsonb DEFAULT '{}';
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS photo_storage_path text;
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS photo_url text;
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS photo_content_hash text;
 
 CREATE UNIQUE INDEX IF NOT EXISTS gigs_bandsintown_id_unique
   ON public.gigs (bandsintown_id)
@@ -402,6 +425,9 @@ $$;
 
 -- bio updated_at
 ALTER TABLE public.bio ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+-- bio: achievements + collabs (displayed as lists in the Biography section)
+ALTER TABLE public.bio ADD COLUMN IF NOT EXISTS achievements jsonb DEFAULT '[]';
+ALTER TABLE public.bio ADD COLUMN IF NOT EXISTS collabs jsonb DEFAULT '[]';
 
 -- NOT NULL backfills
 DO $$
@@ -499,6 +525,7 @@ CREATE TABLE IF NOT EXISTS public.news_posts (
   slug text NOT NULL UNIQUE,
   excerpt text,
   body text NOT NULL DEFAULT '',
+  link text,
   cover_storage_path text,
   cover_url text,
   published_at timestamptz DEFAULT now(),
@@ -510,6 +537,8 @@ CREATE TABLE IF NOT EXISTS public.news_posts (
 
 CREATE INDEX IF NOT EXISTS news_posts_slug_idx ON public.news_posts (slug);
 CREATE INDEX IF NOT EXISTS news_posts_published_idx ON public.news_posts (published_at DESC);
+-- news_posts: optional external article link (from site-config-content import)
+ALTER TABLE public.news_posts ADD COLUMN IF NOT EXISTS link text;
 -- ============================================================
 -- Row Level Security
 -- ============================================================

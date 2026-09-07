@@ -59,6 +59,23 @@ export default function PartnerForm() {
           className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none"
         />
       </div>
+      <div>
+        <label className="block text-xs text-zinc-400 mb-1">Description</label>
+        <textarea
+          name="description"
+          rows={3}
+          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-zinc-400 mb-1">Socials (JSON)</label>
+        <textarea
+          name="socials"
+          rows={3}
+          placeholder='{"instagram":"https://…"}'
+          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm font-mono focus:outline-none"
+        />
+      </div>
       <MediaSourcePicker
         label="Logo"
         storagePrefix="partners/logos"
