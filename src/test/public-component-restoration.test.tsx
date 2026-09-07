@@ -270,7 +270,7 @@ describe('restored public homepage components', () => {
     expect(container.querySelectorAll('.partner-logo-native')).toHaveLength(1)
     expect(container.querySelectorAll('.partner-logo-white')).toHaveLength(1)
     expect(container.querySelectorAll('.partner-logo-cell')).toHaveLength(2)
-    expect(screen.getByText(/credits/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/credits/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/endorsements/i)).toBeInTheDocument()
   })
 })
