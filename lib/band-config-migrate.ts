@@ -132,7 +132,7 @@ export async function migrateDriveAssets(args: {
 
   const map = new Map<string, string>()
   let uploaded = 0
-  let reused = 0
+  const reused = 0
   let failed = 0
   const failures: string[] = []
 
@@ -195,7 +195,6 @@ export async function importBandConfigToSupabase(args: {
 
   const siteName = asString(config.siteName) ?? asString(asRecord(config.band)?.name) ?? 'Neuroklast'
   const tagline = asString(config.tagline) ?? (Array.isArray(config.genres) ? (config.genres as string[]).join(' / ') : null)
-  const description = asString(config.description) ?? asString(asRecord(config.band)?.description)
 
   if (!args.apply) {
     args.log(`Would write site_config hero/legal + content tables for ${siteName}`)
