@@ -72,6 +72,56 @@ function asObject(value: unknown): Record<string, unknown> {
   return isPlainObject(value) ? value : {}
 }
 
+function asLocalizedString(value: unknown): string | null {
+  const direct = asString(value)
+  if (direct) return direct
+  const record = asRecord(value)
+  if (!record) return null
+  return (
+    asString(record.en) ??
+    asString(record.de) ??
+    asString(record.story) ??
+    asString(record.text) ??
+    asString(record.content)
+  )
+}
+
+function biographyStory(biography: Record<string, unknown> | null, data: Record<string, unknown>): string | null {
+  if (!biography) return asString(data.bio) ?? asString(data.story)
+  return (
+    asLocalizedString(biography.story) ??
+    asLocalizedString(biography.content) ??
+    asLocalizedString(biography.text) ??
+    asLocalizedString(biography.bio)
+  )
+}
+
+function memberEntries(biography: Record<string, unknown> | null): Record<string, unknown>[] {
+  const raw = biography?.members
+  if (!Array.isArray(raw)) return []
+  const entries: Record<string, unknown>[] = []
+  for (const item of raw) {
+    if (typeof item === 'string' && item.trim()) {
+      const match = item.trim().match(/^(.*?)(?:\s*\((.+)\))?$/)
+      entries.push({
+        name: (match?.[1] ?? item).trim(),
+        statusValue: match?.[2]?.trim() ?? null,
+      })
+      continue
+    }
+    if (isPlainObject(item)) entries.push(item)
+  }
+  return entries
+}
+
+function recordArrayFromKeys(data: Record<string, unknown>, keys: string[]): Record<string, unknown>[] {
+  for (const key of keys) {
+    const rows = asRecordArray(data[key])
+    if (rows.length > 0) return rows
+  }
+  return []
+}
+
 export function parseSiteConfigContentPayload(input: unknown): ParseContentResult | ParseContentError {
   const root = asRecord(input)
   if (!root) return { ok: false, error: 'Site config content must be a JSON object' }
@@ -149,15 +199,15 @@ export function collectMediaUrls(data: Record<string, unknown>): string[] {
   }
 
   const biography = asRecord(data.biography)
-  for (const member of asRecordArray(biography?.members)) push(member.photo)
+  for (const member of memberEntries(biography)) push(member.photo)
   for (const friend of asRecordArray(biography?.friends)) {
     push(friend.photo)
     push(friend.iconPhoto)
     push(friend.profilePhoto)
   }
-  for (const gig of asRecordArray(data.gigs)) push(gig.photo)
+  for (const gig of recordArrayFromKeys(data, ['gigs', 'events'])) push(gig.photo)
   for (const release of asRecordArray(data.releases)) push(release.artwork)
-  for (const item of asRecordArray(data.news)) push(item.photo)
+  for (const item of recordArrayFromKeys(data, ['news', 'newsPosts', 'news_posts'])) push(item.photo)
   for (const image of asRecordArray(data.galleryImages)) push(image.url)
   for (const file of asRecordArray(data.mediaFiles)) push(file.url)
 
@@ -173,7 +223,7 @@ export function buildImportRows(
   const biography = asRecord(data.biography)
 
   // ── bio (single row, content + achievements + collabs) ────────────────
-  const story = asString(biography?.story)
+  const story = biographyStory(biography, data)
   const achievements = asStringArray(biography?.achievements)
   const collabs = asStringArray(biography?.collabs)
   if (story || achievements.length > 0 || collabs.length > 0) {
@@ -182,14 +232,21 @@ export function buildImportRows(
   }
 
   // ── members ───────────────────────────────────────────────────────────
-  const members = asRecordArray(biography?.members)
+  const members = memberEntries(biography)
   if (members.length > 0) {
     rows.members = members.map((member, index) => {
       const photo = asString(member.photo)
       const { storagePath } = mediaFor(mediaMap, photo)
+      const name = asString(member.name) ?? `Member ${index + 1}`
       return {
-        name: asString(member.name) ?? `Member ${index + 1}`,
-        role: asString(member.statusValue) ?? asString(member.statusLabel) ?? null,
+        id: deterministicUuid(`member-${asString(member.id) ?? name}`),
+        name,
+        role:
+          asString(member.statusValue) ??
+          asString(member.statusLabel) ??
+          asString(member.subjectLabel) ??
+          asString(member.role) ??
+          null,
         bio: asString(member.bio),
         photo_storage_path: storagePath,
         photo_url: photo,
@@ -239,10 +296,10 @@ export function buildImportRows(
   }
 
   // ── gigs ──────────────────────────────────────────────────────────────
-  const gigs = asRecordArray(data.gigs)
+  const gigs = recordArrayFromKeys(data, ['gigs', 'events'])
   if (gigs.length > 0) {
     rows.gigs = gigs.map((gig, index) => {
-      const loc = splitLocation(asString(gig.location))
+      const loc = splitLocation(asString(gig.location) ?? asString(gig.city))
       const photo = asString(gig.photo)
       const { storagePath, contentHash } = mediaFor(mediaMap, photo)
       return {
@@ -251,17 +308,16 @@ export function buildImportRows(
         venue: asString(gig.venue),
         city: loc.city,
         country: loc.country,
-        event_date: normalizeDate(asString(gig.date)) ?? new Date().toISOString(),
-        ticket_url: asString(gig.ticketUrl),
+        event_date: normalizeDate(asString(gig.date) ?? asString(gig.eventDate) ?? asString(gig.event_date)) ?? new Date().toISOString(),
+        ticket_url: asString(gig.ticketUrl) ?? asString(gig.ticket_url),
         description: asString(gig.description),
-        gig_type: asString(gig.gigType),
+        gig_type: asString(gig.gigType) ?? asString(gig.gig_type),
         status: asString(gig.status) ?? 'confirmed',
-        supporting_artists: asStringArray(gig.supportingArtists),
-        event_links: asObject(gig.eventLinks),
+        supporting_artists: asStringArray(gig.supportingArtists ?? gig.supporting_artists),
+        event_links: asObject(gig.eventLinks ?? gig.event_links),
         photo_storage_path: storagePath,
         photo_url: photo,
         photo_content_hash: contentHash,
-        display_order: index,
         active: true,
       }
     })
@@ -295,7 +351,7 @@ export function buildImportRows(
   }
 
   // ── news_posts ────────────────────────────────────────────────────────
-  const news = asRecordArray(data.news)
+  const news = recordArrayFromKeys(data, ['news', 'newsPosts', 'news_posts'])
   if (news.length > 0) {
     rows.news_posts = news.map((item, index) => {
       const title = asString(item.text) ?? `News ${index + 1}`
