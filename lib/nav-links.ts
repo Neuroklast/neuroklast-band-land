@@ -59,7 +59,7 @@ export const NEUROKLAST_NAV_SECTION_IDS = [
 /** Homepage sections = hero + navbar targets, same order as the HUD. */
 export const NEUROKLAST_HOME_SECTION_IDS = ['hero', ...NEUROKLAST_NAV_SECTION_IDS] as const
 
-const HOME_ORDER = new Map(
+const HOME_ORDER = new Map<string, number>(
   NEUROKLAST_HOME_SECTION_IDS.map((id, index) => [id, index]),
 )
 

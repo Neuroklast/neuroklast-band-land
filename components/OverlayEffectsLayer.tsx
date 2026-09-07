@@ -23,6 +23,7 @@ export default function OverlayEffectsLayer({ effects }: OverlayEffectsLayerProp
       {effects.scanlines?.enabled && <div className="overlay-scanlines" />}
       {effects.crt?.enabled && <div className="overlay-crt" />}
       {effects.noise?.enabled && <div className="overlay-noise" />}
+      <div className="overlay-radiation" />
       {effects.vignette?.enabled && <div className="overlay-vignette" />}
       {effects.dof?.enabled && <div className="overlay-dof" />}
       {effects.chromatic?.enabled && <div className="overlay-chromatic" />}

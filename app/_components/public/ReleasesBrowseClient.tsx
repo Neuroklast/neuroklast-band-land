@@ -13,10 +13,10 @@ import {
   Storefront,
   YoutubeLogo,
 } from '@phosphor-icons/react'
-import CyberpunkOverlay from '@/components/CyberpunkOverlay'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { ReleasesSwipeLayout } from '@/components/releases/ReleasesSwipeLayout'
-import type { CyberpunkOverlayState, Release } from '@/lib/app-types'
+import type { Release } from '@/lib/app-types'
 import { paginateItems } from '@/lib/browse-pagination'
 import {
   browseReleases,
@@ -187,8 +187,8 @@ function SwipeReleaseCard({ release, onClick }: { release: PublicReleaseCardItem
   )
 }
 
-export function ReleasesBrowseClient({ releases, artistName = '' }: ReleasesBrowseClientProps) {
-  const [overlay, setOverlay] = useState<CyberpunkOverlayState | null>(null)
+export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
+  const { openOverlay } = useOverlay()
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<ReleaseTypeFilter>('')
   const [page, setPage] = useState(1)
@@ -211,7 +211,7 @@ export function ReleasesBrowseClient({ releases, artistName = '' }: ReleasesBrow
   }
 
   const handleReleaseClick = (item: PublicReleaseCardItem) => {
-    setOverlay({ type: 'release', data: item.overlayRelease })
+    openOverlay({ type: 'release', data: item.overlayRelease })
   }
 
   const layoutReleases: Release[] = pagination.items.map((item) => item.overlayRelease)
@@ -271,12 +271,7 @@ export function ReleasesBrowseClient({ releases, artistName = '' }: ReleasesBrow
         </>
       )}
 
-      <CyberpunkOverlay
-        overlay={overlay}
-        onClose={() => setOverlay(null)}
-        adminSettings={undefined}
-        artistName={artistName}
-      />
+
     </>
   )
 }

@@ -15,6 +15,8 @@ vi.mock('@/components/releases/ReleasesSwipeLayout', () => ({
 }))
 
 import { LocaleProvider } from '@/contexts/LocaleContext'
+import { OverlayProvider } from '@/contexts/OverlayContext'
+import { OverlayHost } from '@/app/_components/public/OverlayHost'
 import { GigsBrowseClient } from '@/app/_components/public/GigsBrowseClient'
 import { ReleasesBrowseClient } from '@/app/_components/public/ReleasesBrowseClient'
 import { GigsSection } from '@/app/_components/public/GigsSection'
@@ -22,7 +24,14 @@ import type { PublicGigRow } from '@/lib/gig-public-mapper'
 import type { PublicReleaseCardItem } from '@/lib/public-fetch'
 
 function renderWithLocale(ui: ReactElement) {
-  return render(<LocaleProvider>{ui}</LocaleProvider>)
+  return render(
+    <OverlayProvider>
+      <LocaleProvider>
+        {ui}
+        <OverlayHost />
+      </LocaleProvider>
+    </OverlayProvider>,
+  )
 }
 
 const root = resolve(import.meta.dirname, '../..')
@@ -123,7 +132,7 @@ describe('public browse pages', () => {
       },
     ]
 
-    render(<GigsBrowseClient gigs={gigs} />)
+    renderWithLocale(<GigsBrowseClient gigs={gigs} />)
 
     fireEvent.click(screen.getByRole('button', { name: /^past$/i }))
     fireEvent.click(screen.getByRole('button', { name: /open event details for madrid show/i }))

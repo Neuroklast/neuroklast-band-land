@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   DEFAULT_SITE_BACKGROUND_VIDEO,
+  HERO_BACKGROUND_VIDEO_OPACITY,
   backgroundVideoDimOpacity,
+  backgroundVideoOpacityForScroll,
 } from '@/lib/background-config'
 import { prefersReducedMotion, shouldDisableVideoBackground } from '@/lib/device-capability'
 import { useLenisContext } from '@/contexts/LenisContext'
@@ -11,6 +13,7 @@ import { attachScrollVideoSync } from '@/lib/scroll-video-sync'
 
 export function SiteBgVideo() {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const dimRef = useRef<HTMLDivElement>(null)
   const { lenis } = useLenisContext()
   const [on, setOn] = useState(false)
 
@@ -50,9 +53,31 @@ export function SiteBgVideo() {
     }
   }, [on, lenis])
 
+  useEffect(() => {
+    if (!on) return
+
+    const apply = (scrollY: number) => {
+      const opacity = backgroundVideoOpacityForScroll(scrollY, window.innerHeight)
+      const node = dimRef.current
+      if (node) node.style.background = `rgb(0 0 0 / ${backgroundVideoDimOpacity(opacity)})`
+    }
+
+    apply(lenis?.scroll ?? (window.scrollY || document.documentElement.scrollTop || 0))
+
+    if (lenis) {
+      const onScroll = (state: { scroll: number }) => apply(state.scroll)
+      lenis.on('scroll', onScroll)
+      return () => lenis.off('scroll', onScroll)
+    }
+
+    const onWindowScroll = () => apply(window.scrollY || document.documentElement.scrollTop || 0)
+    window.addEventListener('scroll', onWindowScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onWindowScroll)
+  }, [on, lenis])
+
   if (!on) return null
 
-  const dim = backgroundVideoDimOpacity()
+  const dim = backgroundVideoDimOpacity(HERO_BACKGROUND_VIDEO_OPACITY)
 
   return (
     <div
@@ -70,7 +95,7 @@ export function SiteBgVideo() {
         className="absolute inset-0 h-full w-full object-cover"
         style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
       />
-      <div className="absolute inset-0" style={{ background: `rgb(0 0 0 / ${dim})` }} />
+      <div ref={dimRef} className="absolute inset-0" style={{ background: `rgb(0 0 0 / ${dim})` }} />
       <div
         className="absolute inset-0"
         style={{

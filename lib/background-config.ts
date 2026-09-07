@@ -1,5 +1,6 @@
 export type MobileVideoMode = 'same' | 'separate' | 'off'
 
+export const HERO_BACKGROUND_VIDEO_OPACITY = 0.5
 export const DEFAULT_BACKGROUND_VIDEO_OPACITY = 0.3
 export const DEFAULT_SITE_BACKGROUND_VIDEO = '/brand/websitebg.scrub.mp4'
 
@@ -7,6 +8,18 @@ export function backgroundVideoDimOpacity(
   videoOpacity = DEFAULT_BACKGROUND_VIDEO_OPACITY,
 ): number {
   return Math.max(0, Math.min(1, 1 - videoOpacity))
+}
+
+export function backgroundVideoOpacityForScroll(
+  scrollY: number,
+  viewportHeight: number,
+): number {
+  const span = Math.max(1, viewportHeight)
+  const t = Math.min(1, Math.max(0, scrollY / span))
+  return (
+    HERO_BACKGROUND_VIDEO_OPACITY +
+    (DEFAULT_BACKGROUND_VIDEO_OPACITY - HERO_BACKGROUND_VIDEO_OPACITY) * t
+  )
 }
 
 export function parseMobileVideoMode(raw: unknown): MobileVideoMode {

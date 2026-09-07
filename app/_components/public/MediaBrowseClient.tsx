@@ -1,8 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import CyberpunkOverlay from '@/components/CyberpunkOverlay'
-import type { CyberpunkOverlayState } from '@/lib/app-types'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { paginateItems } from '@/lib/browse-pagination'
 import {
   MEDIA_CATEGORY_FILTERS,
@@ -36,7 +35,7 @@ export function MediaBrowseClient({ items }: MediaBrowseClientProps) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<MediaCategoryFilter>('all')
   const [page, setPage] = useState(1)
-  const [overlay, setOverlay] = useState<CyberpunkOverlayState | null>(null)
+  const { openOverlay } = useOverlay()
 
   const filtered = useMemo(
     () => browseMediaDownloads(items, query, category),
@@ -62,7 +61,7 @@ export function MediaBrowseClient({ items }: MediaBrowseClientProps) {
   function handleImageClick(item: MediaDownloadItem) {
     if (!item.fileUrl || mediaKindFromMime(item.fileMime, item.originalFilename) !== 'image') return
     const preview = toDirectImageUrl(item.fileUrl, { w: 1600, q: 85 }) || item.fileUrl
-    setOverlay({
+    openOverlay({
       type: 'media',
       data: {
         id: item.id,
@@ -99,7 +98,7 @@ export function MediaBrowseClient({ items }: MediaBrowseClientProps) {
         onPageChange={setPage}
       />
 
-      <CyberpunkOverlay overlay={overlay} onClose={() => setOverlay(null)} adminSettings={undefined} />
+
     </>
   )
 }

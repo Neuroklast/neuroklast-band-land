@@ -4,8 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { m } from 'framer-motion'
 import { ArrowLeft, CalendarBlank, MapPin } from '@phosphor-icons/react'
-import CyberpunkOverlay from '@/components/CyberpunkOverlay'
-import type { CyberpunkOverlayState } from '@/lib/app-types'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { paginateItems } from '@/lib/browse-pagination'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
 import {
@@ -102,8 +101,8 @@ function GigBrowseCard({
   )
 }
 
-export function GigsBrowseClient({ gigs, artistName = '' }: GigsBrowseClientProps) {
-  const [overlay, setOverlay] = useState<CyberpunkOverlayState | null>(null)
+export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
+  const { openOverlay } = useOverlay()
   const [searchQuery, setSearchQuery] = useState('')
   const [timingFilter, setTimingFilter] = useState<GigTimingFilter>('all')
   const [page, setPage] = useState(1)
@@ -126,7 +125,7 @@ export function GigsBrowseClient({ gigs, artistName = '' }: GigsBrowseClientProp
   }
 
   const handleGigClick = (gig: PublicGigRow) => {
-    setOverlay({ type: 'gig', data: mapGigRowToOverlayGig(gig) })
+    openOverlay({ type: 'gig', data: mapGigRowToOverlayGig(gig) })
   }
 
   return (
@@ -167,12 +166,6 @@ export function GigsBrowseClient({ gigs, artistName = '' }: GigsBrowseClientProp
         </>
       )}
 
-      <CyberpunkOverlay
-        overlay={overlay}
-        onClose={() => setOverlay(null)}
-        adminSettings={undefined}
-        artistName={artistName}
-      />
     </>
   )
 }

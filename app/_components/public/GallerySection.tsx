@@ -6,8 +6,7 @@ import { MagnifyingGlassPlus, CaretDown, CaretUp } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
-import CyberpunkOverlay from '@/components/CyberpunkOverlay'
-import type { CyberpunkOverlayState } from '@/lib/app-types'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { resolveGalleryTileAspect } from '@/lib/gallery-aspect-ratio'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { onMediaImageError } from '@/lib/media-fallback'
@@ -42,7 +41,7 @@ export function GallerySection({
   const { t } = useLocale()
   const title = resolveSectionHeading(heading, 'gallery', t)
   const [showAll, setShowAll] = useState(false)
-  const [overlay, setOverlay] = useState<CyberpunkOverlayState | null>(null)
+  const { openOverlay } = useOverlay()
   const prefersReducedMotion = useReducedMotion()
 
   const visibleItems = useMemo(
@@ -72,7 +71,7 @@ export function GallerySection({
       if (!lightbox) return
       const fullIndex = visibleItems.findIndex((item) => item.id === itemId)
       if (fullIndex < 0) return
-      setOverlay({
+      openOverlay({
         type: 'gallery',
         data: {
           images: lightboxUrls,
@@ -81,7 +80,7 @@ export function GallerySection({
         },
       })
     },
-    [lightbox, visibleItems, lightboxUrls, lightboxAlts],
+    [lightbox, visibleItems, lightboxUrls, lightboxAlts, openOverlay],
   )
 
   return (
@@ -171,13 +170,6 @@ export function GallerySection({
           <SectionEmpty label="Gallery coming soon" />
         )}
       </SectionWrapper>
-
-      {/* Same CyberpunkOverlay shell as releases / events */}
-      <CyberpunkOverlay
-        overlay={overlay}
-        onClose={() => setOverlay(null)}
-        adminSettings={undefined}
-      />
     </>
   )
 }

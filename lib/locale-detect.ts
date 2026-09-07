@@ -1,9 +1,7 @@
 /**
  * Public locale resolution:
  * 1. Saved preference (localStorage)
- * 2. Browser Accept-Language / navigator.languages
- * 3. Geo country → locale (when available)
- * 4. English
+ * 2. English
  */
 
 export const DEFAULT_LOCALE = 'en'
@@ -124,16 +122,12 @@ export function initialPublicLocale(supported: string[]): string {
 }
 
 /**
- * Synchronous best-effort detect (storage → browser → en).
- * Apply only after mount. Geo is applied asynchronously by LocaleProvider after /api/geo.
+ * Synchronous detect (storage → en). Browser/geo do not override the English default.
+ * Apply only after mount.
  */
 export function detectLocaleSync(supported: string[]): string {
   const codes = supported.length > 0 ? supported : [DEFAULT_LOCALE]
-  return (
-    readStoredLocale(codes) ??
-    localeFromBrowser(codes) ??
-    initialPublicLocale(codes)
-  )
+  return readStoredLocale(codes) ?? initialPublicLocale(codes)
 }
 
 export async function fetchGeoCountry(): Promise<string | null> {

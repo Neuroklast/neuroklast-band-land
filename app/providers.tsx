@@ -6,6 +6,8 @@ import { ErrorBoundary } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
 import { LenisProvider } from '@/contexts/LenisContext'
 import { LocaleProvider } from '@/contexts/LocaleContext'
+import { OverlayProvider } from '@/contexts/OverlayContext'
+import { OverlayHost } from '@/app/_components/public/OverlayHost'
 import { AnalyticsTracker } from '@/components/AnalyticsTracker'
 import { AppearanceBridge } from '@/app/_components/public/AppearanceBridge'
 import type { AppearanceConfigInput } from '@/lib/apply-appearance-config'
@@ -51,15 +53,18 @@ export function Providers({
   return (
     <LazyMotion features={domAnimation} strict={false}>
       <LenisProvider>
-        <LocaleProvider customTranslations={customTranslations} languages={languages}>
-          <QueryClientProvider client={queryClient}>
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <AppearanceBridge config={appearance} />
-              {children}
-            </ErrorBoundary>
-          </QueryClientProvider>
-          {analyticsConfig ? <AnalyticsTracker config={analyticsConfig} /> : null}
-        </LocaleProvider>
+        <OverlayProvider>
+          <LocaleProvider customTranslations={customTranslations} languages={languages}>
+            <QueryClientProvider client={queryClient}>
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <AppearanceBridge config={appearance} />
+                {children}
+                <OverlayHost lookId={appearance.lookId} />
+              </ErrorBoundary>
+            </QueryClientProvider>
+            {analyticsConfig ? <AnalyticsTracker config={analyticsConfig} /> : null}
+          </LocaleProvider>
+        </OverlayProvider>
       </LenisProvider>
     </LazyMotion>
   )

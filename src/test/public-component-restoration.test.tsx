@@ -9,6 +9,8 @@ vi.mock('@/components/CyberpunkOverlay', () => ({
 }))
 
 import { LocaleProvider } from '@/contexts/LocaleContext'
+import { OverlayProvider } from '@/contexts/OverlayContext'
+import { OverlayHost } from '@/app/_components/public/OverlayHost'
 import { BioSection } from '@/app/_components/public/BioSection'
 import { CreditsSection } from '@/app/_components/public/CreditsSection'
 import { GigsSection } from '@/app/_components/public/GigsSection'
@@ -17,7 +19,14 @@ import { HeroSection } from '@/app/_components/public/HeroSection'
 import { ReleasesSection } from '@/app/_components/public/ReleasesSection'
 
 function renderWithLocale(ui: ReactElement) {
-  return render(<LocaleProvider>{ui}</LocaleProvider>)
+  return render(
+    <OverlayProvider>
+      <LocaleProvider>
+        {ui}
+        <OverlayHost />
+      </LocaleProvider>
+    </OverlayProvider>,
+  )
 }
 
 type IoCallback = IntersectionObserverCallback
