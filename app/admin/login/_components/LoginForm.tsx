@@ -46,18 +46,23 @@ export default function LoginForm() {
           method="POST"
           action="/admin/login/submit"
           className="space-y-4"
-          onSubmit={() => setIsLoading(true)}
+          onSubmit={(event) => {
+            if (isLoading) {
+              event.preventDefault()
+              return
+            }
+            setIsLoading(true)
+          }}
         >
           {/* Forward the intended destination so submit can 303 to it after success */}
           <input type="hidden" name="redirectTo" value={redirectTo} />
 
           <div>
-            <label htmlFor="email" className="block text-sm text-zinc-300 mb-1">Email (or phone)</label>
+            <label htmlFor="email" className="block text-sm text-zinc-300 mb-1">Email</label>
             <input
               id="email"
               name="email"
-              type="text"
-              inputMode="email"
+              type="email"
               required
               className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-base focus:outline-none focus:border-zinc-500"
               placeholder="you@example.com"
@@ -78,8 +83,8 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full py-2 px-4 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+            aria-busy={isLoading}
+            className={`w-full py-2 px-4 rounded bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium transition-colors${isLoading ? ' opacity-50 pointer-events-none' : ''}`}
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>

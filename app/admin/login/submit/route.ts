@@ -14,7 +14,11 @@ import { shouldForceInsecureCookies } from '@/lib/supabaseServer'
  */
 export async function POST(request: Request) {
   const formData = await request.formData()
-  const rawIdentifier = String(formData.get('email') || formData.get('phone') || '').trim()
+  const rawIdentifier =
+    formData
+      .getAll('email')
+      .map((value) => String(value).trim())
+      .find((value) => value.includes('@')) ?? ''
   const password = String(formData.get('password') || '')
   const redirectTo = String(formData.get('redirectTo') || '/admin/releases')
 
@@ -54,7 +58,7 @@ export async function POST(request: Request) {
   // Always forward redirect param so user does not lose intended destination after fixing the form values.
   if (!rawIdentifier) {
     const errorUrl = new URL('/admin/login', request.url)
-    errorUrl.searchParams.set('msg', 'Email (or phone) is required.')
+    errorUrl.searchParams.set('msg', 'Email is required.')
     if (redirectTo && redirectTo !== '/admin/releases') {
       errorUrl.searchParams.set('redirect', redirectTo)
     }
@@ -69,11 +73,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(errorUrl, 303)
   }
 
-  // Build sign-in payload — supports pure email login (phone is not required)
-  // and also allows phone login if a non-email identifier is provided.
-  const signInPayload = rawIdentifier.includes('@')
-    ? { email: rawIdentifier, password }
-    : { phone: rawIdentifier, password }
+  const signInPayload = { email: rawIdentifier, password }
 
   // Prepare the final redirect response FIRST so setAll can attach cookies to it.
   const finalRedirectUrl = redirectTo.startsWith('/') ? redirectTo : '/admin/releases'
@@ -119,11 +119,7 @@ export async function POST(request: Request) {
 
     // On failure, redirect back to login with the real error message.
     // Improve common confusing Supabase messages.
-    let friendlyMessage = error.message || 'Login failed'
-
-    if (/email or phone/i.test(friendlyMessage) || /provide either an email/i.test(friendlyMessage)) {
-      friendlyMessage = 'Please enter a valid email address.'
-    }
+    const friendlyMessage = error.message || 'Login failed'
 
     const errorUrl = new URL('/admin/login', request.url)
     errorUrl.searchParams.set('msg', friendlyMessage)
