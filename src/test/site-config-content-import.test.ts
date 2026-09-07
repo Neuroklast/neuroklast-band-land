@@ -91,6 +91,7 @@ describe('buildImportRows', () => {
     expect(rows.members).toHaveLength(2)
     expect(rows.members?.[0].name).toBe('Kay')
     expect(rows.members?.[0].role).toBe('Producer')
+    expect(rows.members?.[0].id).toMatch(/^[0-9a-f-]{36}$/)
     expect(rows.members?.[0].photo_url).toContain('lh3.googleusercontent.com/d/abc')
   })
 
@@ -113,6 +114,19 @@ describe('buildImportRows', () => {
     expect(gig?.status).toBe('confirmed')
     expect(gig?.supporting_artists).toEqual(['Vicious Moon'])
     expect(gig?.event_links).toEqual({ facebook: 'https://facebook.com/events/1' })
+    expect(gig).not.toHaveProperty('display_order')
+  })
+
+  it('maps events as gigs and biography.content as bio', () => {
+    const { rows } = buildImportRows(
+      {
+        biography: { content: 'Alt story', achievements: ['One'] },
+        events: [{ id: 'e1', venue: 'Club X', date: '2026-08-01' }],
+      },
+      emptyMap,
+    )
+    expect(rows.bio?.[0].content).toBe('Alt story')
+    expect(rows.gigs?.[0].title).toBe('Club X')
   })
 
   it('maps releases with streaming links and itunes id', () => {
@@ -131,6 +145,7 @@ describe('buildImportRows', () => {
     const { rows } = buildImportRows(sampleExport.data, emptyMap)
     expect(rows.news_posts?.[0].link).toBe('https://example.com')
     expect(rows.news_posts?.[0].title).toBe('LET RAGE COMMENCE')
+    expect(rows.news_posts?.[0].body).toBe('New frontwoman')
     expect(rows.gallery?.[0].caption).toBe('IMG_0')
     expect(rows.media_downloads?.[0].title).toBe('press_kit.pdf')
     expect(rows.media_downloads?.[0].category).toBe('other')
