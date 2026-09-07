@@ -67,8 +67,7 @@ describe('applySectionsDraft', () => {
       sections: [{ id: 'bio', label: 'About Me', visible: true, order: 0 }],
     })
 
-    // Nav stays short; full title "About Me" only updates the section heading
-    expect(navLink.textContent).toBe('Bio')
+    expect(navLink.textContent).toBe('Biography')
   })
 
   it('updates order and visibility on matching section shells', () => {

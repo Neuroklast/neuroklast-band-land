@@ -184,6 +184,12 @@ export function getRandomOverlayAnimation(): OverlayAnimation {
   return overlayAnimations[Math.floor(Math.random() * overlayAnimations.length)]
 }
 
+export function getOverlayAnimationByName(name?: string | null): OverlayAnimation {
+  if (!name || name === 'random') return getRandomOverlayAnimation()
+  const found = overlayAnimations.find((a) => a.name === name)
+  return found ?? getRandomOverlayAnimation()
+}
+
 /** Get all available animations (for testing/preview) */
 export function getAllOverlayAnimations(): OverlayAnimation[] {
   return overlayAnimations

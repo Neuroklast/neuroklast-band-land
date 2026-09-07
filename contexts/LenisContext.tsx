@@ -96,7 +96,7 @@ const defaultEasing = (t: number): number =>
 export function LenisProvider({
   children,
   easing = defaultEasing,
-  duration = 1.2,
+  duration = 0.9,
 }: LenisProviderProps) {
   // Reactive reduced-motion preference — re-computes liteMode when the user
   // changes their OS/browser setting so Lenis is properly destroyed/created.
@@ -132,42 +132,32 @@ export function LenisProvider({
   useEffect(() => {
     if (liteMode) return
 
-    let rafId = 0
     let lenis: Lenis | null = null
 
     try {
       lenis = new Lenis({
-        duration: durationRef.current,
-        easing: (t: number) => easingRef.current(t),
-        smoothWheel: true,
-        wheelMultiplier: 1,
-        touchMultiplier: 2,
-      })
+          duration: durationRef.current,
+          easing: (t: number) => easingRef.current(t),
+          lerp: 0.1,
+          smoothWheel: true,
+          autoRaf: true,
+          wheelMultiplier: 1,
+          touchMultiplier: 1.5,
+        })
 
       lenisRef.current = lenis
       setLenisInstance(lenis)
 
-      // CRITICAL: update refs only — never setState on scroll.
-      // setState here re-rendered SiteNav/Hero/every consumer every frame and
-      // fought canvas/video background work (main-thread jank).
       lenis.on('scroll', (e: { scroll: number; velocity: number }) => {
         scrollYRef.current = e.scroll
         velocityYRef.current = e.velocity
       })
-
-      // Drive Lenis with our own RAF loop so we control the timing
-      function raf(time: number) {
-        lenis?.raf(time)
-        rafId = requestAnimationFrame(raf)
-      }
-      rafId = requestAnimationFrame(raf)
     } catch {
       // Lenis failed to initialize (e.g. SSR / jsdom) — fall back to native
       lenisRef.current = null
     }
 
     return () => {
-      cancelAnimationFrame(rafId)
       lenis?.destroy()
       lenisRef.current = null
       setLenisInstance(null)

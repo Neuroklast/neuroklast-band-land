@@ -44,14 +44,14 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
             <Link
               key={post.id}
               href={`/news/${post.slug}`}
-              className="group block overflow-hidden border border-border bg-card/40 transition-colors hover:border-primary/40"
+              className="nk-os-frame group block"
             >
               <div className="relative aspect-video overflow-hidden bg-muted">
                 {post.coverUrl ? (
                   <img
                     src={toDirectImageUrl(post.coverUrl, { w: 800 }) || post.coverUrl}
                     alt=""
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover"
                     loading="lazy"
                     decoding="async"
                   />

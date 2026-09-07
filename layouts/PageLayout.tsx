@@ -62,20 +62,21 @@ export function PageLayout({
       {/* Layer 0-2: Backgrounds (fixed, non-interactive) */}
       {backgroundLayers}
 
-      {/* Layer 10: Content — Holy Grail flex column keeps footer at viewport bottom */}
       <div
         className={`relative min-h-screen flex flex-col${contentClassName ? ` ${contentClassName}` : ''}`}
         style={{ zIndex: 'var(--z-content)' } as CSSProperties}
       >
-        {nav}
         <main id={mainContentId} className="flex-1 flex flex-col">
           {children}
         </main>
         {footer}
       </div>
 
-      {/* Layer 40: Global FX (fixed, pointer-events: none) */}
       {globalEffects}
+
+      <div style={{ zIndex: 'var(--z-nav)' } as CSSProperties}>
+        {nav}
+      </div>
 
       {/* Layer 50: Overlays (interactive) */}
       {overlays}

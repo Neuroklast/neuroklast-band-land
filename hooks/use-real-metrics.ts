@@ -1,6 +1,5 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 
-/** Browser + OS parsed from navigator.userAgent */
 interface ParsedAgent {
   browser: string
   os: string
@@ -12,7 +11,6 @@ function parseUserAgent(): ParsedAgent {
   let browser = 'UNKNOWN'
   let os = 'UNKNOWN'
 
-  // Browser detection
   if (ua.includes('Firefox/')) {
     const m = ua.match(/Firefox\/([\d.]+)/)
     browser = `FIREFOX.${m?.[1]?.split('.')[0] ?? '?'}`
@@ -27,7 +25,6 @@ function parseUserAgent(): ParsedAgent {
     browser = `SAFARI.${m?.[1]?.split('.')[0] ?? '?'}`
   }
 
-  // OS detection
   if (ua.includes('Windows')) os = 'WINDOWS'
   else if (ua.includes('Mac OS X')) os = 'MACOS'
   else if (ua.includes('Linux')) os = 'LINUX'
@@ -37,13 +34,11 @@ function parseUserAgent(): ParsedAgent {
   return { browser, os }
 }
 
-/** Map IANA timezone to a short sector-style region label */
 function timezoneToSector(): string {
   if (typeof Intl === 'undefined') return 'UNKNOWN'
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
     if (!tz) return 'UNKNOWN'
-    // Map timezone regions to cyberpunk sector labels
     if (tz.startsWith('America/')) {
       if (['America/New_York', 'America/Toronto', 'America/Montreal'].includes(tz)) return 'NA-EAST'
       if (['America/Chicago', 'America/Denver'].includes(tz)) return 'NA-CENTRAL'
@@ -72,22 +67,18 @@ function timezoneToSector(): string {
   }
 }
 
-/** Generate a short hex session ID from crypto.randomUUID */
 function generateSessionId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
   }
-  // Fallback using crypto.getRandomValues when randomUUID is unavailable
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     const bytes = new Uint8Array(4)
     crypto.getRandomValues(bytes)
     return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
   }
-  // Final fallback for environments without Web Crypto API (SSR)
   return '00000000'
 }
 
-/** Get connection downlink speed in Mbps if available */
 function getDownlink(): number | null {
   if (typeof navigator === 'undefined') return null
   const conn = (navigator as Navigator & { connection?: { downlink?: number } }).connection
@@ -95,55 +86,51 @@ function getDownlink(): number | null {
 }
 
 export interface RealMetrics {
-  /** Parsed browser name + major version e.g. "CHROME.131" */
   browser: string
-  /** Parsed OS name e.g. "MACOS" */
   os: string
-  /** Combined platform string e.g. "CHROME.131 // MACOS" */
   platform: string
-  /** Timezone-based region sector e.g. "EU-CENTRAL" */
   sector: string
-  /** Short hex session ID (8 chars) */
   sessionId: string
-  /** Connection downlink speed in Mbps, or null if unavailable */
   downlink: number | null
-  /** Build version from package.json + short git hash */
   buildVersion: string
-  /** Whether HTTPS is active */
   isSecure: boolean
-  /** TLS connection string e.g. "TLS.1.3 // HTTPS" */
   connectionStatus: string
 }
 
-/**
- * Hook that provides real browser/session metrics for authentic HUD display.
- * All values are computed once at mount time and memoized.
- */
+const SSR_METRICS: RealMetrics = {
+  browser: 'UNKNOWN',
+  os: 'UNKNOWN',
+  platform: 'UNKNOWN // UNKNOWN',
+  sector: '--------',
+  sessionId: '--------',
+  downlink: null,
+  buildVersion: '1.0.0.dev',
+  isSecure: false,
+  connectionStatus: 'HTTP // LOCAL',
+}
+
+function readMetrics(): RealMetrics {
+  const { browser, os } = parseUserAgent()
+  const isSecure = typeof location !== 'undefined' && location.protocol === 'https:'
+  const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'
+  const gitHash = typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : 'dev'
+  return {
+    browser,
+    os,
+    platform: `${browser} // ${os}`,
+    sector: timezoneToSector(),
+    sessionId: generateSessionId(),
+    downlink: getDownlink(),
+    buildVersion: `${appVersion}.${gitHash}`,
+    isSecure,
+    connectionStatus: isSecure ? 'HTTPS // SECURE' : 'HTTP // LOCAL',
+  }
+}
+
 export function useRealMetrics(): RealMetrics {
-  return useMemo(() => {
-    const { browser, os } = parseUserAgent()
-    const sector = timezoneToSector()
-    const sessionId = generateSessionId()
-    const downlink = getDownlink()
-    const isSecure = typeof location !== 'undefined' && location.protocol === 'https:'
-
-    // Build version from Vite define (injected at build time)
-    const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'
-    const gitHash = typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : 'dev'
-    const buildVersion = `${appVersion}.${gitHash}`
-
-    const connectionStatus = isSecure ? 'HTTPS // SECURE' : 'HTTP // LOCAL'
-
-    return {
-      browser,
-      os,
-      platform: `${browser} // ${os}`,
-      sector,
-      sessionId,
-      downlink,
-      buildVersion,
-      isSecure,
-      connectionStatus,
-    }
+  const [metrics, setMetrics] = useState<RealMetrics>(SSR_METRICS)
+  useEffect(() => {
+    setMetrics(readMetrics())
   }, [])
+  return metrics
 }

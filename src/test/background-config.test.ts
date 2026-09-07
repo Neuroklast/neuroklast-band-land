@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import {
+  DEFAULT_BACKGROUND_VIDEO_OPACITY,
+  DEFAULT_SITE_BACKGROUND_VIDEO,
+  backgroundVideoDimOpacity,
   parseBackgroundVideoEnabled,
   resolveActiveBackgroundVideoUrl,
 } from '@/lib/background-config'
+
+describe('default site background video', () => {
+  it('is the bundled scroll-scrub video at 30% opacity', () => {
+    expect(DEFAULT_SITE_BACKGROUND_VIDEO).toBe('/brand/websitebg.scrub.mp4')
+    expect(DEFAULT_BACKGROUND_VIDEO_OPACITY).toBe(0.3)
+    expect(backgroundVideoDimOpacity()).toBe(0.7)
+  })
+})
 
 describe('parseBackgroundVideoEnabled', () => {
   it('uses explicit boolean', () => {

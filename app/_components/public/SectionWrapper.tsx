@@ -20,7 +20,7 @@ export function SectionContentPanel({
 }) {
   return (
     <div
-      className={`cyber-grid surface-section-panel w-full p-6 md:p-8 ${className}`}
+      className={`theme-card cyber-grid surface-section-panel w-full p-6 md:p-8 ${className}`}
     >
       {children}
     </div>
@@ -44,16 +44,18 @@ export function SectionHeading({
   const label = dataText ?? (typeof children === 'string' ? children : undefined)
   const target = draftTarget ?? (sectionId ? `section-heading-${sectionId}` : undefined)
 
+  const secId = sectionId ? `SEC://${sectionId.toUpperCase()}` : 'SEC://SYS'
+
   return (
-    <div className="mb-12 flex flex-wrap items-center justify-between gap-4">
+    <div className="nk-os-heading">
       <h2
-        className={`section-heading hover-chromatic hover-glitch cyber2077-scan-build cyber2077-data-corrupt text-heading font-bold uppercase tracking-tighter text-foreground ${className}`}
+        className={`nk-os-heading__label ${className}`}
         data-text={label}
         data-draft-target={target}
       >
         {children}
-        <span className="animate-pulse">_</span>
       </h2>
+      <span className="nk-os-heading__id">{secId}</span>
     </div>
   )
 }
@@ -90,7 +92,7 @@ export function SectionWrapper({
   return (
     <section
       id={id}
-      className={`relative w-full max-w-6xl mx-auto px-card py-section ${className}`}
+      className={`relative w-full max-w-7xl mx-auto px-card py-section ${className}`}
       style={{ zIndex: 'var(--z-content)' as React.CSSProperties['zIndex'] }}
       {...rest}
     >
@@ -109,11 +111,11 @@ export function SectionWrapper({
 export function SectionDivider() {
   return (
     <div
-      className="w-full max-w-6xl mx-auto px-card"
+      className="theme-divider w-full max-w-7xl mx-auto px-card"
       style={{ zIndex: 'var(--z-content)' as React.CSSProperties['zIndex'] }}
       aria-hidden="true"
     >
-      <hr className="surface-section-divider border-t" />
+      <span className="theme-divider-data">SYS://DATA</span>
     </div>
   )
 }
@@ -121,7 +123,7 @@ export function SectionDivider() {
 /** Shared empty state for uniform coming-soon states (DRY) */
 export function SectionEmpty({ label = 'Coming soon' }: { label?: string }) {
   return (
-    <div className="surface-card border border-border p-12 text-center font-mono text-xl uppercase tracking-wide text-muted-foreground">
+    <div className="nk-os-frame p-12 text-center font-mono text-xl uppercase tracking-wide text-primary/70">
       {label}
     </div>
   )

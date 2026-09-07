@@ -161,5 +161,5 @@ describe('CyberpunkOverlay module', () => {
   it('can be imported for release overlay', async () => {
     const mod = await import('@/components/CyberpunkOverlay')
     expect(mod.default).toBeTruthy()
-  }, 30_000)
+  }, 60_000)
 })

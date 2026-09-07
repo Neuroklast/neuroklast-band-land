@@ -31,7 +31,7 @@ export const SECTION_ANCHOR_BY_ID: Record<string, string> = {
 }
 
 const NAV_DEFAULT_LABELS: Record<string, string> = {
-  bio: 'Bio',
+  bio: 'Biography',
   credits: 'Credits',
   gallery: 'Gallery',
   media: 'Media',
@@ -39,10 +39,35 @@ const NAV_DEFAULT_LABELS: Record<string, string> = {
   releases: 'Releases',
   merchandise: 'Merch',
   soundpacks: 'Soundpacks',
-  gigs: 'Events',
+  gigs: 'Gigs',
   news: 'News',
   newsletter: 'Newsletter',
   contact: 'Contact',
+}
+
+/** Live neuroklast.net nav (Classic HUD) — not the Zardonic/CMS mega-menu. */
+export const NEUROKLAST_NAV_SECTION_IDS = [
+  'news',
+  'bio',
+  'gallery',
+  'gigs',
+  'releases',
+  'media',
+  'contact',
+] as const
+
+/** Homepage sections = hero + navbar targets, same order as the HUD. */
+export const NEUROKLAST_HOME_SECTION_IDS = ['hero', ...NEUROKLAST_NAV_SECTION_IDS] as const
+
+const HOME_ORDER = new Map(
+  NEUROKLAST_HOME_SECTION_IDS.map((id, index) => [id, index]),
+)
+
+export function filterHomeSectionsToNav(sections: SectionConfig[]): SectionConfig[] {
+  const allowed = new Set<string>(NEUROKLAST_HOME_SECTION_IDS)
+  return sections
+    .filter((section) => allowed.has(section.id))
+    .sort((a, b) => (HOME_ORDER.get(a.id) ?? 99) - (HOME_ORDER.get(b.id) ?? 99))
 }
 
 /**
@@ -68,6 +93,21 @@ export function buildNavLinks(sections: SectionConfig[]): NavLink[] {
       href: `#${SECTION_ANCHOR_BY_ID[section.id]}`,
       label: resolveNavLabel(section),
     }))
+}
+
+/** Seven Classic HUD items matching neuroklast.net, in live order. */
+export function buildNeuroklastNavItems(
+  sections?: SectionConfig[],
+): Array<{ id: string; label: string }> {
+  const visible = new Set(
+    (sections ?? DEFAULT_SECTIONS)
+      .filter((section) => section.visible)
+      .map((section) => section.id),
+  )
+  return NEUROKLAST_NAV_SECTION_IDS.filter((id) => visible.has(id)).map((id) => ({
+    id: SECTION_ANCHOR_BY_ID[id] ?? id,
+    label: NAV_DEFAULT_LABELS[id] ?? id,
+  }))
 }
 
 export function buildNavLinksFromConfig(raw: unknown): NavLink[] {
