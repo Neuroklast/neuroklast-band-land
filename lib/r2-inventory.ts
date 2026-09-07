@@ -1,5 +1,6 @@
-import { DeleteObjectsCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectsCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { contentHashFromKey } from '@/lib/r2-object-key'
+import { createR2S3Client } from '@/lib/r2-s3-client'
 
 export const R2_INVENTORY_MAX_KEYS = 100_000
 export const R2_INVENTORY_PAGE_SIZE = 1000
@@ -129,13 +130,7 @@ export async function listAllR2ObjectKeys(options?: {
     )
   }
 
-  const client = new S3Client({
-    region: 'auto',
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-    forcePathStyle: true,
-    requestChecksumCalculation: 'WHEN_REQUIRED',
-  })
+  const client = createR2S3Client()
 
   const keys: string[] = []
   let token: string | undefined
@@ -171,13 +166,7 @@ export async function deleteAllR2Objects(bucket?: string): Promise<{ deleted: nu
     throw new Error('Missing R2 credentials / bucket')
   }
 
-  const client = new S3Client({
-    region: 'auto',
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-    forcePathStyle: true,
-    requestChecksumCalculation: 'WHEN_REQUIRED',
-  })
+  const client = createR2S3Client()
 
   let deleted = 0
   let token: string | undefined

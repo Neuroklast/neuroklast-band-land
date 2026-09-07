@@ -1,31 +1,19 @@
 import {
-  S3Client,
   CreateMultipartUploadCommand,
   UploadPartCommand,
   CompleteMultipartUploadCommand,
   AbortMultipartUploadCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { createR2S3Client } from '@/lib/r2-s3-client'
 
 export interface CompletedPart {
   PartNumber: number
   ETag: string
 }
 
-function getR2Client(): S3Client {
-  const accountId = process.env.R2_ACCOUNT_ID
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
-  if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error('Missing R2 credentials.')
-  }
-  return new S3Client({
-    region: 'auto',
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-    forcePathStyle: true,
-    requestChecksumCalculation: 'WHEN_REQUIRED',
-  })
+function getR2Client() {
+  return createR2S3Client()
 }
 
 export async function createMultipartUpload(

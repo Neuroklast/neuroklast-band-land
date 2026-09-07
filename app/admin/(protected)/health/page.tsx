@@ -1,6 +1,7 @@
 import { getApiSecret, getApiSecretsStatus } from '@/lib/api-secrets'
 import { createClient } from '@/lib/supabaseServer'
 import { S3Client, ListObjectsV2Command, GetBucketCorsCommand } from '@aws-sdk/client-s3'
+import { r2S3Endpoint } from '@/lib/r2-s3-client'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { RefreshButton } from './RefreshButton'
 
@@ -36,8 +37,9 @@ async function checkR2(): Promise<CheckResult> {
 
     const client = new S3Client({
       region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      endpoint: r2S3Endpoint(accountId),
       credentials: { accessKeyId, secretAccessKey },
+      forcePathStyle: true,
       requestChecksumCalculation: 'WHEN_REQUIRED',
     })
 
@@ -62,7 +64,7 @@ async function checkR2Cors(): Promise<CheckResult> {
 
     const client = new S3Client({
       region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      endpoint: r2S3Endpoint(accountId),
       credentials: { accessKeyId, secretAccessKey },
       forcePathStyle: true,
       requestChecksumCalculation: 'WHEN_REQUIRED',

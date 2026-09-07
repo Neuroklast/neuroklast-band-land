@@ -32,6 +32,7 @@ describe('CSP connect-src parity', () => {
     }
 
     expect(vercelHosts).toContain('https://*.r2.cloudflarestorage.com')
+    expect(vercelHosts).toContain('https://*.eu.r2.cloudflarestorage.com')
     expect(vercelHosts).toContain('https://*.r2.dev')
   })
 

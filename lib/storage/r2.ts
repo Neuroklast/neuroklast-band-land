@@ -1,11 +1,11 @@
 import {
-  S3Client,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
   ListObjectsV2Command,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { createR2S3Client } from '@/lib/r2-s3-client'
 import type { StorageObject, StorageProvider } from './types'
 
 function encodePathSegments(path: string): string {
@@ -17,24 +17,8 @@ function normalizeR2Host(raw: string): string {
   return withoutProtocol.replace(/\/+$/, '')
 }
 
-function getR2Client(): S3Client {
-  const accountId = process.env.R2_ACCOUNT_ID
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
-
-  if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error(
-      'Missing R2 credentials. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY.',
-    )
-  }
-
-  return new S3Client({
-    region: 'auto',
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-    forcePathStyle: true,
-    requestChecksumCalculation: 'WHEN_REQUIRED',
-  })
+function getR2Client() {
+  return createR2S3Client()
 }
 
 const _R2_PUBLIC_HOST: string | undefined = process.env.R2_PUBLIC_HOST
