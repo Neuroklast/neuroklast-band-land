@@ -9,6 +9,7 @@ import {
   parseSiteBackupPayload,
   pickSectionRows,
 } from '@/lib/site-data-backup'
+import { parseSiteConfigContentPayload } from '@/lib/site-config-content-import'
 
 export function DataImportClient() {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -48,6 +49,13 @@ export function DataImportClient() {
 
         const backup = parseSiteBackupPayload(parsed)
         if (!backup.ok) {
+          const content = parseSiteConfigContentPayload(parsed)
+          if (content.ok) {
+            setError(
+              'This file is a site-config-content export (exportScope: "content"). Use the "Import Site Config Content (legacy)" button below instead.',
+            )
+            return
+          }
           setError(backup.error)
           return
         }
