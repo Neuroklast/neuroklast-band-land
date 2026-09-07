@@ -5,9 +5,17 @@ import { OverlayProvider } from '@/contexts/OverlayContext'
 import { OverlayHost } from '@/app/_components/public/OverlayHost'
 import { MediaArchiveCard } from '@/app/_components/public/MediaExplorer'
 import { SectionWrapper } from '@/app/_components/public/SectionWrapper'
+import { NewsSection } from '@/app/_components/public/NewsSection'
+import { BioSection } from '@/app/_components/public/BioSection'
 
 vi.mock('@/components/OverlayTransition', () => ({
   useOverlayTransition: () => ({ trigger: () => {}, element: null }),
+}))
+
+vi.mock('@/components/CyberpunkOverlay', () => ({
+  default: ({ overlay }: { overlay: { type?: string } | null }) => (
+    <div data-testid="overlay-type">{overlay?.type ?? 'none'}</div>
+  ),
 }))
 
 describe('overlay host', () => {
@@ -40,5 +48,49 @@ describe('overlay host', () => {
     fireEvent.click(screen.getByRole('button', { name: /open archive/i }))
     expect(screen.getByText(/initializing filesystem/i)).toBeInTheDocument()
     expect(container.querySelector('#media')?.textContent).not.toMatch(/MEDIA EXPLORER/i)
+  })
+
+  it('opens news in the shared cyberpunk overlay', () => {
+    render(
+      <OverlayProvider>
+        <LocaleProvider>
+          <NewsSection
+            posts={[
+              {
+                id: 'n1',
+                title: 'LET RAGE COMMENCE',
+                slug: 'let-rage-commence',
+                excerpt: 'New frontwoman',
+                body: 'New frontwoman',
+                link: null,
+                coverUrl: null,
+                publishedAt: '2026-01-18',
+              },
+            ]}
+          />
+          <OverlayHost />
+        </LocaleProvider>
+      </OverlayProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /open let rage commence/i }))
+    expect(screen.getByTestId('overlay-type')).toHaveTextContent('news')
+  })
+
+  it('opens members in the shared cyberpunk overlay', () => {
+    render(
+      <OverlayProvider>
+        <LocaleProvider>
+          <BioSection
+            content="Story"
+            members={[{ id: 'm1', name: 'Kay', role: 'Producer', bio: 'Founder', photoUrl: null }]}
+          />
+          <OverlayHost />
+        </LocaleProvider>
+      </OverlayProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /open kay/i }))
+    expect(screen.getByTestId('overlay-type')).toHaveTextContent('member')
   })
 })

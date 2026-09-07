@@ -4,6 +4,7 @@ import {
   collectMediaUrls,
   deterministicUuid,
   parseSiteConfigContentPayload,
+  reconcileImportedMembers,
   type ImportMediaMap,
 } from '@/lib/site-config-content-import'
 
@@ -174,6 +175,23 @@ describe('buildImportRows', () => {
     const release = rows.releases?.[0]
     expect(release?.cover_storage_path).toBe('imports/abcd.webp')
     expect(release?.cover_content_hash).toBe('abcd')
+  })
+
+  it('reuses existing member ids by name and reports leftovers as stale', () => {
+    const incoming = [
+      { id: 'new-kay', name: 'Kay', role: 'Producer' },
+      { id: 'new-markus', name: 'Markus', role: 'Live' },
+    ]
+    const existing = [
+      { id: 'old-kay-1', name: 'Kay' },
+      { id: 'old-kay-2', name: 'Kay' },
+      { id: 'old-markus', name: 'Markus' },
+      { id: 'old-extra', name: 'Ghost' },
+    ]
+    const result = reconcileImportedMembers(incoming, existing)
+    expect(result.rows[0]?.id).toBe('old-kay-1')
+    expect(result.rows[1]?.id).toBe('old-markus')
+    expect(result.staleIds.sort()).toEqual(['old-extra', 'old-kay-2'].sort())
   })
 
   it('collects all media URLs', () => {

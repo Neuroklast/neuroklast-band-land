@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CaretDown, CaretUp } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { asDisplayString } from '@/lib/safe-string'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { SectionWrapper, SectionHeading, SectionIntro } from './SectionWrapper'
@@ -44,6 +45,7 @@ export function BioSection({
   collabs = [],
 }: BioSectionProps) {
   const { t } = useLocale()
+  const { openOverlay } = useOverlay()
   const title = resolveSectionHeading(heading, 'bio', t)
   const [expanded, setExpanded] = useState(false)
   // Never call .trim() on non-strings — that threw and tripped SectionErrorBoundary
@@ -145,25 +147,40 @@ export function BioSection({
           </h3>
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {members.map((member) => (
-              <li key={member.id} className="cyber-border bg-card/40 p-3">
-                {member.photoUrl ? (
-                  <img
-                    src={member.photoUrl}
-                    alt=""
-                    className="mb-3 aspect-square w-full object-cover"
-                  />
-                ) : (
-                  <div className="mb-3 aspect-square w-full bg-secondary" />
-                )}
-                <p className="font-mono text-sm uppercase tracking-wider text-foreground">{member.name}</p>
-                {member.role ? (
-                  <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                    {member.role}
-                  </p>
-                ) : null}
-                {member.bio ? (
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{member.bio}</p>
-                ) : null}
+              <li key={member.id}>
+                <button
+                  type="button"
+                  className="cyber-border group w-full cursor-pointer bg-card/40 p-3 text-left"
+                  onClick={() =>
+                    openOverlay({
+                      type: 'member',
+                      data: {
+                        id: member.id,
+                        name: member.name,
+                        role: member.role ?? '',
+                        bio: member.bio ?? '',
+                        image: member.photoUrl ?? undefined,
+                      },
+                    })
+                  }
+                  aria-label={`Open ${member.name}`}
+                >
+                  {member.photoUrl ? (
+                    <img
+                      src={member.photoUrl}
+                      alt=""
+                      className="mb-3 aspect-square w-full object-cover"
+                    />
+                  ) : (
+                    <div className="mb-3 aspect-square w-full bg-secondary" />
+                  )}
+                  <p className="font-mono text-sm uppercase tracking-wider text-foreground">{member.name}</p>
+                  {member.role ? (
+                    <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                      {member.role}
+                    </p>
+                  ) : null}
+                </button>
               </li>
             ))}
           </ul>

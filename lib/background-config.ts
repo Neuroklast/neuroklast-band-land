@@ -39,6 +39,14 @@ export function parseBackgroundVideoEnabled(
   return hasConfiguredVideo
 }
 
+export function parseBackgroundVideoOpacity(
+  raw: unknown,
+  fallback = DEFAULT_BACKGROUND_VIDEO_OPACITY,
+): number {
+  if (typeof raw !== 'number' || Number.isNaN(raw)) return fallback
+  return Math.max(0, Math.min(1, raw))
+}
+
 /** Pick which background video URL to play for the current viewport. */
 export function resolveActiveBackgroundVideoUrl(
   desktopUrl: string | undefined,

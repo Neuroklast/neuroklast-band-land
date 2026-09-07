@@ -52,6 +52,15 @@ describe('getOverlaySessionKey', () => {
     expect(getOverlaySessionKey({ type: 'contact' })).toBe('contact')
   })
 
+  it('returns news-scoped key', () => {
+    expect(
+      getOverlaySessionKey({
+        type: 'news',
+        data: { id: 'news-1', title: 'Drop', slug: 'drop' },
+      }),
+    ).toBe('news:news-1')
+  })
+
   it('returns media-scoped key', () => {
     expect(
       getOverlaySessionKey({
