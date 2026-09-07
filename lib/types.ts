@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 export interface ThemeCustomization {
   // Base colors
   primaryColor?: string
@@ -721,7 +723,89 @@ export interface OverlayEffects {
   vignette?: OverlayEffect
   chromatic?: OverlayEffect
   movingScanline?: OverlayEffect
+  dof?: OverlayEffect
 }
+
+export interface HudTexts {
+  topLeft1?: string
+  topLeft2?: string
+  topLeftStatus?: string
+  topRight1?: string
+  topRight2?: string
+  bottomLeft1?: string
+  bottomLeft2?: string
+  bottomRight1?: string
+  bottomRight2?: string
+}
+
+export interface HeroButton {
+  id: string
+  label: string
+  action: 'scroll' | 'url' | 'contact-modal'
+  scrollTarget?: string
+  url?: string
+  openInNewTab?: boolean
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary'
+  icon?: string
+}
+
+export interface HeroSlotProps {
+  name: string
+  genres: string[]
+  editMode?: boolean
+  onEdit?: () => void
+  logoUrl?: string
+  titleImageUrl?: string
+  heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
+  heroButtons?: HeroButton[]
+  onContactModalOpen?: () => void
+}
+
+export interface NavigationSlotProps {
+  items: Array<{ label: string; id: string }>
+  siteName: string
+  editMode?: boolean
+  onNavigate?: (id: string) => void
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'floating'
+}
+
+export interface LoadingScreenSlotProps {
+  onComplete: () => void
+  primaryColor?: string
+}
+
+export interface SectionDividerSlotProps {
+  className?: string
+}
+
+export interface CardSlotProps {
+  children: ReactNode
+  className?: string
+}
+
+export interface BackgroundEffectsSlotProps {
+  className?: string
+  siteName?: string
+  hudTexts?: HudTexts
+}
+
+export interface FooterSlotProps {
+  socialLinks?: SocialLinks
+  siteName?: string
+  genres?: string[]
+  label?: string
+  onAdminLogin?: () => void
+  onImpressum?: () => void
+  onDatenschutz?: () => void
+}
+
+export interface OverlayModalSlotProps {
+  overlay?: unknown
+  onClose?: () => void
+  children?: ReactNode
+}
+
+export type LookId = 'neuroklast-classic' | 'glitch-noir' | 'zardonic-industrial' | 'umbrella-corp'
 
 export interface ThemeSettings {
   primary?: string

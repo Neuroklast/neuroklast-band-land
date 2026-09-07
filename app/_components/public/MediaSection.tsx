@@ -56,7 +56,7 @@ export function MediaSection({ items, heading, intro }: MediaSectionProps) {
               <m.div initial={false} animate={{ opacity: 1 }} className="flex justify-center pt-2">
                 <Link
                   href="/media"
-                  className="cyber-border hover-glitch inline-flex min-h-[44px] items-center gap-2 px-4 py-2 font-mono text-xs uppercase tracking-[0.2em]"
+                   className="nk-os-btn"
                 >
                   {t('media.viewAll').replace('{0}', String(items.length))}
                   <ArrowRight className="h-4 w-4" />

@@ -1,6 +1,13 @@
 export type MobileVideoMode = 'same' | 'separate' | 'off'
 
-export const DEFAULT_BACKGROUND_VIDEO_OPACITY = 0.5
+export const DEFAULT_BACKGROUND_VIDEO_OPACITY = 0.3
+export const DEFAULT_SITE_BACKGROUND_VIDEO = '/brand/websitebg.scrub.mp4'
+
+export function backgroundVideoDimOpacity(
+  videoOpacity = DEFAULT_BACKGROUND_VIDEO_OPACITY,
+): number {
+  return Math.max(0, Math.min(1, 1 - videoOpacity))
+}
 
 export function parseMobileVideoMode(raw: unknown): MobileVideoMode {
   if (raw === 'separate' || raw === 'off') return raw

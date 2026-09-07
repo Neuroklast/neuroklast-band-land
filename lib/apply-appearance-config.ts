@@ -9,6 +9,7 @@ import {
 } from '@/lib/color-utils'
 import type { AppearanceTheme } from '@/lib/appearance-presets'
 import { resolvePublicFonts } from '@/lib/public-fonts'
+import { CLASSIC_OVERLAY_EFFECTS, CLASSIC_THEME, parseLookId } from '@/lib/looks'
 
 export interface AppearanceConfigInput {
   crtEnabled?: boolean
@@ -29,6 +30,7 @@ export interface AppearanceConfigInput {
   cardSurfaceOpacity?: number
   faviconUrl?: string
   theme?: AppearanceTheme
+  lookId?: string
 }
 
 const DEFAULT_CARD_COLOR = 'oklch(0.045 0.008 230)'
@@ -197,15 +199,21 @@ export function applyAppearanceConfig(
 ): Record<string, string> {
   const applied: Record<string, string> = {}
 
-  // Fonts always from Appearance theme (system fallback if unset) — never leave CSS brand hardcodes.
+  const lookId = parseLookId(config.lookId)
+  root.setAttribute('data-theme', lookId)
+
   if (config.theme) {
     applyThemeVars(root, config.theme, applied)
   } else {
-    const fonts = resolvePublicFonts(null)
-    setVar(root, '--font-heading', fonts.fontHeading, applied)
-    setVar(root, '--font-body', fonts.fontBody, applied)
-    setVar(root, '--font-mono', fonts.fontMono, applied)
+    applyThemeVars(root, CLASSIC_THEME, applied)
   }
+
+  const fx = CLASSIC_OVERLAY_EFFECTS
+  setVar(root, '--overlay-scanlines', String(fx.scanlines?.intensity ?? 0.3), applied)
+  setVar(root, '--overlay-crt', String(fx.crt?.intensity ?? 0.4), applied)
+  setVar(root, '--overlay-noise', String(fx.noise?.intensity ?? 0.15), applied)
+  setVar(root, '--overlay-vignette', String(fx.vignette?.intensity ?? 0.5), applied)
+  setVar(root, '--overlay-chromatic', String(fx.chromatic?.intensity ?? 0), applied)
 
   if (config.accentColor) {
     const accent = toCssColor(config.accentColor)

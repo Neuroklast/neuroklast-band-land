@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState, useMemo } from 'react'
 import type React from 'react'
 import { useRealMetrics } from '@/hooks/use-real-metrics'

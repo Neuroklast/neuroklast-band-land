@@ -1,5 +1,5 @@
-/** Default hero wordmark bundled in /public. */
-export const DEFAULT_HERO_LOGO_URL = '/brand/neuroklast-wordmark.svg'
+export const DEFAULT_HERO_MARK_URL = '/brand/nk-logo-red-bold.png'
+export const DEFAULT_HERO_LOGO_URL = '/brand/neuroklast-wordmark-red.svg'
 
 export function resolveHeroLogoUrl(
   storagePath: string | null | undefined,

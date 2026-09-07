@@ -18,6 +18,7 @@ import {
   type AppearanceTheme,
   type SavedAppearancePreset,
 } from '@/lib/appearance-presets'
+import { LOOKS, parseLookId, type LookDefinition } from '@/lib/looks'
 import {
   DEFAULT_CARD_SURFACE_OPACITY,
   DEFAULT_SECTION_PANEL_OPACITY,
@@ -43,6 +44,7 @@ export interface AppearanceConfig {
   faviconUrl?: string
   faviconStoragePath?: string
   theme?: AppearanceTheme
+  lookId?: string
   savedPresets?: SavedAppearancePreset[]
 }
 
@@ -64,17 +66,18 @@ const DEFAULTS: AppearanceConfig = {
   scanlineEnabled: true,
   noiseEnabled: true,
   glitchEnabled: true,
-  noiseIntensity: 0.4,
+  noiseIntensity: 0.15,
   filmGrain: false,
   accentColor: '#dc2626',
   accentColorSecondary: '#7c3aed',
-  vignetteOpacity: 0.3,
-  chromaticStrength: 0.5,
+  vignetteOpacity: 0.5,
+  chromaticStrength: 0,
   sectionPanelOpacity: DEFAULT_SECTION_PANEL_OPACITY,
   sectionGridOpacity: 0,
   cardSurfaceOpacity: DEFAULT_CARD_SURFACE_OPACITY,
   faviconUrl: '',
   theme: DEFAULT_THEME,
+  lookId: 'neuroklast-classic',
   savedPresets: [],
 }
 
@@ -146,6 +149,7 @@ function parseConfig(raw: Record<string, unknown>): AppearanceConfig {
     faviconStoragePath:
       typeof raw.faviconStoragePath === 'string' ? raw.faviconStoragePath : undefined,
     theme: parseTheme(raw.theme),
+    lookId: parseLookId(raw.lookId),
     savedPresets,
   }
 }
@@ -241,6 +245,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
     resolveImageUrl(init.faviconStoragePath, init.faviconUrl) ?? '',
   )
   const [theme, setTheme] = useState<AppearanceTheme>(init.theme ?? DEFAULT_THEME)
+  const [lookId, setLookId] = useState(init.lookId ?? 'neuroklast-classic')
   const [savedPresets, setSavedPresets] = useState<SavedAppearancePreset[]>(init.savedPresets ?? [])
   const [presetName, setPresetName] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -264,6 +269,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       faviconUrl: faviconUrl || undefined,
       faviconStoragePath: faviconStoragePath || undefined,
       theme,
+      lookId,
       savedPresets,
     }),
     [
@@ -283,6 +289,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       faviconUrl,
       faviconStoragePath,
       theme,
+      lookId,
       savedPresets,
     ],
   )
@@ -290,6 +297,18 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
   useEffect(() => {
     broadcastAdminDraft('appearance', payload as unknown as Record<string, unknown>)
   }, [payload])
+
+  function applyLook(look: LookDefinition) {
+    setLookId(look.id)
+    setTheme({ ...look.theme })
+    if (look.theme.accentColor) setAccentColor(oklchToHex(look.theme.accentColor))
+    setChromaticStrength(look.overlayEffects.chromatic?.enabled ? look.overlayEffects.chromatic.intensity : 0)
+    setNoiseIntensity(look.overlayEffects.noise?.intensity ?? 0.15)
+    setVignetteOpacity(look.overlayEffects.vignette?.intensity ?? 0.5)
+    setCrtEnabled(look.overlayEffects.crt?.enabled !== false)
+    setScanlineEnabled(look.overlayEffects.scanlines?.enabled !== false)
+    setNoiseEnabled(look.overlayEffects.noise?.enabled !== false)
+  }
 
   function applyPreset(preset: SavedAppearancePreset) {
     setTheme({ ...preset.theme })
@@ -349,6 +368,23 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
         defaultOpen
       >
         <div className="space-y-3">
+          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Looks</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {LOOKS.map((look) => (
+              <button
+                key={look.id}
+                type="button"
+                onClick={() => applyLook(look)}
+                className={`text-left px-3 py-2 rounded border bg-zinc-950/50 transition-colors ${
+                  lookId === look.id ? 'border-red-600' : 'border-zinc-800 hover:border-zinc-600'
+                }`}
+              >
+                <span className="block text-xs text-zinc-200">{look.name}</span>
+                <span className="block text-[10px] text-zinc-500 mt-0.5">{look.description}</span>
+                <PresetSwatch theme={look.theme} />
+              </button>
+            ))}
+          </div>
           <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Color themes</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {BUILTIN_APPEARANCE_PRESETS.map((preset) => (

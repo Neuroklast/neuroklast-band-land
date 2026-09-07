@@ -36,6 +36,7 @@ function parseAppearanceBootstrap(raw: unknown): AppearanceConfigInput {
     sectionGridOpacity: typeof obj.sectionGridOpacity === 'number' ? obj.sectionGridOpacity : undefined,
     cardSurfaceOpacity: typeof obj.cardSurfaceOpacity === 'number' ? obj.cardSurfaceOpacity : undefined,
     faviconUrl: typeof obj.faviconUrl === 'string' ? obj.faviconUrl : undefined,
+    lookId: typeof obj.lookId === 'string' ? obj.lookId : undefined,
     theme,
   }
 }

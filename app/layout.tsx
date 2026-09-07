@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { JetBrains_Mono, Orbitron, Share_Tech_Mono, Space_Grotesk, Space_Mono } from 'next/font/google'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { getPublicSiteBootstrap } from '@/lib/site-config-bootstrap'
+import { parseLookId } from '@/lib/looks'
 import {
   buildPublicFontCssVars,
   googleFontsStylesheetHref,
@@ -17,14 +18,14 @@ import './globals.css'
  */
 const fontJetBrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  weight: ['400', '700'],
+  weight: ['400', '500', '700'],
   variable: '--font-jetbrains-mono',
   display: 'swap',
 })
 
 const fontSpaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  weight: ['400', '500', '700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-space-grotesk',
   display: 'swap',
 })
@@ -53,7 +54,7 @@ const fontSpaceMono = Space_Mono({
 
 export const revalidate = 60
 
-const DEFAULT_ICON = '/brand/nk-mark.svg'
+const DEFAULT_ICON = '/brand/nk-logo-red-bold.png'
 
 export async function generateMetadata(): Promise<Metadata> {
   let faviconUrl: string | undefined
@@ -99,10 +100,12 @@ export default async function RootLayout({
   const fonts = resolvePublicFonts(appearance.theme)
   const fontCss = buildPublicFontCssVars(fonts)
   const remoteFonts = remoteFontFamiliesToLoad(fonts)
+  const lookId = parseLookId(appearance.lookId)
 
   return (
     <html
       lang="en"
+      data-theme={lookId}
       className={`${fontJetBrainsMono.variable} ${fontSpaceGrotesk.variable} ${fontOrbitron.variable} ${fontShareTechMono.variable} ${fontSpaceMono.variable}`}
     >
       <head>

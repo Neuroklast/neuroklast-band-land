@@ -31,14 +31,40 @@ describe('buildNavLinks', () => {
     expect(links.map((link) => link.sectionId)).toEqual(['contact'])
   })
 
-  it('uses compact default nav labels (full section titles stay on page headings)', () => {
+  it('uses Classic live nav labels', () => {
     const links = buildNavLinks([
       { id: 'gigs', label: 'Tour Dates & Live Shows', visible: true, order: 0 },
       { id: 'bio', label: 'Biography', visible: true, order: 1 },
       { id: 'releases', label: 'Discography', visible: true, order: 2 },
     ])
-    expect(links[0].label).toBe('Events')
-    expect(links[1].label).toBe('Bio')
+    expect(links[0].label).toBe('Gigs')
+    expect(links[1].label).toBe('Biography')
     expect(links[2].label).toBe('Releases')
+  })
+
+  it('builds the seven neuroklast.net HUD items', async () => {
+    const { buildNeuroklastNavItems } = await import('@/lib/nav-links')
+    const items = buildNeuroklastNavItems()
+    expect(items.map((item) => item.id)).toEqual([
+      'news',
+      'bio',
+      'gallery',
+      'gigs',
+      'releases',
+      'media',
+      'contact',
+    ])
+    expect(items).toHaveLength(7)
+  })
+
+  it('keeps homepage sections in navbar order', async () => {
+    const { filterHomeSectionsToNav } = await import('@/lib/nav-links')
+    const filtered = filterHomeSectionsToNav([
+      { id: 'merchandise', label: 'Merch', visible: true, order: 0 },
+      { id: 'contact', label: 'Contact', visible: true, order: 1 },
+      { id: 'hero', label: 'Hero', visible: true, order: 2 },
+      { id: 'news', label: 'News', visible: true, order: 3 },
+    ])
+    expect(filtered.map((s) => s.id)).toEqual(['hero', 'news', 'contact'])
   })
 })

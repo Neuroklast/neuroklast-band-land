@@ -112,7 +112,7 @@ export function GallerySection({
                         ? { duration: 0 }
                         : { duration: 0.4, delay: Math.min(index * 0.04, 0.3) }
                     }
-                    className={`group relative overflow-hidden border border-border bg-muted ${tileAspect.className} ${lightbox ? 'cursor-pointer' : ''}`}
+                     className={`nk-os-frame group relative bg-muted ${tileAspect.className} ${lightbox ? 'cursor-pointer' : ''}`}
                     onClick={() => openLightbox(item.id)}
                     onKeyDown={(e) => {
                       if (lightbox && (e.key === 'Enter' || e.key === ' ')) {
@@ -129,7 +129,7 @@ export function GallerySection({
                     <img
                       src={thumb}
                       alt={item.alt ?? ''}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                       className="h-full w-full object-cover"
                       loading="lazy"
                       decoding="async"
                       onError={(e) => void onMediaImageError(e)}
@@ -149,7 +149,7 @@ export function GallerySection({
                 <button
                   type="button"
                   onClick={() => setShowAll((value) => !value)}
-                  className="cyber-border inline-flex min-h-[44px] items-center gap-2 px-4 py-2 uppercase"
+                      className="nk-os-btn"
                   style={{ fontFamily: 'var(--font-mono, monospace)' }}
                 >
                   {showAll ? (

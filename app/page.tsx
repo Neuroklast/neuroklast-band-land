@@ -6,12 +6,9 @@ import { splitGigsByDate } from '@/lib/gig-browse'
 import { PageLayout } from '@/layouts/PageLayout'
 import { CookieConsent } from '@/components/CookieConsent'
 import KonamiListener from '@/components/KonamiListener'
-import { BackgroundStack } from './_components/public/BackgroundStack'
 import { GallerySection } from './_components/public/GallerySection'
 import { MediaSection } from './_components/public/MediaSection'
-import { GlobalEffects } from './_components/public/GlobalEffects'
-import { SiteNav } from './_components/public/SiteNav'
-import { HeroSection } from './_components/public/HeroSection'
+import { LookBackground, LookEffects, LookFooter, LookHero, LookNav, PublicBoot } from './_components/public/LookChrome'
 import { BioSection } from './_components/public/BioSection'
 import { CreditsSection } from './_components/public/CreditsSection'
 import { MusicHighlightsSection } from './_components/public/MusicHighlightsSection'
@@ -24,7 +21,7 @@ import { SoundpacksSection } from './_components/public/SoundpacksSection'
 import { GigsSection } from './_components/public/GigsSection'
 import { NewsSection } from './_components/public/NewsSection'
 import { ContactSection } from './_components/public/ContactSection'
-import { SiteFooter } from './_components/public/SiteFooter'
+import { parseLookId } from '@/lib/looks'
 import { SectionDivider } from './_components/public/SectionWrapper'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { SocialSection } from './_components/public/SocialSection'
@@ -36,16 +33,12 @@ import {
   mapReleaseRowToOverlayRelease,
   type ReleaseDbRow,
 } from '@/lib/release-public-mapper'
-import { resolveHeroLogoUrl } from '@/lib/hero-defaults'
-import { buildNavLinks } from '@/lib/nav-links'
+import { buildNeuroklastNavItems, filterHomeSectionsToNav } from '@/lib/nav-links'
 import {
   parseSections,
   withoutExcludedSections,
   type SectionConfig,
 } from '@/lib/site-config-sections'
-import { parsePublicBackgroundType } from '@/lib/public-background-types'
-import { parseBackgroundVideoEnabled } from '@/lib/background-config'
-
 // Revalidate at most once per minute for quick admin updates
 export const revalidate = 60
 
@@ -274,7 +267,6 @@ export default async function HomePage({
   const heroConfig = getConfig(configRows, 'hero')
   const merchandiseConfig = getConfig(configRows, 'merchandise')
   const footerConfig = getConfig(configRows, 'footer')
-  const bgConfig = getConfig(configRows, 'background')
   const appearanceConfig = getConfig(configRows, 'appearance')
   const sectionsRaw = configRows.find((r) => r.key === 'sections')?.value
   const allSections = withoutExcludedSections(
@@ -282,7 +274,7 @@ export default async function HomePage({
   )
   const sections = isAdminPreview
     ? allSections
-    : allSections.filter((s) => s.visible)
+    : filterHomeSectionsToNav(allSections.filter((s) => s.visible))
 
   // Extract section style overrides from site_config (centralized helper to avoid repetition)
   // Note: sections config can be array of sections or object with styleOverrides
@@ -303,58 +295,18 @@ export default async function HomePage({
   const releaseOverrides = getSectionOverrides('releases')
   const galleryOverrides = getSectionOverrides('gallery')
   const bioOverrides = getSectionOverrides('bio')
-  const heroStyleOverrides = getSectionOverrides('hero')
   const creditOverrides = getSectionOverrides('creditHighlights')
 
-  // Background: Digicide album cover as primary (per final spec) + keep rich scroll video + animated effects
-  // Default to a safe placeholder (Digicide cover should be uploaded via admin background config / R2)
-  const bgStoragePath = typeof bgConfig.storage_path === 'string' ? bgConfig.storage_path : null
-  const bgFallback = typeof bgConfig.url === 'string' && bgConfig.url
-    ? bgConfig.url
-    : '/assets/bg-placeholder.jpg'
-  const backgroundUrl = resolveImageUrl(bgStoragePath, bgFallback) ?? bgFallback
-
-  // Background video (scroll-synced) — master switch backgroundVideoEnabled
-  const bgVideoPath = typeof bgConfig.video_storage_path === 'string' ? bgConfig.video_storage_path : null
-  const bgVideoFallback = typeof bgConfig.video_url === 'string' ? bgConfig.video_url : null
-  const resolvedDesktopVideo = resolveImageUrl(bgVideoPath, bgVideoFallback)
-
-  const bgMobileVideoPath =
-    typeof bgConfig.video_mobile_storage_path === 'string' ? bgConfig.video_mobile_storage_path : null
-  const bgMobileVideoFallback =
-    typeof bgConfig.video_mobile_url === 'string' ? bgConfig.video_mobile_url : null
-  const resolvedMobileVideo = resolveImageUrl(bgMobileVideoPath, bgMobileVideoFallback)
-
-  const hasConfiguredVideo = Boolean(resolvedDesktopVideo || resolvedMobileVideo)
-  const backgroundVideoEnabled = parseBackgroundVideoEnabled(
-    bgConfig.backgroundVideoEnabled,
-    hasConfiguredVideo,
+  const lookId = parseLookId(
+    typeof appearanceConfig.lookId === 'string' ? appearanceConfig.lookId : 'neuroklast-classic',
   )
-  const backgroundVideoUrl = backgroundVideoEnabled ? resolvedDesktopVideo : null
-  const backgroundMobileVideoUrl = backgroundVideoEnabled ? resolvedMobileVideo : null
-
-  const mobileVideoMode =
-    bgConfig.mobileVideoMode === 'separate' || bgConfig.mobileVideoMode === 'off'
-      ? bgConfig.mobileVideoMode
-      : 'same'
-
-  const backgroundVideoOpacity =
-    typeof bgConfig.backgroundVideoOpacity === 'number'
-      ? bgConfig.backgroundVideoOpacity
-      : undefined
-
-  const backgroundType = parsePublicBackgroundType(bgConfig.backgroundType, 'matrix')
-
-  const backgroundOpacity = typeof bgConfig.backgroundImageOpacity === 'number' ? bgConfig.backgroundImageOpacity : 0.55 // slightly more visible album art
-
-  // Appearance config
-  const crtEnabled = typeof appearanceConfig.crtEnabled === 'boolean' ? appearanceConfig.crtEnabled : true
-  const scanlineEnabled = typeof appearanceConfig.scanlineEnabled === 'boolean' ? appearanceConfig.scanlineEnabled : true
-  const noiseEnabled = typeof appearanceConfig.noiseEnabled === 'boolean' ? appearanceConfig.noiseEnabled : true
-  const noiseIntensity =
-    typeof appearanceConfig.noiseIntensity === 'number' ? appearanceConfig.noiseIntensity : 0.4
-  const filmGrain = typeof appearanceConfig.filmGrain === 'boolean' ? appearanceConfig.filmGrain : false
-  // Fonts / theme colors / favicon: applied via root layout SSR + Providers AppearanceBridge (site-wide)
+  const siteName = String(heroConfig.headline ?? 'NEUROKLAST')
+  const heroGenres = Array.isArray(heroConfig.genres)
+    ? (heroConfig.genres as unknown[]).filter((g): g is string => typeof g === 'string')
+    : String(heroConfig.tagline ?? 'Industrial / Electronic')
+        .split(/[/,|]/)
+        .map((g) => g.trim())
+        .filter(Boolean)
 
   // Releases: convert streaming_links to typed array
   const releaseItems = releases.map((r) => {
@@ -409,7 +361,6 @@ export default async function HomePage({
   // Gigs: split upcoming vs past (shared helper — same rules as /gigs browse)
   const { upcoming, past } = splitGigsByDate(gigs)
 
-  // Helper: is a section visible in the saved site config?
   function isSectionVisible(id: string) {
     return allSections.some((s) => s.id === id && s.visible)
   }
@@ -430,35 +381,20 @@ export default async function HomePage({
 
   // Build slots for the mandatory PageLayout (AGENTS §6)
   const backgroundLayers = (
-    <BackgroundStack
-      imageUrl={backgroundUrl}
-      videoUrl={backgroundVideoUrl ?? undefined}
-      mobileVideoUrl={backgroundMobileVideoUrl ?? undefined}
-      mobileVideoMode={mobileVideoMode}
-      videoEnabled={backgroundVideoEnabled}
-      backgroundType={backgroundType}
-      imageOpacity={backgroundOpacity}
-      videoOpacity={backgroundVideoOpacity}
-    />
+    <>
+      <LookBackground lookId={lookId} siteName={siteName} />
+    </>
   )
 
-  const globalEffectsSlot = (
-    <GlobalEffects
-      crtEnabled={crtEnabled}
-      scanlineEnabled={scanlineEnabled}
-      noiseEnabled={noiseEnabled}
-      noiseIntensity={noiseIntensity}
-      filmGrain={filmGrain}
-      chromaticStrength={
-        typeof appearanceConfig.chromaticStrength === 'number'
-          ? appearanceConfig.chromaticStrength
-          : 0.5
-      }
+  const globalEffectsSlot = <LookEffects lookId={lookId} />
+
+  const navSlot = (
+    <LookNav
+      lookId={lookId}
+      siteName={siteName}
+      items={buildNeuroklastNavItems(allSections)}
     />
   )
-
-  const navLinks = buildNavLinks(allSections.filter((section) => section.visible))
-  const navSlot = <SiteNav links={navLinks} />
 
   const legalNoticeUrl = String(
     footerConfig.legalNoticeUrl ?? footerConfig.impressumUrl ?? '/legal-notice',
@@ -476,8 +412,13 @@ export default async function HomePage({
   }))
 
   const footerSlot = (
-    <SiteFooter
-      socialLinks={socialWithLogos}
+    <LookFooter
+      lookId={lookId}
+      siteName={siteName}
+      genres={heroGenres}
+      socialLinks={Object.fromEntries(
+        socialWithLogos.map((link) => [link.platform, link.url]),
+      )}
       legalNoticeUrl={legalNoticeUrl}
       privacyPolicyUrl={privacyPolicyUrl}
     />
@@ -485,7 +426,7 @@ export default async function HomePage({
 
   const systemSlot = (
     <>
-      {/* Fonts/appearance applied globally via Providers + SSR layout inject — never hardcoded */}
+      <PublicBoot lookId={lookId} />
       <AdminDraftListener enableDrafts={isAdminPreview} />
       <CookieConsent privacyPolicyUrl={privacyPolicyUrl} />
       <KonamiListener />
@@ -512,48 +453,37 @@ export default async function HomePage({
           case 'hero':
             return wrapForPreview(
               <SectionErrorBoundary key="hero" sectionName="Hero">
-                <HeroSection
-                  headline={String(heroConfig.headline ?? 'NEUROKLAST')}
-                  logoImageUrl={resolveHeroLogoUrl(
-                    typeof heroConfig.logoImageStoragePath === 'string' ? heroConfig.logoImageStoragePath : null,
-                    typeof heroConfig.logoImageUrl === 'string' ? heroConfig.logoImageUrl : null,
-                    resolveImageUrl,
-                  )}
-                  tagline={String(heroConfig.tagline ?? '')}
-                  ctaLabel={String(heroConfig.ctaLabel ?? 'LISTEN NOW')}
-                  ctaUrl={String(heroConfig.ctaUrl ?? '#releases')}
-                  backgroundImageUrl={
+                <LookHero
+                  lookId={lookId}
+                  name={siteName}
+                  genres={heroGenres}
+                  logoUrl={
                     resolveImageUrl(
-                      typeof heroConfig.backgroundImageStoragePath === 'string' ? heroConfig.backgroundImageStoragePath : null,
-                      typeof heroConfig.backgroundImageUrl === 'string' ? heroConfig.backgroundImageUrl : null,
-                    ) ?? backgroundUrl
+                      typeof heroConfig.logoImageStoragePath === 'string' ? heroConfig.logoImageStoragePath : null,
+                      typeof heroConfig.logoUrl === 'string'
+                        ? heroConfig.logoUrl
+                        : typeof heroConfig.logoImageUrl === 'string'
+                          ? heroConfig.logoImageUrl
+                          : '/brand/nk-logo-red-bold.png',
+                    ) ?? '/brand/nk-logo-red-bold.png'
                   }
-                  backgroundImageOpacity={typeof heroConfig.backgroundImageOpacity === 'number' ? heroConfig.backgroundImageOpacity : 0.35}
-                  minHeight={typeof heroStyleOverrides.minHeight === 'string' ? heroStyleOverrides.minHeight : undefined}
-                  imageBlur={typeof heroStyleOverrides.heroImageBlur === 'number' ? heroStyleOverrides.heroImageBlur : undefined}
-                  paddingTop={typeof heroStyleOverrides.paddingTop === 'string' ? heroStyleOverrides.paddingTop : undefined}
-                  logoWidthPercent={(() => {
-                    if (typeof heroConfig.logoWidthPercent === 'number' && Number.isFinite(heroConfig.logoWidthPercent)) {
-                      return heroConfig.logoWidthPercent
-                    }
-                    // Legacy height-rem slider → approximate width % so old saves still look large.
-                    if (typeof heroConfig.logoMaxHeightRem === 'number' && Number.isFinite(heroConfig.logoMaxHeightRem)) {
-                      return Math.min(100, Math.max(15, Math.round((heroConfig.logoMaxHeightRem / 48) * 100)))
-                    }
-                    if (typeof heroConfig.logoMaxHeight === 'string') {
-                      const m = heroConfig.logoMaxHeight.match(/^([\d.]+)\s*rem$/i)
-                      if (m) return Math.min(100, Math.max(15, Math.round((Number(m[1]) / 48) * 100)))
-                    }
-                    return undefined
-                  })()}
-                  logoWidthPercentMobile={
-                    typeof heroConfig.logoWidthPercentMobile === 'number' &&
-                    Number.isFinite(heroConfig.logoWidthPercentMobile)
-                      ? heroConfig.logoWidthPercentMobile
-                      : undefined
+                  titleImageUrl={
+                    resolveImageUrl(
+                      typeof heroConfig.titleImageStoragePath === 'string' ? heroConfig.titleImageStoragePath : null,
+                      typeof heroConfig.titleImageUrl === 'string'
+                        ? heroConfig.titleImageUrl
+                        : '/brand/neuroklast-wordmark-red.svg',
+                    ) ?? '/brand/neuroklast-wordmark-red.svg'
                   }
-                  showTourDatesCta={isSectionVisible('gigs')}
-                  bootSequenceEnabled={heroConfig.bootSequenceEnabled !== false}
+                  heroButtons={[
+                    {
+                      id: 'initialize',
+                      label: String(heroConfig.ctaLabel ?? 'INITIALIZE'),
+                      action: 'scroll',
+                      scrollTarget: String(heroConfig.ctaUrl ?? '#news').replace(/^#/, '') || 'news',
+                      variant: 'outline',
+                    },
+                  ]}
                 />
               </SectionErrorBoundary>,
               section,

@@ -39,6 +39,8 @@
  */
 
 :root {
+  --nk-nav-h: 64px;
+
   /* Background layers — behind everything */
   --z-bg-image:      0;
   --z-bg-video:      1;

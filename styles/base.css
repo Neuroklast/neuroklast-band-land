@@ -21,16 +21,19 @@ html {
 }
 
 body {
-  font-family: var(--font-body, system-ui, ui-sans-serif, sans-serif);
+  font-family: var(--font-body, var(--font-space-grotesk), 'Space Grotesk', sans-serif);
   overflow-x: hidden;
-  /* Performance optimizations */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeSpeed;
-  /* FOUC prevention — background must match theme from the very first paint */
   background-color: #000000;
   background-color: var(--background);
   color: var(--foreground);
+  text-shadow:
+    0 0 var(--phosphor-inner-blur, 3px) oklch(1 0 0 / var(--phosphor-inner-opacity, 0.4)),
+    0 0 var(--phosphor-outer-blur, 12px) var(--primary-glow-dim, transparent),
+    1px 0 0 var(--primary-glow-xs, transparent),
+    -1px 0 0 var(--primary-glow-xs, transparent);
 }
 
 /* Disable text selection outside of admin edit mode.
@@ -62,11 +65,13 @@ body.no-select a {
 
 /* Section titles — family always from Appearance --font-heading */
 .section-heading {
-  font-family: var(--font-heading, system-ui, ui-sans-serif, sans-serif);
+  font-family: var(--font-heading, var(--font-jetbrains-mono), 'JetBrains Mono', monospace);
   font-size: var(--font-size-heading);
   text-shadow: var(--heading-text-shadow,
-    0.5px 0 0 rgba(255, 255, 255, 0.15),
-    -0.5px 0 0 rgba(200, 200, 200, 0.15));
+    0 0 calc(var(--phosphor-inner-blur, 3px) * 1.3) oklch(1 0 0 / calc(var(--phosphor-inner-opacity, 0.4) * 1.3)),
+    0 0 calc(var(--phosphor-outer-blur, 12px) * 1.2) color-mix(in oklch, var(--primary) 22%, transparent),
+    1.5px 0 0 color-mix(in oklch, var(--primary) 15%, transparent),
+    -1.5px 0 0 color-mix(in oklch, var(--primary) 15%, transparent));
   font-weight: var(--heading-font-weight);
   line-height: var(--heading-line-height, 1.2);
   letter-spacing: var(--heading-letter-spacing);

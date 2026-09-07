@@ -12,7 +12,7 @@ import {
   OVERLAY_GLITCH_PHASE_DELAY_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
-import { getRandomOverlayAnimation } from '@/lib/overlay-animations'
+import { getOverlayAnimationByName } from '@/lib/overlay-animations'
 import { getOverlaySessionKey } from '@/lib/overlay-session'
 import { getRandomProgressiveMode } from '@/lib/progressive-overlay-modes'
 import { ContactOverlayContent } from '@/components/overlays/ContactOverlayContent'
@@ -57,6 +57,8 @@ interface CyberpunkOverlayProps {
   onClose: () => void
   adminSettings: AdminSettings | undefined
   artistName?: string
+  overlayAnimation?: string
+  overlayClassName?: string
 }
 
 /** Content types that skip progressive-reveal scramble (direct content fade). */
@@ -64,7 +66,7 @@ function isDirectRevealType(type: string | undefined): boolean {
   return type === 'release' || type === 'gig' || type === 'gallery' || type === 'media'
 }
 
-export default function CyberpunkOverlay({ overlay, onClose, adminSettings, artistName = '' }: CyberpunkOverlayProps) {
+export default function CyberpunkOverlay({ overlay, onClose, adminSettings, artistName = '', overlayAnimation = 'neuralJackIn', overlayClassName }: CyberpunkOverlayProps) {
   const [overlayPhase, setOverlayPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(OVERLAY_LOADING_TEXTS[0])
   const [progressiveMode, setProgressiveMode] = useState(() => getRandomProgressiveMode())
@@ -87,7 +89,10 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
 
   // Pick a new random animation each time a new overlay session opens.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- session key is the intentional open trigger, not a closed-over value
-  const anim = useMemo(() => getRandomOverlayAnimation(), [overlaySessionKey])
+  const anim = useMemo(
+    () => getOverlayAnimationByName(overlayAnimation),
+    [overlaySessionKey, overlayAnimation],
+  )
   const systemLabel = decorativeTexts?.overlaySystemLabel ?? `// ${artistName ? `${artistName.toUpperCase()}.NET` : 'SYSTEM.INTERFACE'} // v${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}`
 
   useEffect(() => {
@@ -191,7 +196,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
   return (
     <AnimatePresence>
       {overlay && (
-        <>
+        <div className={overlayClassName ?? 'neuroklast-classic-overlay-modal'}>
           {/* Backdrop */}
           <motion.div
             initial={anim.backdrop.initial}
@@ -338,7 +343,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               </div>
             </motion.div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   )

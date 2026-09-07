@@ -68,7 +68,7 @@ function GigList({
             }}
           >
             <div
-              className="cyber-card hover-scan hover-noise group relative w-full cursor-pointer border border-border p-6 transition-colors hover:border-primary/50"
+              className="nk-os-frame group relative w-full cursor-pointer p-6"
               onClick={() => onGigClick(gig)}
               onKeyDown={(event) => {
                 if (event.key !== 'Enter' && event.key !== ' ') return
@@ -86,7 +86,7 @@ function GigList({
 
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="min-w-0 space-y-2">
-                  <h3 className="font-mono text-xl font-bold uppercase hover-chromatic">
+                  <h3 className="font-mono text-xl font-bold uppercase text-primary">
                     {headline}
                   </h3>
                   {gig.venue ? (
@@ -112,7 +112,7 @@ function GigList({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(event) => event.stopPropagation()}
-                    className="cyber-border hover-glitch inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
+                     className="nk-os-btn nk-os-btn--fill shrink-0 tracking-[0.25em]"
                   >
                     Tickets
                   </a>

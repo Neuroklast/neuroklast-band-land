@@ -1,3 +1,5 @@
+'use client'
+
 import type { OverlayEffects } from '@/lib/types'
 
 interface OverlayEffectsLayerProps {
@@ -12,13 +14,18 @@ export default function OverlayEffectsLayer({ effects }: OverlayEffectsLayerProp
   if (!effects) return null
 
   return (
-    <>
-      {effects.dotMatrix?.enabled && <div className="overlay-dot-matrix" aria-hidden="true" />}
-      {effects.scanlines?.enabled && <div className="overlay-scanlines" aria-hidden="true" />}
-      {effects.crt?.enabled && <div className="overlay-crt" aria-hidden="true" />}
-      {effects.noise?.enabled && <div className="overlay-noise" aria-hidden="true" />}
-      {effects.vignette?.enabled && <div className="overlay-vignette" aria-hidden="true" />}
-      {effects.chromatic?.enabled && <div className="overlay-chromatic" aria-hidden="true" />}
-    </>
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-0"
+      style={{ zIndex: 'var(--z-global-fx)', clipPath: 'inset(var(--nk-nav-h, 64px) 0 0 0)' }}
+    >
+      {effects.dotMatrix?.enabled && <div className="overlay-dot-matrix" />}
+      {effects.scanlines?.enabled && <div className="overlay-scanlines" />}
+      {effects.crt?.enabled && <div className="overlay-crt" />}
+      {effects.noise?.enabled && <div className="overlay-noise" />}
+      {effects.vignette?.enabled && <div className="overlay-vignette" />}
+      {effects.dof?.enabled && <div className="overlay-dof" />}
+      {effects.chromatic?.enabled && <div className="overlay-chromatic" />}
+    </div>
   )
 }

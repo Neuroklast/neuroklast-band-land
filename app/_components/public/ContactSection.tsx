@@ -6,8 +6,7 @@ import { resolveSectionHeading } from '@/lib/section-display'
 import { SectionWrapper, SectionHeading, SectionIntro } from './SectionWrapper'
 import { submitContact } from '@/app/_actions/contact'
 
-const fieldClass =
-  'min-h-[44px] w-full border border-border bg-transparent px-3 py-2 font-mono text-sm text-foreground transition-colors hover:border-primary/40 focus:border-primary/60 focus:outline-none'
+const fieldClass = 'nk-os-field'
 
 interface ContactSectionProps {
   heading?: string
@@ -105,7 +104,7 @@ export function ContactSection({
             <button
               type="submit"
               disabled={pending}
-              className="min-h-[44px] border border-border px-6 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
+              className="nk-os-btn nk-os-btn--fill disabled:opacity-50"
             >
               {pending ? t('contact.sending') : t('contact.send')}
             </button>
