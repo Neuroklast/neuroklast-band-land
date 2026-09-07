@@ -5,11 +5,9 @@ import { AnimatePresence } from 'framer-motion'
 import { useOverlayTransition } from '@/components/OverlayTransition'
 import { useLenisContext } from '@/contexts/LenisContext'
 import { useOverlay } from '@/contexts/OverlayContext'
+import CyberpunkOverlay from '@/components/CyberpunkOverlay'
 import { MediaOverlay } from './MediaOverlay'
 import { toExplorerFiles } from './MediaExplorer'
-import dynamic from 'next/dynamic'
-
-const CyberpunkOverlay = dynamic(() => import('@/components/CyberpunkOverlay'), { ssr: false })
 
 export function OverlayHost({ artistName = '' }: { lookId?: string; artistName?: string }) {
   const { overlay, closeOverlay } = useOverlay()
@@ -47,14 +45,12 @@ export function OverlayHost({ artistName = '' }: { lookId?: string; artistName?:
           />
         ) : null}
       </AnimatePresence>
-      {overlay && overlay.type !== 'explorer' ? (
-        <CyberpunkOverlay
-          overlay={overlay}
-          onClose={closeOverlay}
-          adminSettings={undefined}
-          artistName={artistName}
-        />
-      ) : null}
+      <CyberpunkOverlay
+        overlay={overlay && overlay.type !== 'explorer' ? overlay : null}
+        onClose={closeOverlay}
+        adminSettings={undefined}
+        artistName={artistName}
+      />
       {overlay ? element : null}
     </>
   )

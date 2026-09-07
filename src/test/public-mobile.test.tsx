@@ -30,9 +30,9 @@ describe('public mobile regression guards', () => {
     expect(src).toMatch(/aria-label=\{label\}/)
   })
 
-  it('GallerySection opens the shared CyberpunkOverlay lightbox', () => {
+  it('GallerySection opens the shared overlay lightbox', () => {
     const src = readSource('app/_components/public/GallerySection.tsx')
-    expect(src).toMatch(/CyberpunkOverlay/)
+    expect(src).toMatch(/openOverlay/)
     expect(src).toMatch(/type: 'gallery'/)
     expect(src).toMatch(/role=\{lightbox \? 'button' : undefined\}/)
   })
