@@ -1,48 +1,30 @@
 import { describe, it, expect } from 'vitest'
-import { oklchToHex, hexToOklch } from '@/lib/color-utils'
+import { hexToOklch, oklchToHex, parseHexColor } from '@/lib/color-utils'
 
-describe('oklchToHex', () => {
-  it('returns the fallback hex value when running without full CSS engine', () => {
-    // In JSDOM the CSS engine does not resolve oklch() so the function
-    // hits the fallback path and returns the default '#ff3333'.
-    const result = oklchToHex('oklch(0.50 0.22 25)')
-    expect(result).toBe('#ff3333')
+function hexDistance(a: string, b: string): number {
+  const pa = parseHexColor(a)
+  const pb = parseHexColor(b)
+  if (!pa || !pb) return 999
+  return Math.max(Math.abs(pa.r - pb.r), Math.abs(pa.g - pb.g), Math.abs(pa.b - pb.b))
+}
+
+describe('color-utils hex ↔ oklch roundtrip', () => {
+  it.each([
+    '#6399a6',
+    '#008885',
+    '#000000',
+    '#ffffff',
+    '#dc2626',
+    '#33b8cc',
+  ])('round-trips %s within ±2 RGB', (hex) => {
+    const oklch = hexToOklch(hex)
+    expect(oklch.startsWith('oklch(')).toBe(true)
+    const back = oklchToHex(oklch)
+    expect(hexDistance(hex, back)).toBeLessThanOrEqual(2)
   })
 
-  it('converts a plain hex color to itself (through the browser engine)', () => {
-    // JSDOM *can* resolve basic hex/rgb, so cssColorToRgb will succeed
-    const result = oklchToHex('#00ff00')
-    expect(result).toBe('#00ff00')
-  })
-
-  it('converts a named CSS color', () => {
-    const result = oklchToHex('red')
-    expect(result).toBe('#ff0000')
-  })
-
-  it('converts rgb() notation', () => {
-    const result = oklchToHex('rgb(0, 0, 255)')
-    expect(result).toBe('#0000ff')
-  })
-})
-
-describe('hexToOklch', () => {
-  it('converts invalid color keywords (parsed as black by JSDOM) to oklch format', () => {
-    // JSDOM resolves unknown color keywords as black (rgb(0,0,0)), so
-    // cssColorToRgb succeeds and we get the conversion of black.
-    const result = hexToOklch('not-a-color')
-    expect(result).toMatch(/^oklch\(\d+\.\d+ \d+\.\d+ \d+\)$/)
-  })
-
-  it('converts a hex color to an oklch-like string', () => {
-    const result = hexToOklch('#ff0000')
-    // We can't assert the exact oklch values (they depend on the
-    // approximate conversion), but the string must start with "oklch("
-    expect(result).toMatch(/^oklch\(\d+\.\d+ \d+\.\d+ \d+\)$/)
-  })
-
-  it('converts black to oklch with zero chroma', () => {
-    const result = hexToOklch('#000000')
-    expect(result).toMatch(/^oklch\(0\.00 0\.00 0\)$/)
+  it('parseHexColor accepts short and long forms', () => {
+    expect(parseHexColor('#fff')).toEqual({ r: 255, g: 255, b: 255 })
+    expect(parseHexColor('#6399A6')).toEqual({ r: 99, g: 153, b: 166 })
   })
 })

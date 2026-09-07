@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+// Re-export schemas that live in their own API files so tests can import
+// from a single location.
+
 /**
  * Zod schemas for strict input validation on all API endpoints.
  *
@@ -164,7 +167,6 @@ export const imageProxyQuerySchema = z.object({
 /** GET /api/bandsintown — query params */
 export const bandsintownQuerySchema = z.object({
   artist: z.string().min(1, 'artist is required').max(200),
-  app_id: z.string().min(1, 'app_id is required').max(200),
   /** Optional: include past events. Accepts 'true'/'false' string. Default: false */
   include_past: z
     .enum(['true', 'false'])
@@ -206,6 +208,26 @@ export const oauthDisconnectSchema = z.object({
   action: z.literal('disconnect'),
   provider: z.enum(['spotify', 'google-drive']),
 })
+
+// ─── Spotify API ──────────────────────────────────────────────────────────────
+
+/** GET /api/spotify — query params */
+export const spotifyQuerySchema = z.object({
+  action: z.enum(['artist', 'top-tracks', 'albums', 'search']),
+  id: z.string().min(1).optional(),
+  query: z.string().min(1).optional(),
+  market: z.string().length(2).optional(),
+}).refine(
+  (data) => {
+    if (['artist', 'top-tracks', 'albums'].includes(data.action) && !data.id) return false
+    if (data.action === 'search' && !data.query) return false
+    return true
+  },
+  {
+    message: 'id is required for artist/top-tracks/albums; query is required for search',
+    path: ['id'],
+  },
+)
 
 // ─── Validation helper ────────────────────────────────────────────────────────
 

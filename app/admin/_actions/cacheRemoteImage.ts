@@ -1,0 +1,106 @@
+'use server'
+
+import { runAdminAction } from '@/app/admin/_actions/auth'
+import { uploadBufferToR2 } from '@/app/admin/_actions/r2Upload'
+import { MEDIA_BUCKET } from '@/lib/constants'
+import { contentObjectKey } from '@/lib/r2-object-key'
+import { optimizeImageBuffer } from '@/lib/optimize-image'
+import {
+  assertRemoteImageSize,
+  isAllowedImageContentType,
+  resolveRemoteImageUrl,
+} from '@/lib/remote-image-url'
+import { assertSafeRemoteUrl } from '@/lib/ssrf-guard'
+
+export interface CacheRemoteImageResult {
+  ok: boolean
+  storagePath?: string
+  publicUrl?: string
+  source?: 'direct' | 'google_drive' | 'upload'
+  error?: string
+}
+
+export async function cacheRemoteImageToR2(
+  sourceUrl: string,
+  options?: { prefix?: string },
+): Promise<CacheRemoteImageResult> {
+  const result = await runAdminAction(async () => {
+    const resolved = resolveRemoteImageUrl(sourceUrl)
+    if (!resolved) {
+      return { ok: false as const, error: 'Invalid or unsupported image URL' }
+    }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 20_000)
+
+    try {
+      // DNS-resolve + private/loopback IP blocking before the outbound fetch
+      // (prevents SSRF via raw hostname bypass or DNS rebinding).
+      await assertSafeRemoteUrl(resolved.url)
+
+      const response = await fetch(resolved.url, {
+        method: 'GET',
+        redirect: 'follow',
+        signal: controller.signal,
+        headers: {
+          Accept: 'image/*,application/octet-stream',
+          'User-Agent': 'NeuroklastAdmin/1.0',
+        },
+      })
+
+      if (!response.ok) {
+        return { ok: false as const, error: `Failed to download image (HTTP ${response.status})` }
+      }
+
+      const contentType = response.headers.get('content-type')
+      if (!isAllowedImageContentType(contentType)) {
+        return {
+          ok: false as const,
+          error: 'URL did not return an image. For Google Drive, ensure the file is shared publicly.',
+        }
+      }
+
+      const buffer = Buffer.from(await response.arrayBuffer())
+      assertRemoteImageSize(buffer.byteLength)
+
+      const mimeType = contentType?.split(';')[0].trim() ?? 'image/jpeg'
+      const optimized = await optimizeImageBuffer(buffer, mimeType)
+
+      const prefix = options?.prefix ?? 'imports'
+      const objectPath = await contentObjectKey({
+        prefix,
+        data: optimized.buffer,
+        extension: optimized.extension,
+      })
+
+      const { publicUrl, objectPath: storedPath } = await uploadBufferToR2(
+        MEDIA_BUCKET,
+        objectPath,
+        optimized.buffer,
+        optimized.contentType,
+      )
+
+      return {
+        ok: true as const,
+        storagePath: storedPath,
+        publicUrl,
+        source: resolved.source,
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return { ok: false as const, error: 'Image download timed out' }
+      }
+      return {
+        ok: false as const,
+        error: error instanceof Error ? error.message : 'Failed to cache remote image',
+      }
+    } finally {
+      clearTimeout(timeout)
+    }
+  }, 'Unable to cache remote image.')
+
+  if ('error' in result && !('ok' in result)) {
+    return { ok: false, error: result.error }
+  }
+  return result
+}

@@ -1,0 +1,386 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
+import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
+import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
+import { VideoSourcePicker } from '@/app/admin/_components/VideoSourcePicker'
+import { resolveImageUrl } from '@/lib/r2'
+import {
+  DEFAULT_BACKGROUND_VIDEO_OPACITY,
+  parseBackgroundVideoEnabled,
+  parseMobileVideoMode,
+  type MobileVideoMode,
+} from '@/lib/background-config'
+import {
+  PUBLIC_BACKGROUND_TYPE_LABELS,
+  PUBLIC_BACKGROUND_TYPES,
+  parsePublicBackgroundType,
+  type PublicBackgroundType,
+} from '@/lib/public-background-types'
+import * as SliderPrimitive from '@radix-ui/react-slider'
+import * as RadioGroupPrimitive from '@radix-ui/react-radio-group'
+
+interface BackgroundConfigEditorProps {
+  currentValue: Record<string, unknown>
+}
+
+function OpacitySlider({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs text-zinc-400">
+        {label}: <span className="font-mono text-zinc-300">{Math.round(value * 100)}%</span>
+      </label>
+      <SliderPrimitive.Root
+        min={0}
+        max={1}
+        step={0.05}
+        value={[value]}
+        onValueChange={([v]) => onChange(v)}
+        className="relative flex items-center w-full touch-none select-none h-5"
+        aria-label={label}
+      >
+        <SliderPrimitive.Track className="relative h-1 grow rounded-full bg-zinc-700">
+          <SliderPrimitive.Range className="absolute h-full rounded-full bg-red-500" />
+        </SliderPrimitive.Track>
+        <SliderPrimitive.Thumb className="block size-4 rounded-full border border-red-500 bg-zinc-900 shadow focus:outline-none cursor-grab" />
+      </SliderPrimitive.Root>
+    </div>
+  )
+}
+
+export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorProps) {
+  const router = useRouter()
+  const [imageStoragePath, setImageStoragePath] = useState(
+    typeof currentValue.storage_path === 'string' ? currentValue.storage_path : '',
+  )
+  const [imageUrl, setImageUrl] = useState(
+    resolveImageUrl(
+      typeof currentValue.storage_path === 'string' ? currentValue.storage_path : null,
+      typeof currentValue.url === 'string' ? currentValue.url : null,
+    ) ?? '',
+  )
+  const [videoStoragePath, setVideoStoragePath] = useState(
+    typeof currentValue.video_storage_path === 'string' ? currentValue.video_storage_path : '',
+  )
+  const [videoUrl, setVideoUrl] = useState(
+    resolveImageUrl(
+      typeof currentValue.video_storage_path === 'string' ? currentValue.video_storage_path : null,
+      typeof currentValue.video_url === 'string' ? currentValue.video_url : null,
+    ) ?? '',
+  )
+  const [mobileVideoStoragePath, setMobileVideoStoragePath] = useState(
+    typeof currentValue.video_mobile_storage_path === 'string' ? currentValue.video_mobile_storage_path : '',
+  )
+  const [mobileVideoUrl, setMobileVideoUrl] = useState(
+    resolveImageUrl(
+      typeof currentValue.video_mobile_storage_path === 'string'
+        ? currentValue.video_mobile_storage_path
+        : null,
+      typeof currentValue.video_mobile_url === 'string' ? currentValue.video_mobile_url : null,
+    ) ?? '',
+  )
+  const [backgroundType, setBackgroundType] = useState<PublicBackgroundType>(() =>
+    parsePublicBackgroundType(currentValue.backgroundType, 'matrix'),
+  )
+  const [backgroundImageOpacity, setBackgroundImageOpacity] = useState<number>(
+    typeof currentValue.backgroundImageOpacity === 'number' ? currentValue.backgroundImageOpacity : 0.6,
+  )
+  const [backgroundVideoOpacity, setBackgroundVideoOpacity] = useState<number>(
+    typeof currentValue.backgroundVideoOpacity === 'number'
+      ? currentValue.backgroundVideoOpacity
+      : DEFAULT_BACKGROUND_VIDEO_OPACITY,
+  )
+  const hasInitialVideo = Boolean(
+    (typeof currentValue.video_storage_path === 'string' && currentValue.video_storage_path) ||
+      (typeof currentValue.video_url === 'string' && currentValue.video_url),
+  )
+  const [backgroundVideoEnabled, setBackgroundVideoEnabled] = useState<boolean>(() =>
+    parseBackgroundVideoEnabled(currentValue.backgroundVideoEnabled, hasInitialVideo),
+  )
+  const [mobileVideoMode, setMobileVideoMode] = useState<MobileVideoMode>(
+    parseMobileVideoMode(currentValue.mobileVideoMode),
+  )
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const draftPayload = useMemo(
+    () => ({
+      storage_path: imageStoragePath || undefined,
+      url: imageUrl || undefined,
+      video_storage_path: videoStoragePath || undefined,
+      video_url: videoUrl || undefined,
+      video_mobile_storage_path: mobileVideoStoragePath || undefined,
+      video_mobile_url: mobileVideoUrl || undefined,
+      mobileVideoMode,
+      backgroundType,
+      backgroundImageOpacity,
+      backgroundVideoOpacity,
+      backgroundVideoEnabled,
+    }),
+    [
+      imageStoragePath,
+      imageUrl,
+      videoStoragePath,
+      videoUrl,
+      mobileVideoStoragePath,
+      mobileVideoUrl,
+      mobileVideoMode,
+      backgroundType,
+      backgroundImageOpacity,
+      backgroundVideoOpacity,
+      backgroundVideoEnabled,
+    ],
+  )
+
+  useEffect(() => {
+    broadcastAdminDraft('background', draftPayload)
+  }, [draftPayload])
+
+  function buildSavePayload() {
+    return {
+      storage_path: imageStoragePath || undefined,
+      url: imageStoragePath ? imageUrl || undefined : imageUrl || undefined,
+      video_storage_path: videoStoragePath || undefined,
+      video_url: videoStoragePath ? videoUrl || undefined : videoUrl || undefined,
+      video_mobile_storage_path:
+        mobileVideoMode === 'separate' && mobileVideoStoragePath ? mobileVideoStoragePath : undefined,
+      video_mobile_url:
+        mobileVideoMode === 'separate' && mobileVideoStoragePath
+          ? mobileVideoUrl || undefined
+          : mobileVideoMode === 'separate'
+            ? mobileVideoUrl || undefined
+            : undefined,
+      mobileVideoMode,
+      backgroundType,
+      backgroundImageOpacity,
+      backgroundVideoOpacity,
+      backgroundVideoEnabled,
+    }
+  }
+
+  async function handleSave() {
+    setStatus('saving')
+    setErrorMsg(null)
+    const fd = new FormData()
+    fd.set('key', 'background')
+    fd.set('value', JSON.stringify(buildSavePayload()))
+    const result = await updateSiteConfig(fd)
+    if (result.error) {
+      setStatus('error')
+      setErrorMsg(result.error)
+    } else {
+      setStatus('saved')
+      const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
+      broadcastAdminRefresh()
+      router.refresh()
+      setTimeout(() => setStatus('idle'), 2000)
+    }
+  }
+
+  return (
+    <div className="border border-zinc-800 rounded p-4 space-y-4">
+      <div>
+        <h2 className="text-sm font-semibold text-zinc-200">Background</h2>
+        <p className="text-xs text-zinc-500 mt-0.5">
+          Site-wide image, scroll-synced video and animation layer. Preview updates live. Overlay glow
+          colour is under Appearance → Modal glow.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">
+          Animation style
+        </label>
+        <RadioGroupPrimitive.Root
+          value={backgroundType}
+          onValueChange={(v) => setBackgroundType(parsePublicBackgroundType(v))}
+          className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+        >
+          {PUBLIC_BACKGROUND_TYPES.map((type) => (
+            <label key={type} className="flex items-center gap-1.5 cursor-pointer">
+              <RadioGroupPrimitive.Item
+                value={type}
+                className="size-4 shrink-0 rounded-full border border-zinc-600 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500/20 focus:outline-none"
+              >
+                <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
+                  <span className="block size-2 rounded-full bg-red-500" />
+                </RadioGroupPrimitive.Indicator>
+              </RadioGroupPrimitive.Item>
+              <span className="text-xs text-zinc-300">{PUBLIC_BACKGROUND_TYPE_LABELS[type]}</span>
+            </label>
+          ))}
+        </RadioGroupPrimitive.Root>
+        <p className="text-[11px] text-zinc-500">
+          Terminal / data stream are GPU-light canvas layers (pause on hidden tab, reduced-motion off).
+        </p>
+      </div>
+
+      <OpacitySlider
+        label="Background image opacity"
+        value={backgroundImageOpacity}
+        onChange={setBackgroundImageOpacity}
+      />
+
+      <MediaSourcePicker
+        label="Background image"
+        currentUrl={imageUrl || null}
+        currentStoragePath={imageStoragePath || null}
+        storagePrefix="background/images"
+        editorAspectRatio={16 / 9}
+        editorFitMode="cover"
+        onResolved={(path, publicUrl) => {
+          setImageStoragePath(path)
+          if (publicUrl) setImageUrl(publicUrl)
+          setErrorMsg(null)
+        }}
+        onCleared={() => {
+          setImageStoragePath('')
+          setImageUrl('')
+          setErrorMsg(null)
+        }}
+        onError={setErrorMsg}
+      />
+
+      <div className="space-y-4 pt-2 border-t border-zinc-800">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Desktop video</p>
+            <p className="text-xs text-zinc-500 mt-1">
+              Scroll-synced background video (faststart MP4 recommended). Use the switch to turn it off without
+              deleting the file.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setBackgroundVideoEnabled((v) => !v)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+              backgroundVideoEnabled ? 'bg-red-600' : 'bg-zinc-700'
+            }`}
+            role="switch"
+            aria-checked={backgroundVideoEnabled}
+            aria-label="Enable background video"
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${
+                backgroundVideoEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+        <p className="text-xs font-mono text-zinc-400">
+          Background video: {backgroundVideoEnabled ? 'ON' : 'OFF'}
+        </p>
+
+        <VideoSourcePicker
+          label="Desktop video (optional)"
+          currentUrl={videoUrl || null}
+          currentStoragePath={videoStoragePath || null}
+          storagePrefix="background/videos"
+          onResolved={(path, publicUrl) => {
+            setVideoStoragePath(path)
+            if (publicUrl) setVideoUrl(publicUrl)
+            setBackgroundVideoEnabled(true)
+            setErrorMsg(null)
+          }}
+          onCleared={() => {
+            setVideoStoragePath('')
+            setVideoUrl('')
+            setErrorMsg(null)
+          }}
+          onError={setErrorMsg}
+        />
+
+        {backgroundVideoEnabled ? (
+          <OpacitySlider
+            label="Video opacity"
+            value={backgroundVideoOpacity}
+            onChange={setBackgroundVideoOpacity}
+          />
+        ) : (
+          <p className="text-xs text-zinc-500">
+            Video is off. Opacity is ignored until you turn video back on.
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-3 pt-2 border-t border-zinc-800">
+        <div>
+          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Mobile video</p>
+          <p className="text-xs text-zinc-500 mt-1">
+            Phones and small tablets. Separate video saves bandwidth; &quot;No video&quot; skips video
+            and uses the background image as fallback (desktop video can stay on).
+          </p>
+        </div>
+        <RadioGroupPrimitive.Root
+          value={mobileVideoMode}
+          onValueChange={(v) => setMobileVideoMode(v as MobileVideoMode)}
+          className="space-y-2"
+        >
+          {(
+            [
+              { value: 'same', label: 'Same as desktop' },
+              { value: 'separate', label: 'Different video' },
+              { value: 'off', label: 'No video on mobile (use image)' },
+            ] as const
+          ).map(({ value, label }) => (
+            <label key={value} className="flex items-center gap-2 cursor-pointer">
+              <RadioGroupPrimitive.Item
+                value={value}
+                className="size-4 rounded-full border border-zinc-600 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500/20 focus:outline-none"
+              >
+                <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
+                  <span className="block size-2 rounded-full bg-red-500" />
+                </RadioGroupPrimitive.Indicator>
+              </RadioGroupPrimitive.Item>
+              <span className="text-xs text-zinc-300">{label}</span>
+            </label>
+          ))}
+        </RadioGroupPrimitive.Root>
+
+        {mobileVideoMode === 'separate' && (
+          <VideoSourcePicker
+            label="Mobile video"
+            currentUrl={mobileVideoUrl || null}
+            currentStoragePath={mobileVideoStoragePath || null}
+            storagePrefix="background/videos/mobile"
+            onResolved={(path, publicUrl) => {
+              setMobileVideoStoragePath(path)
+              if (publicUrl) setMobileVideoUrl(publicUrl)
+              setErrorMsg(null)
+            }}
+            onCleared={() => {
+              setMobileVideoStoragePath('')
+              setMobileVideoUrl('')
+              setErrorMsg(null)
+            }}
+            onError={setErrorMsg}
+          />
+        )}
+      </div>
+
+      <div className="flex items-center gap-3 pt-1">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={status === 'saving'}
+          className="px-3 py-1.5 text-sm rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors disabled:opacity-50"
+        >
+          {status === 'saving' ? 'Saving…' : 'Save background'}
+        </button>
+        {status === 'saved' && <span className="text-xs text-green-400">Saved</span>}
+        {status === 'error' && <span className="text-xs text-red-400">{errorMsg ?? 'Error'}</span>}
+        {errorMsg && status !== 'error' && <span className="text-xs text-red-400">{errorMsg}</span>}
+      </div>
+    </div>
+  )
+}

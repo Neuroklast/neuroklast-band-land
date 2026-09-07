@@ -1,0 +1,271 @@
+import { getApiSecret, getApiSecretsStatus } from '@/lib/api-secrets'
+import { createClient } from '@/lib/supabaseServer'
+import { S3Client, ListObjectsV2Command, GetBucketCorsCommand } from '@aws-sdk/client-s3'
+import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { RefreshButton } from './RefreshButton'
+
+interface CheckResult {
+  name: string
+  ok: boolean
+  ms: number
+  detail?: string
+}
+
+async function checkSupabase(): Promise<CheckResult> {
+  const start = Date.now()
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.from('site_config').select('key').limit(1)
+    return { name: 'Supabase DB', ok: !error, ms: Date.now() - start, detail: error?.message }
+  } catch (e) {
+    return { name: 'Supabase DB', ok: false, ms: Date.now() - start, detail: e instanceof Error ? e.message : 'Unknown error' }
+  }
+}
+
+async function checkR2(): Promise<CheckResult> {
+  const start = Date.now()
+  try {
+    const accountId = process.env.R2_ACCOUNT_ID
+    const accessKeyId = process.env.R2_ACCESS_KEY_ID
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
+    const bucket = process.env.R2_BUCKET_MEDIA
+
+    if (!accountId || !accessKeyId || !secretAccessKey || !bucket) {
+      return { name: 'Cloudflare R2', ok: false, ms: Date.now() - start, detail: 'Missing R2 environment variables' }
+    }
+
+    const client = new S3Client({
+      region: 'auto',
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId, secretAccessKey },
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+    })
+
+    await client.send(new ListObjectsV2Command({ Bucket: bucket, MaxKeys: 1 }))
+    return { name: 'Cloudflare R2', ok: true, ms: Date.now() - start }
+  } catch (e) {
+    return { name: 'Cloudflare R2', ok: false, ms: Date.now() - start, detail: e instanceof Error ? e.message : 'Unknown error' }
+  }
+}
+
+async function checkR2Cors(): Promise<CheckResult> {
+  const start = Date.now()
+  try {
+    const accountId = process.env.R2_ACCOUNT_ID
+    const accessKeyId = process.env.R2_ACCESS_KEY_ID
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
+    const bucket = process.env.R2_BUCKET_MEDIA
+
+    if (!accountId || !accessKeyId || !secretAccessKey || !bucket) {
+      return { name: 'R2 bucket CORS', ok: false, ms: Date.now() - start, detail: 'Missing R2 environment variables' }
+    }
+
+    const client = new S3Client({
+      region: 'auto',
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId, secretAccessKey },
+      forcePathStyle: true,
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+    })
+
+    const res = await client.send(new GetBucketCorsCommand({ Bucket: bucket }))
+    const rules = res.CORSRules ?? []
+    if (rules.length === 0) {
+      return { name: 'R2 bucket CORS', ok: false, ms: Date.now() - start, detail: 'No CORS policy — browser PUT uploads (video / media download) will be blocked' }
+    }
+    const hasPut = rules.some((r) => r.AllowedMethods?.includes('PUT'))
+    const origins = rules.flatMap((r) => r.AllowedOrigins ?? [])
+    const wildcard = origins.includes('*')
+    const localhost = origins.some((o) => /localhost|127\.0\.0\.1/.test(o))
+    const detail = [
+      `${rules.length} rule(s)`,
+      hasPut ? 'PUT ok' : 'PUT missing',
+      wildcard ? 'origins *' : `${origins.length} origin(s)`,
+      localhost ? 'localhost ok' : 'no localhost',
+    ].join(' · ')
+    return { name: 'R2 bucket CORS', ok: hasPut && (wildcard || origins.length > 0), ms: Date.now() - start, detail }
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : 'Unknown error'
+    return { name: 'R2 bucket CORS', ok: false, ms: Date.now() - start, detail }
+  }
+}
+
+async function checkResend(): Promise<CheckResult> {
+  const start = Date.now()
+  try {
+    const key = await getApiSecret('resend_api_key')
+    if (!key) {
+      return { name: 'Resend Email API', ok: false, ms: Date.now() - start, detail: 'Resend API key not set' }
+    }
+    const res = await fetch('https://api.resend.com/domains', {
+      headers: { Authorization: 'Bearer ' + key },
+      signal: AbortSignal.timeout(5000),
+    })
+    // 200 = OK, 401 = key present but no domain = still reachable
+    const ok = res.status === 200 || res.status === 401
+    return { name: 'Resend Email API', ok, ms: Date.now() - start, detail: ok ? undefined : `HTTP ${res.status}` }
+  } catch (e) {
+    return { name: 'Resend Email API', ok: false, ms: Date.now() - start, detail: e instanceof Error ? e.message : 'Network error' }
+  }
+}
+
+async function checkItunes(): Promise<CheckResult> {
+  const start = Date.now()
+  try {
+    const res = await fetch('https://itunes.apple.com/search?term=test&limit=1', {
+      signal: AbortSignal.timeout(5000),
+    })
+    return { name: 'iTunes Search API', ok: res.ok, ms: Date.now() - start, detail: res.ok ? undefined : `HTTP ${res.status}` }
+  } catch (e) {
+    return { name: 'iTunes Search API', ok: false, ms: Date.now() - start, detail: e instanceof Error ? e.message : 'Network error' }
+  }
+}
+
+const ENV_VARS = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'SECRETS_ENCRYPTION_KEY',
+  'R2_ACCOUNT_ID',
+  'R2_ACCESS_KEY_ID',
+  'R2_SECRET_ACCESS_KEY',
+  'R2_BUCKET_MEDIA',
+  'R2_PUBLIC_HOST',
+  'CONTACT_EMAIL',
+]
+
+function StatusBadge({ ok }: { ok: boolean }) {
+  return (
+    <span
+      className={[
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold',
+        ok ? 'bg-green-900/40 text-green-400 border border-green-800' : 'bg-red-900/40 text-red-400 border border-red-800',
+      ].join(' ')}
+    >
+      {ok ? '✓ OK' : '✗ Fail'}
+    </span>
+  )
+}
+
+export default async function HealthPage() {
+  const [supabaseResult, r2Result, r2CorsResult, resendResult, itunesResult, apiSecretsStatus] = await Promise.all([
+    checkSupabase(),
+    checkR2(),
+    checkR2Cors(),
+    checkResend(),
+    checkItunes(),
+    getApiSecretsStatus(),
+  ])
+
+  const checks: CheckResult[] = [supabaseResult, r2Result, r2CorsResult, resendResult, itunesResult]
+
+  const integrationKeys = [
+    { label: 'Spotify', ok: apiSecretsStatus.spotify_client_id && apiSecretsStatus.spotify_client_secret },
+    { label: 'Discogs', ok: apiSecretsStatus.discogs_token },
+    { label: 'Bandsintown', ok: apiSecretsStatus.bandsintown_api_key },
+    { label: 'Resend', ok: apiSecretsStatus.resend_api_key },
+  ]
+
+  const envStatus = ENV_VARS.map((name) => ({
+    name,
+    set: typeof process.env[name] === 'string' && process.env[name] !== '',
+  }))
+
+  return (
+    <div>
+      <AdminPageHeader
+        title="API Health"
+        description="Connectivity checks for Supabase, R2, Resend, and iTunes. Integration keys are managed under Admin → API Keys."
+        action={<RefreshButton />}
+      />
+
+      {/* Service checks */}
+      <div className="space-y-3 mb-8">
+        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">External Services</h2>
+        <div className="border border-zinc-800 rounded overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[32rem] text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-900/60">
+                <th className="text-left px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Service</th>
+                <th className="text-left px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Status</th>
+                <th className="text-right px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Response</th>
+                <th className="text-left px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Detail</th>
+              </tr>
+            </thead>
+            <tbody>
+              {checks.map((check) => (
+                <tr key={check.name} className="border-b border-zinc-800/60 last:border-0">
+                  <td className="px-4 py-2.5 text-zinc-200 font-medium">{check.name}</td>
+                  <td className="px-4 py-2.5">
+                    <StatusBadge ok={check.ok} />
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-xs text-zinc-400">{check.ms} ms</td>
+                  <td className="px-4 py-2.5 text-xs text-zinc-500">{check.detail ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Integration API keys */}
+      <div className="space-y-3 mb-8">
+        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">Integration API Keys</h2>
+        <div className="border border-zinc-800 rounded overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[24rem] text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-900/60">
+                <th className="text-left px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Service</th>
+                <th className="text-left px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {integrationKeys.map(({ label, ok }) => (
+                <tr key={label} className="border-b border-zinc-800/60 last:border-0">
+                  <td className="px-4 py-2.5 text-zinc-200 font-medium">{label}</td>
+                  <td className="px-4 py-2.5">
+                    <StatusBadge ok={ok} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Environment variables */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">Infrastructure Environment Variables</h2>
+        <div className="border border-zinc-800 rounded overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[24rem] text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-900/60">
+                <th className="text-left px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Variable</th>
+                <th className="text-left px-4 py-2 text-xs text-zinc-500 font-semibold uppercase tracking-widest">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {envStatus.map(({ name, set }) => (
+                <tr key={name} className="border-b border-zinc-800/60 last:border-0">
+                  <td className="px-4 py-2.5 font-mono text-xs text-zinc-300">{name}</td>
+                  <td className="px-4 py-2.5">
+                    <span
+                      className={[
+                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold',
+                        set
+                          ? 'bg-green-900/40 text-green-400 border border-green-800'
+                          : 'bg-zinc-800 text-zinc-500 border border-zinc-700',
+                      ].join(' ')}
+                    >
+                      {set ? '✓ Set' : '✗ Missing'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}

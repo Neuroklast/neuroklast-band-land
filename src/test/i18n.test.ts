@@ -1,137 +1,136 @@
-/**
- * Tests for the i18n infrastructure.
- * Verifies JSON dictionary completeness, i18next configuration,
- * and backward-compatible t() function behavior.
- */
-import { describe, it, expect, beforeAll } from 'vitest'
-import { t } from '@/lib/i18n'
-import { t as secT, tip as secTip, LOCALES } from '@/lib/i18n-security'
-import i18n from '@/lib/i18n-config'
-import fs from 'fs'
-import path from 'path'
+import { describe, it, expect } from 'vitest'
+import { t, getTranslations, LOCALES, type Locale } from '@/lib/i18n'
 
-const LOCALES_DIR = path.resolve(__dirname, '../../public/locales')
-
-// Pre-load JSON resources into i18next for testing (HTTP backend unavailable in vitest)
-beforeAll(() => {
-  const namespaces = ['common', 'security', 'admin'] as const
-  const langs = ['en', 'de'] as const
-  for (const lang of langs) {
-    for (const ns of namespaces) {
-      const filePath = path.join(LOCALES_DIR, lang, `${ns}.json`)
-      if (fs.existsSync(filePath)) {
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'))
-        i18n.addResourceBundle(lang, ns, data, true, true)
-      }
-    }
-  }
-})
-
-// ── JSON Dictionary Validation ──────────────────────────────────────
-
-describe('JSON dictionary files', () => {
-  const namespaces = ['common', 'security', 'admin'] as const
-
-  for (const ns of namespaces) {
-    it(`${ns}.json exists for both en and de`, () => {
-      expect(fs.existsSync(path.join(LOCALES_DIR, 'en', `${ns}.json`))).toBe(true)
-      expect(fs.existsSync(path.join(LOCALES_DIR, 'de', `${ns}.json`))).toBe(true)
-    })
-
-    it(`${ns}.json has matching keys in en and de`, () => {
-      const en = JSON.parse(fs.readFileSync(path.join(LOCALES_DIR, 'en', `${ns}.json`), 'utf8'))
-      const de = JSON.parse(fs.readFileSync(path.join(LOCALES_DIR, 'de', `${ns}.json`), 'utf8'))
-      const enKeys = Object.keys(en).sort()
-      const deKeys = Object.keys(de).sort()
-      expect(enKeys).toEqual(deKeys)
-    })
-
-    it(`${ns}.json has no empty values in en`, () => {
-      const en = JSON.parse(fs.readFileSync(path.join(LOCALES_DIR, 'en', `${ns}.json`), 'utf8'))
-      for (const [key, value] of Object.entries(en)) {
-        expect(value, `Key "${key}" in en/${ns}.json should not be empty`).toBeTruthy()
-      }
-    })
-
-    it(`${ns}.json has no empty values in de`, () => {
-      const de = JSON.parse(fs.readFileSync(path.join(LOCALES_DIR, 'de', `${ns}.json`), 'utf8'))
-      for (const [key, value] of Object.entries(de)) {
-        expect(value, `Key "${key}" in de/${ns}.json should not be empty`).toBeTruthy()
-      }
-    })
-  }
-})
-
-// ── i18next Configuration ───────────────────────────────────────────
-
-describe('i18next configuration', () => {
-  it('supports en language only', () => {
-    expect(i18n.options.supportedLngs).toContain('en')
-    expect(i18n.options.supportedLngs).not.toContain('de')
+describe('i18n translation utility', () => {
+  it('should return English translation for known key', () => {
+    expect(t('footer.admin', 'en')).toBe('ADMIN')
   })
 
-  it('uses en as fallback language', () => {
-    expect(i18n.options.fallbackLng).toContain('en')
+  it('should return German translation for known key', () => {
+    expect(t('footer.admin', 'de')).toBe('ADMIN')
   })
 
-  it('has keySeparator disabled for flat keys', () => {
-    expect(i18n.options.keySeparator).toBe(false)
+  it('should return English for footer.datenschutz', () => {
+    expect(t('footer.datenschutz', 'en')).toBe('PRIVACY POLICY')
   })
 
-  it('has common, security, and admin namespaces', () => {
-    const ns = i18n.options.ns
-    expect(ns).toContain('common')
-    expect(ns).toContain('security')
-    expect(ns).toContain('admin')
-  })
-})
-
-// ── t() backward compatibility ──────────────────────────────────────
-
-describe('t() function (common namespace)', () => {
-  it('returns English translation for common keys', () => {
-    expect(t('footer.section', 'en')).toBe('FOOTER_SECTION')
-    expect(t('nav.home', 'en')).toBe('HOME')
-    expect(t('cookie.accept', 'en')).toBe('ACCEPT')
+  it('should return German for footer.datenschutz', () => {
+    expect(t('footer.datenschutz', 'de')).toBe('DATENSCHUTZ')
   })
 
-  it('returns the key itself for unknown keys', () => {
+  it('should return the key itself for an unknown key', () => {
     expect(t('nonexistent.key', 'en')).toBe('nonexistent.key')
   })
 
-  it('resolves admin namespace keys', () => {
-    expect(t('impressum.editTitle', 'en')).toBe('Edit legal notice')
-    expect(t('export.close', 'en')).toBe('Close')
-  })
-})
-
-// ── Security t() backward compatibility ─────────────────────────────
-
-describe('security t() function', () => {
-  it('returns English translation for security keys', () => {
-    expect(secT('sec.title', 'en')).toBe('SECURITY CENTER')
-    expect(secT('sec.total', 'en')).toBe('Total')
+  it('should fall back to English when German translation is missing for unknown key', () => {
+    expect(t('nonexistent.key', 'de')).toBe('nonexistent.key')
   })
 
-  it('returns key for unknown security keys', () => {
-    expect(secT('nonexistent', 'en')).toBe('nonexistent')
-  })
-})
-
-describe('security tip() function', () => {
-  it('returns tooltip for keys with Tip suffix', () => {
-    expect(secTip('sec.total', 'en')).toBe('Total number of security incidents recorded')
+  it('should translate contact section keys', () => {
+    expect(t('contact.defaultTitle', 'en')).toBe('CONTACT')
+    expect(t('contact.defaultTitle', 'de')).toBe('KONTAKT')
+    expect(t('contact.send', 'en')).toBe('SEND MESSAGE')
+    expect(t('contact.send', 'de')).toBe('NACHRICHT SENDEN')
   })
 
-  it('returns undefined for keys without tooltip', () => {
-    expect(secTip('nonexistent', 'en')).toBeUndefined()
+  it('should translate navigation keys', () => {
+    expect(t('nav.home', 'en')).toBe('HOME')
+    expect(t('nav.home', 'de')).toBe('STARTSEITE')
+    expect(t('nav.gigs', 'en')).toBe('GIGS')
+    expect(t('nav.gigs', 'de')).toBe('AUFTRITTE')
   })
-})
 
-describe('security LOCALES constant', () => {
-  it('exports only en locale', () => {
-    expect(LOCALES).toEqual([
-      { value: 'en', label: 'EN' },
-    ])
+  it('should translate cookie banner keys', () => {
+    expect(t('cookie.accept', 'en')).toBe('ACCEPT')
+    expect(t('cookie.accept', 'de')).toBe('AKZEPTIEREN')
+    expect(t('cookie.decline', 'en')).toBe('DECLINE')
+    expect(t('cookie.decline', 'de')).toBe('ABLEHNEN')
+  })
+
+  it('should translate newsletter keys', () => {
+    expect(t('newsletter.subscribe', 'en')).toBe('SUBSCRIBE')
+    expect(t('newsletter.subscribe', 'de')).toBe('ABONNIEREN')
+    expect(t('newsletter.backHome', 'en')).toBe('Back to home')
+    expect(t('newsletter.confirmSuccessTitle', 'de')).toBe('ANMELDUNG BESTÄTIGT')
+  })
+
+  it('should translate edit controls keys', () => {
+    expect(t('edit.inbox', 'en')).toBe('INBOX')
+    expect(t('edit.inbox', 'de')).toBe('POSTFACH')
+    expect(t('edit.subscribers', 'en')).toBe('SUBSCRIBERS')
+    expect(t('edit.subscribers', 'de')).toBe('ABONNENTEN')
+  })
+
+  it('should handle all 8 locales as Locale type', () => {
+    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    for (const locale of locales) {
+      expect(typeof t('footer.admin', locale)).toBe('string')
+    }
+  })
+
+  it('should have footer.admin translation for all 8 locales', () => {
+    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    for (const locale of locales) {
+      const result = t('footer.admin', locale)
+      expect(result).toBeTruthy()
+      expect(result).not.toBe('footer.admin')
+    }
+  })
+
+  it('should have non-empty translations for all keys in all locales', () => {
+    const all = getTranslations()
+    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    for (const [key, langs] of Object.entries(all)) {
+      for (const locale of locales) {
+        const val = langs[locale]
+        expect(val, `key "${key}" missing for locale "${locale}"`).toBeTruthy()
+        expect(typeof val).toBe('string')
+      }
+    }
+  })
+
+  it('should translate new gigs keys', () => {
+    expect(t('gigs.sync', 'en')).toBe('Sync Gigs')
+    expect(t('gigs.showLess', 'en')).toBe('Show Less')
+    expect(t('gigs.seeMore', 'en')).toBe('See More')
+    expect(t('gigs.support', 'en')).toBe('Support:')
+  })
+
+  it('should translate new releases keys', () => {
+    expect(t('releases.syncAndEnrich', 'en')).toBe('Sync & Enrich')
+    expect(t('releases.showLess', 'en')).toBe('Show Less')
+    expect(t('releases.showAll', 'en')).toBe('Show All')
+  })
+
+  it('should translate new cookie keys', () => {
+    expect(t('cookie.title', 'en')).toBe('PRIVACY & DATA')
+    expect(t('cookie.acceptAll', 'en')).toBe('Accept All')
+    expect(t('cookie.essentialOnly', 'en')).toBe('Essential Only')
+  })
+
+  it('getTranslations() should return all keys', () => {
+    const all = getTranslations()
+    expect(typeof all).toBe('object')
+    expect(Object.keys(all).length).toBeGreaterThan(130)
+    expect(all['footer.admin']).toBeDefined()
+    expect(all['footer.admin']['en']).toBe('ADMIN')
+  })
+
+  it('getTranslations() should return a deep copy', () => {
+    const a = getTranslations()
+    const b = getTranslations()
+    expect(a).not.toBe(b)
+    a['footer.admin']['en'] = 'MUTATED'
+    expect(b['footer.admin']['en']).toBe('ADMIN')
+  })
+
+  it('LOCALES should contain 8 entries', () => {
+    expect(LOCALES.length).toBe(8)
+    const codes = LOCALES.map(l => l.code)
+    expect(codes).toContain('en')
+    expect(codes).toContain('de')
+    expect(codes).toContain('ru')
+    expect(codes).toContain('ja')
+    expect(codes).toContain('ko')
   })
 })
