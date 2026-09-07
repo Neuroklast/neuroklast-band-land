@@ -6,6 +6,7 @@ import {
   backgroundVideoDimOpacity,
   backgroundVideoOpacityForScroll,
   parseBackgroundVideoEnabled,
+  parseBackgroundVideoOpacity,
   resolveActiveBackgroundVideoUrl,
 } from '@/lib/background-config'
 
@@ -22,6 +23,15 @@ describe('default site background video', () => {
     expect(backgroundVideoOpacityForScroll(400, 800)).toBe(0.4)
     expect(backgroundVideoOpacityForScroll(800, 800)).toBe(0.3)
     expect(backgroundVideoOpacityForScroll(1200, 800)).toBe(0.3)
+  })
+})
+
+describe('parseBackgroundVideoOpacity', () => {
+  it('clamps and falls back', () => {
+    expect(parseBackgroundVideoOpacity(0.8)).toBe(0.8)
+    expect(parseBackgroundVideoOpacity(2)).toBe(1)
+    expect(parseBackgroundVideoOpacity(-1)).toBe(0)
+    expect(parseBackgroundVideoOpacity(undefined)).toBe(DEFAULT_BACKGROUND_VIDEO_OPACITY)
   })
 })
 

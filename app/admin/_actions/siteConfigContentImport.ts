@@ -18,6 +18,7 @@ import {
   buildImportRows,
   collectMediaUrls,
   parseSiteConfigContentPayload,
+  reconcileImportedMembers,
   type ImportMediaEntry,
   type ImportMediaMap,
 } from '@/lib/site-config-content-import'
@@ -177,7 +178,7 @@ export async function importSiteConfigContent(jsonText: string): Promise<ImportC
     const summary: Record<string, number> = {}
     const errors: string[] = []
 
-    const tableOrder = ['members', 'partners', 'gigs', 'releases', 'news_posts', 'gallery', 'media_downloads', 'social_links'] as const
+    const tableOrder = ['partners', 'gigs', 'releases', 'news_posts', 'gallery', 'media_downloads', 'social_links'] as const
     for (const table of tableOrder) {
       const tableRows = rows[table]
       if (!tableRows || tableRows.length === 0) continue
@@ -185,6 +186,23 @@ export async function importSiteConfigContent(jsonText: string): Promise<ImportC
         summary[table] = await upsertTable(client, table, tableRows)
       } catch (error) {
         errors.push(error instanceof Error ? error.message : `${table}: unknown error`)
+      }
+    }
+
+    if (rows.members?.length) {
+      try {
+        const { data: existingMembers } = await client.from('members').select('id, name')
+        const reconciled = reconcileImportedMembers(
+          rows.members,
+          (existingMembers ?? []) as Array<{ id: string; name: string | null }>,
+        )
+        summary.members = await upsertTable(client, 'members', reconciled.rows)
+        if (reconciled.staleIds.length > 0) {
+          const { error: deleteError } = await client.from('members').delete().in('id', reconciled.staleIds)
+          if (deleteError) throw new Error(deleteError.message)
+        }
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : 'members: unknown error')
       }
     }
 

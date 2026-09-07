@@ -484,3 +484,19 @@ export function buildImportRows(
 
   return { rows, mediaUrls: collectMediaUrls(data), summary }
 }
+
+/** Reuse existing member rows by name so re-imports do not duplicate. */
+export function reconcileImportedMembers(
+  incoming: SiteConfigContentRow[],
+  existing: Array<{ id: string; name: string | null }>,
+): { rows: SiteConfigContentRow[]; staleIds: string[] } {
+  const unused = [...existing]
+  const rows = incoming.map((row) => {
+    const name = String(row.name ?? '').trim().toLowerCase()
+    const idx = unused.findIndex((entry) => String(entry.name ?? '').trim().toLowerCase() === name)
+    if (idx < 0) return row
+    const match = unused.splice(idx, 1)[0]
+    return { ...row, id: match.id }
+  })
+  return { rows, staleIds: unused.map((entry) => entry.id) }
+}

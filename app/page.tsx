@@ -22,6 +22,7 @@ import { GigsSection } from './_components/public/GigsSection'
 import { NewsSection } from './_components/public/NewsSection'
 import { ContactSection } from './_components/public/ContactSection'
 import { parseLookId } from '@/lib/looks'
+import { parseBackgroundVideoOpacity } from '@/lib/background-config'
 import { SectionDivider } from './_components/public/SectionWrapper'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { SocialSection } from './_components/public/SocialSection'
@@ -100,6 +101,8 @@ interface NewsPostRow {
   title: string
   slug: string
   excerpt: string | null
+  body: string | null
+  link: string | null
   cover_storage_path: string | null
   cover_url: string | null
   published_at: string | null
@@ -182,7 +185,7 @@ async function fetchAll() {
       supabase.from('social_links').select('id, platform, url, label, logo_storage_path, logo_url').order('display_order', { ascending: true }),
       supabase
         .from('news_posts')
-        .select('id, title, slug, excerpt, cover_storage_path, cover_url, published_at, display_order')
+        .select('id, title, slug, excerpt, body, link, cover_storage_path, cover_url, published_at, display_order')
         .eq('active', true)
         .order('display_order', { ascending: true })
         .order('published_at', { ascending: false }),
@@ -390,9 +393,14 @@ export default async function HomePage({
   }
 
   // Build slots for the mandatory PageLayout (AGENTS §6)
+  const backgroundConfig = getConfig(configRows, 'background')
   const backgroundLayers = (
     <>
-      <LookBackground lookId={lookId} siteName={siteName} />
+      <LookBackground
+        lookId={lookId}
+        siteName={siteName}
+        videoOpacity={parseBackgroundVideoOpacity(backgroundConfig.backgroundVideoOpacity)}
+      />
     </>
   )
 
@@ -658,6 +666,8 @@ export default async function HomePage({
                     title: post.title,
                     slug: post.slug,
                     excerpt: post.excerpt,
+                    body: post.body,
+                    link: post.link,
                     coverUrl: resolveImageUrl(post.cover_storage_path, post.cover_url),
                     publishedAt: post.published_at,
                   }))}

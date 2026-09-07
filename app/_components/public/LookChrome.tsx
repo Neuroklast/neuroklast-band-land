@@ -75,8 +75,14 @@ export function LookBootScreen({ lookId, onComplete }: { lookId?: string; onComp
   return <Loader onComplete={onComplete} />
 }
 
-export function LookBackground(_props: { lookId?: string; siteName: string }) {
-  return <SiteBgVideo />
+export function LookBackground({
+  videoOpacity,
+}: {
+  lookId?: string
+  siteName: string
+  videoOpacity?: number
+}) {
+  return <SiteBgVideo opacity={videoOpacity} />
 }
 
 export function LookNav({

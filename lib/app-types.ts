@@ -146,6 +146,17 @@ export interface MediaOverlayData {
   filename?: string | null
 }
 
+export interface NewsOverlayData {
+  id: string
+  title: string
+  slug: string
+  excerpt?: string | null
+  body?: string | null
+  link?: string | null
+  coverUrl?: string | null
+  publishedAt?: string | null
+}
+
 /** Discriminated union so TypeScript narrows `data` to the correct type per overlay variant. */
 export type CyberpunkOverlayState =
   | { type: 'contact'; data?: never }
@@ -154,3 +165,4 @@ export type CyberpunkOverlayState =
   | { type: 'member'; data: Member }
   | { type: 'gallery'; data: GalleryOverlayData }
   | { type: 'media'; data: MediaOverlayData }
+  | { type: 'news'; data: NewsOverlayData }
