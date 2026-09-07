@@ -19,7 +19,7 @@ export default async function SiteConfigPage() {
     <div>
       <AdminPageHeader
         title="Look & Feel"
-        description="Theme, background, hero, sections and site text. Use split preview to see changes live."
+        description="Theme, background, hero, loader, sections and site text. Use split preview to see changes live."
       />
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading editor…</p>}>
         <SiteConfigTabs
@@ -29,6 +29,7 @@ export default async function SiteConfigPage() {
           sectionsValue={rowMap['sections']}
           merchandiseValue={(rowMap['merchandise'] ?? {}) as Record<string, unknown>}
           footerValue={(rowMap['footer'] ?? {}) as Record<string, unknown>}
+          loadingScreenValue={(rowMap['loadingScreen'] ?? {}) as Record<string, unknown>}
           advancedConfigs={[]}
         />
       </Suspense>

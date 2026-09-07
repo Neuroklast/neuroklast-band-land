@@ -252,10 +252,32 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
   )
 }
 
-export function MediaOverlay({ files, onClose }: { files: MediaFile[]; onClose: () => void }) {
-  const [phase, setPhase] = useState<'loading' | 'ready'>('loading')
+export function MediaExplorerBody({ files }: { files: MediaFile[] }) {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null)
+  const { t } = useLocale()
+
+  return (
+    <div className="-mx-4 mt-2 flex min-h-[min(420px,60dvh)] flex-col border-t border-primary/20 md:-mx-12 md:flex-row">
+      <div className="max-h-[200px] overflow-y-auto border-b border-primary/20 p-3 md:max-h-none md:w-2/5 md:border-b-0 md:border-r">
+        <div className="mb-2 px-2 text-[9px] tracking-wider text-primary/40">{t('media.directory')}</div>
+        <FileTreeView
+          files={files}
+          selectedFolder={selectedFolder}
+          onSelectFolder={setSelectedFolder}
+          selectedFile={selectedFile}
+          onSelectFile={setSelectedFile}
+        />
+      </div>
+      <div className="flex-1 overflow-y-auto md:w-3/5">
+        <FileDetailPanel file={selectedFile} allFiles={files} />
+      </div>
+    </div>
+  )
+}
+
+export function MediaOverlay({ files, onClose }: { files: MediaFile[]; onClose: () => void }) {
+  const [phase, setPhase] = useState<'loading' | 'ready'>('loading')
   const { t } = useLocale()
 
   useEffect(() => {
@@ -305,21 +327,7 @@ export function MediaOverlay({ files, onClose }: { files: MediaFile[]; onClose: 
             <CyberCloseButton onClick={onClose} label={t('media.close')} />
           </div>
 
-          <div className="flex flex-col md:flex-row flex-1 min-h-0">
-            <div className="md:w-2/5 border-b md:border-b-0 md:border-r border-primary/20 overflow-y-auto p-3 max-h-[200px] md:max-h-none">
-              <div className="text-[9px] text-primary/40 tracking-wider mb-2 px-2">{t('media.directory')}</div>
-              <FileTreeView
-                files={files}
-                selectedFolder={selectedFolder}
-                onSelectFolder={setSelectedFolder}
-                selectedFile={selectedFile}
-                onSelectFile={setSelectedFile}
-              />
-            </div>
-            <div className="md:w-3/5 overflow-y-auto flex-1">
-              <FileDetailPanel file={selectedFile} allFiles={files} />
-            </div>
-          </div>
+          <MediaExplorerBody files={files} />
         </motion.div>
       )}
     </motion.div>

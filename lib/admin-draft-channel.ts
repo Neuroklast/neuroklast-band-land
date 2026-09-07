@@ -9,6 +9,7 @@ export type AdminDraftKey =
   | 'merchandise'
   | 'footer'
   | 'legal'
+  | 'loadingScreen'
 
 export interface AdminDraftMessage {
   type: 'draft'

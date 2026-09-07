@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { LoadingScreenConfig } from '@/lib/loading-screen-config'
 
 export interface ThemeCustomization {
   // Base colors
@@ -772,6 +773,7 @@ export interface NavigationSlotProps {
 export interface LoadingScreenSlotProps {
   onComplete: () => void
   primaryColor?: string
+  config?: LoadingScreenConfig
 }
 
 export interface SectionDividerSlotProps {

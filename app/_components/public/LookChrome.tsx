@@ -8,6 +8,10 @@ import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import { SiteBgVideo } from './SiteBgVideo'
 import { getLook, type LookDefinition } from '@/lib/looks'
 import type { NavigationSlotProps, FooterSlotProps, HeroSlotProps } from '@/lib/types'
+import {
+  parseLoadingScreenConfig,
+  type LoadingScreenConfig,
+} from '@/lib/loading-screen-config'
 
 import ClassicNav from '@/themes/neuroklast-classic/Navigation'
 import ClassicHero from '@/themes/neuroklast-classic/Hero'
@@ -69,10 +73,18 @@ function slotsFor(look: LookDefinition) {
   }
 }
 
-export function LookBootScreen({ lookId, onComplete }: { lookId?: string; onComplete: () => void }) {
+export function LookBootScreen({
+  lookId,
+  onComplete,
+  config,
+}: {
+  lookId?: string
+  onComplete: () => void
+  config?: LoadingScreenConfig
+}) {
   const look = getLook(lookId)
   const { Loader } = slotsFor(look)
-  return <Loader onComplete={onComplete} />
+  return <Loader onComplete={onComplete} config={config} />
 }
 
 export function LookBackground({
@@ -150,10 +162,17 @@ export function LookEffects({ lookId }: { lookId?: string }) {
   )
 }
 
-export function PublicBoot({ lookId }: { lookId?: string }) {
-  const [ready, setReady] = useState(false)
+export function PublicBoot({
+  lookId,
+  loadingScreen,
+}: {
+  lookId?: string
+  loadingScreen?: Record<string, unknown>
+}) {
+  const config = parseLoadingScreenConfig(loadingScreen)
+  const [ready, setReady] = useState(!config.enabled)
   if (ready) return null
-  return <LookBootScreen lookId={lookId} onComplete={() => setReady(true)} />
+  return <LookBootScreen lookId={lookId} config={config} onComplete={() => setReady(true)} />
 }
 
 export function LookBootGate({ lookId, children }: { lookId?: string; children: React.ReactNode }) {

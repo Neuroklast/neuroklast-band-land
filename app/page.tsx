@@ -444,7 +444,7 @@ export default async function HomePage({
 
   const systemSlot = (
     <>
-      <PublicBoot lookId={lookId} />
+      <PublicBoot lookId={lookId} loadingScreen={getConfig(configRows, 'loadingScreen')} />
       <AdminDraftListener enableDrafts={isAdminPreview} />
       <CookieConsent privacyPolicyUrl={privacyPolicyUrl} />
       <KonamiListener />

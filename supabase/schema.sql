@@ -769,7 +769,8 @@ INSERT INTO public.site_config (key, value) VALUES
   ('social',      '{"spotify":"","instagram":"","facebook":"","youtube":"","soundcloud":"","tiktok":""}'::jsonb),
   ('analytics',   '{"enabled":false,"trackPageViews":false,"trackEvents":false}'::jsonb),
   ('translations', '{}'::jsonb),
-  ('catalogue_sync', '{"artistName":"Neuroklast","itunesArtistId":"","spotifyArtistId":"","discogsArtistId":""}'::jsonb)
+  ('catalogue_sync', '{"artistName":"Neuroklast","itunesArtistId":"","spotifyArtistId":"","discogsArtistId":""}'::jsonb),
+  ('loadingScreen', '{"enabled":true}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='news_posts' AND policyname='Public read news') THEN

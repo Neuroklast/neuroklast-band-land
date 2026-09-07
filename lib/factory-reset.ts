@@ -85,6 +85,7 @@ export const FACTORY_RESET_SITE_CONFIG: readonly FactorySiteConfigSeed[] = [
   { key: 'social', value: { spotify: '', instagram: '', facebook: '', youtube: '', soundcloud: '', tiktok: '' } },
   { key: 'analytics', value: { enabled: false, trackPageViews: false, trackEvents: false } },
   { key: 'translations', value: {} },
+  { key: 'loadingScreen', value: { enabled: true } },
   { key: 'languages', value: { enabled: [], fallback: 'en' } },
 ]
 
