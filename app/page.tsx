@@ -187,7 +187,6 @@ async function fetchAll() {
         .from('news_posts')
         .select('id, title, slug, excerpt, body, link, cover_storage_path, cover_url, published_at, display_order')
         .eq('active', true)
-        .order('display_order', { ascending: true })
         .order('published_at', { ascending: false }),
     ])
 
@@ -314,12 +313,13 @@ export default async function HomePage({
     typeof appearanceConfig.lookId === 'string' ? appearanceConfig.lookId : 'neuroklast-classic',
   )
   const siteName = String(heroConfig.headline ?? 'NEUROKLAST')
+  const heroTagline =
+    typeof heroConfig.tagline === 'string' && heroConfig.tagline.trim()
+      ? heroConfig.tagline.trim()
+      : ''
   const heroGenres = Array.isArray(heroConfig.genres)
     ? (heroConfig.genres as unknown[]).filter((g): g is string => typeof g === 'string')
-    : String(heroConfig.tagline ?? 'Industrial / Electronic')
-        .split(/[/,|]/)
-        .map((g) => g.trim())
-        .filter(Boolean)
+    : []
 
   // Releases: convert streaming_links to typed array
   const releaseItems = releases.map((r) => {
@@ -474,6 +474,7 @@ export default async function HomePage({
                 <LookHero
                   lookId={lookId}
                   name={siteName}
+                  tagline={heroTagline}
                   genres={heroGenres}
                   logoUrl={
                     resolveImageUrl(

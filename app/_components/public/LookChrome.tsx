@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLenisContext } from '@/contexts/LenisContext'
 import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
-import { SystemMonitorHUD } from '@/components/SystemMonitorHUD'
 import { SiteBgVideo } from './SiteBgVideo'
 import { getLook, type LookDefinition } from '@/lib/looks'
 import type { NavigationSlotProps, FooterSlotProps, HeroSlotProps } from '@/lib/types'
@@ -157,7 +156,6 @@ export function LookEffects({ lookId }: { lookId?: string }) {
   return (
     <>
       <OverlayEffectsLayer effects={look.overlayEffects} />
-      <SystemMonitorHUD />
     </>
   )
 }
