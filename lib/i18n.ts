@@ -166,6 +166,8 @@ const translations: Record<string, Record<string, string>> = {
   'bio.showLess':              { en: 'Show Less', de: 'Weniger anzeigen', ru: 'Показать меньше', it: 'Mostra meno', es: 'Mostrar menos', pt: 'Mostrar menos', ja: '表示を減らす', ko: '덜 보기' },
   'bio.empty':                 { en: 'Biography coming soon.', de: 'Biografie folgt in Kürze.', ru: 'Биография скоро появится.', it: 'Biografia in arrivo.', es: 'Biografía próximamente.', pt: 'Biografia em breve.', ja: '経歴は近日公開。', ko: '바이오그래피 준비 중.' },
   'bio.members':               { en: 'Line-up', de: 'Line-up', ru: 'Состав', it: 'Formazione', es: 'Formación', pt: 'Formação', ja: 'メンバー', ko: '멤버' },
+  'bio.achievements':          { en: 'Achievements', de: 'Erfolge', ru: 'Достижения', it: 'Risultati', es: 'Logros', pt: 'Conquistas', ja: '実績', ko: '업적' },
+  'bio.collabs':               { en: 'Collaborations', de: 'Kollaborationen', ru: 'Совместные работы', it: 'Collaborazioni', es: 'Colaboraciones', pt: 'Colaborações', ja: 'コラボレーション', ko: '콜라보레이션' },
 
   // ── GigsSection ─────────────────────────────────────────────────────
   'gigs.defaultTitle':         { en: 'UPCOMING GIGS', de: 'ANSTEHENDE AUFTRITTE', ru: 'ПРЕДСТОЯЩИЕ КОНЦЕРТЫ', it: 'PROSSIMI CONCERTI', es: 'PRÓXIMAS ACTUACIONES', pt: 'PRÓXIMOS CONCERTOS', ja: 'ライブ情報', ko: '다가오는 공연' },

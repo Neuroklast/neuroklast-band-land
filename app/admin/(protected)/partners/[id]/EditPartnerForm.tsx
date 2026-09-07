@@ -11,6 +11,8 @@ interface EditPartnerFormProps {
     name: string
     url: string | null
     category: string
+    description: string | null
+    socials: Record<string, unknown> | null
     logo_storage_path: string | null
     display_order: number
     active: boolean
@@ -72,6 +74,24 @@ export function EditPartnerForm({ partner, resolvedLogoUrl }: EditPartnerFormPro
           type="url"
           defaultValue={partner.url ?? ''}
           className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-zinc-400 mb-1">Description</label>
+        <textarea
+          name="description"
+          rows={3}
+          defaultValue={partner.description ?? ''}
+          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-zinc-400 mb-1">Socials (JSON)</label>
+        <textarea
+          name="socials"
+          rows={4}
+          defaultValue={JSON.stringify(partner.socials ?? {}, null, 2)}
+          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm font-mono"
         />
       </div>
       <div>

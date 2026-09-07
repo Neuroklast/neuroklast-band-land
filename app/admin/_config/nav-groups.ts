@@ -26,7 +26,6 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
     items: [
       { href: '/admin/site-config', label: 'Look & Feel' },
       { href: '/admin/legal', label: 'Legal & Privacy' },
-      { href: '/admin/translations', label: 'Translations' },
     ],
   },
   {
@@ -38,13 +37,9 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
       { href: '/admin/gallery', label: 'Gallery', countKey: 'gallery' },
       { href: '/admin/media', label: 'Media Downloads', countKey: 'media' },
       { href: '/admin/partners', label: 'Credits & Partners', countKey: 'partners' },
-      { href: '/admin/music-highlights', label: 'Music Highlights', countKey: 'musicHighlights' },
       { href: '/admin/releases', label: 'Discography', countKey: 'releases' },
       { href: '/admin/gigs', label: 'Events', countKey: 'gigs' },
-      { href: '/admin/merchandise', label: 'Merchandise', countKey: 'merchandise' },
-      { href: '/admin/soundpacks', label: 'Soundpacks', countKey: 'soundpacks' },
       { href: '/admin/news', label: 'News / Blog', countKey: 'news' },
-      { href: '/admin/social', label: 'Social Links', countKey: 'social' },
     ],
   },
   {
