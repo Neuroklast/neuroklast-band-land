@@ -734,8 +734,8 @@
     0deg,
     transparent,
     transparent 1px,
-    oklch(0 0 0 / calc(var(--overlay-scanlines, 0.3) * 0.45)) 1px,
-    oklch(0 0 0 / calc(var(--overlay-scanlines, 0.3) * 0.45)) 2px
+    oklch(0 0 0 / calc(var(--overlay-scanlines, 0.5) * 0.55)) 1px,
+    oklch(0 0 0 / calc(var(--overlay-scanlines, 0.5) * 0.55)) 2px
   );
 }
 
@@ -748,7 +748,6 @@
   border-radius: calc(var(--overlay-crt) * 12px);
 }
 
-/* Noise grain overlay */
 .overlay-noise {
   position: absolute;
   inset: 0;
@@ -756,6 +755,34 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: calc(var(--overlay-noise) * 0.22);
   mix-blend-mode: overlay;
+}
+
+.overlay-radiation {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='1' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.86 0 0 0 0 0.05 0 0 0 0 0.07 0 0 0 28 -25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+  background-size: 280px 280px;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  animation: radiation-hits 0.45s steps(3) infinite;
+}
+
+.overlay-radiation::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='r2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.38' numOctaves='1' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.92 0 0 0 0 0.08 0 0 0 0 0.08 0 0 0 34 -31'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r2)'/%3E%3C/svg%3E");
+  background-size: 520px 520px;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  animation: radiation-hits 0.8s steps(2) infinite reverse;
+}
+
+@keyframes radiation-hits {
+  0% { background-position: 0 0; }
+  50% { background-position: 18px -11px; }
+  100% { background-position: -9px 14px; }
 }
 
 /* Vignette overlay */
@@ -825,6 +852,7 @@
   .overlay-scanlines,
   .overlay-crt,
   .overlay-noise,
+  .overlay-radiation,
   .overlay-vignette,
   .overlay-dof,
   .overlay-chromatic {

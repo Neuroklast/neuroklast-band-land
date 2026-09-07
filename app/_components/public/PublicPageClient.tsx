@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react'
 
-import CyberpunkOverlay from '@/components/CyberpunkOverlay'
 import { toDirectImageUrl } from '@/lib/image-cache'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { onMediaImageError } from '@/lib/media-fallback'
-import type { CyberpunkOverlayState, Release } from '@/lib/app-types'
+import type { Release } from '@/lib/app-types'
 import { ReleasesSection } from './ReleasesSection'
 import { ReleasesSwipeLayout } from '@/components/releases/ReleasesSwipeLayout'
 import { Releases3DCarouselLayout } from '@/components/releases/Releases3DCarouselLayout'
@@ -83,7 +83,6 @@ function PublicReleaseCard({ item, onClick }: { item: PublicReleaseCardItem; onC
 
 export function PublicPageClient({
   releases,
-  artistName = '',
   heading,
   intro,
   releaseLayout = 'grid',
@@ -93,11 +92,11 @@ export function PublicPageClient({
 }: PublicPageClientProps) {
   const { t } = useLocale()
   const title = resolveSectionHeading(heading, 'releases', t)
-  const [overlay, setOverlay] = useState<CyberpunkOverlayState | null>(null)
+  const { openOverlay } = useOverlay()
   const [activeFilter, setActiveFilter] = useState<ReleaseTypeFilter>('')
 
   const handleReleaseClick = (item: PublicReleaseCardItem) => {
-    setOverlay({ type: 'release', data: item.overlayRelease })
+    openOverlay({ type: 'release', data: item.overlayRelease })
   }
 
   const isFancy = releaseLayout === 'swipe' || releaseLayout === 'carousel-3d'
@@ -168,12 +167,6 @@ export function PublicPageClient({
         </SectionWrapper>
       )}
 
-      <CyberpunkOverlay
-        overlay={overlay}
-        onClose={() => setOverlay(null)}
-        adminSettings={undefined}
-        artistName={artistName}
-      />
     </>
   )
 }

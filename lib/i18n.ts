@@ -195,6 +195,23 @@ const translations: Record<string, Record<string, string>> = {
   'media.noResults':           { en: 'No matching downloads.', de: 'Keine passenden Downloads.', ru: 'Нет подходящих загрузок.', it: 'Nessun download corrispondente.', es: 'Sin descargas coincidentes.', pt: 'Sem downloads correspondentes.', ja: '一致するダウンロードはありません。', ko: '일치하는 다운로드가 없습니다.' },
   'media.searchPlaceholder':   { en: 'Search downloads…', de: 'Downloads suchen…', ru: 'Искать загрузки…', it: 'Cerca download…', es: 'Buscar descargas…', pt: 'Procurar downloads…', ja: 'ダウンロードを検索…', ko: '다운로드 검색…' },
   'media.preview':             { en: 'Preview', de: 'Vorschau', ru: 'Просмотр', it: 'Anteprima', es: 'Vista previa', pt: 'Pré-visualização', ja: 'プレビュー', ko: '미리보기' },
+  'media.initFS':              { en: 'INITIALIZING FILESYSTEM...', de: 'INITIALIZING FILESYSTEM...', ru: 'INITIALIZING FILESYSTEM...', it: 'INITIALIZING FILESYSTEM...', es: 'INITIALIZING FILESYSTEM...', pt: 'INITIALIZING FILESYSTEM...', ja: 'INITIALIZING FILESYSTEM...', ko: 'INITIALIZING FILESYSTEM...' },
+  'media.decrypt':             { en: 'DECRYPTING ARCHIVES...', de: 'DECRYPTING ARCHIVES...', ru: 'DECRYPTING ARCHIVES...', it: 'DECRYPTING ARCHIVES...', es: 'DECRYPTING ARCHIVES...', pt: 'DECRYPTING ARCHIVES...', ja: 'DECRYPTING ARCHIVES...', ko: 'DECRYPTING ARCHIVES...' },
+  'media.accessGranted':       { en: 'ACCESS GRANTED', de: 'ACCESS GRANTED', ru: 'ACCESS GRANTED', it: 'ACCESS GRANTED', es: 'ACCESS GRANTED', pt: 'ACCESS GRANTED', ja: 'ACCESS GRANTED', ko: 'ACCESS GRANTED' },
+  'media.explorerTitle':       { en: 'MEDIA EXPLORER', de: 'MEDIA EXPLORER', ru: 'MEDIA EXPLORER', it: 'MEDIA EXPLORER', es: 'MEDIA EXPLORER', pt: 'MEDIA EXPLORER', ja: 'MEDIA EXPLORER', ko: 'MEDIA EXPLORER' },
+  'media.directory':           { en: 'DIRECTORY', de: 'DIRECTORY', ru: 'DIRECTORY', it: 'DIRECTORY', es: 'DIRECTORY', pt: 'DIRECTORY', ja: 'DIRECTORY', ko: 'DIRECTORY' },
+  'media.root':                { en: 'ROOT', de: 'ROOT', ru: 'ROOT', it: 'ROOT', es: 'ROOT', pt: 'ROOT', ja: 'ROOT', ko: 'ROOT' },
+  'media.selectFile':          { en: 'SELECT A FILE', de: 'SELECT A FILE', ru: 'SELECT A FILE', it: 'SELECT A FILE', es: 'SELECT A FILE', pt: 'SELECT A FILE', ja: 'SELECT A FILE', ko: 'SELECT A FILE' },
+  'media.fileDataPrefix':      { en: 'FILE:', de: 'FILE:', ru: 'FILE:', it: 'FILE:', es: 'FILE:', pt: 'FILE:', ja: 'FILE:', ko: 'FILE:' },
+  'media.close':               { en: 'CLOSE', de: 'CLOSE', ru: 'CLOSE', it: 'CLOSE', es: 'CLOSE', pt: 'CLOSE', ja: 'CLOSE', ko: 'CLOSE' },
+  'media.folderLabel':         { en: 'FOLDER:', de: 'FOLDER:', ru: 'FOLDER:', it: 'FOLDER:', es: 'FOLDER:', pt: 'FOLDER:', ja: 'FOLDER:', ko: 'FOLDER:' },
+  'media.downloading':         { en: 'DOWNLOADING…', de: 'DOWNLOADING…', ru: 'DOWNLOADING…', it: 'DOWNLOADING…', es: 'DOWNLOADING…', pt: 'DOWNLOADING…', ja: 'DOWNLOADING…', ko: 'DOWNLOADING…' },
+  'media.downloaded':          { en: 'DOWNLOADED', de: 'DOWNLOADED', ru: 'DOWNLOADED', it: 'DOWNLOADED', es: 'DOWNLOADED', pt: 'DOWNLOADED', ja: 'DOWNLOADED', ko: 'DOWNLOADED' },
+  'media.downloadProgress':    { en: '{0}%', de: '{0}%', ru: '{0}%', it: '{0}%', es: '{0}%', pt: '{0}%', ja: '{0}%', ko: '{0}%' },
+  'media.downloadComplete':    { en: 'TRANSFER COMPLETE', de: 'TRANSFER COMPLETE', ru: 'TRANSFER COMPLETE', it: 'TRANSFER COMPLETE', es: 'TRANSFER COMPLETE', pt: 'TRANSFER COMPLETE', ja: 'TRANSFER COMPLETE', ko: 'TRANSFER COMPLETE' },
+  'media.error':               { en: 'ERROR: {0}', de: 'ERROR: {0}', ru: 'ERROR: {0}', it: 'ERROR: {0}', es: 'ERROR: {0}', pt: 'ERROR: {0}', ja: 'ERROR: {0}', ko: 'ERROR: {0}' },
+  'media.fileReady':           { en: 'FILE READY', de: 'FILE READY', ru: 'FILE READY', it: 'FILE READY', es: 'FILE READY', pt: 'FILE READY', ja: 'FILE READY', ko: 'FILE READY' },
+  'media.version':             { en: 'v1.0', de: 'v1.0', ru: 'v1.0', it: 'v1.0', es: 'v1.0', pt: 'v1.0', ja: 'v1.0', ko: 'v1.0' },
 
   // ── Credits (public chrome) ─────────────────────────────────────────
   'credits.groupCredits':      { en: 'Credits', de: 'Credits', ru: 'Кредиты', it: 'Crediti', es: 'Créditos', pt: 'Créditos', ja: 'クレジット', ko: '크레딧' },
@@ -255,10 +272,10 @@ const translations: Record<string, Record<string, string>> = {
   'contact.submitButtonField': { en: 'Submit Button Text', de: 'Schaltfläche Senden Text', ru: 'Текст кнопки отправки', it: 'Testo pulsante invio', es: 'Texto del botón de envío', pt: 'Texto do botão de envio', ja: '送信ボタンテキスト', ko: '제출 버튼 텍스트' },
 
   // ── Media ────────────────────────────────────────────────────────────
-  'media.openArchive':         { en: 'OPEN MEDIA ARCHIVE', de: 'MEDIENARCHIV ÖFFNEN', ru: 'ОТКРЫТЬ МЕДИААРХИВ', it: 'APRI ARCHIVIO MEDIA', es: 'ABRIR ARCHIVO MULTIMEDIA', pt: 'ABRIR ARQUIVO DE MEDIA', ja: 'メディアアーカイブを開く', ko: '미디어 아카이브 열기' },
+  'media.openArchive':         { en: 'OPEN ARCHIVE', de: 'OPEN ARCHIVE', ru: 'OPEN ARCHIVE', it: 'OPEN ARCHIVE', es: 'OPEN ARCHIVE', pt: 'OPEN ARCHIVE', ja: 'OPEN ARCHIVE', ko: 'OPEN ARCHIVE' },
   'media.pressKits':           { en: '// PRESS KITS · LOGOS · ASSETS', de: '// PRESSEMAPPEN · LOGOS · ASSETS', ru: '// ПРЕСС-КИТЫ · ЛОГОТИПЫ · РЕСУРСЫ', it: '// PRESS KIT · LOGHI · RISORSE', es: '// KITS DE PRENSA · LOGOS · RECURSOS', pt: '// KITS DE IMPRENSA · LOGOS · RECURSOS', ja: '// プレスキット · ロゴ · アセット', ko: '// 프레스 킷 · 로고 · 에셋' },
   'media.filesAvailable':      { en: '{0} FILE{1} AVAILABLE // PRESS KITS · LOGOS · ASSETS', de: '{0} DATEI{1} VERFÜGBAR // PRESSEMAPPEN · LOGOS · ASSETS', ru: '{0} ФАЙЛ{1} ДОСТУПНО // ПРЕСС-КИТЫ · ЛОГОТИПЫ', it: '{0} FILE{1} DISPONIBILI // PRESS KIT · LOGHI', es: '{0} ARCHIVO{1} DISPONIBLE // KITS DE PRENSA', pt: '{0} FICHEIRO{1} DISPONÍVEL // KITS DE IMPRENSA', ja: '{0}個のファイルが利用可能 // プレスキット', ko: '{0}개 파일 사용 가능 // 프레스 킷' },
-  'media.clickToAccess':       { en: 'CLICK TO ACCESS', de: 'KLICKEN ZUM ÖFFNEN', ru: 'НАЖМИТЕ ДЛЯ ДОСТУПА', it: 'CLICCA PER ACCEDERE', es: 'CLICK PARA ACCEDER', pt: 'CLIQUE PARA ACEDER', ja: 'クリックしてアクセス', ko: '클릭하여 접근' },
+  'media.clickToAccess':       { en: 'CLICK TO ACCESS ARCHIVE', de: 'CLICK TO ACCESS ARCHIVE', ru: 'CLICK TO ACCESS ARCHIVE', it: 'CLICK TO ACCESS ARCHIVE', es: 'CLICK TO ACCESS ARCHIVE', pt: 'CLICK TO ACCESS ARCHIVE', ja: 'CLICK TO ACCESS ARCHIVE', ko: 'CLICK TO ACCESS ARCHIVE' },
   'media.noFiles':             { en: 'NO FILES AVAILABLE', de: 'KEINE DATEIEN VERFÜGBAR', ru: 'НЕТ ДОСТУПНЫХ ФАЙЛОВ', it: 'NESSUN FILE DISPONIBILE', es: 'SIN ARCHIVOS DISPONIBLES', pt: 'SEM FICHEIROS DISPONÍVEIS', ja: 'ファイルなし', ko: '파일 없음' },
 
   // ── Social buttons ────────────────────────────────────────────────────

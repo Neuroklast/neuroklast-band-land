@@ -179,12 +179,44 @@ const overlayAnimations: OverlayAnimation[] = [
   },
 ]
 
-/** Pick a random overlay animation variant */
+export const NONE_OVERLAY_ANIMATION: OverlayAnimation = {
+  name: 'none',
+  loaderClass: '',
+  loaderLabel: '',
+  backdrop: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.1 },
+  },
+  modal: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.1 },
+  },
+}
+
+export function applySpeedFactor(animation: OverlayAnimation, speed: number): OverlayAnimation {
+  if (!speed || speed === 1) return animation
+  const factor = 1 / Math.max(0.01, speed)
+  const scaleTransition = (t: Transition | undefined): Transition | undefined => {
+    if (!t || t.duration === undefined) return t
+    return { ...t, duration: t.duration * factor }
+  }
+  return {
+    ...animation,
+    backdrop: { ...animation.backdrop, transition: scaleTransition(animation.backdrop.transition) },
+    modal: { ...animation.modal, transition: scaleTransition(animation.modal.transition) },
+  }
+}
+
 export function getRandomOverlayAnimation(): OverlayAnimation {
   return overlayAnimations[Math.floor(Math.random() * overlayAnimations.length)]
 }
 
 export function getOverlayAnimationByName(name?: string | null): OverlayAnimation {
+  if (name === 'none') return NONE_OVERLAY_ANIMATION
   if (!name || name === 'random') return getRandomOverlayAnimation()
   const found = overlayAnimations.find((a) => a.name === name)
   return found ?? getRandomOverlayAnimation()

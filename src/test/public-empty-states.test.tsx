@@ -89,6 +89,6 @@ describe('public section empty states', () => {
     expect(screen.getByText(/no upcoming events/i)).toBeInTheDocument()
     expect(screen.getByText(/merchandise coming soon/i)).toBeInTheDocument()
     expect(screen.getByText(/soundpacks coming soon/i)).toBeInTheDocument()
-    expect(screen.getByText(/downloads coming soon/i)).toBeInTheDocument()
+    expect(screen.getByText(/open archive/i)).toBeInTheDocument()
   })
 })

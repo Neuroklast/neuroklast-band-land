@@ -39,9 +39,9 @@ describe('locale-detect', () => {
     expect(detectLocaleSync(supported)).toBe('ja')
   })
 
-  it('uses browser language when no storage', () => {
+  it('stays English when no storage even if browser is another language', () => {
     vi.stubGlobal('navigator', { language: 'es-MX', languages: ['es-MX', 'en'] })
-    expect(detectLocaleSync(supported)).toBe('es')
+    expect(detectLocaleSync(supported)).toBe('en')
   })
 
   it('falls back to English when nothing matches', () => {

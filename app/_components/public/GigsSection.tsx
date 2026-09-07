@@ -1,13 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { m, useReducedMotion } from 'framer-motion'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { HOMEPAGE_GIG_LIMIT } from '@/lib/browse-pagination'
 import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
-import type { CyberpunkOverlayState } from '@/lib/app-types'
-import CyberpunkOverlay from '@/components/CyberpunkOverlay'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
@@ -127,9 +125,9 @@ function GigList({
   )
 }
 
-export function GigsSection({ upcoming, past, artistName = '', heading, intro }: GigsSectionProps) {
+export function GigsSection({ upcoming, past, heading, intro }: GigsSectionProps) {
   const { t } = useLocale()
-  const [overlay, setOverlay] = useState<CyberpunkOverlayState | null>(null)
+  const { openOverlay } = useOverlay()
   const hasUpcoming = upcoming.length > 0
   const title = resolveSectionHeading(heading, 'gigs', t)
   const showViewAll =
@@ -138,7 +136,7 @@ export function GigsSection({ upcoming, past, artistName = '', heading, intro }:
     (!hasUpcoming && past.length > 0)
 
   const handleGigClick = (gig: PublicGigRow) => {
-    setOverlay({ type: 'gig', data: mapGigRowToOverlayGig(gig) })
+    openOverlay({ type: 'gig', data: mapGigRowToOverlayGig(gig) })
   }
 
   const viewAllLink = showViewAll ? (
@@ -172,13 +170,6 @@ export function GigsSection({ upcoming, past, artistName = '', heading, intro }:
           </div>
         )}
       </SectionWrapper>
-
-      <CyberpunkOverlay
-        overlay={overlay}
-        onClose={() => setOverlay(null)}
-        adminSettings={undefined}
-        artistName={artistName}
-      />
     </>
   )
 }

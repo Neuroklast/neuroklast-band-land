@@ -5,10 +5,7 @@ import { type Locale, type SiteLanguage, t as translate, BUILTIN_LOCALES } from 
 import {
   DEFAULT_LOCALE,
   detectLocaleSync,
-  fetchGeoCountry,
   initialPublicLocale,
-  localeFromCountry,
-  readStoredLocale,
   writeStoredLocale,
 } from '@/lib/locale-detect'
 
@@ -50,23 +47,7 @@ export function LocaleProvider({
   const locale = explicitLocale ?? detected
   const resolvedLocale = supportedCodes.includes(locale) ? locale : (supportedCodes.includes(DEFAULT_LOCALE) ? DEFAULT_LOCALE : (supportedCodes[0] ?? DEFAULT_LOCALE))
 
-  // Geo: only when user has no stored preference — apply country locale if supported
-  useEffect(() => {
-    if (!hydrated) return
-    if (readStoredLocale(supportedCodes)) return
-    let cancelled = false
-    void (async () => {
-      const country = await fetchGeoCountry()
-      if (cancelled) return
-      const fromGeo = localeFromCountry(country, supportedCodes)
-      if (!fromGeo) return
-      if (readStoredLocale(supportedCodes)) return
-      setExplicitLocale(fromGeo)
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [hydrated, supportedCodes])
+
 
   useEffect(() => {
     document.documentElement.lang = resolvedLocale

@@ -4,7 +4,7 @@ import type { LookId, OverlayEffects } from '@/lib/types'
 export const DEFAULT_LOOK_ID: LookId = 'neuroklast-classic'
 
 export const CLASSIC_OVERLAY_EFFECTS: OverlayEffects = {
-  scanlines: { enabled: true, intensity: 0.3 },
+  scanlines: { enabled: true, intensity: 0.5 },
   crt: { enabled: false, intensity: 0 },
   noise: { enabled: false, intensity: 0 },
   vignette: { enabled: false, intensity: 0 },

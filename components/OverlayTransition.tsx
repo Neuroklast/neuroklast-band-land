@@ -114,12 +114,12 @@ const TRANSITION_DURATION_MS = 500
  * digital noise burst, or chromatic split effect.
  */
 export default function OverlayTransition({ show, onComplete }: OverlayTransitionProps) {
-  const [patternIdx] = useState(() => Math.floor(Math.random() * patterns.length))
+  const [patternIdx, setPatternIdx] = useState(() => Math.floor(Math.random() * patterns.length))
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     if (show) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPatternIdx(Math.floor(Math.random() * patterns.length))
       setVisible(true)
       const timeout = setTimeout(() => {
         setVisible(false)
