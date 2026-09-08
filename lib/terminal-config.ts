@@ -3,7 +3,7 @@ import type { TerminalCommand } from '@/lib/types'
 
 export const TERMINAL_CHEAT_PARAM = 'access-secret-terminal-NK-666'
 
-export const TERMINAL_RESERVED_COMMANDS = ['help', 'clear', 'exit', 'glitch', 'matrix'] as const
+export const TERMINAL_RESERVED_COMMANDS = ['help', 'clear', 'exit'] as const
 
 export const DEFAULT_TERMINAL_COMMANDS: TerminalCommand[] = [
   {
@@ -49,11 +49,17 @@ export function parseTerminalConfig(raw: unknown): TerminalConfig {
     ? source.commands.map(parseCommand).filter((cmd): cmd is TerminalCommand => cmd !== null)
     : []
   const seen = new Set<string>()
-  const commands = (parsedCommands.length > 0 ? parsedCommands : DEFAULT_TERMINAL_COMMANDS).filter((cmd) => {
-    if (seen.has(cmd.name)) return false
+  const commands: TerminalCommand[] = []
+  for (const cmd of parsedCommands) {
+    if (seen.has(cmd.name)) continue
     seen.add(cmd.name)
-    return true
-  })
+    commands.push(cmd)
+  }
+  for (const cmd of DEFAULT_TERMINAL_COMMANDS) {
+    if (seen.has(cmd.name)) continue
+    seen.add(cmd.name)
+    commands.push(cmd)
+  }
   const secretCode = Array.isArray(source.secretCode)
     ? source.secretCode.filter((key): key is string => typeof key === 'string' && key.trim() !== '')
     : []

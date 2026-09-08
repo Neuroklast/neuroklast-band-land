@@ -25,7 +25,8 @@ describe('parseTerminalConfig', () => {
       secretCode: ['a', 'b'],
       morseCode: '..-',
     })
-    expect(config.commands).toEqual([{ name: 'lore', description: 'Band lore', output: ['Industrial'] }])
+    expect(config.commands.map((cmd) => cmd.name)).toEqual(['lore', 'status', 'info'])
+    expect(config.commands[0]).toEqual({ name: 'lore', description: 'Band lore', output: ['Industrial'] })
     expect(config.secretCode).toEqual(['a', 'b'])
     expect(config.morseCode).toBe('..-')
   })
@@ -35,6 +36,6 @@ describe('parseTerminalConfig', () => {
       commands: [{ name: 'Status', description: 'ok', output: ['ONLINE'] }],
     })
     expect(resolveTerminalCommand(config.commands, 'status')?.output).toEqual(['ONLINE'])
-    expect(TERMINAL_RESERVED_COMMANDS).toContain('glitch')
+    expect(TERMINAL_RESERVED_COMMANDS).toEqual(['help', 'clear', 'exit'])
   })
 })

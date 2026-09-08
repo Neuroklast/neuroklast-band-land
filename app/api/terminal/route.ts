@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const parsed = terminalCommandSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.message }, { status: 400 })
+    return NextResponse.json({ found: false })
   }
 
   try {

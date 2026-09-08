@@ -78,7 +78,7 @@ const SITE_CONFIG_TABS: AdminHelpEntry[] = [
     id: 'site-config-terminal',
     title: 'Secret Terminal',
     description:
-      'Konami / custom key sequence, Morse on the nav logo, and custom terminal commands (help, clear, exit, glitch, matrix are built-in).',
+      'Konami / custom key sequence, Morse on the nav logo, and custom terminal commands (help, clear, exit, status, info are built-in).',
     href: `${SITE_CONFIG}?tab=terminal`,
     group: 'Look & Feel',
     keywords: ['terminal', 'konami', 'morse', 'easter egg', 'cheat', 'commands'],

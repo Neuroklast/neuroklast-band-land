@@ -11,7 +11,7 @@ import {
   OVERLAY_GLITCH_PHASE_DELAY_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
-import { resolveOverlayAnimation } from '@/lib/overlay-animations'
+import { getRandomOverlayAnimation, NONE_OVERLAY_ANIMATION, resolveOverlayAnimation } from '@/lib/overlay-animations'
 import { getOverlaySessionKey } from '@/lib/overlay-session'
 import { getRandomProgressiveMode } from '@/lib/progressive-overlay-modes'
 import { ContactOverlayContent } from '@/components/overlays/ContactOverlayContent'
@@ -80,7 +80,7 @@ function isDirectRevealType(type: string | undefined): boolean {
   )
 }
 
-export default function CyberpunkOverlay({ overlay, onClose, adminSettings, artistName = '', overlayAnimation = 'neuralJackIn', overlayClassName }: CyberpunkOverlayProps) {
+export default function CyberpunkOverlay({ overlay, onClose, adminSettings, artistName = '', overlayAnimation, overlayClassName }: CyberpunkOverlayProps) {
   const [overlayPhase, setOverlayPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(OVERLAY_LOADING_TEXTS[0])
   const [progressiveMode, setProgressiveMode] = useState(() => getRandomProgressiveMode())
@@ -102,13 +102,12 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
   const panelRef = useRef<HTMLDivElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
 
-  const anim = useMemo(
-    () => {
-      void overlaySessionKey
-      return resolveOverlayAnimation(overlayAnimation, prefersReducedMotion)
-    },
-    [overlaySessionKey, overlayAnimation, prefersReducedMotion],
-  )
+  const anim = useMemo(() => {
+    void overlaySessionKey
+    if (prefersReducedMotion) return NONE_OVERLAY_ANIMATION
+    if (overlayAnimation) return resolveOverlayAnimation(overlayAnimation, false)
+    return getRandomOverlayAnimation()
+  }, [overlaySessionKey, overlayAnimation, prefersReducedMotion])
   const systemLabel = decorativeTexts?.overlaySystemLabel ?? `// ${artistName ? `${artistName.toUpperCase()}.NET` : 'SYSTEM.INTERFACE'} // v${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}`
 
   useEffect(() => {
@@ -214,30 +213,32 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
     }
   }, [overlaySessionKey, onClose])
 
+  const sessionKey = overlaySessionKey ?? overlay?.type ?? 'overlay'
+
   return (
     <AnimatePresence>
-      {overlay && (
-        <div className={overlayClassName ?? 'neuroklast-classic-overlay-modal'}>
-          {/* Backdrop */}
-          <motion.div
-            initial={anim.backdrop.initial}
-            animate={anim.backdrop.animate}
-            exit={anim.backdrop.exit}
-            transition={anim.backdrop.transition ?? { duration: 0.3 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm cyberpunk-overlay-bg"
-            style={{ zIndex: 'var(--z-modal-backdrop)' } as React.CSSProperties}
-            onClick={onClose}
-          />
-
-          {/* Modal container */}
-          <motion.div
-            initial={anim.modal.initial}
-            animate={anim.modal.animate}
-            exit={anim.modal.exit}
-            transition={anim.modal.transition ?? { duration: 0.3 }}
-            className="fixed inset-0 flex items-center justify-center p-3 md:p-8 pointer-events-none"
-            style={{ zIndex: 'var(--z-overlay)', perspective: '1000px' } as React.CSSProperties}
-          >
+      {overlay ? (
+        <motion.div
+          key={`${sessionKey}-backdrop`}
+          initial={anim.backdrop.initial}
+          animate={anim.backdrop.animate}
+          exit={anim.backdrop.exit}
+          transition={anim.backdrop.transition ?? { duration: 0.3 }}
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm cyberpunk-overlay-bg"
+          style={{ zIndex: 'var(--z-modal-backdrop)' } as React.CSSProperties}
+          onClick={onClose}
+        />
+      ) : null}
+      {overlay ? (
+        <motion.div
+          key={`${sessionKey}-modal`}
+          initial={anim.modal.initial}
+          animate={anim.modal.animate}
+          exit={anim.modal.exit}
+          transition={anim.modal.transition ?? { duration: 0.3 }}
+          className={`${overlayClassName ?? 'neuroklast-classic-overlay-modal'} fixed inset-0 flex items-center justify-center p-3 md:p-8 pointer-events-none`}
+          style={{ zIndex: 'var(--z-overlay)', perspective: '1000px' } as React.CSSProperties}
+        >
             <motion.div
               ref={panelRef}
               role="dialog"
@@ -287,7 +288,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
                 <CyberCloseButton onClick={onClose} />
               </div>
 
-              <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y">
+              <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y scrollbar-hide">
                 {overlayPhase === 'loading' && (
                   <div className="flex items-center justify-center min-h-[min(400px,50vh)]">
                     <motion.span className="progressive-loading-label text-primary font-mono text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -305,7 +306,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
                 )}
 
                 {overlayPhase === 'revealed' && (
-                  <div className={overlay.type === 'terminal' ? 'p-0' : 'p-4 md:p-10'}>
+                  <div className="p-4 md:p-10">
                     <AnimatePresence mode="wait">
                       {overlayPhase === 'revealed' && (
                         <motion.div
@@ -383,9 +384,8 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
                 )}
               </div>
             </motion.div>
-          </motion.div>
-        </div>
-      )}
+        </motion.div>
+      ) : null}
     </AnimatePresence>
   )
 }
