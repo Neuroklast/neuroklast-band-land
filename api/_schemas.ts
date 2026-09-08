@@ -198,7 +198,7 @@ export const setlistfmQuerySchema = z.object({
 /** POST /api/terminal */
 export const terminalCommandSchema = z.object({
   command: z.string().min(1, 'command is required').max(100)
-    .regex(/^[a-z0-9_-]+$/, 'Invalid command format'),
+    .regex(/^[a-z0-9][a-z0-9:_-]*$/i, 'Invalid command format'),
 })
 
 // ─── OAuth API ────────────────────────────────────────────────────────────────

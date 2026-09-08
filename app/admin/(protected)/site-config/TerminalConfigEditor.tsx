@@ -8,6 +8,7 @@ import { FileSourcePicker } from '@/app/admin/_components/FileSourcePicker'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { DEFAULT_KONAMI_CODE } from '@/lib/konami'
 import {
+  isTerminalCommandName,
   parseTerminalConfig,
   TERMINAL_RESERVED_COMMANDS,
   type TerminalConfig,
@@ -42,6 +43,11 @@ export function TerminalConfigEditor({ currentValue }: { currentValue: Record<st
     setStatus('saving')
     setErrorMsg(null)
     const names = payload.commands.map((cmd) => cmd.name.trim().toLowerCase())
+    if (names.some((name) => !isTerminalCommandName(name))) {
+      setStatus('error')
+      setErrorMsg('Command names: start with a letter or digit; only a-z, 0-9, :, _, -')
+      return
+    }
     if (names.some((name) => (TERMINAL_RESERVED_COMMANDS as readonly string[]).includes(name))) {
       setStatus('error')
       setErrorMsg(`Reserved names: ${TERMINAL_RESERVED_COMMANDS.join(', ')}`)
