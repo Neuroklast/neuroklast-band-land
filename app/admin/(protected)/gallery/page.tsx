@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabaseServer'
 import { resolveImageUrl } from '@/lib/r2'
 import { deleteGalleryImage } from '@/app/admin/_actions/gallery'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import { GalleryVisibilityToggle } from './GalleryVisibilityToggle'
 import Link from 'next/link'
 import { toDirectImageUrl } from '@/lib/image-cache'
@@ -16,15 +17,17 @@ export default async function GalleryPage() {
     active: boolean
   }> = []
 
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('gallery')
       .select('id, alt, storage_path, image_url, display_order, active')
       .order('display_order', { ascending: true })
-    images = data ?? []
+    if (error) loadError = true
+    else images = data ?? []
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
@@ -38,8 +41,15 @@ export default async function GalleryPage() {
           </Link>
         }
       />
-      {images.length === 0 ? (
-        <p className="text-zinc-400 text-sm">No images yet.</p>
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load gallery. Check the database connection.</p>
+      ) : images.length === 0 ? (
+        <div className="space-y-3">
+          <p className="text-zinc-400 text-sm">No images yet.</p>
+          <Link href="/admin/gallery/new" className="inline-flex min-h-[44px] items-center text-sm text-zinc-300 underline hover:text-white">
+            Upload first image
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {images.map((img) => {
@@ -69,9 +79,7 @@ export default async function GalleryPage() {
                       Edit
                     </Link>
                     <form action={async () => { 'use server'; await deleteGalleryImage(img.id) }}>
-                      <button type="submit" className="text-xs text-red-400 hover:text-red-300 transition-colors">
-                        Delete
-                      </button>
+                      <ConfirmDeleteButton message="Delete this image?" className="inline-flex min-h-[44px] items-center text-xs text-red-400 hover:text-red-300" />
                     </form>
                   </div>
                 </div>

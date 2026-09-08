@@ -3,6 +3,7 @@ import {
   DEFAULT_LOADING_BOOT_LABEL,
   DEFAULT_LOADING_DURATION_MS,
   DEFAULT_LOADING_LOGO,
+  DEFAULT_LOADING_LOGO_SIZE_PX,
   parseLoadingScreenConfig,
 } from '@/lib/loading-screen-config'
 
@@ -13,7 +14,14 @@ describe('parseLoadingScreenConfig', () => {
     expect(config.logoUrl).toBe(DEFAULT_LOADING_LOGO)
     expect(config.bootLabel).toBe(DEFAULT_LOADING_BOOT_LABEL)
     expect(config.durationMs).toBe(DEFAULT_LOADING_DURATION_MS)
+    expect(config.logoSizePx).toBe(DEFAULT_LOADING_LOGO_SIZE_PX)
     expect(config.hackingTexts.length).toBeGreaterThan(3)
+  })
+
+  it('clamps logo size', () => {
+    expect(parseLoadingScreenConfig({ logoSizePx: 8 }).logoSizePx).toBe(64)
+    expect(parseLoadingScreenConfig({ logoSizePx: 400 }).logoSizePx).toBe(320)
+    expect(parseLoadingScreenConfig({ logoSizePx: 200 }).logoSizePx).toBe(200)
   })
 
   it('parses newline status lines and duration seconds', () => {

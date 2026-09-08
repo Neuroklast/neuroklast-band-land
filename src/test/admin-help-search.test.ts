@@ -21,7 +21,7 @@ describe('ADMIN_HELP_INDEX integrity', () => {
   })
 
   it('includes all look-and-feel sub-tabs', () => {
-    const tabIds = ['theme', 'background', 'hero', 'sections', 'text', 'advanced']
+    const tabIds = ['theme', 'background', 'hero', 'loader', 'sections', 'text', 'terminal', 'advanced']
     for (const tab of tabIds) {
       expect(
         ADMIN_HELP_INDEX.some((e) => e.href === `/admin/site-config?tab=${tab}`)

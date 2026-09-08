@@ -1018,8 +1018,14 @@
   }
 }
 
+.hero-powerglitch,
+.hero-powerglitch > div {
+  width: 100%;
+}
+
 .hero-logo-glitch img,
-.hero-logo-stage img {
+.hero-logo-stage img,
+.hero-powerglitch img {
   display: block;
   width: 100%;
   height: auto;

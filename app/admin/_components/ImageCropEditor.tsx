@@ -91,13 +91,13 @@ export function ImageCropEditor({
     return aspectRatio ?? null
   }, [aspectRatio, customH, customW, ratioPreset])
 
-  const viewport = useMemo(
-    () =>
-      imageSize.width > 0
-        ? resolveEditorViewport(imageSize.width, imageSize.height, effectiveAspect)
-        : { width: 320, height: 320 },
-    [effectiveAspect, imageSize.height, imageSize.width],
-  )
+  const viewport = useMemo(() => {
+    const maxSize =
+      typeof window === 'undefined' ? 420 : Math.min(420, Math.max(240, window.innerWidth - 48))
+    return imageSize.width > 0
+      ? resolveEditorViewport(imageSize.width, imageSize.height, effectiveAspect, maxSize)
+      : { width: Math.min(320, maxSize), height: Math.min(320, maxSize) }
+  }, [effectiveAspect, imageSize.height, imageSize.width])
 
   const drawRect =
     imageSize.width > 0
@@ -243,7 +243,7 @@ export function ImageCropEditor({
               e.currentTarget.setPointerCapture(e.pointerId)
               handlePointerDown(e.clientX, e.clientY)
             }}
-            role="img"
+            role="application"
             aria-label="Image crop preview — drag to pan"
           >
             <img

@@ -42,19 +42,14 @@ describe('buildNavLinks', () => {
     expect(links[2].label).toBe('Releases')
   })
 
-  it('builds the seven neuroklast.net HUD items', async () => {
-    const { buildNeuroklastNavItems } = await import('@/lib/nav-links')
-    const items = buildNeuroklastNavItems()
-    expect(items.map((item) => item.id)).toEqual([
-      'news',
-      'bio',
-      'gallery',
-      'gigs',
-      'releases',
-      'media',
-      'contact',
+  it('builds nav from visible sections only', async () => {
+    const { navItemsFromSections } = await import('@/lib/nav-links')
+    const items = navItemsFromSections([
+      { id: 'bio', label: 'Biography', visible: false, order: 0 },
+      { id: 'credits', label: 'Credits', visible: true, order: 1 },
+      { id: 'contact', label: 'Contact', visible: true, order: 2 },
     ])
-    expect(items).toHaveLength(7)
+    expect(items.map((item) => item.id)).toEqual(['credits', 'contact'])
   })
 
   it('keeps homepage sections in navbar order', async () => {

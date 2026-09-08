@@ -13,31 +13,36 @@ export default async function ReleasesPage() {
     display_order: number | null
   }> = []
 
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('releases')
       .select('id, title, type, release_date, active, display_order')
       .order('display_order', { ascending: true })
-    releases = (data ?? []).map(
-      (row: {
-        id: string
-        title: string
-        type: string
-        release_date: string | null
-        active: boolean
-        display_order: number | null
-      }) => ({
-        id: row.id,
-        title: row.title,
-        type: row.type,
-        release_date: row.release_date,
-        active: row.active,
-        display_order: row.display_order,
-      }),
-    )
+    if (error) {
+      loadError = true
+    } else {
+      releases = (data ?? []).map(
+        (row: {
+          id: string
+          title: string
+          type: string
+          release_date: string | null
+          active: boolean
+          display_order: number | null
+        }) => ({
+          id: row.id,
+          title: row.title,
+          type: row.type,
+          release_date: row.release_date,
+          active: row.active,
+          display_order: row.display_order,
+        }),
+      )
+    }
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
@@ -63,7 +68,11 @@ export default async function ReleasesPage() {
         }
       />
 
-      <ReleasesListClient releases={releases} />
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load releases. Check the database connection.</p>
+      ) : (
+        <ReleasesListClient releases={releases} />
+      )}
     </div>
   )
 }

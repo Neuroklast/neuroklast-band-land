@@ -43,9 +43,20 @@ export function mergeWithDefaultSections(parsed: SectionConfig[]): SectionConfig
   return merged
 }
 
+function coerceVisible(value: unknown): boolean {
+  if (value === false || value === 0 || value === 'false' || value === '0') return false
+  if (value === true || value === 1 || value === 'true' || value === '1') return true
+  return true
+}
+
 export function parseSections(raw: unknown): SectionConfig[] {
-  if (!Array.isArray(raw)) return DEFAULT_SECTIONS
-  const parsed = raw
+  const source = Array.isArray(raw)
+    ? raw
+    : raw && typeof raw === 'object' && !Array.isArray(raw) && Array.isArray((raw as { sections?: unknown }).sections)
+      ? (raw as { sections: unknown[] }).sections
+      : null
+  if (!source) return DEFAULT_SECTIONS
+  const parsed = source
     .filter(
       (item): item is Record<string, unknown> =>
         item !== null && typeof item === 'object',
@@ -54,7 +65,7 @@ export function parseSections(raw: unknown): SectionConfig[] {
       id: typeof item.id === 'string' ? item.id : '',
       label: typeof item.label === 'string' ? item.label : '',
       intro: typeof item.intro === 'string' ? item.intro : undefined,
-      visible: typeof item.visible === 'boolean' ? item.visible : true,
+      visible: coerceVisible(item.visible),
       order: typeof item.order === 'number' ? item.order : 0,
     }))
     .filter((s) => s.id !== '')

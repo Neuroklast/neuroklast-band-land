@@ -24,6 +24,7 @@ import {
   DEFAULT_SECTION_PANEL_OPACITY,
 } from '@/lib/apply-appearance-config'
 import { hexToOklch, oklchToHex } from '@/lib/color-utils'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import * as SliderPrimitive from '@radix-ui/react-slider'
 import * as SwitchPrimitive from '@radix-ui/react-switch'
 
@@ -41,8 +42,8 @@ export interface AppearanceConfig {
   sectionPanelOpacity: number
   sectionGridOpacity: number
   cardSurfaceOpacity: number
-  faviconUrl?: string
-  faviconStoragePath?: string
+  faviconUrl?: string | null
+  faviconStoragePath?: string | null
   theme?: AppearanceTheme
   lookId?: string
   savedPresets?: SavedAppearancePreset[]
@@ -250,6 +251,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
   const [presetName, setPresetName] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(init))
 
   const payload = useMemo<AppearanceConfig>(
     () => ({
@@ -266,8 +268,8 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       sectionPanelOpacity,
       sectionGridOpacity,
       cardSurfaceOpacity,
-      faviconUrl: faviconUrl || undefined,
-      faviconStoragePath: faviconStoragePath || undefined,
+      faviconUrl: faviconUrl || null,
+      faviconStoragePath: faviconStoragePath || null,
       theme,
       lookId,
       savedPresets,
@@ -293,6 +295,8 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       savedPresets,
     ],
   )
+
+  useUnsavedChanges(JSON.stringify(payload) !== savedSnapshot)
 
   useEffect(() => {
     broadcastAdminDraft('appearance', payload as unknown as Record<string, unknown>)
@@ -345,6 +349,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       setErrorMsg(result.error)
     } else {
       setStatus('saved')
+      setSavedSnapshot(JSON.stringify(payload))
       // Push saved theme to open public tabs immediately
       const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
       broadcastAdminRefresh()
@@ -586,6 +591,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
         <MediaSourcePicker
           label="Favicon"
           currentUrl={faviconUrl || null}
+          currentStoragePath={faviconStoragePath || null}
           storagePrefix="site/favicon"
           accept=".ico,.png,.svg,image/x-icon,image/png,image/svg+xml"
           editorAspectRatio={1}
@@ -593,6 +599,11 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
           onResolved={(path, publicUrl) => {
             setFaviconStoragePath(path)
             if (publicUrl) setFaviconUrl(publicUrl)
+            setErrorMsg(null)
+          }}
+          onCleared={() => {
+            setFaviconStoragePath('')
+            setFaviconUrl('')
             setErrorMsg(null)
           }}
           onError={setErrorMsg}

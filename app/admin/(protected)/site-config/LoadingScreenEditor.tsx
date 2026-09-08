@@ -11,9 +11,12 @@ import {
   DEFAULT_LOADING_CODE_FRAGMENTS,
   DEFAULT_LOADING_HACKING_TEXTS,
   DEFAULT_LOADING_LOGO,
+  MAX_LOADING_LOGO_SIZE_PX,
+  MIN_LOADING_LOGO_SIZE_PX,
   parseLoadingScreenConfig,
 } from '@/lib/loading-screen-config'
 import * as SliderPrimitive from '@radix-ui/react-slider'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 
 interface LoadingScreenEditorProps {
   currentValue: Record<string, unknown>
@@ -31,21 +34,30 @@ export function LoadingScreenEditor({ currentValue }: LoadingScreenEditorProps) 
   const [hackingTexts, setHackingTexts] = useState(parsed.hackingTexts.join('\n'))
   const [codeFragments, setCodeFragments] = useState(parsed.codeFragments.join('\n'))
   const [durationSeconds, setDurationSeconds] = useState(Math.round(parsed.durationMs / 1000))
+  const [logoSizePx, setLogoSizePx] = useState(parsed.logoSizePx)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [savedSnapshot, setSavedSnapshot] = useState('')
 
   const draftPayload = useMemo(
     () => ({
       enabled,
-      logoStoragePath: logoStoragePath || undefined,
-      logoUrl: logoUrl || undefined,
+      logoStoragePath: logoStoragePath || null,
+      logoUrl: logoUrl || null,
       bootLabel,
       hackingTexts,
       codeFragments,
       durationMs: durationSeconds * 1000,
+      logoSizePx,
     }),
-    [enabled, logoStoragePath, logoUrl, bootLabel, hackingTexts, codeFragments, durationSeconds],
+    [enabled, logoStoragePath, logoUrl, bootLabel, hackingTexts, codeFragments, durationSeconds, logoSizePx],
   )
+
+  useEffect(() => {
+    setSavedSnapshot((current) => current || JSON.stringify(draftPayload))
+  }, [draftPayload])
+
+  useUnsavedChanges(Boolean(savedSnapshot) && JSON.stringify(draftPayload) !== savedSnapshot)
 
   useEffect(() => {
     broadcastAdminDraft('loadingScreen', draftPayload)
@@ -63,6 +75,7 @@ export function LoadingScreenEditor({ currentValue }: LoadingScreenEditorProps) 
       setErrorMsg(result.error)
     } else {
       setStatus('saved')
+      setSavedSnapshot(JSON.stringify(draftPayload))
       const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
       broadcastAdminRefresh()
       router.refresh()
@@ -105,12 +118,18 @@ export function LoadingScreenEditor({ currentValue }: LoadingScreenEditorProps) 
       <MediaSourcePicker
         label="Loading icon"
         currentUrl={logoUrl || DEFAULT_LOADING_LOGO}
+        currentStoragePath={logoStoragePath || null}
         storagePrefix="site/loading-logo"
         editorFitMode="contain"
         editorAspectRatio={1}
         onResolved={(path, publicUrl) => {
           setLogoStoragePath(path)
           if (publicUrl) setLogoUrl(publicUrl)
+          setErrorMsg(null)
+        }}
+        onCleared={() => {
+          setLogoStoragePath('')
+          setLogoUrl(DEFAULT_LOADING_LOGO)
           setErrorMsg(null)
         }}
         onError={setErrorMsg}
@@ -126,9 +145,10 @@ export function LoadingScreenEditor({ currentValue }: LoadingScreenEditorProps) 
         Reset to default icon
       </button>
 
-      <label className="block space-y-1">
+      <label htmlFor="loading-boot-label" className="block space-y-1">
         <span className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">Footer label</span>
         <input
+          id="loading-boot-label"
           value={bootLabel}
           onChange={(e) => setBootLabel(e.target.value)}
           className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100"
@@ -138,9 +158,30 @@ export function LoadingScreenEditor({ currentValue }: LoadingScreenEditorProps) 
 
       <div className="space-y-2">
         <label className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
+          Logo size — {logoSizePx}px
+        </label>
+        <SliderPrimitive.Root
+          aria-label="Logo size"
+          min={MIN_LOADING_LOGO_SIZE_PX}
+          max={MAX_LOADING_LOGO_SIZE_PX}
+          step={8}
+          value={[logoSizePx]}
+          onValueChange={([value]) => setLogoSizePx(value)}
+          className="relative flex h-5 w-full touch-none select-none items-center"
+        >
+          <SliderPrimitive.Track className="relative h-1 grow rounded-full bg-zinc-700">
+            <SliderPrimitive.Range className="absolute h-full rounded-full bg-red-500" />
+          </SliderPrimitive.Track>
+          <SliderPrimitive.Thumb className="block size-4 cursor-grab rounded-full border border-red-500 bg-zinc-900 shadow focus:outline-none" />
+        </SliderPrimitive.Root>
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
           Duration — {durationSeconds}s
         </label>
         <SliderPrimitive.Root
+          aria-label="Duration"
           min={1}
           max={8}
           step={1}
@@ -155,11 +196,12 @@ export function LoadingScreenEditor({ currentValue }: LoadingScreenEditorProps) 
         </SliderPrimitive.Root>
       </div>
 
-      <label className="block space-y-1">
+      <label htmlFor="loading-status-lines" className="block space-y-1">
         <span className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
           Status lines (one per line)
         </span>
         <textarea
+          id="loading-status-lines"
           value={hackingTexts}
           onChange={(e) => setHackingTexts(e.target.value)}
           rows={8}
@@ -168,11 +210,12 @@ export function LoadingScreenEditor({ currentValue }: LoadingScreenEditorProps) 
         />
       </label>
 
-      <label className="block space-y-1">
+      <label htmlFor="loading-code-fragments" className="block space-y-1">
         <span className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
           Code fragments (one per line)
         </span>
         <textarea
+          id="loading-code-fragments"
           value={codeFragments}
           onChange={(e) => setCodeFragments(e.target.value)}
           rows={6}

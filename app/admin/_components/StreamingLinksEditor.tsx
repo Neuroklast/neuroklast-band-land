@@ -10,6 +10,9 @@ export interface StreamingLink {
 interface StreamingLinksEditorProps {
   /** JSON-encoded initial value from the hidden input. */
   initialJson?: string
+  fieldName?: string
+  recordMode?: boolean
+  addLabel?: string
 }
 
 const PLATFORM_SUGGESTIONS = [
@@ -17,15 +20,37 @@ const PLATFORM_SUGGESTIONS = [
   'YouTube', 'Amazon Music', 'Deezer', 'Tidal', 'iTunes',
 ]
 
-export function StreamingLinksEditor({ initialJson = '[]' }: StreamingLinksEditorProps) {
-  const [links, setLinks] = useState<StreamingLink[]>(() => {
-    try {
-      const parsed = JSON.parse(initialJson)
-      return Array.isArray(parsed) ? parsed : []
-    } catch {
-      return []
+function parseInitial(json: string, recordMode: boolean): StreamingLink[] {
+  try {
+    const parsed = JSON.parse(json) as unknown
+    if (Array.isArray(parsed)) {
+      return parsed.filter(
+        (item): item is StreamingLink =>
+          item !== null &&
+          typeof item === 'object' &&
+          typeof (item as StreamingLink).platform === 'string' &&
+          typeof (item as StreamingLink).url === 'string',
+      )
     }
-  })
+    if (recordMode && parsed && typeof parsed === 'object') {
+      return Object.entries(parsed as Record<string, unknown>).map(([platform, url]) => ({
+        platform,
+        url: typeof url === 'string' ? url : '',
+      }))
+    }
+  } catch {
+    // ignore
+  }
+  return []
+}
+
+export function StreamingLinksEditor({
+  initialJson = '[]',
+  fieldName = 'streaming_links',
+  recordMode = false,
+  addLabel = '+ Add streaming link',
+}: StreamingLinksEditorProps) {
+  const [links, setLinks] = useState<StreamingLink[]>(() => parseInitial(initialJson, recordMode))
 
   function addLink() {
     setLinks((prev) => [...prev, { platform: '', url: '' }])
@@ -46,7 +71,7 @@ export function StreamingLinksEditor({ initialJson = '[]' }: StreamingLinksEdito
   return (
     <div className="space-y-3">
       {links.map((link, i) => (
-        <div key={i} className="flex gap-2 items-start">
+        <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-start">
           <div className="flex-1 min-w-0">
             <input
               list={`platform-suggestions-${i}`}
@@ -75,7 +100,7 @@ export function StreamingLinksEditor({ initialJson = '[]' }: StreamingLinksEdito
           <button
             type="button"
             onClick={() => removeLink(i)}
-            className="shrink-0 px-2 py-2 text-zinc-500 hover:text-red-400 transition-colors"
+            className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center text-zinc-500 hover:text-red-400 transition-colors"
             aria-label={`Remove streaming link ${i + 1}`}
           >
             ✕
@@ -88,14 +113,17 @@ export function StreamingLinksEditor({ initialJson = '[]' }: StreamingLinksEdito
         onClick={addLink}
         className="text-sm text-zinc-400 hover:text-white transition-colors border border-dashed border-zinc-700 hover:border-zinc-500 rounded px-3 py-1.5 w-full"
       >
-        + Add streaming link
+        {addLabel}
       </button>
 
-      {/* Hidden input serialises the links for form submission */}
       <input
         type="hidden"
-        name="streaming_links"
-        value={JSON.stringify(validLinks)}
+        name={fieldName}
+        value={
+          recordMode
+            ? JSON.stringify(Object.fromEntries(validLinks.map((l) => [l.platform, l.url])))
+            : JSON.stringify(validLinks)
+        }
       />
     </div>
   )

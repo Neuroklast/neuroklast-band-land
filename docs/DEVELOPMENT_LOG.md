@@ -4,6 +4,21 @@ Entries are in **reverse chronological order** (newest first).
 
 ---
 
+## Session: 2026-09-08 — UI/UX P2/P3 + Secret Terminal revival
+
+**Branch:** `feat/hero-legal-overlay`
+
+### Done
+- Gig/release cards: overlay button + sibling links (no nested `role=button`)
+- Unsaved-changes hook on Look & Feel, gigs, members, partners, bio, simple text
+- Admin `htmlFor` via `AdminField` on those forms
+- Reduced-motion: Classic nav/hero/footer/loader, overlays, cookie banner, overlay clip-path
+- Safe-area: overlay close, hero caret, admin mobile nav
+- Footer contrast: `text-xs` instead of `text-[10px]`
+- Secret Terminal migrated to Next: `CyberpunkOverlay` type `terminal`, `POST /api/terminal`, Look & Feel → Terminal, Konami + Morse + cheat URL
+
+---
+
 ## Session: 2026-04-02 — Comprehensive Performance Optimization
 
 **Agent:** GitHub Copilot Coding Agent

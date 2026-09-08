@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { YoutubeLogo, Play } from '@phosphor-icons/react'

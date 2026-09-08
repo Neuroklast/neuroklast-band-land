@@ -199,4 +199,26 @@ describe('buildImportRows', () => {
     expect(urls).toContain('https://wsrv.nl/?url=.../mno')
     expect(urls).toContain('https://drive.google.com/file/d/xyz/view')
   })
+
+  it('maps terminal commands, secret code and morse into site_config', () => {
+    const fileUrl = 'https://example.com/secret.zip'
+    const { rows } = buildImportRows(
+      {
+        terminalCommands: [
+          { name: 'lore', description: 'Band lore', output: ['Industrial'], fileUrl, fileName: 'secret.zip' },
+        ],
+        secretCode: ['a', 'b', 'c'],
+        terminalMorseCode: '..-',
+      },
+      new Map([[fileUrl, { storagePath: 'terminal/lore/secret.zip', contentHash: 'ab' }]]),
+    )
+    const terminal = rows.site_config?.find((row) => row.key === 'terminal')
+    expect(terminal?.value).toMatchObject({
+      secretCode: ['a', 'b', 'c'],
+      morseCode: '..-',
+    })
+    const commands = (terminal?.value as { commands: Array<{ fileStoragePath?: string }> }).commands
+    expect(commands[0]?.fileStoragePath).toBe('terminal/lore/secret.zip')
+    expect(collectMediaUrls({ terminalCommands: [{ fileUrl }] })).toContain(fileUrl)
+  })
 })

@@ -44,6 +44,9 @@ Public content SSR: `createPublicClient()` (cookie-less), not session `createCli
 | `media` | Media downloads (image preview) | `MediaOverlayContent` |
 | `contact` | Contact | `ContactOverlayContent` |
 | `member` | Bio / members | `MemberOverlayContent` |
+| `news` | News overlay | `NewsOverlayContent` |
+| `explorer` | Media archive | `MediaExplorerBody` |
+| `terminal` | Konami / Morse / cheat URL | `SecretTerminalContent` |
 
 Rules:
 
@@ -55,6 +58,20 @@ Rules:
 6. Media download images use overlay type `media` (preview + download). Do **not** run those files through the partner white-silhouette pipeline — they are download originals.
 
 **Forbidden:** shipping a one-off `fixed inset-0` lightbox that only “sort of” matches releases/events.
+
+### Secret Terminal
+
+Live chrome is Classic `LookNav` + `CyberpunkOverlay` type `terminal` (not the SPA `SecretTerminal` modal).
+
+| Trigger | Implementation |
+|---------|----------------|
+| Konami / custom keys | `SecretTerminalTrigger` in `TerminalConfigProvider` (root layout) |
+| Morse on nav logo | `useMorseCode` in `LookNav` → Classic logo button |
+| Cheat query | `?access-secret-terminal-NK-666` (stripped after open) |
+| Commands | `POST /api/terminal` (cookie-less `createPublicClient`, rate-limited) |
+| Admin | Look & Feel → Terminal (`site_config.terminal`) |
+
+Built-ins: `help`, `clear`, `exit`, `glitch`, `matrix`. Custom commands cannot override reserved names. Respect `prefers-reduced-motion` (no typing/FX).
 
 ---
 
@@ -103,6 +120,8 @@ File: `app/_components/public/SiteFooter.tsx`.
 ---
 
 ## Hero wordmark
+
+**PowerGlitch** (`hero.powerGlitch`): Look & Feel → Hero. Modes `off` (CRT idle burst), `hover`, `always`. Reduced-motion skips it.
 
 | Do | Don't |
 |----|--------|

@@ -210,6 +210,7 @@ export function collectMediaUrls(data: Record<string, unknown>): string[] {
   for (const item of recordArrayFromKeys(data, ['news', 'newsPosts', 'news_posts'])) push(item.photo)
   for (const image of asRecordArray(data.galleryImages)) push(image.url)
   for (const file of asRecordArray(data.mediaFiles)) push(file.url)
+  for (const cmd of asRecordArray(data.terminalCommands)) push(cmd.fileUrl)
 
   return Array.from(new Set(urls))
 }
@@ -475,11 +476,37 @@ export function buildImportRows(
     privacyPolicyCustom: asString(datenschutz?.customText) ?? undefined,
   }
 
+  const terminalCommands = asRecordArray(data.terminalCommands).map((cmd) => {
+    const fileUrl = asString(cmd.fileUrl)
+    const { storagePath } = mediaFor(mediaMap, fileUrl)
+    return {
+      name: asString(cmd.name) ?? '',
+      description: asString(cmd.description) ?? '',
+      output: asStringArray(cmd.output),
+      fileName: asString(cmd.fileName) ?? undefined,
+      fileUrl: fileUrl ?? undefined,
+      fileStoragePath: storagePath ?? undefined,
+    }
+  })
+  const secretCode = asStringArray(data.secretCode)
+  const terminalMorseCode = asString(data.terminalMorseCode)
+  const terminalValue =
+    terminalCommands.length > 0 || secretCode.length > 0 || terminalMorseCode
+      ? {
+          commands: terminalCommands,
+          secretCode,
+          morseCode: terminalMorseCode ?? '...',
+        }
+      : null
+
   rows.site_config = [
     { key: 'hero', value: hero, updated_at: new Date().toISOString() },
     { key: 'appearance', value: { lookId: 'neuroklast-classic' }, updated_at: new Date().toISOString() },
     { key: 'sections', value: sections, updated_at: new Date().toISOString() },
     { key: 'legal', value: legal, updated_at: new Date().toISOString() },
+    ...(terminalValue
+      ? [{ key: 'terminal', value: terminalValue, updated_at: new Date().toISOString() }]
+      : []),
   ]
 
   return { rows, mediaUrls: collectMediaUrls(data), summary }

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { parseSections, type SectionConfig } from '@/lib/site-config-sections'
 
 export interface LegalConfig {
   operatorName: string
@@ -174,6 +175,9 @@ export interface LegalPageData {
   legal: LegalConfig
   footer: FooterConfig
   appearance: Record<string, unknown>
+  background: Record<string, unknown>
+  hero: Record<string, unknown>
+  sections: SectionConfig[]
   social: Array<{ id: string; platform: string; url: string; label: string | null }>
 }
 
@@ -194,6 +198,13 @@ export async function loadLegalPageData(
     appearance: (get('appearance') && typeof get('appearance') === 'object'
       ? get('appearance')
       : {}) as Record<string, unknown>,
+    background: (get('background') && typeof get('background') === 'object'
+      ? get('background')
+      : {}) as Record<string, unknown>,
+    hero: (get('hero') && typeof get('hero') === 'object'
+      ? get('hero')
+      : {}) as Record<string, unknown>,
+    sections: parseSections(get('sections')),
     social: (socialResult.data ?? []) as LegalPageData['social'],
   }
 }

@@ -8,6 +8,11 @@ import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { DEFAULT_HERO_LOGO_URL } from '@/lib/hero-defaults'
 import { resolveImageUrl } from '@/lib/r2'
 import * as SliderPrimitive from '@radix-ui/react-slider'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
+import {
+  parseHeroPowerGlitch,
+  type HeroPowerGlitchMode,
+} from '@/lib/hero-glitch-config'
 
 interface HeroConfigEditorProps {
   currentValue: Record<string, unknown>
@@ -45,6 +50,14 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
   const [bootSequenceEnabled, setBootSequenceEnabled] = useState<boolean>(
     currentValue.bootSequenceEnabled === false ? false : true,
   )
+  const initialGlitch = parseHeroPowerGlitch(currentValue.powerGlitch)
+  const [glitchMode, setGlitchMode] = useState<HeroPowerGlitchMode>(initialGlitch.mode)
+  const [glitchDurationMs, setGlitchDurationMs] = useState(initialGlitch.durationMs)
+  const [glitchSliceCount, setGlitchSliceCount] = useState(initialGlitch.sliceCount)
+  const [glitchShake, setGlitchShake] = useState(initialGlitch.shake)
+  const [glitchHue, setGlitchHue] = useState(initialGlitch.hueRotate)
+  const [glitchPulse, setGlitchPulse] = useState(initialGlitch.pulse)
+  const [glitchContinuous, setGlitchContinuous] = useState(initialGlitch.continuous)
   const clampW = (n: number) => Math.min(100, Math.max(15, Math.round(n)))
   /** Desktop wordmark width as % of content column (15–100). Height follows aspect ratio. */
   const [logoWidthPercent, setLogoWidthPercent] = useState<number>(() => {
@@ -74,6 +87,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
   })
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [savedSnapshot, setSavedSnapshot] = useState('')
 
   const resolvedLogoPreview = logoImageUrl || DEFAULT_HERO_LOGO_URL
 
@@ -83,14 +97,23 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
       tagline,
       ctaLabel,
       ctaUrl,
-      logoImageStoragePath: logoImageStoragePath || undefined,
-      logoImageUrl: logoImageUrl || undefined,
-      backgroundImageStoragePath: backgroundImageStoragePath || undefined,
-      backgroundImageUrl: backgroundImageUrl || undefined,
+      logoImageStoragePath: logoImageStoragePath || null,
+      logoImageUrl: logoImageUrl || null,
+      backgroundImageStoragePath: backgroundImageStoragePath || null,
+      backgroundImageUrl: backgroundImageUrl || null,
       backgroundImageOpacity,
       bootSequenceEnabled,
       logoWidthPercent,
       logoWidthPercentMobile,
+      powerGlitch: {
+        mode: glitchMode,
+        durationMs: glitchDurationMs,
+        sliceCount: glitchSliceCount,
+        shake: glitchShake,
+        hueRotate: glitchHue,
+        pulse: glitchPulse,
+        continuous: glitchContinuous,
+      },
     }),
     [
       headline,
@@ -105,8 +128,21 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
       bootSequenceEnabled,
       logoWidthPercent,
       logoWidthPercentMobile,
+      glitchMode,
+      glitchDurationMs,
+      glitchSliceCount,
+      glitchShake,
+      glitchHue,
+      glitchPulse,
+      glitchContinuous,
     ],
   )
+
+  useEffect(() => {
+    setSavedSnapshot((current) => current || JSON.stringify(draftPayload))
+  }, [draftPayload])
+
+  useUnsavedChanges(Boolean(savedSnapshot) && JSON.stringify(draftPayload) !== savedSnapshot)
 
   useEffect(() => {
     broadcastAdminDraft('hero', {
@@ -127,6 +163,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
       setErrorMsg(result.error)
     } else {
       setStatus('saved')
+      setSavedSnapshot(JSON.stringify(draftPayload))
       const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
       broadcastAdminRefresh()
       router.refresh()
@@ -147,6 +184,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
         <MediaSourcePicker
           label="Hero Wordmark Image"
           currentUrl={logoImageUrl || DEFAULT_HERO_LOGO_URL}
+          currentStoragePath={logoImageStoragePath || null}
           storagePrefix="hero/logo"
           editorFitMode="contain"
           maxOutputDimension={4096}
@@ -266,8 +304,9 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">Alt text</label>
+          <label htmlFor="hero-alt-text" className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">Alt text</label>
           <input
+            id="hero-alt-text"
             type="text"
             value={headline}
             onChange={(e) => setHeadline(e.target.value)}
@@ -276,8 +315,9 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">Tagline</label>
+          <label htmlFor="hero-tagline" className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">Tagline</label>
           <input
+            id="hero-tagline"
             type="text"
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
@@ -287,8 +327,9 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">CTA Label</label>
+            <label htmlFor="hero-cta-label" className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">CTA Label</label>
             <input
+              id="hero-cta-label"
               type="text"
               value={ctaLabel}
               onChange={(e) => setCtaLabel(e.target.value)}
@@ -296,8 +337,9 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
             />
           </div>
           <div className="space-y-1">
-            <label className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">CTA URL</label>
+            <label htmlFor="hero-cta-url" className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">CTA URL</label>
             <input
+              id="hero-cta-url"
               type="text"
               value={ctaUrl}
               onChange={(e) => setCtaUrl(e.target.value)}
@@ -309,12 +351,18 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
         <MediaSourcePicker
           label="Hero Background Overlay (optional)"
           currentUrl={backgroundImageUrl || null}
+          currentStoragePath={backgroundImageStoragePath || null}
           storagePrefix="hero/background"
           editorAspectRatio={16 / 9}
           editorFitMode="cover"
           onResolved={(path, publicUrl) => {
             setBackgroundImageStoragePath(path)
             if (publicUrl) setBackgroundImageUrl(publicUrl)
+            setErrorMsg(null)
+          }}
+          onCleared={() => {
+            setBackgroundImageStoragePath('')
+            setBackgroundImageUrl('')
             setErrorMsg(null)
           }}
           onError={setErrorMsg}
@@ -371,6 +419,91 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
         <p className="text-xs font-mono text-zinc-400">
           Boot sequence: {bootSequenceEnabled ? 'ON' : 'OFF'}
         </p>
+
+        <div className="space-y-3 border-t border-zinc-800 pt-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Wordmark glitch</p>
+            <p className="mt-1 text-xs text-zinc-500">
+              PowerGlitch on the hero image. Off keeps the CRT idle burst. Hover glitches on mouseover; always loops.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {([
+              ['off', 'Off'],
+              ['hover', 'Hover'],
+              ['always', 'Always'],
+            ] as const).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setGlitchMode(value)}
+                className={`min-h-[44px] rounded border px-3 text-sm ${
+                  glitchMode === value
+                    ? 'border-red-700/50 bg-red-900/40 text-white'
+                    : 'border-zinc-700 text-zinc-400 hover:text-white'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {glitchMode !== 'off' ? (
+            <div className="space-y-3">
+              <label className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
+                Duration — {glitchDurationMs}ms
+              </label>
+              <SliderPrimitive.Root
+                aria-label="Glitch duration"
+                min={120}
+                max={8000}
+                step={50}
+                value={[glitchDurationMs]}
+                onValueChange={([value]) => setGlitchDurationMs(value)}
+                className="relative flex h-5 w-full touch-none select-none items-center"
+              >
+                <SliderPrimitive.Track className="relative h-1 grow rounded-full bg-zinc-700">
+                  <SliderPrimitive.Range className="absolute h-full rounded-full bg-red-500" />
+                </SliderPrimitive.Track>
+                <SliderPrimitive.Thumb className="block size-4 cursor-grab rounded-full border border-red-500 bg-zinc-900 shadow focus:outline-none" />
+              </SliderPrimitive.Root>
+              <label className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
+                Slices — {glitchSliceCount}
+              </label>
+              <SliderPrimitive.Root
+                aria-label="Glitch slice count"
+                min={2}
+                max={16}
+                step={1}
+                value={[glitchSliceCount]}
+                onValueChange={([value]) => setGlitchSliceCount(value)}
+                className="relative flex h-5 w-full touch-none select-none items-center"
+              >
+                <SliderPrimitive.Track className="relative h-1 grow rounded-full bg-zinc-700">
+                  <SliderPrimitive.Range className="absolute h-full rounded-full bg-red-500" />
+                </SliderPrimitive.Track>
+                <SliderPrimitive.Thumb className="block size-4 cursor-grab rounded-full border border-red-500 bg-zinc-900 shadow focus:outline-none" />
+              </SliderPrimitive.Root>
+              <div className="flex flex-wrap gap-4 text-xs text-zinc-300">
+                <label className="flex min-h-[44px] items-center gap-2">
+                  <input type="checkbox" checked={glitchShake} onChange={(e) => setGlitchShake(e.target.checked)} />
+                  Shake
+                </label>
+                <label className="flex min-h-[44px] items-center gap-2">
+                  <input type="checkbox" checked={glitchHue} onChange={(e) => setGlitchHue(e.target.checked)} />
+                  Hue rotate
+                </label>
+                <label className="flex min-h-[44px] items-center gap-2">
+                  <input type="checkbox" checked={glitchPulse} onChange={(e) => setGlitchPulse(e.target.checked)} />
+                  Pulse
+                </label>
+                <label className="flex min-h-[44px] items-center gap-2">
+                  <input type="checkbox" checked={glitchContinuous} onChange={(e) => setGlitchContinuous(e.target.checked)} />
+                  Continuous
+                </label>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex items-center gap-3 pt-1">

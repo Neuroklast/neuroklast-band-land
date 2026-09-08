@@ -69,22 +69,13 @@ function ReleaseBrowseCard({
   onClick: () => void
 }) {
   return (
-    <article
-      className="cyber-card group cursor-pointer overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic"
-      onClick={(event) => {
-        const target = event.target
-        if (target instanceof Element && target.closest('a')) return
-        onClick()
-      }}
-      onKeyDown={(event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return
-        event.preventDefault()
-        onClick()
-      }}
-      role="button"
-      tabIndex={0}
-      aria-label={`Open release details for ${release.title}`}
-    >
+    <article className="cyber-card group relative overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic">
+      <button
+        type="button"
+        className="absolute inset-0 z-0 cursor-pointer"
+        onClick={onClick}
+        aria-label={`Open release details for ${release.title}`}
+      />
       <div className="aspect-square overflow-hidden bg-muted">
         {release.coverUrl ? (
           <img
@@ -102,7 +93,7 @@ function ReleaseBrowseCard({
         )}
       </div>
 
-      <div className="space-y-4 p-4">
+      <div className="pointer-events-none relative z-[1] space-y-4 p-4">
         <div className="space-y-2">
           <div className="data-label" data-theme-color="data-label">
             // REL.{release.release_date?.slice(0, 4) ?? '----'}
@@ -129,7 +120,7 @@ function ReleaseBrowseCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${release.title} on ${link.platform}`}
-                  className="cyber-border inline-flex items-center gap-2 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] hover-glitch"
+                  className="pointer-events-auto relative z-[1] cyber-border inline-flex min-h-[44px] items-center gap-2 px-2 py-1 font-mono text-xs uppercase tracking-[0.2em] hover-glitch"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span>{link.platform}</span>
@@ -145,19 +136,13 @@ function ReleaseBrowseCard({
 
 function SwipeReleaseCard({ release, onClick }: { release: PublicReleaseCardItem; onClick: () => void }) {
   return (
-    <div
-      className="cyber-card group cursor-pointer overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic"
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          onClick()
-        }
-      }}
-      aria-label={`Open release details for ${release.title}`}
-    >
+    <div className="cyber-card group relative overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic">
+      <button
+        type="button"
+        className="absolute inset-0 z-0 cursor-pointer"
+        onClick={onClick}
+        aria-label={`Open release details for ${release.title}`}
+      />
       <div className="relative aspect-square overflow-hidden bg-black">
         {release.coverUrl ? (
           <img

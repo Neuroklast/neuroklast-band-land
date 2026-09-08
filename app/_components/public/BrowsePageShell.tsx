@@ -9,7 +9,7 @@ interface BrowsePageShellProps {
 export function BrowsePageShell({ title, streamLabel, children }: BrowsePageShellProps) {
   return (
     <div
-      className="relative w-full max-w-6xl mx-auto px-card py-section"
+      className="relative w-full max-w-6xl mx-auto px-card pt-[calc(var(--nk-nav-h)+1.5rem)] pb-section"
       style={{ zIndex: 'var(--z-content)' as React.CSSProperties['zIndex'] }}
     >
       <SectionContentPanel>

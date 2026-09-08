@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import type React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { X } from '@phosphor-icons/react'
 import type { AdminSettings } from '@/lib/types'
@@ -12,7 +12,7 @@ import {
   OVERLAY_GLITCH_PHASE_DELAY_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
-import { getOverlayAnimationByName } from '@/lib/overlay-animations'
+import { resolveOverlayAnimation } from '@/lib/overlay-animations'
 import { getOverlaySessionKey } from '@/lib/overlay-session'
 import { getRandomProgressiveMode } from '@/lib/progressive-overlay-modes'
 import { ContactOverlayContent } from '@/components/overlays/ContactOverlayContent'
@@ -24,6 +24,7 @@ import { MediaOverlayContent } from '@/components/overlays/MediaOverlayContent'
 import { NewsOverlayContent } from '@/components/overlays/NewsOverlayContent'
 import { MediaExplorerBody } from '@/app/_components/public/MediaOverlay'
 import { toExplorerFiles } from '@/app/_components/public/MediaExplorer'
+import { SecretTerminalContent } from '@/components/overlays/SecretTerminalContent'
 import { useLenisContext } from '@/contexts/LenisContext'
 
 const OVERLAY_LOADING_TEXTS = [
@@ -73,7 +74,8 @@ function isDirectRevealType(type: string | undefined): boolean {
     type === 'media' ||
     type === 'news' ||
     type === 'member' ||
-    type === 'explorer'
+    type === 'explorer' ||
+    type === 'terminal'
   )
 }
 
@@ -83,6 +85,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
   const [progressiveMode, setProgressiveMode] = useState(() => getRandomProgressiveMode())
   const decorativeTexts = adminSettings?.decorative
   const { lenis } = useLenisContext()
+  const prefersReducedMotion = useReducedMotion()
 
   // Use a ref so the progressive modes config is always current inside the effect
   // without it being a dependency — prevents a re-run (and phase reset) whenever
@@ -98,11 +101,12 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
   const panelRef = useRef<HTMLDivElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
 
-  // Pick a new random animation each time a new overlay session opens.
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- session key is the intentional open trigger, not a closed-over value
   const anim = useMemo(
-    () => getOverlayAnimationByName(overlayAnimation),
-    [overlaySessionKey, overlayAnimation],
+    () => {
+      void overlaySessionKey
+      return resolveOverlayAnimation(overlayAnimation, prefersReducedMotion)
+    },
+    [overlaySessionKey, overlayAnimation, prefersReducedMotion],
   )
   const systemLabel = decorativeTexts?.overlaySystemLabel ?? `// ${artistName ? `${artistName.toUpperCase()}.NET` : 'SYSTEM.INTERFACE'} // v${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}`
 
@@ -110,6 +114,11 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
     if (!overlaySessionKey) return
 
     setProgressiveMode(getRandomProgressiveMode(progressiveOverlayModesRef.current))
+    if (prefersReducedMotion) {
+      setOverlayPhase('revealed')
+      setLoadingText(OVERLAY_LOADING_TEXTS[OVERLAY_LOADING_TEXTS.length - 1])
+      return
+    }
     setOverlayPhase('loading')
     setLoadingText(OVERLAY_LOADING_TEXTS[0])
 
@@ -135,7 +144,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
       clearTimeout(glitchTimer)
       clearTimeout(revealTimer)
     }
-  }, [overlaySessionKey])
+  }, [overlaySessionKey, prefersReducedMotion])
 
   useEffect(() => {
     if (!overlaySessionKey) return
@@ -234,16 +243,24 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               aria-modal="true"
               aria-labelledby="cyberpunk-overlay-title"
               initial={{ boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
-              animate={{
-                boxShadow: [
-                  `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}`,
-                  `0 0 40px ${resolveModalGlow(adminSettings, 0.5)}`,
-                  `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}`,
-                ],
-              }}
+              animate={
+                prefersReducedMotion
+                  ? { boxShadow: `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}` }
+                  : {
+                      boxShadow: [
+                        `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}`,
+                        `0 0 40px ${resolveModalGlow(adminSettings, 0.5)}`,
+                        `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}`,
+                      ],
+                    }
+              }
               data-theme-color="card card-foreground border"
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/30 bg-background/98 pointer-events-auto scanline-effect cyber-card rounded-[var(--radius)] md:h-auto md:max-h-[90vh]"
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
+              }
+              className="relative flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/30 bg-background/98 pointer-events-auto scanline-effect cyber-card rounded-[var(--radius)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh]"
               style={{ borderRadius: 'var(--radius)' } as React.CSSProperties}
               onClick={(e) => e.stopPropagation()}
             >
@@ -265,7 +282,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-3 right-3 z-20 min-h-[44px] min-w-[44px] text-foreground hover:text-primary hover:bg-primary/10"
+                className="absolute z-20 min-h-[44px] min-w-[44px] text-foreground hover:text-primary hover:bg-primary/10 top-[max(0.75rem,env(safe-area-inset-top))] right-[max(0.75rem,env(safe-area-inset-right))]"
                 onClick={onClose}
                 aria-label="Close dialog"
               >
@@ -353,6 +370,10 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
 
                           {overlay.type === 'explorer' && overlay.data && (
                             <MediaExplorerBody files={toExplorerFiles(overlay.data.items)} />
+                          )}
+
+                          {overlay.type === 'terminal' && (
+                            <SecretTerminalContent siteName={artistName} />
                           )}
                         </motion.div>
                       )}

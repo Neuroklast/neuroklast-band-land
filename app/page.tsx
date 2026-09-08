@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { unstable_cache } from 'next/cache'
 import { createPublicClient } from '@/lib/supabaseServer'
-import { resolveImageUrl } from '@/lib/r2'
+import { resolveImageUrl, resolvePublicAssetUrl } from '@/lib/r2'
 import { splitGigsByDate } from '@/lib/gig-browse'
 import { PageLayout } from '@/layouts/PageLayout'
 import { CookieConsent } from '@/components/CookieConsent'
-import KonamiListener from '@/components/KonamiListener'
+
 import { GallerySection } from './_components/public/GallerySection'
 import { MediaSection } from './_components/public/MediaSection'
 import { LookBackground, LookEffects, LookFooter, LookHero, LookNav, PublicBoot } from './_components/public/LookChrome'
@@ -22,7 +22,13 @@ import { GigsSection } from './_components/public/GigsSection'
 import { NewsSection } from './_components/public/NewsSection'
 import { ContactSection } from './_components/public/ContactSection'
 import { parseLookId } from '@/lib/looks'
-import { parseBackgroundVideoOpacity } from '@/lib/background-config'
+import { parseHeroPowerGlitch } from '@/lib/hero-glitch-config'
+import {
+  DEFAULT_SITE_BACKGROUND_VIDEO,
+  parseBackgroundVideoEnabled,
+  parseBackgroundVideoOpacity,
+  resolveSiteBackgroundVideoSrc,
+} from '@/lib/background-config'
 import { SectionDivider } from './_components/public/SectionWrapper'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { SocialSection } from './_components/public/SocialSection'
@@ -34,7 +40,7 @@ import {
   mapReleaseRowToOverlayRelease,
   type ReleaseDbRow,
 } from '@/lib/release-public-mapper'
-import { buildNeuroklastNavItems, filterHomeSectionsToNav } from '@/lib/nav-links'
+import { navItemsFromSections } from '@/lib/nav-links'
 import {
   parseSections,
   withoutExcludedSections,
@@ -262,6 +268,7 @@ function getConfig(rows: SiteConfigRow[], key: string): Record<string, unknown> 
 // (PostgREST egress amplification: every homepage hit used to cost 13 queries.)
 const fetchAllCached = unstable_cache(fetchAll, ['homepage-site-data'], {
   revalidate: 60,
+  tags: ['site-config', 'homepage-site-data'],
 })
 
 export default async function HomePage({
@@ -286,7 +293,7 @@ export default async function HomePage({
   )
   const sections = isAdminPreview
     ? allSections
-    : filterHomeSectionsToNav(allSections.filter((s) => s.visible))
+    : allSections.filter((s) => s.visible)
 
   // Extract section style overrides from site_config (centralized helper to avoid repetition)
   // Note: sections config can be array of sections or object with styleOverrides
@@ -374,10 +381,6 @@ export default async function HomePage({
   // Gigs: split upcoming vs past (shared helper — same rules as /gigs browse)
   const { upcoming, past } = splitGigsByDate(gigs)
 
-  function isSectionVisible(id: string) {
-    return allSections.some((s) => s.id === id && s.visible)
-  }
-
   function wrapForPreview(content: ReactNode, section: SectionConfig) {
     if (!isAdminPreview) return content
     return (
@@ -394,12 +397,18 @@ export default async function HomePage({
 
   // Build slots for the mandatory PageLayout (AGENTS §6)
   const backgroundConfig = getConfig(configRows, 'background')
+  const configuredVideoSrc = resolveSiteBackgroundVideoSrc(
+    backgroundConfig.video_storage_path,
+    backgroundConfig.video_url,
+  )
   const backgroundLayers = (
     <>
       <LookBackground
         lookId={lookId}
         siteName={siteName}
+        videoUrl={configuredVideoSrc ?? DEFAULT_SITE_BACKGROUND_VIDEO}
         videoOpacity={parseBackgroundVideoOpacity(backgroundConfig.backgroundVideoOpacity)}
+        videoEnabled={parseBackgroundVideoEnabled(backgroundConfig.backgroundVideoEnabled, true)}
       />
     </>
   )
@@ -410,7 +419,7 @@ export default async function HomePage({
     <LookNav
       lookId={lookId}
       siteName={siteName}
-      items={buildNeuroklastNavItems(allSections)}
+        items={navItemsFromSections(allSections)}
     />
   )
 
@@ -447,7 +456,6 @@ export default async function HomePage({
       <PublicBoot lookId={lookId} loadingScreen={getConfig(configRows, 'loadingScreen')} />
       <AdminDraftListener enableDrafts={isAdminPreview} />
       <CookieConsent privacyPolicyUrl={privacyPolicyUrl} />
-      <KonamiListener />
     </>
   )
 
@@ -477,7 +485,7 @@ export default async function HomePage({
                   tagline={heroTagline}
                   genres={heroGenres}
                   logoUrl={
-                    resolveImageUrl(
+                    resolvePublicAssetUrl(
                       typeof heroConfig.logoImageStoragePath === 'string' ? heroConfig.logoImageStoragePath : null,
                       typeof heroConfig.logoUrl === 'string'
                         ? heroConfig.logoUrl
@@ -487,13 +495,22 @@ export default async function HomePage({
                     ) ?? '/brand/nk-logo-red-bold.png'
                   }
                   titleImageUrl={
-                    resolveImageUrl(
+                    resolvePublicAssetUrl(
                       typeof heroConfig.titleImageStoragePath === 'string' ? heroConfig.titleImageStoragePath : null,
                       typeof heroConfig.titleImageUrl === 'string'
                         ? heroConfig.titleImageUrl
                         : '/brand/neuroklast-wordmark-red.svg',
                     ) ?? '/brand/neuroklast-wordmark-red.svg'
                   }
+                  logoWidthPercent={
+                    typeof heroConfig.logoWidthPercent === 'number' ? heroConfig.logoWidthPercent : undefined
+                  }
+                  logoWidthPercentMobile={
+                    typeof heroConfig.logoWidthPercentMobile === 'number'
+                      ? heroConfig.logoWidthPercentMobile
+                      : undefined
+                  }
+                  powerGlitch={parseHeroPowerGlitch(heroConfig.powerGlitch)}
                   heroButtons={[
                     {
                       id: 'initialize',
@@ -695,13 +712,7 @@ export default async function HomePage({
         }
       })}
 
-      {/* Fallback: if sections config is empty or contact not included */}
-      {!isAdminPreview && !isSectionVisible('contact') && (
-        <SectionErrorBoundary sectionName="Contact">
-          <SectionDivider />
-          <ContactSection heading="Contact" privacyPolicyUrl={privacyPolicyUrl} />
-        </SectionErrorBoundary>
-      )}
+
     </PageLayout>
   )
 }

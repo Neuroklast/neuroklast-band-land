@@ -51,10 +51,10 @@ describe('LoginForm (canonical native POST)', () => {
     expect(screen.getByText(/supabase is not configured/i)).toBeInTheDocument()
   })
 
-  it('shows the msg param as auth error text', () => {
-    mockSearchParams.mockReturnValue(new URLSearchParams('msg=Invalid+login+credentials'))
+  it('shows a generic auth error for msg or error=auth', () => {
+    mockSearchParams.mockReturnValue(new URLSearchParams('error=auth'))
     render(<LoginForm />)
-    expect(screen.getByText('Invalid login credentials')).toBeInTheDocument()
+    expect(screen.getByText('Invalid email or password.')).toBeInTheDocument()
   })
 
   it('does not show msg when error=forbidden is set', () => {

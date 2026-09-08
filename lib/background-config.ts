@@ -1,8 +1,14 @@
+import { r2Url } from '@/lib/r2'
+
 export type MobileVideoMode = 'same' | 'separate' | 'off'
 
 export const HERO_BACKGROUND_VIDEO_OPACITY = 0.5
 export const DEFAULT_BACKGROUND_VIDEO_OPACITY = 0.3
 export const DEFAULT_SITE_BACKGROUND_VIDEO = '/brand/websitebg.scrub.mp4'
+
+function isBundledPublicPath(value: string): boolean {
+  return value.startsWith('/brand/') || value.startsWith('/assets/')
+}
 
 export function backgroundVideoDimOpacity(
   videoOpacity = DEFAULT_BACKGROUND_VIDEO_OPACITY,
@@ -64,4 +70,25 @@ export function resolveActiveBackgroundVideoUrl(
   }
 
   return desktopUrl
+}
+
+/**
+ * Public scroll-video URL from site_config.background.
+ * Storage path (R2) wins; then absolute / bundled `/brand` URLs; else undefined
+ * so callers can fall back to DEFAULT_SITE_BACKGROUND_VIDEO.
+ */
+export function resolveSiteBackgroundVideoSrc(
+  storagePath: unknown,
+  fallbackUrl: unknown,
+): string | undefined {
+  if (typeof storagePath === 'string' && storagePath.trim()) {
+    const fromPath = r2Url(storagePath.trim())
+    if (fromPath) return fromPath
+  }
+  if (typeof fallbackUrl === 'string' && fallbackUrl.trim()) {
+    const trimmed = fallbackUrl.trim()
+    if (isBundledPublicPath(trimmed)) return trimmed
+    if (/^(https?:)?\/\//i.test(trimmed)) return trimmed
+  }
+  return undefined
 }

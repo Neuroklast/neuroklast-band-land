@@ -222,6 +222,14 @@ export function getOverlayAnimationByName(name?: string | null): OverlayAnimatio
   return found ?? getRandomOverlayAnimation()
 }
 
+export function resolveOverlayAnimation(
+  name?: string | null,
+  reducedMotion?: boolean | null,
+): OverlayAnimation {
+  if (reducedMotion) return NONE_OVERLAY_ANIMATION
+  return getOverlayAnimationByName(name)
+}
+
 /** Get all available animations (for testing/preview) */
 export function getAllOverlayAnimations(): OverlayAnimation[] {
   return overlayAnimations

@@ -2,19 +2,22 @@ import { createClient } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import { deleteGig } from '@/app/admin/_actions/gigs'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import { GigsSyncButton } from './GigsSyncButton'
 
 export default async function GigsPage() {
   let gigs: Array<{ id: string; title: string; city: string | null; event_date: string }> = []
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('gigs')
       .select('id, title, city, event_date')
       .order('event_date', { ascending: false })
-    gigs = data ?? []
+    if (error) loadError = true
+    else gigs = data ?? []
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
@@ -31,8 +34,15 @@ export default async function GigsPage() {
       <div className="mb-6">
         <GigsSyncButton />
       </div>
-      {gigs.length === 0 ? (
-        <p className="text-zinc-400 text-sm">No gigs yet.</p>
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load gigs. Check the database connection.</p>
+      ) : gigs.length === 0 ? (
+        <div className="space-y-3">
+          <p className="text-zinc-400 text-sm">No gigs yet.</p>
+          <Link href="/admin/gigs/new" className="inline-flex min-h-[44px] items-center text-sm text-zinc-300 underline hover:text-white">
+            Create first gig
+          </Link>
+        </div>
       ) : (
         <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -53,7 +63,7 @@ export default async function GigsPage() {
                 <td className="py-2 text-right space-x-2">
                   <Link href={`/admin/gigs/${gig.id}`} className="text-zinc-400 hover:text-white transition-colors">Edit</Link>
                   <form action={async () => { 'use server'; await deleteGig(gig.id) }} className="inline">
-                    <button type="submit" className="text-red-400 hover:text-red-300 transition-colors">Delete</button>
+                    <ConfirmDeleteButton message="Delete this gig?" />
                   </form>
                 </td>
               </tr>

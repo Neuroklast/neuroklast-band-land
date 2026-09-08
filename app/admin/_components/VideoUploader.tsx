@@ -29,6 +29,7 @@ export function VideoUploader({
   accept = 'video/mp4,video/webm',
 }: VideoUploaderProps) {
   const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
   const [preview, setPreview] = useState<string | null>(currentUrl ?? null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -50,6 +51,7 @@ export function VideoUploader({
     }
 
     setUploading(true)
+    setProgress(0)
     try {
       const { createSignedUploadUrl } = await import('@/app/admin/_actions/r2Upload')
       const ext = file.name.split('.').pop()?.toLowerCase() ?? 'mp4'
@@ -57,15 +59,22 @@ export function VideoUploader({
       const objectKey = await contentObjectKey({ prefix: safePrefix, data: await file.arrayBuffer(), extension: ext })
       const { url, objectPath, publicUrl } = await createSignedUploadUrl(objectKey)
 
-      const uploadRes = await fetch(url, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('PUT', url)
+        xhr.setRequestHeader('Content-Type', file.type)
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            setProgress(Math.round((event.loaded / event.total) * 100))
+          }
+        }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve()
+          else reject(new Error('Upload failed'))
+        }
+        xhr.onerror = () => reject(new Error('Upload failed'))
+        xhr.send(file)
       })
-
-      if (!uploadRes.ok) {
-        throw new Error('Upload failed')
-      }
 
       if (publicUrl) setPreview(publicUrl)
       onUpload(objectPath, publicUrl)
@@ -74,6 +83,7 @@ export function VideoUploader({
       onError?.(msg)
     } finally {
       setUploading(false)
+      setProgress(null)
       if (inputRef.current) inputRef.current.value = ''
     }
   }
@@ -95,7 +105,7 @@ export function VideoUploader({
         disabled={uploading}
         className="px-3 py-1.5 text-sm rounded bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50"
       >
-        {uploading ? 'Uploading…' : label}
+        {uploading ? `Uploading…${progress != null ? ` ${progress}%` : ''}` : label}
       </button>
       <input
         ref={inputRef}

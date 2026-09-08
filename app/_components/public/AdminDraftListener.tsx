@@ -98,14 +98,20 @@ function applyBackgroundDraft(value: Record<string, unknown>) {
     videoWrap.style.opacity = String(value.backgroundVideoOpacity)
   }
 
+  if (videoWrap && typeof value.backgroundVideoEnabled === 'boolean') {
+    videoWrap.style.display = value.backgroundVideoEnabled ? '' : 'none'
+  }
+
   const videoEl = document.querySelector<HTMLVideoElement>('[data-draft-target="bg-video"]')
   if (videoEl && typeof value.video_url === 'string') {
     if (value.video_url) {
       const source = videoEl.querySelector('source')
       if (source) source.src = value.video_url
-      else videoEl.src = value.video_url
+      else if (videoEl.src !== value.video_url) videoEl.src = value.video_url
       videoEl.load()
+      void videoEl.play?.().catch(() => {})
       videoWrap?.removeAttribute('hidden')
+      if (videoWrap) videoWrap.style.display = ''
     } else {
       videoWrap?.setAttribute('hidden', '')
     }

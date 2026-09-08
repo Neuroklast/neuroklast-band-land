@@ -268,6 +268,7 @@ export interface TerminalCommand {
   output: string[]
   fileName?: string
   fileUrl?: string
+  fileStoragePath?: string
 }
 
 export interface MediaFile {
@@ -758,6 +759,9 @@ export interface HeroSlotProps {
   onEdit?: () => void
   logoUrl?: string
   titleImageUrl?: string
+  logoWidthPercent?: number
+  logoWidthPercentMobile?: number
+  powerGlitch?: import('@/lib/hero-glitch-config').HeroPowerGlitchConfig
   heroStyle?: 'glitch-parallax' | 'chromatic-hover' | 'minimal' | 'default'
   heroButtons?: HeroButton[]
   onContactModalOpen?: () => void
@@ -769,6 +773,7 @@ export interface NavigationSlotProps {
   editMode?: boolean
   onNavigate?: (id: string) => void
   position?: 'top' | 'bottom' | 'left' | 'right' | 'floating'
+  morseHandlers?: { onPointerDown: () => void; onPointerUp: () => void }
 }
 
 export interface LoadingScreenSlotProps {
@@ -797,6 +802,7 @@ export interface FooterSlotProps {
   siteName?: string
   genres?: string[]
   label?: string
+  privacyPolicyUrl?: string
   onAdminLogin?: () => void
   onImpressum?: () => void
   onDatenschutz?: () => void

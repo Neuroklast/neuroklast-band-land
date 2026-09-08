@@ -10,6 +10,7 @@ Generic a11y and type rules. **Public chrome hazards** (nav, overlays, partner P
 - Sufficient contrast (`oklch` design tokens)
 - Touch targets: `min-h-[44px] min-w-[44px]` on public icon controls
 - `useReducedMotion` for non-essential motion when practical
+- Overlay clip-path / glow pulse / terminal typing skip when reduced motion is on
 
 ## Typography
 

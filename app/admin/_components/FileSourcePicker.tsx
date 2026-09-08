@@ -198,7 +198,10 @@ export function FileSourcePicker({
         {activePath ? (
           <button
             type="button"
-            onClick={() => void handleRemove(true)}
+            onClick={() => {
+              if (!confirm('Delete this file from storage?')) return
+              void handleRemove(true)
+            }}
             disabled={uploading || removing}
             className="px-3 py-1.5 text-sm rounded border border-red-800 text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
           >

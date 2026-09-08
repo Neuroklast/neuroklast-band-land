@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus, X } from '@phosphor-icons/react'
 import { updateBio } from '@/app/admin/_actions/bio'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 
 interface BioFormProps {
   initialContent: string
@@ -23,11 +24,12 @@ function ListRowEditor({
 }) {
   return (
     <div className="space-y-2">
-      <label className="block text-sm text-zinc-300 mb-1">{label}</label>
+      <p className="block text-sm text-zinc-300 mb-1">{label}</p>
       {values.map((value, index) => (
         <div key={index} className="flex items-center gap-2">
           <input
             value={value}
+            id={`${label.toLowerCase().replace(/\s+/g, '-')}-${index}`}
             onChange={(e) => {
               const next = [...values]
               next[index] = e.target.value
@@ -69,6 +71,8 @@ export default function BioForm({
     initialAchievements.length > 0 ? initialAchievements : [''],
   )
   const [collabs, setCollabs] = useState<string[]>(initialCollabs.length > 0 ? initialCollabs : [''])
+  const [dirty, setDirty] = useState(false)
+  useUnsavedChanges(dirty)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -80,14 +84,18 @@ export default function BioForm({
     formData.set('collabs', JSON.stringify(clean(collabs)))
     const result = await updateBio(formData)
     if (result?.error) setError(result.error)
-    else setSaved(true)
+    else {
+      setSaved(true)
+      setDirty(false)
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="space-y-6">
       <div>
-        <label className="block text-sm text-zinc-300 mb-1">Bio Text</label>
+        <label htmlFor="bio-content" className="block text-sm text-zinc-300 mb-1">Bio Text</label>
         <textarea
+          id="bio-content"
           name="content"
           defaultValue={initialContent}
           rows={10}

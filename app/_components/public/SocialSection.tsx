@@ -1,6 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
+import { sanitizeExternalHref } from '@/lib/sanitize-href'
 import {
   InstagramLogo,
   FacebookLogo,
@@ -59,13 +60,12 @@ function SocialButton({ link }: { link: SocialLink }) {
 
   return (
     <m.a
-      href={link.url}
+      href={sanitizeExternalHref(link.url)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${displayLabel} – opens in new tab`}
       initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.97 }}
@@ -98,9 +98,8 @@ export function SocialSection({ links, label = 'CONNECT' }: SocialSectionProps) 
       data-theme-color="primary accent card border"
     >
       <m.div
-        initial={{ opacity: 0, x: -30, filter: 'blur(10px)', clipPath: 'polygon(0 0, 0 0, 0 100%, 0 100%)' }}
-        whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)', clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)' }}
-        viewport={{ once: true }}
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="cyber-grid surface-section-panel p-6 md:p-8"
       >

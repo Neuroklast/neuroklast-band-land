@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { updatePartner } from '@/app/admin/_actions/partners'
+import { AdminField } from '@/app/admin/_components/AdminField'
 import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
+import { StreamingLinksEditor } from '@/app/admin/_components/StreamingLinksEditor'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 
 interface EditPartnerFormProps {
   partner: {
@@ -21,10 +24,15 @@ interface EditPartnerFormProps {
   resolvedLogoUrl?: string | null
 }
 
+const inputClass = 'w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm'
+const labelClass = 'mb-1 block text-xs text-zinc-400'
+
 export function EditPartnerForm({ partner, resolvedLogoUrl }: EditPartnerFormProps) {
   const router = useRouter()
   const [logoPath, setLogoPath] = useState(partner.logo_storage_path ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [dirty, setDirty] = useState(false)
+  useUnsavedChanges(dirty)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -37,89 +45,76 @@ export function EditPartnerForm({ partner, resolvedLogoUrl }: EditPartnerFormPro
     if (result?.error) {
       setError(result.error)
     } else {
+      setDirty(false)
       router.push('/admin/partners')
       router.refresh()
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
+    <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="space-y-4 max-w-xl">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs text-zinc-400 mb-1">Name *</label>
-          <input
-            name="name"
-            required
-            defaultValue={partner.name}
-            className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-zinc-400 mb-1">Section</label>
-          <select
-            name="category"
-            defaultValue={partner.category}
-            className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm"
-          >
+        <AdminField id="edit-partner-name" label="Name *" labelClassName={labelClass}>
+          <input id="edit-partner-name" name="name" required defaultValue={partner.name} className={inputClass} />
+        </AdminField>
+        <AdminField id="edit-partner-category" label="Section" labelClassName={labelClass}>
+          <select id="edit-partner-category" name="category" defaultValue={partner.category} className={inputClass}>
             <option value="credit">Credit</option>
             <option value="endorsement">Endorsement</option>
             <option value="partner">Partner / Friend</option>
           </select>
-        </div>
+        </AdminField>
       </div>
-      <div>
-        <label className="block text-xs text-zinc-400 mb-1">Website URL</label>
-        <input
-          name="url"
-          type="url"
-          defaultValue={partner.url ?? ''}
-          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm"
-        />
-      </div>
-      <div>
-        <label className="block text-xs text-zinc-400 mb-1">Description</label>
+      <AdminField id="edit-partner-url" label="Website URL" labelClassName={labelClass}>
+        <input id="edit-partner-url" name="url" type="url" defaultValue={partner.url ?? ''} className={inputClass} />
+      </AdminField>
+      <AdminField id="edit-partner-description" label="Description" labelClassName={labelClass}>
         <textarea
+          id="edit-partner-description"
           name="description"
           rows={3}
           defaultValue={partner.description ?? ''}
-          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm"
+          className={inputClass}
+        />
+      </AdminField>
+      <div>
+        <p className="mb-1 block text-xs text-zinc-400">Socials</p>
+        <StreamingLinksEditor
+          fieldName="socials"
+          recordMode
+          addLabel="+ Add social link"
+          initialJson={JSON.stringify(partner.socials ?? {})}
         />
       </div>
-      <div>
-        <label className="block text-xs text-zinc-400 mb-1">Socials (JSON)</label>
-        <textarea
-          name="socials"
-          rows={4}
-          defaultValue={JSON.stringify(partner.socials ?? {}, null, 2)}
-          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm font-mono"
-        />
-      </div>
-      <div>
-        <label className="block text-xs text-zinc-400 mb-1">Display order</label>
+      <AdminField id="edit-partner-order" label="Display order" labelClassName={labelClass}>
         <input
+          id="edit-partner-order"
           name="display_order"
           type="number"
           defaultValue={partner.display_order}
-          className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm"
+          className={inputClass}
         />
-      </div>
+      </AdminField>
       <MediaSourcePicker
         label="Logo"
         currentUrl={resolvedLogoUrl}
+        currentStoragePath={partner.logo_storage_path}
         storagePrefix={`partners/logos/${partner.id}`}
         onResolved={(path) => {
           setLogoPath(path)
+          setDirty(true)
           setError(null)
         }}
         onError={(msg) => setError(msg)}
       />
-      <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
+      <label htmlFor="edit-partner-logo-white" className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
         <input
+          id="edit-partner-logo-white"
           type="checkbox"
           name="logo_white"
           value="true"
           defaultChecked={partner.logo_white !== false}
-          className="rounded border-zinc-600"
+          className="h-5 w-5 min-h-[20px] min-w-[20px] rounded border-zinc-600"
         />
         White logo fill (default — silhouette to white; uncheck for colour or pre-whitened logos)
       </label>

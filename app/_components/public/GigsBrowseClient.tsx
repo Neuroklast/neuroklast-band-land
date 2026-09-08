@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { m } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, CalendarBlank, MapPin } from '@phosphor-icons/react'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { paginateItems } from '@/lib/browse-pagination'
@@ -38,34 +38,30 @@ function GigBrowseCard({
   gig: PublicGigRow
   onClick: () => void
 }) {
+  const prefersReducedMotion = useReducedMotion()
   const location = [gig.city, gig.country].filter(Boolean).join(', ')
   const headline = gig.festival_name || gig.title
 
   return (
     <m.article
-      initial={{ opacity: 0, x: -24 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, x: -24 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.45 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.45 }}
     >
-      <div
-        className="cyber-card hover-scan hover-noise group relative w-full cursor-pointer border border-border p-6 transition-colors hover:border-primary/50"
-        onClick={() => onClick()}
-        onKeyDown={(event) => {
-          if (event.key !== 'Enter' && event.key !== ' ') return
-          event.preventDefault()
-          onClick()
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label={`Open event details for ${headline}`}
-      >
+      <div className="cyber-card hover-scan hover-noise group relative w-full border border-border p-6 transition-colors hover:border-primary/50">
+        <button
+          type="button"
+          className="absolute inset-0 z-0 cursor-pointer"
+          onClick={() => onClick()}
+          aria-label={`Open event details for ${headline}`}
+        />
         <div className="scan-line" aria-hidden="true" />
-        <div className="data-label mb-2" data-theme-color="data-label">
+        <div className="pointer-events-none relative z-[1] data-label mb-2" data-theme-color="data-label">
           // EVENT.{formatEventLabel(gig.event_date)}
         </div>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="min-w-0 space-y-2">
+        <div className="relative z-[1] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="pointer-events-none min-w-0 space-y-2">
             <h3 className="font-mono text-xl font-bold uppercase hover-chromatic">{headline}</h3>
             {gig.venue ? (
               <p className="font-mono text-sm text-muted-foreground">{gig.venue}</p>
@@ -89,8 +85,7 @@ function GigBrowseCard({
               href={sanitizeExternalHref(gig.ticket_url)}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(event) => event.stopPropagation()}
-              className="cyber-border hover-glitch inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
+              className="cyber-border hover-glitch relative z-[1] inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
             >
               Tickets
             </a>
