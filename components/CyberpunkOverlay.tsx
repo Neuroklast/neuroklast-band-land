@@ -102,7 +102,10 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
   const lastFocusedRef = useRef<HTMLElement | null>(null)
 
   const anim = useMemo(
-    () => resolveOverlayAnimation(overlayAnimation, prefersReducedMotion),
+    () => {
+      void overlaySessionKey
+      return resolveOverlayAnimation(overlayAnimation, prefersReducedMotion)
+    },
     [overlaySessionKey, overlayAnimation, prefersReducedMotion],
   )
   const systemLabel = decorativeTexts?.overlaySystemLabel ?? `// ${artistName ? `${artistName.toUpperCase()}.NET` : 'SYSTEM.INTERFACE'} // v${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}`

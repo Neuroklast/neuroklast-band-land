@@ -58,7 +58,7 @@ export function parseTerminalConfig(raw: unknown): TerminalConfig {
     ? source.secretCode.filter((key): key is string => typeof key === 'string' && key.trim() !== '')
     : []
   const morseCode =
-    typeof source.morseCode === 'string' && /^[.\-]+$/.test(source.morseCode.trim())
+    typeof source.morseCode === 'string' && /^[.-]+$/.test(source.morseCode.trim())
       ? source.morseCode.trim()
       : '...'
   return {

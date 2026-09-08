@@ -29,6 +29,7 @@ export function HeroPowerGlitchMark({
     ? toPowerGlitchOptions(parsed)
     : { playMode: 'always', timing: { duration: 1, iterations: 1 } }
   const glitch: GlitchHandle = useGlitch(glitchOptions)
+  const attachGlitch = glitch.ref
 
   if (!enabled) {
     return <CrtGlitchMark src={src} alt={alt} variant="word" imgClassName={imgClassName} />
@@ -37,7 +38,7 @@ export function HeroPowerGlitchMark({
   return (
     <div className="hero-powerglitch w-full">
       <img
-        ref={glitch.ref}
+        ref={attachGlitch}
         src={src}
         alt={alt}
         className={imgClassName}
