@@ -54,6 +54,17 @@ export interface Member {
   instagram?: string
 }
 
+export interface Partner {
+  id: string
+  name: string
+  url: string | null
+  logoUrl: string | null
+  category: string
+  logoWhite?: boolean
+  description?: string | null
+  socials?: Record<string, string> | null
+}
+
 export interface MediaFile {
   id: string
   name: string
@@ -168,3 +179,4 @@ export type CyberpunkOverlayState =
   | { type: 'news'; data: NewsOverlayData }
   | { type: 'explorer'; data: { items: import('@/lib/media-download').MediaDownloadItem[] } }
   | { type: 'terminal'; data?: never }
+  | { type: 'partner'; data: Partner }

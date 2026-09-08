@@ -97,6 +97,21 @@ describe('getOverlaySessionKey', () => {
     expect(getOverlaySessionKey({ type: 'terminal' })).toBe('terminal')
   })
 
+  it('returns partner session key', () => {
+    expect(
+      getOverlaySessionKey({
+        type: 'partner',
+        data: {
+          id: 'p1',
+          name: 'Label',
+          url: null,
+          logoUrl: null,
+          category: 'credit',
+        },
+      }),
+    ).toBe('partner:p1')
+  })
+
   it('produces stable keys for same release regardless of object identity', () => {
     const keyA = getOverlaySessionKey({ type: 'release', data: { ...mockRelease } })
     const keyB = getOverlaySessionKey({ type: 'release', data: { ...mockRelease, title: 'Different title' } })

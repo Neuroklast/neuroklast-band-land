@@ -265,7 +265,7 @@ export function applyAppearanceConfig(
         : 0
   setVar(root, '--section-grid-opacity', String(sectionGridOpacity), applied)
 
-  if (config.faviconUrl) {
+  if (config.faviconUrl && typeof document !== 'undefined') {
     let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
     if (!link) {
       link = document.createElement('link')
@@ -291,6 +291,46 @@ export function applyAppearanceConfig(
   return applied
 }
 
+/** SSR CSS so section opacity/theme colors apply before AppearanceBridge hydrates. */
+export function buildAppearanceInlineCss(config: AppearanceConfigInput): string {
+  const applied: Record<string, string> = {}
+  const fakeRoot = {
+    style: {
+      setProperty(prop: string, value: string) {
+        applied[prop] = value
+      },
+    },
+    setAttribute() {},
+    classList: { toggle() {} },
+  } as unknown as HTMLElement
+
+  const theme = config.theme ?? CLASSIC_THEME
+  applyThemeVars(fakeRoot, theme, applied)
+
+  const sectionPanelOpacity =
+    typeof config.sectionPanelOpacity === 'number'
+      ? config.sectionPanelOpacity
+      : DEFAULT_SECTION_PANEL_OPACITY
+  const cardSurfaceOpacity =
+    typeof config.cardSurfaceOpacity === 'number'
+      ? config.cardSurfaceOpacity
+      : DEFAULT_CARD_SURFACE_OPACITY
+  applySurfaceVars(fakeRoot, theme, sectionPanelOpacity, cardSurfaceOpacity, applied)
+
+  const sectionGridOpacity =
+    typeof config.sectionGridOpacity === 'number'
+      ? config.sectionGridOpacity
+      : sectionPanelOpacity > 0
+        ? DEFAULT_SECTION_GRID_OPACITY
+        : 0
+  setVar(fakeRoot, '--section-grid-opacity', String(sectionGridOpacity), applied)
+
+  const decls = Object.entries(applied)
+    .map(([prop, value]) => `${prop}: ${value};`)
+    .join(' ')
+  return decls ? `:root { ${decls} }` : ''
+}
+
 function setElementDisplay(selector: string, visible: boolean): void {
   document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
     el.style.display = visible ? '' : 'none'
@@ -302,13 +342,13 @@ export function applyGlobalEffectsVisibility(config: AppearanceConfigInput): voi
   if (typeof document === 'undefined') return
 
   if (typeof config.crtEnabled === 'boolean') {
-    setElementDisplay('.crt-overlay, .crt-vignette', config.crtEnabled)
+    setElementDisplay('.crt-overlay, .crt-vignette, .overlay-crt, .overlay-vignette', config.crtEnabled)
   }
   if (typeof config.scanlineEnabled === 'boolean') {
-    setElementDisplay('.crt-scanline-bg', config.scanlineEnabled)
+    setElementDisplay('.crt-scanline-bg, .overlay-scanlines', config.scanlineEnabled)
   }
   if (typeof config.noiseEnabled === 'boolean') {
-    setElementDisplay('.full-page-noise', config.noiseEnabled)
+    setElementDisplay('.full-page-noise, .overlay-noise', config.noiseEnabled)
   }
   if (typeof config.noiseIntensity === 'number') {
     document.documentElement.style.setProperty('--noise-opacity', String(config.noiseIntensity))

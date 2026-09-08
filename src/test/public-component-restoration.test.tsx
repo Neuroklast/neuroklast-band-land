@@ -287,5 +287,7 @@ describe('restored public homepage components', () => {
     expect(container.querySelectorAll('.partner-logo-cell')).toHaveLength(2)
     expect(screen.getAllByText(/credits/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/endorsements/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Label' }))
+    expect(screen.getByTestId('gig-overlay-state')).toHaveTextContent('partner')
   })
 })

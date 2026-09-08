@@ -22,6 +22,13 @@ describe('i18n translation utility', () => {
     expect(t('nonexistent.key', 'en')).toBe('nonexistent.key')
   })
 
+  it('should translate secret terminal keys', () => {
+    expect(t('secretTerminal.inputPlaceholder', 'en')).toBe('Enter command...')
+    expect(t('secretTerminal.inputPlaceholder', 'de')).toBe('Befehl eingeben...')
+    expect(t('secretTerminal.terminalActive', 'en')).toBe('TERMINAL ACTIVE')
+    expect(t('secretTerminal.initSystem', 'de')).toBe('SYSTEM INITIALISIERT')
+  })
+
   it('should fall back to English when German translation is missing for unknown key', () => {
     expect(t('nonexistent.key', 'de')).toBe('nonexistent.key')
   })

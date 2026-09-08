@@ -4,18 +4,25 @@ interface CyberCloseButtonProps {
   onClick: () => void
   label?: string
   className?: string
+  ariaLabel?: string
 }
 
 /** Cyberpunk-styled close button used across all overlays instead of plain X */
-export default function CyberCloseButton({ onClick, label = 'CLOSE', className = '' }: CyberCloseButtonProps) {
+export default function CyberCloseButton({
+  onClick,
+  label = 'CLOSE',
+  className = '',
+  ariaLabel = 'Close dialog',
+}: CyberCloseButtonProps) {
   return (
     <motion.button
-      className={`group relative flex items-center gap-2 px-3 py-1.5 border border-primary/40 bg-black/60 hover:bg-primary/20 hover:border-primary transition-all duration-200 font-mono text-xs tracking-widest text-primary/70 hover:text-primary flex-shrink-0 ${className}`}
+      type="button"
+      className={`group relative ml-auto flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center gap-2 border border-primary/40 bg-black/60 px-3 py-1.5 font-mono text-xs tracking-widest text-primary/70 transition-all duration-200 hover:border-primary hover:bg-primary/20 hover:text-primary ${className}`}
       style={{ zIndex: 'var(--z-local-top)' } as React.CSSProperties}
       onClick={onClick}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      aria-label="Close"
+      aria-label={ariaLabel}
     >
       <span className="relative">
         <span className="inline-block w-2 h-[1px] bg-primary/60 group-hover:bg-primary rotate-45 absolute top-1/2 left-0" />

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { LegalSection } from '@/lib/legal-content'
 
 interface LegalDocumentContentProps {
@@ -7,6 +8,8 @@ interface LegalDocumentContentProps {
   isCustom?: boolean
   incomplete?: boolean
   incompleteMessage?: string
+  backHref?: string
+  backLabel?: string
 }
 
 export function LegalDocumentContent({
@@ -16,10 +19,21 @@ export function LegalDocumentContent({
   isCustom = false,
   incomplete = false,
   incompleteMessage,
+  backHref,
+  backLabel,
 }: LegalDocumentContentProps) {
   return (
     <article className="max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(var(--nk-nav-h)+1.5rem)] pb-10 sm:pt-[calc(var(--nk-nav-h)+2.5rem)] sm:pb-14">
       <header className="mb-8 sm:mb-10">
+        {backHref && backLabel ? (
+          <Link
+            href={backHref}
+            className="mb-6 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
+          >
+            <span aria-hidden>←</span>
+            {backLabel}
+          </Link>
+        ) : null}
         <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-2">{streamLabel}</p>
         <h1 className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-wide text-foreground">
           {title}

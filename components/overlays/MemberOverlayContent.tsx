@@ -15,7 +15,7 @@ export function MemberOverlayContent({ data, decorativeTexts }: MemberOverlayCon
   return (
     <motion.div
       data-theme-color="card card-foreground border"
-      className="mt-8 space-y-6"
+      className="space-y-6"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}

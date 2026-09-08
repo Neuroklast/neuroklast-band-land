@@ -158,20 +158,21 @@ function applyFooterDraft(value: Record<string, unknown>) {
 }
 
 /**
- * Live admin drafts only apply when the public page is opened as the admin
- * preview iframe (`?adminPreview=1`). The real public site updates only after
- * Save → revalidate + broadcastAdminRefresh.
+ * Appearance drafts apply on any open public tab so color/opacity sliders are live.
+ * Other drafts only apply in the admin preview iframe (`?adminPreview=1`).
+ * Save still revalidates + broadcastAdminRefresh for RSC props.
  */
 export function AdminDraftListener({ enableDrafts = false }: { enableDrafts?: boolean }) {
   const router = useRouter()
 
   const onDraft = useCallback(
     (key: AdminDraftKey, value: Record<string, unknown>) => {
+      if (key === 'appearance') {
+        applyAppearanceConfig(value)
+        return
+      }
       if (!enableDrafts) return
       switch (key) {
-        case 'appearance':
-          applyAppearanceConfig(value)
-          break
         case 'hero':
           applyHeroDraft(value)
           break

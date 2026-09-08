@@ -3,8 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import type React from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { X } from '@phosphor-icons/react'
+import CyberCloseButton from '@/components/CyberCloseButton'
 import type { AdminSettings } from '@/lib/types'
 import type { CyberpunkOverlayState } from '@/lib/app-types'
 import {
@@ -25,6 +24,7 @@ import { NewsOverlayContent } from '@/components/overlays/NewsOverlayContent'
 import { MediaExplorerBody } from '@/app/_components/public/MediaOverlay'
 import { toExplorerFiles } from '@/app/_components/public/MediaExplorer'
 import { SecretTerminalContent } from '@/components/overlays/SecretTerminalContent'
+import { PartnerOverlayContent } from '@/components/overlays/PartnerOverlayContent'
 import { useLenisContext } from '@/contexts/LenisContext'
 
 const OVERLAY_LOADING_TEXTS = [
@@ -75,7 +75,8 @@ function isDirectRevealType(type: string | undefined): boolean {
     type === 'news' ||
     type === 'member' ||
     type === 'explorer' ||
-    type === 'terminal'
+    type === 'terminal' ||
+    type === 'partner'
   )
 }
 
@@ -255,41 +256,37 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
                     }
               }
               data-theme-color="card card-foreground border"
+              data-cyberpunk-modal=""
               transition={
                 prefersReducedMotion
                   ? { duration: 0 }
                   : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
               }
-              className="relative flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/30 bg-background/98 pointer-events-auto scanline-effect cyber-card rounded-[var(--radius)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh]"
-              style={{ borderRadius: 'var(--radius)' } as React.CSSProperties}
+              className="theme-overlay-modal-chrome relative flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Corner decorations */}
-              <motion.div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-primary" initial={{ opacity: 0, x: -10, y: -10 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 0.15, duration: 0.3 }} />
-              <motion.div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-primary" initial={{ opacity: 0, x: 10, y: -10 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 0.2, duration: 0.3 }} />
-              <motion.div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-primary" initial={{ opacity: 0, x: -10, y: 10 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 0.25, duration: 0.3 }} />
-              <motion.div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-primary" initial={{ opacity: 0, x: 10, y: 10 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 0.3, duration: 0.3 }} />
+              <div className="pointer-events-none absolute top-0 left-0 z-10 h-6 w-6 border-t-2 border-l-2 border-primary/50" />
+              <div className="pointer-events-none absolute top-0 right-0 z-10 h-6 w-6 border-t-2 border-r-2 border-primary/50" />
+              <div className="pointer-events-none absolute bottom-0 left-0 z-10 h-6 w-6 border-b-2 border-l-2 border-primary/50" />
+              <div className="pointer-events-none absolute bottom-0 right-0 z-10 h-6 w-6 border-b-2 border-r-2 border-primary/50" />
 
-              {/* Top label */}
-              <motion.div className="absolute top-2 left-1/2 -translate-x-1/2" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.3 }}>
-                <div id="cyberpunk-overlay-title" className="data-label">{systemLabel}</div>
-              </motion.div>
+              <div className="relative z-20 flex h-11 shrink-0 items-center justify-between gap-3 overflow-hidden border-b border-primary/30 bg-primary/10 pr-[max(0.75rem,env(safe-area-inset-right))] pl-4">
+                {!prefersReducedMotion ? (
+                  <motion.div
+                    className="pointer-events-none absolute inset-y-0 w-8 bg-primary/20"
+                    animate={{ x: ['-100%', '120%'] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+                  />
+                ) : null}
+                <div className="relative z-[1] flex min-w-0 items-center gap-3">
+                  <div className="h-2 w-2 shrink-0 animate-pulse bg-primary" />
+                  <div id="cyberpunk-overlay-title" className="truncate font-mono text-[10px] uppercase tracking-wider text-primary/70">
+                    {systemLabel}
+                  </div>
+                </div>
+                <CyberCloseButton onClick={onClose} />
+              </div>
 
-              {/* Scan lines */}
-              <motion.div className="absolute top-0 left-0 right-0 h-1 bg-primary/20" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.4, delay: 0.1 }} style={{ transformOrigin: 'left' }} />
-              <motion.div className="absolute bottom-0 left-0 right-0 h-1 bg-primary/20" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.4, delay: 0.15 }} style={{ transformOrigin: 'right' }} />
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute z-20 min-h-[44px] min-w-[44px] text-foreground hover:text-primary hover:bg-primary/10 top-[max(0.75rem,env(safe-area-inset-top))] right-[max(0.75rem,env(safe-area-inset-right))]"
-                onClick={onClose}
-                aria-label="Close dialog"
-              >
-                <X className="w-6 h-6" />
-              </Button>
-
-              {/* Content phases */}
               <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y">
                 {overlayPhase === 'loading' && (
                   <div className="flex items-center justify-center min-h-[min(400px,50vh)]">
@@ -308,7 +305,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
                 )}
 
                 {overlayPhase === 'revealed' && (
-                  <div className="p-4 pt-14 md:p-12 md:pt-12">
+                  <div className={overlay.type === 'terminal' ? 'p-0' : 'p-4 md:p-10'}>
                     <AnimatePresence mode="wait">
                       {overlayPhase === 'revealed' && (
                         <motion.div
@@ -374,6 +371,10 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
 
                           {overlay.type === 'terminal' && (
                             <SecretTerminalContent siteName={artistName} />
+                          )}
+
+                          {overlay.type === 'partner' && overlay.data && (
+                            <PartnerOverlayContent data={overlay.data} />
                           )}
                         </motion.div>
                       )}

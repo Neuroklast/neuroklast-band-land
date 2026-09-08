@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { m } from 'framer-motion'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { resolveSectionHeading } from '@/lib/section-display'
-import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import type { Partner } from '@/lib/app-types'
 import {
   loadLogoImageForCanvas,
   logoRasterSize,
@@ -13,14 +14,7 @@ import {
 } from '@/lib/partner-logo-white'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
 
-interface PartnerItem {
-  id: string
-  name: string
-  url: string | null
-  logoUrl: string | null
-  category: string
-  logoWhite?: boolean
-}
+type PartnerItem = Partner
 
 /**
  * Partner / credit logo in white mode.
@@ -239,10 +233,12 @@ function LogoGrid({
   items,
   heading,
   logoBrightness,
+  onSelect,
 }: {
   items: PartnerItem[]
   heading: string
   logoBrightness?: number
+  onSelect: (item: PartnerItem) => void
 }) {
   if (items.length === 0) return null
 
@@ -256,23 +252,18 @@ function LogoGrid({
           const content = <PartnerLogo item={item} logoBrightness={logoBrightness} />
           // group so chromatic hover fires for the full cell hit-area, not only the img pixels
           const wrapperClassName =
-            'partner-logo-cell group flex min-h-28 items-center justify-center bg-transparent p-3'
+            'partner-logo-cell group flex min-h-28 cursor-pointer items-center justify-center bg-transparent p-3'
 
-          return item.url ? (
-            <a
+          return (
+            <button
               key={item.id}
-              href={sanitizeExternalHref(item.url)}
-              target="_blank"
-              rel="noopener noreferrer"
+              type="button"
               className={wrapperClassName}
               aria-label={item.name}
+              onClick={() => onSelect(item)}
             >
               {content}
-            </a>
-          ) : (
-            <div key={item.id} className={wrapperClassName}>
-              {content}
-            </div>
+            </button>
           )
         })}
       </div>
@@ -289,8 +280,10 @@ export function CreditsSection({
   logoBrightness,
 }: CreditsAndEndorsementsProps) {
   const { t, locale } = useLocale()
+  const { openOverlay } = useOverlay()
   const title = resolveSectionHeading(heading, 'credits', t, locale)
   const hasAny = credits.length > 0 || endorsements.length > 0 || partners.length > 0
+  const openPartner = (item: PartnerItem) => openOverlay({ type: 'partner', data: item })
 
   return (
     <SectionWrapper id="credits" data-theme-color="foreground card border">
@@ -301,9 +294,9 @@ export function CreditsSection({
 
       {hasAny ? (
         <div className="space-y-12">
-          <LogoGrid items={credits} heading={t('credits.groupCredits').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} />
-          <LogoGrid items={endorsements} heading={t('credits.groupEndorsements').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} />
-          <LogoGrid items={partners} heading={t('credits.groupPartners').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} />
+          <LogoGrid items={credits} heading={t('credits.groupCredits').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} onSelect={openPartner} />
+          <LogoGrid items={endorsements} heading={t('credits.groupEndorsements').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} onSelect={openPartner} />
+          <LogoGrid items={partners} heading={t('credits.groupPartners').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} onSelect={openPartner} />
         </div>
       ) : (
         <SectionEmpty label={t('credits.empty')} />

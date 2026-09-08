@@ -20,7 +20,7 @@ export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) 
   const prefersReducedMotion = useReducedMotion()
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<Line[]>([
-    { type: 'output', text: `> ${siteName ? `${siteName} ` : ''}TERMINAL v1.3.37` },
+    { type: 'output', text: `> ${siteName ? `${siteName} ` : ''}${t('secretTerminal.initVersion')}` },
     { type: 'output', text: `> ${t('secretTerminal.initSystem')}` },
     { type: 'output', text: `> ${t('secretTerminal.initHelp')}` },
     { type: 'output', text: '' },

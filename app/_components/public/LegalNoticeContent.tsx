@@ -15,7 +15,7 @@ interface LegalNoticeContentProps {
 }
 
 export function LegalNoticeContent({ config }: LegalNoticeContentProps) {
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
   const legalLocale = resolveLegalLocale(locale)
   const sections = buildLegalNoticeSections(config, legalLocale)
   const isCustom = Boolean(config.legalNoticeCustom)
@@ -33,6 +33,8 @@ export function LegalNoticeContent({ config }: LegalNoticeContentProps) {
           ? 'Hinweis: Pflichtangaben im Impressum sind noch unvollständig. Bitte im Admin unter Legal & Privacy ergänzen.'
           : 'Notice: Required operator details are incomplete. Please complete them under Admin → Legal & Privacy.'
       }
+      backHref="/"
+      backLabel={t('newsletter.backHome')}
     />
   )
 }

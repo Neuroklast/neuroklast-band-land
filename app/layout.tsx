@@ -3,6 +3,7 @@ import { JetBrains_Mono, Orbitron, Share_Tech_Mono, Space_Grotesk, Space_Mono } 
 import { createPublicClient } from '@/lib/supabaseServer'
 import { getPublicSiteBootstrap } from '@/lib/site-config-bootstrap'
 import { parseLookId } from '@/lib/looks'
+import { buildAppearanceInlineCss } from '@/lib/apply-appearance-config'
 import {
   buildPublicFontCssVars,
   googleFontsStylesheetHref,
@@ -99,6 +100,7 @@ export default async function RootLayout({
 
   const fonts = resolvePublicFonts(appearance.theme)
   const fontCss = buildPublicFontCssVars(fonts)
+  const appearanceCss = buildAppearanceInlineCss(appearance)
   const remoteFonts = remoteFontFamiliesToLoad(fonts)
   const lookId = parseLookId(appearance.lookId)
 
@@ -118,8 +120,8 @@ export default async function RootLayout({
             data-zd-font={name}
           />
         ))}
-        {/* SSR: apply Appearance fonts before paint (all routes, not only homepage) */}
-        <style dangerouslySetInnerHTML={{ __html: fontCss }} />
+        {/* SSR: apply Appearance fonts + surface opacity before paint */}
+        <style dangerouslySetInnerHTML={{ __html: `${fontCss}\n${appearanceCss}` }} />
       </head>
       <body className="font-public-root">
         <Providers

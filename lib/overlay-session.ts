@@ -23,6 +23,8 @@ export function getOverlaySessionKey(overlay: CyberpunkOverlayState | null): str
       return overlay.data?.id ? `news:${overlay.data.id}` : 'news:unknown'
     case 'explorer':
       return 'explorer'
+    case 'partner':
+      return overlay.data?.id ? `partner:${overlay.data.id}` : 'partner:unknown'
     default:
       return overlay.type
   }
