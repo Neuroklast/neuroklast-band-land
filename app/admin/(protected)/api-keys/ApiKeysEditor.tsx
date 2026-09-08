@@ -135,10 +135,15 @@ export function ApiKeysEditor({ initialStatus, encryptionReady }: ApiKeysEditorP
                   )}
                   <input
                     id={field.key}
-                    name={field.key}
-                    type={field.sensitive ? 'password' : 'text'}
+                    name={`nk-api-${field.key}`}
+                    type="text"
                     autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
                     spellCheck={false}
+                    data-1p-ignore="true"
+                    data-lpignore="true"
+                    data-form-type="other"
                     placeholder={configured ? 'Enter new value to replace' : 'Enter value'}
                     value={state.value}
                     onChange={(e) => updateField(field.key, { value: e.target.value })}

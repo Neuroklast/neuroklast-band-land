@@ -5,6 +5,12 @@ export const TERMINAL_CHEAT_PARAM = 'access-secret-terminal-NK-666'
 
 export const TERMINAL_RESERVED_COMMANDS = ['help', 'clear', 'exit'] as const
 
+export const TERMINAL_COMMAND_NAME_RE = /^[a-z0-9][a-z0-9:_-]*$/
+
+export function isTerminalCommandName(name: string): boolean {
+  return TERMINAL_COMMAND_NAME_RE.test(name)
+}
+
 export const DEFAULT_TERMINAL_COMMANDS: TerminalCommand[] = [
   {
     name: 'status',
@@ -28,7 +34,7 @@ function parseCommand(raw: unknown): TerminalCommand | null {
   if (!raw || typeof raw !== 'object') return null
   const source = raw as Record<string, unknown>
   const name = typeof source.name === 'string' ? source.name.trim().toLowerCase() : ''
-  if (!name || !/^[a-z0-9_-]+$/.test(name)) return null
+  if (!name || !isTerminalCommandName(name)) return null
   if ((TERMINAL_RESERVED_COMMANDS as readonly string[]).includes(name)) return null
   const description = typeof source.description === 'string' ? source.description.trim() : ''
   const output = Array.isArray(source.output)

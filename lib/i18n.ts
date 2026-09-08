@@ -28,10 +28,6 @@ export const BUILTIN_LOCALES: SiteLanguage[] = [
 /** @deprecated Use BUILTIN_LOCALES or configured languages from LocaleProvider. */
 export const LOCALES = BUILTIN_LOCALES
 
-function loc(en: string, de: string): Record<string, string> {
-  return { en, de, ru: en, it: en, es: en, pt: en, ja: en, ko: en }
-}
-
 const translations: Record<string, Record<string, string>> = {
   // ── Footer ──────────────────────────────────────────────────────────
   'footer.section':            { en: 'FOOTER_SECTION', de: 'FOOTER_BEREICH', ru: 'СЕКЦИЯ_ПОДВАЛА', it: 'SEZIONE_PIÈ_DI_PAGINA', es: 'SECCIÓN_PIE_DE_PÁGINA', pt: 'SECÇÃO_RODAPÉ', ja: 'フッター_セクション', ko: '푸터_섹션' },
@@ -224,27 +220,27 @@ const translations: Record<string, Record<string, string>> = {
   'credits.groupEndorsements': { en: 'Endorsements', de: 'Endorsements', ru: 'Эндорменты', it: 'Endorsement', es: 'Endorsements', pt: 'Endorsements', ja: 'エンドースメント', ko: '엔도스먼트' },
   'credits.groupPartners':     { en: 'Partners', de: 'Partner', ru: 'Партнёры', it: 'Partner', es: 'Partners', pt: 'Parceiros', ja: 'パートナー', ko: '파트너' },
   'credits.empty':             { en: 'Credits coming soon', de: 'Credits folgen in Kürze', ru: 'Кредиты скоро', it: 'Crediti in arrivo', es: 'Créditos pronto', pt: 'Créditos em breve', ja: 'クレジット近日公開', ko: '크레딧 준비 중' },
-  'credits.overlayLabel':      loc('// PARTNER.PROFILE', '// PARTNER.PROFIL'),
-  'credits.overlayLink':       loc('Open website', 'Website öffnen'),
+  'credits.overlayLabel':      { en: '// PARTNER.PROFILE', de: '// PARTNER.PROFIL', ru: '// PARTNER.PROFILE', it: '// PARTNER.PROFILO', es: '// PARTNER.PERFIL', pt: '// PARTNER.PERFIL', ja: '// PARTNER.PROFILE', ko: '// PARTNER.PROFILE' },
+  'credits.overlayLink':       { en: 'Open website', de: 'Website öffnen', ru: 'Открыть сайт', it: 'Apri sito', es: 'Abrir sitio', pt: 'Abrir site', ja: 'サイトを開く', ko: '웹사이트 열기' },
 
   // ── Secret Terminal ─────────────────────────────────────────────────
-  'secretTerminal.initVersion': loc('TERMINAL v1.3.37', 'TERMINAL v1.3.37'),
-  'secretTerminal.initSystem': loc('SYSTEM INITIALIZED', 'SYSTEM INITIALISIERT'),
-  'secretTerminal.initHelp': loc('TYPE "help" FOR AVAILABLE COMMANDS', '"help" für verfügbare Befehle eingeben'),
-  'secretTerminal.cleared': loc('TERMINAL CLEARED', 'TERMINAL GELEERT'),
-  'secretTerminal.apiError': loc('TERMINAL API ERROR', 'TERMINAL API FEHLER'),
-  'secretTerminal.helpDesc': loc('Show this message', 'Diese Meldung anzeigen'),
-  'secretTerminal.clearDesc': loc('Clear terminal', 'Terminal leeren'),
-  'secretTerminal.exitDesc': loc('Close terminal', 'Terminal schließen'),
-  'secretTerminal.availableCommands': loc('AVAILABLE COMMANDS:', 'VERFÜGBARE BEFEHLE:'),
-  'secretTerminal.commandNotFound': loc('COMMAND NOT FOUND', 'BEFEHL NICHT GEFUNDEN'),
-  'secretTerminal.typeHelp': loc('TYPE "help" FOR AVAILABLE COMMANDS', '"help" für verfügbare Befehle eingeben'),
-  'secretTerminal.initiatingDownload': loc('INITIATING DOWNLOAD', 'DOWNLOAD WIRD GESTARTET'),
-  'secretTerminal.connectionError': loc('CONNECTION ERROR', 'VERBINDUNGSFEHLER'),
-  'secretTerminal.terminalActive': loc('TERMINAL ACTIVE', 'TERMINAL AKTIV'),
-  'secretTerminal.cursorChar': loc('▌', '▌'),
-  'secretTerminal.transferComplete': loc('TRANSFER COMPLETE', 'TRANSFER ABGESCHLOSSEN'),
-  'secretTerminal.inputPlaceholder': loc('Enter command...', 'Befehl eingeben...'),
+  'secretTerminal.initVersion': { en: 'TERMINAL v1.3.37', de: 'TERMINAL v1.3.37', ru: 'TERMINAL v1.3.37', it: 'TERMINAL v1.3.37', es: 'TERMINAL v1.3.37', pt: 'TERMINAL v1.3.37', ja: 'TERMINAL v1.3.37', ko: 'TERMINAL v1.3.37' },
+  'secretTerminal.initSystem': { en: 'SYSTEM INITIALIZED', de: 'SYSTEM INITIALISIERT', ru: 'СИСТЕМА ИНИЦИАЛИЗИРОВАНА', it: 'SISTEMA INIZIALIZZATO', es: 'SISTEMA INICIALIZADO', pt: 'SISTEMA INICIALIZADO', ja: 'システム初期化完了', ko: '시스템 초기화됨' },
+  'secretTerminal.initHelp': { en: 'TYPE "help" FOR AVAILABLE COMMANDS', de: '"help" FÜR VERFÜGBARE BEFEHLE EINGEBEN', ru: 'ВВЕДИТЕ "help" ДЛЯ СПИСКА КОМАНД', it: 'DIGITA "help" PER I COMANDI', es: 'ESCRIBE "help" PARA VER COMANDOS', pt: 'ESCREVE "help" PARA VER COMANDOS', ja: '"help" でコマンド一覧', ko: '"help" 입력 시 명령 목록' },
+  'secretTerminal.cleared': { en: 'TERMINAL CLEARED', de: 'TERMINAL GELEERT', ru: 'ТЕРМИНАЛ ОЧИЩЕН', it: 'TERMINALE SVUOTATO', es: 'TERMINAL LIMPIADO', pt: 'TERMINAL LIMPO', ja: 'ターミナルをクリア', ko: '터미널 지워짐' },
+  'secretTerminal.apiError': { en: 'TERMINAL API ERROR', de: 'TERMINAL API FEHLER', ru: 'ОШИБКА API ТЕРМИНАЛА', it: 'ERRORE API TERMINALE', es: 'ERROR API TERMINAL', pt: 'ERRO API TERMINAL', ja: 'ターミナルAPIエラー', ko: '터미널 API 오류' },
+  'secretTerminal.helpDesc': { en: 'Show this message', de: 'Diese Meldung anzeigen', ru: 'Показать это сообщение', it: 'Mostra questo messaggio', es: 'Mostrar este mensaje', pt: 'Mostrar esta mensagem', ja: 'このメッセージを表示', ko: '이 메시지 표시' },
+  'secretTerminal.clearDesc': { en: 'Clear terminal', de: 'Terminal leeren', ru: 'Очистить терминал', it: 'Svuota terminale', es: 'Limpiar terminal', pt: 'Limpar terminal', ja: 'ターミナルをクリア', ko: '터미널 지우기' },
+  'secretTerminal.exitDesc': { en: 'Close terminal', de: 'Terminal schließen', ru: 'Закрыть терминал', it: 'Chiudi terminale', es: 'Cerrar terminal', pt: 'Fechar terminal', ja: 'ターミナルを閉じる', ko: '터미널 닫기' },
+  'secretTerminal.availableCommands': { en: 'AVAILABLE COMMANDS:', de: 'VERFÜGBARE BEFEHLE:', ru: 'ДОСТУПНЫЕ КОМАНДЫ:', it: 'COMANDI DISPONIBILI:', es: 'COMANDOS DISPONIBLES:', pt: 'COMANDOS DISPONÍVEIS:', ja: '利用可能なコマンド:', ko: '사용 가능한 명령:' },
+  'secretTerminal.commandNotFound': { en: 'COMMAND NOT FOUND', de: 'BEFEHL NICHT GEFUNDEN', ru: 'КОМАНДА НЕ НАЙДЕНА', it: 'COMANDO NON TROVATO', es: 'COMANDO NO ENCONTRADO', pt: 'COMANDO NÃO ENCONTRADO', ja: 'コマンドが見つかりません', ko: '명령을 찾을 수 없음' },
+  'secretTerminal.typeHelp': { en: 'TYPE "help" FOR AVAILABLE COMMANDS', de: '"help" FÜR VERFÜGBARE BEFEHLE EINGEBEN', ru: 'ВВЕДИТЕ "help" ДЛЯ СПИСКА КОМАНД', it: 'DIGITA "help" PER I COMANDI', es: 'ESCRIBE "help" PARA VER COMANDOS', pt: 'ESCREVE "help" PARA VER COMANDOS', ja: '"help" でコマンド一覧', ko: '"help" 입력 시 명령 목록' },
+  'secretTerminal.initiatingDownload': { en: 'INITIATING DOWNLOAD', de: 'DOWNLOAD WIRD GESTARTET', ru: 'ЗАПУСК ЗАГРУЗКИ', it: 'AVVIO DOWNLOAD', es: 'INICIANDO DESCARGA', pt: 'A INICIAR DOWNLOAD', ja: 'ダウンロード開始', ko: '다운로드 시작' },
+  'secretTerminal.connectionError': { en: 'CONNECTION ERROR', de: 'VERBINDUNGSFEHLER', ru: 'ОШИБКА СОЕДИНЕНИЯ', it: 'ERRORE DI CONNESSIONE', es: 'ERROR DE CONEXIÓN', pt: 'ERRO DE LIGAÇÃO', ja: '接続エラー', ko: '연결 오류' },
+  'secretTerminal.terminalActive': { en: 'TERMINAL ACTIVE', de: 'TERMINAL AKTIV', ru: 'ТЕРМИНАЛ АКТИВЕН', it: 'TERMINALE ATTIVO', es: 'TERMINAL ACTIVO', pt: 'TERMINAL ATIVO', ja: 'ターミナル稼働中', ko: '터미널 활성' },
+  'secretTerminal.cursorChar': { en: '▌', de: '▌', ru: '▌', it: '▌', es: '▌', pt: '▌', ja: '▌', ko: '▌' },
+  'secretTerminal.transferComplete': { en: 'TRANSFER COMPLETE', de: 'TRANSFER ABGESCHLOSSEN', ru: 'ПЕРЕДАЧА ЗАВЕРШЕНА', it: 'TRASFERIMENTO COMPLETATO', es: 'TRANSFERENCIA COMPLETA', pt: 'TRANSFERÊNCIA CONCLUÍDA', ja: '転送完了', ko: '전송 완료' },
+  'secretTerminal.inputPlaceholder': { en: 'Enter command...', de: 'Befehl eingeben...', ru: 'Введите команду...', it: 'Inserisci comando...', es: 'Escribe un comando...', pt: 'Introduz um comando...', ja: 'コマンドを入力...', ko: '명령 입력...' },
 
   // ── ReleasesSection ─────────────────────────────────────────────────
   'releases.defaultTitle':     { en: 'RELEASES', de: 'VERÖFFENTLICHUNGEN', ru: 'РЕЛИЗЫ', it: 'USCITE', es: 'LANZAMIENTOS', pt: 'LANÇAMENTOS', ja: 'リリース', ko: '릴리즈' },

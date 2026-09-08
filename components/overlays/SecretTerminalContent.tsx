@@ -6,6 +6,7 @@ import { downloadFile, type DownloadProgress } from '@/lib/download'
 import { TERMINAL_TYPING_SPEED_MS } from '@/lib/config'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useTerminalConfig } from '@/contexts/TerminalConfigContext'
+import { isTerminalCommandName } from '@/lib/terminal-config'
 
 type Line = { type: 'command' | 'output' | 'error'; text: string }
 
@@ -103,12 +104,28 @@ export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) 
       return
     }
     if (trimmed === 'help') {
-      const allCommands = [
-        { name: 'help', description: t('secretTerminal.helpDesc') },
-        ...commands.map((item) => ({ name: item.name, description: item.description })),
+      let listing = commands.map((item) => ({ name: item.name, description: item.description }))
+      try {
+        const res = await fetch('/api/terminal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: 'help' }),
+        })
+        if (res.ok) {
+          const data = (await res.json()) as { listing?: Array<{ name: string; description: string }> }
+          if (Array.isArray(data.listing) && data.listing.length > 0) {
+            listing = data.listing.filter((item) => item.name !== 'help')
+          }
+        }
+      } catch {
+        // keep bootstrap listing
+      }
+      const extras = [
         { name: 'clear', description: t('secretTerminal.clearDesc') },
         { name: 'exit', description: t('secretTerminal.exitDesc') },
       ]
+      const seen = new Set(listing.map((item) => item.name))
+      const allCommands = [...listing, ...extras.filter((item) => !seen.has(item.name))]
       enqueue([
         { type: 'output', text: t('secretTerminal.availableCommands') },
         ...allCommands.map((item) => ({ type: 'output' as const, text: `  ${item.name.padEnd(10)} - ${item.description}` })),
@@ -117,7 +134,7 @@ export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) 
       setInput('')
       return
     }
-    if (!/^[a-z0-9_-]+$/.test(trimmed)) {
+    if (!isTerminalCommandName(trimmed)) {
       enqueue([
         { type: 'error', text: `${t('secretTerminal.commandNotFound')}: ${cmd}` },
         { type: 'error', text: t('secretTerminal.typeHelp') },

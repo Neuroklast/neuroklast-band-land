@@ -460,7 +460,10 @@ async function tickEnrichPhase(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
 
 async function tickPurgeAndSyncReleases(job: SyncJobRow): Promise<AdvanceSyncJobResult> {
   const supabase = createAdminClient()
-  const { count, error } = await supabase.from('releases').delete({ count: 'exact' })
+  const { count, error } = await supabase
+    .from('releases')
+    .delete({ count: 'exact' })
+    .neq('id', '00000000-0000-0000-0000-000000000000')
 
   if (error) throw new Error(error.message)
 

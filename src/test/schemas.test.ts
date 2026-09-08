@@ -326,8 +326,9 @@ describe('terminalCommandSchema', () => {
     expect(terminalCommandSchema.safeParse({ command: 'help' }).success).toBe(true)
   })
 
-  it('accepts command with hyphens and underscores', () => {
+  it('accepts command with hyphens, underscores, and colons', () => {
     expect(terminalCommandSchema.safeParse({ command: 'list-tours' }).success).toBe(true)
+    expect(terminalCommandSchema.safeParse({ command: 'access:vem' }).success).toBe(true)
   })
 
   it('rejects empty command', () => {

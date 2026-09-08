@@ -31,6 +31,14 @@ describe('parseTerminalConfig', () => {
     expect(config.morseCode).toBe('..-')
   })
 
+  it('keeps colon command names from admin', () => {
+    const config = parseTerminalConfig({
+      commands: [{ name: 'access:vem', description: 'Secret file', output: ['OK'] }],
+    })
+    expect(config.commands.map((cmd) => cmd.name)).toContain('access:vem')
+    expect(resolveTerminalCommand(config.commands, 'access:vem')?.output).toEqual(['OK'])
+  })
+
   it('resolves commands case-insensitively via parser', () => {
     const config = parseTerminalConfig({
       commands: [{ name: 'Status', description: 'ok', output: ['ONLINE'] }],
