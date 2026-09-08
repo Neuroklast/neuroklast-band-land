@@ -5,18 +5,13 @@ import { useReducedMotion } from 'framer-motion'
 import { downloadFile, type DownloadProgress } from '@/lib/download'
 import { TERMINAL_TYPING_SPEED_MS } from '@/lib/config'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useTerminalConfig } from '@/contexts/TerminalConfigContext'
 
 type Line = { type: 'command' | 'output' | 'error'; text: string }
 
-function applyTerminalFx(kind: 'glitch' | 'matrix') {
-  const root = document.documentElement
-  const className = kind === 'glitch' ? 'nk-terminal-glitch' : 'nk-terminal-matrix'
-  root.classList.add(className)
-  window.setTimeout(() => root.classList.remove(className), kind === 'glitch' ? 900 : 1600)
-}
-
 export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) {
   const { t } = useLocale()
+  const { commands } = useTerminalConfig()
   const prefersReducedMotion = useReducedMotion()
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<Line[]>([
@@ -107,10 +102,25 @@ export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) 
       document.querySelector<HTMLButtonElement>('button[aria-label="Close dialog"]')?.click()
       return
     }
-    if (trimmed === 'glitch' || trimmed === 'matrix') {
-      if (!prefersReducedMotion) applyTerminalFx(trimmed)
+    if (trimmed === 'help') {
+      const allCommands = [
+        { name: 'help', description: t('secretTerminal.helpDesc') },
+        ...commands.map((item) => ({ name: item.name, description: item.description })),
+        { name: 'clear', description: t('secretTerminal.clearDesc') },
+        { name: 'exit', description: t('secretTerminal.exitDesc') },
+      ]
       enqueue([
-        { type: 'output', text: trimmed === 'glitch' ? 'GLITCH PROTOCOL ENGAGED' : 'MATRIX OVERLAY ACTIVE' },
+        { type: 'output', text: t('secretTerminal.availableCommands') },
+        ...allCommands.map((item) => ({ type: 'output' as const, text: `  ${item.name.padEnd(10)} - ${item.description}` })),
+        { type: 'output', text: '' },
+      ])
+      setInput('')
+      return
+    }
+    if (!/^[a-z0-9_-]+$/.test(trimmed)) {
+      enqueue([
+        { type: 'error', text: `${t('secretTerminal.commandNotFound')}: ${cmd}` },
+        { type: 'error', text: t('secretTerminal.typeHelp') },
         { type: 'output', text: '' },
       ])
       setInput('')
@@ -129,29 +139,10 @@ export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) 
         return
       }
       const data = (await res.json()) as {
-        listing?: Array<{ name: string; description: string }>
         found?: boolean
         output?: string[]
         fileUrl?: string
         fileName?: string
-      }
-      if (trimmed === 'help') {
-        const serverCmds = data.listing ?? []
-        const allCommands = [
-          { name: 'help', description: t('secretTerminal.helpDesc') },
-          ...serverCmds,
-          { name: 'glitch', description: 'Engage glitch protocol' },
-          { name: 'matrix', description: 'Drop a matrix overlay' },
-          { name: 'clear', description: t('secretTerminal.clearDesc') },
-          { name: 'exit', description: t('secretTerminal.exitDesc') },
-        ]
-        enqueue([
-          { type: 'output', text: t('secretTerminal.availableCommands') },
-          ...allCommands.map((item) => ({ type: 'output' as const, text: `  ${item.name.padEnd(10)} - ${item.description}` })),
-          { type: 'output', text: '' },
-        ])
-        setInput('')
-        return
       }
       if (!data.found) {
         enqueue([
@@ -183,7 +174,7 @@ export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) 
         <span className="size-2.5 rounded-full bg-primary" aria-hidden="true" />
         <span className="text-xs uppercase tracking-wider text-primary">{t('secretTerminal.terminalActive')}</span>
       </div>
-      <div ref={historyRef} className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1" aria-live="polite">
+      <div ref={historyRef} className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1 scrollbar-hide" aria-live="polite">
         {history.map((line, index) => (
           <p
             key={`${line.type}-${index}-${line.text}`}

@@ -74,7 +74,7 @@ export function TerminalConfigEditor({ currentValue }: { currentValue: Record<st
       <div>
         <h2 className="text-sm font-semibold text-zinc-200">Secret Terminal</h2>
         <p className="mt-0.5 text-xs text-zinc-400">
-          Konami (or custom keys) and Morse on the nav logo open the overlay terminal. Built-ins: help, clear, exit, glitch, matrix.
+          Konami (or custom keys) and Morse on the nav logo open the overlay terminal. Built-ins: help, clear, exit, status, info.
         </p>
       </div>
       <AdminField id="terminal-secret-code" label="Key sequence" labelClassName="mb-1 block text-xs text-zinc-400">
