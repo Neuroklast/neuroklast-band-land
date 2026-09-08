@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  getClipShellNames,
   getRandomOverlayAnimation,
   NONE_OVERLAY_ANIMATION,
   parseOverlayAnimationName,
+  parseOverlayAnimationPool,
+  pickOverlayAnimationFromPool,
   resolveOverlayAnimation,
 } from '@/lib/overlay-animations'
 
@@ -58,5 +61,21 @@ describe('overlay animations', () => {
     expect(resolveOverlayAnimation('irisLock', false).modal.initial).toMatchObject({
       clipPath: 'circle(0% at 50% 50%)',
     })
+  })
+
+  it('clip shells exclude interiors and are the empty-pool default', () => {
+    const shells = getClipShellNames()
+    expect(shells).toContain('circuitBreak')
+    expect(shells).not.toContain('circuitHandshake')
+    expect(pickOverlayAnimationFromPool([], true)).toEqual(NONE_OVERLAY_ANIMATION)
+    expect(shells).toContain(pickOverlayAnimationFromPool([], false).name)
+  })
+
+  it('parses a multi-select overlay animation pool', () => {
+    expect(parseOverlayAnimationPool(['circuitBreak', 'irisLock', 'nope'])).toEqual([
+      'circuitBreak',
+      'irisLock',
+    ])
+    expect(parseOverlayAnimationPool('systemPost')).toEqual(['systemPost'])
   })
 })

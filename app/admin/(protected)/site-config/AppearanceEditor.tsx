@@ -19,7 +19,11 @@ import {
   type SavedAppearancePreset,
 } from '@/lib/appearance-presets'
 import { LOOKS, parseLookId, type LookDefinition } from '@/lib/looks'
-import { getAllOverlayAnimations, parseOverlayAnimationName } from '@/lib/overlay-animations'
+import {
+  getAllOverlayAnimations,
+  getClipShellNames,
+  parseOverlayAnimationPool,
+} from '@/lib/overlay-animations'
 import {
   DEFAULT_CARD_SURFACE_OPACITY,
   DEFAULT_SECTION_PANEL_OPACITY,
@@ -48,6 +52,7 @@ export interface AppearanceConfig {
   theme?: AppearanceTheme
   lookId?: string
   overlayAnimation?: string
+  overlayAnimations?: string[]
   savedPresets?: SavedAppearancePreset[]
 }
 
@@ -82,6 +87,7 @@ const DEFAULTS: AppearanceConfig = {
   theme: DEFAULT_THEME,
   lookId: 'neuroklast-classic',
   overlayAnimation: 'circuitBreak',
+  overlayAnimations: getClipShellNames(),
   savedPresets: [],
 }
 
@@ -154,7 +160,11 @@ function parseConfig(raw: Record<string, unknown>): AppearanceConfig {
       typeof raw.faviconStoragePath === 'string' ? raw.faviconStoragePath : undefined,
     theme: parseTheme(raw.theme),
     lookId: parseLookId(raw.lookId),
-    overlayAnimation: parseOverlayAnimationName(raw.overlayAnimation) ?? DEFAULTS.overlayAnimation,
+    overlayAnimation: parseOverlayAnimationPool(raw.overlayAnimations ?? raw.overlayAnimation)[0] ?? DEFAULTS.overlayAnimation,
+    overlayAnimations: (() => {
+      const pool = parseOverlayAnimationPool(raw.overlayAnimations ?? raw.overlayAnimation)
+      return pool.length > 0 ? pool : DEFAULTS.overlayAnimations
+    })(),
     savedPresets,
   }
 }
@@ -251,7 +261,9 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
   )
   const [theme, setTheme] = useState<AppearanceTheme>(init.theme ?? DEFAULT_THEME)
   const [lookId, setLookId] = useState(init.lookId ?? 'neuroklast-classic')
-  const [overlayAnimation, setOverlayAnimation] = useState(init.overlayAnimation ?? 'circuitBreak')
+  const [overlayAnimations, setOverlayAnimations] = useState<string[]>(
+    init.overlayAnimations ?? DEFAULTS.overlayAnimations ?? [],
+  )
   const [savedPresets, setSavedPresets] = useState<SavedAppearancePreset[]>(init.savedPresets ?? [])
   const [presetName, setPresetName] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -277,7 +289,8 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       faviconStoragePath: faviconStoragePath || null,
       theme,
       lookId,
-      overlayAnimation,
+      overlayAnimations,
+      overlayAnimation: overlayAnimations[0] ?? DEFAULTS.overlayAnimation,
       savedPresets,
     }),
     [
@@ -298,7 +311,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       faviconStoragePath,
       theme,
       lookId,
-      overlayAnimation,
+      overlayAnimations,
       savedPresets,
     ],
   )
@@ -311,7 +324,6 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
 
   function applyLook(look: LookDefinition) {
     setLookId(look.id)
-    setOverlayAnimation(look.overlayAnimation)
     setTheme({ ...look.theme })
     if (look.theme.accentColor) setAccentColor(oklchToHex(look.theme.accentColor))
     setChromaticStrength(look.overlayEffects.chromatic?.enabled ? look.overlayEffects.chromatic.intensity : 0)
@@ -398,21 +410,31 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
               </button>
             ))}
           </div>
-          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Overlay animation</p>
+          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Overlay animations</p>
+          <p className="text-xs text-zinc-500">Select one or more. Each overlay open picks at random from the pool.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {getAllOverlayAnimations().map((animation) => (
-              <button
-                key={animation.name}
-                type="button"
-                onClick={() => setOverlayAnimation(animation.name)}
-                className={`text-left px-3 py-2 rounded border bg-zinc-950/50 transition-colors ${
-                  overlayAnimation === animation.name ? 'border-red-600' : 'border-zinc-800 hover:border-zinc-600'
-                }`}
-              >
-                <span className="block text-xs text-zinc-200">{animation.loaderLabel}</span>
-                <span className="block text-[10px] text-zinc-500 mt-0.5">{animation.name}</span>
-              </button>
-            ))}
+            {getAllOverlayAnimations().map((animation) => {
+              const selected = overlayAnimations.includes(animation.name)
+              return (
+                <button
+                  key={animation.name}
+                  type="button"
+                  onClick={() =>
+                    setOverlayAnimations((current) =>
+                      selected
+                        ? current.filter((name) => name !== animation.name)
+                        : [...current, animation.name],
+                    )
+                  }
+                  className={`text-left px-3 py-2 rounded border bg-zinc-950/50 transition-colors ${
+                    selected ? 'border-red-600' : 'border-zinc-800 hover:border-zinc-600'
+                  }`}
+                >
+                  <span className="block text-xs text-zinc-200">{animation.loaderLabel}</span>
+                  <span className="block text-[10px] text-zinc-500 mt-0.5">{animation.name}</span>
+                </button>
+              )
+            })}
           </div>
           <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Color themes</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

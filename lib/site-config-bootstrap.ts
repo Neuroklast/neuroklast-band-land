@@ -6,6 +6,7 @@ import { parseTranslationsConfig, type CustomTranslations } from '@/lib/translat
 import type { AppearanceConfigInput } from '@/lib/apply-appearance-config'
 import type { AppearanceTheme } from '@/lib/appearance-presets'
 import { parseTerminalConfig, type TerminalConfig } from '@/lib/terminal-config'
+import { parseOverlayAnimationPool } from '@/lib/overlay-animations'
 
 export interface PublicSiteBootstrap {
   customTranslations: CustomTranslations
@@ -39,6 +40,7 @@ function parseAppearanceBootstrap(raw: unknown): AppearanceConfigInput {
     cardSurfaceOpacity: typeof obj.cardSurfaceOpacity === 'number' ? obj.cardSurfaceOpacity : undefined,
     faviconUrl: typeof obj.faviconUrl === 'string' ? obj.faviconUrl : undefined,
     lookId: typeof obj.lookId === 'string' ? obj.lookId : undefined,
+    overlayAnimations: parseOverlayAnimationPool(obj.overlayAnimations ?? obj.overlayAnimation),
     theme,
   }
 }
