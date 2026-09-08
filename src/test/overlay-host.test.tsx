@@ -50,7 +50,7 @@ describe('overlay host', () => {
     expect(container.querySelector('#media')?.textContent).not.toMatch(/MEDIA EXPLORER/i)
   })
 
-  it('links news cards to the article page', () => {
+  it('opens news cards in the shared cyberpunk overlay', () => {
     render(
       <OverlayProvider>
         <LocaleProvider>
@@ -73,10 +73,8 @@ describe('overlay host', () => {
       </OverlayProvider>,
     )
 
-    expect(screen.getByRole('link', { name: /let rage commence/i })).toHaveAttribute(
-      'href',
-      '/news/let-rage-commence',
-    )
+    fireEvent.click(screen.getByRole('button', { name: /open let rage commence/i }))
+    expect(screen.getByTestId('overlay-type')).toHaveTextContent('news')
   })
 
   it('opens members in the shared cyberpunk overlay', () => {

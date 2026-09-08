@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { formatIsoDateLong } from '@/lib/format-display-date'
@@ -31,6 +31,7 @@ function formatDate(iso: string | null): string {
 
 export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
   const { t } = useLocale()
+  const { openOverlay } = useOverlay()
   const title = resolveSectionHeading(heading, 'news', t)
 
   return (
@@ -43,10 +44,12 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <Link
+            <button
               key={post.id}
-              href={`/news/${post.slug}`}
-              className="nk-os-frame group block w-full text-left"
+              type="button"
+              className="nk-os-frame group block w-full cursor-pointer text-left"
+              onClick={() => openOverlay({ type: 'news', data: post })}
+              aria-label={`Open ${post.title}`}
             >
               <div className="relative aspect-video overflow-hidden bg-muted">
                 {post.coverUrl ? (
@@ -87,7 +90,7 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
                   Read more →
                 </span>
               </div>
-            </Link>
+            </button>
           ))}
         </div>
       ) : (

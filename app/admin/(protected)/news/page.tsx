@@ -39,7 +39,7 @@ export default async function NewsAdminPage() {
     <div>
       <AdminPageHeader
         title="News / Blog"
-        description="Homepage news cards and individual post pages at /news/[slug]."
+        description="Homepage news cards open in the overlay. Share URLs remain at /news/[slug]."
         action={
           <Link
             href="/admin/news/new"
