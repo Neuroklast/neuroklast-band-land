@@ -8,10 +8,6 @@ import { SectionWrapper } from '@/app/_components/public/SectionWrapper'
 import { NewsSection } from '@/app/_components/public/NewsSection'
 import { BioSection } from '@/app/_components/public/BioSection'
 
-vi.mock('@/components/OverlayTransition', () => ({
-  useOverlayTransition: () => ({ trigger: () => {}, element: null }),
-}))
-
 vi.mock('@/components/CyberpunkOverlay', () => ({
   default: ({ overlay }: { overlay: { type?: string } | null }) => (
     <div data-testid="overlay-type">{overlay?.type ?? 'none'}</div>

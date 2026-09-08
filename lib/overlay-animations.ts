@@ -317,9 +317,34 @@ export function getAllOverlayAnimations(): OverlayAnimation[] {
   return overlayAnimations
 }
 
+export function getClipShellNames(): string[] {
+  return overlayAnimations.filter((animation) => !animation.interior).map((animation) => animation.name)
+}
+
 export function parseOverlayAnimationName(value: unknown): string | undefined {
   if (typeof value !== 'string' || value.trim() === '') return undefined
   if (value === 'none' || value === 'random') return value
   if (overlayAnimations.some((animation) => animation.name === value)) return value
   return undefined
+}
+
+export function parseOverlayAnimationPool(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => parseOverlayAnimationName(entry))
+      .filter((name): name is string => Boolean(name) && name !== 'none' && name !== 'random')
+  }
+  const single = parseOverlayAnimationName(value)
+  if (single && single !== 'none' && single !== 'random') return [single]
+  return []
+}
+
+export function pickOverlayAnimationFromPool(
+  pool: string[] | undefined,
+  reducedMotion?: boolean | null,
+): OverlayAnimation {
+  if (reducedMotion) return NONE_OVERLAY_ANIMATION
+  const names = pool && pool.length > 0 ? pool : getClipShellNames()
+  const name = names[Math.floor(Math.random() * names.length)]
+  return getOverlayAnimationByName(name)
 }

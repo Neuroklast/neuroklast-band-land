@@ -32,6 +32,7 @@ export interface AppearanceConfigInput {
   theme?: AppearanceTheme
   lookId?: string
   overlayAnimation?: string
+  overlayAnimations?: string[]
 }
 
 const DEFAULT_CARD_COLOR = 'oklch(0.045 0.008 230)'
