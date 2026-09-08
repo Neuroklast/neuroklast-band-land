@@ -5,6 +5,8 @@
 
 import type { Transition, TargetAndTransition } from 'framer-motion'
 
+export type OverlayInterior = 'handshake' | 'post' | 'sectorSweep' | 'packetFill' | 'irisLock'
+
 export interface OverlayAnimation {
   name: string
   backdrop: {
@@ -19,37 +21,64 @@ export interface OverlayAnimation {
     exit: TargetAndTransition
     transition?: Transition
   }
-  /** CSS class name for the unique overlay loading indicator */
   loaderClass: string
-  /** Label shown next to the loading indicator */
   loaderLabel: string
+  interior?: OverlayInterior
 }
 
+const circuitBreakBackdrop = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  transition: { duration: 0.2 },
+} as const
+
+const circuitBreakModal = {
+  initial: { opacity: 0, clipPath: 'polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%)', filter: 'brightness(2)' },
+  animate: { opacity: 1, clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', filter: 'brightness(1)' },
+  exit: { opacity: 0, clipPath: 'polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%)', filter: 'brightness(2)' },
+  transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+} as const
+
 const overlayAnimations: OverlayAnimation[] = [
-  // 1. Circuit Break — clip-path reveal from center line outward
   {
     name: 'circuitBreak',
     loaderClass: 'overlay-loader-circuit',
     loaderLabel: 'CIRCUIT LINK',
-    backdrop: {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      exit: { opacity: 0 },
-      transition: { duration: 0.2 },
-    },
-    modal: {
-      initial: { opacity: 0, clipPath: 'polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%)', filter: 'brightness(2)' },
-      animate: { opacity: 1, clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', filter: 'brightness(1)' },
-      exit: { opacity: 0, clipPath: 'polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%)', filter: 'brightness(2)' },
-      transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
-    },
+    backdrop: circuitBreakBackdrop,
+    modal: circuitBreakModal,
+  },
+  {
+    name: 'circuitHandshake',
+    loaderClass: 'overlay-loader-circuit',
+    loaderLabel: 'CIRCUIT HANDSHAKE',
+    interior: 'handshake',
+    backdrop: circuitBreakBackdrop,
+    modal: circuitBreakModal,
   },
 
-  // 2. System Boot — clip-path scan from top to bottom
   {
     name: 'systemBoot',
     loaderClass: 'overlay-loader-boot',
     loaderLabel: 'BOOTING SYSTEM',
+    backdrop: {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 0.15 },
+    },
+    modal: {
+      initial: { opacity: 0, clipPath: 'inset(0 0 100% 0)', filter: 'brightness(1.5)' },
+      animate: { opacity: 1, clipPath: 'inset(0 0 0% 0)', filter: 'brightness(1)' },
+      exit: { opacity: 0, clipPath: 'inset(100% 0 0 0)', filter: 'brightness(1.5)' },
+      transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+    },
+  },
+  {
+    name: 'systemPost',
+    loaderClass: 'overlay-loader-boot',
+    loaderLabel: 'SYSTEM POST',
+    interior: 'post',
     backdrop: {
       initial: { opacity: 0 },
       animate: { opacity: 1 },
@@ -82,12 +111,48 @@ const overlayAnimations: OverlayAnimation[] = [
       transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
     },
   },
+  {
+    name: 'sectorSweep',
+    loaderClass: 'overlay-loader-scan',
+    loaderLabel: 'SECTOR SWEEP',
+    interior: 'sectorSweep',
+    backdrop: {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 0.15 },
+    },
+    modal: {
+      initial: { opacity: 0, clipPath: 'inset(0 100% 0 0)', filter: 'brightness(2)' },
+      animate: { opacity: 1, clipPath: 'inset(0 0% 0 0)', filter: 'brightness(1)' },
+      exit: { opacity: 0, clipPath: 'inset(0 0 0 100%)', filter: 'brightness(2)' },
+      transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+    },
+  },
 
   // 4. Data Stream — clip-path reveal from bottom with brightness flash
   {
     name: 'dataStream',
     loaderClass: 'overlay-loader-blocks',
     loaderLabel: 'BUFFERING STREAM',
+    backdrop: {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 0.2 },
+    },
+    modal: {
+      initial: { opacity: 0, clipPath: 'inset(100% 0 0 0)', filter: 'brightness(2)' },
+      animate: { opacity: 1, clipPath: 'inset(0 0 0 0)', filter: 'brightness(1)' },
+      exit: { opacity: 0, clipPath: 'inset(0 0 100% 0)', filter: 'brightness(2)' },
+      transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] },
+    },
+  },
+  {
+    name: 'packetFill',
+    loaderClass: 'overlay-loader-blocks',
+    loaderLabel: 'PACKET FILL',
+    interior: 'packetFill',
     backdrop: {
       initial: { opacity: 0 },
       animate: { opacity: 1 },
@@ -118,6 +183,24 @@ const overlayAnimations: OverlayAnimation[] = [
       animate: { opacity: 1, filter: 'brightness(1) saturate(1) hue-rotate(0deg)' },
       exit: { opacity: 0, filter: 'brightness(2) saturate(1.5) hue-rotate(-45deg)' },
       transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+    },
+  },
+  {
+    name: 'irisLock',
+    loaderClass: 'overlay-loader-ring',
+    loaderLabel: 'IRIS LOCK',
+    interior: 'irisLock',
+    backdrop: {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 0.2 },
+    },
+    modal: {
+      initial: { opacity: 0, clipPath: 'circle(0% at 50% 50%)', filter: 'brightness(1.4)' },
+      animate: { opacity: 1, clipPath: 'circle(80% at 50% 50%)', filter: 'brightness(1)' },
+      exit: { opacity: 0, clipPath: 'circle(0% at 50% 50%)', filter: 'brightness(1.4)' },
+      transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
     },
   },
 
@@ -230,7 +313,13 @@ export function resolveOverlayAnimation(
   return getOverlayAnimationByName(name)
 }
 
-/** Get all available animations (for testing/preview) */
 export function getAllOverlayAnimations(): OverlayAnimation[] {
   return overlayAnimations
+}
+
+export function parseOverlayAnimationName(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value.trim() === '') return undefined
+  if (value === 'none' || value === 'random') return value
+  if (overlayAnimations.some((animation) => animation.name === value)) return value
+  return undefined
 }

@@ -11,7 +11,7 @@ import {
   OVERLAY_GLITCH_PHASE_DELAY_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
-import { getRandomOverlayAnimation, NONE_OVERLAY_ANIMATION, resolveOverlayAnimation } from '@/lib/overlay-animations'
+import { resolveOverlayAnimation } from '@/lib/overlay-animations'
 import { getOverlaySessionKey } from '@/lib/overlay-session'
 import { getRandomProgressiveMode } from '@/lib/progressive-overlay-modes'
 import { ContactOverlayContent } from '@/components/overlays/ContactOverlayContent'
@@ -25,6 +25,7 @@ import { MediaExplorerBody } from '@/app/_components/public/MediaOverlay'
 import { toExplorerFiles } from '@/app/_components/public/MediaExplorer'
 import { SecretTerminalContent } from '@/components/overlays/SecretTerminalContent'
 import { PartnerOverlayContent } from '@/components/overlays/PartnerOverlayContent'
+import { OverlayBootInterior } from '@/components/overlays/OverlayBootInterior'
 import { useLenisContext } from '@/contexts/LenisContext'
 
 const OVERLAY_LOADING_TEXTS = [
@@ -104,9 +105,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
 
   const anim = useMemo(() => {
     void overlaySessionKey
-    if (prefersReducedMotion) return NONE_OVERLAY_ANIMATION
-    if (overlayAnimation) return resolveOverlayAnimation(overlayAnimation, false)
-    return getRandomOverlayAnimation()
+    return resolveOverlayAnimation(overlayAnimation ?? 'circuitBreak', prefersReducedMotion)
   }, [overlaySessionKey, overlayAnimation, prefersReducedMotion])
   const systemLabel = decorativeTexts?.overlaySystemLabel ?? `// ${artistName ? `${artistName.toUpperCase()}.NET` : 'SYSTEM.INTERFACE'} // v${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}`
 
@@ -122,6 +121,14 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
     setOverlayPhase('loading')
     setLoadingText(OVERLAY_LOADING_TEXTS[0])
 
+    const revealTimer = setTimeout(() => {
+      setOverlayPhase('revealed')
+    }, OVERLAY_REVEAL_PHASE_DELAY_MS)
+
+    if (anim.interior) {
+      return () => clearTimeout(revealTimer)
+    }
+
     let idx = 0
     const txtInterval = setInterval(() => {
       idx += 1
@@ -135,16 +142,12 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
       setOverlayPhase('glitch')
     }, OVERLAY_GLITCH_PHASE_DELAY_MS)
 
-    const revealTimer = setTimeout(() => {
-      setOverlayPhase('revealed')
-    }, OVERLAY_REVEAL_PHASE_DELAY_MS)
-
     return () => {
       clearInterval(txtInterval)
       clearTimeout(glitchTimer)
       clearTimeout(revealTimer)
     }
-  }, [overlaySessionKey, prefersReducedMotion])
+  }, [overlaySessionKey, prefersReducedMotion, anim.interior])
 
   useEffect(() => {
     if (!overlaySessionKey) return
@@ -215,54 +218,47 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
 
   const sessionKey = overlaySessionKey ?? overlay?.type ?? 'overlay'
 
+  const glow35 = overlay ? resolveModalGlow(adminSettings, 0.35) : DEFAULT_MODAL_GLOW
+  const glow50 = overlay ? resolveModalGlow(adminSettings, 0.5) : DEFAULT_MODAL_GLOW
+
   return (
     <AnimatePresence>
       {overlay ? (
         <motion.div
-          key={`${sessionKey}-backdrop`}
+          key={sessionKey}
           initial={anim.backdrop.initial}
           animate={anim.backdrop.animate}
           exit={anim.backdrop.exit}
           transition={anim.backdrop.transition ?? { duration: 0.3 }}
           className="fixed inset-0 bg-black/90 backdrop-blur-sm cyberpunk-overlay-bg"
-          style={{ zIndex: 'var(--z-modal-backdrop)' } as React.CSSProperties}
+          style={{ zIndex: 'var(--z-overlay)' } as React.CSSProperties}
           onClick={onClose}
-        />
-      ) : null}
-      {overlay ? (
-        <motion.div
-          key={`${sessionKey}-modal`}
-          initial={anim.modal.initial}
-          animate={anim.modal.animate}
-          exit={anim.modal.exit}
-          transition={anim.modal.transition ?? { duration: 0.3 }}
-          className={`${overlayClassName ?? 'neuroklast-classic-overlay-modal'} fixed inset-0 flex items-center justify-center p-3 md:p-8 pointer-events-none`}
-          style={{ zIndex: 'var(--z-overlay)', perspective: '1000px' } as React.CSSProperties}
         >
+          <div
+            className={`${overlayClassName ?? 'neuroklast-classic-overlay-modal'} flex h-full items-center justify-center p-3 md:p-8 pointer-events-none`}
+            style={{ perspective: '1000px' }}
+          >
             <motion.div
               ref={panelRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby="cyberpunk-overlay-title"
-              initial={{ boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
-              animate={
-                prefersReducedMotion
-                  ? { boxShadow: `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}` }
-                  : {
-                      boxShadow: [
-                        `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}`,
-                        `0 0 40px ${resolveModalGlow(adminSettings, 0.5)}`,
-                        `0 0 20px ${resolveModalGlow(adminSettings, 0.35)}`,
-                      ],
-                    }
-              }
+              initial={{ ...anim.modal.initial, boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
+              animate={{
+                ...anim.modal.animate,
+                boxShadow: prefersReducedMotion
+                  ? `0 0 20px ${glow35}`
+                  : [`0 0 20px ${glow35}`, `0 0 40px ${glow50}`, `0 0 20px ${glow35}`],
+              }}
+              exit={anim.modal.exit}
               data-theme-color="card card-foreground border"
               data-cyberpunk-modal=""
-              transition={
-                prefersReducedMotion
+              transition={{
+                ...(anim.modal.transition ?? { duration: 0.3 }),
+                boxShadow: prefersReducedMotion
                   ? { duration: 0 }
-                  : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-              }
+                  : { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+              }}
               className="theme-overlay-modal-chrome relative flex h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
@@ -289,13 +285,21 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
               </div>
 
               <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y scrollbar-hide">
-                {overlayPhase === 'loading' && (
-                  <div className="flex items-center justify-center min-h-[min(400px,50vh)]">
-                    <motion.span className="progressive-loading-label text-primary font-mono text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      {loadingText}
-                    </motion.span>
-                  </div>
-                )}
+                {overlayPhase === 'loading' &&
+                  (anim.interior ? (
+                    <OverlayBootInterior interior={anim.interior} />
+                  ) : (
+                    <div className="flex min-h-[min(400px,50vh)] items-center justify-center">
+                      <motion.span
+                        className="progressive-loading-label font-mono text-lg text-primary"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        {loadingText}
+                      </motion.span>
+                    </div>
+                  ))}
 
                 {overlayPhase === 'glitch' && (
                   <div className="flex items-center justify-center min-h-[min(400px,50vh)]">
@@ -384,6 +388,7 @@ export default function CyberpunkOverlay({ overlay, onClose, adminSettings, arti
                 )}
               </div>
             </motion.div>
+          </div>
         </motion.div>
       ) : null}
     </AnimatePresence>
