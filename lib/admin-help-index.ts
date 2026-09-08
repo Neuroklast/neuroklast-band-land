@@ -201,7 +201,7 @@ const HOWTO_ENTRIES: AdminHelpEntry[] = [
     id: 'help-live-preview',
     title: 'How does live preview work?',
     description:
-      'Look & Feel editors broadcast drafts to a split preview pane. Toggle Desktop / Mobile on the preview header to constrain the iframe width (media queries + hero mobile width). Changes appear before Save; Save persists to the public site (~60s cache).',
+      'Look & Feel editors broadcast drafts to a split preview pane. Toggle Desktop / Mobile on the preview header to constrain the iframe width (media queries + hero mobile width). Changes appear before Save; Save revalidates the public site immediately.',
     href: `${SITE_CONFIG}?tab=theme`,
     group: 'Help',
     keywords: ['preview', 'live', 'draft', 'split', 'see changes', 'before save', 'mobile', 'desktop', 'device'],

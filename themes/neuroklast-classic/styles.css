@@ -33,6 +33,17 @@
     0 var(--nk-chamfer)
   );
 }
+[data-theme="neuroklast-classic"] .theme-card.surface-section-panel {
+  background: var(--surface-section-bg-fallback);
+  background: var(--surface-section-bg);
+  backdrop-filter: var(--surface-section-backdrop);
+  -webkit-backdrop-filter: var(--surface-section-backdrop);
+  border-color: color-mix(
+    in srgb,
+    var(--border) calc(var(--surface-section-border-opacity, 0.6) * 100%),
+    transparent
+  );
+}
 [data-theme="neuroklast-classic"] .theme-card::before {
   content: '';
   position: absolute;

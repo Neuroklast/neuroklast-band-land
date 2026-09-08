@@ -10,10 +10,6 @@
 @import '../styles/layout.css';
 @import '../styles/loading.css';
 @import '../src/animations.css';
-@import '../src/themes/neuroklast-classic/styles.css';
-@import '../src/themes/glitch-noir/styles.css';
-@import '../src/themes/zardonic-industrial/styles.css';
-@import '../src/themes/umbrella-corp/styles.css';
 
 @layer base {
   * {

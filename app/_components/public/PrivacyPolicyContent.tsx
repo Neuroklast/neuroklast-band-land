@@ -14,7 +14,7 @@ interface PrivacyPolicyContentProps {
 }
 
 export function PrivacyPolicyContent({ config }: PrivacyPolicyContentProps) {
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
   const legalLocale = resolveLegalLocale(locale)
   const sections = buildPrivacyPolicySections(config, legalLocale)
   const isCustom = Boolean(config.privacyPolicyCustom)
@@ -25,6 +25,8 @@ export function PrivacyPolicyContent({ config }: PrivacyPolicyContentProps) {
       streamLabel={legalLocale === 'de' ? '// DATENSCHUTZ' : '// PRIVACY.POLICY'}
       sections={sections}
       isCustom={isCustom}
+      backHref="/"
+      backLabel={t('newsletter.backHome')}
     />
   )
 }

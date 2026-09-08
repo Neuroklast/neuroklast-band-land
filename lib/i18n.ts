@@ -28,6 +28,10 @@ export const BUILTIN_LOCALES: SiteLanguage[] = [
 /** @deprecated Use BUILTIN_LOCALES or configured languages from LocaleProvider. */
 export const LOCALES = BUILTIN_LOCALES
 
+function loc(en: string, de: string): Record<string, string> {
+  return { en, de, ru: en, it: en, es: en, pt: en, ja: en, ko: en }
+}
+
 const translations: Record<string, Record<string, string>> = {
   // ── Footer ──────────────────────────────────────────────────────────
   'footer.section':            { en: 'FOOTER_SECTION', de: 'FOOTER_BEREICH', ru: 'СЕКЦИЯ_ПОДВАЛА', it: 'SEZIONE_PIÈ_DI_PAGINA', es: 'SECCIÓN_PIE_DE_PÁGINA', pt: 'SECÇÃO_RODAPÉ', ja: 'フッター_セクション', ko: '푸터_섹션' },
@@ -220,6 +224,27 @@ const translations: Record<string, Record<string, string>> = {
   'credits.groupEndorsements': { en: 'Endorsements', de: 'Endorsements', ru: 'Эндорменты', it: 'Endorsement', es: 'Endorsements', pt: 'Endorsements', ja: 'エンドースメント', ko: '엔도스먼트' },
   'credits.groupPartners':     { en: 'Partners', de: 'Partner', ru: 'Партнёры', it: 'Partner', es: 'Partners', pt: 'Parceiros', ja: 'パートナー', ko: '파트너' },
   'credits.empty':             { en: 'Credits coming soon', de: 'Credits folgen in Kürze', ru: 'Кредиты скоро', it: 'Crediti in arrivo', es: 'Créditos pronto', pt: 'Créditos em breve', ja: 'クレジット近日公開', ko: '크레딧 준비 중' },
+  'credits.overlayLabel':      loc('// PARTNER.PROFILE', '// PARTNER.PROFIL'),
+  'credits.overlayLink':       loc('Open website', 'Website öffnen'),
+
+  // ── Secret Terminal ─────────────────────────────────────────────────
+  'secretTerminal.initVersion': loc('TERMINAL v1.3.37', 'TERMINAL v1.3.37'),
+  'secretTerminal.initSystem': loc('SYSTEM INITIALIZED', 'SYSTEM INITIALISIERT'),
+  'secretTerminal.initHelp': loc('TYPE "help" FOR AVAILABLE COMMANDS', '"help" für verfügbare Befehle eingeben'),
+  'secretTerminal.cleared': loc('TERMINAL CLEARED', 'TERMINAL GELEERT'),
+  'secretTerminal.apiError': loc('TERMINAL API ERROR', 'TERMINAL API FEHLER'),
+  'secretTerminal.helpDesc': loc('Show this message', 'Diese Meldung anzeigen'),
+  'secretTerminal.clearDesc': loc('Clear terminal', 'Terminal leeren'),
+  'secretTerminal.exitDesc': loc('Close terminal', 'Terminal schließen'),
+  'secretTerminal.availableCommands': loc('AVAILABLE COMMANDS:', 'VERFÜGBARE BEFEHLE:'),
+  'secretTerminal.commandNotFound': loc('COMMAND NOT FOUND', 'BEFEHL NICHT GEFUNDEN'),
+  'secretTerminal.typeHelp': loc('TYPE "help" FOR AVAILABLE COMMANDS', '"help" für verfügbare Befehle eingeben'),
+  'secretTerminal.initiatingDownload': loc('INITIATING DOWNLOAD', 'DOWNLOAD WIRD GESTARTET'),
+  'secretTerminal.connectionError': loc('CONNECTION ERROR', 'VERBINDUNGSFEHLER'),
+  'secretTerminal.terminalActive': loc('TERMINAL ACTIVE', 'TERMINAL AKTIV'),
+  'secretTerminal.cursorChar': loc('▌', '▌'),
+  'secretTerminal.transferComplete': loc('TRANSFER COMPLETE', 'TRANSFER ABGESCHLOSSEN'),
+  'secretTerminal.inputPlaceholder': loc('Enter command...', 'Befehl eingeben...'),
 
   // ── ReleasesSection ─────────────────────────────────────────────────
   'releases.defaultTitle':     { en: 'RELEASES', de: 'VERÖFFENTLICHUNGEN', ru: 'РЕЛИЗЫ', it: 'USCITE', es: 'LANZAMIENTOS', pt: 'LANÇAMENTOS', ja: 'リリース', ko: '릴리즈' },

@@ -1606,11 +1606,10 @@
 
 .scanline-effect::before {
   content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
   background-image: repeating-linear-gradient(
     0deg,
     transparent,
@@ -1619,8 +1618,8 @@
     var(--scanline-color, rgba(255,255,255,0.03)) 4px
   );
   pointer-events: none;
-  z-index: 9996;
-  animation: crt-scanline-move 0.1s linear infinite;
+  z-index: 1;
+  animation: scanline-drift 8s linear infinite;
 }
 
 .crt-overlay {
