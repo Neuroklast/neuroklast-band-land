@@ -5,12 +5,21 @@ import { useOverlayTransition } from '@/components/OverlayTransition'
 import { useLenisContext } from '@/contexts/LenisContext'
 import { useOverlay } from '@/contexts/OverlayContext'
 import CyberpunkOverlay from '@/components/CyberpunkOverlay'
+import { parseOverlayAnimationName } from '@/lib/overlay-animations'
 
-export function OverlayHost({ artistName = '' }: { lookId?: string; artistName?: string }) {
+export function OverlayHost({
+  overlayAnimation,
+  artistName = '',
+}: {
+  lookId?: string
+  overlayAnimation?: string
+  artistName?: string
+}) {
   const { overlay, closeOverlay } = useOverlay()
   const { lenis } = useLenisContext()
   const { trigger, element } = useOverlayTransition()
   const triggerRef = useRef(trigger)
+  const resolvedAnimation = parseOverlayAnimationName(overlayAnimation) ?? 'circuitBreak'
 
   useEffect(() => {
     triggerRef.current = trigger
@@ -35,6 +44,7 @@ export function OverlayHost({ artistName = '' }: { lookId?: string; artistName?:
         onClose={closeOverlay}
         adminSettings={undefined}
         artistName={artistName}
+        overlayAnimation={resolvedAnimation}
       />
       {overlay ? element : null}
     </>

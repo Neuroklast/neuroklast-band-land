@@ -31,6 +31,7 @@ export interface AppearanceConfigInput {
   faviconUrl?: string
   theme?: AppearanceTheme
   lookId?: string
+  overlayAnimation?: string
 }
 
 const DEFAULT_CARD_COLOR = 'oklch(0.045 0.008 230)'

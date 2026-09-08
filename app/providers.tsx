@@ -74,7 +74,7 @@ export function Providers({
                 <TerminalConfigProvider value={terminal ?? parseTerminalConfig(null)}>
                   <AppearanceBridge config={appearance} />
                   {children}
-                  <OverlayHost lookId={appearance.lookId} />
+                  <OverlayHost lookId={appearance.lookId} overlayAnimation={appearance.overlayAnimation} />
                 </TerminalConfigProvider>
               </ErrorBoundary>
             </QueryClientProvider>
