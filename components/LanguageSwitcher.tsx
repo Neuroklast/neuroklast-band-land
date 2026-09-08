@@ -3,33 +3,42 @@
 import { useLocale } from '@/contexts/LocaleContext'
 import type { Locale } from '@/lib/i18n'
 
-/**
- * Live language switcher for the public site.
- * Hidden when only one language is configured in admin.
- */
 export default function LanguageSwitcher({ className }: { className?: string }) {
   const { locale, setLocale, languages, t } = useLocale()
 
   if (languages.length <= 1) return null
 
-  // Footer / chrome only — not in the main navbar
   return (
-    <label className={`inline-flex items-center gap-2 ${className ?? ''}`}>
-      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+    <div className={`flex flex-col items-center gap-3 ${className ?? ''}`}>
+      <p className="font-mono text-xs uppercase tracking-[0.28em] text-primary">
         {t('nav.language')}
-      </span>
-      <select
-        value={locale}
-        onChange={(e) => setLocale(e.target.value as Locale)}
-        className="min-h-[40px] cursor-pointer border border-border/40 bg-transparent px-2 py-1 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+      </p>
+      <div
+        className="flex max-w-xl flex-wrap items-center justify-center gap-2"
+        role="group"
         aria-label={t('nav.language')}
       >
-        {languages.map((l) => (
-          <option key={l.code} value={l.code}>
-            {l.code.toUpperCase()}
-          </option>
-        ))}
-      </select>
-    </label>
+        {languages.map((language) => {
+          const active = language.code === locale
+          return (
+            <button
+              key={language.code}
+              type="button"
+              onClick={() => setLocale(language.code as Locale)}
+              aria-pressed={active}
+              aria-label={language.label}
+              title={language.label}
+              className={`inline-flex min-h-[44px] min-w-[3.25rem] items-center justify-center border px-3 font-mono text-xs uppercase tracking-[0.18em] transition-colors ${
+                active
+                  ? 'border-primary bg-primary/15 text-primary'
+                  : 'border-border/80 text-muted-foreground hover:border-primary/60 hover:text-foreground'
+              }`}
+            >
+              {language.code}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }

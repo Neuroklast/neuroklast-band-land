@@ -1,6 +1,12 @@
+import type { ReactElement } from 'react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, fireEvent, waitFor, act } from '@testing-library/react'
+import { LocaleProvider } from '@/contexts/LocaleContext'
 import { SpotifyEmbed } from './SpotifyEmbed'
+
+function renderEmbed(ui: ReactElement) {
+  return render(<LocaleProvider>{ui}</LocaleProvider>)
+}
 
 const SPOTIFY_SCRIPT_SRC = 'https://open.spotify.com/embed/iframe-api/v1'
 
@@ -21,15 +27,15 @@ describe('SpotifyEmbed', () => {
   // ── Pre-consent (GDPR gate) ────────────────────────────────────────────
 
   it('renders a container div with placeholder', () => {
-    const { container, getByText } = render(
+    const { container, getByText } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
     expect(container.firstChild).toBeInstanceOf(HTMLDivElement)
-    expect(getByText(/Click to load Spotify Player/i)).toBeInTheDocument()
+    expect(getByText(/Load Spotify player/i)).toBeInTheDocument()
   })
 
   it('applies className to the container', () => {
-    const { container } = render(
+    const { container } = renderEmbed(
       <SpotifyEmbed
         uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n"
         className="test-class"
@@ -39,20 +45,20 @@ describe('SpotifyEmbed', () => {
   })
 
   it('does not inject script on mount (GDPR consent required)', () => {
-    render(<SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />)
+    renderEmbed(<SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />)
     const script = document.querySelector(`script[src="${SPOTIFY_SCRIPT_SRC}"]`)
     expect(script).toBeNull()
   })
 
   it('shows consent disclosure text', () => {
-    const { getByText } = render(
+    const { getByText } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
-    expect(getByText(/transmit your IP address to Spotify servers/i)).toBeInTheDocument()
+    expect(getByText(/your ip address may be sent to spotify/i)).toBeInTheDocument()
   })
 
   it('placeholder has role=button and aria-label', () => {
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
     const btn = getByRole('button', { name: /Load Spotify Player/i })
@@ -60,7 +66,7 @@ describe('SpotifyEmbed', () => {
   })
 
   it('placeholder is keyboard-focusable (tabIndex=0)', () => {
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
     const btn = getByRole('button', { name: /Load Spotify Player/i })
@@ -70,7 +76,7 @@ describe('SpotifyEmbed', () => {
   // ── Post-consent (click interaction) ──────────────────────────────────
 
   it('injects the Spotify script after user clicks the consent button', async () => {
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
 
@@ -85,7 +91,7 @@ describe('SpotifyEmbed', () => {
   })
 
   it('injects the Spotify script after Enter keydown on the consent button', async () => {
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
 
@@ -100,7 +106,7 @@ describe('SpotifyEmbed', () => {
   })
 
   it('injects the Spotify script after Space keydown on the consent button', async () => {
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
 
@@ -115,7 +121,7 @@ describe('SpotifyEmbed', () => {
   })
 
   it('does not inject a second script when clicked twice', async () => {
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
 
@@ -133,7 +139,7 @@ describe('SpotifyEmbed', () => {
     const createController = vi.fn()
     window.SpotifyIframeApi = { createController } as unknown as typeof window.SpotifyIframeApi
 
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
 
@@ -162,7 +168,7 @@ describe('SpotifyEmbed', () => {
       return result
     })
 
-    const { getByRole } = render(
+    const { getByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
 
@@ -188,7 +194,7 @@ describe('SpotifyEmbed', () => {
       return result
     })
 
-    const { getByRole, getByText } = render(
+    const { getByRole, getByText } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
 

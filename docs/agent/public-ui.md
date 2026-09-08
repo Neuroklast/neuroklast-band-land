@@ -12,7 +12,7 @@ Stack surface: `app/_components/public/*`, `components/CyberpunkOverlay.tsx`, `c
 |----|--------|
 | Logo in flex row: `shrink-0` sibling of `<nav>` | `position: absolute` logo over the link row |
 | **Desktop:** icon per section (`lib/nav-icons.ts`); hover/focus **glitches** icon → compact label | Long text labels always visible (clips BIO / `…ography`) |
-| Compact labels from `lib/nav-links.ts` (`Bio`, `Releases`, …) for hover + mobile | Full section titles (`Biography`, `Discography`) in the top nav |
+| Compact labels from `NAV_LABEL_I18N_KEYS` + `lib/nav-links.ts` for hover + mobile | Hardcoded English-only nav chrome |
 | `aria-label` + `title` on icon links; mobile shows icon + text | Icon-only without accessible name |
 | CSS: `.nav-glitch-link` in `styles/effects.css` | Custom one-off hover without reduced-motion path |
 

@@ -14,9 +14,7 @@ export const COUNTRY_TO_LOCALE: Record<string, string> = {
   AT: 'de',
   CH: 'de',
   LI: 'de',
-  RU: 'ru',
-  BY: 'ru',
-  KZ: 'ru',
+  UA: 'uk',
   IT: 'it',
   SM: 'it',
   VA: 'it',
@@ -49,7 +47,7 @@ export const COUNTRY_TO_LOCALE: Record<string, string> = {
 
 /** Map section id → i18n key for compact nav labels. */
 export const NAV_LABEL_I18N_KEYS: Record<string, string> = {
-  bio: 'nav.bio',
+  bio: 'nav.biography',
   credits: 'nav.credits',
   gallery: 'nav.gallery',
   media: 'nav.media',
@@ -57,8 +55,9 @@ export const NAV_LABEL_I18N_KEYS: Record<string, string> = {
   releases: 'nav.releases',
   merchandise: 'nav.merch',
   soundpacks: 'nav.soundpacks',
-  gigs: 'nav.events',
+  gigs: 'nav.gigs',
   news: 'nav.news',
+  spotify: 'nav.music',
   newsletter: 'nav.newsletter',
   contact: 'nav.contact',
 }
@@ -66,7 +65,9 @@ export const NAV_LABEL_I18N_KEYS: Record<string, string> = {
 export function readStoredLocale(supported: string[]): string | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored && supported.includes(stored)) return stored
+    if (!stored) return null
+    if (stored === 'ru' && supported.includes('uk')) return 'uk'
+    if (supported.includes(stored)) return stored
   } catch {
     // ignore
   }

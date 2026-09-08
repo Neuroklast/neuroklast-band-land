@@ -37,7 +37,7 @@ export function MerchandiseSection({
       {items.length > 0 ? (
         <SquareImageGrid items={items} footerText={footerText} footerUrl={footerUrl} />
       ) : (
-        <SectionEmpty label="Merchandise coming soon" />
+        <SectionEmpty label={t('section.empty')} />
       )}
     </SectionWrapper>
   )

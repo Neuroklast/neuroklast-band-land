@@ -16,14 +16,15 @@ export const DEFAULT_SECTIONS: SectionConfig[] = [
   { id: 'media', label: 'Media', visible: true, order: 4 },
   { id: 'music-highlights', label: 'Music Highlights', visible: true, order: 5 },
   { id: 'releases', label: 'Discography', visible: true, order: 6 },
-  { id: 'merchandise', label: 'Merchandise', visible: true, order: 7 },
-  { id: 'soundpacks', label: 'Soundpacks', visible: true, order: 8 },
-  { id: 'gigs', label: 'Events', visible: true, order: 9 },
-  { id: 'news', label: 'News', visible: true, order: 10 },
-  { id: 'contact', label: 'Contact', visible: true, order: 11 },
+  { id: 'spotify', label: 'Listen', visible: true, order: 7 },
+  { id: 'merchandise', label: 'Merchandise', visible: true, order: 8 },
+  { id: 'soundpacks', label: 'Soundpacks', visible: true, order: 9 },
+  { id: 'gigs', label: 'Events', visible: true, order: 10 },
+  { id: 'news', label: 'News', visible: true, order: 11 },
+  { id: 'contact', label: 'Contact', visible: true, order: 12 },
 ]
 
-export const EXCLUDED_HOME_SECTION_IDS = new Set(['social', 'connect', 'spotify'])
+export const EXCLUDED_HOME_SECTION_IDS = new Set(['social', 'connect'])
 
 export function withoutExcludedSections(items: SectionConfig[]): SectionConfig[] {
   return items.filter((section) => !EXCLUDED_HOME_SECTION_IDS.has(section.id))

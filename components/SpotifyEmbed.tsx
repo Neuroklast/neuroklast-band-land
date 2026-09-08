@@ -1,5 +1,8 @@
+'use client'
+
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { Play, Warning } from '@phosphor-icons/react'
+import { useLocale } from '@/contexts/LocaleContext'
 import { cn } from '@/lib/utils'
 
 declare global {
@@ -49,6 +52,7 @@ export function SpotifyEmbed({
   theme = '0',
   className,
 }: SpotifyEmbedProps) {
+  const { t } = useLocale()
   const [isLoaded, setIsLoaded] = useState(false)
   const [isPlayerReady, setIsPlayerReady] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -162,7 +166,7 @@ export function SpotifyEmbed({
       <div
         role="button"
         tabIndex={0}
-        aria-label="Load Spotify Player"
+        aria-label={t('spotify.loadPlayer')}
         className={`flex flex-col items-center justify-center bg-black/40 border border-primary/20 cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all group rounded-none ${className}`}
         style={{ width, height }}
         onClick={handleConsent}
@@ -172,10 +176,9 @@ export function SpotifyEmbed({
           <Play weight="fill" className="w-8 h-8 text-primary ml-1" />
         </div>
         <p className="mt-4 font-mono text-sm text-muted-foreground group-hover:text-primary transition-colors uppercase tracking-wider text-center px-4">
-          Click to load Spotify Player<br/>
+          {t('spotify.loadPlayer')}<br/>
           <span className="text-xs opacity-60 normal-case tracking-normal block mt-2">
-            By clicking, you consent to loading external content from Spotify. <br/>
-            This may transmit your IP address to Spotify servers.
+            {t('spotify.consentHint')}
           </span>
         </p>
       </div>
@@ -191,13 +194,13 @@ export function SpotifyEmbed({
       >
         <Warning className="w-10 h-10 text-destructive/70 mb-3" />
         <p className="font-mono text-sm text-muted-foreground text-center px-4">
-          Spotify player could not be loaded.
+          {t('spotify.failed')}
         </p>
         <button
           onClick={handleRetry}
           className="mt-3 font-mono text-xs text-primary hover:underline"
         >
-          Try again
+          {t('spotify.retry')}
         </button>
       </div>
     )
@@ -209,7 +212,7 @@ export function SpotifyEmbed({
       {!isPlayerReady && (
         <div
           className="absolute inset-0 bg-black/40 border border-primary/20 flex flex-col gap-3 p-4 animate-pulse"
-          aria-label="Loading Spotify Player"
+          aria-label={t('spotify.loading')}
           aria-live="polite"
           aria-busy="true"
         >

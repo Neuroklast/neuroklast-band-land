@@ -29,7 +29,7 @@ export function SoundpacksSection({ items, heading, intro }: SoundpacksSectionPr
       {items.length > 0 ? (
         <SquareImageGrid items={items} />
       ) : (
-        <SectionEmpty label="Soundpacks coming soon" />
+        <SectionEmpty label={t('section.empty')} />
       )}
     </SectionWrapper>
   )

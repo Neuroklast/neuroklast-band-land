@@ -12,7 +12,7 @@ export interface NavLink {
 }
 
 /** Section config ids that never appear in the main nav (no scroll target or hero). */
-export const NAV_EXCLUDED_SECTION_IDS = new Set(['hero', 'social', 'connect', 'spotify'])
+export const NAV_EXCLUDED_SECTION_IDS = new Set(['hero', 'social', 'connect'])
 
 /** Maps site_config section id → public DOM anchor id. */
 export const SECTION_ANCHOR_BY_ID: Record<string, string> = {
@@ -28,6 +28,7 @@ export const SECTION_ANCHOR_BY_ID: Record<string, string> = {
   news: 'news',
   newsletter: 'newsletter',
   contact: 'contact',
+  spotify: 'spotify',
 }
 
 const NAV_DEFAULT_LABELS: Record<string, string> = {
@@ -43,6 +44,7 @@ const NAV_DEFAULT_LABELS: Record<string, string> = {
   news: 'News',
   newsletter: 'Newsletter',
   contact: 'Contact',
+  spotify: 'Listen',
 }
 
 /** Live neuroklast.net nav (Classic HUD) — not the Zardonic/CMS mega-menu. */
@@ -52,6 +54,7 @@ export const NEUROKLAST_NAV_SECTION_IDS = [
   'gallery',
   'gigs',
   'releases',
+  'spotify',
   'media',
   'contact',
 ] as const

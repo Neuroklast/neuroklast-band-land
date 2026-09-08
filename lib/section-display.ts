@@ -13,6 +13,7 @@ export const SECTION_DEFAULT_HEADINGS: Record<string, string> = {
   news: 'News',
   newsletter: 'Stay Connected',
   contact: 'Contact',
+  spotify: 'Listen',
 }
 
 /** i18n keys for public section titles (chrome). Custom admin labels are shown as-is. */
@@ -29,6 +30,7 @@ export const SECTION_TITLE_I18N_KEYS: Record<string, string> = {
   news: 'section.news',
   newsletter: 'section.newsletter',
   contact: 'section.contact',
+  spotify: 'section.spotify',
 }
 
 function headingUpper(value: string, locale?: string): string {

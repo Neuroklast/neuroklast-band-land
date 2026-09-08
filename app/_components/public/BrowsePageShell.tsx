@@ -1,12 +1,16 @@
+'use client'
+
+import { useLocale } from '@/contexts/LocaleContext'
 import { SectionContentPanel } from './SectionWrapper'
 
 interface BrowsePageShellProps {
-  title: string
+  titleKey: string
   streamLabel: string
   children: React.ReactNode
 }
 
-export function BrowsePageShell({ title, streamLabel, children }: BrowsePageShellProps) {
+export function BrowsePageShell({ titleKey, streamLabel, children }: BrowsePageShellProps) {
+  const { t } = useLocale()
   return (
     <div
       className="relative w-full max-w-6xl mx-auto px-card pt-[calc(var(--nk-nav-h)+1.5rem)] pb-section"
@@ -18,7 +22,7 @@ export function BrowsePageShell({ title, streamLabel, children }: BrowsePageShel
             {streamLabel}
           </p>
           <h1 className="hover-chromatic font-mono text-2xl font-bold uppercase tracking-tighter text-foreground sm:text-3xl md:text-4xl">
-            {title}
+            {t(titleKey)}
           </h1>
         </header>
         {children}

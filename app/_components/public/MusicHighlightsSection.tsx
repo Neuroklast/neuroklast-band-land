@@ -80,7 +80,7 @@ export function MusicHighlightsSection({ highlights, heading, intro }: MusicHigh
           ))}
         </div>
       ) : (
-        <SectionEmpty label="Music highlights coming soon" />
+        <SectionEmpty label={t('section.empty')} />
       )}
     </SectionWrapper>
   )

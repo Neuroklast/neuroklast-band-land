@@ -28,6 +28,7 @@ import { displayReleaseType } from '@/lib/release-type'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { onMediaImageError } from '@/lib/media-fallback'
 import type { PublicReleaseCardItem } from '@/lib/public-fetch'
+import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
 import { SectionEmpty } from './SectionWrapper'
@@ -173,6 +174,7 @@ function SwipeReleaseCard({ release, onClick }: { release: PublicReleaseCardItem
 }
 
 export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
+  const { t } = useLocale()
   const { openOverlay } = useOverlay()
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<ReleaseTypeFilter>('')
@@ -214,13 +216,13 @@ export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
         className="mb-8 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to home
+        {t('newsletter.backHome')}
       </Link>
 
       <BrowseToolbar
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search releases by title or type…"
+        searchPlaceholder={t('releases.searchPlaceholder')}
         filters={RELEASE_TYPE_FILTERS}
         activeFilter={typeFilter}
         onFilterChange={handleFilterChange}
@@ -228,7 +230,7 @@ export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
       />
 
       {filteredReleases.length === 0 ? (
-        <SectionEmpty label="No releases match your search" />
+        <SectionEmpty label={t('releases.noSearchResults')} />
       ) : (
         <>
           <div className="hidden gap-6 md:grid md:grid-cols-3 lg:grid-cols-4">

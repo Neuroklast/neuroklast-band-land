@@ -14,6 +14,7 @@ import {
 } from '@/lib/gig-browse'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
 import { SectionEmpty } from './SectionWrapper'
@@ -97,6 +98,7 @@ function GigBrowseCard({
 }
 
 export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
+  const { t } = useLocale()
   const { openOverlay } = useOverlay()
   const [searchQuery, setSearchQuery] = useState('')
   const [timingFilter, setTimingFilter] = useState<GigTimingFilter>('all')
@@ -130,21 +132,30 @@ export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
         className="mb-8 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to home
+        {t('newsletter.backHome')}
       </Link>
 
       <BrowseToolbar
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search events by venue, city, or festival…"
-        filters={GIG_TIMING_FILTERS}
+        searchPlaceholder={t('gigs.searchPlaceholder')}
+        filters={GIG_TIMING_FILTERS.map((filter) => ({
+          ...filter,
+          label: t(
+            filter.value === 'upcoming'
+              ? 'gigs.upcoming'
+              : filter.value === 'past'
+                ? 'gigs.past'
+                : 'common.all',
+          ),
+        }))}
         activeFilter={timingFilter}
         onFilterChange={handleFilterChange}
         resultCount={filteredGigs.length}
       />
 
       {filteredGigs.length === 0 ? (
-        <SectionEmpty label="No events match your search" />
+        <SectionEmpty label={t('gigs.noSearchResults')} />
       ) : (
         <>
           <div className="space-y-4">

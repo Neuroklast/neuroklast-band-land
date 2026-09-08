@@ -22,27 +22,31 @@ export function MemberOverlayContent({ data, decorativeTexts }: MemberOverlayCon
       transition={{ duration: 0.3 }}
     >
       <motion.div
-        className="flex flex-col md:flex-row gap-6"
+        className="flex flex-col gap-6 md:flex-row"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        {data.image && (
-          <div className="w-48 h-48 bg-muted relative">
+        {data.image ? (
+          <div className="relative h-40 w-40 shrink-0 bg-muted sm:h-48 sm:w-48">
             <img
               src={data.image}
               alt={data.name}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           </div>
-        )}
-        <div className="flex-1">
-          <div className="text-xs text-primary uppercase tracking-widest font-mono mb-2">{profileLabel}</div>
-          <h2 className="text-4xl font-bold uppercase font-mono mb-2 crt-flash-in" data-text={data.name}>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 font-mono text-xs uppercase tracking-widest text-primary">{profileLabel}</div>
+          <h2 className="mb-2 font-mono text-2xl font-bold uppercase crt-flash-in sm:text-4xl" data-text={data.name}>
             {data.name}
           </h2>
-          <p className="text-xl text-muted-foreground font-mono mb-4">{data.role}</p>
-          <p className="text-foreground/90 leading-relaxed">{data.bio}</p>
+          {data.role ? (
+            <p className="mb-4 font-mono text-base text-muted-foreground sm:text-xl">{data.role}</p>
+          ) : null}
+          {data.bio ? (
+            <p className="leading-relaxed text-foreground/90">{data.bio}</p>
+          ) : null}
           {data.instagram && (
             <Button asChild variant="outline" className="mt-4 font-mono">
               <a href={sanitizeExternalHref(data.instagram)} target="_blank" rel="noopener noreferrer">

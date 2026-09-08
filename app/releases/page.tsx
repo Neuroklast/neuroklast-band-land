@@ -26,7 +26,7 @@ export default async function ReleasesBrowsePage() {
 
   return (
     <LegalPageShell>
-      <BrowsePageShell title="Releases" streamLabel="// DISCOGRAPHY.BROWSE">
+      <BrowsePageShell titleKey="section.releases" streamLabel="// DISCOGRAPHY.BROWSE">
         <ReleasesBrowseClient releases={releases} artistName={artistName} />
       </BrowsePageShell>
     </LegalPageShell>

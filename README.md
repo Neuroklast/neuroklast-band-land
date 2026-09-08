@@ -9,6 +9,12 @@ Official Neuroklast website: Next.js App Router, Supabase, Cloudflare R2, Resend
 - Cloudflare R2 (media)
 - Resend (contact form only)
 
+## Public site
+
+- Languages: English, Deutsch, Українська, Italiano, Español, Português, 日本語, 한국어 (footer language chips)
+- Spotify **Listen** section: Neuroklast artist player, two-click consent (GDPR)
+- Legal: `/legal-notice`, `/privacy-policy`
+
 ## Dev
 
 ```bash

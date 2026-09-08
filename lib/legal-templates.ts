@@ -274,7 +274,7 @@ function buildPrivacyEn(config: LegalConfig): LegalSection[] {
       id: 'embeds',
       title: '9. Third-party embeds (Spotify, YouTube)',
       paragraphs: [
-        'Embedded media players (Spotify, YouTube) are NOT loaded automatically. They only load after you explicitly click a load button (two-click method).',
+        'Embedded media players (Spotify artist player, YouTube) are NOT loaded automatically. They only load after you explicitly click a load button (two-click method). The Listen section on the homepage uses this Spotify embed.',
         'When activated, your IP address and browser data may be transmitted to Spotify AB (Sweden) or Google/YouTube (USA). Legal basis: Art. 6(1)(a) GDPR (your explicit consent).',
         'Spotify privacy policy: https://www.spotify.com/legal/privacy-policy/',
         'Google privacy policy: https://policies.google.com/privacy',
@@ -395,7 +395,7 @@ function buildPrivacyDe(config: LegalConfig): LegalSection[] {
       id: 'embeds',
       title: '9. Drittanbieter-Embeds (Spotify, YouTube)',
       paragraphs: [
-        'Eingebettete Media-Player (Spotify, YouTube) werden NICHT automatisch geladen. Sie laden erst nach explizitem Klick (Zwei-Klick-Lösung).',
+        'Eingebettete Media-Player (Spotify-Artist-Player, YouTube) werden NICHT automatisch geladen. Sie laden erst nach explizitem Klick (Zwei-Klick-Lösung). Der Bereich „Hören“ auf der Startseite nutzt dieses Spotify-Embed.',
         'Nach Aktivierung können IP-Adresse und Browserdaten an Spotify AB (Schweden) bzw. Google/YouTube (USA) übermittelt werden. Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).',
         'Datenschutz Spotify: https://www.spotify.com/legal/privacy-policy/',
         'Datenschutz Google: https://policies.google.com/privacy',

@@ -87,14 +87,14 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
                   </p>
                 ) : null}
                 <span className="inline-block font-mono text-xs uppercase tracking-widest text-primary">
-                  Read more →
+                  {t('news.readMore')}
                 </span>
               </div>
             </button>
           ))}
         </div>
       ) : (
-        <SectionEmpty label="News coming soon" />
+        <SectionEmpty label={t('news.noNews')} />
       )}
     </SectionWrapper>
   )
