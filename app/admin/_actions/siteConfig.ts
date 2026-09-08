@@ -4,8 +4,9 @@ import { runAdminAction } from '@/app/admin/_actions/auth'
 import { createSupabaseActionContext } from '@/app/admin/_actions/context'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
+import { mergeSiteConfigValue, replacedConfigStoragePaths } from '@/lib/site-config-save'
 
 const schema = z.object({
   key: z.string().min(1),
@@ -34,15 +35,40 @@ export async function updateSiteConfig(formData: FormData) {
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
+    const { data: existingRow } = await supabaseAdmin
+      .from('site_config')
+      .select('value')
+      .eq('key', parsed.data.key)
+      .maybeSingle()
+
+    const previous = existingRow?.value
+    const nextValue = mergeSiteConfigValue(previous, parsedJson)
+
     const { error } = await supabaseAdmin
       .from('site_config')
       .upsert(
-        { key: parsed.data.key, value: parsedJson, updated_at: new Date().toISOString() },
+        { key: parsed.data.key, value: nextValue, updated_at: new Date().toISOString() },
         { onConflict: 'key' },
       )
 
     if (error) return { error: error.message }
 
+    const stalePaths = replacedConfigStoragePaths(parsed.data.key, previous, nextValue)
+    if (stalePaths.length > 0) {
+      const { deleteR2MediaObject } = await import('@/app/admin/_actions/r2Upload')
+      await Promise.all(
+        stalePaths.map(async (path) => {
+          try {
+            await deleteR2MediaObject(path)
+          } catch {
+            // Save already succeeded; orphan cleanup is best-effort.
+          }
+        }),
+      )
+    }
+
+    revalidateTag('site-config', 'max')
+    revalidateTag('homepage-site-data', 'max')
     revalidatePath('/', 'layout')
     revalidatePath('/')
     revalidatePath('/releases')

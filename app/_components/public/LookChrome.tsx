@@ -1,8 +1,11 @@
 'use client'
 
-import { useCallback, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useLenisContext } from '@/contexts/LenisContext'
+import { useOverlay } from '@/contexts/OverlayContext'
+import { useTerminalConfig } from '@/contexts/TerminalConfigContext'
+import { useMorseCode } from '@/hooks/use-morse-code'
 import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
 import { SiteBgVideo } from './SiteBgVideo'
 import { getLook, type LookDefinition } from '@/lib/looks'
@@ -87,16 +90,21 @@ export function LookBootScreen({
 }
 
 export function LookBackground({
+  videoUrl,
   videoOpacity,
+  videoEnabled,
 }: {
   lookId?: string
   siteName: string
+  videoUrl?: string
   videoOpacity?: number
+  videoEnabled?: boolean
 }) {
-  return <SiteBgVideo opacity={videoOpacity} />
+  return <SiteBgVideo src={videoUrl} opacity={videoOpacity} enabled={videoEnabled} />
 }
 
 export function LookNav({
+  lookId,
   siteName,
   items,
 }: {
@@ -104,15 +112,50 @@ export function LookNav({
   siteName: string
   items: NavigationSlotProps['items']
 }) {
+  const look = getLook(lookId)
+  const { Navigation } = slotsFor(look)
   const { scrollTo } = useLenisContext()
+  const { openOverlay } = useOverlay()
+  const { morseCode } = useTerminalConfig()
+  const router = useRouter()
+  const pathname = usePathname()
+  const openTerminal = useCallback(() => openOverlay({ type: 'terminal' }), [openOverlay])
+  const morseHandlers = useMorseCode({
+    targetCode: morseCode,
+    onMatch: openTerminal,
+  })
+
+  useEffect(() => {
+    if (pathname !== '/') return
+    const hash = window.location.hash.replace(/^#/, '')
+    if (!hash) return
+    const timer = window.setTimeout(() => {
+      if (hash === 'hero') scrollTo(0, { offset: 0 })
+      else scrollTo(`#${hash}`, { offset: -64 })
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [pathname, scrollTo])
+
   const onNavigate = useCallback((id: string) => {
+    if (pathname !== '/') {
+      router.push(id === 'hero' ? '/' : `/#${id}`)
+      return
+    }
     if (id === 'hero') {
       scrollTo(0, { offset: 0 })
       return
     }
     scrollTo(`#${id}`, { offset: -64 })
-  }, [scrollTo])
-  return <ClassicNav items={items} siteName={siteName} onNavigate={onNavigate} />
+  }, [pathname, router, scrollTo])
+
+  return (
+    <Navigation
+      items={items}
+      siteName={siteName}
+      onNavigate={onNavigate}
+      morseHandlers={morseCode ? morseHandlers : undefined}
+    />
+  )
 }
 
 export function LookHero(props: HeroSlotProps & { lookId?: string }) {
@@ -144,6 +187,7 @@ export function LookFooter({
       siteName={siteName}
       genres={genres}
       socialLinks={socialLinks}
+      privacyPolicyUrl={privacyPolicyUrl}
       onImpressum={() => router.push(legalNoticeUrl)}
       onDatenschutz={() => router.push(privacyPolicyUrl)}
       onAdminLogin={() => router.push('/admin/login')}

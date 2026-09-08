@@ -21,6 +21,7 @@ import {
 } from '@/lib/public-background-types'
 import * as SliderPrimitive from '@radix-ui/react-slider'
 import * as RadioGroupPrimitive from '@radix-ui/react-radio-group'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 
 interface BackgroundConfigEditorProps {
   currentValue: Record<string, unknown>
@@ -112,6 +113,7 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
   )
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [savedSnapshot, setSavedSnapshot] = useState('')
 
   const draftPayload = useMemo(
     () => ({
@@ -143,23 +145,24 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
   )
 
   useEffect(() => {
+    setSavedSnapshot((current) => current || JSON.stringify(draftPayload))
+  }, [draftPayload])
+
+  useUnsavedChanges(Boolean(savedSnapshot) && JSON.stringify(draftPayload) !== savedSnapshot)
+
+  useEffect(() => {
     broadcastAdminDraft('background', draftPayload)
   }, [draftPayload])
 
   function buildSavePayload() {
     return {
-      storage_path: imageStoragePath || undefined,
-      url: imageStoragePath ? imageUrl || undefined : imageUrl || undefined,
-      video_storage_path: videoStoragePath || undefined,
-      video_url: videoStoragePath ? videoUrl || undefined : videoUrl || undefined,
+      storage_path: imageStoragePath || null,
+      url: imageUrl || null,
+      video_storage_path: videoStoragePath || null,
+      video_url: videoUrl || null,
       video_mobile_storage_path:
-        mobileVideoMode === 'separate' && mobileVideoStoragePath ? mobileVideoStoragePath : undefined,
-      video_mobile_url:
-        mobileVideoMode === 'separate' && mobileVideoStoragePath
-          ? mobileVideoUrl || undefined
-          : mobileVideoMode === 'separate'
-            ? mobileVideoUrl || undefined
-            : undefined,
+        mobileVideoMode === 'separate' ? mobileVideoStoragePath || null : null,
+      video_mobile_url: mobileVideoMode === 'separate' ? mobileVideoUrl || null : null,
       mobileVideoMode,
       backgroundType,
       backgroundImageOpacity,
@@ -180,6 +183,7 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
       setErrorMsg(result.error)
     } else {
       setStatus('saved')
+      setSavedSnapshot(JSON.stringify(draftPayload))
       const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
       broadcastAdminRefresh()
       router.refresh()

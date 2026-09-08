@@ -60,7 +60,8 @@ export function BioSection({
       ? readMoreMaxHeight
       : '280px'
   // Always show full content when short or expanded — avoid mask making text look "invisible"
-  const clampCollapsed = hasContent && !expanded
+  const needsReadMore = hasContent && safeContent.length > 360
+  const clampCollapsed = needsReadMore && !expanded
 
   return (
     <SectionWrapper id="bio" data-theme-color="foreground muted-foreground card border">
@@ -85,7 +86,7 @@ export function BioSection({
         {displayContent}
       </div>
 
-      {hasContent ? (
+      {needsReadMore ? (
         <div className="mt-6">
           <button
             type="button"
@@ -168,7 +169,7 @@ export function BioSection({
                   {member.photoUrl ? (
                     <img
                       src={member.photoUrl}
-                      alt=""
+                       alt={member.name}
                       className="mb-3 aspect-square w-full object-cover"
                     />
                   ) : (

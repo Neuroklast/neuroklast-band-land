@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabaseServer'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import { deleteNewsPost, toggleNewsPostVisibility } from '@/app/admin/_actions/news'
 import { resolveImageUrl } from '@/lib/r2'
 import { toDirectImageUrl } from '@/lib/image-cache'
@@ -18,18 +19,20 @@ export default async function NewsAdminPage() {
     display_order: number
   }> = []
 
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('news_posts')
       .select(
         'id, title, slug, excerpt, cover_storage_path, cover_url, published_at, active, display_order',
       )
       .order('display_order', { ascending: true })
       .order('published_at', { ascending: false })
-    posts = data ?? []
+    if (error) loadError = true
+    else posts = data ?? []
   } catch {
-    // empty
+    loadError = true
   }
 
   return (
@@ -47,11 +50,18 @@ export default async function NewsAdminPage() {
         }
       />
 
-      {posts.length === 0 ? (
-        <p className="text-sm text-zinc-400">
-          No posts yet. Create one, then ensure the News section is visible under Look &amp; Feel →
-          Sections.
-        </p>
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load news. Check the database connection.</p>
+      ) : posts.length === 0 ? (
+        <div className="space-y-3">
+          <p className="text-sm text-zinc-400">
+            No posts yet. Create one, then ensure the News section is visible under Look &amp; Feel →
+            Sections.
+          </p>
+          <Link href="/admin/news/new" className="inline-flex min-h-[44px] items-center text-sm text-zinc-300 underline hover:text-white">
+            Create first post
+          </Link>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -117,9 +127,7 @@ export default async function NewsAdminPage() {
                             await deleteNewsPost(post.id)
                           }}
                         >
-                          <button type="submit" className="text-xs text-red-400 hover:text-red-300">
-                            Delete
-                          </button>
+                          <ConfirmDeleteButton message="Delete this post?" className="inline-flex min-h-[44px] items-center px-2 text-xs text-red-400 hover:text-red-300" />
                         </form>
                       </div>
                     </td>

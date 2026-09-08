@@ -26,7 +26,9 @@ npm run lint && npm run typecheck && npm run build && npm run test
 
 `/admin/login` — Supabase Auth, `profiles.role = admin`.
 
-Members: `/admin/members`. Look & Feel: `/admin/site-config`.
+Members: `/admin/members`. Look & Feel: `/admin/site-config` (includes Secret Terminal).
+
+Public overlays: `CyberpunkOverlay` via `OverlayHost`. Secret Terminal = overlay type `terminal` (Konami, Morse on logo, `?access-secret-terminal-NK-666`).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

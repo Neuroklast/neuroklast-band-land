@@ -49,6 +49,15 @@ describe('public mobile regression guards', () => {
     expect(src).toMatch(/min-h-\[44px\]/)
   })
 
+  it('Classic Navigation is the live chrome with 44px targets and reduced-motion', () => {
+    const src = readSource('themes/neuroklast-classic/Navigation.tsx')
+    expect(src).toMatch(/min-h-\[44px\]/)
+    expect(src).toMatch(/min-w-\[44px\]/)
+    expect(src).toMatch(/safe-area-inset-top/)
+    expect(src).toMatch(/useReducedMotion/)
+    expect(src).toMatch(/aria-expanded/)
+  })
+
   it('Gallery overlay dots are keyboard buttons', () => {
     const src = readSource('components/overlays/GalleryOverlayContent.tsx')
     expect(src).toMatch(/aria-label=\{`Go to image/)

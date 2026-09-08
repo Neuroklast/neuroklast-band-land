@@ -16,6 +16,12 @@ export default function KonamiListener({ onCodeActivated, customCode }: KonamiLi
     let konamiIndex = 0
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target
+      if (target instanceof HTMLElement) {
+        const tag = target.tagName
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) return
+      }
+
       const key = e.key.toLowerCase()
       const expectedKey = code[konamiIndex].toLowerCase()
 
@@ -24,6 +30,7 @@ export default function KonamiListener({ onCodeActivated, customCode }: KonamiLi
         
         if (konamiIndex === code.length) {
           konamiIndex = 0
+          e.preventDefault()
           onCodeActivated?.()
         }
       } else {

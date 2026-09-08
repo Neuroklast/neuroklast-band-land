@@ -95,19 +95,21 @@ export function buildNavLinks(sections: SectionConfig[]): NavLink[] {
     }))
 }
 
-/** Seven Classic HUD items matching neuroklast.net, in live order. */
+/** Visible homepage sections with a public anchor, in CMS order. */
+export function navItemsFromSections(
+  sections?: SectionConfig[],
+): Array<{ id: string; label: string }> {
+  return buildNavLinks(sections ?? DEFAULT_SECTIONS).map((link) => ({
+    id: link.href.replace(/^#/, ''),
+    label: link.label,
+  }))
+}
+
+/** @deprecated Prefer navItemsFromSections — kept for compact HUD fallbacks. */
 export function buildNeuroklastNavItems(
   sections?: SectionConfig[],
 ): Array<{ id: string; label: string }> {
-  const visible = new Set(
-    (sections ?? DEFAULT_SECTIONS)
-      .filter((section) => section.visible)
-      .map((section) => section.id),
-  )
-  return NEUROKLAST_NAV_SECTION_IDS.filter((id) => visible.has(id)).map((id) => ({
-    id: SECTION_ANCHOR_BY_ID[id] ?? id,
-    label: NAV_DEFAULT_LABELS[id] ?? id,
-  }))
+  return navItemsFromSections(sections)
 }
 
 export function buildNavLinksFromConfig(raw: unknown): NavLink[] {

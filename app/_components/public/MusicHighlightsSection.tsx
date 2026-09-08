@@ -6,10 +6,10 @@
  */
 'use client'
 
-import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import YouTubeEmbed from '@/components/YouTubeEmbed'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
 
 interface MusicHighlight {
@@ -35,7 +35,6 @@ function extractVideoId(url: string): string | null {
 }
 
 function EmbedPlayer({ title, youtubeUrl }: EmbedPlayerProps) {
-  const [consented, setConsented] = useState(false)
   const videoId = extractVideoId(youtubeUrl)
 
   if (!videoId) {
@@ -51,47 +50,7 @@ function EmbedPlayer({ title, youtubeUrl }: EmbedPlayerProps) {
     )
   }
 
-  if (!consented) {
-    return (
-      <button
-        type="button"
-        onClick={() => setConsented(true)}
-        className="group relative aspect-video w-full overflow-hidden border border-border bg-muted transition-colors hover:border-primary/40"
-        aria-label={`Play ${title} on YouTube`}
-      >
-        <img
-          src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-          alt={title}
-          className="absolute inset-0 h-full w-full object-cover opacity-50 transition-opacity group-hover:opacity-60"
-          loading="lazy"
-          decoding="async"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-foreground/60 transition-colors group-hover:border-foreground">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="ml-0.5 h-5 w-5 text-foreground">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-          <span className="font-mono text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-            Click to load YouTube
-          </span>
-        </div>
-      </button>
-    )
-  }
-
-  return (
-    <div className="relative aspect-video w-full">
-      <iframe
-        src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`}
-        title={title}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        className="absolute inset-0 h-full w-full border-0"
-        loading="lazy"
-      />
-    </div>
-  )
+  return <YouTubeEmbed videoId={videoId} title={title} />
 }
 
 interface MusicHighlightsSectionProps {

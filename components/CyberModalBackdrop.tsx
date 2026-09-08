@@ -41,6 +41,8 @@ export default function CyberModalBackdrop({
     <AnimatePresence>
       {open && (
         <motion.div
+          role="dialog"
+          aria-modal="true"
           className={`fixed inset-0 ${bgClass} overflow-y-auto`}
           style={{ zIndex: zIndexStyle, boxShadow: 'inset 0 0 80px var(--modal-glow-color, transparent)' } as React.CSSProperties}
           initial={{ opacity: 0 }}

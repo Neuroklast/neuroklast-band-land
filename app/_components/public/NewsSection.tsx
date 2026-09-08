@@ -1,6 +1,6 @@
 'use client'
 
-import { useOverlay } from '@/contexts/OverlayContext'
+import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { toDirectImageUrl } from '@/lib/image-cache'
@@ -31,7 +31,6 @@ function formatDate(iso: string | null): string {
 
 export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
   const { t } = useLocale()
-  const { openOverlay } = useOverlay()
   const title = resolveSectionHeading(heading, 'news', t)
 
   return (
@@ -44,32 +43,16 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <button
+            <Link
               key={post.id}
-              type="button"
-              className="nk-os-frame group block w-full cursor-pointer text-left"
-              onClick={() =>
-                openOverlay({
-                  type: 'news',
-                  data: {
-                    id: post.id,
-                    title: post.title,
-                    slug: post.slug,
-                    excerpt: post.excerpt,
-                    body: post.body,
-                    link: post.link,
-                    coverUrl: post.coverUrl,
-                    publishedAt: post.publishedAt,
-                  },
-                })
-              }
-              aria-label={`Open ${post.title}`}
+              href={`/news/${post.slug}`}
+              className="nk-os-frame group block w-full text-left"
             >
               <div className="relative aspect-video overflow-hidden bg-muted">
                 {post.coverUrl ? (
                   <img
                     src={toDirectImageUrl(post.coverUrl, { w: 800 }) || post.coverUrl}
-                    alt=""
+                     alt={post.title}
                     className="h-full w-full object-cover"
                     loading="lazy"
                     decoding="async"
@@ -104,7 +87,7 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
                   Read more →
                 </span>
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       ) : (

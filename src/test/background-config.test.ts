@@ -8,6 +8,7 @@ import {
   parseBackgroundVideoEnabled,
   parseBackgroundVideoOpacity,
   resolveActiveBackgroundVideoUrl,
+  resolveSiteBackgroundVideoSrc,
 } from '@/lib/background-config'
 
 describe('default site background video', () => {
@@ -64,5 +65,21 @@ describe('resolveActiveBackgroundVideoUrl', () => {
     expect(
       resolveActiveBackgroundVideoUrl('https://x/v.mp4', 'https://x/m.mp4', 'off', true, true),
     ).toBeUndefined()
+  })
+})
+
+describe('resolveSiteBackgroundVideoSrc', () => {
+  it('keeps bundled brand paths and absolute URLs', () => {
+    expect(resolveSiteBackgroundVideoSrc(null, '/brand/websitebg.scrub.mp4')).toBe(
+      '/brand/websitebg.scrub.mp4',
+    )
+    expect(resolveSiteBackgroundVideoSrc(undefined, 'https://cdn.example/bg.mp4')).toBe(
+      'https://cdn.example/bg.mp4',
+    )
+  })
+
+  it('returns undefined when nothing is configured', () => {
+    expect(resolveSiteBackgroundVideoSrc(null, null)).toBeUndefined()
+    expect(resolveSiteBackgroundVideoSrc('', '')).toBeUndefined()
   })
 })

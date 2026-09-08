@@ -104,8 +104,7 @@ export function GallerySection({
                   <m.div
                     key={item.id}
                     initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-                    whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                    viewport={prefersReducedMotion ? undefined : { once: true, margin: '40px' }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={
                       prefersReducedMotion
                         ? { duration: 0 }
@@ -134,7 +133,7 @@ export function GallerySection({
                       onError={(e) => void onMediaImageError(e)}
                     />
                     {lightbox ? (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                         <MagnifyingGlassPlus className="h-8 w-8 text-foreground" aria-hidden />
                       </div>
                     ) : null}

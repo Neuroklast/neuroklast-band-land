@@ -22,6 +22,14 @@ export function ContactSection({
   const { t } = useLocale()
   const [state, formAction, pending] = useActionState(submitContact, null)
   const title = resolveSectionHeading(heading, 'contact', t)
+  const errorMessage =
+    state?.error === 'invalid'
+      ? t('contact.errorInvalid')
+      : state?.error === 'rate_limit'
+        ? t('contact.errorRateLimit')
+        : state?.error
+          ? t('contact.sendError')
+          : null
 
   return (
     <SectionWrapper id="contact" data-theme-color="foreground card border input">
@@ -29,19 +37,19 @@ export function ContactSection({
       <SectionIntro sectionId="contact">{intro}</SectionIntro>
 
       {state?.success ? (
-        <p className="border border-border px-4 py-3 font-mono text-sm text-foreground">
+        <p role="status" aria-live="polite" className="mb-4 border border-border px-4 py-3 font-mono text-sm text-foreground">
           {t('contact.success')}
         </p>
-      ) : (
-        <form action={formAction} className="flex w-full flex-col gap-4">
-          {/* Honeypot — hidden from users; bots that fill it are silently accepted */}
+      ) : null}
+
+      <form action={formAction} className="flex w-full flex-col gap-4">
           <input
             type="text"
             name="_hp"
             tabIndex={-1}
             autoComplete="off"
             aria-hidden="true"
-            className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
+            className="sr-only"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -83,7 +91,9 @@ export function ContactSection({
               minLength={10}
               maxLength={5000}
               rows={5}
-              className={`${fieldClass} min-h-[8rem] resize-none`}
+              className={`${fieldClass} min-h-[8rem] resize-y`}
+              aria-invalid={Boolean(errorMessage)}
+              aria-describedby={errorMessage ? 'contact-form-error' : undefined}
               placeholder={t('contact.messagePlaceholder')}
             />
           </div>
@@ -97,20 +107,21 @@ export function ContactSection({
             </a>
             .
           </p>
-          {state?.error ? (
-            <p className="font-mono text-xs text-destructive">{state.error}</p>
+          {errorMessage ? (
+            <p id="contact-form-error" role="alert" aria-live="assertive" className="font-mono text-xs text-destructive">
+              {errorMessage}
+            </p>
           ) : null}
           <div>
             <button
               type="submit"
               disabled={pending}
-              className="nk-os-btn nk-os-btn--fill disabled:opacity-50"
+              className="nk-os-btn nk-os-btn--fill min-h-[44px] disabled:opacity-50"
             >
               {pending ? t('contact.sending') : t('contact.send')}
             </button>
           </div>
         </form>
-      )}
     </SectionWrapper>
   )
 }

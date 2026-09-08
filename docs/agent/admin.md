@@ -9,6 +9,8 @@
 
 New public-facing config → **Supabase `site_config`**, not KV.
 
+Look & Feel tabs: Theme, Background, Hero, Loader, Sections, Site Text, **Terminal**. Terminal JSON key: `terminal` (`commands`, `secretCode`, `morseCode`) via `lib/terminal-config.ts`. Command files upload to R2 (`fileStoragePath`); included in full `site_config` backups and legacy `site-config-content` import (`terminalCommands` / `secretCode` / `terminalMorseCode`).
+
 ## Site config mutations
 
 `updateSiteConfig` in `app/admin/_actions/siteConfig.ts` dispatches `update_site_config` via `lib/admin-action-registry.ts`.

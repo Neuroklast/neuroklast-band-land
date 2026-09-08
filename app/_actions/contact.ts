@@ -32,12 +32,12 @@ export async function submitContact(
   }
   const parsed = contactFormSchema.safeParse(raw)
   if (!parsed.success) {
-    return { error: 'Please fill in all required fields correctly.' }
+    return { error: 'invalid' }
   }
 
   const allowed = await checkContactRateLimit()
   if (!allowed) {
-    return { error: 'Too many messages. Please try again in a few minutes.' }
+    return { error: 'rate_limit' }
   }
 
   const { name, email, subject, message } = parsed.data
@@ -76,7 +76,7 @@ export async function submitContact(
   })
 
   if (!res.ok) {
-    return { error: 'Failed to send message. Please try again later.' }
+    return { error: 'send_failed' }
   }
 
   return { success: true }

@@ -192,12 +192,18 @@ describe('restored public homepage components', () => {
   })
 
   it('restores the bio expand/collapse mask behaviour', () => {
-    renderWithLocale(<BioSection content={'Line one\nLine two\nLine three'} />)
+    const longBio = Array.from({ length: 40 }, (_, i) => `Line ${i + 1} of the band story.`).join('\n')
+    renderWithLocale(<BioSection content={longBio} />)
 
     expect(screen.getByText(/biography/i)).toBeInTheDocument()
     const button = screen.getByRole('button', { name: /read more/i })
     fireEvent.click(button)
     expect(screen.getByRole('button', { name: /show less/i })).toBeInTheDocument()
+  })
+
+  it('hides read more for short bios', () => {
+    renderWithLocale(<BioSection content={'Line one\nLine two\nLine three'} />)
+    expect(screen.queryByRole('button', { name: /read more/i })).not.toBeInTheDocument()
   })
 
   it('restores release filters and browse-page link', () => {

@@ -5,6 +5,7 @@ import type { SiteLanguage } from '@/lib/i18n'
 import { parseTranslationsConfig, type CustomTranslations } from '@/lib/translations-config'
 import type { AppearanceConfigInput } from '@/lib/apply-appearance-config'
 import type { AppearanceTheme } from '@/lib/appearance-presets'
+import { parseTerminalConfig, type TerminalConfig } from '@/lib/terminal-config'
 
 export interface PublicSiteBootstrap {
   customTranslations: CustomTranslations
@@ -12,6 +13,7 @@ export interface PublicSiteBootstrap {
   languages: SiteLanguage[]
   /** Full appearance row for fonts/effects — applied on every public page. */
   appearance: AppearanceConfigInput
+  terminal: TerminalConfig
 }
 
 function parseAppearanceBootstrap(raw: unknown): AppearanceConfigInput {
@@ -49,7 +51,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
     const { data } = await supabase
       .from('site_config')
       .select('key, value')
-      .in('key', ['translations', 'analytics', 'languages', 'appearance'])
+      .in('key', ['translations', 'analytics', 'languages', 'appearance', 'terminal'])
 
     const rows = (data ?? []) as Array<{ key: string; value: unknown }>
     const rowMap = Object.fromEntries(rows.map((row) => [row.key, row.value]))
@@ -58,6 +60,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       analyticsConfig: parseAnalyticsConfig(rowMap.analytics),
       languages: parseLanguagesConfig(rowMap.languages),
       appearance: parseAppearanceBootstrap(rowMap.appearance),
+      terminal: parseTerminalConfig(rowMap.terminal),
     }
   } catch {
     return {
@@ -65,6 +68,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       analyticsConfig: parseAnalyticsConfig(null),
       languages: parseLanguagesConfig(null),
       appearance: {},
+      terminal: parseTerminalConfig(null),
     }
   }
 }

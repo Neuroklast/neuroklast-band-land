@@ -65,25 +65,20 @@ function GigList({
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
-            <div
-              className="nk-os-frame group relative w-full cursor-pointer p-6"
-              onClick={() => onGigClick(gig)}
-              onKeyDown={(event) => {
-                if (event.key !== 'Enter' && event.key !== ' ') return
-                event.preventDefault()
-                onGigClick(gig)
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={`Open event details for ${headline}`}
-            >
+            <div className="nk-os-frame group relative w-full p-6">
+              <button
+                type="button"
+                className="absolute inset-0 z-0 cursor-pointer"
+                onClick={() => onGigClick(gig)}
+                aria-label={`Open event details for ${headline}`}
+              />
               <div className="scan-line" aria-hidden="true" />
-              <div className="data-label mb-2" data-theme-color="data-label">
+              <div className="pointer-events-none relative z-[1] data-label mb-2" data-theme-color="data-label">
                 // EVENT.{formatEventLabel(gig.event_date)}
               </div>
 
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="min-w-0 space-y-2">
+              <div className="relative z-[1] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="pointer-events-none min-w-0 space-y-2">
                   <h3 className="font-mono text-xl font-bold uppercase text-primary">
                     {headline}
                   </h3>
@@ -109,8 +104,7 @@ function GigList({
                     href={sanitizeExternalHref(gig.ticket_url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(event) => event.stopPropagation()}
-                     className="nk-os-btn nk-os-btn--fill shrink-0 tracking-[0.25em]"
+                    className="nk-os-btn nk-os-btn--fill relative z-[1] shrink-0 tracking-[0.25em]"
                   >
                     Tickets
                   </a>

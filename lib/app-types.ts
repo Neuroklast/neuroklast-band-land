@@ -167,3 +167,4 @@ export type CyberpunkOverlayState =
   | { type: 'media'; data: MediaOverlayData }
   | { type: 'news'; data: NewsOverlayData }
   | { type: 'explorer'; data: { items: import('@/lib/media-download').MediaDownloadItem[] } }
+  | { type: 'terminal'; data?: never }

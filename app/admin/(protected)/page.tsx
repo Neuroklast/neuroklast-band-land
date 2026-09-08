@@ -18,7 +18,7 @@ type CountKey =
   | 'musicHighlights'
   | 'news'
 
-async function getCounts(): Promise<Record<CountKey, number>> {
+async function getCounts(): Promise<Record<CountKey, number> | null> {
   try {
     const supabase = await createClient()
     const [releases, gigs, gallery, media, bio, members, social, partners, soundpacks, merchandise, musicHighlights, news] =
@@ -51,20 +51,7 @@ async function getCounts(): Promise<Record<CountKey, number>> {
       news: news.count ?? 0,
     }
   } catch {
-    return {
-      releases: 0,
-      gigs: 0,
-      gallery: 0,
-      media: 0,
-      bio: 0,
-      members: 0,
-      social: 0,
-      partners: 0,
-      soundpacks: 0,
-      merchandise: 0,
-      musicHighlights: 0,
-      news: 0,
-    }
+    return null
   }
 }
 
@@ -107,6 +94,10 @@ export default async function AdminDashboard() {
         }
       />
 
+      {!counts ? (
+        <p role="alert" className="mb-6 text-sm text-red-400">Could not load dashboard counts. Check the database connection.</p>
+      ) : null}
+
       {legacySupabaseUrls > 0 ? (
         <div className="mb-6 rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
           <strong className="font-semibold">{legacySupabaseUrls}</strong>{' '}
@@ -123,7 +114,7 @@ export default async function AdminDashboard() {
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {group.items.map((item) => {
                 const count =
-                  item.countKey && item.countKey in counts
+                  counts && item.countKey && item.countKey in counts
                     ? counts[item.countKey as CountKey]
                     : null
                 return (

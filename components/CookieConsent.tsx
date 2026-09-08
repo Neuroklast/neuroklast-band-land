@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import type { CSSProperties } from 'react'
-import { m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { X, Shield } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -81,6 +81,7 @@ function PrivacyPolicyLink({
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privacyPolicyUrl }: CookieConsentProps) {
+  const prefersReducedMotion = useReducedMotion()
   const { t } = useLocale()
   const [showBanner, setShowBanner] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
@@ -114,15 +115,7 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
     return () => document.removeEventListener('keydown', onKey)
   }, [showBanner, showDetails])
 
-  useEffect(() => {
-    if (!showBanner) return
-    const id = window.setTimeout(() => {
-      const root = document.querySelector('[data-cookie-banner]')
-      const btn = root?.querySelector<HTMLElement>('button')
-      btn?.focus()
-    }, 900)
-    return () => window.clearTimeout(id)
-  }, [showBanner])
+
 
   const saveConsent = useCallback((prefs: ConsentPreferences) => {
     writeStoredConsent(prefs)
@@ -148,16 +141,15 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
     <AnimatePresence>
       {showBanner && (
         <m.div
-          role="dialog"
-          aria-modal="true"
+          role="region"
           aria-labelledby="cookie-banner-title"
           data-cookie-banner
-          className="fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t-2 border-primary/30 p-4 md:p-6 shadow-2xl"
+          className="fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t-2 border-primary/30 p-4 md:p-6 shadow-2xl pb-[max(1rem,env(safe-area-inset-bottom))]"
           style={{ zIndex: 'var(--z-system)' } as CSSProperties}
-          initial={{ y: 100, opacity: 0 }}
+          initial={prefersReducedMotion ? false : { y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          exit={prefersReducedMotion ? undefined : { y: 100, opacity: 0 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
         >
           <div className="container mx-auto max-w-5xl">
             {!showDetails ? (
@@ -183,16 +175,14 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
                   <Button
                     onClick={handleRejectAll}
                     variant="outline"
-                    size="sm"
-                    className="font-mono"
+                    className="font-mono min-h-[44px]"
                   >
                     {t('cookie.rejectAll')}
                   </Button>
                   <Button
                     onClick={() => setShowDetails(true)}
                     variant="ghost"
-                    size="sm"
-                    className="font-mono"
+                    className="font-mono min-h-[44px]"
                     aria-expanded={showDetails}
                     aria-controls="cookie-prefs-panel"
                   >
@@ -200,8 +190,7 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
                   </Button>
                   <Button
                     onClick={handleAcceptAll}
-                    size="sm"
-                    className="font-mono"
+                    className="font-mono min-h-[44px]"
                   >
                     {t('cookie.acceptAll')}
                   </Button>
@@ -216,7 +205,7 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
                   </h3>
                   <button
                     onClick={() => setShowDetails(false)}
-                    className="text-primary/60 hover:text-primary focus:outline-none focus:text-primary"
+                    className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-primary/60 hover:text-primary focus:outline-none focus:text-primary"
                     aria-label={t('cookie.closeDetails')}
                   >
                     <X size={20} />
@@ -260,7 +249,7 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
                           type="checkbox"
                           checked={analyticsChecked}
                           onChange={(e) => setAnalyticsChecked(e.target.checked)}
-                          className="w-4 h-4 rounded border-primary/30 bg-background text-primary focus:ring-2 focus:ring-primary cursor-pointer"
+                          className="h-5 w-5 min-h-[20px] min-w-[20px] rounded border-primary/30 bg-background text-primary focus:ring-2 focus:ring-primary cursor-pointer"
                           aria-label={t('cookie.analyticsLabel')}
                         />
                         <span className="text-xs font-mono select-none">
@@ -279,13 +268,13 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
                     />
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <Button onClick={handleRejectAll} variant="ghost" size="sm" className="font-mono">
+                    <Button onClick={handleRejectAll} variant="ghost" className="font-mono min-h-[44px]">
                       {t('cookie.rejectAll')}
                     </Button>
-                    <Button onClick={handleSaveCustom} variant="outline" size="sm" className="font-mono">
+                    <Button onClick={handleSaveCustom} variant="outline" className="font-mono min-h-[44px]">
                       {t('cookie.savePrefs')}
                     </Button>
-                    <Button onClick={handleAcceptAll} size="sm" className="font-mono">
+                    <Button onClick={handleAcceptAll} className="font-mono min-h-[44px]">
                       {t('cookie.acceptAll')}
                     </Button>
                   </div>

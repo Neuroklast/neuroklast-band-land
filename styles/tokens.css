@@ -74,6 +74,7 @@
   --spacing-section: 6rem;   /* Tailwind: py-section, pt-section, pb-section */
   --spacing-card: 1.5rem;    /* Tailwind: p-card, px-card, py-card           */
   --spacing-inline: 1rem;    /* Tailwind: gap-inline                          */
+  --nk-nav-h: 4rem;          /* Fixed public nav height (logo + py-3/4) */
 
   /* Typography scale */
   --font-size-hero: clamp(2rem, 5vw, 4rem);        /* Tailwind: text-hero    */

@@ -93,6 +93,10 @@ describe('getOverlaySessionKey', () => {
     ).toBe('gallery:2:1')
   })
 
+  it('returns terminal session key', () => {
+    expect(getOverlaySessionKey({ type: 'terminal' })).toBe('terminal')
+  })
+
   it('produces stable keys for same release regardless of object identity', () => {
     const keyA = getOverlaySessionKey({ type: 'release', data: { ...mockRelease } })
     const keyB = getOverlaySessionKey({ type: 'release', data: { ...mockRelease, title: 'Different title' } })

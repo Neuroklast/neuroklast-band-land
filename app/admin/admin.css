@@ -1,0 +1,22 @@
+[data-admin-ui] input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+[data-admin-ui] select,
+[data-admin-ui] textarea {
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+[data-admin-ui] input[type='checkbox'],
+[data-admin-ui] input[type='radio'] {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+}
+
+[data-admin-ui] input:focus-visible,
+[data-admin-ui] select:focus-visible,
+[data-admin-ui] textarea:focus-visible,
+[data-admin-ui] button:focus-visible {
+  outline: 2px solid #71717a;
+  outline-offset: 2px;
+}
