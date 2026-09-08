@@ -166,7 +166,7 @@ export function GallerySection({
             ) : null}
           </>
         ) : (
-          <SectionEmpty label="Gallery coming soon" />
+          <SectionEmpty label={t('gallery.noImages')} />
         )}
       </SectionWrapper>
     </>

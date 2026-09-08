@@ -129,7 +129,7 @@ export function ReleasesSection({
           </div>
 
           {filteredReleases.length === 0 ? (
-            <SectionEmpty label="Releases coming soon" />
+            <SectionEmpty label={t('releases.noReleases')} />
           ) : (
             <>
               <div className={`grid ${colsClass} gap-6`}>

@@ -42,6 +42,14 @@ describe('public mobile regression guards', () => {
     expect(src).toMatch(/role="dialog"/)
     expect(src).toMatch(/aria-modal="true"/)
     expect(src).toMatch(/GalleryOverlayContent/)
+    expect(src).toMatch(/nk-scroll-lock/)
+    expect(src).toMatch(/100svh/)
+  })
+
+  it('OverlayHost does not duplicate page scroll lock', () => {
+    const src = readSource('app/_components/public/OverlayHost.tsx')
+    expect(src).not.toMatch(/overflow/)
+    expect(src).not.toMatch(/lenis/)
   })
 
   it('SiteNav mobile links have 44px touch targets', () => {

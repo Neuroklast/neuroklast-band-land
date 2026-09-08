@@ -34,7 +34,9 @@ export function parseLanguagesConfig(raw: unknown): SiteLanguage[] {
     })
   }
 
-  return result.length > 0 ? result : [...BUILTIN_LOCALES]
+  if (result.length === 0) return [...BUILTIN_LOCALES]
+  if (result.length === 1 && result[0].code === 'en') return [...BUILTIN_LOCALES]
+  return result
 }
 
 /** Locale codes enabled on the public site. */

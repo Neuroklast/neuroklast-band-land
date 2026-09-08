@@ -32,6 +32,7 @@ export const NAV_ICONS: Record<string, Icon> = {
   news: Newspaper,
   newsletter: EnvelopeSimple,
   contact: ChatCircleDots,
+  spotify: MusicNotes,
 }
 
 export function getNavIcon(sectionId: string): Icon {

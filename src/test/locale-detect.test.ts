@@ -10,7 +10,7 @@ import {
 } from '@/lib/locale-detect'
 
 describe('locale-detect', () => {
-  const supported = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+  const supported = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
 
   beforeEach(() => {
     localStorage.clear()
@@ -24,6 +24,7 @@ describe('locale-detect', () => {
     expect(localeFromCountry('DE', supported)).toBe('de')
     expect(localeFromCountry('BR', supported)).toBe('pt')
     expect(localeFromCountry('JP', supported)).toBe('ja')
+    expect(localeFromCountry('UA', supported)).toBe('uk')
     expect(localeFromCountry('US', supported)).toBeNull()
   })
 
@@ -63,6 +64,7 @@ describe('locale-detect', () => {
       'news',
       'newsletter',
       'contact',
+      'spotify',
     ]
     for (const id of sections) {
       expect(NAV_LABEL_I18N_KEYS[id]).toBeTruthy()

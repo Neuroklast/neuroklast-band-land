@@ -69,14 +69,14 @@ describe('i18n translation utility', () => {
   })
 
   it('should handle all 8 locales as Locale type', () => {
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const locale of locales) {
       expect(typeof t('footer.admin', locale)).toBe('string')
     }
   })
 
   it('should have footer.admin translation for all 8 locales', () => {
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const locale of locales) {
       const result = t('footer.admin', locale)
       expect(result).toBeTruthy()
@@ -86,7 +86,7 @@ describe('i18n translation utility', () => {
 
   it('should have non-empty translations for all keys in all locales', () => {
     const all = getTranslations()
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const [key, langs] of Object.entries(all)) {
       for (const locale of locales) {
         const val = langs[locale]
@@ -136,7 +136,7 @@ describe('i18n translation utility', () => {
     const codes = LOCALES.map(l => l.code)
     expect(codes).toContain('en')
     expect(codes).toContain('de')
-    expect(codes).toContain('ru')
+    expect(codes).toContain('uk')
     expect(codes).toContain('ja')
     expect(codes).toContain('ko')
   })

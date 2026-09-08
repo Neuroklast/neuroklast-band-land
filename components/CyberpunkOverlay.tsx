@@ -73,7 +73,10 @@ function isDirectRevealType(type: string | undefined): boolean {
     type === 'media' ||
     type === 'explorer' ||
     type === 'terminal' ||
-    type === 'partner'
+    type === 'partner' ||
+    type === 'member' ||
+    type === 'news' ||
+    type === 'contact'
   )
 }
 
@@ -153,16 +156,12 @@ export default function CyberpunkOverlay({
 
   useEffect(() => {
     if (!overlaySessionKey) return
-    const prevOverflow = document.body.style.overflow
-    const prevHtmlOverflow = document.documentElement.style.overflow
-    document.body.style.overflow = 'hidden'
-    document.documentElement.style.overflow = 'hidden'
-    document.body.style.touchAction = 'none'
+    document.documentElement.classList.add('nk-scroll-lock')
+    document.body.classList.add('nk-scroll-lock')
     lenis?.stop()
     return () => {
-      document.body.style.overflow = prevOverflow
-      document.documentElement.style.overflow = prevHtmlOverflow
-      document.body.style.touchAction = ''
+      document.documentElement.classList.remove('nk-scroll-lock')
+      document.body.classList.remove('nk-scroll-lock')
       lenis?.start()
     }
   }, [overlaySessionKey, lenis])
@@ -271,7 +270,7 @@ export default function CyberpunkOverlay({
                   ? { duration: 0 }
                   : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
               }
-              className="theme-overlay-modal-chrome relative flex h-[100dvh] max-h-[100dvh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh]"
+              className="theme-overlay-modal-chrome relative flex h-[100svh] max-h-[100svh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect box-border pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh] md:pt-0"
               onClick={(e) => e.stopPropagation()}
             >
               <motion.div

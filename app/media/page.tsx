@@ -22,7 +22,7 @@ export default async function MediaBrowsePage() {
 
   return (
     <LegalPageShell>
-      <BrowsePageShell title="Media" streamLabel="// MEDIA.DOWNLOADS">
+      <BrowsePageShell titleKey="section.media" streamLabel="// MEDIA.DOWNLOADS">
         <MediaBrowseClient items={items} />
       </BrowsePageShell>
     </LegalPageShell>

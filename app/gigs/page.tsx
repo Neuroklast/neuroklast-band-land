@@ -23,7 +23,7 @@ export default async function GigsBrowsePage() {
 
   return (
     <LegalPageShell>
-      <BrowsePageShell title="Tour Dates" streamLabel="// EVENTS.BROWSE">
+      <BrowsePageShell titleKey="section.gigs" streamLabel="// EVENTS.BROWSE">
         <GigsBrowseClient gigs={gigs} artistName={artistName} />
       </BrowsePageShell>
     </LegalPageShell>

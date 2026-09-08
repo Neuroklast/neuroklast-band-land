@@ -32,6 +32,8 @@ import {
 import { SectionDivider } from './_components/public/SectionWrapper'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { SocialSection } from './_components/public/SocialSection'
+import { SpotifySection } from './_components/public/SpotifySection'
+import { resolveSpotifyArtistUri } from '@/lib/spotify-artist'
 import {
   mapMediaDownloadRow,
   type MediaDownloadDbRow,
@@ -317,6 +319,11 @@ export default async function HomePage({
   const galleryOverrides = getSectionOverrides('gallery')
   const bioOverrides = getSectionOverrides('bio')
   const creditOverrides = getSectionOverrides('creditHighlights')
+  const catalogueSync = getConfig(configRows, 'catalogue_sync')
+  const spotifyUri = resolveSpotifyArtistUri([
+    social.find((link) => link.platform.toLowerCase().includes('spotify'))?.url,
+    typeof catalogueSync.spotifyArtistId === 'string' ? catalogueSync.spotifyArtistId : null,
+  ])
 
   const lookId = parseLookId(
     typeof appearanceConfig.lookId === 'string' ? appearanceConfig.lookId : 'neuroklast-classic',
@@ -601,6 +608,18 @@ export default async function HomePage({
                 {divider}
                 <MusicHighlightsSection
                   highlights={musicHighlights}
+                  heading={section.label}
+                  intro={section.intro}
+                />
+              </SectionErrorBoundary>,
+              section,
+            )
+           case 'spotify':
+            return wrapForPreview(
+              <SectionErrorBoundary key="spotify" sectionName="Listen">
+                {divider}
+                <SpotifySection
+                  uri={spotifyUri}
                   heading={section.label}
                   intro={section.intro}
                 />
