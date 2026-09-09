@@ -12,8 +12,7 @@ import './styles.css'
 
 export default function NeuroklastClassicFooter({
   socialLinks,
-  siteName,
-  genres,
+  siteName: _siteName,
   label,
   privacyPolicyUrl = '/privacy-policy',
   onAdminLogin,
@@ -43,19 +42,6 @@ export default function NeuroklastClassicFooter({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
         >
-          {genres && genres.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-2">
-              {genres.map((genre) => (
-                <span
-                  key={genre}
-                  className="nk-os-chip"
-                >
-                  {genre}
-                </span>
-              ))}
-            </div>
-          )}
-
           <LanguageSwitcher className="justify-center" />
 
           {socialEntries.length > 0 && (
