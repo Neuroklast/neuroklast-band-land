@@ -10,10 +10,10 @@ import './styles.css'
 
 import type { ThemePackage } from '@/lib/types'
 
-export const zardonicIndustrialTheme: ThemePackage = {
-  id: 'zardonic-industrial',
-  name: 'Zardonic Industrial',
-  description: 'Zardonic industrial dark cyberpunk theme — premium edition',
+export const neuroklastIndustrialTheme: ThemePackage = {
+  id: 'neuroklast-industrial',
+  name: 'Neuroklast Industrial',
+  description: 'Neuroklast industrial dark cyberpunk theme — premium edition',
   version: '1.0.0',
   author: 'Neuroklast',
   access: 'premium',
@@ -36,7 +36,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
   },
   colorPresets: [
     {
-      id: 'zardonic-ember',
+      id: 'neuroklast-ember',
       name: 'Ember',
       description: 'Industrial orange/red default',
       colors: {
@@ -51,7 +51,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
       },
     },
     {
-      id: 'zardonic-steel-blue',
+      id: 'neuroklast-steel-blue',
       name: 'Steel Blue',
       description: 'Cold industrial steel blue',
       colors: {
@@ -66,7 +66,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
       },
     },
     {
-      id: 'zardonic-toxic',
+      id: 'neuroklast-toxic',
       name: 'Toxic',
       description: 'Toxic industrial green',
       colors: {
@@ -81,7 +81,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
       },
     },
     {
-      id: 'zardonic-steel-blue',
+      id: 'neuroklast-steel-blue',
       name: 'Steel Blue',
       description: 'Cold steel industrial',
       colors: {
@@ -96,7 +96,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
       },
     },
     {
-      id: 'zardonic-radioactive',
+      id: 'neuroklast-radioactive',
       name: 'Radioactive',
       description: 'Industrial radioactive green',
       colors: {
@@ -111,7 +111,7 @@ export const zardonicIndustrialTheme: ThemePackage = {
       },
     },
   ],
-  defaultPresetId: 'zardonic-ember',
+  defaultPresetId: 'neuroklast-ember',
   customizability: { customColors: true, customFonts: true, adjustEffects: true },
   defaultModalAnimation: 'circuitBreak',
   supportedModalAnimations: ['circuitBreak', 'systemBoot', 'glitchScan', 'dataStream', 'hologramMaterialize', 'matrixDecode', 'ringLink', 'random'],
@@ -142,4 +142,4 @@ export const zardonicIndustrialTheme: ThemePackage = {
   },
 }
 
-export type ZardonicIndustrialTheme = typeof zardonicIndustrialTheme
+export type NeuroklastIndustrialTheme = typeof neuroklastIndustrialTheme

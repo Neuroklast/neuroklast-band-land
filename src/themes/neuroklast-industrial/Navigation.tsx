@@ -26,7 +26,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationPr
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-sm border-b border-border zardonic-theme-scanline-effect"
+      className="fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-sm border-b border-border neuroklast-theme-scanline-effect"
       style={{ position: 'fixed', top: 0 }}
     >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -42,7 +42,7 @@ export default function Navigation({ siteName, items, onNavigate }: NavigationPr
             <button
               key={item.label}
               onClick={() => handleNavigation(item.id)}
-              className="text-sm uppercase tracking-wide hover:text-primary transition-colors font-mono zardonic-theme-hover-chromatic zardonic-theme-hover-glitch"
+              className="text-sm uppercase tracking-wide hover:text-primary transition-colors font-mono neuroklast-theme-hover-chromatic neuroklast-theme-hover-glitch"
             >
               {item.label}
             </button>

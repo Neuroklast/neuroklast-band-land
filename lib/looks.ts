@@ -81,8 +81,8 @@ export const LOOKS: LookDefinition[] = [
     defaultCta: 'ENTER',
   },
   {
-    id: 'zardonic-industrial',
-    name: 'Zardonic Industrial',
+    id: 'neuroklast-industrial',
+    name: 'Neuroklast Industrial',
     description: 'Industrial dark cyberpunk',
     theme: {
       primaryColor: 'oklch(0.62 0.19 35)',
@@ -100,7 +100,7 @@ export const LOOKS: LookDefinition[] = [
     },
     overlayEffects: CLASSIC_OVERLAY_EFFECTS,
     overlayAnimation: 'circuitBreak',
-    overlayClass: 'zardonic-industrial-overlay-modal',
+    overlayClass: 'neuroklast-industrial-overlay-modal',
     defaultCta: 'ENGAGE',
   },
   {
@@ -129,12 +129,13 @@ export const LOOKS: LookDefinition[] = [
 ]
 
 export function parseLookId(value: unknown): LookId {
-  if (value === 'glitch-noir' || value === 'zardonic-industrial' || value === 'umbrella-corp') {
+  if (value === 'zardonic-industrial') return 'neuroklast-industrial'
+  if (value === 'glitch-noir' || value === 'neuroklast-industrial' || value === 'umbrella-corp') {
     return value
   }
   return DEFAULT_LOOK_ID
 }
 
 export function getLook(id?: string | null): LookDefinition {
-  return LOOKS.find((look) => look.id === id) ?? LOOKS[0]
+  return LOOKS.find((look) => look.id === parseLookId(id)) ?? LOOKS[0]
 }

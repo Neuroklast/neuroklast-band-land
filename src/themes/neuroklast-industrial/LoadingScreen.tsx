@@ -1,5 +1,3 @@
-'use client'
-
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 
@@ -62,9 +60,9 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
       transition={{ duration: 0.5 }}
       className="fixed inset-0 z-[9999] bg-background flex items-center justify-center"
     >
-      <div className="zardonic-theme-crt-overlay" />
-      <div className="zardonic-theme-crt-vignette" />
-      <div className="zardonic-theme-full-page-noise" />
+      <div className="neuroklast-theme-crt-overlay" />
+      <div className="neuroklast-theme-crt-vignette" />
+      <div className="neuroklast-theme-full-page-noise" />
 
       <div className="relative z-10 w-full max-w-md px-8">
         <motion.div
@@ -73,7 +71,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-          <div className="zardonic-theme-data-label mb-4">// SYSTEM.BOOT.SEQUENCE</div>
+          <div className="neuroklast-theme-data-label mb-4">// SYSTEM.BOOT.SEQUENCE</div>
 
           <motion.div
             className="font-mono text-primary text-lg"

@@ -24,10 +24,10 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
   const buttons = heroButtons && heroButtons.length > 0 ? heroButtons : DEFAULT_BUTTONS
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden zardonic-theme-scanline-effect">
+    <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden neuroklast-theme-scanline-effect">
       <div className="absolute inset-0 bg-black" />
 
-      <div className="absolute inset-0 zardonic-theme-noise-effect" />
+      <div className="absolute inset-0 neuroklast-theme-noise-effect" />
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -40,23 +40,23 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
         >
-          <div className="relative mx-auto w-fit zardonic-theme-hero-logo-glitch">
+          <div className="relative mx-auto w-fit neuroklast-theme-hero-logo-glitch">
             <img
               src={logoUrl || ''}
-              alt={name || "ZARDONIC"}
-              className="h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 zardonic-theme-hover-chromatic-image"
+              alt={name || "NEUROKLAST"}
+              className="h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 neuroklast-theme-hover-chromatic-image"
             />
             <img
               src={logoUrl || ''}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 zardonic-theme-hero-logo-r"
+              className="absolute inset-0 h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 neuroklast-theme-hero-logo-r"
             />
             <img
               src={logoUrl || ''}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 zardonic-theme-hero-logo-b"
+              className="absolute inset-0 h-40 md:h-56 lg:h-72 w-auto object-contain brightness-110 neuroklast-theme-hero-logo-b"
             />
           </div>
         </motion.div>
@@ -74,9 +74,9 @@ export default function Hero({ name, logoUrl, heroButtons, onContactModalOpen }:
                 size="lg"
                 variant={btn.variant ?? (idx === 0 ? 'default' : 'outline')}
                 onClick={() => handleHeroButton(btn, onContactModalOpen)}
-                className="uppercase font-mono zardonic-theme-hover-glitch zardonic-theme-hover-noise relative zardonic-theme-cyber-border"
+                className="uppercase font-mono neuroklast-theme-hover-glitch neuroklast-theme-hover-noise relative neuroklast-theme-cyber-border"
               >
-                <span className="zardonic-theme-hover-chromatic">{btn.label}</span>
+                <span className="neuroklast-theme-hover-chromatic">{btn.label}</span>
                 {btn.action === 'scroll' && idx === 0 && <CaretDown className="ml-2" size={16} />}
               </Button>
             ))}

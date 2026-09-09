@@ -23,7 +23,7 @@ describe('cross-source streaming link ids', () => {
 
   it('extracts Discogs release id from links', () => {
     const id = extractDiscogsIdFromLinks([
-      { platform: 'discogs', url: 'https://www.discogs.com/release/12345-Zardonic' },
+      { platform: 'discogs', url: 'https://www.discogs.com/release/12345-Neuroklast' },
     ])
     expect(id).toBe('12345')
   })

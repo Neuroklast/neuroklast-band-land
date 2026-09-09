@@ -54,6 +54,7 @@ export function registerTheme(theme: ThemePackage): void {
 }
 
 export function getTheme(id: string): ThemePackage | undefined {
+  if (id === 'zardonic-industrial') return _registry.get('neuroklast-industrial')
   return _registry.get(id)
 }
 
@@ -63,7 +64,7 @@ export function getAllThemes(): ThemePackage[] {
 
 export function getActiveTheme(themeId?: string): ThemePackage {
   if (themeId) {
-    const found = _registry.get(themeId)
+    const found = getTheme(themeId)
     if (found) return found
   }
   // glitch-noir is the default free theme for all users.
@@ -142,13 +143,13 @@ export const THEME_CATALOG: ThemeDefinition[] = [
     themeType: 'full',
   },
   {
-    id: 'zardonic-industrial',
-    name: 'Zardonic Industrial',
+    id: 'neuroklast-industrial',
+    name: 'Neuroklast Industrial',
     description: 'Industrial dark cyberpunk theme — premium',
     licenseStatus: 'locked',
-    licenseKeyPrefix: 'ZARDONIC-',
+    licenseKeyPrefix: 'NEUROKLAST-',
     theme: {
-      activePreset: 'zardonic-industrial',
+      activePreset: 'neuroklast-industrial',
     },
     author: 'Neuroklast',
     tags: ['dark', 'industrial', 'cyberpunk', 'premium'],
@@ -176,13 +177,17 @@ export interface ThemeCatalogRegistry {
   isUnlocked(id: string): boolean
 }
 
+function resolveThemeId(id: string): string {
+  return id === 'zardonic-industrial' ? 'neuroklast-industrial' : id
+}
+
 export function createThemeRegistry(
   unlockedThemeIds: string[] = [],
   assignedThemeIds: string[] = [],
   tier: LicenseTier = 'free',
 ): ThemeCatalogRegistry {
-  const unlockedSet = new Set(unlockedThemeIds)
-  const assignedSet = new Set(assignedThemeIds)
+  const unlockedSet = new Set(unlockedThemeIds.map(resolveThemeId))
+  const assignedSet = new Set(assignedThemeIds.map(resolveThemeId))
 
   function getEffectiveStatus(def: ThemeDefinition): ThemeLicenseStatus {
     if (def.licenseStatus === 'free') return 'free'
@@ -196,17 +201,18 @@ export function createThemeRegistry(
     themes: THEME_CATALOG,
 
     getTheme(id: string) {
-      return THEME_CATALOG.find((t) => t.id === id)
+      const resolved = resolveThemeId(id)
+      return THEME_CATALOG.find((t) => t.id === resolved)
     },
 
     getLicenseStatus(id: string) {
-      const def = THEME_CATALOG.find((t) => t.id === id)
+      const def = THEME_CATALOG.find((t) => t.id === resolveThemeId(id))
       if (!def) return 'locked'
       return getEffectiveStatus(def)
     },
 
     isUnlocked(id: string) {
-      const def = THEME_CATALOG.find((t) => t.id === id)
+      const def = THEME_CATALOG.find((t) => t.id === resolveThemeId(id))
       if (!def) return false
       const status = getEffectiveStatus(def)
       return status === 'free' || status === 'licensed'

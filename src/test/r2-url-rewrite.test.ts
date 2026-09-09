@@ -65,8 +65,8 @@ describe('rewriteR2MediaUrl', () => {
   })
 
   it('strips the bucket name from r2.cloudflarestorage.com paths', () => {
-    const s3 = `https://abc.r2.cloudflarestorage.com/zardonic-media/${OBJECT_KEY}`
-    expect(rewriteR2MediaUrl(s3, NEW_HOST, { mediaBucket: 'zardonic-media' })).toBe(NEW_DIRECT)
+    const s3 = `https://abc.r2.cloudflarestorage.com/neuroklast-media/${OBJECT_KEY}`
+    expect(rewriteR2MediaUrl(s3, NEW_HOST, { mediaBucket: 'neuroklast-media' })).toBe(NEW_DIRECT)
   })
 })
 

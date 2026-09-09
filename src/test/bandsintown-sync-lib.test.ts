@@ -14,7 +14,7 @@ describe('mapBandsintownEventToGigRow', () => {
       url: 'https://bandsintown.com/e/101',
       offers: [{ url: 'https://tickets.example.com' }],
       venue: { name: 'Club Voltage', city: 'Berlin', country: 'Germany' },
-      lineup: ['Zardonic', 'Guest'],
+      lineup: ['Neuroklast', 'Guest'],
       sold_out: true,
       description: 'Special set',
     })
@@ -30,7 +30,7 @@ describe('mapBandsintownEventToGigRow', () => {
       active: true,
     })
     expect(row?.event_date).toContain('2026-09-15')
-    expect(row?.description).toContain('Lineup: Zardonic, Guest')
+    expect(row?.description).toContain('Lineup: Neuroklast, Guest')
   })
 
   it('returns null when id or datetime is missing', () => {
@@ -50,13 +50,13 @@ describe('fetchBandsintownEventsFromApi', () => {
 
   it('returns empty array on 404', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 404 }))
-    const events = await fetchBandsintownEventsFromApi('Zardonic', 'test-key', true)
+    const events = await fetchBandsintownEventsFromApi('Neuroklast', 'test-key', true)
     expect(events).toEqual([])
   })
 
   it('throws on upstream failure', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('bad', { status: 500 }))
-    await expect(fetchBandsintownEventsFromApi('Zardonic', 'test-key', true)).rejects.toThrow(
+    await expect(fetchBandsintownEventsFromApi('Neuroklast', 'test-key', true)).rejects.toThrow(
       'Bandsintown API returned 500',
     )
   })
@@ -106,7 +106,7 @@ describe('syncBandsintownGigsToSupabase', () => {
 
     const result = await syncBandsintownGigsToSupabase(
       supabase as unknown as import('@supabase/supabase-js').SupabaseClient,
-      'Zardonic',
+      'Neuroklast',
       'test-key',
     )
 

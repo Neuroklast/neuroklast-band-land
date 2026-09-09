@@ -13,7 +13,7 @@ describe('fetchBandsintownEvents', () => {
         venue: { name: 'Club Voltage', city: 'Berlin', region: 'BE', country: 'Germany' },
         datetime: '2025-03-15T20:00:00',
         url: 'https://bandsintown.com/e/101',
-        lineup: ['Zardonic', 'Support Act'],
+        lineup: ['Neuroklast', 'Support Act'],
       },
     ]
 
@@ -35,7 +35,7 @@ describe('fetchBandsintownEvents', () => {
       date: '2025-03-15',
       startsAt: '2025-03-15T20:00:00',
       ticketUrl: 'https://bandsintown.com/e/101',
-      lineup: ['Zardonic', 'Support Act'],
+      lineup: ['Neuroklast', 'Support Act'],
       streetAddress: undefined,
       postalCode: undefined,
       latitude: undefined,
@@ -101,7 +101,7 @@ describe('fetchBandsintownEvents', () => {
         id: '303',
         venue: { name: 'Some Venue', city: 'London', country: 'UK' },
         url: 'https://bandsintown.com/e/303',
-        lineup: ['Zardonic'],
+        lineup: ['Neuroklast'],
       },
     ]
 

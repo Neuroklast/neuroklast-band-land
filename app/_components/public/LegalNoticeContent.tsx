@@ -2,11 +2,8 @@
 
 import type { LegalConfig } from '@/lib/legal-content'
 import { getLegalCompleteness } from '@/lib/legal-content'
-import {
-  buildLegalNoticeSections,
-  legalNoticeTitle,
-  resolveLegalLocale,
-} from '@/lib/legal-templates'
+import { INCOMPLETE_NOTICE, NOTICE_DOC_TITLE, NOTICE_STREAM } from '@/lib/legal-i18n'
+import { buildLegalNoticeSections, resolveLegalLocale } from '@/lib/legal-templates'
 import { useLocale } from '@/contexts/LocaleContext'
 import { LegalDocumentContent } from './LegalDocumentContent'
 
@@ -23,16 +20,12 @@ export function LegalNoticeContent({ config }: LegalNoticeContentProps) {
 
   return (
     <LegalDocumentContent
-      title={legalNoticeTitle(legalLocale)}
-      streamLabel={legalLocale === 'de' ? '// IMPRESSUM' : '// LEGAL.INFORMATION'}
+      title={NOTICE_DOC_TITLE[legalLocale]}
+      streamLabel={NOTICE_STREAM[legalLocale]}
       sections={sections}
       isCustom={isCustom}
       incomplete={!isCustom && !completeness.complete}
-      incompleteMessage={
-        legalLocale === 'de'
-          ? 'Hinweis: Pflichtangaben im Impressum sind noch unvollständig. Bitte im Admin unter Legal & Privacy ergänzen.'
-          : 'Notice: Required operator details are incomplete. Please complete them under Admin → Legal & Privacy.'
-      }
+      incompleteMessage={INCOMPLETE_NOTICE[legalLocale]}
       backHref="/"
       backLabel={t('newsletter.backHome')}
     />

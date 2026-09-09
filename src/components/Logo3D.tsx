@@ -1,7 +1,7 @@
 /**
  * Logo3D — Three.js-based 3D logo for the hero section.
  *
- * Loads a GLB model from `src/assets/models/ZARDONICTEXT.glb` when available.
+ * Loads a GLB model from `src/assets/models/NEUROKLASTTEXT.glb` when available.
  * Falls back to a 3D box placeholder with the same scroll-parallax animation
  * when the GLB file is absent or WebGL is not supported by the browser.
  *
@@ -21,7 +21,7 @@ const glbModels = import.meta.glob('../assets/models/*.glb', {
   eager: true,
 }) as Record<string, string>
 
-const MODEL_KEY = '../assets/models/ZARDONICTEXT.glb'
+const MODEL_KEY = '../assets/models/NEUROKLASTTEXT.glb'
 const modelUrl: string | undefined = glbModels[MODEL_KEY]
 
 // ---------------------------------------------------------------------------

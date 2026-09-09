@@ -880,7 +880,7 @@
   left: 0.5rem;
 }
 
-/* ─── Cyberpunk Utility Classes (ported from zardonic) ─── */
+/* ─── Cyberpunk Utility Classes (ported from neuroklast) ─── */
 
 /* Hover glitch – subtle chromatic offset on hover */
 .hover-glitch {
@@ -1373,7 +1373,7 @@
   50%, 100% { opacity: 0; }
 }
 
-/* ─── Zardonic Industrial – HeroZardonic CSS classes ─────────────────────── */
+/* ─── Neuroklast Industrial – HeroNeuroklast CSS classes ─────────────────────── */
 
 /* Full-page noise texture (used in loading screens and overlays) */
 .full-page-noise {
@@ -1547,7 +1547,7 @@
   100% { opacity: 1; clip-path: inset(0 0 0% 0); }
 }
 
-/* ─── Zardonic Industrial Theme ─────────────────────────────────────────────── */
+/* ─── Neuroklast Industrial Theme ─────────────────────────────────────────────── */
 
 @keyframes crt-flicker {
   0%, 100% { opacity: var(--crt-overlay-opacity, 0.6); }

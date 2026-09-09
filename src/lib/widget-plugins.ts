@@ -8,9 +8,9 @@
  *
  * Related issue: #163
  *
- * @example Zardonic-style integration
+ * @example Neuroklast-style integration
  * The Bandsintown widget replicates the event-listing section seen on
- * zardonic.net: an embedded event feed powered by the Bandsintown API,
+ * neuroklast.net: an embedded event feed powered by the Bandsintown API,
  * styled to match the active theme.  The Spotify Player widget mirrors
  * the embedded playlist section, allowing visitors to listen without
  * leaving the page.

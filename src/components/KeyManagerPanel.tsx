@@ -328,7 +328,7 @@ export default function KeyManagerPanel() {
               className="w-full bg-secondary border border-input rounded px-2 py-1.5 text-xs text-foreground h-8"
             >
               <option value="">{t('common.none')}</option>
-              <option value="zardonic">{t('keyManager.zardonic')}</option>
+              <option value="neuroklast">{t('keyManager.neuroklast')}</option>
             </select>
           </div>
         </div>

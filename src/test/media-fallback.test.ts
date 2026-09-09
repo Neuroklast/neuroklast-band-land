@@ -5,7 +5,7 @@ describe('isR2Url', () => {
   it('accepts r2.dev and r2.cloudflarestorage.com hosts', () => {
     expect(isR2Url('https://pub-abc.r2.dev/background/x.webp')).toBe(true)
     expect(isR2Url('https://pub-abc.r2.dev/x.webp')).toBe(true)
-    expect(isR2Url('https://abc.r2.cloudflarestorage.com/zardonic-media/x.webp')).toBe(true)
+    expect(isR2Url('https://abc.r2.cloudflarestorage.com/neuroklast-media/x.webp')).toBe(true)
   })
 
   it('rejects unrelated hosts and junk', () => {
@@ -28,11 +28,11 @@ describe('objectPathFromUrl', () => {
 
   it('strips the bucket prefix on the storage endpoint', () => {
     expect(
-      objectPathFromUrl('https://abc.r2.cloudflarestorage.com/zardonic-media/background/x.webp'),
+      objectPathFromUrl('https://abc.r2.cloudflarestorage.com/neuroklast-media/background/x.webp'),
     ).toBe('background/x.webp')
   })
 
   it('returns null when there is no object segment', () => {
-    expect(objectPathFromUrl('https://abc.r2.cloudflarestorage.com/zardonic-media')).toBeNull()
+    expect(objectPathFromUrl('https://abc.r2.cloudflarestorage.com/neuroklast-media')).toBeNull()
   })
 })
