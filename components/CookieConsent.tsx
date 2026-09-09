@@ -144,7 +144,7 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
           role="region"
           aria-labelledby="cookie-banner-title"
           data-cookie-banner
-          className="fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-lg border-t-2 border-primary/30 p-4 md:p-6 shadow-2xl pb-[max(1rem,env(safe-area-inset-bottom))]"
+          className="fixed bottom-0 left-0 right-0 max-h-[min(70svh,32rem)] overflow-y-auto overscroll-contain bg-background/98 backdrop-blur-lg border-t-2 border-primary/30 p-4 md:p-6 shadow-2xl pb-[max(1rem,env(safe-area-inset-bottom))]"
           style={{ zIndex: 'var(--z-system)' } as CSSProperties}
           initial={prefersReducedMotion ? false : { y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

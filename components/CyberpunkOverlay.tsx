@@ -173,7 +173,7 @@ export default function CyberpunkOverlay({
       document.activeElement instanceof HTMLElement ? document.activeElement : null
 
     const focusClose = () => {
-      const closeBtn = panelRef.current?.querySelector<HTMLElement>('button[aria-label="Close dialog"]')
+      const closeBtn = panelRef.current?.querySelector<HTMLElement>('[data-overlay-close]')
       closeBtn?.focus()
     }
 
@@ -219,7 +219,6 @@ export default function CyberpunkOverlay({
 
   const sessionKey = overlaySessionKey ?? overlay?.type ?? 'overlay'
   const glow35 = overlay ? resolveModalGlow(adminSettings, 0.35) : DEFAULT_MODAL_GLOW
-  const glow50 = overlay ? resolveModalGlow(adminSettings, 0.5) : DEFAULT_MODAL_GLOW
 
   return (
     <AnimatePresence>
@@ -255,21 +254,11 @@ export default function CyberpunkOverlay({
               aria-labelledby="cyberpunk-overlay-title"
               initial={{ boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
               animate={{
-                boxShadow: prefersReducedMotion
-                  ? `0 0 24px ${glow35}, inset 0 0 40px ${glow35}`
-                  : [
-                      `0 0 24px ${glow35}, inset 0 0 28px ${glow35}`,
-                      `0 0 48px ${glow50}, inset 0 0 40px ${glow35}`,
-                      `0 0 24px ${glow35}, inset 0 0 28px ${glow35}`,
-                    ],
+                boxShadow: `0 0 24px ${glow35}, inset 0 0 28px ${glow35}`,
               }}
               data-theme-color="card card-foreground border"
               data-cyberpunk-modal=""
-              transition={
-                prefersReducedMotion
-                  ? { duration: 0 }
-                  : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-              }
+              transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
               className="theme-overlay-modal-chrome relative flex h-[100svh] max-h-[100svh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect box-border pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh] md:pt-0"
               onClick={(e) => e.stopPropagation()}
             >

@@ -100,7 +100,7 @@ export function SecretTerminalContent({ siteName = '' }: { siteName?: string }) 
     }
     if (trimmed === 'exit') {
       setInput('')
-      document.querySelector<HTMLButtonElement>('button[aria-label="Close dialog"]')?.click()
+      document.querySelector<HTMLButtonElement>('[data-overlay-close]')?.click()
       return
     }
     if (trimmed === 'help') {
