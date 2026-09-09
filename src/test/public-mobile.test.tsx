@@ -64,6 +64,9 @@ describe('public mobile regression guards', () => {
     expect(src).toMatch(/safe-area-inset-top/)
     expect(src).toMatch(/useReducedMotion/)
     expect(src).toMatch(/aria-expanded/)
+    expect(src).toMatch(/nk-scroll-lock/)
+    expect(src).toMatch(/overflow-y-auto/)
+    expect(src).toMatch(/navItemLabel/)
   })
 
   it('Gallery overlay dots are keyboard buttons', () => {

@@ -439,7 +439,7 @@
   min-height: 44px;
   padding: 0.5rem 0.75rem;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: oklch(1 0 0);
   background: color-mix(in oklch, var(--primary) 4%, transparent);
   border: 1px solid color-mix(in oklch, var(--primary) 28%, transparent);

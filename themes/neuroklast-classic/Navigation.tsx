@@ -7,7 +7,25 @@ import { List, X } from '@phosphor-icons/react'
 import type { NavigationSlotProps } from '@/lib/types'
 import { useLenisContext } from '@/contexts/LenisContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { NAV_LABEL_I18N_KEYS } from '@/lib/locale-detect'
+import { SECTION_ANCHOR_BY_ID } from '@/lib/nav-links'
 import './styles.css'
+
+const ANCHOR_TO_SECTION = Object.fromEntries(
+  Object.entries(SECTION_ANCHOR_BY_ID).map(([sectionId, anchor]) => [anchor, sectionId]),
+)
+
+function navItemLabel(
+  id: string,
+  fallback: string,
+  t: (key: string) => string,
+): string {
+  const sectionId = ANCHOR_TO_SECTION[id] ?? id
+  const key = NAV_LABEL_I18N_KEYS[sectionId]
+  if (!key) return fallback
+  const translated = t(key)
+  return !translated || translated === key ? fallback : translated
+}
 
 const NAV_HEIGHT_PX = 64
 const GLITCH_PROBABILITY = 0.95
@@ -39,15 +57,16 @@ export default function NeuroklastClassicNavigation({
 
   useEffect(() => {
     if (!isMobileMenuOpen) return
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    document.documentElement.classList.add('nk-scroll-lock')
+    document.body.classList.add('nk-scroll-lock')
     lenis?.stop()
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setIsMobileMenuOpen(false)
     }
     document.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prevOverflow
+      document.documentElement.classList.remove('nk-scroll-lock')
+      document.body.classList.remove('nk-scroll-lock')
       lenis?.start()
       document.removeEventListener('keydown', onKey)
     }
@@ -102,7 +121,7 @@ export default function NeuroklastClassicNavigation({
                 className="nk-os-nav min-h-[44px]"
               >
                 <span className="nk-os-nav__tick">&gt;:</span>
-                {item.label}
+                {navItemLabel(item.id, item.label, t)}
               </button>
             ))}
           </div>
@@ -142,7 +161,7 @@ export default function NeuroklastClassicNavigation({
               id="nk-mobile-nav"
               role="navigation"
               aria-label={t('aria.mobileNav')}
-              className="fixed inset-x-0 top-0 md:hidden pt-16 pb-8 border-b border-primary/20 bg-background"
+              className="fixed inset-x-0 top-0 max-h-[100svh] overflow-y-auto overscroll-contain md:hidden border-b border-primary/20 bg-background pb-[max(2rem,env(safe-area-inset-bottom))]"
               style={{ zIndex: 'var(--z-nav)', paddingTop: 'calc(var(--nk-nav-h) + env(safe-area-inset-top))' }}
                 initial={prefersReducedMotion ? false : { opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -160,7 +179,7 @@ export default function NeuroklastClassicNavigation({
                     transition={{ duration: prefersReducedMotion ? 0 : 0.3, delay: prefersReducedMotion ? 0 : index * 0.05 }}
                   >
                     <span className="relative z-[1]">
-                      <span className="nk-os-nav__tick">&gt;:</span> {item.label}
+                      <span className="nk-os-nav__tick">&gt;:</span> {navItemLabel(item.id, item.label, t)}
                     </span>
                   </motion.button>
                 ))}

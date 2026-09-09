@@ -29,7 +29,6 @@ import {
   parseBackgroundVideoOpacity,
   resolveSiteBackgroundVideoSrc,
 } from '@/lib/background-config'
-import { SectionDivider } from './_components/public/SectionWrapper'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { SocialSection } from './_components/public/SocialSection'
 import { SpotifySection } from './_components/public/SpotifySection'
@@ -485,7 +484,7 @@ export default async function HomePage({
     >
       {/* Main content – sections rendered in DB-controlled order (inside PageLayout <main>) */}
       {sections.map((section, idx) => {
-        const divider = idx > 0 ? <SectionDivider /> : null
+        const divider = null
         switch (section.id) {
           case 'hero':
             return wrapForPreview(

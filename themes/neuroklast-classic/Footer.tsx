@@ -82,7 +82,7 @@ export default function NeuroklastClassicFooter({
 
           <div className="text-center space-y-3">
             <p className="text-xs font-mono text-muted-foreground tracking-wider">
-              {`\u00A9 ${new Date().getFullYear()} ${(siteName || 'NEUROKLAST').toUpperCase()}. ALL RIGHTS RESERVED.`}
+              {t('footer.copyrightLine').replace('{0}', String(new Date().getFullYear()))}
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-muted-foreground tracking-wider">
