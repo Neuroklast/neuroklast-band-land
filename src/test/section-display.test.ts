@@ -4,7 +4,10 @@ import { formatSectionHeading, resolveSectionHeading } from '@/lib/section-displ
 describe('resolveSectionHeading', () => {
   const t = (key: string) => {
     if (key === 'section.bio') return 'Biografie'
-    if (key === 'section.gigs') return 'Tourdaten'
+    if (key === 'section.gigs') return 'Events'
+    if (key === 'section.credits') return 'Credits & Partner'
+    if (key === 'section.releases') return 'Diskografie'
+    if (key === 'section.soundpacks') return 'Soundpacks'
     return key
   }
 
@@ -12,6 +15,15 @@ describe('resolveSectionHeading', () => {
     expect(resolveSectionHeading(undefined, 'bio', t)).toBe('BIOGRAFIE')
     expect(resolveSectionHeading('Biography', 'bio', t)).toBe('BIOGRAFIE')
     expect(resolveSectionHeading('  biography  ', 'bio', t)).toBe('BIOGRAFIE')
+  })
+
+  it('translates CMS seed labels that differ from the i18n default', () => {
+    expect(resolveSectionHeading('Events', 'gigs', t)).toBe('EVENTS')
+    expect(resolveSectionHeading('Tour Dates', 'gigs', t)).toBe('EVENTS')
+    expect(resolveSectionHeading('Credits & Partners', 'credits', t)).toBe('CREDITS & PARTNER')
+    expect(resolveSectionHeading('Credit Highlights', 'credits', t)).toBe('CREDITS & PARTNER')
+    expect(resolveSectionHeading('Discography', 'releases', t)).toBe('DISKOGRAFIE')
+    expect(resolveSectionHeading('Soundpacks', 'soundpacks', t)).toBe('SOUNDPACKS')
   })
 
   it('keeps custom admin labels', () => {
