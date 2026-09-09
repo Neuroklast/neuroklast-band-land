@@ -75,12 +75,14 @@ describe('buildLegalNoticeSections', () => {
     expect(operator?.paragraphs.join(' ')).toContain('Musterstraße 1')
   })
 
-  it('uses custom override when set', () => {
-    const sections = buildLegalNoticeSections(
-      parseLegalConfig({ ...sampleConfig, legalNoticeCustom: 'Custom legal text' }),
-    )
-    expect(sections).toHaveLength(1)
-    expect(sections[0].paragraphs[0]).toBe('Custom legal text')
+  it('uses custom override only for German', () => {
+    const config = parseLegalConfig({ ...sampleConfig, legalNoticeCustom: 'Custom legal text' })
+    const de = buildLegalNoticeSections(config, 'de')
+    expect(de).toHaveLength(1)
+    expect(de[0].paragraphs[0]).toBe('Custom legal text')
+    const es = buildLegalNoticeSections(config, 'es')
+    expect(es.length).toBeGreaterThan(1)
+    expect(es[0].paragraphs.join(' ')).not.toBe('Custom legal text')
   })
 })
 
@@ -91,12 +93,18 @@ describe('buildPrivacyPolicySections', () => {
     expect(overview?.paragraphs.join(' ')).toContain('Neuroklast')
   })
 
-  it('uses privacy custom override when set', () => {
-    const sections = buildPrivacyPolicySections(
-      parseLegalConfig({ ...sampleConfig, privacyPolicyCustom: 'My custom policy' }),
-    )
-    expect(sections).toHaveLength(1)
-    expect(sections[0].paragraphs[0]).toBe('My custom policy')
+  it('uses privacy custom override only for German', () => {
+    const config = parseLegalConfig({
+      ...sampleConfig,
+      privacyPolicyCustom: '1. Datenschutz auf einen Blick',
+    })
+    const de = buildPrivacyPolicySections(config, 'de')
+    expect(de).toHaveLength(1)
+    expect(de[0].paragraphs[0]).toContain('Datenschutz auf einen Blick')
+
+    const es = buildPrivacyPolicySections(config, 'es')
+    expect(es.find((s) => s.id === 'overview')?.title).toMatch(/Protección de datos/i)
+    expect(es.map((s) => s.paragraphs.join(' ')).join(' ')).not.toContain('Datenschutz auf einen Blick')
   })
 
   it('covers no-newsletter, TDDDG, self-hosted fonts, analytics retention', () => {

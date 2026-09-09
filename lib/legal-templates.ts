@@ -39,11 +39,19 @@ function fillPlaceholders(text: string, vars: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, key: string) => vars[key] ?? `{${key}}`)
 }
 
+/**
+ * Admin custom copy is a single German blob. Using it for every locale
+ * replaced translated templates (ES title + DE body). Keep it on `de` only.
+ */
+export function usesCustomLegalCopy(custom: string | undefined, locale: LegalLocale): boolean {
+  return Boolean(custom?.trim()) && locale === 'de'
+}
+
 export function buildLegalNoticeSections(
   config: LegalConfig,
   locale: LegalLocale = 'en',
 ): LegalSection[] {
-  if (config.legalNoticeCustom) {
+  if (usesCustomLegalCopy(config.legalNoticeCustom, locale) && config.legalNoticeCustom) {
     return [
       {
         id: 'custom',
@@ -96,7 +104,7 @@ export function buildPrivacyPolicySections(
   config: LegalConfig,
   locale: LegalLocale = 'en',
 ): LegalSection[] {
-  if (config.privacyPolicyCustom) {
+  if (usesCustomLegalCopy(config.privacyPolicyCustom, locale) && config.privacyPolicyCustom) {
     return [
       {
         id: 'custom',

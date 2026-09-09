@@ -3,7 +3,7 @@
 import type { LegalConfig } from '@/lib/legal-content'
 import { getLegalCompleteness } from '@/lib/legal-content'
 import { INCOMPLETE_NOTICE, NOTICE_DOC_TITLE, NOTICE_STREAM } from '@/lib/legal-i18n'
-import { buildLegalNoticeSections, resolveLegalLocale } from '@/lib/legal-templates'
+import { buildLegalNoticeSections, resolveLegalLocale, usesCustomLegalCopy } from '@/lib/legal-templates'
 import { useLocale } from '@/contexts/LocaleContext'
 import { LegalDocumentContent } from './LegalDocumentContent'
 
@@ -15,7 +15,7 @@ export function LegalNoticeContent({ config }: LegalNoticeContentProps) {
   const { locale, t } = useLocale()
   const legalLocale = resolveLegalLocale(locale)
   const sections = buildLegalNoticeSections(config, legalLocale)
-  const isCustom = Boolean(config.legalNoticeCustom)
+  const isCustom = usesCustomLegalCopy(config.legalNoticeCustom, legalLocale)
   const completeness = getLegalCompleteness(config)
 
   return (
