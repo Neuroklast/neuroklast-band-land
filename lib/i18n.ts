@@ -76,6 +76,7 @@ const translations: Record<string, Record<string, string>> = {
   'aria.openMenu':             { en: 'Open menu', de: 'Menü öffnen', uk: 'Відкрити меню', it: 'Apri menu', es: 'Abrir menú', pt: 'Abrir menu', ja: 'メニューを開く', ko: '메뉴 열기' },
   'aria.closeMenu':            { en: 'Close menu', de: 'Menü schließen', uk: 'Закрити меню', it: 'Chiudi menu', es: 'Cerrar menú', pt: 'Fechar menu', ja: 'メニューを閉じる', ko: '메뉴 닫기' },
   'aria.closeOverlay':         { en: 'Close dialog', de: 'Dialog schließen', uk: 'Закрити діалог', it: 'Chiudi finestra', es: 'Cerrar diálogo', pt: 'Fechar diálogo', ja: 'ダイアログを閉じる', ko: '대화 상자 닫기' },
+  'common.close':              { en: 'CLOSE', de: 'SCHLIESSEN', uk: 'ЗАКРИТИ', it: 'CHIUDI', es: 'CERRAR', pt: 'FECHAR', ja: '閉じる', ko: '닫기' },
   'aria.openGallery':          { en: 'Open image in lightbox', de: 'Bild in Lightbox öffnen', uk: 'Відкрити зображення', it: 'Apri immagine in lightbox', es: 'Abrir imagen en lightbox', pt: 'Abrir imagem em lightbox', ja: 'ライトボックスで画像を開く', ko: '라이트박스에서 이미지 열기' },
   'aria.skipToContent':        { en: 'Skip to content', de: 'Zum Inhalt springen', uk: 'До вмісту', it: 'Vai al contenuto', es: 'Saltar al contenido', pt: 'Saltar para o conteúdo', ja: 'コンテンツへ', ko: '본문으로 건너뛰기' },
   'browse.prev':               { en: 'Prev', de: 'Zurück', uk: 'Назад', it: 'Prec', es: 'Ant', pt: 'Ant', ja: '前', ko: '이전' },
