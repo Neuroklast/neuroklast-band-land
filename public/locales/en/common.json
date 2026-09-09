@@ -664,7 +664,7 @@
   "keyManager.tierAgency": "Agency",
   "keyManager.tierSaas": "SaaS",
   "keyManager.exclusiveTheme": "Exclusive Theme (Optional)",
-  "keyManager.zardonic": "Zardonic",
+  "keyManager.neuroklast": "Neuroklast",
   "keyManager.generating": "Generating…",
   "keyManager.generateKey": "Generate Key",
   "keyManager.keyGenerated": "Key Generated — copy it now!",

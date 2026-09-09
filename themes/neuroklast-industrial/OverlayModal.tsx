@@ -3,5 +3,5 @@
 import type { OverlayModalSlotProps } from '@/lib/types'
 
 export default function OverlayModal({ children }: OverlayModalSlotProps) {
-  return <div className="zardonic-overlay-modal">{children}</div>
+  return <div className="neuroklast-overlay-modal">{children}</div>
 }

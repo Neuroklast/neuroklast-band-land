@@ -22,12 +22,12 @@ describe('gig-ics', () => {
   })
 
   it('builds a valid VEVENT block', () => {
-    const content = buildGigIcsContent(sampleGig, 'ZARDONIC')
+    const content = buildGigIcsContent(sampleGig, 'NEUROKLAST')
 
     expect(content).toContain('BEGIN:VCALENDAR')
     expect(content).toContain('BEGIN:VEVENT')
     expect(content).toContain('UID:gig-abc@neuroklast')
-    expect(content).toContain('SUMMARY:ZARDONIC @ Club Matrix')
+    expect(content).toContain('SUMMARY:NEUROKLAST @ Club Matrix')
     expect(content).toContain('LOCATION:Berlin\\, Germany')
     expect(content).toContain('URL:https://tickets.example.com/gig')
     expect(content).toContain('END:VEVENT')

@@ -181,7 +181,7 @@ describe('buildSiteBackup + applySiteBackup', () => {
       merchandise: [],
       soundpacks: [],
       media_downloads: [],
-      site_config: [{ key: 'hero', value: { headline: 'ZARDONIC' } }],
+      site_config: [{ key: 'hero', value: { headline: 'NEUROKLAST' } }],
     })
 
     const backup = await buildSiteBackup(source)
@@ -221,7 +221,7 @@ describe('buildSiteBackup + applySiteBackup', () => {
   it('imports a v1 backup that used social/config aliases and a lone bio object', async () => {
     const parsed = parseSiteBackupPayload({
       social: [{ id: 'soc-1', platform: 'youtube', url: 'https://youtube.com/x' }],
-      config: [{ key: 'legal', value: { operatorName: 'Zardonic' } }],
+      config: [{ key: 'legal', value: { operatorName: 'Neuroklast' } }],
       bio: { content: 'From the old exporter' },
     })
     expect(parsed.ok).toBe(true)

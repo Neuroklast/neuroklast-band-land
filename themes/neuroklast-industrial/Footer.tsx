@@ -23,10 +23,10 @@ export default function Footer({
   const socialEntries = Object.entries(socialLinks ?? {})
 
   return (
-    <footer className="relative border-t border-border bg-background zardonic-theme-scanline-effect">
+    <footer className="relative border-t border-border bg-background neuroklast-theme-scanline-effect">
       <div className="max-w-7xl mx-auto px-4 py-12 relative">
         <div className="absolute top-4 left-4 hidden md:block">
-          <div className="font-mono text-[9px] text-primary/60 tracking-wider zardonic-theme-data-label">
+          <div className="font-mono text-[9px] text-primary/60 tracking-wider neuroklast-theme-data-label">
             {'// SYSTEM.FOOTER.PROTOCOL'}
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function Footer({
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-mono text-muted-foreground hover:text-primary transition-colors capitalize tracking-wider zardonic-theme-hover-chromatic"
+                  className="text-xs font-mono text-muted-foreground hover:text-primary transition-colors capitalize tracking-wider neuroklast-theme-hover-chromatic"
                 >
                   {platform}
                 </a>
@@ -98,7 +98,7 @@ export default function Footer({
 
           <button
             onClick={scrollToTop}
-            className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground hover:text-primary transition-colors tracking-wider border border-border hover:border-primary/50 px-4 py-2 uppercase zardonic-theme-cyber-border"
+            className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground hover:text-primary transition-colors tracking-wider border border-border hover:border-primary/50 px-4 py-2 uppercase neuroklast-theme-cyber-border"
             aria-label="Back to top"
           >
             <ArrowUp size={14} />

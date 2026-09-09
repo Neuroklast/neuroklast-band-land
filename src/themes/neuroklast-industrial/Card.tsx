@@ -22,17 +22,17 @@ export default function Card({
         bg-card
         border-border
         ${hoverable ? 'hover:border-primary/50 transition-colors cursor-pointer' : ''}
-        ${scanEffect ? 'zardonic-theme-hover-scan' : ''}
-        zardonic-theme-cyber-card
-        zardonic-theme-hover-noise
+        ${scanEffect ? 'neuroklast-theme-hover-scan' : ''}
+        neuroklast-theme-cyber-card
+        neuroklast-theme-hover-noise
         relative
         ${className}
       `}
       onClick={onClick}
     >
-      {scanEffect && <div className="zardonic-theme-scan-line" />}
+      {scanEffect && <div className="neuroklast-theme-scan-line" />}
       {dataLabel && (
-        <div className="zardonic-theme-data-label mb-2">{dataLabel}</div>
+        <div className="neuroklast-theme-data-label mb-2">{dataLabel}</div>
       )}
       {children}
     </ShadcnCard>

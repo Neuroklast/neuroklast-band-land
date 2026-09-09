@@ -44,18 +44,18 @@ describe('Gig display with real Bandsintown API structure', () => {
           "url": "https://www.bandsintown.com/a/372971?came_from=267&app_id=3f27e39d51d64514d466e1eb7422cb07",
           "support_url": "",
           "show_multi_ticket": true,
-          "name": "Zardonic",
+          "name": "Neuroklast",
           "options": {
             "display_listen_unit": false
           },
           "links": [
             {
               "type": "vkontakte",
-              "url": "zardonicofficial"
+              "url": "neuroklastofficial"
             },
             {
               "type": "website",
-              "url": "http://www.zardonic.net/epk"
+              "url": "http://www.neuroklast.net/epk"
             },
             {
               "type": "shazam",
@@ -63,7 +63,7 @@ describe('Gig display with real Bandsintown API structure', () => {
             },
             {
               "type": "youtube",
-              "url": "djzardonic"
+              "url": "djneuroklast"
             },
             {
               "type": "amazon",
@@ -75,7 +75,7 @@ describe('Gig display with real Bandsintown API structure', () => {
             },
             {
               "type": "snapchat",
-              "url": "djzardonic"
+              "url": "djneuroklast"
             },
             {
               "type": "spotify",
@@ -83,19 +83,19 @@ describe('Gig display with real Bandsintown API structure', () => {
             },
             {
               "type": "soundcloud",
-              "url": "zardonic"
+              "url": "neuroklast"
             },
             {
               "type": "twitter",
-              "url": "zardonic"
+              "url": "neuroklast"
             },
             {
               "type": "instagram",
-              "url": "djzardonic"
+              "url": "djneuroklast"
             },
             {
               "type": "facebook",
-              "url": "https://www.facebook.com/zardonic/"
+              "url": "https://www.facebook.com/neuroklast/"
             }
           ],
           "artist_optin_show_phone_number": false,
@@ -104,7 +104,7 @@ describe('Gig display with real Bandsintown API structure', () => {
         "festival_datetime_display_rule": "",
         "description": "",
         "lineup": [
-          "Zardonic",
+          "Neuroklast",
           "DJ Bones",
           "Teya",
           "Shmidoo",
@@ -150,7 +150,7 @@ describe('Gig display with real Bandsintown API structure', () => {
         "festival_datetime_display_rule": "",
         "description": "",
         "lineup": [
-          "Zardonic",
+          "Neuroklast",
           "T-Virus",
           "Mantis",
           "Reeve",
@@ -200,7 +200,7 @@ describe('Gig display with real Bandsintown API structure', () => {
         "festival_datetime_display_rule": "",
         "description": "",
         "lineup": [
-          "Zardonic",
+          "Neuroklast",
           "Drax",
           "Cockroach",
           "Kayra",
@@ -253,7 +253,7 @@ describe('Gig display with real Bandsintown API structure', () => {
       startsAt: '2026-03-06T21:00:00',
       ticketUrl: 'https://www.bandsintown.com/t/1037947501?app_id=3f27e39d51d64514d466e1eb7422cb07&came_from=267&utm_medium=api&utm_source=public_api&utm_campaign=ticket',
       lineup: [
-        "Zardonic",
+        "Neuroklast",
         "DJ Bones",
         "Teya",
         "Shmidoo",
@@ -279,7 +279,7 @@ describe('Gig display with real Bandsintown API structure', () => {
       startsAt: '2026-04-24T21:00:00',
       ticketUrl: 'https://www.bandsintown.com/t/1037907422?app_id=3f27e39d51d64514d466e1eb7422cb07&came_from=267&utm_medium=api&utm_source=public_api&utm_campaign=ticket',
       lineup: [
-        "Zardonic",
+        "Neuroklast",
         "T-Virus",
         "Mantis",
         "Reeve",
@@ -309,7 +309,7 @@ describe('Gig display with real Bandsintown API structure', () => {
       startsAt: '2026-05-16T20:00:00',
       ticketUrl: 'https://www.bandsintown.com/t/1037995121?app_id=3f27e39d51d64514d466e1eb7422cb07&came_from=267&utm_medium=api&utm_source=public_api&utm_campaign=ticket',
       lineup: [
-        "Zardonic",
+        "Neuroklast",
         "Drax",
         "Cockroach",
         "Kayra",
@@ -345,7 +345,7 @@ describe('Gig display with real Bandsintown API structure', () => {
           "country": "Czech Republic",
         },
         "datetime": "2026-03-06T21:00:00",
-        "lineup": ["Zardonic"],
+        "lineup": ["Neuroklast"],
       }
     ]
 
@@ -427,7 +427,7 @@ describe('Gig display with real Bandsintown API structure', () => {
         },
         "datetime": "2026-03-06T21:00:00",
         "lineup": [
-          "Zardonic",
+          "Neuroklast",
           "DJ Bones",
           "Teya",
           "Shmidoo",
@@ -446,7 +446,7 @@ describe('Gig display with real Bandsintown API structure', () => {
     const result = await fetchBandsintownEvents()
 
     expect(result[0].lineup).toHaveLength(7)
-    expect(result[0].lineup).toContain('Zardonic')
+    expect(result[0].lineup).toContain('Neuroklast')
     expect(result[0].lineup).toContain('DJ Bones')
     expect(result[0].lineup).toContain('JOSHU4')
   })
@@ -586,7 +586,7 @@ describe('Gig display with real Bandsintown API structure', () => {
         },
         "datetime": "2026-03-06T21:00:00",
         "description": "Special event",
-        "title": "Zardonic Live",
+        "title": "Neuroklast Live",
       }
     ]
 
@@ -598,7 +598,7 @@ describe('Gig display with real Bandsintown API structure', () => {
     const result = await fetchBandsintownEvents()
 
     expect(result[0].description).toBe('Special event')
-    expect(result[0].title).toBe('Zardonic Live')
+    expect(result[0].title).toBe('Neuroklast Live')
   })
 
   it('should handle empty description and title', async () => {

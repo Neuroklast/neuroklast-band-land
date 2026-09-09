@@ -26,7 +26,7 @@ const sampleExport = {
         { name: 'Markus', photo: 'https://wsrv.nl/?url=.../def', bio: 'Co-founder', statusValue: 'Live' },
       ],
       friends: [
-        { id: 'friend-1', name: 'Zardonic', photo: 'https://wsrv.nl/?url=.../ghi', url: 'https://zardonic.net', description: 'Mastering engineer', socials: { instagram: 'https://instagram.com/djzardonic' } },
+        { id: 'friend-1', name: 'Neuroklast', photo: 'https://wsrv.nl/?url=.../ghi', url: 'https://neuroklast.net', description: 'Mastering engineer', socials: { instagram: 'https://instagram.com/djneuroklast' } },
       ],
     },
     label: 'darkTunes Music Group',
@@ -99,10 +99,10 @@ describe('buildImportRows', () => {
   it('maps friends into partners (with description/socials) plus the label', () => {
     const { rows } = buildImportRows(sampleExport.data, emptyMap)
     const partners = rows.partners ?? []
-    const friend = partners.find((p) => p.name === 'Zardonic')
+    const friend = partners.find((p) => p.name === 'Neuroklast')
     expect(friend).toBeTruthy()
     expect(friend?.description).toBe('Mastering engineer')
-    expect(friend?.socials).toEqual({ instagram: 'https://instagram.com/djzardonic' })
+    expect(friend?.socials).toEqual({ instagram: 'https://instagram.com/djneuroklast' })
     expect(friend?.category).toBe('partner')
     expect(partners.some((p) => p.name === 'darkTunes Music Group' && p.category === 'label')).toBe(true)
   })

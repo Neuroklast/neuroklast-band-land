@@ -1,29 +1,24 @@
 {
   "biography": {
-    "story": "Zardonic is a Venezuelan-Canadian electronic music producer, DJ, and multi-instrumentalist known for his unique fusion of drum and bass, metal, and industrial sounds. Since emerging onto the scene, he has pushed the boundaries of heavy electronic music, combining aggressive breakbeats with crushing guitar riffs and cinematic atmospheres. His work spans multiple genres including neurofunk, crossbreed, and industrial, creating a sound that is uniquely his own. With releases on major labels and collaborations with artists across the heavy music spectrum, Zardonic continues to be a driving force in the underground electronic music scene.",
-    "story_de": "Zardonic ist ein venezolanisch-kanadischer Produzent elektronischer Musik, DJ und Multi-Instrumentalist, bekannt für seine einzigartige Fusion aus Drum and Bass, Metal und Industrial-Sounds.",
-    "founded": "2004",
+    "story": "Neuroklast is an industrial / electronic music project. Official site: https://neuroklast.net",
+    "story_de": "Neuroklast ist ein Industrial-/Electronic-Projekt. Offizielle Seite: https://neuroklast.net",
+    "founded": "",
     "members": [
-      "Zardonic (Production / DJ)"
+      "Neuroklast"
     ],
-    "achievements": [
-      "Multiple releases on major DnB and industrial labels",
-      "Performed at festivals worldwide",
-      "Mastering engineer for various artists",
-      "Pioneer of the DnB-metal crossover sound"
-    ]
+    "achievements": []
   },
   "terminalMorseCode": "..--.",
   "band": {
-    "name": "ZARDONIC",
+    "name": "NEUROKLAST",
     "genres": [
-      "DRUM AND BASS",
-      "NEUROFUNK",
-      "INDUSTRIAL",
-      "CROSSBREED"
+      "HARD TECHNO",
+      "CYBERPUNK",
+      "DNB",
+      "DARK ELECTRO"
     ],
-    "location": "Canada",
-    "description": "An uncompromising force in heavy electronic music, pushing the boundaries of drum and bass, industrial, and metal fusion.",
+    "location": "",
+    "description": "Industrial / electronic.",
     "label": "Independent"
   }
 }

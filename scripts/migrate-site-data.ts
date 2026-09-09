@@ -21,13 +21,7 @@ const supabase = createClient(
 // ---------------------------------------------------------------------------
 // 1. BIO
 // ---------------------------------------------------------------------------
-const BIO_CONTENT = `Since the early 2000s, FEDERICO ÁGREDA ÁLVAREZ — known worldwide as ZARDONIC — has been fusing the brutality of metal with the electronic precision of drum and bass into a ferocious, singular sound. Born in Venezuela and now based in Europe, Zardonic spent years refining his craft as a multi-instrumentalist, producer, mixing and mastering engineer, and DJ, developing a vision that bridges genres without compromise.
-
-His productions have earned releases on Nuclear Blast Records, OWSLA, Victor Entertainment, and Earache Records, among others, while his mastering work has shaped albums from Fear Factory, Bullet For My Valentine, Celldweller, Sonic Syndicate, The Unguided, Skarlett Riot, A Killer's Confession, and many more. On the sync side, his music has been licensed to major sports broadcasts (NBC Sports Network, PFL, TNT, AEW), video games (Redout 2, SUPERHOT: MCD), and films, cementing his reach far beyond the underground.
-
-As a live performer, Zardonic has headlined and co-headlined stages at festivals across Europe, North America, South America, and Asia, sharing bills with Gorgoroth, Impaled, Pop Evil, American Grim, and dozens of other heavy acts. His endorsement roster — including Arturia, HOFA, Quested, SPL, Plugin Alliance, Kilohearts, Baby Audio, FL Studio, and PWM — reflects the professional-grade production environment behind every release.
-
-Zardonic's catalog is uncompromising: from the breakneck crossbreed chaos of *Antihero* and *Brutalism* to the industrial metal precision of *Digicide*, each record is both a personal statement and a genre-expanding document. He continues to tour, produce, and push the boundaries of what heavy electronic music can be.`
+const BIO_CONTENT = `Neuroklast is an industrial / electronic music project. Official site: https://neuroklast.net`
 
 // ---------------------------------------------------------------------------
 // 2. GIGS
@@ -126,7 +120,7 @@ const GIGS: GigRecord[] = [
   { title: 'Gewölbe', venue: 'Gewölbe', city: 'Cologne', country: 'Germany', event_date: '2025-03-07T22:00:00Z', ticket_url: null, festival_name: null, active: true },
   { title: 'Printworks', venue: 'Printworks', city: 'London', country: 'United Kingdom', event_date: '2025-04-11T22:00:00Z', ticket_url: null, festival_name: null, active: true },
   { title: 'Rote Fabrik', venue: 'Rote Fabrik', city: 'Zurich', country: 'Switzerland', event_date: '2025-05-16T20:00:00Z', ticket_url: 'https://www.rotefabrik.ch', festival_name: null, active: true },
-  { title: 'Digicide Release Show', venue: 'Lido', city: 'Berlin', country: 'Germany', event_date: '2026-05-16T20:00:00Z', ticket_url: 'https://citizenvinyl.shop/products/zardonic-digicide-limited-edition-clear-black-vinyl', festival_name: null, active: true },
+  { title: 'Digicide Release Show', venue: 'Lido', city: 'Berlin', country: 'Germany', event_date: '2026-05-16T20:00:00Z', ticket_url: 'https://citizenvinyl.shop/products/neuroklast-digicide-limited-edition-clear-black-vinyl', festival_name: null, active: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -157,7 +151,7 @@ const RELEASES: ReleaseRecord[] = [
     streaming_links: [
       { platform: 'spotify', url: 'https://open.spotify.com/album/digicide' },
       { platform: 'appleMusic', url: 'https://music.apple.com/album/digicide' },
-      { platform: 'bandcamp', url: 'https://zardonic.bandcamp.com/album/digicide' },
+      { platform: 'bandcamp', url: 'https://neuroklast.bandcamp.com/album/digicide' },
     ],
     display_order: 0,
     active: true,
@@ -171,7 +165,7 @@ const RELEASES: ReleaseRecord[] = [
     streaming_links: [
       { platform: 'spotify', url: 'https://open.spotify.com/album/antihero' },
       { platform: 'appleMusic', url: 'https://music.apple.com/album/antihero' },
-      { platform: 'bandcamp', url: 'https://zardonic.bandcamp.com/album/antihero' },
+      { platform: 'bandcamp', url: 'https://neuroklast.bandcamp.com/album/antihero' },
     ],
     display_order: 1,
     active: true,
@@ -185,7 +179,7 @@ const RELEASES: ReleaseRecord[] = [
     streaming_links: [
       { platform: 'spotify', url: 'https://open.spotify.com/album/brutalism' },
       { platform: 'appleMusic', url: 'https://music.apple.com/album/brutalism' },
-      { platform: 'bandcamp', url: 'https://zardonic.bandcamp.com/album/brutalism' },
+      { platform: 'bandcamp', url: 'https://neuroklast.bandcamp.com/album/brutalism' },
     ],
     display_order: 2,
     active: true,
@@ -210,8 +204,8 @@ const RELEASES: ReleaseRecord[] = [
     release_date: '2014-11-14',
     cover_url: null,
     streaming_links: [
-      { platform: 'spotify', url: 'https://open.spotify.com/album/rise-zardonic' },
-      { platform: 'appleMusic', url: 'https://music.apple.com/album/rise-zardonic' },
+      { platform: 'spotify', url: 'https://open.spotify.com/album/rise-neuroklast' },
+      { platform: 'appleMusic', url: 'https://music.apple.com/album/rise-neuroklast' },
     ],
     display_order: 4,
     active: true,
@@ -234,7 +228,7 @@ const RELEASES: ReleaseRecord[] = [
     cover_url: null,
     streaming_links: [
       { platform: 'spotify', url: 'https://open.spotify.com/album/hive-mind-ep' },
-      { platform: 'bandcamp', url: 'https://zardonic.bandcamp.com/album/hive-mind' },
+      { platform: 'bandcamp', url: 'https://neuroklast.bandcamp.com/album/hive-mind' },
     ],
     display_order: 6,
     active: true,
@@ -247,7 +241,7 @@ const RELEASES: ReleaseRecord[] = [
     cover_url: null,
     streaming_links: [
       { platform: 'spotify', url: 'https://open.spotify.com/album/ironborn-ep' },
-      { platform: 'bandcamp', url: 'https://zardonic.bandcamp.com/album/ironborn' },
+      { platform: 'bandcamp', url: 'https://neuroklast.bandcamp.com/album/ironborn' },
     ],
     display_order: 7,
     active: true,
@@ -393,15 +387,15 @@ interface SocialLinkRecord {
 }
 
 const SOCIAL_LINKS: SocialLinkRecord[] = [
-  { platform: 'instagram', url: 'https://www.instagram.com/djzardonic', label: 'Instagram', display_order: 0, active: true },
-  { platform: 'facebook', url: 'https://www.facebook.com/zardonic/', label: 'Facebook', display_order: 1, active: true },
+  { platform: 'instagram', url: 'https://www.instagram.com/djneuroklast', label: 'Instagram', display_order: 0, active: true },
+  { platform: 'facebook', url: 'https://www.facebook.com/neuroklast/', label: 'Facebook', display_order: 1, active: true },
   { platform: 'spotify', url: 'https://open.spotify.com/artist/7BqEidErPMNiUXCRE0dV2n', label: 'Spotify', display_order: 2, active: true },
-  { platform: 'youtube', url: 'https://www.youtube.com/djzardonic', label: 'YouTube', display_order: 3, active: true },
-  { platform: 'soundcloud', url: 'https://soundcloud.com/zardonic', label: 'SoundCloud', display_order: 4, active: true },
-  { platform: 'bandcamp', url: 'https://zardonic.bandcamp.com/', label: 'Bandcamp', display_order: 5, active: true },
-  { platform: 'appleMusic', url: 'https://music.apple.com/artist/zardonic/184996964', label: 'Apple Music', display_order: 6, active: true },
-  { platform: 'beatport', url: 'https://www.beatport.com/artist/zardonic/23120', label: 'Beatport', display_order: 7, active: true },
-  { platform: 'linktree', url: 'https://linktr.ee/zardonic', label: 'Linktree', display_order: 8, active: true },
+  { platform: 'youtube', url: 'https://www.youtube.com/djneuroklast', label: 'YouTube', display_order: 3, active: true },
+  { platform: 'soundcloud', url: 'https://soundcloud.com/neuroklast', label: 'SoundCloud', display_order: 4, active: true },
+  { platform: 'bandcamp', url: 'https://neuroklast.bandcamp.com/', label: 'Bandcamp', display_order: 5, active: true },
+  { platform: 'appleMusic', url: 'https://music.apple.com/artist/neuroklast/184996964', label: 'Apple Music', display_order: 6, active: true },
+  { platform: 'beatport', url: 'https://www.beatport.com/artist/neuroklast/23120', label: 'Beatport', display_order: 7, active: true },
+  { platform: 'linktree', url: 'https://linktr.ee/neuroklast', label: 'Linktree', display_order: 8, active: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -468,10 +462,10 @@ const SITE_CONFIG: SiteConfigEntry[] = [
   {
     key: 'hero',
     value: {
-      headline: 'ZARDONIC',
+      headline: 'NEUROKLAST',
       tagline: 'Industrial Metal / Drum & Bass',
       ctaLabel: 'DIGICIDE PRE-ORDER',
-      ctaUrl: 'https://citizenvinyl.shop/products/zardonic-digicide-limited-edition-clear-black-vinyl',
+      ctaUrl: 'https://citizenvinyl.shop/products/neuroklast-digicide-limited-edition-clear-black-vinyl',
     },
   },
   {
@@ -484,7 +478,7 @@ const SITE_CONFIG: SiteConfigEntry[] = [
   {
     key: 'merchandise',
     value: {
-      footerText: 'Visit the official Zardonic Merchandise Store to get these and more!',
+      footerText: 'Visit the official Neuroklast Merchandise Store to get these and more!',
     },
   },
   {
@@ -607,7 +601,7 @@ async function migrateSiteConfig(): Promise<void> {
 // Main
 // ---------------------------------------------------------------------------
 async function main(): Promise<void> {
-  console.log('🚀 Starting Zardonic data migration…\n')
+  console.log('🚀 Starting Neuroklast data migration…\n')
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error('❌ Missing env vars: NEXT_PUBLIC_SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY')

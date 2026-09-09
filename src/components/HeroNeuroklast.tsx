@@ -1,9 +1,9 @@
 /**
- * HeroZardonic — hero section ported from the Zardonic Industrial site.
+ * HeroNeuroklast — hero section ported from the Neuroklast Industrial site.
  *
- * Replaces the default Hero when `activePreset === 'zardonic'`
+ * Replaces the default Hero when `activePreset === 'neuroklast'`
  * and `heroStyle === 'glitch-parallax'`.  Closely mirrors the upstream
- * zardonic `Hero.tsx` design while integrating with the
+ * neuroklast `Hero.tsx` design while integrating with the
  * band-land SiteConfig / ThemeSettings system.
  */
 
@@ -24,7 +24,7 @@ import {
 } from '@/lib/config'
 import type { ThemeSettings } from '@/lib/types'
 
-interface HeroZardonicProps {
+interface HeroNeuroklastProps {
   name: string
   genres: string[]
   logoUrl?: string
@@ -40,7 +40,7 @@ interface HeroZardonicProps {
   hudBottomRight2?: string
 }
 
-export default function HeroZardonic({
+export default function HeroNeuroklast({
   name,
   genres,
   logoUrl,
@@ -49,7 +49,7 @@ export default function HeroZardonic({
   hudTopLeft2 = 'ONLINE',
   hudBottomRight1 = 'FREQ: 140-180',
   hudBottomRight2 = 'MODE: HARD',
-}: HeroZardonicProps) {
+}: HeroNeuroklastProps) {
   const [glitchLogo, setGlitchLogo] = useState(false)
   const [glitchTitle, setGlitchTitle] = useState(false)
 

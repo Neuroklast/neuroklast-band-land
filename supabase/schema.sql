@@ -1,5 +1,5 @@
 -- ============================================================
--- Zardonic Industrial – Canonical Supabase Schema (idempotent)
+-- Neuroklast Industrial – Canonical Supabase Schema (idempotent)
 -- Run this entire file in the Supabase SQL Editor anytime.
 -- Safe on fresh projects AND existing databases (re-runnable).
 -- ============================================================
