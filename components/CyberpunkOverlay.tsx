@@ -11,7 +11,7 @@ import {
   OVERLAY_GLITCH_PHASE_DELAY_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
-import { pickOverlayAnimationFromPool } from '@/lib/overlay-animations'
+import { overlayAnimationPoolKey, pickOverlayAnimationFromPool } from '@/lib/overlay-animations'
 import { getOverlaySessionKey } from '@/lib/overlay-session'
 import { getRandomProgressiveMode } from '@/lib/progressive-overlay-modes'
 import { ContactOverlayContent } from '@/components/overlays/ContactOverlayContent'
@@ -26,6 +26,7 @@ import { toExplorerFiles } from '@/app/_components/public/MediaExplorer'
 import { SecretTerminalContent } from '@/components/overlays/SecretTerminalContent'
 import { PartnerOverlayContent } from '@/components/overlays/PartnerOverlayContent'
 import { OverlayBootInterior } from '@/components/overlays/OverlayBootInterior'
+import { OverlayShellLoader } from '@/components/overlays/OverlayShellLoader'
 import { useLenisContext } from '@/contexts/LenisContext'
 
 const OVERLAY_LOADING_TEXTS = [
@@ -94,6 +95,7 @@ export default function CyberpunkOverlay({
   const decorativeTexts = adminSettings?.decorative
   const { lenis } = useLenisContext()
   const prefersReducedMotion = useReducedMotion()
+  const reducedMotion = prefersReducedMotion === true
   const progressiveOverlayModesRef = useRef(adminSettings?.progressiveOverlayModes)
 
   useEffect(() => {
@@ -104,10 +106,11 @@ export default function CyberpunkOverlay({
   const panelRef = useRef<HTMLDivElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
 
+  const poolKey = overlayAnimationPoolKey(overlayAnimations)
   const anim = useMemo(() => {
     void overlaySessionKey
-    return pickOverlayAnimationFromPool(overlayAnimations, prefersReducedMotion)
-  }, [overlaySessionKey, overlayAnimations, prefersReducedMotion])
+    return pickOverlayAnimationFromPool(poolKey ? poolKey.split('|') : undefined, reducedMotion)
+  }, [overlaySessionKey, poolKey, reducedMotion])
 
   const systemLabel =
     decorativeTexts?.overlaySystemLabel ??
@@ -117,7 +120,7 @@ export default function CyberpunkOverlay({
     if (!overlaySessionKey) return
 
     setProgressiveMode(getRandomProgressiveMode(progressiveOverlayModesRef.current))
-    if (prefersReducedMotion) {
+    if (reducedMotion) {
       setOverlayPhase('revealed')
       setLoadingText(OVERLAY_LOADING_TEXTS[OVERLAY_LOADING_TEXTS.length - 1])
       return
@@ -152,7 +155,7 @@ export default function CyberpunkOverlay({
       clearTimeout(glitchTimer)
       clearTimeout(revealTimer)
     }
-  }, [overlaySessionKey, prefersReducedMotion, anim.interior])
+  }, [overlaySessionKey, reducedMotion, anim.interior])
 
   useEffect(() => {
     if (!overlaySessionKey) return
@@ -238,27 +241,26 @@ export default function CyberpunkOverlay({
           }
           onClick={onClose}
         >
-          <motion.div
-            initial={anim.modal.initial}
-            animate={anim.modal.animate}
-            exit={anim.modal.exit}
-            transition={anim.modal.transition ?? { duration: 0.3 }}
+          <div
             className={`${overlayClassName ?? 'neuroklast-classic-overlay-modal'} flex h-full items-end justify-center p-0 pointer-events-none md:items-center md:p-8`}
             style={{ perspective: '1000px' }}
-            data-overlay-clip=""
           >
             <motion.div
               ref={panelRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby="cyberpunk-overlay-title"
-              initial={{ boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
+              initial={{ ...anim.modal.initial, boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
               animate={{
+                ...anim.modal.animate,
                 boxShadow: `0 0 24px ${glow35}, inset 0 0 28px ${glow35}`,
               }}
+              exit={anim.modal.exit}
+              transition={anim.modal.transition ?? { duration: reducedMotion ? 0 : 0.3 }}
               data-theme-color="card card-foreground border"
               data-cyberpunk-modal=""
-              transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+              data-overlay-clip=""
+              data-overlay-animation={anim.name}
               className="theme-overlay-modal-chrome relative flex h-[100svh] max-h-[100svh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect box-border pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh] md:pt-0"
               onClick={(e) => e.stopPropagation()}
             >
@@ -323,16 +325,11 @@ export default function CyberpunkOverlay({
                   (anim.interior ? (
                     <OverlayBootInterior interior={anim.interior} />
                   ) : (
-                    <div className="flex min-h-[min(400px,50vh)] items-center justify-center">
-                      <motion.span
-                        className="progressive-loading-label data-label text-lg"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        {loadingText}
-                      </motion.span>
-                    </div>
+                    <OverlayShellLoader
+                      loaderClass={anim.loaderClass}
+                      loaderLabel={anim.loaderLabel}
+                      loadingText={loadingText}
+                    />
                   ))}
 
                 {overlayPhase === 'glitch' && (
@@ -427,7 +424,7 @@ export default function CyberpunkOverlay({
                 )}
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         </motion.div>
       ) : null}
     </AnimatePresence>
