@@ -3,6 +3,7 @@ import {
   getClipShellNames,
   getRandomOverlayAnimation,
   NONE_OVERLAY_ANIMATION,
+  overlayAnimationPoolKey,
   parseOverlayAnimationName,
   parseOverlayAnimationPool,
   pickOverlayAnimationFromPool,
@@ -68,6 +69,8 @@ describe('overlay animations', () => {
     expect(shells).toContain('circuitBreak')
     expect(shells).not.toContain('circuitHandshake')
     expect(pickOverlayAnimationFromPool([], true)).toEqual(NONE_OVERLAY_ANIMATION)
+    expect(pickOverlayAnimationFromPool(['circuitBreak'], null).name).toBe('circuitBreak')
+    expect(pickOverlayAnimationFromPool(['circuitBreak'], undefined).name).toBe('circuitBreak')
     expect(shells).toContain(pickOverlayAnimationFromPool([], false).name)
   })
 
@@ -77,5 +80,14 @@ describe('overlay animations', () => {
       'irisLock',
     ])
     expect(parseOverlayAnimationPool('systemPost')).toEqual(['systemPost'])
+  })
+
+  it('builds a stable pool key from contents not array identity', () => {
+    expect(overlayAnimationPoolKey(['circuitBreak', 'irisLock'])).toBe('circuitBreak|irisLock')
+    expect(overlayAnimationPoolKey(['circuitBreak', 'irisLock'])).toBe(
+      overlayAnimationPoolKey(['circuitBreak', 'irisLock']),
+    )
+    expect(overlayAnimationPoolKey([])).toBe('')
+    expect(overlayAnimationPoolKey(undefined)).toBe('')
   })
 })

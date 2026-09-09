@@ -1,8 +1,9 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useOverlay } from '@/contexts/OverlayContext'
 import CyberpunkOverlay from '@/components/CyberpunkOverlay'
-import { parseOverlayAnimationPool } from '@/lib/overlay-animations'
+import { overlayAnimationPoolKey, parseOverlayAnimationPool } from '@/lib/overlay-animations'
 
 export function OverlayHost({
   overlayAnimations,
@@ -14,7 +15,11 @@ export function OverlayHost({
   artistName?: string
 }) {
   const { overlay, closeOverlay } = useOverlay()
-  const pool = parseOverlayAnimationPool(overlayAnimations)
+  const poolKey = overlayAnimationPoolKey(overlayAnimations)
+  const pool = useMemo(
+    () => parseOverlayAnimationPool(poolKey ? poolKey.split('|') : undefined),
+    [poolKey],
+  )
 
   return (
     <CyberpunkOverlay
