@@ -270,6 +270,11 @@ describe('logo raster helpers', () => {
     expect(logoRasterSize(800, 200)).toEqual({ width: 800, height: 200 })
   })
 
+  it('caps canvas processing at display-scale max', () => {
+    expect(logoRasterSize(155, 18, 256, 320)).toEqual({ width: 256, height: 30 })
+    expect(logoRasterSize(4000, 1000, 256, 320)).toEqual({ width: 320, height: 80 })
+  })
+
   it('rewrites tiny SVG width/height so rasterization is sharp', () => {
     const src =
       '<svg width="155" height="18" viewBox="0 0 155 18" xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>'

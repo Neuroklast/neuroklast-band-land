@@ -34,15 +34,14 @@ export async function GET(request: Request) {
   try {
     const rl = await consumeRateLimitForRequest(request, {
       namespace: 'partner-logo',
-      limit: 60,
+      limit: 180,
       windowSeconds: 60,
     })
     if (!rl.allowed) {
       return new NextResponse('Rate limited', { status: 429 })
     }
   } catch (err) {
-    console.warn('[partner-logo] rate limit unavailable, rejecting (fail-closed):', err)
-    return new NextResponse('Rate limited', { status: 429 })
+    console.warn('[partner-logo] rate limit unavailable, continuing:', err)
   }
 
   const target = canonicalizeR2MediaUrl(requested)
