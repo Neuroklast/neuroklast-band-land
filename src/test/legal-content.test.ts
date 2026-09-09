@@ -8,6 +8,7 @@ import {
   getLegalCompleteness,
   isLegalConfigComplete,
 } from '@/lib/legal-content'
+import { LEGAL_LOCALES, NOTICE_DOC_TITLE, PRIVACY_DOC_TITLE } from '@/lib/legal-i18n'
 import {
   buildLegalNoticeSections,
   buildPrivacyPolicySections,
@@ -121,11 +122,29 @@ describe('buildPrivacyPolicySections', () => {
 })
 
 describe('legal locale + completeness', () => {
-  it('resolves de/en locales', () => {
+  it('resolves all built-in locales and falls back to en', () => {
     expect(resolveLegalLocale('de')).toBe('de')
     expect(resolveLegalLocale('de-DE')).toBe('de')
     expect(resolveLegalLocale('en')).toBe('en')
-    expect(resolveLegalLocale('ja')).toBe('en')
+    expect(resolveLegalLocale('ja')).toBe('ja')
+    expect(resolveLegalLocale('uk-UA')).toBe('uk')
+    expect(resolveLegalLocale('fr')).toBe('en')
+    expect(resolveLegalLocale(null)).toBe('en')
+  })
+
+  it('builds notice and privacy in every locale', () => {
+    const config = parseLegalConfig(sampleConfig)
+    for (const locale of LEGAL_LOCALES) {
+      const notice = buildLegalNoticeSections(config, locale)
+      const privacy = buildPrivacyPolicySections(config, locale)
+      expect(notice.find((s) => s.id === 'operator')?.title).toBeTruthy()
+      expect(notice.find((s) => s.id === 'operator')?.paragraphs.join(' ')).toContain('Zardonic Music')
+      expect(privacy.find((s) => s.id === 'overview')?.paragraphs.join(' ')).toContain('Zardonic Music')
+      expect(privacy.find((s) => s.id === 'overview')?.paragraphs.join(' ')).not.toContain('{controller}')
+      expect(privacy.some((s) => s.id === 'news')).toBe(true)
+      expect(NOTICE_DOC_TITLE[locale]).toBeTruthy()
+      expect(PRIVACY_DOC_TITLE[locale]).toBeTruthy()
+    }
   })
 
   it('builds German legal notice with DDG heading', () => {
