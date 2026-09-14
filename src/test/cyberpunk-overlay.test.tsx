@@ -85,6 +85,21 @@ describe('CyberpunkOverlay boot animation', () => {
     expect(screen.getByRole('dialog')).toHaveAttribute('data-overlay-animation', 'systemBoot')
     expect(screen.getByText('BOOTING SYSTEM')).toBeInTheDocument()
   })
+
+  it('skips boot loaders for the secret terminal overlay', () => {
+    renderOverlay(
+      <CyberpunkOverlay
+        overlay={{ type: 'terminal' }}
+        onClose={() => {}}
+        adminSettings={undefined}
+        overlayAnimations={['circuitHandshake']}
+      />,
+    )
+
+    expect(screen.queryByText('CIRCUIT LINK')).not.toBeInTheDocument()
+    expect(screen.queryByText('> ACCESSING PROFILE...')).not.toBeInTheDocument()
+    expect(screen.getByText(/TERMINAL ACTIVE/i)).toBeInTheDocument()
+  })
 })
 
 describe('overlay loader CSS', () => {
