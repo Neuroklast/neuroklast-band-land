@@ -64,7 +64,7 @@ export function GigOverlayContent({ data, artistName = '', decorativeTexts }: Gi
         {data.photoUrl ? (
           <img
             src={data.photoUrl}
-            alt=""
+            alt={data.title || data.venue || ''}
             className="mb-4 max-h-56 w-full border border-border object-cover"
           />
         ) : null}

@@ -19,6 +19,23 @@ test.describe('public smoke', () => {
     }
   })
 
+  test('legal notice cites DDG, not TMG', async ({ page }) => {
+    const res = await page.goto('/legal-notice')
+    expect(res?.status()).toBeLessThan(500)
+    const body = await page.locator('body').innerText()
+    expect(body).toMatch(/§ 5 DDG/)
+    expect(body).not.toMatch(/§ 5 TMG/)
+  })
+
+  test('privacy policy cites Art. 6 and TDDDG, not TTDSG', async ({ page }) => {
+    const res = await page.goto('/privacy-policy')
+    expect(res?.status()).toBeLessThan(500)
+    const body = await page.locator('body').innerText()
+    expect(body).toMatch(/Art\. 6/)
+    expect(body).toMatch(/TDDDG/)
+    expect(body).not.toMatch(/TTDSG/)
+  })
+
   test('cookie banner can reject all (opt-in analytics)', async ({ page }) => {
     await page.goto('/')
     const banner = page.locator('[data-cookie-banner]')

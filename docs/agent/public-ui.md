@@ -147,10 +147,10 @@ Regression: `src/test/public-component-restoration.test.tsx` (desktop + mobile C
 
 ## Lenis
 
-- Single provider: `contexts/LenisContext.tsx`.
+- Root layout wraps the tree in `Providers` → `LenisProvider` (`contexts/LenisContext.tsx`). One instance only.
 - Public page scroll is Lenis-owned; nested scrollports need care.
 - Any modal/overlay that covers the page must `lenis.stop()` on open and `lenis.start()` on close (implemented in `CyberpunkOverlay`).
-- Do not add a second Lenis instance.
+- Do not add a second Lenis instance. Do not add GSAP ScrollTrigger as a second scroller — scroll-linked video uses `attachScrollVideoSync`; circuit parallax uses Framer `useScroll`.
 
 ## Background layers & overlay glow
 

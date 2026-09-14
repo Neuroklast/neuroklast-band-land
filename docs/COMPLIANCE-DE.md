@@ -29,10 +29,12 @@ If the public site is a consumer-facing service in scope: keyboard, focus, contr
 
 ## Launch gate
 
-- [ ] Footer links to `/legal-notice` and `/privacy-policy`
-- [ ] Impressum says § 5 DDG, not TMG
+- [x] Footer links to `/legal-notice` and `/privacy-policy`
+- [x] Impressum says § 5 DDG, not TMG (cookie banner + setup copy cite TDDDG, never TTDSG)
 - [ ] Operator fields filled by a human in admin
-- [ ] Banner blocks non-essential embeds until opt-in
-- [ ] Production is HTTPS-only
+- [x] Banner blocks non-essential embeds until opt-in (Spotify / YouTube two-click; analytics gated by `lib/consent.ts`)
+- [x] Production is HTTPS-only (Vercel TLS + HSTS + `proxy.ts` 308 on `x-forwarded-proto: http`)
 - [ ] No secrets in the client bundle
-- [ ] Contact form does not log PII
+- [x] Contact form does not log PII
+- [x] `robots.txt` + dynamic `/sitemap.xml` (`/api/sitemap`; do not restore `public/sitemap.xml`)
+- [x] Custom 404 (`app/not-found.tsx`); root metadata title/description/favicon/OG
