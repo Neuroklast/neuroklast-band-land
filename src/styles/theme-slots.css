@@ -914,8 +914,7 @@
 /* ── Overlay modal chrome ────────────────────────────────────────────── */
 
 [data-theme="neuroklast-classic"] .theme-overlay-modal-chrome {
-  box-shadow: 0 0 60px color-mix(in oklch, var(--primary) 25%, transparent),
-              0 0 120px color-mix(in oklch, var(--primary) 10%, transparent);
+  box-shadow: 0 0 24px color-mix(in oklch, var(--primary) 22%, transparent);
 }
 
 [data-theme="glitch-noir"] .theme-overlay-modal-chrome {

@@ -221,7 +221,7 @@ export default function CyberpunkOverlay({
   }, [overlaySessionKey, onClose])
 
   const sessionKey = overlaySessionKey ?? overlay?.type ?? 'overlay'
-  const glow35 = overlay ? resolveModalGlow(adminSettings, 0.35) : DEFAULT_MODAL_GLOW
+  const glowOuter = overlay ? resolveModalGlow(adminSettings, 0.22) : DEFAULT_MODAL_GLOW
 
   return (
     <AnimatePresence>
@@ -233,12 +233,7 @@ export default function CyberpunkOverlay({
           exit={anim.backdrop.exit}
           transition={anim.backdrop.transition ?? { duration: 0.3 }}
           className="cyberpunk-overlay-bg fixed inset-0 bg-black/45 backdrop-blur-md"
-          style={
-            {
-              zIndex: 'var(--z-overlay)',
-              boxShadow: 'inset 0 0 120px color-mix(in srgb, var(--modal-glow, var(--primary)) 35%, transparent)',
-            } as React.CSSProperties
-          }
+          style={{ zIndex: 'var(--z-overlay)' } as React.CSSProperties}
           onClick={onClose}
         >
           <div
@@ -253,7 +248,7 @@ export default function CyberpunkOverlay({
               initial={{ ...anim.modal.initial, boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
               animate={{
                 ...anim.modal.animate,
-                boxShadow: `0 0 24px ${glow35}, inset 0 0 28px ${glow35}`,
+                boxShadow: `0 0 28px ${glowOuter}`,
               }}
               exit={anim.modal.exit}
               transition={anim.modal.transition ?? { duration: reducedMotion ? 0 : 0.3 }}

@@ -2,8 +2,7 @@ import type { LegalConfig, LegalSection } from '@/lib/legal-content'
 import {
   formatServiceAddress,
   getDataControllerLabel,
-  getResponsibleAddress,
-  getResponsibleName,
+  hasEditorialResponsible,
 } from '@/lib/legal-content'
 import {
   FIELD_LABEL,
@@ -64,8 +63,6 @@ export function buildLegalNoticeSections(
   const copy = NOTICE_COPY[locale]
   const labels = FIELD_LABEL[locale]
   const address = formatServiceAddress(config)
-  const responsibleName = getResponsibleName(config)
-  const responsibleAddress = getResponsibleAddress(config)
 
   const operatorLines: string[] = []
   if (address) operatorLines.push(address)
@@ -73,31 +70,35 @@ export function buildLegalNoticeSections(
   if (config.email) operatorLines.push(`${labels.email}: ${config.email}`)
   if (config.vatId) operatorLines.push(`${labels.vat}: ${config.vatId}`)
 
-  return NOTICE_SECTION_ORDER.map((id) => {
+  const sections: LegalSection[] = []
+  for (const id of NOTICE_SECTION_ORDER) {
     const section = copy[id]
     if (id === 'operator') {
-      return {
+      sections.push({
         id,
         title: section.title,
         paragraphs: operatorLines.length > 0 ? operatorLines : [labels.configureOperator],
-      }
+      })
+      continue
     }
     if (id === 'responsible') {
-      return {
+      const name = config.responsibleName?.trim()
+      const responsibleAddress = config.responsibleAddress?.trim()
+      if (!hasEditorialResponsible(config) || !name || !responsibleAddress) continue
+      sections.push({
         id,
         title: section.title,
-        paragraphs: [
-          responsibleName || labels.configureResponsible,
-          ...(responsibleAddress ? [responsibleAddress] : []),
-        ],
-      }
+        paragraphs: [name, responsibleAddress],
+      })
+      continue
     }
-    return {
+    sections.push({
       id,
       title: section.title,
       paragraphs: section.paragraphs,
-    }
-  })
+    })
+  }
+  return sections
 }
 
 export function buildPrivacyPolicySections(

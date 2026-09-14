@@ -167,9 +167,7 @@
 
 .neuroklast-classic-overlay-modal [data-cyberpunk-modal] {
   border-color: var(--modal-glow-color);
-  box-shadow:
-    0 0 8px var(--modal-glow-color),
-    inset 0 0 8px color-mix(in oklch, var(--modal-glow-color), transparent 85%);
+  box-shadow: 0 0 22px color-mix(in oklch, var(--modal-glow-color), transparent 55%);
 }
 
 .neuroklast-classic-overlay-modal [data-cyberpunk-modal-backdrop] {

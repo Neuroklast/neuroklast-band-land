@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { m, useReducedMotion } from 'framer-motion'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { HOMEPAGE_GIG_LIMIT } from '@/lib/browse-pagination'
-import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
@@ -49,8 +49,8 @@ function GigList({
       </div>
 
       {visibleGigs.map((gig, index) => {
-        const location = [gig.city, gig.country].filter(Boolean).join(', ')
-        const headline = gig.festival_name || gig.title
+        const location = formatGigLocation(gig)
+        const headline = eventDisplayName(gig)
 
         return (
           <m.article
@@ -82,9 +82,6 @@ function GigList({
                   <h3 className="font-mono text-xl font-bold uppercase text-primary">
                     {headline}
                   </h3>
-                  {gig.venue ? (
-                    <p className="font-mono text-sm text-muted-foreground">{gig.venue}</p>
-                  ) : null}
                   <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
                     {location ? (
                       <span className="flex items-center gap-2">
