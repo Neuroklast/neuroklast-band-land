@@ -4,6 +4,20 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-09-14
+
+### What Worked
+
+**Static `public/sitemap.xml` shadows rewrites.** Next/Vercel serve files in `public/` before `rewrites()`. A one-URL placeholder sitemap hid `/api/sitemap` (releases, gigs, legal, news). Delete the static file; keep the rewrite in both `next.config.mjs` and `vercel.json`.
+
+**TTDSG vs TDDDG.** The cookie banner `essentialDesc` still said TTDSG after the privacy templates moved to TDDDG. Grep both `TTDSG` and `TMG` in i18n + locales, not only `lib/legal-i18n.ts`.
+
+### What to Avoid
+
+**Do not add GSAP alongside Lenis.** Smooth scroll is owned by `LenisProvider` in root `Providers`. Scroll-linked video uses `attachScrollVideoSync`. A second scroller (ScrollTrigger without `scrollerProxy`) fights Lenis. Circuit parallax stays on Framer `useScroll`.
+
+---
+
 ## Session: 2026-04-01
 
 ### What Worked

@@ -69,6 +69,9 @@ const nextConfig = {
   async rewrites() {
     return [
       { source: '/favicon.ico', destination: DEFAULT_FAVICON },
+      // Dynamic sitemap (news + static routes). Do not keep public/sitemap.xml —
+      // a static file would shadow this rewrite.
+      { source: '/sitemap.xml', destination: '/api/sitemap' },
     ]
   },
   async headers() {

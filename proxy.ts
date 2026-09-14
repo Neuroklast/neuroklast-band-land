@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { shouldForceInsecureCookies } from '@/lib/supabaseServer'
 import { isBlockedCrawlerUserAgent } from '@/lib/crawler-blocklist'
+import { httpsRedirectLocation } from '@/lib/force-https'
 
 /**
  * Canonical admin auth "proxy" (the active protection file per this Next.js version's convention).
@@ -20,6 +21,14 @@ export async function proxy(request: NextRequest) {
   // never start a function instance nor hit the database.
   if (isBlockedCrawlerUserAgent(request.headers.get('user-agent'))) {
     return new NextResponse(null, { status: 403 })
+  }
+
+  const httpsLocation = httpsRedirectLocation(
+    request.url,
+    request.headers.get('x-forwarded-proto'),
+  )
+  if (httpsLocation) {
+    return NextResponse.redirect(httpsLocation, 308)
   }
 
   // Always allow login/logout (and non-admin). Login form must reach the submit handler.

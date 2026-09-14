@@ -196,8 +196,24 @@ describe('legal locale + completeness', () => {
 
   it('builds German legal notice with DDG heading', () => {
     const sections = buildLegalNoticeSections(parseLegalConfig(sampleConfig), 'de')
-    expect(sections.find((s) => s.id === 'operator')?.title).toMatch(/§ 5 DDG/)
+    expect(sections.find((s) => s.id === 'operator')?.title).toMatch(/Angaben gemäß § 5 DDG/)
     expect(sections.find((s) => s.id === 'operator')?.paragraphs.join(' ')).toContain('Neuroklast')
+  })
+
+  it('never cites TMG or TTDSG in any legal locale', () => {
+    const config = parseLegalConfig(sampleConfig)
+    for (const locale of LEGAL_LOCALES) {
+      const notice = buildLegalNoticeSections(config, locale)
+        .map((s) => `${s.title}\n${s.paragraphs.join('\n')}`)
+        .join('\n')
+      const privacy = buildPrivacyPolicySections(config, locale)
+        .map((s) => `${s.title}\n${s.paragraphs.join('\n')}`)
+        .join('\n')
+      expect(notice, locale).not.toMatch(/\bTMG\b/)
+      expect(privacy, locale).not.toMatch(/TTDSG/)
+      expect(privacy, locale).toMatch(/TDDDG/)
+      expect(privacy, locale).toMatch(/Art\. 6|ст\. 6|RGPD|GDPR|DSGVO|제6조|第6条/)
+    }
   })
 
   it('detects incomplete legal config', () => {

@@ -8,7 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Cookie banner and setup copy cite **§ 25 TDDDG** / **§ 5 DDG** (removed leftover TTDSG and TMG).
+- `/sitemap.xml` is the dynamic API sitemap again (`public/sitemap.xml` no longer shadows the rewrite).
+- HTTP requests with `x-forwarded-proto: http` 308 to HTTPS (`proxy.ts`).
+- Gig and news overlay images use content `alt` text.
+
 ### Added
+
+- Root metadata: `metadataBase`, title template, Open Graph / Twitter image, apple icon.
+
 
 - **`src/base.css`** — CSS split: base styles, CSS reset, CSS variables (`:root`), and
   theme foundations (`@theme`) extracted from `src/index.css` for faster initial parse.

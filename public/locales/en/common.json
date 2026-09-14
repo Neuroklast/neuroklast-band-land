@@ -611,7 +611,7 @@
   "setup.socialLinksTitle": "SOCIAL LINKS",
   "setup.socialLinksDesc": "Add your social media profiles. All fields are optional.",
   "setup.legalDesc": "Impressum / legal notice & privacy policy.",
-  "setup.legalDisclaimer": "⚠️ This data will be shown in the legal notice (Impressum) of your site. By German law (§ 5 TMG) a legally responsible person must be named. You can edit this later.",
+  "setup.legalDisclaimer": "⚠️ This data will be shown in the legal notice (Impressum) of your site. By German law (§ 5 DDG) a legally responsible person must be named. You can edit this later.",
   "setup.adminPasswordTitle": "ADMIN PASSWORD",
   "setup.adminPasswordDesc": "Set a password to protect the admin panel. Minimum 8 characters.",
   "setup.finishSetup": "FINISH SETUP",

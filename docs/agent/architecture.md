@@ -102,6 +102,10 @@ Admin edits via `app/admin/_actions/siteConfig.ts` → `update_site_config` acti
 
 Schema: `releases.tracks`, `tracks_source`, `last_enriched_at`, `manually_edited`.
 
+## Sitemap
+
+`/sitemap.xml` is a rewrite to `app/api/sitemap/route.ts` (`next.config.mjs` + `vercel.json`). It lists `/`, `/releases`, `/gigs`, `/media`, legal routes, and published news. **Never** add `public/sitemap.xml` — a static file shadows the rewrite.
+
 ## Legal pages
 
 - `/legal-notice` — templates in `lib/legal-templates.ts`
