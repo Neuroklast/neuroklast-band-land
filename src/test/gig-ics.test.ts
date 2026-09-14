@@ -27,7 +27,7 @@ describe('gig-ics', () => {
     expect(content).toContain('BEGIN:VCALENDAR')
     expect(content).toContain('BEGIN:VEVENT')
     expect(content).toContain('UID:gig-abc@neuroklast')
-    expect(content).toContain('SUMMARY:NEUROKLAST @ Club Matrix')
+    expect(content).toContain('SUMMARY:NEUROKLAST — Festival Night')
     expect(content).toContain('LOCATION:Berlin\\, Germany')
     expect(content).toContain('URL:https://tickets.example.com/gig')
     expect(content).toContain('END:VEVENT')

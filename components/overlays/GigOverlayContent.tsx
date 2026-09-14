@@ -58,14 +58,21 @@ export function GigOverlayContent({ data, artistName = '', decorativeTexts }: Gi
         transition={{ delay: 0.1 }}
       >
         <div className="data-label mb-2">{dataStreamLabel}</div>
-        {data.title && (
-          <p className="mb-1 font-mono text-sm uppercase tracking-widest text-primary">{data.title}</p>
-        )}
+        {data.gigType ? (
+          <p className="mb-2 font-mono text-xs uppercase tracking-[0.25em] text-primary">{data.gigType}</p>
+        ) : null}
+        {data.photoUrl ? (
+          <img
+            src={data.photoUrl}
+            alt=""
+            className="mb-4 max-h-56 w-full border border-border object-cover"
+          />
+        ) : null}
         <h2
           className="mb-4 font-mono text-3xl font-bold uppercase hover-chromatic crt-flash-in sm:text-4xl md:text-5xl"
-          data-text={data.venue}
+          data-text={data.title || data.venue}
         >
-          {data.venue}
+          {data.title || data.venue}
         </h2>
         {data.soldOut && (
           <span className="inline-block border border-destructive/30 bg-destructive/20 px-3 py-1 font-mono text-xs uppercase tracking-wider text-destructive">
@@ -82,9 +89,16 @@ export function GigOverlayContent({ data, artistName = '', decorativeTexts }: Gi
           transition={{ delay: 0.2 }}
         >
           <div className="data-label mb-2">Location</div>
-          <div className="flex items-center gap-2 font-mono text-xl hover-chromatic">
-            <MapPin className="h-5 w-5 shrink-0 text-primary" />
-            {data.location}
+          <div className="flex items-start gap-2 font-mono text-xl hover-chromatic">
+            <MapPin className="mt-1 h-5 w-5 shrink-0 text-primary" />
+            <a
+              href={sanitizeExternalHref(`https://www.openstreetmap.org/search?query=${encodeURIComponent(data.location || data.venue)}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline-offset-4 hover:underline"
+            >
+              {data.location || data.venue}
+            </a>
           </div>
           {data.streetAddress && (
             <p className="ml-7 mt-2 font-mono text-sm text-muted-foreground">
@@ -107,7 +121,6 @@ export function GigOverlayContent({ data, artistName = '', decorativeTexts }: Gi
           </div>
           {data.startsAt && (
             <p className="ml-7 mt-2 font-mono text-sm text-muted-foreground">
-              Doors:{' '}
               {new Date(data.startsAt).toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -184,6 +197,19 @@ export function GigOverlayContent({ data, artistName = '', decorativeTexts }: Gi
             <a href={sanitizeExternalHref(data.ticketUrl)} target="_blank" rel="noopener noreferrer">
               <Ticket className="mr-2 h-5 w-5" />
               <span className="hover-chromatic">{data.soldOut ? 'Sold Out' : 'Get Tickets'}</span>
+            </a>
+          </Button>
+        ) : null}
+
+        {data.eventUrl ? (
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="min-h-[44px] w-full font-mono uppercase tracking-wider sm:w-auto"
+          >
+            <a href={sanitizeExternalHref(data.eventUrl)} target="_blank" rel="noopener noreferrer">
+              <span className="hover-chromatic">Event page</span>
             </a>
           </Button>
         ) : null}

@@ -9,7 +9,7 @@ export default async function EditGigPage({ params }: { params: Promise<{ id: st
   if (!data) notFound()
   return (
     <div className="max-w-2xl">
-      <h1 className="text-xl font-bold mb-6">Edit Gig</h1>
+      <h1 className="text-xl font-bold mb-6">Edit event</h1>
       <EditGigForm gig={data as Record<string, unknown>} />
     </div>
   )
