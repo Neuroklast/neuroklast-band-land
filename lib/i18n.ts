@@ -268,6 +268,15 @@ const translations: Record<string, Record<string, string>> = {
   'secretTerminal.cursorChar': { en: '▌', de: '▌', uk: '▌', it: '▌', es: '▌', pt: '▌', ja: '▌', ko: '▌' },
   'secretTerminal.transferComplete': { en: 'TRANSFER COMPLETE', de: 'TRANSFER ABGESCHLOSSEN', uk: 'ПЕРЕДАЧА ЗАВЕРШЕНА', it: 'TRASFERIMENTO COMPLETATO', es: 'TRANSFERENCIA COMPLETA', pt: 'TRANSFERÊNCIA CONCLUÍDA', ja: '転送完了', ko: '전송 완료' },
   'secretTerminal.inputPlaceholder': { en: 'Enter command...', de: 'Befehl eingeben...', uk: 'Введите команду...', it: 'Inserisci comando...', es: 'Escribe un comando...', pt: 'Introduz um comando...', ja: 'コマンドを入力...', ko: '명령 입력...' },
+  'secretTerminal.authHold': { en: 'HOLD CONTACT', de: 'KONTAKT HALTEN', uk: 'УТРИМУЙТЕ КОНТАКТ', it: 'MANTIENI CONTATTO', es: 'MANTÉN CONTACTO', pt: 'MANTER CONTACTO', ja: '接触を維持', ko: '접촉 유지' },
+  'secretTerminal.authPlaten': { en: 'PLACE THUMB ON SCANNER', de: 'DAUMEN AUF SCANNER', uk: 'ВЕЛИКИЙ ПАЛЕЦЬ НА СКАНЕР', it: 'POLLICE SULLO SCANNER', es: 'PULGAR EN EL ESCÁNER', pt: 'POLEGAR NO SCANNER', ja: 'スキャナーに親指を置く', ko: '스캐너에 엄지를 대세요' },
+  'secretTerminal.authSlide': { en: 'DRAG TO LATCH', de: 'ZIEHEN ZUM VERRIEGELN', uk: 'ТЯГНІТЬ ДЛЯ ФІКСАЦІЇ', it: 'TRASCINA PER BLOCCARE', es: 'ARRASTRA PARA BLOQUEAR', pt: 'ARRASTAR PARA TRANCAR', ja: 'ドラッグしてロック', ko: '드래그하여 잠금' },
+  'secretTerminal.authGranted': { en: 'ACCESS GRANTED', de: 'ZUGRIFF GEWÄHRT', uk: 'ДОСТУП ДОЗВОЛЕНО', it: 'ACCESSO CONCESSO', es: 'ACCESO CONCEDIDO', pt: 'ACESSO CONCEDIDO', ja: 'アクセス許可', ko: '접근 허용' },
+  'secretTerminal.authDrop': { en: 'SIGNAL DROP', de: 'SIGNALVERLUST', uk: 'ВТРАТА СИГНАЛУ', it: 'SEGNALE PERSO', es: 'SEÑAL PERDIDA', pt: 'SINAL PERDIDO', ja: '信号途絶', ko: '신호 손실' },
+  'secretTerminal.authRetry': { en: 'RETRY', de: 'ERNEUT', uk: 'ПОВТОР', it: 'RIPROVA', es: 'REINTENTAR', pt: 'TENTAR DE NOVO', ja: '再試行', ko: '재시도' },
+  'secretTerminal.authHoldAria': { en: 'Hold fingerprint to authenticate', de: 'Fingerabdruck halten zum Authentifizieren', uk: 'Утримуйте відбиток для автентифікації', it: 'Tieni il dito per autenticarti', es: 'Mantén la huella para autenticarte', pt: 'Mantém a impressão para autenticar', ja: '指紋を押したまま認証', ko: '지문을 유지하여 인증' },
+  'secretTerminal.authSlideAria': { en: 'Drag latch to authenticate', de: 'Riegel ziehen zum Authentifizieren', uk: 'Потягніть засув для автентифікації', it: 'Trascina il fermo per autenticarti', es: 'Arrastra el pestillo para autenticarte', pt: 'Arrasta o trinco para autenticar', ja: 'ラッチをドラッグして認証', ko: '래치를 드래그하여 인증' },
+  'secretTerminal.authTitle': { en: 'Secret terminal authentication', de: 'Secret-Terminal-Authentifizierung', uk: 'Автентифікація секретного термінала', it: 'Autenticazione terminale segreto', es: 'Autenticación del terminal secreto', pt: 'Autenticação do terminal secreto', ja: 'シークレットターミナル認証', ko: '시크릿 터미널 인증' },
 
   // ── ReleasesSection ─────────────────────────────────────────────────
   'releases.defaultTitle':     { en: 'RELEASES', de: 'VERÖFFENTLICHUNGEN', uk: 'РЕЛИЗЫ', it: 'USCITE', es: 'LANZAMIENTOS', pt: 'LANÇAMENTOS', ja: 'リリース', ko: '릴리즈' },

@@ -120,7 +120,7 @@ export default function CyberpunkOverlay({
     if (!overlaySessionKey) return
 
     setProgressiveMode(getRandomProgressiveMode(progressiveOverlayModesRef.current))
-    if (reducedMotion) {
+    if (reducedMotion || overlay?.type === 'terminal') {
       setOverlayPhase('revealed')
       setLoadingText(OVERLAY_LOADING_TEXTS[OVERLAY_LOADING_TEXTS.length - 1])
       return
@@ -155,7 +155,7 @@ export default function CyberpunkOverlay({
       clearTimeout(glitchTimer)
       clearTimeout(revealTimer)
     }
-  }, [overlaySessionKey, reducedMotion, anim.interior])
+  }, [overlaySessionKey, reducedMotion, anim.interior, overlay?.type])
 
   useEffect(() => {
     if (!overlaySessionKey) return
