@@ -6,6 +6,7 @@ import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import {
   getLegalCompleteness,
+  hasEditorialResponsible,
   parseLegalConfig,
   type LegalConfig,
   type LegalRequiredField,
@@ -41,13 +42,13 @@ const RESPONSIBLE_FIELDS: FieldDef[] = [
   {
     key: 'responsibleName',
     label: 'Responsible Person Name',
-    placeholder: 'Defaults to operator name if empty',
+    placeholder: 'Natural person — leave empty to hide the MStV block',
   },
   {
     key: 'responsibleAddress',
     label: 'Responsible Person Address',
     type: 'textarea',
-    placeholder: 'Defaults to operator address if empty',
+    placeholder: 'Address of that person — both fields required to publish',
   },
 ]
 
@@ -122,6 +123,7 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
   }
 
   const completeness = getLegalCompleteness(values)
+  const mstvReady = hasEditorialResponsible(values)
 
   return (
     <div className="space-y-6 pb-24" data-admin-ui="true">
@@ -145,8 +147,8 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
               </li>
             )
           })}
-          <li className={completeness.hasResponsible ? 'text-green-400' : 'text-amber-300'}>
-            {completeness.hasResponsible ? '✓' : '○'} Responsible person (or operator name as fallback)
+          <li className={mstvReady ? 'text-green-400' : 'text-zinc-500'}>
+            {mstvReady ? '✓' : '○'} MStV responsible person (optional — public block only if name and address are both set)
           </li>
         </ul>
         {!completeness.complete && (
@@ -171,7 +173,9 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
       <section className="border border-zinc-800 rounded p-4 sm:p-6 space-y-4">
         <div>
           <h2 className="text-sm font-semibold text-zinc-200">Editorial Responsibility</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">Required under § 18 (2) MStV for editorial content.</p>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            § 18 (2) MStV only for journalistic/editorial content, and only with a named natural person. Leave empty to omit the public block — the site will not show an admin placeholder.
+          </p>
         </div>
         <div className="grid grid-cols-1 gap-4">
           {RESPONSIBLE_FIELDS.map(renderField)}

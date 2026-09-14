@@ -79,7 +79,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'EU dispute resolution',
       paragraphs: [
-        'The European Commission provides a platform for online dispute resolution (ODR): https://ec.europa.eu/consumers/odr/. Our email address can be found above.',
         'We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.',
       ],
     },
@@ -112,7 +111,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'EU-Streitschlichtung',
       paragraphs: [
-        'Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: https://ec.europa.eu/consumers/odr/. Unsere E-Mail-Adresse finden Sie oben im Impressum.',
         'Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
       ],
     },
@@ -145,7 +143,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'Вирішення спорів в ЄС',
       paragraphs: [
-        'Європейська комісія надає платформу онлайн-вирішення спорів (ODR): https://ec.europa.eu/consumers/odr/. Нашу електронну адресу наведено вище.',
         'Ми не зобов’язані і не згодні брати участь у процедурах вирішення спорів перед споживчим арбітражем.',
       ],
     },
@@ -178,7 +175,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'Risoluzione delle controversie UE',
       paragraphs: [
-        'La Commissione europea mette a disposizione una piattaforma ODR: https://ec.europa.eu/consumers/odr/. Il nostro indirizzo e-mail è indicato sopra.',
         'Non siamo obbligati né disponibili a partecipare a procedimenti dinanzi a un organismo di conciliazione dei consumatori.',
       ],
     },
@@ -211,7 +207,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'Resolución de litigios de la UE',
       paragraphs: [
-        'La Comisión Europea ofrece una plataforma ODR: https://ec.europa.eu/consumers/odr/. Nuestra dirección de correo figura arriba.',
         'No estamos dispuestos ni obligados a participar en procedimientos ante una junta arbitral de consumo.',
       ],
     },
@@ -244,7 +239,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'Resolução de litígios da UE',
       paragraphs: [
-        'A Comissão Europeia disponibiliza uma plataforma ODR: https://ec.europa.eu/consumers/odr/. O nosso e-mail encontra-se acima.',
         'Não estamos dispostos nem obrigados a participar em processos perante um centro de arbitragem de consumo.',
       ],
     },
@@ -277,7 +271,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'EUにおける紛争解決',
       paragraphs: [
-        '欧州委員会はオンライン紛争解決（ODR）プラットフォームを提供しています: https://ec.europa.eu/consumers/odr/ メールアドレスは上記をご覧ください。',
         '消費者仲裁機関における紛争解決手続に参加する意思も義務もありません。',
       ],
     },
@@ -310,7 +303,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     dispute: {
       title: 'EU 분쟁 해결',
       paragraphs: [
-        '유럽연합 집행위원회는 온라인 분쟁 해결(ODR) 플랫폼을 제공합니다: https://ec.europa.eu/consumers/odr/ 이메일 주소는 위에 있습니다.',
         '소비자 중재 기구의 분쟁 해결 절차에 참여할 의사나 의무가 없습니다.',
       ],
     },
