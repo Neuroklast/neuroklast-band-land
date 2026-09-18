@@ -23,7 +23,7 @@ src/themes/
 │   ├── index.ts
 │   ├── Hero.tsx
 │   └── styles.css
-├── zardonic-industrial/      # Exclusive industrial cyberpunk theme
+├── neuroklast-industrial/      # Exclusive industrial cyberpunk theme
 │   ├── index.ts
 │   ├── Navigation.tsx
 │   └── styles.css

@@ -80,7 +80,7 @@ describe('restored public homepage components', () => {
       <>
         <GlobalEffects />
         <HeroSection
-          headline="ZARDONIC"
+          headline="NEUROKLAST"
           tagline="Industrial Metal / Drum & Bass"
           ctaLabel="LISTEN NOW"
           ctaUrl="#releases"
@@ -105,7 +105,7 @@ describe('restored public homepage components', () => {
   it('starts hero wordmark boot only when the stage is in view', async () => {
     ioInstances.length = 0
     const { container } = renderWithLocale(
-      <HeroSection headline="ZARDONIC" tagline="Industrial Metal / Drum & Bass" />,
+      <HeroSection headline="NEUROKLAST" tagline="Industrial Metal / Drum & Bass" />,
     )
 
     expect(container.querySelector('.hero-logo-boot--pending')).toBeInTheDocument()
@@ -146,7 +146,7 @@ describe('restored public homepage components', () => {
   it('skips hero boot sequence when disabled', () => {
     const { container } = renderWithLocale(
       <HeroSection
-        headline="ZARDONIC"
+        headline="NEUROKLAST"
         tagline="Industrial Metal / Drum & Bass"
         bootSequenceEnabled={false}
       />,
@@ -161,7 +161,7 @@ describe('restored public homepage components', () => {
   it('applies hero width via --hero-logo-width (aspect ratio free height)', () => {
     const { container } = renderWithLocale(
       <HeroSection
-        headline="ZARDONIC"
+        headline="NEUROKLAST"
         logoWidthPercent={80}
         bootSequenceEnabled={false}
       />,
@@ -178,7 +178,7 @@ describe('restored public homepage components', () => {
   it('applies separate mobile and desktop hero width vars', () => {
     const { container } = renderWithLocale(
       <HeroSection
-        headline="ZARDONIC"
+        headline="NEUROKLAST"
         logoWidthPercent={65}
         logoWidthPercentMobile={95}
         bootSequenceEnabled={false}

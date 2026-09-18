@@ -44,12 +44,15 @@ vi.mock('@supabase/ssr', () => ({
 
 import { proxy } from '@/proxy'
 
-function createRequest(pathname: string): NextRequest {
+function createRequest(
+  pathname: string,
+  init?: { headers?: Record<string, string>; url?: string },
+): NextRequest {
   const cookieJar = new Map<string, string>()
   return {
     nextUrl: { pathname },
-    url: `https://example.com${pathname}`,
-    headers: new Headers(),
+    url: init?.url ?? `https://example.com${pathname}`,
+    headers: new Headers(init?.headers),
     cookies: {
       getAll: () => Array.from(cookieJar.entries()).map(([name, value]) => ({ name, value })),
       set: (name: string, value: string) => cookieJar.set(name, value),
@@ -168,5 +171,29 @@ describe('middleware admin auth', () => {
     )
     expect(response.headers.get('expires')).toBe('0')
     expect(response.headers.get('pragma')).toBe('no-cache')
+  })
+})
+
+describe('HTTPS redirect', () => {
+  it('308-redirects when x-forwarded-proto is http', async () => {
+    const response = await proxy(
+      createRequest('/', {
+        headers: { 'x-forwarded-proto': 'http' },
+        url: 'http://neuroklast.net/',
+      }),
+    )
+    expect(response.status).toBe(308)
+    expect(response.headers.get('location')).toBe('https://neuroklast.net/')
+  })
+
+  it('does not bounce localhost HTTP', async () => {
+    const response = await proxy(
+      createRequest('/', {
+        headers: { 'x-forwarded-proto': 'http' },
+        url: 'http://localhost:3000/',
+      }),
+    )
+    expect(response.status).not.toBe(308)
+    expect(response.headers.get('location')).toBeNull()
   })
 })

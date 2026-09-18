@@ -44,7 +44,7 @@ describe('validate()', () => {
 // ---------------------------------------------------------------------------
 describe('kvKeySchema', () => {
   it('accepts normal key', () => {
-    expect(kvKeySchema.safeParse('zardonic-band-data').success).toBe(true)
+    expect(kvKeySchema.safeParse('neuroklast-band-data').success).toBe(true)
   })
 
   it('rejects empty key', () => {
@@ -103,7 +103,7 @@ describe('kvPostSchema', () => {
 // ---------------------------------------------------------------------------
 describe('kvGetQuerySchema', () => {
   it('accepts valid key', () => {
-    expect(kvGetQuerySchema.safeParse({ key: 'zardonic-band-data' }).success).toBe(true)
+    expect(kvGetQuerySchema.safeParse({ key: 'neuroklast-band-data' }).success).toBe(true)
   })
 
   it('rejects missing key', () => {
@@ -254,7 +254,7 @@ describe('analyticsPostSchema', () => {
 // ---------------------------------------------------------------------------
 describe('itunesQuerySchema', () => {
   it('accepts valid term', () => {
-    expect(itunesQuerySchema.safeParse({ term: 'Zardonic' }).success).toBe(true)
+    expect(itunesQuerySchema.safeParse({ term: 'Neuroklast' }).success).toBe(true)
   })
 
   it('accepts valid entity', () => {

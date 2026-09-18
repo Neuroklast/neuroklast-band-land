@@ -22,6 +22,9 @@ export interface Gig {
   startsAt?: string
   description?: string
   title?: string
+  gigType?: string
+  photoUrl?: string
+  eventUrl?: string
 }
 
 export interface Release {

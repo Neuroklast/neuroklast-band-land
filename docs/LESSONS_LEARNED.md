@@ -4,6 +4,36 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-09-18
+
+### What Worked
+
+**One progress value, many channels.** Hatch quality comes from coupling handle/fill/ticks/servos/HUD to the same 0–1 physics tick — not extra CSS animations.
+
+**PhaseCrossfade instead of XOR unmount.** `loading | glitch | revealed` as exclusive trees is the hard cut. Keep outgoing mounted while incoming clips in on the same progress.
+
+### What to Avoid
+
+**Do not unmount the terminal gate on grant.** `if (!unlocked) return Gate` drops chrome and kills continuity. Keep one shell: arm → hatch → live.
+
+**Cookie consent is not a hatch.** Accept/Reject must stay equally prominent. Two-click embeds may use LatchRail plus an explicit load button.
+
+---
+
+## Session: 2026-09-14
+
+### What Worked
+
+**Static `public/sitemap.xml` shadows rewrites.** Next/Vercel serve files in `public/` before `rewrites()`. A one-URL placeholder sitemap hid `/api/sitemap` (releases, gigs, legal, news). Delete the static file; keep the rewrite in both `next.config.mjs` and `vercel.json`.
+
+**TTDSG vs TDDDG.** The cookie banner `essentialDesc` still said TTDSG after the privacy templates moved to TDDDG. Grep both `TTDSG` and `TMG` in i18n + locales, not only `lib/legal-i18n.ts`.
+
+### What to Avoid
+
+**Do not add GSAP alongside Lenis.** Smooth scroll is owned by `LenisProvider` in root `Providers`. Scroll-linked video uses `attachScrollVideoSync`. A second scroller (ScrollTrigger without `scrollerProxy`) fights Lenis. Circuit parallax stays on Framer `useScroll`.
+
+---
+
 ## Session: 2026-04-01
 
 ### What Worked

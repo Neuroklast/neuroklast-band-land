@@ -1,8 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { OVERLAY_REVEAL_PHASE_DELAY_MS } from '@/lib/config'
 import { useOverlayBootProgress } from '@/hooks/use-overlay-boot-progress'
+import { ProgressMeter } from '@/components/motion/ProgressMeter'
 
 const CHECKS = [
   { id: 'MEM', addr: '0x0100' },
@@ -38,17 +38,7 @@ export function OverlaySystemPost({
           )
         })}
       </ul>
-      <div className="flex w-48 items-center gap-2">
-        <div className="h-0.5 flex-1 overflow-hidden bg-primary/20">
-          <motion.div
-            className="h-full origin-left bg-primary"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: durationMs / 1000, ease: 'linear' }}
-          />
-        </div>
-        <span className="font-mono text-[9px] tabular-nums text-primary/50">{pct}%</span>
-      </div>
+      <ProgressMeter progress={pct / 100} className="w-48" />
     </div>
   )
 }

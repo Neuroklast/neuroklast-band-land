@@ -11,6 +11,7 @@ import {
   resolvePublicFonts,
 } from '@/lib/public-fonts'
 import { Providers } from './providers'
+import { getSiteOrigin } from '@/lib/og-share'
 import './globals.css'
 
 /**
@@ -76,16 +77,44 @@ export async function generateMetadata(): Promise<Metadata> {
     faviconUrl = undefined
   }
 
+  const icon = faviconUrl || DEFAULT_ICON
+  const title = 'Neuroklast'
+  const description = 'Official website of Neuroklast – industrial / electronic'
+  let metadataBase: URL
+  try {
+    metadataBase = new URL(`${getSiteOrigin()}/`)
+  } catch {
+    metadataBase = new URL('https://neuroklast.net/')
+  }
+
   return {
-    title: 'Neuroklast',
-    description: 'Official website of Neuroklast – industrial / electronic',
+    metadataBase,
+    title: {
+      default: title,
+      template: '%s | Neuroklast',
+    },
+    description,
     icons: {
-      icon: faviconUrl || DEFAULT_ICON,
+      icon,
+      shortcut: icon,
+      apple: icon,
     },
     openGraph: {
-      title: 'Neuroklast',
-      description: 'Official website of Neuroklast – industrial / electronic',
+      title,
+      description,
       type: 'website',
+      siteName: title,
+      images: [{ url: '/og-image.png' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/og-image.png'],
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   }
 }
@@ -95,7 +124,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { customTranslations, analyticsConfig, languages, appearance, terminal } =
+  const { customTranslations, analyticsConfig, languages, appearance, terminal, artistName } =
     await getPublicSiteBootstrap()
 
   const fonts = resolvePublicFonts(appearance.theme)
@@ -130,6 +159,7 @@ export default async function RootLayout({
           languages={languages}
           appearance={appearance}
           terminal={terminal}
+          artistName={artistName}
         >
           {children}
         </Providers>

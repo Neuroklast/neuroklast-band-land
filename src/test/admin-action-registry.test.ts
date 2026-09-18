@@ -17,7 +17,7 @@ function makeCtx(overrides: Partial<AdminActionContext> = {}): AdminActionContex
   const setSiteData = vi.fn<(updater: SiteData | ((s: SiteData) => SiteData)) => void>()
   return {
     adminSettings: {} as AdminSettings,
-    siteData: { ...DEFAULT_SITE_DATA, artistName: 'ZARDONIC' },
+    siteData: { ...DEFAULT_SITE_DATA, artistName: 'NEUROKLAST' },
     setAdminSettings,
     setSiteData,
     ...overrides,

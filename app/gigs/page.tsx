@@ -5,7 +5,7 @@ import { GigsBrowseClient } from '@/app/_components/public/GigsBrowseClient'
 import { fetchPublicArtistName, fetchPublicGigs } from '@/lib/public-fetch'
 
 export const metadata: Metadata = {
-  title: 'Tour Dates',
+  title: 'Events',
   description: 'Browse all upcoming and past events with search and filters.',
 }
 

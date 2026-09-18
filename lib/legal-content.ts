@@ -98,6 +98,11 @@ export function getResponsibleAddress(config: LegalConfig): string {
   return config.responsibleAddress?.trim() || formatServiceAddress(config)
 }
 
+/** § 18 (2) MStV: publish only when a named natural person and address are both set. */
+export function hasEditorialResponsible(config: LegalConfig): boolean {
+  return Boolean(config.responsibleName?.trim() && config.responsibleAddress?.trim())
+}
+
 export function getDataControllerLabel(config: LegalConfig): string {
   if (config.operatorName && config.email) {
     return `${config.operatorName} (${config.email})`

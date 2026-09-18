@@ -44,9 +44,9 @@ describe('parseTrackTitle', () => {
     expect(result.extractedArtists).toEqual(["Noisesmith", "Roel Peijs", "Kylee Brielle"])
   })
 
-  it('preserves (Zardonic Remix) suffix', () => {
-    const result = parseTrackTitle("Song (Zardonic Remix)")
-    expect(result.cleanTitle).toBe("Song (Zardonic Remix)")
+  it('preserves (Neuroklast Remix) suffix', () => {
+    const result = parseTrackTitle("Song (Neuroklast Remix)")
+    expect(result.cleanTitle).toBe("Song (Neuroklast Remix)")
     expect(result.extractedArtists).toEqual([])
   })
 

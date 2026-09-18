@@ -13,7 +13,7 @@ import {
   type GigTimingFilter,
 } from '@/lib/gig-browse'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
-import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
@@ -40,8 +40,8 @@ function GigBrowseCard({
   onClick: () => void
 }) {
   const prefersReducedMotion = useReducedMotion()
-  const location = [gig.city, gig.country].filter(Boolean).join(', ')
-  const headline = gig.festival_name || gig.title
+  const location = formatGigLocation(gig)
+  const headline = eventDisplayName(gig)
 
   return (
     <m.article
@@ -52,21 +52,18 @@ function GigBrowseCard({
       <div className="cyber-card hover-scan hover-noise group relative w-full border border-border p-6 transition-colors hover:border-primary/50">
         <button
           type="button"
-          className="absolute inset-0 z-0 cursor-pointer"
+          className="absolute inset-0 z-[1] cursor-pointer"
           onClick={() => onClick()}
           aria-label={`Open event details for ${headline}`}
         />
         <div className="scan-line" aria-hidden="true" />
-        <div className="pointer-events-none relative z-[1] data-label mb-2" data-theme-color="data-label">
+        <div className="pointer-events-none relative z-[2] data-label mb-2" data-theme-color="data-label">
           // EVENT.{formatEventLabel(gig.event_date)}
         </div>
 
-        <div className="relative z-[1] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="pointer-events-none min-w-0 space-y-2">
+        <div className="pointer-events-none relative z-[2] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0 space-y-2">
             <h3 className="font-mono text-xl font-bold uppercase hover-chromatic">{headline}</h3>
-            {gig.venue ? (
-              <p className="font-mono text-sm text-muted-foreground">{gig.venue}</p>
-            ) : null}
             <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
               {location ? (
                 <span className="flex items-center gap-2">
@@ -86,7 +83,7 @@ function GigBrowseCard({
               href={sanitizeExternalHref(gig.ticket_url)}
               target="_blank"
               rel="noopener noreferrer"
-              className="cyber-border hover-glitch relative z-[1] inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
+              className="cyber-border hover-glitch pointer-events-auto relative z-[3] inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
             >
               Tickets
             </a>

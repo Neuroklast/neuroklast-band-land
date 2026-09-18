@@ -814,7 +814,7 @@ export interface OverlayModalSlotProps {
   children?: ReactNode
 }
 
-export type LookId = 'neuroklast-classic' | 'glitch-noir' | 'zardonic-industrial' | 'umbrella-corp'
+export type LookId = 'neuroklast-classic' | 'glitch-noir' | 'neuroklast-industrial' | 'umbrella-corp'
 
 export interface ThemeSettings {
   primary?: string

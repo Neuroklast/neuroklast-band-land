@@ -5,9 +5,11 @@ import {
   formatServiceAddress,
   getResponsibleName,
   getResponsibleAddress,
+  hasEditorialResponsible,
   getLegalCompleteness,
   isLegalConfigComplete,
 } from '@/lib/legal-content'
+import { LEGAL_LOCALES, NOTICE_COPY, NOTICE_DOC_TITLE, PRIVACY_DOC_TITLE } from '@/lib/legal-i18n'
 import {
   buildLegalNoticeSections,
   buildPrivacyPolicySections,
@@ -15,20 +17,20 @@ import {
 } from '@/lib/legal-templates'
 
 const sampleConfig = {
-  operatorName: 'Zardonic Music',
+  operatorName: 'Neuroklast',
   careOf: 'c/o Example Label',
   street: 'Musterstraße 1',
   zipCity: '10115 Berlin',
   country: 'Germany',
   phone: '+49 30 123456',
-  email: 'legal@zardonic.com',
+  email: 'legal@neuroklast.net',
   vatId: 'DE123456789',
 }
 
 describe('parseLegalConfig', () => {
   it('parses structured operator fields', () => {
     const config = parseLegalConfig(sampleConfig)
-    expect(config.operatorName).toBe('Zardonic Music')
+    expect(config.operatorName).toBe('Neuroklast')
     expect(config.street).toBe('Musterstraße 1')
     expect(config.country).toBe('Germany')
   })
@@ -59,7 +61,7 @@ describe('parseFooterConfig', () => {
 describe('formatServiceAddress', () => {
   it('formats ladungsfähige Anschrift from structured fields', () => {
     const address = formatServiceAddress(parseLegalConfig(sampleConfig))
-    expect(address).toContain('Zardonic Music')
+    expect(address).toContain('Neuroklast')
     expect(address).toContain('Musterstraße 1')
     expect(address).toContain('10115 Berlin')
     expect(address).toContain('Germany')
@@ -70,16 +72,56 @@ describe('buildLegalNoticeSections', () => {
   it('injects operator name without custom override', () => {
     const sections = buildLegalNoticeSections(parseLegalConfig(sampleConfig))
     const operator = sections.find((s) => s.id === 'operator')
-    expect(operator?.paragraphs.join(' ')).toContain('Zardonic Music')
+    expect(operator?.paragraphs.join(' ')).toContain('Neuroklast')
     expect(operator?.paragraphs.join(' ')).toContain('Musterstraße 1')
   })
 
-  it('uses custom override when set', () => {
-    const sections = buildLegalNoticeSections(
-      parseLegalConfig({ ...sampleConfig, legalNoticeCustom: 'Custom legal text' }),
+  it('uses custom override only for German', () => {
+    const config = parseLegalConfig({ ...sampleConfig, legalNoticeCustom: 'Custom legal text' })
+    const de = buildLegalNoticeSections(config, 'de')
+    expect(de).toHaveLength(1)
+    expect(de[0].paragraphs[0]).toBe('Custom legal text')
+    const es = buildLegalNoticeSections(config, 'es')
+    expect(es.length).toBeGreaterThan(1)
+    expect(es[0].paragraphs.join(' ')).not.toBe('Custom legal text')
+  })
+
+  it('omits the EU ODR platform URL in every locale', () => {
+    const config = parseLegalConfig(sampleConfig)
+    for (const locale of LEGAL_LOCALES) {
+      const body = buildLegalNoticeSections(config, locale)
+        .map((s) => s.paragraphs.join(' '))
+        .join(' ')
+      expect(body).not.toMatch(/ec\.europa\.eu\/consumers\/odr/i)
+      expect(NOTICE_COPY[locale].dispute.paragraphs.join(' ')).not.toMatch(
+        /ec\.europa\.eu\/consumers\/odr/i,
+      )
+      const dispute = buildLegalNoticeSections(config, locale).find((s) => s.id === 'dispute')
+      expect(dispute?.paragraphs.length).toBe(1)
+    }
+  })
+
+  it('omits the MStV block unless name and address are both set', () => {
+    const without = buildLegalNoticeSections(parseLegalConfig(sampleConfig), 'de')
+    expect(without.find((s) => s.id === 'responsible')).toBeUndefined()
+    expect(without.map((s) => s.paragraphs.join(' ')).join(' ')).not.toMatch(/Admin hinterlegen/)
+
+    const nameOnly = buildLegalNoticeSections(
+      parseLegalConfig({ ...sampleConfig, responsibleName: 'Kay Schäfer' }),
+      'de',
     )
-    expect(sections).toHaveLength(1)
-    expect(sections[0].paragraphs[0]).toBe('Custom legal text')
+    expect(nameOnly.find((s) => s.id === 'responsible')).toBeUndefined()
+
+    const both = parseLegalConfig({
+      ...sampleConfig,
+      responsibleName: 'Kay Schäfer',
+      responsibleAddress: 'Friedhofweg 1\n69118 Heidelberg',
+    })
+    expect(hasEditorialResponsible(both)).toBe(true)
+    const sections = buildLegalNoticeSections(both, 'de')
+    const responsible = sections.find((s) => s.id === 'responsible')
+    expect(responsible?.paragraphs[0]).toBe('Kay Schäfer')
+    expect(responsible?.paragraphs[1]).toContain('Friedhofweg 1')
   })
 })
 
@@ -87,15 +129,21 @@ describe('buildPrivacyPolicySections', () => {
   it('includes controller name in template', () => {
     const sections = buildPrivacyPolicySections(parseLegalConfig(sampleConfig))
     const overview = sections.find((s) => s.id === 'overview')
-    expect(overview?.paragraphs.join(' ')).toContain('Zardonic Music')
+    expect(overview?.paragraphs.join(' ')).toContain('Neuroklast')
   })
 
-  it('uses privacy custom override when set', () => {
-    const sections = buildPrivacyPolicySections(
-      parseLegalConfig({ ...sampleConfig, privacyPolicyCustom: 'My custom policy' }),
-    )
-    expect(sections).toHaveLength(1)
-    expect(sections[0].paragraphs[0]).toBe('My custom policy')
+  it('uses privacy custom override only for German', () => {
+    const config = parseLegalConfig({
+      ...sampleConfig,
+      privacyPolicyCustom: '1. Datenschutz auf einen Blick',
+    })
+    const de = buildPrivacyPolicySections(config, 'de')
+    expect(de).toHaveLength(1)
+    expect(de[0].paragraphs[0]).toContain('Datenschutz auf einen Blick')
+
+    const es = buildPrivacyPolicySections(config, 'es')
+    expect(es.find((s) => s.id === 'overview')?.title).toMatch(/Protección de datos/i)
+    expect(es.map((s) => s.paragraphs.join(' ')).join(' ')).not.toContain('Datenschutz auf einen Blick')
   })
 
   it('covers no-newsletter, TDDDG, self-hosted fonts, analytics retention', () => {
@@ -121,17 +169,51 @@ describe('buildPrivacyPolicySections', () => {
 })
 
 describe('legal locale + completeness', () => {
-  it('resolves de/en locales', () => {
+  it('resolves all built-in locales and falls back to en', () => {
     expect(resolveLegalLocale('de')).toBe('de')
     expect(resolveLegalLocale('de-DE')).toBe('de')
     expect(resolveLegalLocale('en')).toBe('en')
-    expect(resolveLegalLocale('ja')).toBe('en')
+    expect(resolveLegalLocale('ja')).toBe('ja')
+    expect(resolveLegalLocale('uk-UA')).toBe('uk')
+    expect(resolveLegalLocale('fr')).toBe('en')
+    expect(resolveLegalLocale(null)).toBe('en')
+  })
+
+  it('builds notice and privacy in every locale', () => {
+    const config = parseLegalConfig(sampleConfig)
+    for (const locale of LEGAL_LOCALES) {
+      const notice = buildLegalNoticeSections(config, locale)
+      const privacy = buildPrivacyPolicySections(config, locale)
+      expect(notice.find((s) => s.id === 'operator')?.title).toBeTruthy()
+      expect(notice.find((s) => s.id === 'operator')?.paragraphs.join(' ')).toContain('Neuroklast')
+      expect(privacy.find((s) => s.id === 'overview')?.paragraphs.join(' ')).toContain('Neuroklast')
+      expect(privacy.find((s) => s.id === 'overview')?.paragraphs.join(' ')).not.toContain('{controller}')
+      expect(privacy.some((s) => s.id === 'news')).toBe(true)
+      expect(NOTICE_DOC_TITLE[locale]).toBeTruthy()
+      expect(PRIVACY_DOC_TITLE[locale]).toBeTruthy()
+    }
   })
 
   it('builds German legal notice with DDG heading', () => {
     const sections = buildLegalNoticeSections(parseLegalConfig(sampleConfig), 'de')
-    expect(sections.find((s) => s.id === 'operator')?.title).toMatch(/§ 5 DDG/)
-    expect(sections.find((s) => s.id === 'operator')?.paragraphs.join(' ')).toContain('Zardonic Music')
+    expect(sections.find((s) => s.id === 'operator')?.title).toMatch(/Angaben gemäß § 5 DDG/)
+    expect(sections.find((s) => s.id === 'operator')?.paragraphs.join(' ')).toContain('Neuroklast')
+  })
+
+  it('never cites TMG or TTDSG in any legal locale', () => {
+    const config = parseLegalConfig(sampleConfig)
+    for (const locale of LEGAL_LOCALES) {
+      const notice = buildLegalNoticeSections(config, locale)
+        .map((s) => `${s.title}\n${s.paragraphs.join('\n')}`)
+        .join('\n')
+      const privacy = buildPrivacyPolicySections(config, locale)
+        .map((s) => `${s.title}\n${s.paragraphs.join('\n')}`)
+        .join('\n')
+      expect(notice, locale).not.toMatch(/\bTMG\b/)
+      expect(privacy, locale).not.toMatch(/TTDSG/)
+      expect(privacy, locale).toMatch(/TDDDG/)
+      expect(privacy, locale).toMatch(/Art\. 6|ст\. 6|RGPD|GDPR|DSGVO|제6조|第6条/)
+    }
   })
 
   it('detects incomplete legal config', () => {
@@ -144,7 +226,7 @@ describe('legal locale + completeness', () => {
 describe('responsible person defaults', () => {
   it('defaults responsible name to operator name', () => {
     const config = parseLegalConfig(sampleConfig)
-    expect(getResponsibleName(config)).toBe('Zardonic Music')
+    expect(getResponsibleName(config)).toBe('Neuroklast')
   })
 
   it('defaults responsible address to formatted service address', () => {

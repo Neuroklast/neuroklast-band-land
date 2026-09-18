@@ -48,7 +48,7 @@ export async function LegalPageShell({ children }: LegalPageShellProps) {
       : 'NEUROKLAST'
   const genres = Array.isArray(pageData.hero.genres)
     ? pageData.hero.genres.filter((g): g is string => typeof g === 'string' && g.trim() !== '')
-    : ['Industrial', 'Electronic']
+    : []
 
   return (
     <PageLayout
@@ -77,7 +77,7 @@ export async function LegalPageShell({ children }: LegalPageShellProps) {
         <LookFooter
           lookId={lookId}
           siteName={siteName}
-          genres={genres.length > 0 ? genres : ['Industrial', 'Electronic']}
+          genres={genres}
           socialLinks={Object.fromEntries(pageData.social.map((link) => [link.platform, link.url]))}
           legalNoticeUrl={pageData.footer.legalNoticeUrl}
           privacyPolicyUrl={privacyUrl}

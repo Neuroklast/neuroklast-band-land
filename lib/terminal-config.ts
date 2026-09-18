@@ -3,6 +3,15 @@ import type { TerminalCommand } from '@/lib/types'
 
 export const TERMINAL_CHEAT_PARAM = 'access-secret-terminal-NK-666'
 
+export const TERMINAL_AUTH_PATH = '/nk-sec'
+
+export const TERMINAL_OPEN_EVENT = 'nk-secret-terminal-open'
+
+export function requestSecretTerminal(): void {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new Event(TERMINAL_OPEN_EVENT))
+}
+
 export const TERMINAL_RESERVED_COMMANDS = ['help', 'clear', 'exit'] as const
 
 export const TERMINAL_COMMAND_NAME_RE = /^[a-z0-9][a-z0-9:_-]*$/

@@ -258,7 +258,7 @@ export function MediaExplorerBody({ files }: { files: MediaFile[] }) {
   const { t } = useLocale()
 
   return (
-    <div className="-mx-4 mt-2 flex min-h-[min(420px,60dvh)] flex-col border-t border-primary/20 md:-mx-12 md:flex-row">
+    <div className="-mx-4 mt-2 flex min-h-[min(280px,50svh)] flex-col border-t border-primary/20 md:-mx-12 md:min-h-[min(420px,60dvh)] md:flex-row">
       <div className="max-h-[200px] overflow-y-auto border-b border-primary/20 p-3 md:max-h-none md:w-2/5 md:border-b-0 md:border-r">
         <div className="mb-2 px-2 text-[9px] tracking-wider text-primary/40">{t('media.directory')}</div>
         <FileTreeView
