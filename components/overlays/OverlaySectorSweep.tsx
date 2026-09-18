@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion'
 import { OVERLAY_REVEAL_PHASE_DELAY_MS } from '@/lib/config'
 import { useOverlayBootProgress } from '@/hooks/use-overlay-boot-progress'
+import { HudReadout } from '@/components/motion/HudReadout'
+import { ProgressMeter } from '@/components/motion/ProgressMeter'
 
 const FLASH_AT = [20, 50, 80] as const
 
@@ -45,10 +47,13 @@ export function OverlaySectorSweep({
           />
         ))}
       </div>
-      <div className="flex w-40 items-center justify-between font-mono text-[9px] uppercase tracking-widest text-primary/50">
-        <span>SEC {sector}</span>
-        <span className="tabular-nums">{pct}%</span>
-      </div>
+      <HudReadout
+        items={[
+          { label: 'SEC', value: sector },
+          { label: 'SCAN', value: pct >= 100 ? 'OK' : 'RUN', hot: pct >= 100 },
+        ]}
+      />
+      <ProgressMeter progress={pct / 100} className="w-40" />
     </div>
   )
 }

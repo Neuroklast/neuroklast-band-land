@@ -4,6 +4,22 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-09-18
+
+### What Worked
+
+**One progress value, many channels.** Hatch quality comes from coupling handle/fill/ticks/servos/HUD to the same 0–1 physics tick — not extra CSS animations.
+
+**PhaseCrossfade instead of XOR unmount.** `loading | glitch | revealed` as exclusive trees is the hard cut. Keep outgoing mounted while incoming clips in on the same progress.
+
+### What to Avoid
+
+**Do not unmount the terminal gate on grant.** `if (!unlocked) return Gate` drops chrome and kills continuity. Keep one shell: arm → hatch → live.
+
+**Cookie consent is not a hatch.** Accept/Reject must stay equally prominent. Two-click embeds may use LatchRail plus an explicit load button.
+
+---
+
 ## Session: 2026-09-14
 
 ### What Worked

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { ProgressMeter } from '@/components/motion/ProgressMeter'
 import { applyHoldProgress } from '@/lib/terminal-auth-physics'
 import { buildFingerprintTelemetry } from '@/lib/terminal-auth-telemetry'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -116,7 +117,6 @@ export function TerminalFingerprintAuth({
   }, [onDrop, reducedMotion])
 
   const telemetry = buildFingerprintTelemetry(progress, nowMs)
-  const pct = Math.round(progress * 100)
   const status = granted
     ? t('secretTerminal.authGranted')
     : holding
@@ -249,24 +249,24 @@ export function TerminalFingerprintAuth({
               />
             ))}
           </svg>
-          {holding && !granted ? (
-            <motion.span
-              className="pointer-events-none absolute inset-x-8 h-px bg-primary"
-              initial={{ top: '18%', opacity: 0.2 }}
-              animate={{ top: ['18%', '82%'], opacity: [0.2, 1, 0.2] }}
-              transition={{ duration: 1.05, repeat: Infinity, ease: 'linear' }}
-              aria-hidden
-            />
-          ) : null}
+          <motion.span
+            className="pointer-events-none absolute inset-x-8 h-px bg-primary"
+            animate={
+              holding && !granted
+                ? { top: ['18%', '82%'], opacity: [0.2, 1, 0.2] }
+                : { top: '18%', opacity: 0 }
+            }
+            transition={
+              holding && !granted
+                ? { duration: 1.05, repeat: Infinity, ease: 'linear' }
+                : { duration: 0.18 }
+            }
+            aria-hidden
+          />
         </motion.button>
         </div>
 
-        <div className="flex w-[min(72vw,15.5rem)] items-center gap-2">
-          <div className="h-0.5 flex-1 overflow-hidden bg-primary/20">
-            <div className="h-full origin-left bg-primary" style={{ transform: `scaleX(${progress})` }} />
-          </div>
-          <span className="font-mono text-[9px] tabular-nums tracking-widest text-primary/60">{pct}%</span>
-        </div>
+        <ProgressMeter progress={progress} className="w-[min(72vw,15.5rem)]" />
         <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary" aria-live="polite">
           {status}
         </p>
