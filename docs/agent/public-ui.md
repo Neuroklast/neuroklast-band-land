@@ -46,13 +46,13 @@ Public content SSR: `createPublicClient()` (cookie-less), not session `createCli
 | `member` | Bio / members | `MemberOverlayContent` |
 | `news` | News overlay | `NewsOverlayContent` |
 | `explorer` | Media archive | `MediaExplorerBody` |
-| `terminal` | Konami / Morse / cheat URL | `SecretTerminalContent` |
+| `terminal` | Overlay fallback (tests) | `SecretTerminalContent` |
 
 Rules:
 
 1. State type: `CyberpunkOverlayState` in `lib/app-types.ts`.
 2. Session key: `lib/overlay-session.ts` (include enough identity to re-animate on reopen).
-3. Shell owns: backdrop, corners, scanlines, loading/glitch/reveal phases, close button, glow, **Lenis + body scroll lock**.
+3. Shell owns: backdrop, corners, scanlines, boot→content **PhaseCrossfade** (no XOR unmount), close button, glow, **Lenis + body scroll lock**.
 4. Content components own **only** inner body (no second fixed fullscreen chrome).
 5. Gallery: swipe/dots/arrows in `GalleryOverlayContent` — not a parallel lightbox component for production UI.
 6. Media download images use overlay type `media` (preview + download). Do **not** run those files through the partner white-silhouette pipeline — they are download originals.
@@ -61,17 +61,23 @@ Rules:
 
 ### Secret Terminal
 
-Live chrome is Classic `LookNav` + `CyberpunkOverlay` type `terminal` (not the SPA `SecretTerminal` modal).
+Live path is `/nk-sec` (`TERMINAL_AUTH_PATH`). Triggers route there; they do **not** open overlay type `terminal`. Overlay type `terminal` still renders `SecretTerminalContent` (no boot) for tests.
 
 | Trigger | Implementation |
 |---------|----------------|
-| Konami / custom keys | `SecretTerminalTrigger` in `TerminalConfigProvider` (root layout) |
+| Konami / custom keys | `SecretTerminalTrigger` in `TerminalConfigProvider` (root layout) → `/nk-sec` |
 | Morse on nav logo | `useMorseCode` in `LookNav` → Classic logo button |
 | Cheat query | `?access-secret-terminal-NK-666` (stripped after open) |
 | Commands | `POST /api/terminal` (cookie-less `createPublicClient`, rate-limited) |
 | Admin | Look & Feel → Terminal (`site_config.terminal`) |
 
+Sequence on `/nk-sec` (one shell, no unmount): **arm** (slider / fingerprint) → **hatch** (~550ms doors + PhaseCrossfade) → **live** (`SecretTerminalContent`). Shared chrome: corners, scanlines, close, title. Physics: `lib/latch-physics.ts` / `LatchRail`. Reduced motion skips hatch.
+
 Built-ins: `help`, `clear`, `exit`, `glitch`, `matrix`. Custom commands cannot override reserved names. Respect `prefers-reduced-motion` (no typing/FX).
+
+### Two-click embeds
+
+YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: compact `LatchRail` plus an explicit load button. Iframe / Spotify script loads **only after** consent (seal **or** button). Never auto-load. Cookie banner is **not** a hatch slider.
 
 ---
 

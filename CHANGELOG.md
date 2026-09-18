@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Hatch handoff: grid stack (no clipped content), closed doors at 0, embed gate→player crossfade, grant-timeout cleanup.
 - Cookie banner and setup copy cite **§ 25 TDDDG** / **§ 5 DDG** (removed leftover TTDSG and TMG).
 - `/sitemap.xml` is the dynamic API sitemap again (`public/sitemap.xml` no longer shadows the rewrite).
 - HTTP requests with `x-forwarded-proto: http` 308 to HTTPS (`proxy.ts`).
@@ -17,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Hatch motion kit (`LatchRail`, `PhaseCrossfade`, `HudReadout`) — terminal arm→hatch→live, overlay boot handoff, YouTube/Spotify jack-in.
 - Root metadata: `metadataBase`, title template, Open Graph / Twitter image, apple icon.
 
 
