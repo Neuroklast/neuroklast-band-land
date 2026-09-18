@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Overlay close plays reverse boot then clip exit; frame glow pulses; panel is translucent.
+- Spotify/YouTube consent is one HUD click (no latch); Spotify embed uses pixel height so the player fills LISTEN.
 - Hatch handoff: grid stack (no clipped content), closed doors at 0, embed gate→player crossfade, grant-timeout cleanup.
 - Cookie banner and setup copy cite **§ 25 TDDDG** / **§ 5 DDG** (removed leftover TTDSG and TMG).
 - `/sitemap.xml` is the dynamic API sitemap again (`public/sitemap.xml` no longer shadows the rewrite).

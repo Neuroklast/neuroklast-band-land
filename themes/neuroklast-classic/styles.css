@@ -167,7 +167,45 @@
 
 .neuroklast-classic-overlay-modal [data-cyberpunk-modal] {
   border-color: var(--modal-glow-color);
-  box-shadow: 0 0 22px color-mix(in oklch, var(--modal-glow-color), transparent 55%);
+  background-color: color-mix(in srgb, var(--background, #0a0a0a) 82%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 0 8px color-mix(in oklch, var(--modal-glow-color), transparent 35%),
+    0 0 22px color-mix(in oklch, var(--modal-glow-color), transparent 72%),
+    inset 0 0 10px color-mix(in oklch, var(--modal-glow-color), transparent 88%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .neuroklast-classic-overlay-modal [data-cyberpunk-modal] {
+    animation: overlay-frame-glow 4.5s ease-in-out infinite;
+  }
+}
+
+@keyframes overlay-frame-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 6px color-mix(in oklch, var(--modal-glow-color), transparent 45%),
+      0 0 18px color-mix(in oklch, var(--modal-glow-color), transparent 78%),
+      inset 0 0 8px color-mix(in oklch, var(--modal-glow-color), transparent 90%);
+  }
+  46% {
+    box-shadow:
+      0 0 10px color-mix(in oklch, var(--modal-glow-color), transparent 28%),
+      0 0 26px color-mix(in oklch, var(--modal-glow-color), transparent 62%),
+      inset 0 0 12px color-mix(in oklch, var(--modal-glow-color), transparent 84%);
+  }
+  50% {
+    box-shadow:
+      0 0 14px color-mix(in oklch, var(--modal-glow-color), transparent 18%),
+      0 0 32px color-mix(in oklch, var(--modal-glow-color), transparent 55%),
+      inset 0 0 14px color-mix(in oklch, var(--modal-glow-color), transparent 78%);
+  }
+  54% {
+    box-shadow:
+      0 0 10px color-mix(in oklch, var(--modal-glow-color), transparent 28%),
+      0 0 26px color-mix(in oklch, var(--modal-glow-color), transparent 62%),
+      inset 0 0 12px color-mix(in oklch, var(--modal-glow-color), transparent 84%);
+  }
 }
 
 .neuroklast-classic-overlay-modal [data-cyberpunk-modal-backdrop] {

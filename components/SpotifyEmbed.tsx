@@ -62,6 +62,7 @@ export function SpotifyEmbed({
   const [isLoaded, setIsLoaded] = useState(false)
   const [isPlayerReady, setIsPlayerReady] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const shellRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<SpotifyEmbedController | null>(null)
   const initializedRef = useRef(false)
@@ -86,10 +87,11 @@ export function SpotifyEmbed({
         timeoutRef.current = null
       }
 
+      const measured = shellRef.current?.clientHeight ?? 0
       const options: SpotifyEmbedOptions = {
         uri,
         width,
-        height,
+        height: measured > 0 ? measured : typeof height === 'number' ? height : 352,
         theme,
       }
 
@@ -184,7 +186,7 @@ export function SpotifyEmbed({
   }
 
   return (
-    <div className={cn('relative', className)} style={{ width, height }}>
+    <div ref={shellRef} className={cn('relative h-full w-full', className)} style={{ width }}>
       <PhaseCrossfade
         className="h-full"
         progress={isLoaded ? handoff : 0}

@@ -4,6 +4,19 @@ Entries are in **reverse chronological order** (newest first).
 
 ---
 
+## Session: 2026-09-18 — Overlay close, click embeds, frame glow
+
+**Agent:** grok-4.6
+
+### Done
+- Overlay close: hold snapshot, reverse boot, then clip exit
+- EmbedConsentGate is one HUD click (no LatchRail)
+- Spotify IFrame height from box pixels (232/352)
+- Classic overlay: translucent panel + pulsing frame glow
+- OverlayHost title uses hero artist name
+
+---
+
 ## Session: 2026-09-18 — Hatch motion kit + seamless handoffs
 
 **Agent:** grok-4.6

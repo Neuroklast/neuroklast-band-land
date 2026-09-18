@@ -45,6 +45,7 @@ interface ProvidersProps {
   /** Applied on every public page — fonts never hardcoded outside Appearance. */
   appearance?: AppearanceConfigInput
   terminal?: TerminalConfig
+  artistName?: string
 }
 
 export function Providers({
@@ -54,6 +55,7 @@ export function Providers({
   languages,
   appearance = {},
   terminal,
+  artistName = 'NEUROKLAST',
 }: ProvidersProps) {
   const [queryClient] = useState(
     () =>
@@ -74,7 +76,11 @@ export function Providers({
                 <TerminalConfigProvider value={terminal ?? parseTerminalConfig(null)}>
                   <AppearanceBridge config={appearance} />
                   {children}
-                  <OverlayHost lookId={appearance.lookId} overlayAnimations={appearance.overlayAnimations} />
+                  <OverlayHost
+                    lookId={appearance.lookId}
+                    overlayAnimations={appearance.overlayAnimations}
+                    artistName={artistName}
+                  />
                 </TerminalConfigProvider>
               </ErrorBoundary>
             </QueryClientProvider>
