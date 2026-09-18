@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { m, useReducedMotion } from 'framer-motion'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { HOMEPAGE_GIG_LIMIT } from '@/lib/browse-pagination'
-import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
@@ -49,8 +49,8 @@ function GigList({
       </div>
 
       {visibleGigs.map((gig, index) => {
-        const location = [gig.city, gig.country].filter(Boolean).join(', ')
-        const headline = gig.festival_name || gig.title
+        const location = formatGigLocation(gig)
+        const headline = eventDisplayName(gig)
 
         return (
           <m.article
@@ -68,23 +68,20 @@ function GigList({
             <div className="nk-os-frame group relative w-full p-6">
               <button
                 type="button"
-                className="absolute inset-0 z-0 cursor-pointer"
+                className="absolute inset-0 z-[1] cursor-pointer"
                 onClick={() => onGigClick(gig)}
                 aria-label={`Open event details for ${headline}`}
               />
               <div className="scan-line" aria-hidden="true" />
-              <div className="pointer-events-none relative z-[1] data-label mb-2" data-theme-color="data-label">
+              <div className="pointer-events-none relative z-[2] data-label mb-2" data-theme-color="data-label">
                 // EVENT.{formatEventLabel(gig.event_date)}
               </div>
 
-              <div className="relative z-[1] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="pointer-events-none min-w-0 space-y-2">
+              <div className="pointer-events-none relative z-[2] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0 space-y-2">
                   <h3 className="font-mono text-xl font-bold uppercase text-primary">
                     {headline}
                   </h3>
-                  {gig.venue ? (
-                    <p className="font-mono text-sm text-muted-foreground">{gig.venue}</p>
-                  ) : null}
                   <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
                     {location ? (
                       <span className="flex items-center gap-2">
@@ -104,7 +101,7 @@ function GigList({
                     href={sanitizeExternalHref(gig.ticket_url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="nk-os-btn nk-os-btn--fill relative z-[1] shrink-0 tracking-[0.25em]"
+                    className="nk-os-btn nk-os-btn--fill pointer-events-auto relative z-[3] shrink-0 tracking-[0.25em]"
                   >
                     Tickets
                   </a>

@@ -52,27 +52,49 @@ const gigInputSchema = z.object({
   status: z.string().optional().default('confirmed'),
   supporting_artists: z.array(z.string()).optional().default([]),
   event_links: z.record(z.string(), z.unknown()).optional().default({}),
+  event_url: safeExternalUrlOptional.transform(v => v === '' ? null : v),
   photo_storage_path: z.string().optional().nullable(),
   photo_url: safeExternalUrlOptional.transform(v => v === '' ? null : v),
 })
 
+function combineEventDate(formData: FormData): string | null {
+  const raw = formData.get('event_date')
+  if (typeof raw !== 'string' || !raw.trim()) return null
+  const date = raw.trim()
+  if (date.includes('T')) return date
+  const timeRaw = formData.get('event_time')
+  const time = typeof timeRaw === 'string' && timeRaw.trim() ? timeRaw.trim() : '00:00'
+  return `${date}T${time}`
+}
+
 function parseFormData(formData: FormData) {
+  const title = formData.get('title')
+
   return {
-    title: formData.get('title'),
+    title,
     venue: formData.get('venue') || null,
     city: formData.get('city') || null,
     country: formData.get('country') || null,
-    event_date: formData.get('event_date'),
+    event_date: combineEventDate(formData),
     ticket_url: formData.get('ticket_url') || null,
-    festival_name: formData.get('festival_name') || null,
+    festival_name: typeof title === 'string' && title.trim() ? title.trim() : null,
     description: formData.get('description') || null,
     gig_type: formData.get('gig_type') || null,
     status: formData.get('status') || 'confirmed',
     supporting_artists: parseStringListFormField(formData, 'supporting_artists'),
     event_links: parseObjectFormField(formData, 'event_links'),
+    event_url: formData.get('event_url') || null,
     photo_storage_path: formData.get('photo_storage_path') || null,
     photo_url: formData.get('photo_url') || null,
   }
+}
+
+function toGigRow(data: z.infer<typeof gigInputSchema>) {
+  const { event_url, event_links, ...row } = data
+  const links = { ...event_links }
+  if (event_url) links.page = event_url
+  else delete links.page
+  return { ...row, event_links: links }
 }
 
 export async function createGig(formData: FormData) {
@@ -82,14 +104,16 @@ export async function createGig(formData: FormData) {
   const supabaseAdmin = createAdminClient()
 
   // Dispatch via registry for AGENTS compliance
-  const dispatchResult = dispatchAdminActionAsAdmin('create_gig', parsed.data, createSupabaseActionContext(supabaseAdmin))
+  const row = toGigRow(parsed.data)
+  const dispatchResult = dispatchAdminActionAsAdmin('create_gig', row, createSupabaseActionContext(supabaseAdmin))
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
-    const { error } = await supabaseAdmin.from('gigs').insert(parsed.data)
+    const { error } = await supabaseAdmin.from('gigs').insert(row)
     if (error) return { error: error.message }
 
     revalidatePath('/admin/gigs')
+    revalidatePath('/gigs')
     revalidatePath('/')
     return { success: true }
   }, 'Unable to create gig.')
@@ -101,15 +125,17 @@ export async function updateGig(id: string, formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('update_gig', { ...parsed.data, id }, createSupabaseActionContext(supabaseAdmin))
+  const row = toGigRow(parsed.data)
+  const dispatchResult = dispatchAdminActionAsAdmin('update_gig', { ...row, id }, createSupabaseActionContext(supabaseAdmin))
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
-    const { error } = await supabaseAdmin.from('gigs').update(parsed.data).eq('id', id)
+    const { error } = await supabaseAdmin.from('gigs').update(row).eq('id', id)
     if (error) return { error: error.message }
 
     revalidatePath('/admin/gigs')
     revalidatePath(`/admin/gigs/${id}`)
+    revalidatePath('/gigs')
     revalidatePath('/')
     return { success: true }
   }, 'Unable to update gig.')

@@ -46,13 +46,13 @@ Public content SSR: `createPublicClient()` (cookie-less), not session `createCli
 | `member` | Bio / members | `MemberOverlayContent` |
 | `news` | News overlay | `NewsOverlayContent` |
 | `explorer` | Media archive | `MediaExplorerBody` |
-| `terminal` | Konami / Morse / cheat URL | `SecretTerminalContent` |
+| `terminal` | Overlay fallback (tests) | `SecretTerminalContent` |
 
 Rules:
 
 1. State type: `CyberpunkOverlayState` in `lib/app-types.ts`.
 2. Session key: `lib/overlay-session.ts` (include enough identity to re-animate on reopen).
-3. Shell owns: backdrop, corners, scanlines, loading/glitch/reveal phases, close button, glow, **Lenis + body scroll lock**.
+3. Shell owns: backdrop, corners, scanlines, boot→content **PhaseCrossfade**, **close reverse-boot then clip exit**, frame glow pulse, close button, **Lenis + body scroll lock**. Title uses site name (`artistName` from OverlayHost).
 4. Content components own **only** inner body (no second fixed fullscreen chrome).
 5. Gallery: swipe/dots/arrows in `GalleryOverlayContent` — not a parallel lightbox component for production UI.
 6. Media download images use overlay type `media` (preview + download). Do **not** run those files through the partner white-silhouette pipeline — they are download originals.
@@ -61,17 +61,23 @@ Rules:
 
 ### Secret Terminal
 
-Live chrome is Classic `LookNav` + `CyberpunkOverlay` type `terminal` (not the SPA `SecretTerminal` modal).
+Live path is `/nk-sec` (`TERMINAL_AUTH_PATH`). Triggers route there; they do **not** open overlay type `terminal`. Overlay type `terminal` still renders `SecretTerminalContent` (no boot) for tests.
 
 | Trigger | Implementation |
 |---------|----------------|
-| Konami / custom keys | `SecretTerminalTrigger` in `TerminalConfigProvider` (root layout) |
+| Konami / custom keys | `SecretTerminalTrigger` in `TerminalConfigProvider` (root layout) → `/nk-sec` |
 | Morse on nav logo | `useMorseCode` in `LookNav` → Classic logo button |
 | Cheat query | `?access-secret-terminal-NK-666` (stripped after open) |
 | Commands | `POST /api/terminal` (cookie-less `createPublicClient`, rate-limited) |
 | Admin | Look & Feel → Terminal (`site_config.terminal`) |
 
+Sequence on `/nk-sec` (one shell, no unmount): **arm** (slider / fingerprint) → **hatch** (~550ms doors + PhaseCrossfade) → **live** (`SecretTerminalContent`). Shared chrome: corners, scanlines, close, title. Physics: `lib/latch-physics.ts` / `LatchRail`. Reduced motion skips hatch.
+
 Built-ins: `help`, `clear`, `exit`, `glitch`, `matrix`. Custom commands cannot override reserved names. Respect `prefers-reduced-motion` (no typing/FX).
+
+### Two-click embeds
+
+YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: one HUD click (no latch). Iframe / Spotify script loads **only after** that click. Spotify IFrame height is the box pixel height (232 mobile / 352 desktop), not `"100%"`. Cookie banner is **not** a hatch slider.
 
 ---
 
@@ -147,10 +153,10 @@ Regression: `src/test/public-component-restoration.test.tsx` (desktop + mobile C
 
 ## Lenis
 
-- Single provider: `contexts/LenisContext.tsx`.
+- Root layout wraps the tree in `Providers` → `LenisProvider` (`contexts/LenisContext.tsx`). One instance only.
 - Public page scroll is Lenis-owned; nested scrollports need care.
 - Any modal/overlay that covers the page must `lenis.stop()` on open and `lenis.start()` on close (implemented in `CyberpunkOverlay`).
-- Do not add a second Lenis instance.
+- Do not add a second Lenis instance. Do not add GSAP ScrollTrigger as a second scroller — scroll-linked video uses `attachScrollVideoSync`; circuit parallax uses Framer `useScroll`.
 
 ## Background layers & overlay glow
 

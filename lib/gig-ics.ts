@@ -42,7 +42,9 @@ export function buildGigIcsContent(gig: Gig, artistName: string): string {
   }
 
   const end = new Date(start.getTime() + DEFAULT_EVENT_HOURS * 60 * 60 * 1000)
-  const summary = escapeIcsText(`${artistName} @ ${gig.venue}`)
+  const summary = escapeIcsText(
+    gig.title ? `${artistName} — ${gig.title}` : `${artistName} @ ${gig.venue}`,
+  )
   const location = escapeIcsText(
     [gig.streetAddress, gig.postalCode, gig.location].filter(Boolean).join(', ') || gig.location,
   )

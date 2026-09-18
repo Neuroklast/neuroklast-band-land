@@ -43,20 +43,20 @@ describe('release external id normalization', () => {
     expect(normalizeSpotifyArtistId('https://open.spotify.com/artist/1hCXQnXpV6ZvppsATivV27')).toBe(
       '1hCXQnXpV6ZvppsATivV27',
     )
-    expect(normalizeDiscogsArtistId('https://www.discogs.com/artist/261118-Zardonic')).toBe('261118')
-    expect(normalizeItunesArtistId('https://music.apple.com/us/artist/zardonic/261118434')).toBe('261118434')
+    expect(normalizeDiscogsArtistId('https://www.discogs.com/artist/261118-Neuroklast')).toBe('261118')
+    expect(normalizeItunesArtistId('https://music.apple.com/us/artist/neuroklast/261118434')).toBe('261118434')
   })
 })
 
 describe('parseCatalogueSyncConfig', () => {
   it('normalizes stored artist ids and keeps fallback name', () => {
     const parsed = parseCatalogueSyncConfig({
-      artistName: 'Zardonic',
+      artistName: 'Neuroklast',
       spotifyArtistId: 'https://open.spotify.com/artist/7BqEidErPMNiUXCRE0dV2n',
       discogsArtistId: '',
       itunesArtistId: '261118434',
     })
-    expect(parsed.artistName).toBe('Zardonic')
+    expect(parsed.artistName).toBe('Neuroklast')
     expect(parsed.spotifyArtistId).toBe('7BqEidErPMNiUXCRE0dV2n')
     expect(parsed.itunesArtistId).toBe('261118434')
   })

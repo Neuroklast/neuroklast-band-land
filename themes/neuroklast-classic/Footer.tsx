@@ -12,8 +12,7 @@ import './styles.css'
 
 export default function NeuroklastClassicFooter({
   socialLinks,
-  siteName,
-  genres,
+  siteName: _siteName,
   label,
   privacyPolicyUrl = '/privacy-policy',
   onAdminLogin,
@@ -43,19 +42,6 @@ export default function NeuroklastClassicFooter({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
         >
-          {genres && genres.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-2">
-              {genres.map((genre) => (
-                <span
-                  key={genre}
-                  className="nk-os-chip"
-                >
-                  {genre}
-                </span>
-              ))}
-            </div>
-          )}
-
           <LanguageSwitcher className="justify-center" />
 
           {socialEntries.length > 0 && (
@@ -82,7 +68,7 @@ export default function NeuroklastClassicFooter({
 
           <div className="text-center space-y-3">
             <p className="text-xs font-mono text-muted-foreground tracking-wider">
-              {`\u00A9 ${new Date().getFullYear()} ${(siteName || 'NEUROKLAST').toUpperCase()}. ALL RIGHTS RESERVED.`}
+              {t('footer.copyrightLine').replace('{0}', String(new Date().getFullYear()))}
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-muted-foreground tracking-wider">

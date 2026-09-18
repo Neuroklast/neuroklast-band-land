@@ -7,7 +7,7 @@ describe('ReleaseTracklistField', () => {
     render(
       <ReleaseTracklistField
         initialTracks={[
-          { title: 'Opener', artist: 'Zardonic', duration: '4:12', featuredArtists: ['Guest'] },
+          { title: 'Opener', artist: 'Neuroklast', duration: '4:12', featuredArtists: ['Guest'] },
         ]}
       />,
     )

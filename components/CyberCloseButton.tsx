@@ -1,4 +1,7 @@
+'use client'
+
 import { motion } from 'framer-motion'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface CyberCloseButtonProps {
   onClick: () => void
@@ -7,33 +10,33 @@ interface CyberCloseButtonProps {
   ariaLabel?: string
 }
 
-/** Cyberpunk-styled close button used across all overlays instead of plain X */
 export default function CyberCloseButton({
   onClick,
-  label = 'CLOSE',
+  label,
   className = '',
-  ariaLabel = 'Close dialog',
+  ariaLabel,
 }: CyberCloseButtonProps) {
+  const { t } = useLocale()
+  const text = label ?? t('common.close')
+  const accessible = ariaLabel ?? t('aria.closeOverlay')
+
   return (
     <motion.button
       type="button"
-      className={`group relative ml-auto flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center gap-2 border border-primary/40 bg-black/60 px-3 py-1.5 font-mono text-xs tracking-widest text-primary/70 transition-all duration-200 hover:border-primary hover:bg-primary/20 hover:text-primary ${className}`}
+      data-overlay-close=""
+      className={`group relative ml-auto flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center gap-2 border border-primary/40 bg-black/60 px-2 py-1.5 font-mono text-xs tracking-widest text-primary/70 transition-all duration-200 hover:border-primary hover:bg-primary/20 hover:text-primary sm:px-3 ${className}`}
       style={{ zIndex: 'var(--z-local-top)' } as React.CSSProperties}
       onClick={onClick}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      aria-label={ariaLabel}
+      aria-label={accessible}
     >
-      <span className="relative">
-        <span className="inline-block w-2 h-[1px] bg-primary/60 group-hover:bg-primary rotate-45 absolute top-1/2 left-0" />
-        <span className="inline-block w-2 h-[1px] bg-primary/60 group-hover:bg-primary -rotate-45 absolute top-1/2 left-0" />
-        <span className="w-2 inline-block" />
+      <span className="relative" aria-hidden>
+        <span className="absolute top-1/2 left-0 inline-block h-[1px] w-2 rotate-45 bg-primary/60 group-hover:bg-primary" />
+        <span className="absolute top-1/2 left-0 inline-block h-[1px] w-2 -rotate-45 bg-primary/60 group-hover:bg-primary" />
+        <span className="inline-block w-2" />
       </span>
-      <span>{label}</span>
-      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-primary/50" />
-      <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-primary/50" />
-      <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-primary/50" />
-      <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-primary/50" />
+      <span className="hidden sm:inline">{text}</span>
     </motion.button>
   )
 }

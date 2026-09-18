@@ -1,179 +1,129 @@
 # GDPR Compliance Review - NEUROKLAST Band Website
 
-## Date: 2026-02-18
+## Date: 2026-09-14
 
 ### Overview
 This document reviews the GDPR compliance status of the NEUROKLAST band website.
+
+**Canonical stack (do not describe Vite, Vercel KV, or Google Drive as runtime hosting):** Next.js App Router, React, Supabase (PostgreSQL + Auth), Cloudflare R2 (all public media), Resend (contact form only). Human reference for agents: `docs/agent/security.md`.
+
+Public legal routes: `/legal-notice`, `/privacy-policy`. Editor: `/admin/legal`. Templates: `lib/legal-i18n.ts`, `lib/legal-templates.ts`. Operator fields live in `site_config.legal` — do not invent a GmbH or fill Stammdaten from training data.
 
 ### Data Collection & Processing
 
 #### ✅ Compliant Features
 
 1. **Cookie Banner**
-   - Implemented cookie consent banner (CookieBanner component)
-   - Users can accept or reject cookie usage
-   - Clear notice about Local Storage and IndexedDB usage
-   - Link to privacy policy (Datenschutz)
+   - `CookieConsent` + `lib/consent.ts` (`zd-cookie-consent`)
+   - Users can accept or reject optional analytics
+   - Functional prefs (locale, theme, sound) do not require analytics consent
+   - Footer link to `/privacy-policy` sits outside the banner
 
-2. **Local Storage Only**
-   - Analytics data stored in localStorage
-   - No third-party cookies
-   - No tracking cookies
-   - User data stays in browser
+2. **First-party storage**
+   - Consent and functional prefs in localStorage
+   - Optional analytics events in Supabase `analytics_events` only after explicit consent (retention described in the privacy template: up to 90 days)
+   - No third-party advertising or tracking cookies
+   - No Meta / Google Analytics pixel in the public bundle
 
 3. **Transparent Data Usage**
-   - Clear privacy policy (DatenschutzWindow component)
-   - Multi-language support (DE/EN)
-   - Explains data processing purposes
+   - Public privacy policy at `/privacy-policy` (Art. 6 GDPR + § 25 TDDDG)
+   - Public legal notice at `/legal-notice` (§ 5 DDG, Haftung §§ 7–10 DDG)
+   - Multi-language templates; German custom override only if `privacyPolicyCustom` / `legalNoticeCustom` is set
 
 4. **User Rights**
-   - Admin can reset analytics data
-   - Users can clear localStorage
-   - No personal data stored on servers
+   - Consent can be withdrawn via Cookie Preferences in the footer
+   - Contact is Resend email delivery only — no inbox, no newsletter list
+   - Admin content is edited in `/admin/*` (Supabase Auth, `profiles.role = admin`)
 
 5. **Legal Pages**
-   - Impressum (legal notice) page
-   - Datenschutz (privacy policy) page
-   - Both editable via admin interface
-   - Multi-language support
+   - `/legal-notice`, `/privacy-policy`
+   - Structured operator fields injected into templates
+   - Optional full-text override in `/admin/legal` (German locale only)
 
 #### 📋 Data Processing Activities
 
-**Local Storage Items:**
-- `band-data`: Band information and content
-- `admin-password-hash`: Hashed admin password
-- `font-sizes`: User interface preferences
-- `analytics`: Anonymous usage statistics
-- `sound-settings`: Audio preferences
-- Image cache (IndexedDB)
+**Browser storage:**
+- `zd-cookie-consent`: consent choice
+- `zd-locale`: language preference
+- Theme / sound mute and similar functional prefs
+- IndexedDB image cache (performance; no profiles)
 
-**Server-Side Data (Vercel KV / Redis):**
-- Band content and configuration
-- Admin password hash (scrypt, with legacy SHA-256 migration)
-- Anonymous analytics counters (no personal data)
-- Rate-limit state: SHA-256 hashed IP + salt, auto-expires after 10 seconds
-- Honeytoken alert log (hashed IPs only, no plaintext)
+**Server-side (Supabase Postgres, not Vercel KV / Redis):**
+- Site content and `site_config`
+- Admin sessions via Supabase Auth cookies
+- Optional consented analytics events
+- Rate-limit state: SHA-256 hashed IP + `RATE_LIMIT_SALT`, fail-closed (`lib/rate-limit.ts`)
+- Contact submissions are emailed via Resend and are not stored in the database
 
-**External Services:**
-- iTunes API: Fetches public release information
-- Odesli API: Resolves streaming links
-- Google Drive: Optional image hosting (with user consent)
-- wsrv.nl: Image proxy service
+**External services:**
+- Vercel: hosting
+- Cloudflare R2: media files (never Supabase Storage)
+- Resend: transactional contact email
+- wsrv.nl: optional image proxy
+- iTunes / Odesli / Spotify / YouTube APIs: public catalogue and two-click embeds (players load only after explicit click)
+- Google Drive appears only as an **admin import helper**; files are cached to R2. Drive is not public image hosting.
 
 #### ⚠️ Privacy Considerations
 
 1. **Third-Party Services**
-   - Privacy policy mentions external image services
-   - Google Drive and wsrv.nl may receive IP addresses
-   - Legal basis: Legitimate interest (Art. 6(1)(f) GDPR)
+   - Privacy policy covers Vercel, Supabase, R2, Resend, wsrv.nl, and two-click Spotify/YouTube
+   - Legal basis for hosting/CDN: Art. 6(1)(f) GDPR
+   - Embeds: Art. 6(1)(a) GDPR (explicit two-click)
 
 2. **Analytics**
-   - Anonymous usage tracking
-   - No personal identifiers
-   - No cross-site tracking
-   - Data stays in user's browser
+   - First-party only, after cookie-banner opt-in
+   - No advertising network
+   - Do not document Meta/GA if they are not in the bundle
 
 3. **Admin Features**
-   - Password-protected admin mode
-   - scrypt password hashing
-   - No transmission of credentials
+   - Supabase Auth (`/admin/login`), not a local scrypt password hash
+   - `profiles.role = admin`
 
 4. **Rate Limiting & Attack Defense (Art. 6(1)(f) GDPR)**
    - IP addresses are pseudonymised using SHA-256 + secret salt before processing
-   - Hashed IP is used solely for rate-limit enforcement (5 requests / 10 s)
-   - Rate-limit state is ephemeral: auto-deleted after the 10-second window
+   - Hashed IP is used solely for rate-limit enforcement
    - No plaintext IP addresses are stored or logged
-   - Legal basis: Legitimate interest in protecting the website and its users from automated attacks (Art. 6(1)(f) GDPR)
-   - Proportionality: Minimal data (hash only), shortest possible retention (10 s), no profiling
+   - Legal basis: legitimate interest in protecting the website (Art. 6(1)(f) GDPR)
 
-5. **Honeytokens (Intrusion Detection)**
-   - Decoy records in the database trigger silent alarms on unauthorised access
-   - Alert logs contain only hashed IPs and timestamps — no plaintext personal data
-   - Legal basis: Legitimate interest in IT security (Art. 6(1)(f) GDPR)
-
-6. **robots.txt Access Violations**
-   - Violations of robots.txt Disallow rules are logged for security monitoring
-   - Logs contain only hashed IPs — no plaintext personal data stored
-   - Legal basis: Legitimate interest in IT security (Art. 6(1)(f) GDPR)
+5. **Public forms**
+   - Honeypot (`_hp`), Zod validation, Resend delivery
+   - No newsletter product on the public site
 
 ### GDPR Rights Implementation
 
-✅ **Right to Access**: Users control their localStorage data
-✅ **Right to Erasure**: Users can clear browser data; rate-limit data auto-expires
-✅ **Right to Rectification**: Admin can update all content
-✅ **Right to Data Portability**: JSON export/import supported
-✅ **Right to Object**: Users can reject cookie consent
-✅ **Transparency**: Clear privacy policy provided
+✅ **Right to Access**: contact via Legal Notice email; browser storage is user-controlled
+✅ **Right to Erasure**: users can clear browser data; rate-limit hashes are short-lived
+✅ **Right to Rectification**: admin can update content
+✅ **Right to Object**: users can reject analytics consent
+✅ **Transparency**: `/privacy-policy` and `/legal-notice`
 
 ### Security Measures (Art. 32 GDPR)
 
 | Measure | Implementation |
 |---|---|
-| Password hashing | scrypt (with legacy SHA-256 migration), constant-time comparison |
-| Input validation | Zod schemas on all API endpoints |
-| Rate limiting | Sliding window, GDPR-compliant IP hashing |
-| SSRF protection | Blocklist for private networks, protocol allowlist |
-| Intrusion detection | Honeytoken decoy records with silent alarms |
-| XSS prevention | Content sanitisation, iframe sandboxing |
-| Timing attack prevention | Constant-time string comparison |
-
-### Recommendations
-
-1. **Data Processing Register**
-   - Document all data processing activities
-   - Maintain updated privacy policy
-   - Review third-party service agreements
-
-2. **Consent Management**
-   - ✅ Cookie banner implemented
-   - Consider granular consent options
-   - Log consent decisions (optional)
-
-3. **Security Measures**
-   - ✅ Password hashing implemented
-   - ✅ Input validation via Zod schemas
-   - ✅ Rate limiting with IP anonymisation
-   - ✅ XSS prevention measures
-   - ✅ Honeytoken intrusion detection
-
-4. **Data Minimization**
-   - ✅ Only essential data collected
-   - ✅ No personal identifiers stored
-   - ✅ Anonymous analytics
-   - ✅ Rate-limit state ephemeral (10 s TTL)
-   - ✅ IP addresses always hashed before processing
-
-5. **Documentation**
-   - ✅ Privacy policy present (DE/EN)
-   - ✅ Legal notice (Impressum) present
-   - ✅ SECURITY.md with full architecture docs
-   - Consider adding data processing agreement for third parties
+| Admin authentication | Supabase Auth + HttpOnly cookies; optional TOTP MFA in the dashboard |
+| Input validation | Zod schemas on public and admin actions |
+| Rate limiting | Postgres sliding window, hashed IPs (`lib/rate-limit.ts`) |
+| SSRF protection | `lib/ssrf-guard.ts` on remote fetch |
+| XSS prevention | Sanitised hrefs, two-click iframe sandboxing |
+| Media | Cloudflare R2 only |
 
 ### Compliance Status
 
-**Overall GDPR Compliance: ✅ Good**
-
-The website demonstrates strong GDPR compliance with:
-- Transparent data practices
-- User consent mechanisms
-- Minimal data collection
-- Local-first data storage
-- Clear privacy policy
-- User control over data
-- GDPR-compliant attack defense (pseudonymised rate limiting)
+**Overall GDPR Compliance: ✅ Good** (runtime described by `docs/agent/security.md` and the legal templates — not by the former Vite/KV stack)
 
 ### Action Items
 
 Priority | Item | Status
 ---------|------|-------
 High | ✅ Cookie consent banner | Complete
-High | ✅ Privacy policy (DE/EN) | Complete
-High | ✅ Impressum/Legal notice | Complete
-High | ✅ Rate limiting with IP anonymisation | Complete
-High | ✅ Input validation (Zod) | Complete
-Medium | ⚠️ Review external service agreements | Pending
-Low | ⚠️ Enhanced consent logging | Optional
+High | ✅ Privacy policy (Art. 6 GDPR / § 25 TDDDG) | Complete
+High | ✅ Legal notice (§ 5 DDG) | Complete
+High | ✅ Rate limiting with IP hashing | Complete
+High | ✅ Two-click Spotify/YouTube | Complete
+Medium | ⚠️ Review processor DPAs in each provider dashboard | Operator
+Low | — BFSG certificate / extra a11y statement | Out of scope unless a concrete bug is named
 
 ### Contact
 
-For GDPR-related questions, refer to the Impressum for contact information.
+For GDPR-related questions, use the email in `/legal-notice`.

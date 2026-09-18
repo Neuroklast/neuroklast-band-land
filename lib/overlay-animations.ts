@@ -309,7 +309,7 @@ export function resolveOverlayAnimation(
   name?: string | null,
   reducedMotion?: boolean | null,
 ): OverlayAnimation {
-  if (reducedMotion) return NONE_OVERLAY_ANIMATION
+  if (reducedMotion === true) return NONE_OVERLAY_ANIMATION
   return getOverlayAnimationByName(name)
 }
 
@@ -339,11 +339,15 @@ export function parseOverlayAnimationPool(value: unknown): string[] {
   return []
 }
 
+export function overlayAnimationPoolKey(pool: string[] | undefined): string {
+  return pool && pool.length > 0 ? pool.join('|') : ''
+}
+
 export function pickOverlayAnimationFromPool(
   pool: string[] | undefined,
   reducedMotion?: boolean | null,
 ): OverlayAnimation {
-  if (reducedMotion) return NONE_OVERLAY_ANIMATION
+  if (reducedMotion === true) return NONE_OVERLAY_ANIMATION
   const names = pool && pool.length > 0 ? pool : getClipShellNames()
   const name = names[Math.floor(Math.random() * names.length)]
   return getOverlayAnimationByName(name)

@@ -114,10 +114,10 @@ export const umbrellaCorpPreset: DesignPreset = {
   animationsEnabled: true,
 }
 
-/** Zardonic Industrial — ember orange on near-black industrial theme */
-export const zardonicIndustrialPreset: DesignPreset = {
-  id: 'zardonic-industrial',
-  name: 'Zardonic Industrial',
+/** Neuroklast Industrial — ember orange on near-black industrial theme */
+export const neuroklastIndustrialPreset: DesignPreset = {
+  id: 'neuroklast-industrial',
+  name: 'Neuroklast Industrial',
   description: 'Industrial dark — near-black surface with high-contrast ember orange',
   colors: {
     primary: 'oklch(0.65 0.25 30)',
@@ -143,7 +143,8 @@ export const DESIGN_PRESETS: Record<string, DesignPreset> = {
   'minimal-dark': minimalDarkPreset,
   'glitch-noir': glitchNoirPreset,
   'umbrella-corp': umbrellaCorpPreset,
-  'zardonic-industrial': zardonicIndustrialPreset,
+  'neuroklast-industrial': neuroklastIndustrialPreset,
+  'zardonic-industrial': neuroklastIndustrialPreset,
 }
 
 export const PRESET_IDS = Object.keys(DESIGN_PRESETS) as (keyof typeof DESIGN_PRESETS)[]

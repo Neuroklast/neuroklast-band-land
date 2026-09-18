@@ -47,7 +47,7 @@ const NAV_DEFAULT_LABELS: Record<string, string> = {
   spotify: 'Listen',
 }
 
-/** Live neuroklast.net nav (Classic HUD) — not the Zardonic/CMS mega-menu. */
+/** Live neuroklast.net nav (Classic HUD) — not the Neuroklast/CMS mega-menu. */
 export const NEUROKLAST_NAV_SECTION_IDS = [
   'news',
   'bio',

@@ -1,9 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { Play, Warning } from '@phosphor-icons/react'
+import { useReducedMotion } from 'framer-motion'
+import { Warning } from '@phosphor-icons/react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { cn } from '@/lib/utils'
+import { EmbedConsentGate } from '@/components/motion/EmbedConsentGate'
+import { PhaseCrossfade } from '@/components/motion/PhaseCrossfade'
+import { useLinearProgress } from '@/hooks/use-linear-progress'
+import { MOTION } from '@/lib/motion-tokens'
 
 declare global {
   interface Window {
@@ -53,22 +58,17 @@ export function SpotifyEmbed({
   className,
 }: SpotifyEmbedProps) {
   const { t } = useLocale()
+  const reducedMotion = useReducedMotion() === true
   const [isLoaded, setIsLoaded] = useState(false)
   const [isPlayerReady, setIsPlayerReady] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const shellRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<SpotifyEmbedController | null>(null)
   const initializedRef = useRef(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleConsent = useCallback(() => setIsLoaded(true), [])
-
-  const handleConsentKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      setIsLoaded(true)
-    }
-  }, [])
 
   const handleRetry = useCallback(() => {
     setHasError(false)
@@ -87,10 +87,11 @@ export function SpotifyEmbed({
         timeoutRef.current = null
       }
 
+      const measured = shellRef.current?.clientHeight ?? 0
       const options: SpotifyEmbedOptions = {
         uri,
         width,
-        height,
+        height: measured > 0 ? measured : typeof height === 'number' ? height : 352,
         theme,
       }
 
@@ -161,29 +162,7 @@ export function SpotifyEmbed({
     }
   }, [createPlayer, isLoaded])
 
-  if (!isLoaded) {
-    return (
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label={t('spotify.loadPlayer')}
-        className={`flex flex-col items-center justify-center bg-black/40 border border-primary/20 cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all group rounded-none ${className}`}
-        style={{ width, height }}
-        onClick={handleConsent}
-        onKeyDown={handleConsentKeyDown}
-      >
-        <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/30 transition-transform">
-          <Play weight="fill" className="w-8 h-8 text-primary ml-1" />
-        </div>
-        <p className="mt-4 font-mono text-sm text-muted-foreground group-hover:text-primary transition-colors uppercase tracking-wider text-center px-4">
-          {t('spotify.loadPlayer')}<br/>
-          <span className="text-xs opacity-60 normal-case tracking-normal block mt-2">
-            {t('spotify.consentHint')}
-          </span>
-        </p>
-      </div>
-    )
-  }
+  const handoff = useLinearProgress(isLoaded && !hasError, MOTION.HANDOFF_MS, reducedMotion)
 
   if (hasError) {
     return (
@@ -207,46 +186,59 @@ export function SpotifyEmbed({
   }
 
   return (
-    <div className={cn('relative', className)} style={{ width, height }}>
-      {/* Skeleton loader shown until the Spotify controller fires its callback */}
-      {!isPlayerReady && (
-        <div
-          className="absolute inset-0 bg-black/40 border border-primary/20 flex flex-col gap-3 p-4 animate-pulse"
-          aria-label={t('spotify.loading')}
-          aria-live="polite"
-          aria-busy="true"
-        >
-          {/* Top bar: album art placeholder + text lines */}
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 shrink-0 bg-primary/10 rounded-sm" />
-            <div className="flex-1 space-y-2">
-              <div className="h-3 bg-primary/15 rounded-sm w-3/4" />
-              <div className="h-2 bg-primary/10 rounded-sm w-1/2" />
-            </div>
-          </div>
-          {/* Progress bar placeholder */}
-          <div className="h-1 bg-primary/10 rounded-full w-full mt-1">
-            <div className="h-1 bg-primary/20 rounded-full w-1/3" />
-          </div>
-          {/* Controls placeholder */}
-          <div className="flex items-center justify-center gap-4 mt-1">
-            <div className="w-5 h-5 bg-primary/10 rounded-full" />
-            <div className="w-8 h-8 bg-primary/15 rounded-full" />
-            <div className="w-5 h-5 bg-primary/10 rounded-full" />
-          </div>
-          {/* Track list skeletons */}
-          <div className="space-y-2 mt-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="w-4 h-3 bg-primary/10 rounded-sm shrink-0" />
-                <div className="h-2 bg-primary/10 rounded-sm flex-1" style={{ width: `${60 + i * 10}%` }} />
-                <div className="w-8 h-2 bg-primary/10 rounded-sm shrink-0" />
+    <div ref={shellRef} className={cn('relative h-full w-full', className)} style={{ width }}>
+      <PhaseCrossfade
+        className="h-full"
+        progress={isLoaded ? handoff : 0}
+        holdIncoming={isLoaded}
+        outgoing={
+          <EmbedConsentGate
+            ariaLabel={t('spotify.loadPlayer')}
+            title={t('spotify.loadPlayer')}
+            hint={t('spotify.consentHint')}
+            className="h-full w-full border-0"
+            onConsent={handleConsent}
+          />
+        }
+        incoming={
+          <div className="relative h-full w-full">
+            {!isPlayerReady && (
+              <div
+                className="absolute inset-0 bg-black/40 border border-primary/20 flex flex-col gap-3 p-4 animate-pulse"
+                aria-label={t('spotify.loading')}
+                aria-live="polite"
+                aria-busy="true"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 shrink-0 bg-primary/10 rounded-sm" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-primary/15 rounded-sm w-3/4" />
+                    <div className="h-2 bg-primary/10 rounded-sm w-1/2" />
+                  </div>
+                </div>
+                <div className="h-1 bg-primary/10 rounded-full w-full mt-1">
+                  <div className="h-1 bg-primary/20 rounded-full w-1/3" />
+                </div>
+                <div className="flex items-center justify-center gap-4 mt-1">
+                  <div className="w-5 h-5 bg-primary/10 rounded-full" />
+                  <div className="w-8 h-8 bg-primary/15 rounded-full" />
+                  <div className="w-5 h-5 bg-primary/10 rounded-full" />
+                </div>
+                <div className="space-y-2 mt-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-4 h-3 bg-primary/10 rounded-sm shrink-0" />
+                      <div className="h-2 bg-primary/10 rounded-sm flex-1" style={{ width: `${60 + i * 10}%` }} />
+                      <div className="w-8 h-2 bg-primary/10 rounded-sm shrink-0" />
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
+            <div ref={containerRef} className="w-full h-full" />
           </div>
-        </div>
-      )}
-      <div ref={containerRef} className="w-full h-full" />
+        }
+      />
     </div>
   )
 }

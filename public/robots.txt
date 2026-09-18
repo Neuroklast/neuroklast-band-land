@@ -1,4 +1,4 @@
-# https://zardonic.com
+# https://neuroklast.net
 # Crawlers: Please respect these access rules.
 
 User-agent: *
@@ -6,6 +6,7 @@ Allow: /
 
 # Private and restricted areas — access prohibited
 Disallow: /admin/
+Disallow: /nk-sec
 Disallow: /wp-admin/
 Disallow: /phpmyadmin/
 Disallow: /.env
@@ -102,4 +103,4 @@ Disallow: /
 User-agent: omi
 Disallow: /
 
-Sitemap: https://zardonic.com/sitemap.xml
+Sitemap: https://neuroklast.net/sitemap.xml
