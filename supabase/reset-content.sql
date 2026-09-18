@@ -1,5 +1,5 @@
 -- ============================================================
--- Zardonic Industrial – Reset content (NOT a factory reset)
+-- Neuroklast Industrial – Reset content (NOT a factory reset)
 --
 -- Run in Supabase Dashboard → SQL Editor. Deletes ALL editable
 -- content + stale sync state so you can re-import the site

@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion'
 import { OVERLAY_REVEAL_PHASE_DELAY_MS } from '@/lib/config'
 import { useOverlayBootProgress } from '@/hooks/use-overlay-boot-progress'
+import { HudReadout } from '@/components/motion/HudReadout'
+import { ProgressMeter } from '@/components/motion/ProgressMeter'
 
 export function OverlayIrisLock({
   durationMs = OVERLAY_REVEAL_PHASE_DELAY_MS,
@@ -37,10 +39,13 @@ export function OverlayIrisLock({
           />
         ))}
       </div>
-      <div className="flex w-28 items-center justify-between font-mono text-[9px] uppercase tracking-widest text-primary/50">
-        <span>F {fStop}</span>
-        <span className="tabular-nums">{pct}%</span>
-      </div>
+      <HudReadout
+        items={[
+          { label: 'F', value: fStop },
+          { label: 'LOCK', value: pct >= 100 ? 'SEAL' : 'ARM', hot: pct >= 100 },
+        ]}
+      />
+      <ProgressMeter progress={pct / 100} className="w-28" />
     </div>
   )
 }

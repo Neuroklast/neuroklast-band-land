@@ -64,7 +64,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
       case 'bandsintown':
         return (
           <>
-            <Field label={t('widgetConfig.artistName') || 'Artist Name'} hint="e.g. Zardonic">
+            <Field label={t('widgetConfig.artistName') || 'Artist Name'} hint="e.g. Neuroklast">
               <Input
                 value={String(config.artist ?? '')}
                 onChange={(e) => set('artist', e.target.value)}
@@ -531,7 +531,7 @@ export default function WidgetConfigDialog({ widget, onSave, onClose }: WidgetCo
               <Input
                 value={String(config.artistName ?? '')}
                 onChange={(e) => set('artistName', e.target.value)}
-                placeholder="Zardonic"
+                placeholder="Neuroklast"
                 className="bg-secondary border-input text-sm"
               />
             </Field>

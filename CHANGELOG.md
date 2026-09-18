@@ -8,7 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Overlay frame glow animates opacity on a `::after` layer (no `box-shadow` keyframes / extra panel blur).
+- Overlay close plays reverse boot then clip exit; frame glow pulses; panel is translucent.
+- Spotify/YouTube consent is one HUD click (no latch); Spotify embed uses pixel height so the player fills LISTEN.
+- Hatch handoff: grid stack (no clipped content), closed doors at 0, embed gate→player crossfade, grant-timeout cleanup.
+- Cookie banner and setup copy cite **§ 25 TDDDG** / **§ 5 DDG** (removed leftover TTDSG and TMG).
+- `/sitemap.xml` is the dynamic API sitemap again (`public/sitemap.xml` no longer shadows the rewrite).
+- HTTP requests with `x-forwarded-proto: http` 308 to HTTPS (`proxy.ts`).
+- Gig and news overlay images use content `alt` text.
+
 ### Added
+
+- Hatch motion kit (`LatchRail`, `PhaseCrossfade`, `HudReadout`) — terminal arm→hatch→live, overlay boot handoff, YouTube/Spotify jack-in.
+- Root metadata: `metadataBase`, title template, Open Graph / Twitter image, apple icon.
+
 
 - **`src/base.css`** — CSS split: base styles, CSS reset, CSS variables (`:root`), and
   theme foundations (`@theme`) extracted from `src/index.css` for faster initial parse.

@@ -115,12 +115,12 @@ Before closing the session, update:
 
 | File | Purpose |
 |------|---------|
-| `src/components/Hero.tsx` | Hero section, logo, title image, glitch effects |
+| `app/_components/public/HeroSection.tsx` | Hero section, logo, title image, glitch effects |
 | `src/index.css` | Global CSS, all custom utility classes |
 | `vercel.json` | Security headers (CSP, HSTS, etc.), URL rewrites |
 | `api/_schemas.ts` | Zod validation schemas for all API endpoints |
 | `api/_ratelimit.ts` | Rate limiting implementation |
-| `middleware.ts` | Vercel Edge Middleware — circuit breaker, IP gate |
+| `proxy.ts` | Next.js request proxy — auth gate, bot shield, IP gate (`middleware.ts` is not used) |
 | `app/api/terminal/route.ts` | Secret Terminal API endpoint |
 | `src/lib/config.ts` | Global configuration constants |
 | `src/lib/types.ts` | Shared TypeScript types |

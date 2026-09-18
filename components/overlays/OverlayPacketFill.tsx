@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion'
 import { OVERLAY_REVEAL_PHASE_DELAY_MS } from '@/lib/config'
 import { useOverlayBootProgress } from '@/hooks/use-overlay-boot-progress'
+import { HudReadout } from '@/components/motion/HudReadout'
+import { ProgressMeter } from '@/components/motion/ProgressMeter'
 
 const BAR_HEIGHTS = [40, 70, 55, 100, 45, 80, 60, 35]
 const TARGET = 4096
@@ -31,21 +33,13 @@ export function OverlayPacketFill({
           />
         ))}
       </div>
-      <div className="flex w-32 items-center justify-between font-mono text-[9px] uppercase tracking-widest text-primary/50">
-        <span>RX {String(rx).padStart(4, '0')}</span>
-        <span>TX {String(tx).padStart(4, '0')}</span>
-      </div>
-      <div className="flex w-32 items-center gap-2">
-        <div className="h-0.5 flex-1 overflow-hidden bg-primary/20">
-          <motion.div
-            className="h-full origin-left bg-primary"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: durationMs / 1000, ease: 'linear' }}
-          />
-        </div>
-        <span className="font-mono text-[9px] tabular-nums text-primary/50">{pct}%</span>
-      </div>
+      <HudReadout
+        items={[
+          { label: 'RX', value: String(rx).padStart(4, '0') },
+          { label: 'TX', value: String(tx).padStart(4, '0') },
+        ]}
+      />
+      <ProgressMeter progress={pct / 100} className="w-32" />
     </div>
   )
 }

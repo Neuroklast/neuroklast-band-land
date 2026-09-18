@@ -14,7 +14,7 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
         {t('nav.language')}
       </p>
       <div
-        className="flex max-w-xl flex-wrap items-center justify-center gap-2"
+        className="flex max-w-xl flex-wrap items-center justify-center gap-1.5 sm:gap-2"
         role="group"
         aria-label={t('nav.language')}
       >
@@ -28,7 +28,7 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
               aria-pressed={active}
               aria-label={language.label}
               title={language.label}
-              className={`inline-flex min-h-[44px] min-w-[3.25rem] items-center justify-center border px-3 font-mono text-xs uppercase tracking-[0.18em] transition-colors ${
+              className={`inline-flex min-h-[44px] min-w-[2.75rem] items-center justify-center border px-2.5 font-mono text-[11px] uppercase tracking-[0.16em] sm:min-w-[3.25rem] sm:px-3 sm:text-xs sm:tracking-[0.18em] transition-colors ${
                 active
                   ? 'border-primary bg-primary/15 text-primary'
                   : 'border-border/80 text-muted-foreground hover:border-primary/60 hover:text-foreground'

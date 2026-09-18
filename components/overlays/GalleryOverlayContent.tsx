@@ -103,7 +103,7 @@ export function GalleryOverlayContent({ data }: GalleryOverlayContentProps) {
   const alt = alts?.[currentIndex] ?? ''
 
   return (
-    <div className="flex min-h-[min(60vh,520px)] flex-col">
+    <div className="flex min-h-0 flex-col">
       <div
         className="mb-4 data-label text-center"
         style={{ fontFamily: 'var(--font-mono, monospace)' }}
@@ -111,7 +111,7 @@ export function GalleryOverlayContent({ data }: GalleryOverlayContentProps) {
         // GALLERY.VIEW [{currentIndex + 1}/{images.length}]
       </div>
 
-      <div className="relative flex min-h-[min(50vh,440px)] flex-1 items-center justify-center">
+      <div className="relative flex min-h-[min(36svh,320px)] flex-1 items-center justify-center sm:min-h-[min(50vh,440px)]">
         <button
           type="button"
           className="absolute left-0 top-1/2 z-10 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-primary md:left-1"
@@ -121,7 +121,7 @@ export function GalleryOverlayContent({ data }: GalleryOverlayContentProps) {
           <CaretLeft className="h-10 w-10" />
         </button>
 
-        <div className="relative h-[min(55vh,480px)] w-full overflow-hidden px-12 md:px-16">
+        <div className="relative h-[min(38svh,360px)] w-full overflow-hidden px-12 sm:h-[min(55vh,480px)] md:px-16">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.img
               key={page}

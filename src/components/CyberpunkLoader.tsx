@@ -179,7 +179,7 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Gradient background overlay for 3d-model type (matches zardonic loading screen) */}
+      {/* Gradient background overlay for 3d-model type (matches neuroklast loading screen) */}
       {loadingScreenType === '3d-model' && (
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
       )}
@@ -205,7 +205,7 @@ export default function CyberpunkLoader({ onLoadComplete, precacheUrls = [], sit
         </div>
       )}
 
-      {/* Vertical light-rain particles for 3d-model type (matches zardonic loading screen) */}
+      {/* Vertical light-rain particles for 3d-model type (matches neuroklast loading screen) */}
       {loadingScreenType === '3d-model' && lightRainParams.map((params, i) => (
         <motion.div
           key={`rain-${i}`}

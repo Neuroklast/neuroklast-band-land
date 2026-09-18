@@ -945,7 +945,7 @@ export interface DesignPreset {
     mutedForeground: string
     border: string
     secondary: string
-    // Extended optional colors matching the zardonic ThemeCustomization interface
+    // Extended optional colors matching the neuroklast ThemeCustomization interface
     primaryForeground?: string
     cardForeground?: string
     popoverColor?: string
@@ -1081,7 +1081,7 @@ export interface ThemeDefinition {
   description?: string
   previewImageUrl?: string
   licenseStatus: ThemeLicenseStatus
-  /** Key prefix used to validate theme-specific license keys, e.g. 'ZARDONIC-' */
+  /** Key prefix used to validate theme-specific license keys, e.g. 'NEUROKLAST-' */
   licenseKeyPrefix?: string
   theme: ThemeSettings
   author?: string

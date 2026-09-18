@@ -147,6 +147,8 @@ export function processLogoToWhiteSilhouette(
 /** Raster size for white-fill canvas: upscale tiny SVG defaults, cap huge assets. */
 export const PARTNER_LOGO_RASTER_MIN = 512
 export const PARTNER_LOGO_RASTER_MAX = 1024
+/** Display logos are ~64px; 320px is enough for 2× DPR without a 1024px pixel walk. */
+export const PARTNER_LOGO_CANVAS_MAX = 320
 
 export function isSvgLogoUrl(url: string): boolean {
   if (!url) return false

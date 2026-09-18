@@ -12,7 +12,7 @@ export function getGigShareUrl(gigId: string, origin?: string): string {
 
 export function buildGigSharePayload(gig: Gig, artistName: string, origin?: string) {
   const url = getGigShareUrl(gig.id, origin)
-  const title = `${artistName} @ ${gig.venue}`
+  const title = gig.title ? `${artistName} — ${gig.title}` : `${artistName} @ ${gig.venue}`
   const text = [formatIsoDateLong(gig.date), gig.location].filter(Boolean).join(' — ')
   return { title, text, url }
 }
