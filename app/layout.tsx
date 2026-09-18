@@ -124,7 +124,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { customTranslations, analyticsConfig, languages, appearance, terminal } =
+  const { customTranslations, analyticsConfig, languages, appearance, terminal, artistName } =
     await getPublicSiteBootstrap()
 
   const fonts = resolvePublicFonts(appearance.theme)
@@ -159,6 +159,7 @@ export default async function RootLayout({
           languages={languages}
           appearance={appearance}
           terminal={terminal}
+          artistName={artistName}
         >
           {children}
         </Providers>

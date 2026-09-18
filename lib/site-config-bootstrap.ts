@@ -15,6 +15,13 @@ export interface PublicSiteBootstrap {
   /** Full appearance row for fonts/effects — applied on every public page. */
   appearance: AppearanceConfigInput
   terminal: TerminalConfig
+  artistName: string
+}
+
+function parseArtistName(raw: unknown): string {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return 'NEUROKLAST'
+  const headline = (raw as Record<string, unknown>).headline
+  return typeof headline === 'string' && headline.trim() ? headline.trim() : 'NEUROKLAST'
 }
 
 function parseAppearanceBootstrap(raw: unknown): AppearanceConfigInput {
@@ -53,7 +60,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
     const { data } = await supabase
       .from('site_config')
       .select('key, value')
-      .in('key', ['translations', 'analytics', 'languages', 'appearance', 'terminal'])
+      .in('key', ['translations', 'analytics', 'languages', 'appearance', 'terminal', 'hero'])
 
     const rows = (data ?? []) as Array<{ key: string; value: unknown }>
     const rowMap = Object.fromEntries(rows.map((row) => [row.key, row.value]))
@@ -63,6 +70,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       languages: parseLanguagesConfig(rowMap.languages),
       appearance: parseAppearanceBootstrap(rowMap.appearance),
       terminal: parseTerminalConfig(rowMap.terminal),
+      artistName: parseArtistName(rowMap.hero),
     }
   } catch {
     return {
@@ -71,6 +79,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       languages: parseLanguagesConfig(null),
       appearance: {},
       terminal: parseTerminalConfig(null),
+      artistName: 'NEUROKLAST',
     }
   }
 }

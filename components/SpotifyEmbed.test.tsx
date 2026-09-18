@@ -58,11 +58,12 @@ describe('SpotifyEmbed', () => {
   })
 
   it('placeholder has role=button and aria-label', () => {
-    const { getByRole } = renderEmbed(
+    const { getByRole, queryByRole } = renderEmbed(
       <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
     )
     const btn = getByRole('button', { name: /Load Spotify Player/i })
     expect(btn).toBeInTheDocument()
+    expect(queryByRole('slider')).not.toBeInTheDocument()
   })
 
   it('placeholder is keyboard-focusable (tabIndex=0)', () => {

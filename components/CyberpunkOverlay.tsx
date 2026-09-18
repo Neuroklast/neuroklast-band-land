@@ -37,27 +37,10 @@ const OVERLAY_LOADING_TEXTS = [
   '> IDENTITY VERIFIED',
 ]
 
-const DEFAULT_MODAL_GLOW = 'rgba(180, 50, 50, 0.3)'
-const INTERIOR_REVEAL_MS = 1000
+const OVERLAY_CLOSE_TEXT = '> DROPPING LINK...'
+const OVERLAY_CLOSE_LABEL = 'LINK DROP'
 
-function resolveModalGlow(adminSettings: AdminSettings | undefined, alpha: number): string {
-  const fromAdmin = adminSettings?.design?.theme?.modalGlowColor
-  if (fromAdmin) {
-    if (fromAdmin.startsWith('rgba') || fromAdmin.startsWith('rgb')) return fromAdmin
-    return `color-mix(in srgb, ${fromAdmin} ${Math.round(alpha * 100)}%, transparent)`
-  }
-  if (typeof document !== 'undefined') {
-    const cssVar = getComputedStyle(document.documentElement).getPropertyValue('--modal-glow').trim()
-    if (cssVar) {
-      return `color-mix(in srgb, ${cssVar} ${Math.round(alpha * 100)}%, transparent)`
-    }
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
-    if (accent) {
-      return `color-mix(in srgb, ${accent} ${Math.round(alpha * 100)}%, transparent)`
-    }
-  }
-  return DEFAULT_MODAL_GLOW.replace('0.3', String(alpha))
-}
+const INTERIOR_REVEAL_MS = 1000
 
 interface CyberpunkOverlayProps {
   overlay: CyberpunkOverlayState | null
@@ -86,15 +69,37 @@ export default function CyberpunkOverlay({
   const overlaySessionKey = getOverlaySessionKey(overlay)
   const panelRef = useRef<HTMLDivElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
+  const [held, setHeld] = useState<CyberpunkOverlayState | null>(overlay)
 
   const poolKey = overlayAnimationPoolKey(overlayAnimations)
   const anim = useMemo(() => {
     void overlaySessionKey
     return pickOverlayAnimationFromPool(poolKey ? poolKey.split('|') : undefined, reducedMotion)
   }, [overlaySessionKey, poolKey, reducedMotion])
+  const [heldAnim, setHeldAnim] = useState(anim)
+  const displayAnim = overlay ? anim : heldAnim
 
-  const skipBoot = reducedMotion || overlay?.type === 'terminal'
-  const handoff = useLinearProgress(overlayPhase === 'revealed' || skipBoot, MOTION.HANDOFF_MS, skipBoot)
+  useEffect(() => {
+    if (!overlay) return
+    setHeld(overlay)
+    setHeldAnim(anim)
+  }, [overlay, anim])
+
+  const skipCloseAnim = reducedMotion || held?.type === 'terminal'
+  const closing = !overlay && held !== null && !skipCloseAnim
+  const displayOverlay = overlay ?? (closing ? held : null)
+  const displaySessionKey = getOverlaySessionKey(displayOverlay)
+
+  const skipBoot = reducedMotion || displayOverlay?.type === 'terminal'
+  const openHandoff = useLinearProgress(overlayPhase === 'revealed' || skipBoot, MOTION.HANDOFF_MS, skipBoot)
+  const closeProgress = useLinearProgress(closing, MOTION.CLOSE_MS, reducedMotion)
+  const handoff = closing ? 1 - closeProgress : openHandoff
+
+  useEffect(() => {
+    if (!closing) return
+    if (closeProgress < 1) return
+    setHeld(null)
+  }, [closing, closeProgress])
 
   const systemLabel =
     decorativeTexts?.overlaySystemLabel ??
@@ -141,7 +146,7 @@ export default function CyberpunkOverlay({
   }, [overlaySessionKey, reducedMotion, anim.interior, overlay?.type])
 
   useEffect(() => {
-    if (!overlaySessionKey) return
+    if (!displaySessionKey) return
     document.documentElement.classList.add('nk-scroll-lock')
     document.body.classList.add('nk-scroll-lock')
     lenis?.stop()
@@ -150,10 +155,10 @@ export default function CyberpunkOverlay({
       document.body.classList.remove('nk-scroll-lock')
       lenis?.start()
     }
-  }, [overlaySessionKey, lenis])
+  }, [displaySessionKey, lenis])
 
   useEffect(() => {
-    if (!overlaySessionKey) return
+    if (!displaySessionKey) return
 
     lastFocusedRef.current =
       document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -176,7 +181,7 @@ export default function CyberpunkOverlay({
         panelRef.current.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ),
-      ).filter((el) => !el.hasAttribute('disabled') && el.tabIndex !== -1)
+      ).filter((el) => !el.hasAttribute('disabled') && el.tabIndex !== -1 && !el.closest('[inert]'))
 
       if (focusable.length === 0) return
 
@@ -201,20 +206,19 @@ export default function CyberpunkOverlay({
       window.clearTimeout(focusTimer)
       lastFocusedRef.current?.focus?.()
     }
-  }, [overlaySessionKey, onClose])
+  }, [displaySessionKey, onClose])
 
-  const sessionKey = overlaySessionKey ?? overlay?.type ?? 'overlay'
-  const glowOuter = overlay ? resolveModalGlow(adminSettings, 0.22) : DEFAULT_MODAL_GLOW
+  const sessionKey = displaySessionKey ?? displayOverlay?.type ?? 'overlay'
 
   return (
     <AnimatePresence>
-      {overlay ? (
+      {displayOverlay ? (
         <motion.div
           key={`${sessionKey}-backdrop`}
-          initial={anim.backdrop.initial}
-          animate={anim.backdrop.animate}
-          exit={anim.backdrop.exit}
-          transition={anim.backdrop.transition ?? { duration: 0.3 }}
+          initial={displayAnim.backdrop.initial}
+          animate={displayAnim.backdrop.animate}
+          exit={displayAnim.backdrop.exit}
+          transition={displayAnim.backdrop.transition ?? { duration: 0.3 }}
           className="cyberpunk-overlay-bg fixed inset-0 bg-black/45 backdrop-blur-md"
           style={{ zIndex: 'var(--z-overlay)' } as React.CSSProperties}
           onClick={onClose}
@@ -228,18 +232,16 @@ export default function CyberpunkOverlay({
               role="dialog"
               aria-modal="true"
               aria-labelledby="cyberpunk-overlay-title"
-              initial={{ ...anim.modal.initial, boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
-              animate={{
-                ...anim.modal.animate,
-                boxShadow: `0 0 28px ${glowOuter}`,
-              }}
-              exit={anim.modal.exit}
-              transition={anim.modal.transition ?? { duration: reducedMotion ? 0 : 0.3 }}
+              initial={displayAnim.modal.initial}
+              animate={displayAnim.modal.animate}
+              exit={displayAnim.modal.exit}
+              transition={displayAnim.modal.transition ?? { duration: reducedMotion ? 0 : 0.3 }}
               data-theme-color="card card-foreground border"
               data-cyberpunk-modal=""
               data-overlay-clip=""
-              data-overlay-animation={anim.name}
-              className="theme-overlay-modal-chrome relative flex h-[100svh] max-h-[100svh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect box-border pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh] md:pt-0"
+              data-overlay-animation={displayAnim.name}
+              data-overlay-closing={closing ? '' : undefined}
+              className="theme-overlay-modal-chrome relative flex h-[100svh] max-h-[100svh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/80 pointer-events-auto scanline-effect box-border pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh] md:pt-0"
               onClick={(e) => e.stopPropagation()}
             >
               <motion.div
@@ -301,65 +303,66 @@ export default function CyberpunkOverlay({
               <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y scrollbar-hide">
                 <PhaseCrossfade
                   progress={handoff}
+                  holdIncoming={overlayPhase === 'revealed' || skipBoot}
                   outgoing={
-                    anim.interior ? (
-                      <OverlayBootInterior interior={anim.interior} />
+                    displayAnim.interior ? (
+                      <OverlayBootInterior interior={displayAnim.interior} />
                     ) : (
                       <OverlayShellLoader
-                        loaderClass={anim.loaderClass}
-                        loaderLabel={anim.loaderLabel}
-                        loadingText={loadingText}
+                        loaderClass={displayAnim.loaderClass}
+                        loaderLabel={closing ? OVERLAY_CLOSE_LABEL : displayAnim.loaderLabel}
+                        loadingText={closing ? OVERLAY_CLOSE_TEXT : loadingText}
                       />
                     )
                   }
                   incoming={
                     <div className="p-4 pt-14 md:p-12 md:pt-12">
-                      {overlay.type === 'contact' && (
+                      {displayOverlay.type === 'contact' && (
                         <ContactOverlayContent adminSettings={adminSettings} decorativeTexts={decorativeTexts} />
                       )}
 
-                      {overlay.type === 'member' && overlay.data && (
-                        <MemberOverlayContent data={overlay.data} decorativeTexts={decorativeTexts} />
+                      {displayOverlay.type === 'member' && displayOverlay.data && (
+                        <MemberOverlayContent data={displayOverlay.data} decorativeTexts={decorativeTexts} />
                       )}
 
-                      {overlay.type === 'gig' && overlay.data && (
-                        <GigOverlayContent data={overlay.data} artistName={artistName} decorativeTexts={decorativeTexts} />
+                      {displayOverlay.type === 'gig' && displayOverlay.data && (
+                        <GigOverlayContent data={displayOverlay.data} artistName={artistName} decorativeTexts={decorativeTexts} />
                       )}
 
-                      {overlay.type === 'release' && overlay.data && (
+                      {displayOverlay.type === 'release' && displayOverlay.data && (
                         <ReleaseOverlayContent
-                          data={overlay.data}
+                          data={displayOverlay.data}
                           sectionLabels={adminSettings?.labels}
                           mainArtistName={artistName}
                         />
                       )}
 
-                      {overlay.type === 'release' && !overlay.data && (
+                      {displayOverlay.type === 'release' && !displayOverlay.data && (
                         <p className="text-sm font-mono text-muted-foreground">Release data unavailable.</p>
                       )}
 
-                      {overlay.type === 'gallery' && overlay.data && (
-                        <GalleryOverlayContent data={overlay.data} />
+                      {displayOverlay.type === 'gallery' && displayOverlay.data && (
+                        <GalleryOverlayContent data={displayOverlay.data} />
                       )}
 
-                      {overlay.type === 'media' && overlay.data && (
-                        <MediaOverlayContent data={overlay.data} />
+                      {displayOverlay.type === 'media' && displayOverlay.data && (
+                        <MediaOverlayContent data={displayOverlay.data} />
                       )}
 
-                      {overlay.type === 'news' && overlay.data && (
-                        <NewsOverlayContent data={overlay.data} />
+                      {displayOverlay.type === 'news' && displayOverlay.data && (
+                        <NewsOverlayContent data={displayOverlay.data} />
                       )}
 
-                      {overlay.type === 'explorer' && overlay.data && (
-                        <MediaExplorerBody files={toExplorerFiles(overlay.data.items)} />
+                      {displayOverlay.type === 'explorer' && displayOverlay.data && (
+                        <MediaExplorerBody files={toExplorerFiles(displayOverlay.data.items)} />
                       )}
 
-                      {overlay.type === 'terminal' && (
+                      {displayOverlay.type === 'terminal' && (
                         <SecretTerminalContent siteName={artistName} />
                       )}
 
-                      {overlay.type === 'partner' && overlay.data && (
-                        <PartnerOverlayContent data={overlay.data} />
+                      {displayOverlay.type === 'partner' && displayOverlay.data && (
+                        <PartnerOverlayContent data={displayOverlay.data} />
                       )}
                     </div>
                   }

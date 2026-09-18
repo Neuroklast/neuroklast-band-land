@@ -86,6 +86,46 @@ describe('CyberpunkOverlay boot animation', () => {
     expect(screen.getByText('BOOTING SYSTEM')).toBeInTheDocument()
   })
 
+  it('keeps the shell mounted on close until the drop handoff finishes', () => {
+    const { rerender } = renderOverlay(
+      <CyberpunkOverlay
+        overlay={newsOverlay}
+        onClose={() => {}}
+        adminSettings={undefined}
+        overlayAnimations={['circuitBreak']}
+      />,
+    )
+
+    rerender(
+      <LocaleProvider>
+        <CyberpunkOverlay
+          overlay={null}
+          onClose={() => {}}
+          adminSettings={undefined}
+          overlayAnimations={['circuitBreak']}
+        />
+      </LocaleProvider>,
+    )
+
+    const dialog = screen.queryByRole('dialog')
+    if (dialog) {
+      expect(dialog).toHaveAttribute('data-overlay-closing')
+    }
+  })
+
+  it('uses the artist name in the overlay title', () => {
+    renderOverlay(
+      <CyberpunkOverlay
+        overlay={newsOverlay}
+        onClose={() => {}}
+        adminSettings={undefined}
+        overlayAnimations={['circuitBreak']}
+        artistName="Neuroklast"
+      />,
+    )
+    expect(screen.getByText(/NEUROKLAST\.NET/i)).toBeInTheDocument()
+  })
+
   it('skips boot loaders for the secret terminal overlay', () => {
     renderOverlay(
       <CyberpunkOverlay

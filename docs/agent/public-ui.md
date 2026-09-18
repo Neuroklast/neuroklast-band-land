@@ -52,7 +52,7 @@ Rules:
 
 1. State type: `CyberpunkOverlayState` in `lib/app-types.ts`.
 2. Session key: `lib/overlay-session.ts` (include enough identity to re-animate on reopen).
-3. Shell owns: backdrop, corners, scanlines, boot→content **PhaseCrossfade** (no XOR unmount), close button, glow, **Lenis + body scroll lock**.
+3. Shell owns: backdrop, corners, scanlines, boot→content **PhaseCrossfade**, **close reverse-boot then clip exit**, frame glow pulse, close button, **Lenis + body scroll lock**. Title uses site name (`artistName` from OverlayHost).
 4. Content components own **only** inner body (no second fixed fullscreen chrome).
 5. Gallery: swipe/dots/arrows in `GalleryOverlayContent` — not a parallel lightbox component for production UI.
 6. Media download images use overlay type `media` (preview + download). Do **not** run those files through the partner white-silhouette pipeline — they are download originals.
@@ -77,7 +77,7 @@ Built-ins: `help`, `clear`, `exit`, `glitch`, `matrix`. Custom commands cannot o
 
 ### Two-click embeds
 
-YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: compact `LatchRail` plus an explicit load button. Iframe / Spotify script loads **only after** consent (seal **or** button). Never auto-load. Cookie banner is **not** a hatch slider.
+YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: one HUD click (no latch). Iframe / Spotify script loads **only after** that click. Spotify IFrame height is the box pixel height (232 mobile / 352 desktop), not `"100%"`. Cookie banner is **not** a hatch slider.
 
 ---
 

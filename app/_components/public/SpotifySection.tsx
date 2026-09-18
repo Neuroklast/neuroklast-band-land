@@ -22,7 +22,7 @@ export function SpotifySection({ uri, heading, intro }: SpotifySectionProps) {
       </SectionHeading>
       <SectionIntro sectionId="spotify">{intro}</SectionIntro>
       <div className="h-[232px] w-full overflow-hidden border border-border sm:h-[352px]">
-        <SpotifyEmbed uri={uri} height="100%" className="h-full w-full" />
+        <SpotifyEmbed uri={uri} height={352} className="h-full w-full" />
       </div>
     </SectionWrapper>
   )
