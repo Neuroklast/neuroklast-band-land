@@ -148,4 +148,11 @@ describe('overlay loader CSS', () => {
     expect(css).not.toMatch(/\.overlay-loader-circuit,\s*\n\.overlay-loader-boot/)
     expect(css).not.toMatch(/overlay-loader-blink/)
   })
+
+  it('does not animate overlay frame glow via box-shadow keyframes', () => {
+    const css = readFileSync(resolve('themes/neuroklast-classic/styles.css'), 'utf8')
+    const glow = css.slice(css.indexOf('@keyframes overlay-frame-glow'))
+    expect(glow).toMatch(/opacity/)
+    expect(glow.slice(0, 280)).not.toMatch(/box-shadow/)
+  })
 })

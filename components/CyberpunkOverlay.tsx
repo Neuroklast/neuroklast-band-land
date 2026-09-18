@@ -219,7 +219,7 @@ export default function CyberpunkOverlay({
           animate={displayAnim.backdrop.animate}
           exit={displayAnim.backdrop.exit}
           transition={displayAnim.backdrop.transition ?? { duration: 0.3 }}
-          className="cyberpunk-overlay-bg fixed inset-0 bg-black/45 backdrop-blur-md"
+          className="cyberpunk-overlay-bg fixed inset-0 bg-black/45 backdrop-blur-sm"
           style={{ zIndex: 'var(--z-overlay)' } as React.CSSProperties}
           onClick={onClose}
         >

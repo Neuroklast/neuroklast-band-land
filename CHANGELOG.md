@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Overlay frame glow animates opacity on a `::after` layer (no `box-shadow` keyframes / extra panel blur).
 - Overlay close plays reverse boot then clip exit; frame glow pulses; panel is translucent.
 - Spotify/YouTube consent is one HUD click (no latch); Spotify embed uses pixel height so the player fills LISTEN.
 - Hatch handoff: grid stack (no clipped content), closed doors at 0, embed gate→player crossfade, grant-timeout cleanup.
