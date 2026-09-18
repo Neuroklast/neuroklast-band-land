@@ -1,8 +1,9 @@
 import type { Gig } from '@/lib/app-types'
+import { normalizeGigStatus, isSoldOutStatus } from '@/lib/gig-status'
 import { resolveImageUrl } from '@/lib/r2'
 
 export const GIG_PUBLIC_COLUMNS =
-  'id, title, venue, city, country, event_date, ticket_url, festival_name, description, gig_type, photo_storage_path, photo_url, event_links'
+  'id, title, venue, city, country, event_date, ticket_url, festival_name, description, gig_type, status, sold_out, photo_storage_path, photo_url, event_links'
 
 export const GIG_TYPE_OPTIONS = [
   { value: 'gig', label: 'Gig' },
@@ -24,6 +25,8 @@ export interface PublicGigRow {
   festival_name: string | null
   description?: string | null
   gig_type?: string | null
+  status?: string | null
+  sold_out?: boolean | null
   photo_storage_path?: string | null
   photo_url?: string | null
   event_links?: Record<string, unknown> | null
@@ -99,6 +102,8 @@ export function mapGigRowToOverlayGig(row: PublicGigRow): Gig {
     description: row.description?.trim() || undefined,
     startsAt: gigHasClockTime(row.event_date) ? row.event_date : undefined,
     gigType: gigTypeLabel(row.gig_type),
+    status: normalizeGigStatus(row.status),
+    soldOut: row.sold_out === true || isSoldOutStatus(row.status),
     photoUrl: resolveImageUrl(row.photo_storage_path, row.photo_url) ?? undefined,
     eventUrl: eventPageUrlFromLinks(row.event_links),
   }

@@ -4,9 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import type { GalleryOverlayData } from '@/lib/app-types'
+import { OverlayItem, OverlayReveal } from '@/components/motion/overlay-motion'
 
 interface GalleryOverlayContentProps {
   data: GalleryOverlayData
+  closing?: boolean
 }
 
 const swipeConfidenceTolerance = 8000
@@ -33,7 +35,7 @@ const imageVariants = {
  * Gallery lightbox body — rendered inside CyberpunkOverlay (same chrome as
  * releases / events). Only the image stage + controls live here.
  */
-export function GalleryOverlayContent({ data }: GalleryOverlayContentProps) {
+export function GalleryOverlayContent({ data, closing }: GalleryOverlayContentProps) {
   const { images, initialIndex, alts } = data
   // initialIndex is fixed for an overlay session (session key includes it)
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
@@ -103,15 +105,20 @@ export function GalleryOverlayContent({ data }: GalleryOverlayContentProps) {
   const alt = alts?.[currentIndex] ?? ''
 
   return (
-    <div className="flex min-h-0 flex-col">
-      <div
+    <OverlayReveal className="flex min-h-0 flex-col" closing={closing} stagger={0.06}>
+      <OverlayItem
         className="mb-4 data-label text-center"
-        style={{ fontFamily: 'var(--font-mono, monospace)' }}
+        delay={0.04}
       >
-        // GALLERY.VIEW [{currentIndex + 1}/{images.length}]
-      </div>
+        <span style={{ fontFamily: 'var(--font-mono, monospace)' }}>
+          // GALLERY.VIEW [{currentIndex + 1}/{images.length}]
+        </span>
+      </OverlayItem>
 
-      <div className="relative flex min-h-[min(36svh,320px)] flex-1 items-center justify-center sm:min-h-[min(50vh,440px)]">
+      <OverlayItem
+        className="relative flex min-h-[min(36svh,320px)] flex-1 items-center justify-center sm:min-h-[min(50vh,440px)]"
+        delay={0.1}
+      >
         <button
           type="button"
           className="absolute left-0 top-1/2 z-10 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-primary md:left-1"
@@ -155,9 +162,9 @@ export function GalleryOverlayContent({ data }: GalleryOverlayContentProps) {
         >
           <CaretRight className="h-10 w-10" />
         </button>
-      </div>
+      </OverlayItem>
 
-      <div className="mt-4 flex shrink-0 justify-center gap-0.5 px-2">
+      <OverlayItem className="mt-4 flex shrink-0 justify-center gap-0.5 px-2" delay={0.16}>
         {images.map((_, index) => (
           <button
             key={index}
@@ -175,7 +182,7 @@ export function GalleryOverlayContent({ data }: GalleryOverlayContentProps) {
             />
           </button>
         ))}
-      </div>
-    </div>
+      </OverlayItem>
+    </OverlayReveal>
   )
 }

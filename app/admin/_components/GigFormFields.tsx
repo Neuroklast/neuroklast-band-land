@@ -186,10 +186,23 @@ export function GigFormFields({
           >
             <option value="confirmed">Confirmed</option>
             <option value="announced">Announced</option>
-            <option value="canceled">Canceled</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </AdminField>
       </div>
+
+      <AdminField id="gig-soldout" label="Ticket status">
+        <label className="flex min-h-[44px] items-center gap-3 text-sm text-zinc-300">
+          <input
+            id="gig-soldout"
+            name="sold_out"
+            type="checkbox"
+            defaultChecked={gig?.sold_out === true}
+            className="h-4 w-4"
+          />
+          Sold out
+        </label>
+      </AdminField>
 
       <AdminField id="gig-tickets" label="Ticket link">
         <input

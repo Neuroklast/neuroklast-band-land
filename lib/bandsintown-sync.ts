@@ -36,6 +36,7 @@ export interface BandsintownGigRow {
   ticket_url: string | null
   festival_name: string | null
   description: string | null
+  sold_out: boolean
   bandsintown_id: string
   active: boolean
 }
@@ -91,7 +92,6 @@ export function mapBandsintownEventToGigRow(event: BandsintownApiEvent): Bandsin
   const descriptionParts = [
     event.description?.trim(),
     event.lineup?.length ? `Lineup: ${event.lineup.join(', ')}` : '',
-    event.sold_out ? 'Status: Sold out' : '',
   ].filter(Boolean)
 
   return {
@@ -103,6 +103,7 @@ export function mapBandsintownEventToGigRow(event: BandsintownApiEvent): Bandsin
     ticket_url: ticketUrl,
     festival_name: festivalName,
     description: descriptionParts.length > 0 ? descriptionParts.join('\n') : null,
+    sold_out: event.sold_out === true,
     bandsintown_id: bandsintownId,
     active: true,
   }
@@ -175,6 +176,7 @@ export async function syncBandsintownGigsToSupabase(
           ticket_url: gig.ticket_url,
           festival_name: gig.festival_name,
           description: gig.description,
+          sold_out: gig.sold_out,
           active: true,
         })
         .eq('id', existing.id)
@@ -262,6 +264,7 @@ export async function syncBandsintownGigsBatch(
           ticket_url: gig.ticket_url,
           festival_name: gig.festival_name,
           description: gig.description,
+          sold_out: gig.sold_out,
           active: true,
         })
         .eq('id', existing.id)

@@ -19,6 +19,7 @@ export interface Gig {
   latitude?: string
   longitude?: string
   soldOut?: boolean
+  status?: 'confirmed' | 'announced' | 'cancelled'
   startsAt?: string
   description?: string
   title?: string
