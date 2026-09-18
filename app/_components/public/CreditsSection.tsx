@@ -1,32 +1,31 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { m } from 'framer-motion'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { resolveSectionHeading } from '@/lib/section-display'
-import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import type { Partner } from '@/lib/app-types'
 import {
   loadLogoImageForCanvas,
   logoRasterSize,
+  PARTNER_LOGO_CANVAS_MAX,
   preparePartnerLogoSrc,
   processLogoToWhiteSilhouette,
 } from '@/lib/partner-logo-white'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
 
-interface PartnerItem {
-  id: string
-  name: string
-  url: string | null
-  logoUrl: string | null
-  category: string
-  logoWhite?: boolean
-}
+type PartnerItem = Partner
+
+const processedLogoCache = new Map<string, string>()
+
+const logoImgClass =
+  'partner-logo-white h-12 w-auto min-w-[4rem] max-w-[8.5rem] object-contain md:h-16 md:max-w-[10rem]'
 
 /**
  * Partner / credit logo in white mode.
- * Canvas-processes the PNG so alpha is real (transparent stays transparent)
- * and baked white backgrounds are stripped — CSS mask-image + CORS was
- * painting solid white rectangles on R2 URLs.
+ * Shows the original immediately, then canvas-processes in view so alpha is
+ * real and baked white backgrounds are stripped.
  */
 function PartnerLogoWhite({
   src,
@@ -37,15 +36,43 @@ function PartnerLogoWhite({
   name: string
   brightness: number
 }) {
-  const [processedSrc, setProcessedSrc] = useState<string | null>(null)
-  const [failed, setFailed] = useState(false)
+  const imgRef = useRef<HTMLImageElement | null>(null)
+  const [processedSrc, setProcessedSrc] = useState<string | null>(() => processedLogoCache.get(src) ?? null)
+  const [inView, setInView] = useState(() => processedLogoCache.has(src))
 
   useEffect(() => {
+    const cached = processedLogoCache.get(src)
+    if (cached) {
+      setProcessedSrc(cached)
+      setInView(true)
+      return
+    }
+    setProcessedSrc(null)
+    setInView(false)
+    if (typeof IntersectionObserver === 'undefined') {
+      setInView(true)
+      return
+    }
+    const el = imgRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '160px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [src])
+
+  useEffect(() => {
+    if (!inView || processedSrc) return
     let cancelled = false
 
     const run = async () => {
-      setFailed(false)
-      setProcessedSrc(null)
       try {
         const img = await loadLogoImageForCanvas(src)
         if (cancelled) return
@@ -54,8 +81,7 @@ function PartnerLogoWhite({
         const h = img.naturalHeight || img.height
         if (!w || !h) throw new Error('empty logo')
 
-        // Upscale tiny SVG defaults (155×18) and cap huge assets
-        const { width: cw, height: ch } = logoRasterSize(w, h)
+        const { width: cw, height: ch } = logoRasterSize(w, h, 256, PARTNER_LOGO_CANVAS_MAX)
 
         const canvas = document.createElement('canvas')
         canvas.width = cw
@@ -71,10 +97,15 @@ function PartnerLogoWhite({
         out.data.set(processed.data)
         ctx.putImageData(out, 0, 0)
 
-        const dataUrl = canvas.toDataURL('image/png')
-        if (!cancelled) setProcessedSrc(dataUrl)
+        const blob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob(resolve, 'image/png')
+        })
+        if (cancelled) return
+        const next = blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png')
+        processedLogoCache.set(src, next)
+        setProcessedSrc(next)
       } catch {
-        if (!cancelled) setFailed(true)
+        if (!cancelled) setProcessedSrc(null)
       }
     }
 
@@ -82,48 +113,21 @@ function PartnerLogoWhite({
     return () => {
       cancelled = true
     }
-  }, [src])
-
-  if (failed) {
-    // Last-resort: native img, NO invert filter (invert on white-bg PNGs = solid white box).
-    // Show original at reduced opacity so layout still works.
-    // filter stays in CSS only — inline filter:none would block hover chromatic.
-    return (
-      <m.img
-        src={src}
-        alt={name}
-        className="partner-logo-white h-12 w-auto min-w-[4rem] max-w-[8.5rem] object-contain opacity-80 md:h-16 md:max-w-[10rem]"
-        style={{ opacity: brightness, background: 'transparent' }}
-        initial={false}
-        animate={{ opacity: brightness }}
-        whileHover={{ opacity: 1 }}
-        transition={{ duration: 0.35 }}
-        decoding="async"
-      />
-    )
-  }
-
-  if (!processedSrc) {
-    return (
-      <span
-        className="partner-logo-white inline-block h-12 w-28 animate-pulse rounded-sm bg-muted/30 md:h-16 md:w-32"
-        aria-label={name}
-        role="img"
-      />
-    )
-  }
+  }, [src, inView, processedSrc])
 
   return (
     <m.img
-      src={processedSrc}
+      ref={imgRef}
+      src={processedSrc ?? src}
       alt={name}
-      className="partner-logo-white h-12 w-auto min-w-[4rem] max-w-[8.5rem] object-contain md:h-16 md:max-w-[10rem]"
+      className={logoImgClass}
       style={{ opacity: brightness, background: 'transparent' }}
       initial={false}
       animate={{ opacity: brightness }}
       whileHover={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
       decoding="async"
+      loading="lazy"
     />
   )
 }
@@ -185,6 +189,7 @@ function PartnerLogoNative({
       whileHover={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
       decoding="async"
+      loading="lazy"
       onError={() => {
         if (displaySrc !== src) {
           setDisplaySrc(src)
@@ -239,10 +244,12 @@ function LogoGrid({
   items,
   heading,
   logoBrightness,
+  onSelect,
 }: {
   items: PartnerItem[]
   heading: string
   logoBrightness?: number
+  onSelect: (item: PartnerItem) => void
 }) {
   if (items.length === 0) return null
 
@@ -256,23 +263,18 @@ function LogoGrid({
           const content = <PartnerLogo item={item} logoBrightness={logoBrightness} />
           // group so chromatic hover fires for the full cell hit-area, not only the img pixels
           const wrapperClassName =
-            'partner-logo-cell group flex min-h-28 items-center justify-center bg-transparent p-3'
+            'partner-logo-cell group flex min-h-28 cursor-pointer items-center justify-center bg-transparent p-3'
 
-          return item.url ? (
-            <a
+          return (
+            <button
               key={item.id}
-              href={sanitizeExternalHref(item.url)}
-              target="_blank"
-              rel="noopener noreferrer"
+              type="button"
               className={wrapperClassName}
               aria-label={item.name}
+              onClick={() => onSelect(item)}
             >
               {content}
-            </a>
-          ) : (
-            <div key={item.id} className={wrapperClassName}>
-              {content}
-            </div>
+            </button>
           )
         })}
       </div>
@@ -289,8 +291,10 @@ export function CreditsSection({
   logoBrightness,
 }: CreditsAndEndorsementsProps) {
   const { t, locale } = useLocale()
+  const { openOverlay } = useOverlay()
   const title = resolveSectionHeading(heading, 'credits', t, locale)
   const hasAny = credits.length > 0 || endorsements.length > 0 || partners.length > 0
+  const openPartner = (item: PartnerItem) => openOverlay({ type: 'partner', data: item })
 
   return (
     <SectionWrapper id="credits" data-theme-color="foreground card border">
@@ -301,9 +305,9 @@ export function CreditsSection({
 
       {hasAny ? (
         <div className="space-y-12">
-          <LogoGrid items={credits} heading={t('credits.groupCredits').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} />
-          <LogoGrid items={endorsements} heading={t('credits.groupEndorsements').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} />
-          <LogoGrid items={partners} heading={t('credits.groupPartners').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} />
+          <LogoGrid items={credits} heading={t('credits.groupCredits').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} onSelect={openPartner} />
+          <LogoGrid items={endorsements} heading={t('credits.groupEndorsements').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} onSelect={openPartner} />
+          <LogoGrid items={partners} heading={t('credits.groupPartners').toLocaleUpperCase(locale)} logoBrightness={logoBrightness} onSelect={openPartner} />
         </div>
       ) : (
         <SectionEmpty label={t('credits.empty')} />

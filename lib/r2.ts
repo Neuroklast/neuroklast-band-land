@@ -18,6 +18,19 @@ export function r2Url(storagePath: string | null | undefined): string | null {
  * Fallback URLs that still point at an old `*.r2.dev` host (or a wsrv.nl
  * wrapper of one) are rebuilt onto the current `R2_PUBLIC_HOST`.
  */
+/** R2 URL, or a site-bundled `/brand` `/assets` path (root-relative, safe as img src). */
+export function resolvePublicAssetUrl(
+  storagePath: string | null | undefined,
+  fallbackUrl: string | null | undefined,
+): string | null {
+  const fromR2 = resolveImageUrl(storagePath, fallbackUrl)
+  if (fromR2) return fromR2
+  if (typeof fallbackUrl !== 'string') return null
+  const trimmed = fallbackUrl.trim()
+  if (trimmed.startsWith('/brand/') || trimmed.startsWith('/assets/')) return trimmed
+  return null
+}
+
 export function resolveImageUrl(
   storagePath: string | null | undefined,
   fallbackUrl: string | null | undefined,

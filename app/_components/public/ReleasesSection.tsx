@@ -129,16 +129,15 @@ export function ReleasesSection({
           </div>
 
           {filteredReleases.length === 0 ? (
-            <SectionEmpty label="Releases coming soon" />
+            <SectionEmpty label={t('releases.noReleases')} />
           ) : (
             <>
               <div className={`grid ${colsClass} gap-6`}>
                 {visibleReleases.map((release, index) => (
                   <m.article
                     key={release.id}
-                    initial={prefersReducedMotion ? false : { opacity: 0, y: 24, clipPath: 'inset(0 0 100% 0)' }}
-                    whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)' }}
-                    viewport={prefersReducedMotion ? undefined : { once: true }}
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={
                       prefersReducedMotion
                         ? { duration: 0 }
@@ -225,8 +224,7 @@ export function ReleasesSection({
                 <m.div
                   className="mt-8 flex justify-center"
                   initial={prefersReducedMotion ? false : { opacity: 0 }}
-                  whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
-                  viewport={prefersReducedMotion ? undefined : { once: true }}
+                  animate={{ opacity: 1 }}
                 >
                   <Link
                     href="/releases"

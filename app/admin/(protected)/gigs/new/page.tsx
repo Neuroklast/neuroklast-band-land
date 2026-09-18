@@ -3,84 +3,48 @@
 import { useRouter } from 'next/navigation'
 import { createGig } from '@/app/admin/_actions/gigs'
 import { useState } from 'react'
+import { GigFormFields } from '@/app/admin/_components/GigFormFields'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 
 export default function NewGigPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [photoPath, setPhotoPath] = useState<string | null>(null)
+  const [dirty, setDirty] = useState(false)
+  useUnsavedChanges(dirty)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
+    if (photoPath) formData.set('photo_storage_path', photoPath)
     const result = await createGig(formData)
     if (result?.error) setError(result.error)
-    else router.push('/admin/gigs')
+    else {
+      setDirty(false)
+      router.push('/admin/gigs')
+    }
   }
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-xl font-bold mb-6">New Gig</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm text-zinc-300 mb-1">Title *</label>
-          <input name="title" required className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-zinc-300 mb-1">Venue</label>
-            <input name="venue" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm text-zinc-300 mb-1">Festival Name</label>
-            <input name="festival_name" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-zinc-300 mb-1">City</label>
-            <input name="city" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm text-zinc-300 mb-1">Country</label>
-            <input name="country" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm text-zinc-300 mb-1">Date & Time *</label>
-          <input name="event_date" type="datetime-local" required className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-        </div>
-        <div>
-          <label className="block text-sm text-zinc-300 mb-1">Ticket URL</label>
-          <input name="ticket_url" type="url" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-zinc-300 mb-1">Gig type</label>
-            <select name="gig_type" defaultValue="dj" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none">
-              <option value="dj">DJ</option>
-              <option value="concert">Concert</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-zinc-300 mb-1">Status</label>
-            <select name="status" defaultValue="confirmed" className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none">
-              <option value="confirmed">Confirmed</option>
-              <option value="announced">Announced</option>
-              <option value="canceled">Canceled</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm text-zinc-300 mb-1">Supporting artists (one per line)</label>
-          <textarea name="supporting_artists" rows={3} className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none" />
-        </div>
-        <div>
-          <label className="block text-sm text-zinc-300 mb-1">Event links (JSON)</label>
-          <textarea name="event_links" rows={3} placeholder='{"facebook":"https://…"}' className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm font-mono focus:outline-none" />
-        </div>
+      <h1 className="text-xl font-bold mb-6">New event</h1>
+      <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="space-y-4">
+        <GigFormFields
+          photoPath={photoPath}
+          onPhoto={(path) => {
+            setPhotoPath(path)
+            setDirty(true)
+          }}
+          onError={setError}
+        />
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <div className="flex gap-3">
-          <button type="submit" className="px-4 py-2 rounded bg-zinc-700 hover:bg-zinc-600 text-white text-sm transition-colors">Create Gig</button>
-          <button type="button" onClick={() => router.back()} className="px-4 py-2 rounded bg-zinc-900 border border-zinc-700 text-zinc-300 text-sm hover:text-white transition-colors">Cancel</button>
+          <button type="submit" className="px-4 py-2 rounded bg-zinc-700 hover:bg-zinc-600 text-white text-sm transition-colors">
+            Create event
+          </button>
+          <button type="button" onClick={() => router.back()} className="px-4 py-2 rounded bg-zinc-900 border border-zinc-700 text-zinc-300 text-sm hover:text-white transition-colors">
+            Cancel
+          </button>
         </div>
       </form>
     </div>

@@ -1,6 +1,6 @@
 import { createPublicClient } from '@/lib/supabaseServer'
 import { resolveImageUrl } from '@/lib/r2'
-import type { PublicGigRow } from '@/lib/gig-public-mapper'
+import { GIG_PUBLIC_COLUMNS, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { mapMediaDownloadRow, type MediaDownloadDbRow, type MediaDownloadItem } from '@/lib/media-download'
 import {
   mapReleaseRowToOverlayRelease,
@@ -91,7 +91,7 @@ export async function fetchPublicGigs(): Promise<PublicGigRow[]> {
   const supabase = createPublicClient()
   const { data, error } = await supabase
     .from('gigs')
-    .select('id, title, venue, city, country, event_date, ticket_url, festival_name, description')
+    .select(GIG_PUBLIC_COLUMNS)
     .eq('active', true)
     .order('event_date', { ascending: true })
 

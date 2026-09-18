@@ -4,7 +4,7 @@
 
 Next.js App Router (public + admin), Supabase (`site_config`, content tables, auth), Cloudflare R2, Resend. Legacy root `api/` remains for some proxies (rate-limited via Upstash) — prefer `app/api/**` for new routes.
 
-**Never dual-mount the same path:** root `api/<name>.ts` can shadow `app/api/<name>/route.ts` on Vercel. Public `/api/geo` is App Router only. Partner SVG rewrite is `/api/partner-logo` (R2/Supabase SVGs only + SSRF guard) — public `*.r2.dev` has no CORS.
+**Never dual-mount the same path:** root `api/<name>.ts` can shadow `app/api/<name>/route.ts` on Vercel. Public `/api/geo` is App Router only. Partner SVG rewrite is `/api/partner-logo` (R2/Supabase SVGs only + SSRF guard) — public `*.r2.dev` has no CORS. Secret Terminal is `app/api/terminal/route.ts` (do not add a root `api/terminal.ts`).
 
 **Public Supabase reads:** use `createPublicClient()` from `lib/supabaseServer.ts` (cookie-less anon). Do not use `createClient()` (cookie session) for homepage/browse content — admin JWT skew must not blank the public site.
 
@@ -101,6 +101,10 @@ Admin edits via `app/admin/_actions/siteConfig.ts` → `update_site_config` acti
 | Async jobs | `sync_jobs` table + `app/api/sync-jobs/**` | Chunked Spotify/Discogs import, purge+sync |
 
 Schema: `releases.tracks`, `tracks_source`, `last_enriched_at`, `manually_edited`.
+
+## Sitemap
+
+`/sitemap.xml` is a rewrite to `app/api/sitemap/route.ts` (`next.config.mjs` + `vercel.json`). It lists `/`, `/releases`, `/gigs`, `/media`, legal routes, and published news. **Never** add `public/sitemap.xml` — a static file shadows the rewrite.
 
 ## Legal pages
 

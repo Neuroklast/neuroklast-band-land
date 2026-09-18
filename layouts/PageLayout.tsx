@@ -62,8 +62,12 @@ export function PageLayout({
       {/* Layer 0-2: Backgrounds (fixed, non-interactive) */}
       {backgroundLayers}
 
+      <div style={{ zIndex: 'var(--z-nav)' } as CSSProperties}>
+        {nav}
+      </div>
+
       <div
-        className={`relative min-h-screen flex flex-col${contentClassName ? ` ${contentClassName}` : ''}`}
+        className={`relative min-h-dvh flex flex-col${contentClassName ? ` ${contentClassName}` : ''}`}
         style={{ zIndex: 'var(--z-content)' } as CSSProperties}
       >
         <main id={mainContentId} className="flex-1 flex flex-col">
@@ -73,10 +77,6 @@ export function PageLayout({
       </div>
 
       {globalEffects}
-
-      <div style={{ zIndex: 'var(--z-nav)' } as CSSProperties}>
-        {nav}
-      </div>
 
       {/* Layer 50: Overlays (interactive) */}
       {overlays}

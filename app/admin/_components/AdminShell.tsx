@@ -53,10 +53,16 @@ interface AdminShellProps {
 export function AdminShell({ children }: AdminShellProps) {
   const [defaultLayout, setDefaultLayout] = useState<AdminShellLayout>(FALLBACK_LAYOUT)
   const [layoutReady, setLayoutReady] = useState(false)
+  const [viewport, setViewport] = useState<'unknown' | 'mobile' | 'desktop'>('unknown')
 
   useEffect(() => {
     setDefaultLayout(readStoredLayout())
     setLayoutReady(true)
+    const mq = window.matchMedia('(min-width: 768px)')
+    const update = () => setViewport(mq.matches ? 'desktop' : 'mobile')
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
   }, [])
 
   const onLayoutChanged = useCallback((layout: Record<string, number>) => {
@@ -67,43 +73,48 @@ export function AdminShell({ children }: AdminShellProps) {
     }
   }, [])
 
+  if (viewport !== 'desktop') {
+    return (
+      <>
+        <AdminNav mobileOnly />
+        <main className="flex-1 p-4 pt-16 overflow-auto min-w-0 md:p-8 md:pt-8">{children}</main>
+      </>
+    )
+  }
+
   return (
-    <>
-      <AdminNav mobileOnly />
-      <div className="hidden md:flex flex-1 min-h-0 w-full">
-        {!layoutReady ? (
-          <div className="flex flex-1 min-h-screen w-full">
-            <div className="w-64 shrink-0 border-r border-zinc-800 bg-zinc-950" aria-hidden="true" />
-            <main className="flex-1 p-8 overflow-auto min-w-0">{children}</main>
-          </div>
-        ) : (
-          <ResizablePanelGroup
-            key="admin-shell-resizable"
-            orientation="horizontal"
-            className="flex-1 min-h-screen"
-            defaultLayout={defaultLayout}
-            onLayoutChanged={onLayoutChanged}
+    <div className="flex flex-1 min-h-0 w-full">
+      {!layoutReady ? (
+        <div className="flex flex-1 min-h-screen w-full">
+          <div className="w-64 shrink-0 border-r border-zinc-800 bg-zinc-950" aria-hidden="true" />
+          <main className="flex-1 p-8 overflow-auto min-w-0">{children}</main>
+        </div>
+      ) : (
+        <ResizablePanelGroup
+          key="admin-shell-resizable"
+          orientation="horizontal"
+          className="flex-1 min-h-screen"
+          defaultLayout={defaultLayout}
+          onLayoutChanged={onLayoutChanged}
+        >
+          <ResizablePanel
+            id="admin-nav"
+            defaultSize="20%"
+            minSize="220px"
+            maxSize="36%"
+            className="min-w-0 bg-zinc-950"
           >
-            <ResizablePanel
-              id="admin-nav"
-              defaultSize="20%"
-              minSize="220px"
-              maxSize="36%"
-              className="min-w-0 bg-zinc-950"
-            >
-              <AdminNav sidebarOnly className="h-full" />
-            </ResizablePanel>
-            <ResizableHandle
-              withHandle
-              className="w-2 bg-zinc-800/80 hover:bg-zinc-700 transition-colors data-[resize-handle-active]:bg-red-900/50"
-            />
-            <ResizablePanel id="admin-main" minSize="50%" className="min-w-0">
-              <main className="h-full p-8 overflow-auto min-w-0">{children}</main>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        )}
-      </div>
-      <main className="md:hidden flex-1 p-4 pt-16 overflow-auto min-w-0">{children}</main>
-    </>
+            <AdminNav sidebarOnly className="h-full" />
+          </ResizablePanel>
+          <ResizableHandle
+            withHandle
+            className="w-2 bg-zinc-800/80 hover:bg-zinc-700 transition-colors data-[resize-handle-active]:bg-red-900/50"
+          />
+          <ResizablePanel id="admin-main" minSize="50%" className="min-w-0">
+            <main className="h-full p-8 overflow-auto min-w-0">{children}</main>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
+    </div>
   )
 }

@@ -80,7 +80,7 @@ describe('restored public homepage components', () => {
       <>
         <GlobalEffects />
         <HeroSection
-          headline="ZARDONIC"
+          headline="NEUROKLAST"
           tagline="Industrial Metal / Drum & Bass"
           ctaLabel="LISTEN NOW"
           ctaUrl="#releases"
@@ -105,7 +105,7 @@ describe('restored public homepage components', () => {
   it('starts hero wordmark boot only when the stage is in view', async () => {
     ioInstances.length = 0
     const { container } = renderWithLocale(
-      <HeroSection headline="ZARDONIC" tagline="Industrial Metal / Drum & Bass" />,
+      <HeroSection headline="NEUROKLAST" tagline="Industrial Metal / Drum & Bass" />,
     )
 
     expect(container.querySelector('.hero-logo-boot--pending')).toBeInTheDocument()
@@ -146,7 +146,7 @@ describe('restored public homepage components', () => {
   it('skips hero boot sequence when disabled', () => {
     const { container } = renderWithLocale(
       <HeroSection
-        headline="ZARDONIC"
+        headline="NEUROKLAST"
         tagline="Industrial Metal / Drum & Bass"
         bootSequenceEnabled={false}
       />,
@@ -161,7 +161,7 @@ describe('restored public homepage components', () => {
   it('applies hero width via --hero-logo-width (aspect ratio free height)', () => {
     const { container } = renderWithLocale(
       <HeroSection
-        headline="ZARDONIC"
+        headline="NEUROKLAST"
         logoWidthPercent={80}
         bootSequenceEnabled={false}
       />,
@@ -178,7 +178,7 @@ describe('restored public homepage components', () => {
   it('applies separate mobile and desktop hero width vars', () => {
     const { container } = renderWithLocale(
       <HeroSection
-        headline="ZARDONIC"
+        headline="NEUROKLAST"
         logoWidthPercent={65}
         logoWidthPercentMobile={95}
         bootSequenceEnabled={false}
@@ -192,12 +192,18 @@ describe('restored public homepage components', () => {
   })
 
   it('restores the bio expand/collapse mask behaviour', () => {
-    renderWithLocale(<BioSection content={'Line one\nLine two\nLine three'} />)
+    const longBio = Array.from({ length: 40 }, (_, i) => `Line ${i + 1} of the band story.`).join('\n')
+    renderWithLocale(<BioSection content={longBio} />)
 
     expect(screen.getByText(/biography/i)).toBeInTheDocument()
     const button = screen.getByRole('button', { name: /read more/i })
     fireEvent.click(button)
     expect(screen.getByRole('button', { name: /show less/i })).toBeInTheDocument()
+  })
+
+  it('hides read more for short bios', () => {
+    renderWithLocale(<BioSection content={'Line one\nLine two\nLine three'} />)
+    expect(screen.queryByRole('button', { name: /read more/i })).not.toBeInTheDocument()
   })
 
   it('restores release filters and browse-page link', () => {
@@ -281,5 +287,7 @@ describe('restored public homepage components', () => {
     expect(container.querySelectorAll('.partner-logo-cell')).toHaveLength(2)
     expect(screen.getAllByText(/credits/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/endorsements/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Label' }))
+    expect(screen.getByTestId('gig-overlay-state')).toHaveTextContent('partner')
   })
 })

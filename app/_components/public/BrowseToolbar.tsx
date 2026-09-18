@@ -1,6 +1,7 @@
 'use client'
 
 import { MagnifyingGlass, X } from '@phosphor-icons/react'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface BrowseFilterOption<T extends string> {
   value: T
@@ -20,17 +21,19 @@ interface BrowseToolbarProps<T extends string> {
 export function BrowseToolbar<T extends string>({
   searchQuery,
   onSearchChange,
-  searchPlaceholder = 'Search…',
+  searchPlaceholder,
   filters,
   activeFilter,
   onFilterChange,
   resultCount,
 }: BrowseToolbarProps<T>) {
+  const { t } = useLocale()
+  const placeholder = searchPlaceholder ?? t('browse.searchEllipsis')
   return (
     <div className="mb-8 space-y-4">
       <div className="relative">
         <label htmlFor="browse-search" className="sr-only">
-          Search
+          {t('browse.search')}
         </label>
         <MagnifyingGlass
           className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -41,7 +44,7 @@ export function BrowseToolbar<T extends string>({
           type="search"
           value={searchQuery}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder={searchPlaceholder}
+          placeholder={placeholder}
           className="w-full min-h-[44px] border border-border bg-card/60 py-2 pl-10 pr-10 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
           autoComplete="off"
         />
@@ -50,7 +53,7 @@ export function BrowseToolbar<T extends string>({
             type="button"
             onClick={() => onSearchChange('')}
             className="absolute right-2 top-1/2 inline-flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-primary"
-            aria-label="Clear search"
+            aria-label={t('browse.clearSearch')}
           >
             <X className="h-4 w-4" />
           </button>
@@ -78,7 +81,7 @@ export function BrowseToolbar<T extends string>({
 
       {typeof resultCount === 'number' ? (
         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-          // {resultCount} {resultCount === 1 ? 'result' : 'results'}
+          // {resultCount} {resultCount === 1 ? t('browse.result') : t('browse.results')}
         </p>
       ) : null}
     </div>

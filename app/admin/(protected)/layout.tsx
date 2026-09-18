@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createActionClient } from '@/lib/supabaseServer'
 import { AdminShell } from '@/app/admin/_components/AdminShell'
 import { AdminHelpPalette } from '@/app/admin/_components/AdminHelpPalette'
+import '@/app/admin/admin.css'
 
 export default async function ProtectedAdminLayout({
   children,

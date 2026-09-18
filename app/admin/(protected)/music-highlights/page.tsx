@@ -2,19 +2,22 @@ import { createClient } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import { deleteMusicHighlight } from '@/app/admin/_actions/musicHighlights'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 
 export default async function MusicHighlightsPage() {
   let items: Array<{ id: string; title: string; youtube_url: string; display_order: number }> = []
 
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('music_highlights')
       .select('id, title, youtube_url, display_order')
       .order('display_order', { ascending: true })
-    items = data ?? []
+    if (error) loadError = true
+    else items = data ?? []
   } catch {
-    // ignore – no data in dev
+    loadError = true
   }
 
   return (
@@ -31,8 +34,15 @@ export default async function MusicHighlightsPage() {
           </Link>
         }
       />
-      {items.length === 0 ? (
-        <p className="text-zinc-400 text-sm">No music highlights yet.</p>
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load highlights. Check the database connection.</p>
+      ) : items.length === 0 ? (
+        <div className="space-y-3">
+          <p className="text-zinc-400 text-sm">No music highlights yet.</p>
+          <Link href="/admin/music-highlights/new" className="inline-flex min-h-[44px] items-center text-sm text-zinc-300 underline hover:text-white">
+            Add first highlight
+          </Link>
+        </div>
       ) : (
         <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -64,12 +74,7 @@ export default async function MusicHighlightsPage() {
                     }}
                     className="inline"
                   >
-                    <button
-                      type="submit"
-                      className="text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      Delete
-                    </button>
+                    <ConfirmDeleteButton message="Delete this highlight?" />
                   </form>
                 </td>
               </tr>

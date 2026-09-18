@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { useRouter } from 'next/navigation'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
@@ -38,8 +39,10 @@ export function SimpleTextConfigEditor({
   }, [currentValue, fields])
 
   const [values, setValues] = useState(initial)
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(initial))
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  useUnsavedChanges(JSON.stringify(values) !== savedSnapshot)
 
   function updateField(key: string, value: string) {
     const next = { ...values, [key]: value }
@@ -59,6 +62,7 @@ export function SimpleTextConfigEditor({
       setErrorMsg(result.error)
     } else {
       setStatus('saved')
+      setSavedSnapshot(JSON.stringify(values))
       const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
       broadcastAdminRefresh()
       router.refresh()
@@ -75,11 +79,12 @@ export function SimpleTextConfigEditor({
       <div className="space-y-3">
         {fields.map((field) => (
           <div key={field.key} className="space-y-1">
-            <label className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">
+            <label htmlFor={`simple-text-${configKey}-${field.key}`} className="block text-xs text-zinc-400 font-semibold uppercase tracking-widest">
               {field.label}
             </label>
             {field.type === 'textarea' ? (
               <textarea
+                id={`simple-text-${configKey}-${field.key}`}
                 value={values[field.key] ?? ''}
                 onChange={(e) => updateField(field.key, e.target.value)}
                 rows={3}
@@ -88,6 +93,7 @@ export function SimpleTextConfigEditor({
               />
             ) : (
               <input
+                id={`simple-text-${configKey}-${field.key}`}
                 type={field.type === 'url' ? 'url' : 'text'}
                 value={values[field.key] ?? ''}
                 onChange={(e) => updateField(field.key, e.target.value)}

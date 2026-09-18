@@ -57,15 +57,15 @@ describe('ReleaseOverlayContent Track Rendering – compound artist dedup', () =
       year: '2023',
       tracks: [
         {
-          // "The Last Bear Ender & Zardonic" — Zardonic must not appear twice
+          // "The Last Bear Ender & Neuroklast" — Neuroklast must not appear twice
           title: 'Kernel Breaker (feat. Noisesmith, Roel Peijs & Kylee Brielle) [Remix]',
-          artist: 'The Last Bear Ender & Zardonic',
+          artist: 'The Last Bear Ender & Neuroklast',
         },
       ],
     }
 
     const { container } = render(
-      <ReleaseOverlayContent data={release} mainArtistName="Zardonic" />,
+      <ReleaseOverlayContent data={release} mainArtistName="Neuroklast" />,
     )
 
     const item = container.querySelector('li')!
@@ -73,12 +73,12 @@ describe('ReleaseOverlayContent Track Rendering – compound artist dedup', () =
     // Clean title preserves [Remix] and strips feat. block
     expect(item.textContent).toContain('Kernel Breaker [Remix]')
 
-    // Zardonic must appear exactly once in the track row
+    // Neuroklast must appear exactly once in the track row
     const artistSpans = item.querySelectorAll('span')
-    const zardonicMatches = Array.from(artistSpans).filter(
-      s => s.textContent?.trim().toLowerCase() === 'zardonic',
+    const neuroklastMatches = Array.from(artistSpans).filter(
+      s => s.textContent?.trim().toLowerCase() === 'neuroklast',
     )
-    expect(zardonicMatches.length).toBe(1)
+    expect(neuroklastMatches.length).toBe(1)
 
     // Co-artist and feat. artists should all be present
     expect(item.textContent).toContain('The Last Bear Ender')
@@ -101,12 +101,12 @@ describe('ReleaseOverlayContent Track Rendering – compound artist dedup', () =
     }
 
     const { container } = render(
-      <ReleaseOverlayContent data={release} mainArtistName="Zardonic" />,
+      <ReleaseOverlayContent data={release} mainArtistName="Neuroklast" />,
     )
 
     const item = container.querySelector('li')!
     // "Other Artist" is the sole artist — no artist line (length ≤ 1 rule)
-    // But "Zardonic" must definitely not appear here
-    expect(item.textContent).not.toContain('Zardonic')
+    // But "Neuroklast" must definitely not appear here
+    expect(item.textContent).not.toContain('Neuroklast')
   })
 })

@@ -935,3 +935,42 @@
   .nk-hero-hud__dot { animation: none; }
 }
 
+@keyframes nk-terminal-glitch {
+  0%, 100% { filter: none; transform: none; }
+  25% { filter: hue-rotate(80deg) contrast(1.3); transform: translate3d(2px, 0, 0); }
+  50% { filter: hue-rotate(-40deg) contrast(1.5); transform: translate3d(-2px, 1px, 0); }
+  75% { filter: hue-rotate(120deg); transform: translate3d(1px, -1px, 0); }
+}
+
+html.nk-terminal-glitch body {
+  animation: nk-terminal-glitch 0.12s steps(2) 7;
+}
+
+html.nk-terminal-matrix::after {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 10px,
+      color-mix(in oklch, var(--primary) 18%, transparent) 10px 11px
+    );
+  mix-blend-mode: screen;
+  animation: nk-terminal-matrix 1.6s linear;
+}
+
+@keyframes nk-terminal-matrix {
+  from { opacity: 0.15; transform: translate3d(0, -8%, 0); }
+  to { opacity: 0; transform: translate3d(0, 8%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.nk-terminal-glitch body,
+  html.nk-terminal-matrix::after {
+    animation: none;
+  }
+}
+

@@ -12,7 +12,7 @@ function TestConsumer() {
       <span data-testid="translated">{t('footer.admin')}</span>
       <button onClick={() => setLocale('de')} data-testid="switch-de">DE</button>
       <button onClick={() => setLocale('en')} data-testid="switch-en">EN</button>
-      <button onClick={() => setLocale('ru')} data-testid="switch-ru">RU</button>
+      <button onClick={() => setLocale('uk')} data-testid="switch-uk">UK</button>
       <button onClick={() => setLocale('ja')} data-testid="switch-ja">JA</button>
       <button onClick={() => setLocale('ko')} data-testid="switch-ko">KO</button>
     </div>
@@ -107,7 +107,7 @@ describe('LocaleContext', () => {
   })
 
   it('should switch to all 8 locales', async () => {
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const locale of locales) {
       localStorage.setItem('zd-locale', locale)
       const { unmount } = render(
@@ -123,7 +123,7 @@ describe('LocaleContext', () => {
   })
 
   it('should restore all supported locales from localStorage', async () => {
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const locale of locales) {
       localStorage.setItem('zd-locale', locale)
       const { unmount } = render(

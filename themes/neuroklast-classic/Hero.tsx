@@ -1,10 +1,10 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { CaretDown } from '@phosphor-icons/react'
 import type { HeroSlotProps, HeroButton } from '@/lib/types'
-import { CrtGlitchMark } from './CrtGlitchMark'
+import { HeroPowerGlitchMark } from '@/components/HeroPowerGlitchMark'
 import { useLenisContext } from '@/contexts/LenisContext'
 import './styles.css'
 
@@ -18,10 +18,14 @@ export default function NeuroklastClassicHero({
   genres,
   logoUrl,
   titleImageUrl,
+  logoWidthPercent,
+  logoWidthPercentMobile,
+  powerGlitch,
   heroButtons,
   onContactModalOpen,
 }: HeroSlotProps) {
   const { scrollTo } = useLenisContext()
+  const prefersReducedMotion = useReducedMotion()
   const buttons = heroButtons && heroButtons.length > 0 ? heroButtons : DEFAULT_BUTTONS
 
   function handleHeroButton(btn: HeroButton) {
@@ -37,7 +41,7 @@ export default function NeuroklastClassicHero({
   }
 
   return (
-    <section id="hero" className="relative min-h-screen flex flex-col items-center px-4 pt-24 md:pt-28 pb-20">
+    <section id="hero" className="relative min-h-dvh flex flex-col items-center px-4 pt-24 md:pt-28 pb-20">
       {/* HUD decorative lines */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <svg
@@ -86,18 +90,33 @@ export default function NeuroklastClassicHero({
 
       <div className="relative z-10 mt-auto mb-[7vh] md:mb-[5vh] text-center w-full max-w-7xl mx-auto flex flex-col items-center">
         <motion.div
-          className="mb-5 md:mb-6 flex justify-center w-full px-4"
+          className="hero-logo-stage mb-5 md:mb-6 flex justify-center w-full px-4"
+          style={{
+            ['--hero-logo-width' as string]: `${logoWidthPercent ?? 55}%`,
+            ['--hero-logo-width-mobile' as string]: `${logoWidthPercentMobile ?? 86}%`,
+          }}
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
           {titleImageUrl ? (
-            <CrtGlitchMark
-              src={titleImageUrl}
-              alt={name}
-              variant="word"
-              imgClassName="w-[min(92vw,72rem)] h-auto"
-            />
+            <div className="hero-logo-glitch">
+              <HeroPowerGlitchMark
+                src={titleImageUrl}
+                alt={name}
+                imgClassName="h-auto w-full"
+                config={powerGlitch}
+              />
+            </div>
+          ) : logoUrl ? (
+            <div className="hero-logo-glitch">
+              <HeroPowerGlitchMark
+                src={logoUrl}
+                alt={name}
+                imgClassName="h-auto w-full"
+                config={powerGlitch}
+              />
+            </div>
           ) : (
             <div className="nk-crt-mark nk-crt-mark--word">
               <h1
@@ -157,8 +176,8 @@ export default function NeuroklastClassicHero({
               {btn.label}
               {btn.action === 'scroll' && (
                 <motion.div
-                  animate={{ y: [0, 4, 0] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                  animate={prefersReducedMotion ? undefined : { y: [0, 4, 0] }}
+                  transition={{ duration: 1.8, repeat: prefersReducedMotion ? 0 : Infinity, ease: 'easeInOut' }}
                 >
                   <CaretDown className="ml-2" size={16} />
                 </motion.div>
@@ -170,15 +189,15 @@ export default function NeuroklastClassicHero({
 
       {/* Bottom scroll indicator */}
       <motion.div
-        className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2"
-        initial={{ opacity: 0 }}
+        className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:bottom-8 left-1/2 -translate-x-1/2"
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1 }}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: prefersReducedMotion ? 0 : 1 }}
       >
         <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          className="text-primary/30"
+          animate={prefersReducedMotion ? undefined : { y: [0, 6, 0] }}
+          transition={{ duration: 2.5, repeat: prefersReducedMotion ? 0 : Infinity, ease: 'easeInOut' }}
+          className="text-primary/70"
         >
           <CaretDown size={18} className="md:hidden" />
           <CaretDown size={20} className="hidden md:block" />

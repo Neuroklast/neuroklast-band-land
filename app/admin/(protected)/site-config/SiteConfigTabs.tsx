@@ -11,10 +11,11 @@ import SiteConfigEditor from './SiteConfigEditor'
 import { AdminPreviewPane } from '@/app/admin/_components/AdminPreviewPane'
 import { SectionsSortable } from '@/app/admin/(protected)/sections/SectionsSortable'
 import { parseSections, type SectionConfig } from '@/lib/site-config-sections'
+import { TerminalConfigEditor } from './TerminalConfigEditor'
 
-type TabId = 'hero' | 'background' | 'theme' | 'sections' | 'text' | 'loader' | 'advanced'
+type TabId = 'hero' | 'background' | 'theme' | 'sections' | 'text' | 'loader' | 'terminal' | 'advanced'
 
-const VALID_TAB_IDS: TabId[] = ['hero', 'background', 'theme', 'sections', 'text', 'loader', 'advanced']
+const VALID_TAB_IDS: TabId[] = ['hero', 'background', 'theme', 'sections', 'text', 'loader', 'terminal', 'advanced']
 
 function isTabId(value: string | null): value is TabId {
   return value !== null && (VALID_TAB_IDS as string[]).includes(value)
@@ -28,6 +29,7 @@ interface SiteConfigTabsProps {
   merchandiseValue: Record<string, unknown>
   footerValue: Record<string, unknown>
   loadingScreenValue: Record<string, unknown>
+  terminalValue: Record<string, unknown>
   advancedConfigs: Array<{
     key: string
     label: string
@@ -44,6 +46,7 @@ const BASE_TABS: { id: TabId; label: string }[] = [
   { id: 'loader', label: 'Loader' },
   { id: 'sections', label: 'Sections' },
   { id: 'text', label: 'Site Text' },
+  { id: 'terminal', label: 'Terminal' },
 ]
 
 export function SiteConfigTabs({
@@ -54,6 +57,7 @@ export function SiteConfigTabs({
   merchandiseValue,
   footerValue,
   loadingScreenValue,
+  terminalValue,
   advancedConfigs,
 }: SiteConfigTabsProps) {
   const router = useRouter()
@@ -98,7 +102,7 @@ export function SiteConfigTabs({
               key={tab.id}
               type="button"
               onClick={() => selectTab(tab.id)}
-              className={`px-3 py-1.5 text-xs rounded transition-colors ${
+              className={`min-h-[44px] px-3 py-1.5 text-xs rounded transition-colors ${
                 activeTab === tab.id
                   ? 'bg-red-900/40 text-white border border-red-700/50'
                   : 'text-zinc-400 hover:text-white border border-transparent'
@@ -124,6 +128,7 @@ export function SiteConfigTabs({
             <SectionsSortable initialSections={sections as SectionConfig[]} />
           </div>
         )}
+        {activeTab === 'terminal' && <TerminalConfigEditor currentValue={terminalValue} />}
         {activeTab === 'text' && (
           <div className="space-y-6">
             <SimpleTextConfigEditor

@@ -8,10 +8,6 @@ import { SectionWrapper } from '@/app/_components/public/SectionWrapper'
 import { NewsSection } from '@/app/_components/public/NewsSection'
 import { BioSection } from '@/app/_components/public/BioSection'
 
-vi.mock('@/components/OverlayTransition', () => ({
-  useOverlayTransition: () => ({ trigger: () => {}, element: null }),
-}))
-
 vi.mock('@/components/CyberpunkOverlay', () => ({
   default: ({ overlay }: { overlay: { type?: string } | null }) => (
     <div data-testid="overlay-type">{overlay?.type ?? 'none'}</div>
@@ -50,7 +46,7 @@ describe('overlay host', () => {
     expect(container.querySelector('#media')?.textContent).not.toMatch(/MEDIA EXPLORER/i)
   })
 
-  it('opens news in the shared cyberpunk overlay', () => {
+  it('opens news cards in the shared cyberpunk overlay', () => {
     render(
       <OverlayProvider>
         <LocaleProvider>

@@ -40,6 +40,10 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
       { href: '/admin/releases', label: 'Discography', countKey: 'releases' },
       { href: '/admin/gigs', label: 'Events', countKey: 'gigs' },
       { href: '/admin/news', label: 'News / Blog', countKey: 'news' },
+      { href: '/admin/merchandise', label: 'Merchandise', countKey: 'merchandise' },
+      { href: '/admin/soundpacks', label: 'Soundpacks', countKey: 'soundpacks' },
+      { href: '/admin/music-highlights', label: 'Music Highlights', countKey: 'musicHighlights' },
+      { href: '/admin/social', label: 'Social Links', countKey: 'social' },
     ],
   },
   {
@@ -47,6 +51,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
     label: 'System',
     items: [
       { href: '/admin/releases/sync', label: 'Catalogue Sync' },
+      { href: '/admin/translations', label: 'Translations' },
       { href: '/admin/analytics', label: 'Analytics' },
       { href: '/admin/api-keys', label: 'API Keys' },
       { href: '/admin/security', label: 'Security' },

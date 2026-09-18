@@ -1,7 +1,7 @@
 'use client'
 
-import { useOverlay } from '@/contexts/OverlayContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useOverlay } from '@/contexts/OverlayContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { formatIsoDateLong } from '@/lib/format-display-date'
@@ -48,28 +48,14 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
               key={post.id}
               type="button"
               className="nk-os-frame group block w-full cursor-pointer text-left"
-              onClick={() =>
-                openOverlay({
-                  type: 'news',
-                  data: {
-                    id: post.id,
-                    title: post.title,
-                    slug: post.slug,
-                    excerpt: post.excerpt,
-                    body: post.body,
-                    link: post.link,
-                    coverUrl: post.coverUrl,
-                    publishedAt: post.publishedAt,
-                  },
-                })
-              }
+              onClick={() => openOverlay({ type: 'news', data: post })}
               aria-label={`Open ${post.title}`}
             >
               <div className="relative aspect-video overflow-hidden bg-muted">
                 {post.coverUrl ? (
                   <img
                     src={toDirectImageUrl(post.coverUrl, { w: 800 }) || post.coverUrl}
-                    alt=""
+                     alt={post.title}
                     className="h-full w-full object-cover"
                     loading="lazy"
                     decoding="async"
@@ -101,14 +87,14 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
                   </p>
                 ) : null}
                 <span className="inline-block font-mono text-xs uppercase tracking-widest text-primary">
-                  Read more →
+                  {t('news.readMore')}
                 </span>
               </div>
             </button>
           ))}
         </div>
       ) : (
-        <SectionEmpty label="News coming soon" />
+        <SectionEmpty label={t('news.noNews')} />
       )}
     </SectionWrapper>
   )

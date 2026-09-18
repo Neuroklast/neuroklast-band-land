@@ -5,7 +5,7 @@ import { GigsBrowseClient } from '@/app/_components/public/GigsBrowseClient'
 import { fetchPublicArtistName, fetchPublicGigs } from '@/lib/public-fetch'
 
 export const metadata: Metadata = {
-  title: 'Tour Dates',
+  title: 'Events',
   description: 'Browse all upcoming and past events with search and filters.',
 }
 
@@ -23,7 +23,7 @@ export default async function GigsBrowsePage() {
 
   return (
     <LegalPageShell>
-      <BrowsePageShell title="Tour Dates" streamLabel="// EVENTS.BROWSE">
+      <BrowsePageShell titleKey="section.gigs" streamLabel="// EVENTS.BROWSE">
         <GigsBrowseClient gigs={gigs} artistName={artistName} />
       </BrowsePageShell>
     </LegalPageShell>

@@ -20,10 +20,16 @@ import {
 } from '@/lib/appearance-presets'
 import { LOOKS, parseLookId, type LookDefinition } from '@/lib/looks'
 import {
+  getAllOverlayAnimations,
+  getClipShellNames,
+  parseOverlayAnimationPool,
+} from '@/lib/overlay-animations'
+import {
   DEFAULT_CARD_SURFACE_OPACITY,
   DEFAULT_SECTION_PANEL_OPACITY,
 } from '@/lib/apply-appearance-config'
 import { hexToOklch, oklchToHex } from '@/lib/color-utils'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import * as SliderPrimitive from '@radix-ui/react-slider'
 import * as SwitchPrimitive from '@radix-ui/react-switch'
 
@@ -41,10 +47,12 @@ export interface AppearanceConfig {
   sectionPanelOpacity: number
   sectionGridOpacity: number
   cardSurfaceOpacity: number
-  faviconUrl?: string
-  faviconStoragePath?: string
+  faviconUrl?: string | null
+  faviconStoragePath?: string | null
   theme?: AppearanceTheme
   lookId?: string
+  overlayAnimation?: string
+  overlayAnimations?: string[]
   savedPresets?: SavedAppearancePreset[]
 }
 
@@ -78,6 +86,8 @@ const DEFAULTS: AppearanceConfig = {
   faviconUrl: '',
   theme: DEFAULT_THEME,
   lookId: 'neuroklast-classic',
+  overlayAnimation: 'circuitBreak',
+  overlayAnimations: getClipShellNames(),
   savedPresets: [],
 }
 
@@ -150,6 +160,11 @@ function parseConfig(raw: Record<string, unknown>): AppearanceConfig {
       typeof raw.faviconStoragePath === 'string' ? raw.faviconStoragePath : undefined,
     theme: parseTheme(raw.theme),
     lookId: parseLookId(raw.lookId),
+    overlayAnimation: parseOverlayAnimationPool(raw.overlayAnimations ?? raw.overlayAnimation)[0] ?? DEFAULTS.overlayAnimation,
+    overlayAnimations: (() => {
+      const pool = parseOverlayAnimationPool(raw.overlayAnimations ?? raw.overlayAnimation)
+      return pool.length > 0 ? pool : DEFAULTS.overlayAnimations
+    })(),
     savedPresets,
   }
 }
@@ -246,10 +261,14 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
   )
   const [theme, setTheme] = useState<AppearanceTheme>(init.theme ?? DEFAULT_THEME)
   const [lookId, setLookId] = useState(init.lookId ?? 'neuroklast-classic')
+  const [overlayAnimations, setOverlayAnimations] = useState<string[]>(
+    init.overlayAnimations ?? DEFAULTS.overlayAnimations ?? [],
+  )
   const [savedPresets, setSavedPresets] = useState<SavedAppearancePreset[]>(init.savedPresets ?? [])
   const [presetName, setPresetName] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(init))
 
   const payload = useMemo<AppearanceConfig>(
     () => ({
@@ -266,10 +285,12 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       sectionPanelOpacity,
       sectionGridOpacity,
       cardSurfaceOpacity,
-      faviconUrl: faviconUrl || undefined,
-      faviconStoragePath: faviconStoragePath || undefined,
+      faviconUrl: faviconUrl || null,
+      faviconStoragePath: faviconStoragePath || null,
       theme,
       lookId,
+      overlayAnimations,
+      overlayAnimation: overlayAnimations[0] ?? DEFAULTS.overlayAnimation,
       savedPresets,
     }),
     [
@@ -290,9 +311,12 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       faviconStoragePath,
       theme,
       lookId,
+      overlayAnimations,
       savedPresets,
     ],
   )
+
+  useUnsavedChanges(JSON.stringify(payload) !== savedSnapshot)
 
   useEffect(() => {
     broadcastAdminDraft('appearance', payload as unknown as Record<string, unknown>)
@@ -345,6 +369,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       setErrorMsg(result.error)
     } else {
       setStatus('saved')
+      setSavedSnapshot(JSON.stringify(payload))
       // Push saved theme to open public tabs immediately
       const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
       broadcastAdminRefresh()
@@ -384,6 +409,32 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
                 <PresetSwatch theme={look.theme} />
               </button>
             ))}
+          </div>
+          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Overlay animations</p>
+          <p className="text-xs text-zinc-500">Select one or more. Each overlay open picks at random from the pool.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {getAllOverlayAnimations().map((animation) => {
+              const selected = overlayAnimations.includes(animation.name)
+              return (
+                <button
+                  key={animation.name}
+                  type="button"
+                  onClick={() =>
+                    setOverlayAnimations((current) =>
+                      selected
+                        ? current.filter((name) => name !== animation.name)
+                        : [...current, animation.name],
+                    )
+                  }
+                  className={`text-left px-3 py-2 rounded border bg-zinc-950/50 transition-colors ${
+                    selected ? 'border-red-600' : 'border-zinc-800 hover:border-zinc-600'
+                  }`}
+                >
+                  <span className="block text-xs text-zinc-200">{animation.loaderLabel}</span>
+                  <span className="block text-[10px] text-zinc-500 mt-0.5">{animation.name}</span>
+                </button>
+              )
+            })}
           </div>
           <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Color themes</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -586,6 +637,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
         <MediaSourcePicker
           label="Favicon"
           currentUrl={faviconUrl || null}
+          currentStoragePath={faviconStoragePath || null}
           storagePrefix="site/favicon"
           accept=".ico,.png,.svg,image/x-icon,image/png,image/svg+xml"
           editorAspectRatio={1}
@@ -593,6 +645,11 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
           onResolved={(path, publicUrl) => {
             setFaviconStoragePath(path)
             if (publicUrl) setFaviconUrl(publicUrl)
+            setErrorMsg(null)
+          }}
+          onCleared={() => {
+            setFaviconStoragePath('')
+            setFaviconUrl('')
             setErrorMsg(null)
           }}
           onError={setErrorMsg}

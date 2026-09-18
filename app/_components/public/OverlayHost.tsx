@@ -1,42 +1,33 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { useOverlayTransition } from '@/components/OverlayTransition'
-import { useLenisContext } from '@/contexts/LenisContext'
+import { useMemo } from 'react'
 import { useOverlay } from '@/contexts/OverlayContext'
 import CyberpunkOverlay from '@/components/CyberpunkOverlay'
+import { overlayAnimationPoolKey, parseOverlayAnimationPool } from '@/lib/overlay-animations'
 
-export function OverlayHost({ artistName = '' }: { lookId?: string; artistName?: string }) {
+export function OverlayHost({
+  overlayAnimations,
+  artistName = '',
+}: {
+  lookId?: string
+  overlayAnimation?: string
+  overlayAnimations?: string[]
+  artistName?: string
+}) {
   const { overlay, closeOverlay } = useOverlay()
-  const { lenis } = useLenisContext()
-  const { trigger, element } = useOverlayTransition()
-  const triggerRef = useRef(trigger)
-
-  useEffect(() => {
-    triggerRef.current = trigger
-  }, [trigger])
-
-  useEffect(() => {
-    if (!overlay) return
-    triggerRef.current()
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    lenis?.stop()
-    return () => {
-      document.body.style.overflow = prev
-      lenis?.start()
-    }
-  }, [overlay, lenis])
+  const poolKey = overlayAnimationPoolKey(overlayAnimations)
+  const pool = useMemo(
+    () => parseOverlayAnimationPool(poolKey ? poolKey.split('|') : undefined),
+    [poolKey],
+  )
 
   return (
-    <>
-      <CyberpunkOverlay
-        overlay={overlay}
-        onClose={closeOverlay}
-        adminSettings={undefined}
-        artistName={artistName}
-      />
-      {overlay ? element : null}
-    </>
+    <CyberpunkOverlay
+      overlay={overlay}
+      onClose={closeOverlay}
+      adminSettings={undefined}
+      artistName={artistName}
+      overlayAnimations={pool}
+    />
   )
 }

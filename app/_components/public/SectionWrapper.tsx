@@ -72,7 +72,7 @@ export function SectionIntro({
 
   return (
     <p
-      className="-mt-8 mb-6 text-sm text-muted-foreground"
+      className="mb-6 text-sm text-muted-foreground"
       style={{ fontFamily: 'var(--font-body, inherit)' }}
       data-draft-target={`section-intro-${sectionId}`}
     >
@@ -107,17 +107,9 @@ export function SectionWrapper({
   )
 }
 
-/** Full-width border divider between sections */
+/** Intentionally empty — half-width HUD traces looked like stray lines over the video. */
 export function SectionDivider() {
-  return (
-    <div
-      className="theme-divider w-full max-w-7xl mx-auto px-card"
-      style={{ zIndex: 'var(--z-content)' as React.CSSProperties['zIndex'] }}
-      aria-hidden="true"
-    >
-      <span className="theme-divider-data">SYS://DATA</span>
-    </div>
-  )
+  return null
 }
 
 /** Shared empty state for uniform coming-soon states (DRY) */

@@ -64,6 +64,7 @@ function SortableRow({
   }
 
   const logoSrc = resolveImageUrl(link.logo_storage_path, link.logo_url)
+  const [logoOpen, setLogoOpen] = useState(false)
 
   return (
     <div
@@ -103,15 +104,32 @@ function SortableRow({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <MediaSourcePicker
-          label="Logo"
-          storagePrefix="social-logos"
-          editorFitMode="contain"
-          onResolved={(path) => onLogo(link.id, path)}
-        />
+        {logoOpen ? (
+          <MediaSourcePicker
+            label="Logo"
+            storagePrefix="social-logos"
+            editorFitMode="contain"
+            currentStoragePath={link.logo_storage_path}
+            onResolved={(path) => {
+              onLogo(link.id, path)
+              setLogoOpen(false)
+            }}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setLogoOpen(true)}
+            className="inline-flex min-h-[44px] items-center rounded border border-zinc-700 px-3 text-xs text-zinc-400 hover:text-white"
+          >
+            Change logo
+          </button>
+        )}
         <button
           type="button"
-          onClick={() => onDelete(link.id)}
+          onClick={() => {
+            if (!confirm('Delete this social link?')) return
+            onDelete(link.id)
+          }}
           className="text-xs text-red-400 transition-colors hover:text-red-300"
         >
           Delete

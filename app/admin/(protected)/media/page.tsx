@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabaseServer'
 import { resolveImageUrl } from '@/lib/r2'
 import { deleteMediaDownload } from '@/app/admin/_actions/mediaDownloads'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import { MediaVisibilityToggle } from './MediaVisibilityToggle'
 import Link from 'next/link'
 import { formatFileSize, mediaKindFromMime, parseMediaCategory } from '@/lib/media-download'
@@ -21,17 +22,19 @@ export default async function MediaDownloadsPage() {
     active: boolean
   }> = []
 
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('media_downloads')
       .select(
         'id, title, category, file_storage_path, file_url, file_mime, file_size_bytes, original_filename, display_order, active',
       )
       .order('display_order', { ascending: true })
-    items = data ?? []
+    if (error) loadError = true
+    else items = data ?? []
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
@@ -48,8 +51,15 @@ export default async function MediaDownloadsPage() {
           </Link>
         }
       />
-      {items.length === 0 ? (
-        <p className="text-zinc-400 text-sm">No downloadable files yet.</p>
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load media. Check the database connection.</p>
+      ) : items.length === 0 ? (
+        <div className="space-y-3">
+          <p className="text-zinc-400 text-sm">No downloadable files yet.</p>
+          <Link href="/admin/media/new" className="inline-flex min-h-[44px] items-center text-sm text-zinc-300 underline hover:text-white">
+            Upload first file
+          </Link>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -97,9 +107,7 @@ export default async function MediaDownloadsPage() {
                         }}
                         className="inline"
                       >
-                        <button type="submit" className="text-red-400 hover:text-red-300 transition-colors">
-                          Delete
-                        </button>
+                        <ConfirmDeleteButton message="Delete this download?" />
                       </form>
                     </td>
                   </tr>

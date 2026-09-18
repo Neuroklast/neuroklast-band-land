@@ -4,6 +4,53 @@ Entries are in **reverse chronological order** (newest first).
 
 ---
 
+## Session: 2026-09-18 — Overlay close, click embeds, frame glow
+
+**Agent:** grok-4.6
+
+### Done
+- Overlay close: hold snapshot, reverse boot, then clip exit
+- EmbedConsentGate is one HUD click (no LatchRail)
+- Spotify IFrame height from box pixels (232/352)
+- Classic overlay: translucent panel + pulsing frame glow
+- OverlayHost title uses hero artist name
+
+---
+
+## Session: 2026-09-18 — Hatch motion kit + seamless handoffs
+
+**Agent:** grok-4.6
+**Branch:** current
+
+### Objectives
+1. Shared latch physics + HUD primitives
+2. Terminal arm → hatch → live without unmount
+3. Overlay boot → content PhaseCrossfade
+4. YouTube/Spotify jack-in (explicit consent kept)
+
+### What Was Done
+Motion kit (`lib/latch-physics.ts`, `LatchRail`, `PhaseCrossfade`, `HudReadout`). `/nk-sec` keeps one shell. Overlay interiors share ProgressMeter. Embeds: compact rail + load button. Cookie banner unchanged.
+
+### What Was Tested
+`npm run lint` (0 errors), `npm run typecheck`, `npm run build`, `npm run test` (1091 passed).
+
+---
+
+## Session: 2026-09-08 — UI/UX P2/P3 + Secret Terminal revival
+
+**Branch:** `feat/hero-legal-overlay`
+
+### Done
+- Gig/release cards: overlay button + sibling links (no nested `role=button`)
+- Unsaved-changes hook on Look & Feel, gigs, members, partners, bio, simple text
+- Admin `htmlFor` via `AdminField` on those forms
+- Reduced-motion: Classic nav/hero/footer/loader, overlays, cookie banner, overlay clip-path
+- Safe-area: overlay close, hero caret, admin mobile nav
+- Footer contrast: `text-xs` instead of `text-[10px]`
+- Secret Terminal migrated to Next: `CyberpunkOverlay` type `terminal`, `POST /api/terminal`, Look & Feel → Terminal, Konami + Morse + cheat URL
+
+---
+
 ## Session: 2026-04-02 — Comprehensive Performance Optimization
 
 **Agent:** GitHub Copilot Coding Agent

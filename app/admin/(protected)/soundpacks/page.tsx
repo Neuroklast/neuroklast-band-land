@@ -2,19 +2,22 @@ import { createClient } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import { deleteSoundpack } from '@/app/admin/_actions/soundpacks'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 
 export default async function SoundpacksPage() {
   let items: Array<{ id: string; title: string; display_order: number }> = []
 
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('soundpacks')
       .select('id, title, display_order')
       .order('display_order', { ascending: true })
-    items = data ?? []
+    if (error) loadError = true
+    else items = data ?? []
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
@@ -31,8 +34,15 @@ export default async function SoundpacksPage() {
           </Link>
         }
       />
-      {items.length === 0 ? (
-        <p className="text-zinc-400 text-sm">No soundpacks yet.</p>
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load soundpacks. Check the database connection.</p>
+      ) : items.length === 0 ? (
+        <div className="space-y-3">
+          <p className="text-zinc-400 text-sm">No soundpacks yet.</p>
+          <Link href="/admin/soundpacks/new" className="inline-flex min-h-[44px] items-center text-sm text-zinc-300 underline hover:text-white">
+            Create first soundpack
+          </Link>
+        </div>
       ) : (
         <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -62,12 +72,7 @@ export default async function SoundpacksPage() {
                     }}
                     className="inline"
                   >
-                    <button
-                      type="submit"
-                      className="text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      Delete
-                    </button>
+                    <ConfirmDeleteButton message="Delete this soundpack?" />
                   </form>
                 </td>
               </tr>

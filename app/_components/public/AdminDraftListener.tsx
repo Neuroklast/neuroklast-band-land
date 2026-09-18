@@ -98,14 +98,20 @@ function applyBackgroundDraft(value: Record<string, unknown>) {
     videoWrap.style.opacity = String(value.backgroundVideoOpacity)
   }
 
+  if (videoWrap && typeof value.backgroundVideoEnabled === 'boolean') {
+    videoWrap.style.display = value.backgroundVideoEnabled ? '' : 'none'
+  }
+
   const videoEl = document.querySelector<HTMLVideoElement>('[data-draft-target="bg-video"]')
   if (videoEl && typeof value.video_url === 'string') {
     if (value.video_url) {
       const source = videoEl.querySelector('source')
       if (source) source.src = value.video_url
-      else videoEl.src = value.video_url
+      else if (videoEl.src !== value.video_url) videoEl.src = value.video_url
       videoEl.load()
+      void videoEl.play?.().catch(() => {})
       videoWrap?.removeAttribute('hidden')
+      if (videoWrap) videoWrap.style.display = ''
     } else {
       videoWrap?.setAttribute('hidden', '')
     }
@@ -152,20 +158,21 @@ function applyFooterDraft(value: Record<string, unknown>) {
 }
 
 /**
- * Live admin drafts only apply when the public page is opened as the admin
- * preview iframe (`?adminPreview=1`). The real public site updates only after
- * Save → revalidate + broadcastAdminRefresh.
+ * Appearance drafts apply on any open public tab so color/opacity sliders are live.
+ * Other drafts only apply in the admin preview iframe (`?adminPreview=1`).
+ * Save still revalidates + broadcastAdminRefresh for RSC props.
  */
 export function AdminDraftListener({ enableDrafts = false }: { enableDrafts?: boolean }) {
   const router = useRouter()
 
   const onDraft = useCallback(
     (key: AdminDraftKey, value: Record<string, unknown>) => {
+      if (key === 'appearance') {
+        applyAppearanceConfig(value)
+        return
+      }
       if (!enableDrafts) return
       switch (key) {
-        case 'appearance':
-          applyAppearanceConfig(value)
-          break
         case 'hero':
           applyHeroDraft(value)
           break

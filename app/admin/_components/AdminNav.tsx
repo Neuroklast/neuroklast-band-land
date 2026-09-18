@@ -25,6 +25,8 @@ import {
   Translate,
   Key,
   Newspaper,
+  Lock,
+  Scroll,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import {
@@ -36,7 +38,9 @@ import {
 const NAV_ICONS: Record<string, Icon> = {
   '/admin': House,
   '/admin/site-config': Gear,
-  '/admin/legal': Gear,
+  '/admin/legal': Scroll,
+  '/admin/security': Lock,
+  '/admin/media': Images,
   '/admin/translations': Translate,
   '/admin/bio': TextAlignLeft,
   '/admin/members': UserCircle,
@@ -165,8 +169,13 @@ export function AdminNav({ mobileOnly = false, sidebarOnly = false, className = 
     if (!mobileOpen) return
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = prevOverflow
+      document.removeEventListener('keydown', onKey)
     }
   }, [mobileOpen])
 
@@ -183,7 +192,7 @@ export function AdminNav({ mobileOnly = false, sidebarOnly = false, className = 
       ) : null}
 
       {showMobile ? (
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-zinc-950 border-b border-zinc-800 sticky top-0 z-50">
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-zinc-950 border-b border-zinc-800 sticky top-0 z-50 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <span className="font-mono font-bold tracking-[0.2em] text-sm text-white uppercase">
           Neuroklast <span className="text-zinc-500 text-[10px] font-mono">Admin</span>
         </span>
@@ -209,21 +218,14 @@ export function AdminNav({ mobileOnly = false, sidebarOnly = false, className = 
       </div>
       ) : null}
 
-      {showMobile && mobileOpen && (
+      {showMobile && mobileOpen ? (
+        <>
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/80"
-          aria-hidden="true"
+          className="md:hidden fixed inset-0 z-[55] bg-black/80"
           onClick={() => setMobileOpen(false)}
         />
-      )}
-
-      {showMobile ? (
       <aside
-        className={[
-          'md:hidden fixed inset-y-0 left-0 z-[60] w-64 bg-zinc-950 border-r border-zinc-800',
-          'transform transition-transform duration-200',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full',
-        ].join(' ')}
+        className="md:hidden fixed inset-y-0 left-0 z-[60] w-64 bg-zinc-950 border-r border-zinc-800"
         aria-label="Mobile admin navigation"
       >
         <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
@@ -254,6 +256,7 @@ export function AdminNav({ mobileOnly = false, sidebarOnly = false, className = 
           </div>
         </div>
       </aside>
+        </>
       ) : null}
     </>
   )

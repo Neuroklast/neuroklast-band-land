@@ -5,6 +5,8 @@ import type { SiteLanguage } from '@/lib/i18n'
 import { parseTranslationsConfig, type CustomTranslations } from '@/lib/translations-config'
 import type { AppearanceConfigInput } from '@/lib/apply-appearance-config'
 import type { AppearanceTheme } from '@/lib/appearance-presets'
+import { parseTerminalConfig, type TerminalConfig } from '@/lib/terminal-config'
+import { parseOverlayAnimationPool } from '@/lib/overlay-animations'
 
 export interface PublicSiteBootstrap {
   customTranslations: CustomTranslations
@@ -12,6 +14,14 @@ export interface PublicSiteBootstrap {
   languages: SiteLanguage[]
   /** Full appearance row for fonts/effects — applied on every public page. */
   appearance: AppearanceConfigInput
+  terminal: TerminalConfig
+  artistName: string
+}
+
+function parseArtistName(raw: unknown): string {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return 'NEUROKLAST'
+  const headline = (raw as Record<string, unknown>).headline
+  return typeof headline === 'string' && headline.trim() ? headline.trim() : 'NEUROKLAST'
 }
 
 function parseAppearanceBootstrap(raw: unknown): AppearanceConfigInput {
@@ -37,6 +47,7 @@ function parseAppearanceBootstrap(raw: unknown): AppearanceConfigInput {
     cardSurfaceOpacity: typeof obj.cardSurfaceOpacity === 'number' ? obj.cardSurfaceOpacity : undefined,
     faviconUrl: typeof obj.faviconUrl === 'string' ? obj.faviconUrl : undefined,
     lookId: typeof obj.lookId === 'string' ? obj.lookId : undefined,
+    overlayAnimations: parseOverlayAnimationPool(obj.overlayAnimations ?? obj.overlayAnimation),
     theme,
   }
 }
@@ -49,7 +60,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
     const { data } = await supabase
       .from('site_config')
       .select('key, value')
-      .in('key', ['translations', 'analytics', 'languages', 'appearance'])
+      .in('key', ['translations', 'analytics', 'languages', 'appearance', 'terminal', 'hero'])
 
     const rows = (data ?? []) as Array<{ key: string; value: unknown }>
     const rowMap = Object.fromEntries(rows.map((row) => [row.key, row.value]))
@@ -58,6 +69,8 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       analyticsConfig: parseAnalyticsConfig(rowMap.analytics),
       languages: parseLanguagesConfig(rowMap.languages),
       appearance: parseAppearanceBootstrap(rowMap.appearance),
+      terminal: parseTerminalConfig(rowMap.terminal),
+      artistName: parseArtistName(rowMap.hero),
     }
   } catch {
     return {
@@ -65,6 +78,8 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       analyticsConfig: parseAnalyticsConfig(null),
       languages: parseLanguagesConfig(null),
       appearance: {},
+      terminal: parseTerminalConfig(null),
+      artistName: 'NEUROKLAST',
     }
   }
 }

@@ -28,6 +28,7 @@ import { displayReleaseType } from '@/lib/release-type'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { onMediaImageError } from '@/lib/media-fallback'
 import type { PublicReleaseCardItem } from '@/lib/public-fetch'
+import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
 import { SectionEmpty } from './SectionWrapper'
@@ -69,22 +70,13 @@ function ReleaseBrowseCard({
   onClick: () => void
 }) {
   return (
-    <article
-      className="cyber-card group cursor-pointer overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic"
-      onClick={(event) => {
-        const target = event.target
-        if (target instanceof Element && target.closest('a')) return
-        onClick()
-      }}
-      onKeyDown={(event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return
-        event.preventDefault()
-        onClick()
-      }}
-      role="button"
-      tabIndex={0}
-      aria-label={`Open release details for ${release.title}`}
-    >
+    <article className="cyber-card group relative overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic">
+      <button
+        type="button"
+        className="absolute inset-0 z-0 cursor-pointer"
+        onClick={onClick}
+        aria-label={`Open release details for ${release.title}`}
+      />
       <div className="aspect-square overflow-hidden bg-muted">
         {release.coverUrl ? (
           <img
@@ -102,7 +94,7 @@ function ReleaseBrowseCard({
         )}
       </div>
 
-      <div className="space-y-4 p-4">
+      <div className="pointer-events-none relative z-[1] space-y-4 p-4">
         <div className="space-y-2">
           <div className="data-label" data-theme-color="data-label">
             // REL.{release.release_date?.slice(0, 4) ?? '----'}
@@ -129,7 +121,7 @@ function ReleaseBrowseCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${release.title} on ${link.platform}`}
-                  className="cyber-border inline-flex items-center gap-2 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] hover-glitch"
+                  className="pointer-events-auto relative z-[1] cyber-border inline-flex min-h-[44px] items-center gap-2 px-2 py-1 font-mono text-xs uppercase tracking-[0.2em] hover-glitch"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span>{link.platform}</span>
@@ -145,19 +137,13 @@ function ReleaseBrowseCard({
 
 function SwipeReleaseCard({ release, onClick }: { release: PublicReleaseCardItem; onClick: () => void }) {
   return (
-    <div
-      className="cyber-card group cursor-pointer overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic"
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          onClick()
-        }
-      }}
-      aria-label={`Open release details for ${release.title}`}
-    >
+    <div className="cyber-card group relative overflow-hidden border border-border transition-all hover:border-primary/50 hover-chromatic">
+      <button
+        type="button"
+        className="absolute inset-0 z-0 cursor-pointer"
+        onClick={onClick}
+        aria-label={`Open release details for ${release.title}`}
+      />
       <div className="relative aspect-square overflow-hidden bg-black">
         {release.coverUrl ? (
           <img
@@ -188,6 +174,7 @@ function SwipeReleaseCard({ release, onClick }: { release: PublicReleaseCardItem
 }
 
 export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
+  const { t } = useLocale()
   const { openOverlay } = useOverlay()
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<ReleaseTypeFilter>('')
@@ -229,13 +216,13 @@ export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
         className="mb-8 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to home
+        {t('newsletter.backHome')}
       </Link>
 
       <BrowseToolbar
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search releases by title or type…"
+        searchPlaceholder={t('releases.searchPlaceholder')}
         filters={RELEASE_TYPE_FILTERS}
         activeFilter={typeFilter}
         onFilterChange={handleFilterChange}
@@ -243,7 +230,7 @@ export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
       />
 
       {filteredReleases.length === 0 ? (
-        <SectionEmpty label="No releases match your search" />
+        <SectionEmpty label={t('releases.noSearchResults')} />
       ) : (
         <>
           <div className="hidden gap-6 md:grid md:grid-cols-3 lg:grid-cols-4">

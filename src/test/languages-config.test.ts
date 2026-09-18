@@ -41,6 +41,10 @@ describe('parseLanguagesConfig', () => {
     ])
   })
 
+  it('expands a lone English locale to all built-ins', () => {
+    expect(parseLanguagesConfig([{ code: 'en', label: 'English' }])).toEqual(BUILTIN_LOCALES)
+  })
+
   it('uses built-in labels when label is omitted', () => {
     const parsed = parseLanguagesConfig([{ code: 'de' }])
     expect(parsed).toEqual([{ code: 'de', label: 'Deutsch', flag: '' }])

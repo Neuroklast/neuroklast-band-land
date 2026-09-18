@@ -16,7 +16,7 @@ interface AdminPreviewPaneProps {
 }
 
 export function AdminPreviewPane({ children }: AdminPreviewPaneProps) {
-  const [mode, setMode] = useState<PreviewMode>('split')
+  const [mode, setMode] = useState<PreviewMode>('editor')
   const [device, setDevice] = useState<PreviewDevice>('desktop')
   const iframeRef = useRef<HTMLIFrameElement>(null)
 

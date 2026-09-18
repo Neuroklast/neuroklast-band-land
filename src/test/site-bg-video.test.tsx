@@ -24,4 +24,18 @@ describe('SiteBgVideo opacity', () => {
     expect(wrap).toBeTruthy()
     expect(wrap.style.opacity).toBe('0.8')
   })
+
+  it('uses the custom video src when provided', async () => {
+    const { container } = render(<SiteBgVideo src="https://cdn.example/custom.mp4" />)
+    await act(async () => {})
+    const video = container.querySelector('[data-draft-target="bg-video"]') as HTMLVideoElement
+    expect(video).toBeTruthy()
+    expect(video.getAttribute('src')).toBe('https://cdn.example/custom.mp4')
+  })
+
+  it('does not render when disabled', async () => {
+    const { container } = render(<SiteBgVideo src="https://cdn.example/custom.mp4" enabled={false} />)
+    await act(async () => {})
+    expect(container.querySelector('[data-draft-target="bg-video"]')).toBeNull()
+  })
 })

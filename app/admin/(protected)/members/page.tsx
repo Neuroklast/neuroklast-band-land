@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { deleteMember } from '@/app/admin/_actions/members'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import MemberForm from './MemberForm'
 import { MemberVisibilityToggle } from './MemberVisibilityToggle'
 
@@ -17,16 +18,18 @@ export default async function MembersPage() {
     photo_storage_path: string | null
     photo_url: string | null
   }> = []
+  let loadError = false
 
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('members')
       .select('id, name, role, display_order, active, photo_storage_path, photo_url')
       .order('display_order', { ascending: true })
-    members = data ?? []
+    if (error) loadError = true
+    else members = data ?? []
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
@@ -39,7 +42,11 @@ export default async function MembersPage() {
         <h2 className="text-sm font-medium text-zinc-400 mb-4">Add member</h2>
         <MemberForm />
       </div>
-      {members.length > 0 && (
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load members. Check the database connection.</p>
+      ) : members.length === 0 ? (
+        <p className="text-zinc-400 text-sm">No members yet. Use the form above to add the first one.</p>
+      ) : (
         <div>
           <h2 className="text-sm font-medium text-zinc-400 mb-4">Existing members</h2>
           <div className="overflow-x-auto">
@@ -86,9 +93,7 @@ export default async function MembersPage() {
                           Edit
                         </Link>
                         <form action={async () => { 'use server'; await deleteMember(member.id) }}>
-                          <button type="submit" className="text-red-400 hover:text-red-300 text-xs">
-                            Delete
-                          </button>
+                          <ConfirmDeleteButton message="Delete this member?" className="inline-flex min-h-[44px] items-center px-2 text-xs text-red-400 hover:text-red-300" />
                         </form>
                       </td>
                     </tr>

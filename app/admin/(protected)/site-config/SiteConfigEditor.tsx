@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 
 interface SiteConfigEditorProps {
   configKey: string
@@ -19,8 +20,10 @@ export default function SiteConfigEditor({
   currentValue,
 }: SiteConfigEditorProps) {
   const [value, setValue] = useState(currentValue)
+  const [savedValue, setSavedValue] = useState(currentValue)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  useUnsavedChanges(value !== savedValue)
 
   async function handleSave() {
     setStatus('saving')
@@ -34,6 +37,9 @@ export default function SiteConfigEditor({
       setErrorMsg(result.error)
     } else {
       setStatus('saved')
+      setSavedValue(value)
+      const { broadcastAdminRefresh } = await import('@/lib/admin-draft-channel')
+      broadcastAdminRefresh()
       setTimeout(() => setStatus('idle'), 2000)
     }
   }
@@ -45,6 +51,7 @@ export default function SiteConfigEditor({
         <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
       </div>
       <textarea
+        id={`site-config-${configKey}`}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={4}

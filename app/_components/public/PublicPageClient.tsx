@@ -158,7 +158,7 @@ export function PublicPageClient({
             </div>
 
             {filteredReleases.length === 0 ? (
-              <SectionEmpty label="Releases coming soon" />
+              <SectionEmpty label={t('releases.noReleases')} />
             ) : releaseLayout === 'swipe' ? (
               <ReleasesSwipeLayout releases={layoutReleases} renderCard={renderLayoutCard} />
             ) : (

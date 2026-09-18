@@ -38,7 +38,7 @@ describe('normalizeReleaseTitleKey', () => {
   it('strips deluxe suffixes and parentheticals', () => {
     expect(normalizeReleaseTitleKey('Villain (Deluxe Edition)')).toBe('villain')
     expect(normalizeReleaseTitleKey('Villain - EP')).toBe('villain')
-    expect(normalizeReleaseTitleKey('Zardonic - Villain', { artistNames: ['Zardonic'] })).toBe('villain')
+    expect(normalizeReleaseTitleKey('Neuroklast - Villain', { artistNames: ['Neuroklast'] })).toBe('villain')
   })
 })
 
@@ -67,11 +67,11 @@ describe('releasesAreDuplicates', () => {
   })
 
   it('merges Mars / Going Under / Kernel Breaker cross-source singles', () => {
-    const opts = { artistNames: ['Zardonic'] }
+    const opts = { artistNames: ['Neuroklast'] }
 
     const marsSpotify = row({
       id: 'mars-sp',
-      title: 'Mars (Zardonic Remix)',
+      title: 'Mars (Neuroklast Remix)',
       type: 'single',
       release_date: '2026-06-19',
       spotify_id: 'mars-spotify',
@@ -79,7 +79,7 @@ describe('releasesAreDuplicates', () => {
     })
     const marsItunes = row({
       id: 'mars-it',
-      title: 'Mars (Zardonic Remix) - Single',
+      title: 'Mars (Neuroklast Remix) - Single',
       type: 'single',
       release_date: '2026-06-19',
       itunes_id: 'mars-itunes',
@@ -109,7 +109,7 @@ describe('releasesAreDuplicates', () => {
 
     const goingSpotify = row({
       id: 'gu-sp',
-      title: 'Going Under (Zardonic Remix)',
+      title: 'Going Under (Neuroklast Remix)',
       type: 'single',
       release_date: '2026-03-01',
       spotify_id: 'gu-spotify',
@@ -117,11 +117,11 @@ describe('releasesAreDuplicates', () => {
     })
     const goingItunes = row({
       id: 'gu-it',
-      title: 'Going Under (Zardonic Remix) - Single',
+      title: 'Going Under (Neuroklast Remix) - Single',
       type: 'single',
       release_date: '2026-03-01',
       itunes_id: 'gu-itunes',
-      tracks: [{ title: 'Going Under (Zardonic Remix)' }, { title: 'Going Under' }],
+      tracks: [{ title: 'Going Under (Neuroklast Remix)' }, { title: 'Going Under' }],
       streaming_links: [
         { platform: 'appleMusic', url: 'https://music.apple.com/album/gu1' },
         { platform: 'boomplay', url: 'https://www.boomplay.com/gu1' },
@@ -133,37 +133,37 @@ describe('releasesAreDuplicates', () => {
   it('merges fuzzy titles with complementary links even when release dates differ', () => {
     const a = row({
       id: '1',
-      title: 'Going Under (Zardonic Remix)',
+      title: 'Going Under (Neuroklast Remix)',
       type: 'single',
       release_date: '2025-12-01',
       streaming_links: [{ platform: 'spotify', url: 'https://open.spotify.com/album/7BqEidErPMNiUXCRE0dV2n' }],
     })
     const b = row({
       id: '2',
-      title: 'Going Under (Zardonic Remix) - Single',
+      title: 'Going Under (Neuroklast Remix) - Single',
       type: 'single',
       release_date: '2026-03-01',
       streaming_links: [{ platform: 'appleMusic', url: 'https://music.apple.com/us/album/x/1440000000' }],
     })
-    expect(releasesAreDuplicates(a, b, { artistNames: ['Zardonic'] })).toBe(true)
+    expect(releasesAreDuplicates(a, b, { artistNames: ['Neuroklast'] })).toBe(true)
   })
 
   it('merges rows that only have platform ids inside streaming_links', () => {
     const a = row({
       id: '1',
-      title: 'Going Under (Zardonic Remix)',
+      title: 'Going Under (Neuroklast Remix)',
       type: 'single',
       release_date: '2026-03-01',
       streaming_links: [{ platform: 'spotify', url: 'https://open.spotify.com/album/7BqEidErPMNiUXCRE0dV2n' }],
     })
     const b = row({
       id: '2',
-      title: 'Going Under (Zardonic Remix) - Single',
+      title: 'Going Under (Neuroklast Remix) - Single',
       type: 'single',
       release_date: '2026-03-01',
       streaming_links: [{ platform: 'appleMusic', url: 'https://music.apple.com/us/album/x/1440000000' }],
     })
-    expect(releasesAreDuplicates(a, b, { artistNames: ['Zardonic'] })).toBe(true)
+    expect(releasesAreDuplicates(a, b, { artistNames: ['Neuroklast'] })).toBe(true)
   })
 
   it('merges iTunes single with Spotify album listing for the same title', () => {
@@ -220,7 +220,7 @@ describe('dedupeCatalogueImportItems', () => {
         {
           externalId: 'itunes-1',
           metadata: {
-            title: 'Zardonic - Revolution',
+            title: 'Neuroklast - Revolution',
             type: 'album',
             release_date: '2015-01-01',
             description: null,
@@ -245,7 +245,7 @@ describe('dedupeCatalogueImportItems', () => {
           },
         },
       ],
-      { artistNames: ['Zardonic'] },
+      { artistNames: ['Neuroklast'] },
     )
 
     expect(deduped).toHaveLength(1)
@@ -346,19 +346,19 @@ describe('findManualMergeRejectionReason', () => {
   it('allows cross-source duplicates to be merged manually', () => {
     const a = row({
       id: '1',
-      title: 'Going Under (Zardonic Remix)',
+      title: 'Going Under (Neuroklast Remix)',
       type: 'single',
       release_date: '2026-03-01',
       spotify_id: 'sp1',
     })
     const b = row({
       id: '2',
-      title: 'Going Under (Zardonic Remix) - Single',
+      title: 'Going Under (Neuroklast Remix) - Single',
       type: 'single',
       release_date: '2026-03-01',
       itunes_id: 'it1',
     })
-    expect(findManualMergeRejectionReason([a, b], { artistNames: ['Zardonic'] })).toBeNull()
+    expect(findManualMergeRejectionReason([a, b], { artistNames: ['Neuroklast'] })).toBeNull()
   })
 
   it('rejects unrelated releases with the same base title but different years', () => {
@@ -386,14 +386,14 @@ describe('findManualMergeRejectionReason', () => {
   it('rejects selections where only some releases are related', () => {
     const mars = row({
       id: '1',
-      title: 'Mars (Zardonic Remix)',
+      title: 'Mars (Neuroklast Remix)',
       type: 'single',
       release_date: '2026-06-19',
       spotify_id: 'sp1',
     })
     const marsItunes = row({
       id: '2',
-      title: 'Mars (Zardonic Remix) - Single',
+      title: 'Mars (Neuroklast Remix) - Single',
       type: 'single',
       release_date: '2026-06-19',
       itunes_id: 'it1',
@@ -405,7 +405,7 @@ describe('findManualMergeRejectionReason', () => {
       release_date: '2010-01-01',
     })
     expect(
-      findManualMergeRejectionReason([mars, marsItunes, unrelated], { artistNames: ['Zardonic'] }),
+      findManualMergeRejectionReason([mars, marsItunes, unrelated], { artistNames: ['Neuroklast'] }),
     ).toMatch(/not all related/i)
   })
 })
@@ -432,13 +432,13 @@ describe('buildConsolidatedReleaseUpdate', () => {
   it('replaces Spotify canonical cover with iTunes duplicate cover', () => {
     const canonical = row({
       id: '1',
-      title: 'Mars (Zardonic Remix)',
+      title: 'Mars (Neuroklast Remix)',
       cover_storage_path: 'releases/spotify-mars',
       cover_url: 'https://i.scdn.co/image/mars',
     })
     const duplicate = row({
       id: '2',
-      title: 'Mars (Zardonic Remix) - Single',
+      title: 'Mars (Neuroklast Remix) - Single',
       cover_storage_path: 'releases/itunes-mars',
       cover_url: 'https://is1-ssl.mzstatic.com/mars.jpg',
       itunes_id: '999',

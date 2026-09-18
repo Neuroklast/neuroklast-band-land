@@ -615,10 +615,13 @@
   opacity: 0.7;
 }
 
-.surface-section-panel {
+.surface-section-panel,
+.theme-card.surface-section-panel,
+[data-theme] .theme-card.surface-section-panel {
   background-color: var(--surface-section-bg-fallback);
   background-color: var(--surface-section-bg);
   backdrop-filter: var(--surface-section-backdrop);
+  -webkit-backdrop-filter: var(--surface-section-backdrop);
   border-width: 1px;
   border-style: solid;
   border-color: color-mix(
@@ -1018,8 +1021,14 @@
   }
 }
 
+.hero-powerglitch,
+.hero-powerglitch > div {
+  width: 100%;
+}
+
 .hero-logo-glitch img,
-.hero-logo-stage img {
+.hero-logo-stage img,
+.hero-powerglitch img {
   display: block;
   width: 100%;
   height: auto;
@@ -1289,6 +1298,23 @@
   .hero-boot-hud {
     display: none;
   }
+}
+
+[data-cyberpunk-modal] .data-label {
+  text-shadow: 0 0 6px color-mix(in srgb, currentColor 35%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-cyberpunk-modal] .data-label {
+    animation: overlay-crt-idle 4.5s ease-in-out infinite;
+  }
+}
+
+@keyframes overlay-crt-idle {
+  0%, 100% { opacity: 0.65; }
+  46% { opacity: 0.8; }
+  50% { opacity: 0.7; }
+  54% { opacity: 0.84; }
 }
 
 /* `.hero-logo-glitch` sizing rules live above (boot + sizing box). */

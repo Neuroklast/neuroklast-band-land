@@ -75,7 +75,7 @@ export const FACTORY_RESET_SITE_CONFIG: readonly FactorySiteConfigSeed[] = [
       { id: 'music-highlights', label: 'Music Highlights', visible: true, order: 5 },
       { id: 'releases', label: 'Discography', visible: true, order: 6 },
       { id: 'social', label: 'Connect', visible: true, order: 7 },
-      { id: 'spotify', label: 'Music Stream', visible: true, order: 8 },
+      { id: 'spotify', label: 'Listen', visible: true, order: 8 },
       { id: 'merchandise', label: 'Merchandise', visible: true, order: 9 },
       { id: 'soundpacks', label: 'Soundpacks', visible: true, order: 10 },
       { id: 'gigs', label: 'Events', visible: true, order: 11 },

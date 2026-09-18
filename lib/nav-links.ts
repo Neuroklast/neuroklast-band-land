@@ -12,7 +12,7 @@ export interface NavLink {
 }
 
 /** Section config ids that never appear in the main nav (no scroll target or hero). */
-export const NAV_EXCLUDED_SECTION_IDS = new Set(['hero', 'social', 'connect', 'spotify'])
+export const NAV_EXCLUDED_SECTION_IDS = new Set(['hero', 'social', 'connect'])
 
 /** Maps site_config section id → public DOM anchor id. */
 export const SECTION_ANCHOR_BY_ID: Record<string, string> = {
@@ -28,6 +28,7 @@ export const SECTION_ANCHOR_BY_ID: Record<string, string> = {
   news: 'news',
   newsletter: 'newsletter',
   contact: 'contact',
+  spotify: 'spotify',
 }
 
 const NAV_DEFAULT_LABELS: Record<string, string> = {
@@ -43,15 +44,17 @@ const NAV_DEFAULT_LABELS: Record<string, string> = {
   news: 'News',
   newsletter: 'Newsletter',
   contact: 'Contact',
+  spotify: 'Listen',
 }
 
-/** Live neuroklast.net nav (Classic HUD) — not the Zardonic/CMS mega-menu. */
+/** Live neuroklast.net nav (Classic HUD) — not the Neuroklast/CMS mega-menu. */
 export const NEUROKLAST_NAV_SECTION_IDS = [
   'news',
   'bio',
   'gallery',
   'gigs',
   'releases',
+  'spotify',
   'media',
   'contact',
 ] as const
@@ -95,19 +98,21 @@ export function buildNavLinks(sections: SectionConfig[]): NavLink[] {
     }))
 }
 
-/** Seven Classic HUD items matching neuroklast.net, in live order. */
+/** Visible homepage sections with a public anchor, in CMS order. */
+export function navItemsFromSections(
+  sections?: SectionConfig[],
+): Array<{ id: string; label: string }> {
+  return buildNavLinks(sections ?? DEFAULT_SECTIONS).map((link) => ({
+    id: link.href.replace(/^#/, ''),
+    label: link.label,
+  }))
+}
+
+/** @deprecated Prefer navItemsFromSections — kept for compact HUD fallbacks. */
 export function buildNeuroklastNavItems(
   sections?: SectionConfig[],
 ): Array<{ id: string; label: string }> {
-  const visible = new Set(
-    (sections ?? DEFAULT_SECTIONS)
-      .filter((section) => section.visible)
-      .map((section) => section.id),
-  )
-  return NEUROKLAST_NAV_SECTION_IDS.filter((id) => visible.has(id)).map((id) => ({
-    id: SECTION_ANCHOR_BY_ID[id] ?? id,
-    label: NAV_DEFAULT_LABELS[id] ?? id,
-  }))
+  return navItemsFromSections(sections)
 }
 
 export function buildNavLinksFromConfig(raw: unknown): NavLink[] {

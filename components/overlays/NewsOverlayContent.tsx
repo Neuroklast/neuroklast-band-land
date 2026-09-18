@@ -25,7 +25,7 @@ export function NewsOverlayContent({ data }: NewsOverlayContentProps) {
     >
       {cover ? (
         <div className="overflow-hidden border border-primary/20 bg-muted">
-          <img src={cover} alt="" className="max-h-[50vh] w-full object-contain" />
+          <img src={cover} alt={data.title} className="max-h-[50vh] w-full object-contain" />
         </div>
       ) : null}
 

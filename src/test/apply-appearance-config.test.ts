@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest'
-import { applyAppearanceConfig } from '@/lib/apply-appearance-config'
+import { applyAppearanceConfig, buildAppearanceInlineCss } from '@/lib/apply-appearance-config'
 
 describe('applyAppearanceConfig', () => {
   let root: HTMLElement
@@ -194,5 +194,17 @@ describe('applyAppearanceConfig', () => {
     expect(root.classList.contains('no-glitch')).toBe(true)
     applyAppearanceConfig({ glitchEnabled: true }, root)
     expect(root.classList.contains('no-glitch')).toBe(false)
+  })
+})
+
+describe('buildAppearanceInlineCss', () => {
+  it('emits section opacity vars without touching the document', () => {
+    const css = buildAppearanceInlineCss({
+      theme: { cardColor: 'oklch(0.05 0 0)' },
+      sectionPanelOpacity: 0.4,
+    })
+    expect(css).toContain(':root {')
+    expect(css).toContain('--surface-section-bg: oklch(0.05 0 0 / 0.4);')
+    expect(css).toContain('--surface-section-backdrop: blur(4px);')
   })
 })

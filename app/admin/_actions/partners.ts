@@ -4,7 +4,7 @@ import { runAdminAction } from '@/app/admin/_actions/auth'
 import { createSupabaseActionContext } from '@/app/admin/_actions/context'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { safeExternalUrlOptional } from '@/lib/safe-external-url'
 import { z } from 'zod'
@@ -77,6 +77,7 @@ export async function createPartner(formData: FormData) {
 
     revalidatePath('/admin/partners')
     revalidatePath('/')
+    revalidateTag('homepage-site-data', 'max')
     return { success: true }
   }, 'Unable to create partner.')
 }
@@ -99,6 +100,7 @@ export async function updatePartner(id: string, formData: FormData) {
 
     revalidatePath('/admin/partners')
     revalidatePath('/')
+    revalidateTag('homepage-site-data', 'max')
     return { success: true }
   }, 'Unable to update partner.')
 }
@@ -115,6 +117,7 @@ export async function deletePartner(id: string) {
 
     revalidatePath('/admin/partners')
     revalidatePath('/')
+    revalidateTag('homepage-site-data', 'max')
     return { success: true }
   }, 'Unable to delete partner.')
 }
@@ -132,6 +135,28 @@ export async function togglePartnerVisibility(id: string, active: boolean) {
 
     revalidatePath('/admin/partners')
     revalidatePath('/')
+    revalidateTag('homepage-site-data', 'max')
     return { success: true }
   }, 'Unable to update partner visibility.')
+}
+
+export async function togglePartnerLogoWhite(id: string, logoWhite: boolean) {
+  const supabaseAdmin = createAdminClient()
+
+  const dispatchResult = dispatchAdminActionAsAdmin(
+    'update_partner',
+    { id, logo_white: logoWhite },
+    createSupabaseActionContext(supabaseAdmin),
+  )
+  if (!dispatchResult.ok) return { error: dispatchResult.error }
+
+  return runAdminAction(async () => {
+    const { error } = await supabaseAdmin.from('partners').update({ logo_white: logoWhite }).eq('id', id)
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/partners')
+    revalidatePath('/')
+    revalidateTag('homepage-site-data', 'max')
+    return { success: true }
+  }, 'Unable to update logo fill.')
 }

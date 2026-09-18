@@ -9,7 +9,7 @@ export interface SectionsDraftEntry {
   order: number
 }
 
-const EXCLUDED_SECTION_IDS = new Set(['social', 'connect', 'spotify'])
+const EXCLUDED_SECTION_IDS = new Set(['social', 'connect'])
 
 export function parseSectionsDraft(value: Record<string, unknown>): SectionsDraftEntry[] {
   const raw = value.sections

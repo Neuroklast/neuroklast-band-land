@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { unstable_cache } from 'next/cache'
 import { createPublicClient } from '@/lib/supabaseServer'
-import { resolveImageUrl } from '@/lib/r2'
+import { resolveImageUrl, resolvePublicAssetUrl } from '@/lib/r2'
 import { splitGigsByDate } from '@/lib/gig-browse'
 import { PageLayout } from '@/layouts/PageLayout'
 import { CookieConsent } from '@/components/CookieConsent'
-import KonamiListener from '@/components/KonamiListener'
+
 import { GallerySection } from './_components/public/GallerySection'
 import { MediaSection } from './_components/public/MediaSection'
 import { LookBackground, LookEffects, LookFooter, LookHero, LookNav, PublicBoot } from './_components/public/LookChrome'
@@ -22,10 +22,17 @@ import { GigsSection } from './_components/public/GigsSection'
 import { NewsSection } from './_components/public/NewsSection'
 import { ContactSection } from './_components/public/ContactSection'
 import { parseLookId } from '@/lib/looks'
-import { parseBackgroundVideoOpacity } from '@/lib/background-config'
-import { SectionDivider } from './_components/public/SectionWrapper'
+import { parseHeroPowerGlitch } from '@/lib/hero-glitch-config'
+import {
+  DEFAULT_SITE_BACKGROUND_VIDEO,
+  parseBackgroundVideoEnabled,
+  parseBackgroundVideoOpacity,
+  resolveSiteBackgroundVideoSrc,
+} from '@/lib/background-config'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { SocialSection } from './_components/public/SocialSection'
+import { SpotifySection } from './_components/public/SpotifySection'
+import { resolveSpotifyArtistUri } from '@/lib/spotify-artist'
 import {
   mapMediaDownloadRow,
   type MediaDownloadDbRow,
@@ -34,7 +41,7 @@ import {
   mapReleaseRowToOverlayRelease,
   type ReleaseDbRow,
 } from '@/lib/release-public-mapper'
-import { buildNeuroklastNavItems, filterHomeSectionsToNav } from '@/lib/nav-links'
+import { navItemsFromSections } from '@/lib/nav-links'
 import {
   parseSections,
   withoutExcludedSections,
@@ -69,12 +76,18 @@ interface GigRow {
   id: string; title: string; venue: string | null; city: string | null
   country: string | null; event_date: string; ticket_url: string | null
   festival_name: string | null; description: string | null
+  gig_type?: string | null
+  photo_storage_path?: string | null
+  photo_url?: string | null
+  event_links?: Record<string, unknown> | null
 }
 type ReleaseRow = ReleaseDbRow
 interface PartnerRow {
   id: string; name: string; url: string | null
   logo_storage_path: string | null; logo_url: string | null; category: string
   logo_white?: boolean | null
+  description?: string | null
+  socials?: Record<string, string> | null
 }
 interface MusicHighlightRow {
   id: string; title: string; youtube_url: string; description: string | null
@@ -175,8 +188,8 @@ async function fetchAll() {
       // maybeSingle: empty bio table is not an error (single() would log PGRST116)
       supabase.from('bio').select('content, achievements, collabs').limit(1).maybeSingle(),
       supabase.from('members').select('id, name, role, bio, photo_storage_path, photo_url').eq('active', true).order('display_order', { ascending: true }),
-      supabase.from('gigs').select('id, title, venue, city, country, event_date, ticket_url, festival_name, description').eq('active', true).order('event_date', { ascending: true }),
-      supabase.from('partners').select('id, name, url, logo_storage_path, logo_url, category, logo_white').eq('active', true).order('display_order', { ascending: true }),
+      supabase.from('gigs').select('id, title, venue, city, country, event_date, ticket_url, festival_name, description, gig_type, photo_storage_path, photo_url, event_links').eq('active', true).order('event_date', { ascending: true }),
+      supabase.from('partners').select('id, name, url, logo_storage_path, logo_url, category, logo_white, description, socials').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('music_highlights').select('id, title, youtube_url, description').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('merchandise').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('soundpacks').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
@@ -262,6 +275,7 @@ function getConfig(rows: SiteConfigRow[], key: string): Record<string, unknown> 
 // (PostgREST egress amplification: every homepage hit used to cost 13 queries.)
 const fetchAllCached = unstable_cache(fetchAll, ['homepage-site-data'], {
   revalidate: 60,
+  tags: ['site-config', 'homepage-site-data'],
 })
 
 export default async function HomePage({
@@ -286,7 +300,7 @@ export default async function HomePage({
   )
   const sections = isAdminPreview
     ? allSections
-    : filterHomeSectionsToNav(allSections.filter((s) => s.visible))
+    : allSections.filter((s) => s.visible)
 
   // Extract section style overrides from site_config (centralized helper to avoid repetition)
   // Note: sections config can be array of sections or object with styleOverrides
@@ -308,6 +322,11 @@ export default async function HomePage({
   const galleryOverrides = getSectionOverrides('gallery')
   const bioOverrides = getSectionOverrides('bio')
   const creditOverrides = getSectionOverrides('creditHighlights')
+  const catalogueSync = getConfig(configRows, 'catalogue_sync')
+  const spotifyUri = resolveSpotifyArtistUri([
+    social.find((link) => link.platform.toLowerCase().includes('spotify'))?.url,
+    typeof catalogueSync.spotifyArtistId === 'string' ? catalogueSync.spotifyArtistId : null,
+  ])
 
   const lookId = parseLookId(
     typeof appearanceConfig.lookId === 'string' ? appearanceConfig.lookId : 'neuroklast-classic',
@@ -351,6 +370,8 @@ export default async function HomePage({
     logoUrl: resolveImageUrl(p.logo_storage_path, p.logo_url),
     category: p.category,
     logoWhite: p.logo_white !== false,
+    description: p.description ?? null,
+    socials: p.socials ?? null,
   })
 
   const credits = partners.filter((p) => p.category === 'credit').map(mapPartnerItem)
@@ -374,10 +395,6 @@ export default async function HomePage({
   // Gigs: split upcoming vs past (shared helper — same rules as /gigs browse)
   const { upcoming, past } = splitGigsByDate(gigs)
 
-  function isSectionVisible(id: string) {
-    return allSections.some((s) => s.id === id && s.visible)
-  }
-
   function wrapForPreview(content: ReactNode, section: SectionConfig) {
     if (!isAdminPreview) return content
     return (
@@ -394,12 +411,18 @@ export default async function HomePage({
 
   // Build slots for the mandatory PageLayout (AGENTS §6)
   const backgroundConfig = getConfig(configRows, 'background')
+  const configuredVideoSrc = resolveSiteBackgroundVideoSrc(
+    backgroundConfig.video_storage_path,
+    backgroundConfig.video_url,
+  )
   const backgroundLayers = (
     <>
       <LookBackground
         lookId={lookId}
         siteName={siteName}
+        videoUrl={configuredVideoSrc ?? DEFAULT_SITE_BACKGROUND_VIDEO}
         videoOpacity={parseBackgroundVideoOpacity(backgroundConfig.backgroundVideoOpacity)}
+        videoEnabled={parseBackgroundVideoEnabled(backgroundConfig.backgroundVideoEnabled, true)}
       />
     </>
   )
@@ -410,7 +433,7 @@ export default async function HomePage({
     <LookNav
       lookId={lookId}
       siteName={siteName}
-      items={buildNeuroklastNavItems(allSections)}
+        items={navItemsFromSections(allSections)}
     />
   )
 
@@ -447,7 +470,6 @@ export default async function HomePage({
       <PublicBoot lookId={lookId} loadingScreen={getConfig(configRows, 'loadingScreen')} />
       <AdminDraftListener enableDrafts={isAdminPreview} />
       <CookieConsent privacyPolicyUrl={privacyPolicyUrl} />
-      <KonamiListener />
     </>
   )
 
@@ -466,7 +488,7 @@ export default async function HomePage({
     >
       {/* Main content – sections rendered in DB-controlled order (inside PageLayout <main>) */}
       {sections.map((section, idx) => {
-        const divider = idx > 0 ? <SectionDivider /> : null
+        const divider = null
         switch (section.id) {
           case 'hero':
             return wrapForPreview(
@@ -477,7 +499,7 @@ export default async function HomePage({
                   tagline={heroTagline}
                   genres={heroGenres}
                   logoUrl={
-                    resolveImageUrl(
+                    resolvePublicAssetUrl(
                       typeof heroConfig.logoImageStoragePath === 'string' ? heroConfig.logoImageStoragePath : null,
                       typeof heroConfig.logoUrl === 'string'
                         ? heroConfig.logoUrl
@@ -487,13 +509,22 @@ export default async function HomePage({
                     ) ?? '/brand/nk-logo-red-bold.png'
                   }
                   titleImageUrl={
-                    resolveImageUrl(
+                    resolvePublicAssetUrl(
                       typeof heroConfig.titleImageStoragePath === 'string' ? heroConfig.titleImageStoragePath : null,
                       typeof heroConfig.titleImageUrl === 'string'
                         ? heroConfig.titleImageUrl
                         : '/brand/neuroklast-wordmark-red.svg',
                     ) ?? '/brand/neuroklast-wordmark-red.svg'
                   }
+                  logoWidthPercent={
+                    typeof heroConfig.logoWidthPercent === 'number' ? heroConfig.logoWidthPercent : undefined
+                  }
+                  logoWidthPercentMobile={
+                    typeof heroConfig.logoWidthPercentMobile === 'number'
+                      ? heroConfig.logoWidthPercentMobile
+                      : undefined
+                  }
+                  powerGlitch={parseHeroPowerGlitch(heroConfig.powerGlitch)}
                   heroButtons={[
                     {
                       id: 'initialize',
@@ -580,6 +611,18 @@ export default async function HomePage({
                 {divider}
                 <MusicHighlightsSection
                   highlights={musicHighlights}
+                  heading={section.label}
+                  intro={section.intro}
+                />
+              </SectionErrorBoundary>,
+              section,
+            )
+           case 'spotify':
+            return wrapForPreview(
+              <SectionErrorBoundary key="spotify" sectionName="Listen">
+                {divider}
+                <SpotifySection
+                  uri={spotifyUri}
                   heading={section.label}
                   intro={section.intro}
                 />
@@ -695,13 +738,7 @@ export default async function HomePage({
         }
       })}
 
-      {/* Fallback: if sections config is empty or contact not included */}
-      {!isAdminPreview && !isSectionVisible('contact') && (
-        <SectionErrorBoundary sectionName="Contact">
-          <SectionDivider />
-          <ContactSection heading="Contact" privacyPolicyUrl={privacyPolicyUrl} />
-        </SectionErrorBoundary>
-      )}
+
     </PageLayout>
   )
 }

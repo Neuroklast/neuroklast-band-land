@@ -4,8 +4,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { deletePartner } from '@/app/admin/_actions/partners'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import PartnerForm from './PartnerForm'
 import { PartnerVisibilityToggle } from './PartnerVisibilityToggle'
+import { PartnerLogoWhiteToggle } from './PartnerLogoWhiteToggle'
 
 export default async function PartnersPage() {
   let partners: Array<{
@@ -17,17 +19,20 @@ export default async function PartnersPage() {
     active: boolean
     logo_storage_path: string | null
     logo_url: string | null
+    logo_white: boolean | null
   }> = []
 
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('partners')
-      .select('id, name, url, category, display_order, active, logo_storage_path, logo_url')
+      .select('id, name, url, category, display_order, active, logo_storage_path, logo_url, logo_white')
       .order('display_order', { ascending: true })
-    partners = data ?? []
+    if (error) loadError = true
+    else partners = data ?? []
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
@@ -40,7 +45,11 @@ export default async function PartnersPage() {
         <h2 className="text-sm font-medium text-zinc-400 mb-4">Add entry</h2>
         <PartnerForm />
       </div>
-      {partners.length > 0 && (
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load partners. Check the database connection.</p>
+      ) : partners.length === 0 ? (
+        <p className="text-zinc-400 text-sm">No credits yet. Use the form above to add the first one.</p>
+      ) : (
         <div>
           <h2 className="text-sm font-medium text-zinc-400 mb-4">Existing entries</h2>
           <div className="overflow-x-auto">
@@ -51,6 +60,7 @@ export default async function PartnersPage() {
                   <th className="text-left py-2 pr-4">Name</th>
                   <th className="text-left py-2 pr-4">Section</th>
                   <th className="text-left py-2 pr-4">Status</th>
+                  <th className="text-left py-2 pr-4">Logo fill</th>
                   <th className="text-right py-2">Actions</th>
                 </tr>
               </thead>
@@ -79,6 +89,9 @@ export default async function PartnersPage() {
                       <td className="py-2 pr-4">
                         <PartnerVisibilityToggle partnerId={partner.id} active={partner.active ?? true} />
                       </td>
+                      <td className="py-2 pr-4">
+                        <PartnerLogoWhiteToggle partnerId={partner.id} logoWhite={partner.logo_white !== false} />
+                      </td>
                       <td className="py-2 text-right space-x-2">
                         <Link
                           href={`/admin/partners/${partner.id}`}
@@ -87,9 +100,7 @@ export default async function PartnersPage() {
                           Edit
                         </Link>
                         <form action={async () => { 'use server'; await deletePartner(partner.id) }}>
-                          <button type="submit" className="text-red-400 hover:text-red-300 text-xs">
-                            Delete
-                          </button>
+                          <ConfirmDeleteButton message="Delete this partner?" className="inline-flex min-h-[44px] items-center px-2 text-xs text-red-400 hover:text-red-300" />
                         </form>
                       </td>
                     </tr>

@@ -43,9 +43,16 @@ export async function generateMetadata({
   const { slug } = await params
   const post = await loadPost(slug)
   if (!post) return { title: 'News' }
+  const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
   return {
     title: post.title,
     description: post.excerpt ?? undefined,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt ?? undefined,
+      type: 'article',
+      images: cover ? [{ url: cover }] : undefined,
+    },
   }
 }
 
@@ -85,7 +92,7 @@ export default async function NewsPostPage({
 
   return (
     <LegalPageShell>
-      <article className="mx-auto max-w-3xl px-card py-section">
+      <article className="mx-auto max-w-3xl px-card pt-[calc(var(--nk-nav-h)+1.5rem)] pb-section">
         <Link
           href="/#news"
           className="mb-8 inline-flex font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
@@ -97,7 +104,7 @@ export default async function NewsPostPage({
           <div className="mb-8 aspect-video overflow-hidden border border-border bg-muted">
             <img
               src={toDirectImageUrl(cover, { w: 1200 }) || cover}
-              alt=""
+              alt={post.title}
               className="h-full w-full object-cover"
             />
           </div>

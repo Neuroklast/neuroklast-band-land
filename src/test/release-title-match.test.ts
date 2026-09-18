@@ -48,7 +48,7 @@ describe('normalizeReleaseTitleKey', () => {
 describe('releaseTitleKeysMatch', () => {
   it('matches the and prefix variants', () => {
     expect(releaseTitleKeysMatch('takeover', 'the takeover')).toBe(true)
-    expect(releaseTitleKeysMatch('revolution', 'zardonic revolution')).toBe(true)
+    expect(releaseTitleKeysMatch('revolution', 'neuroklast revolution')).toBe(true)
   })
 })
 
@@ -144,7 +144,7 @@ describe('releasesAreDuplicates cross-source', () => {
   it('merges complementary platform ids with fuzzy titles', () => {
     const a = row({
       id: '1',
-      title: 'Zardonic - Revolution',
+      title: 'Neuroklast - Revolution',
       release_date: '2015-01-01',
       itunes_id: '100',
     })
@@ -154,6 +154,6 @@ describe('releasesAreDuplicates cross-source', () => {
       release_date: '2015-06-01',
       spotify_id: '200',
     })
-    expect(releasesAreDuplicates(a, b, { artistNames: ['Zardonic'] })).toBe(true)
+    expect(releasesAreDuplicates(a, b, { artistNames: ['Neuroklast'] })).toBe(true)
   })
 })

@@ -26,9 +26,14 @@ export interface ConsolidateReleasesResult {
   errors: string[]
 }
 
+const PURGE_ALL_ID = '00000000-0000-0000-0000-000000000000'
+
 async function purgeAllReleases(): Promise<PurgeResult> {
   const supabase = createAdminClient()
-  const { count, error } = await supabase.from('releases').delete({ count: 'exact' })
+  const { count, error } = await supabase
+    .from('releases')
+    .delete({ count: 'exact' })
+    .neq('id', PURGE_ALL_ID)
 
   if (error) throw new Error(error.message)
   return { deleted: count ?? 0 }
@@ -36,7 +41,7 @@ async function purgeAllReleases(): Promise<PurgeResult> {
 
 async function purgeAllGigs(): Promise<PurgeResult> {
   const supabase = createAdminClient()
-  const { count, error } = await supabase.from('gigs').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000')
+  const { count, error } = await supabase.from('gigs').delete({ count: 'exact' }).neq('id', PURGE_ALL_ID)
 
   if (error) throw new Error(error.message)
   return { deleted: count ?? 0 }

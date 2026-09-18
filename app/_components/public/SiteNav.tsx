@@ -41,8 +41,7 @@ function useTranslatedNavLabel(sectionId: string, fallback: string): string {
   const key = NAV_LABEL_I18N_KEYS[sectionId]
   if (!key) return fallback
   const translated = t(key)
-  // t() returns key if missing — keep English compact fallback
-  return translated === key ? fallback : translated
+  return !translated || translated === key ? fallback : translated
 }
 
 function DesktopNavLink({
@@ -124,8 +123,8 @@ export function SiteNav({ links: initialLinks }: SiteNavProps) {
   useEffect(() => {
     if (!open) return
 
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    document.documentElement.classList.add('nk-scroll-lock')
+    document.body.classList.add('nk-scroll-lock')
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false)
@@ -133,7 +132,8 @@ export function SiteNav({ links: initialLinks }: SiteNavProps) {
 
     document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.body.style.overflow = prevOverflow
+      document.documentElement.classList.remove('nk-scroll-lock')
+      document.body.classList.remove('nk-scroll-lock')
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [open])

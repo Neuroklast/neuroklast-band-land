@@ -33,6 +33,17 @@
     0 var(--nk-chamfer)
   );
 }
+[data-theme="neuroklast-classic"] .theme-card.surface-section-panel {
+  background: var(--surface-section-bg-fallback);
+  background: var(--surface-section-bg);
+  backdrop-filter: var(--surface-section-backdrop);
+  -webkit-backdrop-filter: var(--surface-section-backdrop);
+  border-color: color-mix(
+    in srgb,
+    var(--border) calc(var(--surface-section-border-opacity, 0.6) * 100%),
+    transparent
+  );
+}
 [data-theme="neuroklast-classic"] .theme-card::before {
   content: '';
   position: absolute;
@@ -156,9 +167,33 @@
 
 .neuroklast-classic-overlay-modal [data-cyberpunk-modal] {
   border-color: var(--modal-glow-color);
+  background-color: color-mix(in srgb, var(--background, #0a0a0a) 82%, transparent);
   box-shadow:
-    0 0 8px var(--modal-glow-color),
-    inset 0 0 8px color-mix(in oklch, var(--modal-glow-color), transparent 85%);
+    0 0 8px color-mix(in oklch, var(--modal-glow-color), transparent 40%),
+    0 0 20px color-mix(in oklch, var(--modal-glow-color), transparent 75%),
+    inset 0 0 8px color-mix(in oklch, var(--modal-glow-color), transparent 88%);
+}
+
+.neuroklast-classic-overlay-modal [data-cyberpunk-modal]::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 18px color-mix(in oklch, var(--modal-glow-color), transparent 55%);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .neuroklast-classic-overlay-modal [data-cyberpunk-modal]::after {
+    animation: overlay-frame-glow 4.5s ease-in-out infinite;
+  }
+}
+
+@keyframes overlay-frame-glow {
+  0%, 100% { opacity: 0.28; }
+  46% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+  54% { opacity: 0.5; }
 }
 
 .neuroklast-classic-overlay-modal [data-cyberpunk-modal-backdrop] {
@@ -428,7 +463,7 @@
   min-height: 44px;
   padding: 0.5rem 0.75rem;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: oklch(1 0 0);
   background: color-mix(in oklch, var(--primary) 4%, transparent);
   border: 1px solid color-mix(in oklch, var(--primary) 28%, transparent);

@@ -22,6 +22,13 @@ describe('i18n translation utility', () => {
     expect(t('nonexistent.key', 'en')).toBe('nonexistent.key')
   })
 
+  it('should translate secret terminal keys', () => {
+    expect(t('secretTerminal.inputPlaceholder', 'en')).toBe('Enter command...')
+    expect(t('secretTerminal.inputPlaceholder', 'de')).toBe('Befehl eingeben...')
+    expect(t('secretTerminal.terminalActive', 'en')).toBe('TERMINAL ACTIVE')
+    expect(t('secretTerminal.initSystem', 'de')).toBe('SYSTEM INITIALISIERT')
+  })
+
   it('should fall back to English when German translation is missing for unknown key', () => {
     expect(t('nonexistent.key', 'de')).toBe('nonexistent.key')
   })
@@ -62,14 +69,14 @@ describe('i18n translation utility', () => {
   })
 
   it('should handle all 8 locales as Locale type', () => {
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const locale of locales) {
       expect(typeof t('footer.admin', locale)).toBe('string')
     }
   })
 
   it('should have footer.admin translation for all 8 locales', () => {
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const locale of locales) {
       const result = t('footer.admin', locale)
       expect(result).toBeTruthy()
@@ -79,7 +86,7 @@ describe('i18n translation utility', () => {
 
   it('should have non-empty translations for all keys in all locales', () => {
     const all = getTranslations()
-    const locales: Locale[] = ['en', 'de', 'ru', 'it', 'es', 'pt', 'ja', 'ko']
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
     for (const [key, langs] of Object.entries(all)) {
       for (const locale of locales) {
         const val = langs[locale]
@@ -108,6 +115,19 @@ describe('i18n translation utility', () => {
     expect(t('cookie.essentialOnly', 'en')).toBe('Essential Only')
   })
 
+  it('cookie copy cites TDDDG and Art. 6, never TTDSG or TMG', () => {
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
+    for (const locale of locales) {
+      const essential = t('cookie.essentialDesc', locale)
+      const basis = t('cookie.analyticsBasis', locale)
+      expect(essential, locale).not.toMatch(/TTDSG/)
+      expect(essential, locale).not.toMatch(/\bTMG\b/)
+      expect(essential, locale).toMatch(/TDDDG/)
+      expect(basis, locale).toMatch(/Art\. 6|ст\. 6|GDPR|RGPD|제6조|第6条/)
+      expect(basis, locale).toMatch(/TDDDG/)
+    }
+  })
+
   it('getTranslations() should return all keys', () => {
     const all = getTranslations()
     expect(typeof all).toBe('object')
@@ -129,7 +149,7 @@ describe('i18n translation utility', () => {
     const codes = LOCALES.map(l => l.code)
     expect(codes).toContain('en')
     expect(codes).toContain('de')
-    expect(codes).toContain('ru')
+    expect(codes).toContain('uk')
     expect(codes).toContain('ja')
     expect(codes).toContain('ko')
   })

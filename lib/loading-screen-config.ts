@@ -1,6 +1,9 @@
 export const DEFAULT_LOADING_LOGO = '/assets/images/baphomet.svg'
 export const DEFAULT_LOADING_BOOT_LABEL = 'NEUROKLAST // BOOT SEQUENCE'
 export const DEFAULT_LOADING_DURATION_MS = 3000
+export const DEFAULT_LOADING_LOGO_SIZE_PX = 160
+export const MIN_LOADING_LOGO_SIZE_PX = 64
+export const MAX_LOADING_LOGO_SIZE_PX = 320
 
 export const DEFAULT_LOADING_HACKING_TEXTS = [
   '> INITIALIZING NEURAL INTERFACE...',
@@ -44,6 +47,12 @@ export interface LoadingScreenConfig {
   hackingTexts: string[]
   codeFragments: string[]
   durationMs: number
+  logoSizePx: number
+}
+
+export function parseLoadingLogoSizePx(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return DEFAULT_LOADING_LOGO_SIZE_PX
+  return Math.max(MIN_LOADING_LOGO_SIZE_PX, Math.min(MAX_LOADING_LOGO_SIZE_PX, Math.round(raw)))
 }
 
 function asStringList(value: unknown, fallback: string[]): string[] {
@@ -84,5 +93,6 @@ export function parseLoadingScreenConfig(raw: unknown): LoadingScreenConfig {
     hackingTexts: asStringList(source.hackingTexts, DEFAULT_LOADING_HACKING_TEXTS),
     codeFragments: asStringList(source.codeFragments, DEFAULT_LOADING_CODE_FRAGMENTS),
     durationMs,
+    logoSizePx: parseLoadingLogoSizePx(source.logoSizePx),
   }
 }

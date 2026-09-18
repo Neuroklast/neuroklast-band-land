@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       .map((value) => String(value).trim())
       .find((value) => value.includes('@')) ?? ''
   const password = String(formData.get('password') || '')
-  const redirectTo = String(formData.get('redirectTo') || '/admin/releases')
+  const redirectTo = String(formData.get('redirectTo') || '/admin')
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     if (!rl.allowed) {
       const url = new URL('/admin/login', request.url)
       url.searchParams.set('msg', 'Too many attempts. Please try again in a few minutes.')
-      if (redirectTo && redirectTo !== '/admin/releases') {
+      if (redirectTo && redirectTo !== '/admin') {
         url.searchParams.set('redirect', redirectTo)
       }
       return NextResponse.redirect(url, 303)
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   if (!rawIdentifier) {
     const errorUrl = new URL('/admin/login', request.url)
     errorUrl.searchParams.set('msg', 'Email is required.')
-    if (redirectTo && redirectTo !== '/admin/releases') {
+    if (redirectTo && redirectTo !== '/admin') {
       errorUrl.searchParams.set('redirect', redirectTo)
     }
     return NextResponse.redirect(errorUrl, 303)
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
   if (!password) {
     const errorUrl = new URL('/admin/login', request.url)
     errorUrl.searchParams.set('msg', 'Password is required.')
-    if (redirectTo && redirectTo !== '/admin/releases') {
+    if (redirectTo && redirectTo !== '/admin') {
       errorUrl.searchParams.set('redirect', redirectTo)
     }
     return NextResponse.redirect(errorUrl, 303)
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
   const signInPayload = { email: rawIdentifier, password }
 
   // Prepare the final redirect response FIRST so setAll can attach cookies to it.
-  const finalRedirectUrl = redirectTo.startsWith('/') ? redirectTo : '/admin/releases'
+  const finalRedirectUrl = redirectTo.startsWith('/') ? redirectTo : '/admin'
   const response = NextResponse.redirect(new URL(finalRedirectUrl, request.url), 303)
 
   // Register the attempt with Supabase (writes cookies on success). We create the
@@ -117,13 +117,9 @@ export async function POST(request: Request) {
     // Small constant-time-ish delay to slow credential stuffing / brute force.
     await new Promise((resolve) => setTimeout(resolve, 450))
 
-    // On failure, redirect back to login with the real error message.
-    // Improve common confusing Supabase messages.
-    const friendlyMessage = error.message || 'Login failed'
-
     const errorUrl = new URL('/admin/login', request.url)
-    errorUrl.searchParams.set('msg', friendlyMessage)
-    if (redirectTo && redirectTo !== '/admin/releases') {
+    errorUrl.searchParams.set('error', 'auth')
+    if (redirectTo && redirectTo !== '/admin') {
       errorUrl.searchParams.set('redirect', redirectTo)
     }
     // For error path we can return a fresh redirect (no valid session cookies to propagate).

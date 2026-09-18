@@ -65,6 +65,26 @@ const SITE_CONFIG_TABS: AdminHelpEntry[] = [
     priority: 70,
   },
   {
+    id: 'site-config-loader',
+    title: 'Loading Screen',
+    description:
+      'Boot screen logo, size, duration, footer label and status lines shown before the homepage.',
+    href: `${SITE_CONFIG}?tab=loader`,
+    group: 'Look & Feel',
+    keywords: ['loader', 'boot', 'loading', 'splash', 'logo size'],
+    priority: 72,
+  },
+  {
+    id: 'site-config-terminal',
+    title: 'Secret Terminal',
+    description:
+      'Konami / custom key sequence, Morse on the nav logo, and custom terminal commands (help, clear, exit, status, info are built-in).',
+    href: `${SITE_CONFIG}?tab=terminal`,
+    group: 'Look & Feel',
+    keywords: ['terminal', 'konami', 'morse', 'easter egg', 'cheat', 'commands'],
+    priority: 74,
+  },
+  {
     id: 'site-config-advanced',
     title: 'Advanced JSON Editors',
     description:
@@ -181,7 +201,7 @@ const HOWTO_ENTRIES: AdminHelpEntry[] = [
     id: 'help-live-preview',
     title: 'How does live preview work?',
     description:
-      'Look & Feel editors broadcast drafts to a split preview pane. Toggle Desktop / Mobile on the preview header to constrain the iframe width (media queries + hero mobile width). Changes appear before Save; Save persists to the public site (~60s cache).',
+      'Look & Feel editors broadcast drafts to a split preview pane. Toggle Desktop / Mobile on the preview header to constrain the iframe width (media queries + hero mobile width). Changes appear before Save; Save revalidates the public site immediately.',
     href: `${SITE_CONFIG}?tab=theme`,
     group: 'Help',
     keywords: ['preview', 'live', 'draft', 'split', 'see changes', 'before save', 'mobile', 'desktop', 'device'],
@@ -342,7 +362,7 @@ const HOWTO_ENTRIES: AdminHelpEntry[] = [
 function navDescription(href: string, label: string): string {
   const map: Record<string, string> = {
     '/admin': 'Overview of content counts and quick links to common admin tasks.',
-    '/admin/site-config': 'Theme, background, hero, sections and site text with live split preview.',
+    '/admin/site-config': 'Theme, background, hero, loader, sections, site text and secret terminal with live split preview.',
     '/admin/legal': 'Operator identity, editorial responsibility and optional privacy policy override.',
     '/admin/translations': 'Override public UI strings per locale.',
     '/admin/bio': 'Artist biography shown on the homepage bio section.',

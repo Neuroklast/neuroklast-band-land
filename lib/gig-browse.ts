@@ -27,7 +27,7 @@ export function searchGigs(gigs: PublicGigRow[], query: string): PublicGigRow[] 
   if (!normalized) return gigs
 
   return gigs.filter((gig) => {
-    const headline = gig.festival_name || gig.title
+    const headline = gig.title || gig.festival_name
     const haystack = [
       headline,
       gig.title,

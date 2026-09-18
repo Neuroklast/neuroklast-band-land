@@ -97,7 +97,7 @@ describe('public browse pages', () => {
       overlayRelease: makeOverlayRelease(`release-${index}`, `Release ${index}`),
     }))
 
-    render(<ReleasesBrowseClient releases={releases} />)
+    renderWithLocale(<ReleasesBrowseClient releases={releases} />)
 
     expect(screen.getByRole('searchbox')).toBeInTheDocument()
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'EP 3' } })

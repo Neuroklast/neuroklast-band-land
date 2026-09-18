@@ -1,0 +1,66 @@
+import { describe, expect, it, vi } from 'vitest'
+import { DEFAULT_KONAMI_CODE } from '@/lib/konami'
+import {
+  DEFAULT_TERMINAL_COMMANDS,
+  parseTerminalConfig,
+  requestSecretTerminal,
+  resolveTerminalCommand,
+  TERMINAL_AUTH_PATH,
+  TERMINAL_OPEN_EVENT,
+  TERMINAL_RESERVED_COMMANDS,
+} from '@/lib/terminal-config'
+
+describe('parseTerminalConfig', () => {
+  it('falls back to defaults', () => {
+    const config = parseTerminalConfig(null)
+    expect(config.commands).toEqual(DEFAULT_TERMINAL_COMMANDS)
+    expect(config.secretCode).toEqual(DEFAULT_KONAMI_CODE)
+    expect(config.morseCode).toBe('...')
+  })
+
+  it('keeps custom commands and drops reserved names', () => {
+    const config = parseTerminalConfig({
+      commands: [
+        { name: 'help', description: 'nope', output: ['x'] },
+        { name: 'lore', description: 'Band lore', output: ['Industrial'] },
+        { name: 'LORE', description: 'dup', output: ['skip'] },
+      ],
+      secretCode: ['a', 'b'],
+      morseCode: '..-',
+    })
+    expect(config.commands.map((cmd) => cmd.name)).toEqual(['lore', 'status', 'info'])
+    expect(config.commands[0]).toEqual({ name: 'lore', description: 'Band lore', output: ['Industrial'] })
+    expect(config.secretCode).toEqual(['a', 'b'])
+    expect(config.morseCode).toBe('..-')
+  })
+
+  it('keeps colon command names from admin', () => {
+    const config = parseTerminalConfig({
+      commands: [{ name: 'access:vem', description: 'Secret file', output: ['OK'] }],
+    })
+    expect(config.commands.map((cmd) => cmd.name)).toContain('access:vem')
+    expect(resolveTerminalCommand(config.commands, 'access:vem')?.output).toEqual(['OK'])
+  })
+
+  it('resolves commands case-insensitively via parser', () => {
+    const config = parseTerminalConfig({
+      commands: [{ name: 'Status', description: 'ok', output: ['ONLINE'] }],
+    })
+    expect(resolveTerminalCommand(config.commands, 'status')?.output).toEqual(['ONLINE'])
+    expect(TERMINAL_RESERVED_COMMANDS).toEqual(['help', 'clear', 'exit'])
+  })
+})
+
+describe('requestSecretTerminal', () => {
+  it('exposes the dedicated auth path', () => {
+    expect(TERMINAL_AUTH_PATH).toBe('/nk-sec')
+  })
+
+  it('dispatches the terminal open event', () => {
+    const onOpen = vi.fn()
+    window.addEventListener(TERMINAL_OPEN_EVENT, onOpen)
+    requestSecretTerminal()
+    expect(onOpen).toHaveBeenCalledTimes(1)
+    window.removeEventListener(TERMINAL_OPEN_EVENT, onOpen)
+  })
+})

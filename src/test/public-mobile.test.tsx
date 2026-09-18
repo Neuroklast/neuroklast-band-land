@@ -42,11 +42,31 @@ describe('public mobile regression guards', () => {
     expect(src).toMatch(/role="dialog"/)
     expect(src).toMatch(/aria-modal="true"/)
     expect(src).toMatch(/GalleryOverlayContent/)
+    expect(src).toMatch(/nk-scroll-lock/)
+    expect(src).toMatch(/100svh/)
+  })
+
+  it('OverlayHost does not duplicate page scroll lock', () => {
+    const src = readSource('app/_components/public/OverlayHost.tsx')
+    expect(src).not.toMatch(/overflow/)
+    expect(src).not.toMatch(/lenis/)
   })
 
   it('SiteNav mobile links have 44px touch targets', () => {
     const src = readSource('app/_components/public/SiteNav.tsx')
     expect(src).toMatch(/min-h-\[44px\]/)
+  })
+
+  it('Classic Navigation is the live chrome with 44px targets and reduced-motion', () => {
+    const src = readSource('themes/neuroklast-classic/Navigation.tsx')
+    expect(src).toMatch(/min-h-\[44px\]/)
+    expect(src).toMatch(/min-w-\[44px\]/)
+    expect(src).toMatch(/safe-area-inset-top/)
+    expect(src).toMatch(/useReducedMotion/)
+    expect(src).toMatch(/aria-expanded/)
+    expect(src).toMatch(/nk-scroll-lock/)
+    expect(src).toMatch(/overflow-y-auto/)
+    expect(src).toMatch(/navItemLabel/)
   })
 
   it('Gallery overlay dots are keyboard buttons', () => {

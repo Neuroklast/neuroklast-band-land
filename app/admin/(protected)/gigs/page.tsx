@@ -2,44 +2,54 @@ import { createClient } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import { deleteGig } from '@/app/admin/_actions/gigs'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import { GigsSyncButton } from './GigsSyncButton'
 
 export default async function GigsPage() {
-  let gigs: Array<{ id: string; title: string; city: string | null; event_date: string }> = []
+  let gigs: Array<{ id: string; title: string; venue: string | null; event_date: string }> = []
+  let loadError = false
   try {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('gigs')
-      .select('id, title, city, event_date')
+      .select('id, title, venue, event_date')
       .order('event_date', { ascending: false })
-    gigs = data ?? []
+    if (error) loadError = true
+    else gigs = data ?? []
   } catch {
-    // ignore
+    loadError = true
   }
 
   return (
     <div>
       <AdminPageHeader
-        title="Gigs"
-        description="Manage upcoming and past events shown in the Events section."
+        title="Events"
+        description="Manage upcoming and past events shown on the public site."
         action={
           <Link href="/admin/gigs/new" className="px-3 py-1.5 text-sm rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors">
-            + New Gig
+            + New event
           </Link>
         }
       />
       <div className="mb-6">
         <GigsSyncButton />
       </div>
-      {gigs.length === 0 ? (
-        <p className="text-zinc-400 text-sm">No gigs yet.</p>
+      {loadError ? (
+        <p role="alert" className="text-sm text-red-400">Could not load gigs. Check the database connection.</p>
+      ) : gigs.length === 0 ? (
+        <div className="space-y-3">
+          <p className="text-zinc-400 text-sm">No events yet.</p>
+          <Link href="/admin/gigs/new" className="inline-flex min-h-[44px] items-center text-sm text-zinc-300 underline hover:text-white">
+            Create first event
+          </Link>
+        </div>
       ) : (
         <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-800 text-zinc-400">
-              <th className="text-left py-2 pr-4">Title</th>
-              <th className="text-left py-2 pr-4">City</th>
+              <th className="text-left py-2 pr-4">Event</th>
+              <th className="text-left py-2 pr-4">Location</th>
               <th className="text-left py-2 pr-4">Date</th>
               <th className="text-right py-2">Actions</th>
             </tr>
@@ -48,12 +58,12 @@ export default async function GigsPage() {
             {gigs.map((gig) => (
               <tr key={gig.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
                 <td className="py-2 pr-4 text-zinc-200">{gig.title}</td>
-                <td className="py-2 pr-4 text-zinc-400">{gig.city ?? '—'}</td>
+                <td className="py-2 pr-4 text-zinc-400">{gig.venue ?? '—'}</td>
                 <td className="py-2 pr-4 text-zinc-400">{new Date(gig.event_date).toLocaleDateString()}</td>
                 <td className="py-2 text-right space-x-2">
                   <Link href={`/admin/gigs/${gig.id}`} className="text-zinc-400 hover:text-white transition-colors">Edit</Link>
                   <form action={async () => { 'use server'; await deleteGig(gig.id) }} className="inline">
-                    <button type="submit" className="text-red-400 hover:text-red-300 transition-colors">Delete</button>
+                    <ConfirmDeleteButton message="Delete this event?" />
                   </form>
                 </td>
               </tr>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { m } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, CalendarBlank, MapPin } from '@phosphor-icons/react'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { paginateItems } from '@/lib/browse-pagination'
@@ -13,7 +13,8 @@ import {
   type GigTimingFilter,
 } from '@/lib/gig-browse'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
-import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
 import { SectionEmpty } from './SectionWrapper'
@@ -38,38 +39,31 @@ function GigBrowseCard({
   gig: PublicGigRow
   onClick: () => void
 }) {
-  const location = [gig.city, gig.country].filter(Boolean).join(', ')
-  const headline = gig.festival_name || gig.title
+  const prefersReducedMotion = useReducedMotion()
+  const location = formatGigLocation(gig)
+  const headline = eventDisplayName(gig)
 
   return (
     <m.article
-      initial={{ opacity: 0, x: -24 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, x: -24 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.45 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.45 }}
     >
-      <div
-        className="cyber-card hover-scan hover-noise group relative w-full cursor-pointer border border-border p-6 transition-colors hover:border-primary/50"
-        onClick={() => onClick()}
-        onKeyDown={(event) => {
-          if (event.key !== 'Enter' && event.key !== ' ') return
-          event.preventDefault()
-          onClick()
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label={`Open event details for ${headline}`}
-      >
+      <div className="cyber-card hover-scan hover-noise group relative w-full border border-border p-6 transition-colors hover:border-primary/50">
+        <button
+          type="button"
+          className="absolute inset-0 z-[1] cursor-pointer"
+          onClick={() => onClick()}
+          aria-label={`Open event details for ${headline}`}
+        />
         <div className="scan-line" aria-hidden="true" />
-        <div className="data-label mb-2" data-theme-color="data-label">
+        <div className="pointer-events-none relative z-[2] data-label mb-2" data-theme-color="data-label">
           // EVENT.{formatEventLabel(gig.event_date)}
         </div>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="pointer-events-none relative z-[2] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0 space-y-2">
             <h3 className="font-mono text-xl font-bold uppercase hover-chromatic">{headline}</h3>
-            {gig.venue ? (
-              <p className="font-mono text-sm text-muted-foreground">{gig.venue}</p>
-            ) : null}
             <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
               {location ? (
                 <span className="flex items-center gap-2">
@@ -89,8 +83,7 @@ function GigBrowseCard({
               href={sanitizeExternalHref(gig.ticket_url)}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(event) => event.stopPropagation()}
-              className="cyber-border hover-glitch inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
+              className="cyber-border hover-glitch pointer-events-auto relative z-[3] inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
             >
               Tickets
             </a>
@@ -102,6 +95,7 @@ function GigBrowseCard({
 }
 
 export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
+  const { t } = useLocale()
   const { openOverlay } = useOverlay()
   const [searchQuery, setSearchQuery] = useState('')
   const [timingFilter, setTimingFilter] = useState<GigTimingFilter>('all')
@@ -135,21 +129,30 @@ export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
         className="mb-8 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to home
+        {t('newsletter.backHome')}
       </Link>
 
       <BrowseToolbar
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search events by venue, city, or festival…"
-        filters={GIG_TIMING_FILTERS}
+        searchPlaceholder={t('gigs.searchPlaceholder')}
+        filters={GIG_TIMING_FILTERS.map((filter) => ({
+          ...filter,
+          label: t(
+            filter.value === 'upcoming'
+              ? 'gigs.upcoming'
+              : filter.value === 'past'
+                ? 'gigs.past'
+                : 'common.all',
+          ),
+        }))}
         activeFilter={timingFilter}
         onFilterChange={handleFilterChange}
         resultCount={filteredGigs.length}
       />
 
       {filteredGigs.length === 0 ? (
-        <SectionEmpty label="No events match your search" />
+        <SectionEmpty label={t('gigs.noSearchResults')} />
       ) : (
         <>
           <div className="space-y-4">

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { m, useReducedMotion } from 'framer-motion'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { HOMEPAGE_GIG_LIMIT } from '@/lib/browse-pagination'
-import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
@@ -49,8 +49,8 @@ function GigList({
       </div>
 
       {visibleGigs.map((gig, index) => {
-        const location = [gig.city, gig.country].filter(Boolean).join(', ')
-        const headline = gig.festival_name || gig.title
+        const location = formatGigLocation(gig)
+        const headline = eventDisplayName(gig)
 
         return (
           <m.article
@@ -65,31 +65,23 @@ function GigList({
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
-            <div
-              className="nk-os-frame group relative w-full cursor-pointer p-6"
-              onClick={() => onGigClick(gig)}
-              onKeyDown={(event) => {
-                if (event.key !== 'Enter' && event.key !== ' ') return
-                event.preventDefault()
-                onGigClick(gig)
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={`Open event details for ${headline}`}
-            >
+            <div className="nk-os-frame group relative w-full p-6">
+              <button
+                type="button"
+                className="absolute inset-0 z-[1] cursor-pointer"
+                onClick={() => onGigClick(gig)}
+                aria-label={`Open event details for ${headline}`}
+              />
               <div className="scan-line" aria-hidden="true" />
-              <div className="data-label mb-2" data-theme-color="data-label">
+              <div className="pointer-events-none relative z-[2] data-label mb-2" data-theme-color="data-label">
                 // EVENT.{formatEventLabel(gig.event_date)}
               </div>
 
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="pointer-events-none relative z-[2] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="min-w-0 space-y-2">
                   <h3 className="font-mono text-xl font-bold uppercase text-primary">
                     {headline}
                   </h3>
-                  {gig.venue ? (
-                    <p className="font-mono text-sm text-muted-foreground">{gig.venue}</p>
-                  ) : null}
                   <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
                     {location ? (
                       <span className="flex items-center gap-2">
@@ -109,8 +101,7 @@ function GigList({
                     href={sanitizeExternalHref(gig.ticket_url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(event) => event.stopPropagation()}
-                     className="nk-os-btn nk-os-btn--fill shrink-0 tracking-[0.25em]"
+                    className="nk-os-btn nk-os-btn--fill pointer-events-auto relative z-[3] shrink-0 tracking-[0.25em]"
                   >
                     Tickets
                   </a>

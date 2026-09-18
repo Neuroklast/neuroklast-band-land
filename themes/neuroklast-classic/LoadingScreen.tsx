@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useEffect, useState, useRef } from 'react'
 import type { LoadingScreenSlotProps } from '@/lib/types'
 import { parseLoadingScreenConfig } from '@/lib/loading-screen-config'
@@ -13,6 +13,7 @@ const codeRainParams = Array.from({ length: 20 }, (_, i) => ({
 
 export default function NeuroklastClassicLoadingScreen({ onComplete, config }: LoadingScreenSlotProps) {
   const settings = parseLoadingScreenConfig(config)
+  const prefersReducedMotion = useReducedMotion()
   const [progress, setProgress] = useState(0)
   const onCompleteRef = useRef(onComplete)
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
@@ -43,7 +44,8 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background overflow-hidden"
+      className="fixed inset-0 flex items-center justify-center bg-background overflow-hidden"
+      style={{ zIndex: 'var(--z-system)' }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
@@ -54,8 +56,8 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
             <motion.div
               key={i}
               className="whitespace-nowrap"
-              animate={{ opacity: [0.05, 0.4, 0.05] }}
-              transition={{ duration: params.duration, repeat: Infinity, delay: params.delay }}
+              animate={prefersReducedMotion ? { opacity: 0.15 } : { opacity: [0.05, 0.4, 0.05] }}
+              transition={{ duration: params.duration, repeat: prefersReducedMotion ? 0 : Infinity, delay: prefersReducedMotion ? 0 : params.delay }}
               style={{ transform: `translateX(${params.translateX}px)` }}
             >
               {settings.codeFragments[i % settings.codeFragments.length]}
@@ -75,22 +77,23 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
           style={{
             filter: 'drop-shadow(0 0 20px oklch(0.50 0.22 25 / 0.4)) drop-shadow(0 0 40px oklch(0.50 0.22 25 / 0.15))',
           }}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: [0.7, 1, 0.7], scale: 1 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.5 }}
+          animate={prefersReducedMotion ? { opacity: 1, scale: 1 } : { opacity: [0.7, 1, 0.7], scale: 1 }}
           transition={{
-            opacity: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-            scale: { duration: 0.8 },
+            opacity: { duration: 2, repeat: prefersReducedMotion ? 0 : Infinity, ease: 'easeInOut' },
+            scale: { duration: prefersReducedMotion ? 0 : 0.8 },
           }}
         >
           <img
             src={settings.logoUrl}
-            alt=""
-            className="w-40 h-40 object-contain"
+            alt={settings.bootLabel || 'Neuroklast'}
+            className="object-contain"
+            style={{ width: settings.logoSizePx, height: settings.logoSizePx }}
           />
         </motion.div>
 
         {/* Progress bar */}
-        <div className="relative w-80 h-2 bg-secondary/30 overflow-hidden border border-primary/20">
+        <div className="relative h-2 w-[min(20rem,calc(100vw-2rem))] bg-secondary/30 overflow-hidden border border-primary/20">
           <motion.div
             className="absolute inset-0 bg-primary"
             initial={{ width: 0 }}
@@ -108,8 +111,8 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
         <div className="flex flex-col gap-3 items-center">
           <motion.div
             className="text-primary font-mono text-base tracking-[0.08em]"
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.5, repeat: prefersReducedMotion ? 0 : Infinity }}
           >
             {Math.floor(progress)}%
           </motion.div>
@@ -124,9 +127,9 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
           </motion.div>
 
           <motion.div
-            className="text-primary/20 font-mono text-[9px] tracking-wider"
-            animate={{ opacity: [0.1, 0.3, 0.1] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            className="text-primary/50 font-mono text-xs tracking-wider"
+            animate={prefersReducedMotion ? { opacity: 0.4 } : { opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 2, repeat: prefersReducedMotion ? 0 : Infinity }}
           >
             {codeFragment}
           </motion.div>
@@ -135,9 +138,9 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
 
       <div className="absolute bottom-8 left-0 right-0 text-center">
         <motion.div
-          className="text-muted-foreground/30 font-mono text-[10px] tracking-[0.08em]"
-          animate={{ opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="text-muted-foreground font-mono text-xs tracking-[0.08em]"
+          animate={prefersReducedMotion ? { opacity: 0.7 } : { opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 2, repeat: prefersReducedMotion ? 0 : Infinity }}
         >
           {settings.bootLabel}
         </motion.div>

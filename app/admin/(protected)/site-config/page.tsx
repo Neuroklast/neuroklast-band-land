@@ -30,6 +30,7 @@ export default async function SiteConfigPage() {
           merchandiseValue={(rowMap['merchandise'] ?? {}) as Record<string, unknown>}
           footerValue={(rowMap['footer'] ?? {}) as Record<string, unknown>}
           loadingScreenValue={(rowMap['loadingScreen'] ?? {}) as Record<string, unknown>}
+          terminalValue={(rowMap['terminal'] ?? {}) as Record<string, unknown>}
           advancedConfigs={[]}
         />
       </Suspense>

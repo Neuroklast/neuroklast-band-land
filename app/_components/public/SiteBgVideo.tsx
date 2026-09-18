@@ -10,16 +10,25 @@ import { prefersReducedMotion, shouldDisableVideoBackground } from '@/lib/device
 import { useLenisContext } from '@/contexts/LenisContext'
 import { attachScrollVideoSync } from '@/lib/scroll-video-sync'
 
-export function SiteBgVideo({ opacity }: { opacity?: number }) {
+export function SiteBgVideo({
+  src,
+  opacity,
+  enabled = true,
+}: {
+  src?: string
+  opacity?: number
+  enabled?: boolean
+}) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const { lenis } = useLenisContext()
   const [on, setOn] = useState(false)
+  const videoSrc = src?.trim() || DEFAULT_SITE_BACKGROUND_VIDEO
   const videoOpacity = parseBackgroundVideoOpacity(opacity, DEFAULT_BACKGROUND_VIDEO_OPACITY)
 
   useEffect(() => {
-    if (shouldDisableVideoBackground() || prefersReducedMotion()) return
+    if (!enabled || shouldDisableVideoBackground() || prefersReducedMotion()) return
     setOn(true)
-  }, [])
+  }, [enabled])
 
   useEffect(() => {
     if (!on) return
@@ -52,21 +61,22 @@ export function SiteBgVideo({ opacity }: { opacity?: number }) {
     }
   }, [on, lenis])
 
-  if (!on) return null
+  if (!on || !enabled) return null
 
   return (
     <div
       aria-hidden
       className="pointer-events-none fixed inset-0"
       data-draft-target="bg-video-wrap"
-      style={{ zIndex: 1, contain: 'layout paint', opacity: videoOpacity }}
+      style={{ zIndex: 'var(--z-bg-video, 1)', contain: 'layout paint', opacity: videoOpacity }}
     >
       <video
+        key={videoSrc}
         ref={videoRef}
-        src={DEFAULT_SITE_BACKGROUND_VIDEO}
+        src={videoSrc}
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         disablePictureInPicture
         data-draft-target="bg-video"
         className="absolute inset-0 h-full w-full object-cover"

@@ -61,7 +61,7 @@ When starting a new session, add an entry to `docs/DEVELOPMENT_LOG.md` using thi
 These MUST remain completely unchanged across all sessions:
 
 1. **UI / Surface** — Every visible component, layout, animation, loading screen stays as-is unless explicitly requested
-2. **Secret Terminal** — The `/terminal` URL and Konami-code feature must remain reachable at all times (marketing feature)
+2. **Secret Terminal** — Konami / custom key sequence, Morse on the nav logo, and `?access-secret-terminal-NK-666` must remain reachable (marketing feature). UI is `CyberpunkOverlay` type `terminal`.
 3. **Security features** — Rate limiting, DOMPurify, IP blocklist, TOTP 2FA, attacker profiling must not be removed or weakened
 4. **Cyberpunk aesthetic** — Code rain, glitch effects, HUD elements, Framer Motion animations must remain intact
 
@@ -115,13 +115,13 @@ Before closing the session, update:
 
 | File | Purpose |
 |------|---------|
-| `src/components/Hero.tsx` | Hero section, logo, title image, glitch effects |
+| `app/_components/public/HeroSection.tsx` | Hero section, logo, title image, glitch effects |
 | `src/index.css` | Global CSS, all custom utility classes |
 | `vercel.json` | Security headers (CSP, HSTS, etc.), URL rewrites |
 | `api/_schemas.ts` | Zod validation schemas for all API endpoints |
 | `api/_ratelimit.ts` | Rate limiting implementation |
-| `middleware.ts` | Vercel Edge Middleware — circuit breaker, IP gate |
-| `api/terminal.ts` | Secret Terminal API endpoint |
+| `proxy.ts` | Next.js request proxy — auth gate, bot shield, IP gate (`middleware.ts` is not used) |
+| `app/api/terminal/route.ts` | Secret Terminal API endpoint |
 | `src/lib/config.ts` | Global configuration constants |
 | `src/lib/types.ts` | Shared TypeScript types |
 | `docs/SECURITY_AUDIT.md` | Security audit findings and fix status |

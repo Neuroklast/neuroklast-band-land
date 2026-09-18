@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 export default function LoginForm() {
@@ -8,9 +8,15 @@ export default function LoginForm() {
 
   const errorParam = searchParams.get('error')
   const msgParam = searchParams.get('msg')
-  const redirectTo = searchParams.get('redirect') ?? '/admin/releases'
+  const redirectTo = searchParams.get('redirect') ?? '/admin'
 
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    const reset = () => setIsLoading(false)
+    window.addEventListener('pageshow', reset)
+    return () => window.removeEventListener('pageshow', reset)
+  }, [])
 
   // Server-provided generic auth error message from the /submit handler
   const serverAuthError = msgParam && errorParam !== 'forbidden' && errorParam !== 'config' ? msgParam : null
@@ -24,17 +30,22 @@ export default function LoginForm() {
         </div>
 
         {errorParam === 'forbidden' && (
-          <div className="mb-4 p-3 rounded bg-red-950 border border-red-800 text-red-300 text-sm">
+          <div role="alert" className="mb-4 p-3 rounded bg-red-950 border border-red-800 text-red-300 text-sm">
             Access denied. Your account does not have admin privileges.
           </div>
         )}
         {errorParam === 'config' && (
-          <div className="mb-4 p-3 rounded bg-red-950 border border-red-800 text-red-300 text-sm">
+          <div role="alert" className="mb-4 p-3 rounded bg-red-950 border border-red-800 text-red-300 text-sm">
             Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.
           </div>
         )}
-        {serverAuthError && (
-          <div className="mb-4 p-3 rounded bg-red-950 border border-red-800 text-red-300 text-sm">
+        {errorParam === 'auth' && (
+          <div role="alert" className="mb-4 p-3 rounded bg-red-950 border border-red-800 text-red-300 text-sm">
+            Invalid email or password.
+          </div>
+        )}
+        {serverAuthError && errorParam !== 'auth' && (
+          <div role="alert" className="mb-4 p-3 rounded bg-red-950 border border-red-800 text-red-300 text-sm">
             {serverAuthError}
           </div>
         )}
@@ -84,7 +95,7 @@ export default function LoginForm() {
           <button
             type="submit"
             aria-busy={isLoading}
-            className={`w-full py-2 px-4 rounded bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium transition-colors${isLoading ? ' opacity-50 pointer-events-none' : ''}`}
+            className={`w-full min-h-[44px] py-2 px-4 rounded bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium transition-colors${isLoading ? ' opacity-50 pointer-events-none' : ''}`}
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>

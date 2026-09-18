@@ -4,14 +4,14 @@ import { buildOgHtml, escHtml, resolveReleaseOg } from '@/lib/og-share'
 describe('og-share', () => {
   it('escapes HTML in OG output', () => {
     const html = buildOgHtml(
-      'https://zardonic.com',
+      'https://neuroklast.net',
       {
         title: '<script>alert(1)</script>',
         description: 'Test & demo',
         image: '/og-image.png',
         hash: '#releases',
       },
-      'Zardonic',
+      'Neuroklast',
     )
     expect(html).not.toContain('<script>')
     expect(html).toContain('&lt;script&gt;')
@@ -28,7 +28,7 @@ describe('og-share', () => {
         cover_storage_path: null,
         cover_url: null,
       },
-      'Zardonic',
+      'Neuroklast',
     )
     expect(meta.title).toContain('Album')
     expect(meta.hash).toBe('#releases')
