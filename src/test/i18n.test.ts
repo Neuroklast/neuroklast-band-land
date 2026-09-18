@@ -115,6 +115,19 @@ describe('i18n translation utility', () => {
     expect(t('cookie.essentialOnly', 'en')).toBe('Essential Only')
   })
 
+  it('cookie copy cites TDDDG and Art. 6, never TTDSG or TMG', () => {
+    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
+    for (const locale of locales) {
+      const essential = t('cookie.essentialDesc', locale)
+      const basis = t('cookie.analyticsBasis', locale)
+      expect(essential, locale).not.toMatch(/TTDSG/)
+      expect(essential, locale).not.toMatch(/\bTMG\b/)
+      expect(essential, locale).toMatch(/TDDDG/)
+      expect(basis, locale).toMatch(/Art\. 6|ст\. 6|GDPR|RGPD|제6조|第6条/)
+      expect(basis, locale).toMatch(/TDDDG/)
+    }
+  })
+
   it('getTranslations() should return all keys', () => {
     const all = getTranslations()
     expect(typeof all).toBe('object')

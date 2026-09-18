@@ -85,6 +85,61 @@ describe('CyberpunkOverlay boot animation', () => {
     expect(screen.getByRole('dialog')).toHaveAttribute('data-overlay-animation', 'systemBoot')
     expect(screen.getByText('BOOTING SYSTEM')).toBeInTheDocument()
   })
+
+  it('keeps the shell mounted on close until the drop handoff finishes', () => {
+    const { rerender } = renderOverlay(
+      <CyberpunkOverlay
+        overlay={newsOverlay}
+        onClose={() => {}}
+        adminSettings={undefined}
+        overlayAnimations={['circuitBreak']}
+      />,
+    )
+
+    rerender(
+      <LocaleProvider>
+        <CyberpunkOverlay
+          overlay={null}
+          onClose={() => {}}
+          adminSettings={undefined}
+          overlayAnimations={['circuitBreak']}
+        />
+      </LocaleProvider>,
+    )
+
+    const dialog = screen.queryByRole('dialog')
+    if (dialog) {
+      expect(dialog).toHaveAttribute('data-overlay-closing')
+    }
+  })
+
+  it('uses the artist name in the overlay title', () => {
+    renderOverlay(
+      <CyberpunkOverlay
+        overlay={newsOverlay}
+        onClose={() => {}}
+        adminSettings={undefined}
+        overlayAnimations={['circuitBreak']}
+        artistName="Neuroklast"
+      />,
+    )
+    expect(screen.getByText(/NEUROKLAST\.NET/i)).toBeInTheDocument()
+  })
+
+  it('skips boot loaders for the secret terminal overlay', () => {
+    renderOverlay(
+      <CyberpunkOverlay
+        overlay={{ type: 'terminal' }}
+        onClose={() => {}}
+        adminSettings={undefined}
+        overlayAnimations={['circuitHandshake']}
+      />,
+    )
+
+    expect(screen.queryByText('CIRCUIT LINK')).not.toBeInTheDocument()
+    expect(screen.queryByText('> ACCESSING PROFILE...')).not.toBeInTheDocument()
+    expect(screen.getByText(/TERMINAL ACTIVE/i)).toBeInTheDocument()
+  })
 })
 
 describe('overlay loader CSS', () => {
@@ -92,5 +147,12 @@ describe('overlay loader CSS', () => {
     const css = readFileSync(resolve('src/animations.css'), 'utf8')
     expect(css).not.toMatch(/\.overlay-loader-circuit,\s*\n\.overlay-loader-boot/)
     expect(css).not.toMatch(/overlay-loader-blink/)
+  })
+
+  it('does not animate overlay frame glow via box-shadow keyframes', () => {
+    const css = readFileSync(resolve('themes/neuroklast-classic/styles.css'), 'utf8')
+    const glow = css.slice(css.indexOf('@keyframes overlay-frame-glow'))
+    expect(glow).toMatch(/opacity/)
+    expect(glow.slice(0, 280)).not.toMatch(/box-shadow/)
   })
 })

@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLenisContext } from '@/contexts/LenisContext'
-import { useOverlay } from '@/contexts/OverlayContext'
 import { useTerminalConfig } from '@/contexts/TerminalConfigContext'
 import { useMorseCode } from '@/hooks/use-morse-code'
+import { requestSecretTerminal } from '@/lib/terminal-config'
 import OverlayEffectsLayer from '@/components/OverlayEffectsLayer'
 import { SiteBgVideo } from './SiteBgVideo'
 import { getLook } from '@/lib/looks'
@@ -55,14 +55,12 @@ export function LookNav({
   items: NavigationSlotProps['items']
 }) {
   const { scrollTo } = useLenisContext()
-  const { openOverlay } = useOverlay()
   const { morseCode } = useTerminalConfig()
   const router = useRouter()
   const pathname = usePathname()
-  const openTerminal = useCallback(() => openOverlay({ type: 'terminal' }), [openOverlay])
   const morseHandlers = useMorseCode({
     targetCode: morseCode,
-    onMatch: openTerminal,
+    onMatch: requestSecretTerminal,
   })
 
   useEffect(() => {

@@ -1,8 +1,9 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { OVERLAY_REVEAL_PHASE_DELAY_MS } from '@/lib/config'
 import { useOverlayBootProgress } from '@/hooks/use-overlay-boot-progress'
+import { HudReadout } from '@/components/motion/HudReadout'
+import { ProgressMeter } from '@/components/motion/ProgressMeter'
 
 export function OverlayCircuitHandshake({
   durationMs = OVERLAY_REVEAL_PHASE_DELAY_MS,
@@ -15,17 +16,13 @@ export function OverlayCircuitHandshake({
     <div className="flex min-h-[min(400px,50vh)] flex-col items-center justify-center gap-4 px-8 py-16">
       <div className="overlay-loader-circuit" aria-hidden />
       <p className="font-mono text-[9px] uppercase tracking-widest text-primary/40">CIRCUIT LINK</p>
-      <div className="flex w-32 items-center gap-2">
-        <div className="h-0.5 flex-1 overflow-hidden bg-primary/20">
-          <motion.div
-            className="h-full origin-left bg-primary"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: durationMs / 1000, ease: 'linear' }}
-          />
-        </div>
-        <span className="font-mono text-[9px] tabular-nums text-primary/50">{pct}%</span>
-      </div>
+      <HudReadout
+        items={[
+          { label: 'SYNC', value: pct >= 100 ? 'OK' : 'PEND', hot: pct >= 100 },
+          { label: 'CHAN', value: 'NK.0' },
+        ]}
+      />
+      <ProgressMeter progress={pct / 100} className="w-32" />
       <div className="overlay-loader-boot" aria-hidden>
         <span />
         <span />

@@ -13,7 +13,9 @@ import {
 } from '@/lib/config'
 import { overlayAnimationPoolKey, pickOverlayAnimationFromPool } from '@/lib/overlay-animations'
 import { getOverlaySessionKey } from '@/lib/overlay-session'
-import { getRandomProgressiveMode } from '@/lib/progressive-overlay-modes'
+import { PhaseCrossfade } from '@/components/motion/PhaseCrossfade'
+import { useLinearProgress } from '@/hooks/use-linear-progress'
+import { MOTION } from '@/lib/motion-tokens'
 import { ContactOverlayContent } from '@/components/overlays/ContactOverlayContent'
 import { MemberOverlayContent } from '@/components/overlays/MemberOverlayContent'
 import { GigOverlayContent } from '@/components/overlays/GigOverlayContent'
@@ -35,27 +37,10 @@ const OVERLAY_LOADING_TEXTS = [
   '> IDENTITY VERIFIED',
 ]
 
-const DEFAULT_MODAL_GLOW = 'rgba(180, 50, 50, 0.3)'
-const INTERIOR_REVEAL_MS = 1000
+const OVERLAY_CLOSE_TEXT = '> DROPPING LINK...'
+const OVERLAY_CLOSE_LABEL = 'LINK DROP'
 
-function resolveModalGlow(adminSettings: AdminSettings | undefined, alpha: number): string {
-  const fromAdmin = adminSettings?.design?.theme?.modalGlowColor
-  if (fromAdmin) {
-    if (fromAdmin.startsWith('rgba') || fromAdmin.startsWith('rgb')) return fromAdmin
-    return `color-mix(in srgb, ${fromAdmin} ${Math.round(alpha * 100)}%, transparent)`
-  }
-  if (typeof document !== 'undefined') {
-    const cssVar = getComputedStyle(document.documentElement).getPropertyValue('--modal-glow').trim()
-    if (cssVar) {
-      return `color-mix(in srgb, ${cssVar} ${Math.round(alpha * 100)}%, transparent)`
-    }
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
-    if (accent) {
-      return `color-mix(in srgb, ${accent} ${Math.round(alpha * 100)}%, transparent)`
-    }
-  }
-  return DEFAULT_MODAL_GLOW.replace('0.3', String(alpha))
-}
+const INTERIOR_REVEAL_MS = 1000
 
 interface CyberpunkOverlayProps {
   overlay: CyberpunkOverlayState | null
@@ -64,21 +49,6 @@ interface CyberpunkOverlayProps {
   artistName?: string
   overlayAnimations?: string[]
   overlayClassName?: string
-}
-
-function isDirectRevealType(type: string | undefined): boolean {
-  return (
-    type === 'release' ||
-    type === 'gig' ||
-    type === 'gallery' ||
-    type === 'media' ||
-    type === 'explorer' ||
-    type === 'terminal' ||
-    type === 'partner' ||
-    type === 'member' ||
-    type === 'news' ||
-    type === 'contact'
-  )
 }
 
 export default function CyberpunkOverlay({
@@ -91,26 +61,45 @@ export default function CyberpunkOverlay({
 }: CyberpunkOverlayProps) {
   const [overlayPhase, setOverlayPhase] = useState<'loading' | 'glitch' | 'revealed'>('loading')
   const [loadingText, setLoadingText] = useState(OVERLAY_LOADING_TEXTS[0])
-  const [progressiveMode, setProgressiveMode] = useState(() => getRandomProgressiveMode())
   const decorativeTexts = adminSettings?.decorative
   const { lenis } = useLenisContext()
   const prefersReducedMotion = useReducedMotion()
   const reducedMotion = prefersReducedMotion === true
-  const progressiveOverlayModesRef = useRef(adminSettings?.progressiveOverlayModes)
-
-  useEffect(() => {
-    progressiveOverlayModesRef.current = adminSettings?.progressiveOverlayModes
-  }, [adminSettings?.progressiveOverlayModes])
 
   const overlaySessionKey = getOverlaySessionKey(overlay)
   const panelRef = useRef<HTMLDivElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
+  const [held, setHeld] = useState<CyberpunkOverlayState | null>(overlay)
 
   const poolKey = overlayAnimationPoolKey(overlayAnimations)
   const anim = useMemo(() => {
     void overlaySessionKey
     return pickOverlayAnimationFromPool(poolKey ? poolKey.split('|') : undefined, reducedMotion)
   }, [overlaySessionKey, poolKey, reducedMotion])
+  const [heldAnim, setHeldAnim] = useState(anim)
+  const displayAnim = overlay ? anim : heldAnim
+
+  useEffect(() => {
+    if (!overlay) return
+    setHeld(overlay)
+    setHeldAnim(anim)
+  }, [overlay, anim])
+
+  const skipCloseAnim = reducedMotion || held?.type === 'terminal'
+  const closing = !overlay && held !== null && !skipCloseAnim
+  const displayOverlay = overlay ?? (closing ? held : null)
+  const displaySessionKey = getOverlaySessionKey(displayOverlay)
+
+  const skipBoot = reducedMotion || displayOverlay?.type === 'terminal'
+  const openHandoff = useLinearProgress(overlayPhase === 'revealed' || skipBoot, MOTION.HANDOFF_MS, skipBoot)
+  const closeProgress = useLinearProgress(closing, MOTION.CLOSE_MS, reducedMotion)
+  const handoff = closing ? 1 - closeProgress : openHandoff
+
+  useEffect(() => {
+    if (!closing) return
+    if (closeProgress < 1) return
+    setHeld(null)
+  }, [closing, closeProgress])
 
   const systemLabel =
     decorativeTexts?.overlaySystemLabel ??
@@ -119,8 +108,7 @@ export default function CyberpunkOverlay({
   useEffect(() => {
     if (!overlaySessionKey) return
 
-    setProgressiveMode(getRandomProgressiveMode(progressiveOverlayModesRef.current))
-    if (reducedMotion) {
+    if (reducedMotion || overlay?.type === 'terminal') {
       setOverlayPhase('revealed')
       setLoadingText(OVERLAY_LOADING_TEXTS[OVERLAY_LOADING_TEXTS.length - 1])
       return
@@ -155,10 +143,10 @@ export default function CyberpunkOverlay({
       clearTimeout(glitchTimer)
       clearTimeout(revealTimer)
     }
-  }, [overlaySessionKey, reducedMotion, anim.interior])
+  }, [overlaySessionKey, reducedMotion, anim.interior, overlay?.type])
 
   useEffect(() => {
-    if (!overlaySessionKey) return
+    if (!displaySessionKey) return
     document.documentElement.classList.add('nk-scroll-lock')
     document.body.classList.add('nk-scroll-lock')
     lenis?.stop()
@@ -167,10 +155,10 @@ export default function CyberpunkOverlay({
       document.body.classList.remove('nk-scroll-lock')
       lenis?.start()
     }
-  }, [overlaySessionKey, lenis])
+  }, [displaySessionKey, lenis])
 
   useEffect(() => {
-    if (!overlaySessionKey) return
+    if (!displaySessionKey) return
 
     lastFocusedRef.current =
       document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -193,7 +181,7 @@ export default function CyberpunkOverlay({
         panelRef.current.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ),
-      ).filter((el) => !el.hasAttribute('disabled') && el.tabIndex !== -1)
+      ).filter((el) => !el.hasAttribute('disabled') && el.tabIndex !== -1 && !el.closest('[inert]'))
 
       if (focusable.length === 0) return
 
@@ -218,27 +206,21 @@ export default function CyberpunkOverlay({
       window.clearTimeout(focusTimer)
       lastFocusedRef.current?.focus?.()
     }
-  }, [overlaySessionKey, onClose])
+  }, [displaySessionKey, onClose])
 
-  const sessionKey = overlaySessionKey ?? overlay?.type ?? 'overlay'
-  const glow35 = overlay ? resolveModalGlow(adminSettings, 0.35) : DEFAULT_MODAL_GLOW
+  const sessionKey = displaySessionKey ?? displayOverlay?.type ?? 'overlay'
 
   return (
     <AnimatePresence>
-      {overlay ? (
+      {displayOverlay ? (
         <motion.div
           key={`${sessionKey}-backdrop`}
-          initial={anim.backdrop.initial}
-          animate={anim.backdrop.animate}
-          exit={anim.backdrop.exit}
-          transition={anim.backdrop.transition ?? { duration: 0.3 }}
-          className="cyberpunk-overlay-bg fixed inset-0 bg-black/45 backdrop-blur-md"
-          style={
-            {
-              zIndex: 'var(--z-overlay)',
-              boxShadow: 'inset 0 0 120px color-mix(in srgb, var(--modal-glow, var(--primary)) 35%, transparent)',
-            } as React.CSSProperties
-          }
+          initial={displayAnim.backdrop.initial}
+          animate={displayAnim.backdrop.animate}
+          exit={displayAnim.backdrop.exit}
+          transition={displayAnim.backdrop.transition ?? { duration: 0.3 }}
+          className="cyberpunk-overlay-bg fixed inset-0 bg-black/45 backdrop-blur-sm"
+          style={{ zIndex: 'var(--z-overlay)' } as React.CSSProperties}
           onClick={onClose}
         >
           <div
@@ -250,18 +232,16 @@ export default function CyberpunkOverlay({
               role="dialog"
               aria-modal="true"
               aria-labelledby="cyberpunk-overlay-title"
-              initial={{ ...anim.modal.initial, boxShadow: '0 0 0px rgba(0, 0, 0, 0)' }}
-              animate={{
-                ...anim.modal.animate,
-                boxShadow: `0 0 24px ${glow35}, inset 0 0 28px ${glow35}`,
-              }}
-              exit={anim.modal.exit}
-              transition={anim.modal.transition ?? { duration: reducedMotion ? 0 : 0.3 }}
+              initial={displayAnim.modal.initial}
+              animate={displayAnim.modal.animate}
+              exit={displayAnim.modal.exit}
+              transition={displayAnim.modal.transition ?? { duration: reducedMotion ? 0 : 0.3 }}
               data-theme-color="card card-foreground border"
               data-cyberpunk-modal=""
               data-overlay-clip=""
-              data-overlay-animation={anim.name}
-              className="theme-overlay-modal-chrome relative flex h-[100svh] max-h-[100svh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/98 pointer-events-auto scanline-effect box-border pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh] md:pt-0"
+              data-overlay-animation={displayAnim.name}
+              data-overlay-closing={closing ? '' : undefined}
+              className="theme-overlay-modal-chrome relative flex h-[100svh] max-h-[100svh] w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-primary/40 bg-background/80 pointer-events-auto scanline-effect box-border pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-auto md:max-h-[90vh] md:pt-0"
               onClick={(e) => e.stopPropagation()}
             >
               <motion.div
@@ -321,19 +301,75 @@ export default function CyberpunkOverlay({
               />
 
               <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y scrollbar-hide">
-                {overlayPhase === 'loading' &&
-                  (anim.interior ? (
-                    <OverlayBootInterior interior={anim.interior} />
-                  ) : (
-                    <OverlayShellLoader
-                      loaderClass={anim.loaderClass}
-                      loaderLabel={anim.loaderLabel}
-                      loadingText={loadingText}
-                    />
-                  ))}
+                <PhaseCrossfade
+                  progress={handoff}
+                  holdIncoming={overlayPhase === 'revealed' || skipBoot}
+                  outgoing={
+                    displayAnim.interior ? (
+                      <OverlayBootInterior interior={displayAnim.interior} />
+                    ) : (
+                      <OverlayShellLoader
+                        loaderClass={displayAnim.loaderClass}
+                        loaderLabel={closing ? OVERLAY_CLOSE_LABEL : displayAnim.loaderLabel}
+                        loadingText={closing ? OVERLAY_CLOSE_TEXT : loadingText}
+                      />
+                    )
+                  }
+                  incoming={
+                    <div className="p-4 pt-14 md:p-12 md:pt-12">
+                      {displayOverlay.type === 'contact' && (
+                        <ContactOverlayContent adminSettings={adminSettings} decorativeTexts={decorativeTexts} />
+                      )}
 
-                {overlayPhase === 'glitch' && (
-                  <div className="flex min-h-[min(400px,50vh)] items-center justify-center">
+                      {displayOverlay.type === 'member' && displayOverlay.data && (
+                        <MemberOverlayContent data={displayOverlay.data} decorativeTexts={decorativeTexts} />
+                      )}
+
+                      {displayOverlay.type === 'gig' && displayOverlay.data && (
+                        <GigOverlayContent data={displayOverlay.data} artistName={artistName} decorativeTexts={decorativeTexts} />
+                      )}
+
+                      {displayOverlay.type === 'release' && displayOverlay.data && (
+                        <ReleaseOverlayContent
+                          data={displayOverlay.data}
+                          sectionLabels={adminSettings?.labels}
+                          mainArtistName={artistName}
+                        />
+                      )}
+
+                      {displayOverlay.type === 'release' && !displayOverlay.data && (
+                        <p className="text-sm font-mono text-muted-foreground">Release data unavailable.</p>
+                      )}
+
+                      {displayOverlay.type === 'gallery' && displayOverlay.data && (
+                        <GalleryOverlayContent data={displayOverlay.data} />
+                      )}
+
+                      {displayOverlay.type === 'media' && displayOverlay.data && (
+                        <MediaOverlayContent data={displayOverlay.data} />
+                      )}
+
+                      {displayOverlay.type === 'news' && displayOverlay.data && (
+                        <NewsOverlayContent data={displayOverlay.data} />
+                      )}
+
+                      {displayOverlay.type === 'explorer' && displayOverlay.data && (
+                        <MediaExplorerBody files={toExplorerFiles(displayOverlay.data.items)} />
+                      )}
+
+                      {displayOverlay.type === 'terminal' && (
+                        <SecretTerminalContent siteName={artistName} />
+                      )}
+
+                      {displayOverlay.type === 'partner' && displayOverlay.data && (
+                        <PartnerOverlayContent data={displayOverlay.data} />
+                      )}
+                    </div>
+                  }
+                />
+
+                {overlayPhase === 'glitch' ? (
+                  <div className="pointer-events-none absolute inset-0 flex min-h-[min(400px,50vh)] items-center justify-center">
                     <motion.div
                       className="glitch-effect data-label text-lg"
                       initial={{ opacity: 0 }}
@@ -343,85 +379,7 @@ export default function CyberpunkOverlay({
                       {loadingText}
                     </motion.div>
                   </div>
-                )}
-
-                {overlayPhase === 'revealed' && (
-                  <div className="p-4 pt-14 md:p-12 md:pt-12">
-                    <AnimatePresence mode="wait">
-                      {overlayPhase === 'revealed' && (
-                        <motion.div
-                          key={overlaySessionKey ?? overlay.type}
-                          className={
-                            isDirectRevealType(overlay.type) ? undefined : progressiveMode.className
-                          }
-                          initial={
-                            isDirectRevealType(overlay.type)
-                              ? { opacity: 0, y: 8 }
-                              : progressiveMode.containerVariants.loading
-                          }
-                          animate={
-                            isDirectRevealType(overlay.type)
-                              ? { opacity: 1, y: 0 }
-                              : progressiveMode.containerVariants.loaded
-                          }
-                          transition={
-                            isDirectRevealType(overlay.type)
-                              ? { duration: 0.25, ease: 'easeOut' }
-                              : progressiveMode.transition
-                          }
-                        >
-                          {overlay.type === 'contact' && (
-                            <ContactOverlayContent adminSettings={adminSettings} decorativeTexts={decorativeTexts} />
-                          )}
-
-                          {overlay.type === 'member' && overlay.data && (
-                            <MemberOverlayContent data={overlay.data} decorativeTexts={decorativeTexts} />
-                          )}
-
-                          {overlay.type === 'gig' && overlay.data && (
-                            <GigOverlayContent data={overlay.data} artistName={artistName} decorativeTexts={decorativeTexts} />
-                          )}
-
-                          {overlay.type === 'release' && overlay.data && (
-                            <ReleaseOverlayContent
-                              data={overlay.data}
-                              sectionLabels={adminSettings?.labels}
-                              mainArtistName={artistName}
-                            />
-                          )}
-
-                          {overlay.type === 'release' && !overlay.data && (
-                            <p className="text-sm font-mono text-muted-foreground">Release data unavailable.</p>
-                          )}
-
-                          {overlay.type === 'gallery' && overlay.data && (
-                            <GalleryOverlayContent data={overlay.data} />
-                          )}
-
-                          {overlay.type === 'media' && overlay.data && (
-                            <MediaOverlayContent data={overlay.data} />
-                          )}
-
-                          {overlay.type === 'news' && overlay.data && (
-                            <NewsOverlayContent data={overlay.data} />
-                          )}
-
-                          {overlay.type === 'explorer' && overlay.data && (
-                            <MediaExplorerBody files={toExplorerFiles(overlay.data.items)} />
-                          )}
-
-                          {overlay.type === 'terminal' && (
-                            <SecretTerminalContent siteName={artistName} />
-                          )}
-
-                          {overlay.type === 'partner' && overlay.data && (
-                            <PartnerOverlayContent data={overlay.data} />
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
+                ) : null}
               </div>
             </motion.div>
           </div>

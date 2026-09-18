@@ -6,6 +6,7 @@ Allow: /
 
 # Private and restricted areas — access prohibited
 Disallow: /admin/
+Disallow: /nk-sec
 Disallow: /wp-admin/
 Disallow: /phpmyadmin/
 Disallow: /.env

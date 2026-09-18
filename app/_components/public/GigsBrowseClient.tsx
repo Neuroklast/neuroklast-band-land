@@ -13,7 +13,7 @@ import {
   type GigTimingFilter,
 } from '@/lib/gig-browse'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
-import { mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
@@ -40,8 +40,8 @@ function GigBrowseCard({
   onClick: () => void
 }) {
   const prefersReducedMotion = useReducedMotion()
-  const location = [gig.city, gig.country].filter(Boolean).join(', ')
-  const headline = gig.festival_name || gig.title
+  const location = formatGigLocation(gig)
+  const headline = eventDisplayName(gig)
 
   return (
     <m.article
@@ -64,9 +64,6 @@ function GigBrowseCard({
         <div className="pointer-events-none relative z-[2] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0 space-y-2">
             <h3 className="font-mono text-xl font-bold uppercase hover-chromatic">{headline}</h3>
-            {gig.venue ? (
-              <p className="font-mono text-sm text-muted-foreground">{gig.venue}</p>
-            ) : null}
             <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
               {location ? (
                 <span className="flex items-center gap-2">

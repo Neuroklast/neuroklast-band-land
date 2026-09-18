@@ -76,6 +76,10 @@ interface GigRow {
   id: string; title: string; venue: string | null; city: string | null
   country: string | null; event_date: string; ticket_url: string | null
   festival_name: string | null; description: string | null
+  gig_type?: string | null
+  photo_storage_path?: string | null
+  photo_url?: string | null
+  event_links?: Record<string, unknown> | null
 }
 type ReleaseRow = ReleaseDbRow
 interface PartnerRow {
@@ -184,7 +188,7 @@ async function fetchAll() {
       // maybeSingle: empty bio table is not an error (single() would log PGRST116)
       supabase.from('bio').select('content, achievements, collabs').limit(1).maybeSingle(),
       supabase.from('members').select('id, name, role, bio, photo_storage_path, photo_url').eq('active', true).order('display_order', { ascending: true }),
-      supabase.from('gigs').select('id, title, venue, city, country, event_date, ticket_url, festival_name, description').eq('active', true).order('event_date', { ascending: true }),
+      supabase.from('gigs').select('id, title, venue, city, country, event_date, ticket_url, festival_name, description, gig_type, photo_storage_path, photo_url, event_links').eq('active', true).order('event_date', { ascending: true }),
       supabase.from('partners').select('id, name, url, logo_storage_path, logo_url, category, logo_white, description, socials').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('music_highlights').select('id, title, youtube_url, description').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('merchandise').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),

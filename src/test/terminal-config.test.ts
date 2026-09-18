@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { DEFAULT_KONAMI_CODE } from '@/lib/konami'
 import {
   DEFAULT_TERMINAL_COMMANDS,
   parseTerminalConfig,
+  requestSecretTerminal,
   resolveTerminalCommand,
+  TERMINAL_AUTH_PATH,
+  TERMINAL_OPEN_EVENT,
   TERMINAL_RESERVED_COMMANDS,
 } from '@/lib/terminal-config'
 
@@ -45,5 +48,19 @@ describe('parseTerminalConfig', () => {
     })
     expect(resolveTerminalCommand(config.commands, 'status')?.output).toEqual(['ONLINE'])
     expect(TERMINAL_RESERVED_COMMANDS).toEqual(['help', 'clear', 'exit'])
+  })
+})
+
+describe('requestSecretTerminal', () => {
+  it('exposes the dedicated auth path', () => {
+    expect(TERMINAL_AUTH_PATH).toBe('/nk-sec')
+  })
+
+  it('dispatches the terminal open event', () => {
+    const onOpen = vi.fn()
+    window.addEventListener(TERMINAL_OPEN_EVENT, onOpen)
+    requestSecretTerminal()
+    expect(onOpen).toHaveBeenCalledTimes(1)
+    window.removeEventListener(TERMINAL_OPEN_EVENT, onOpen)
   })
 })
