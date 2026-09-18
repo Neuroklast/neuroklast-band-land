@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS public.gigs (
   bandsintown_id text,
   gig_type text,
   status text DEFAULT 'confirmed',
+  sold_out boolean NOT NULL DEFAULT false,
   supporting_artists jsonb DEFAULT '[]',
   event_links jsonb DEFAULT '{}',
   photo_storage_path text,
@@ -303,11 +304,15 @@ ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS bandsintown_id text;
 -- gigs: extra fields from the site-config-content import
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS gig_type text;
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS status text DEFAULT 'confirmed';
+ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS sold_out boolean NOT NULL DEFAULT false;
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS supporting_artists jsonb DEFAULT '[]';
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS event_links jsonb DEFAULT '{}';
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS photo_storage_path text;
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS photo_url text;
 ALTER TABLE public.gigs ADD COLUMN IF NOT EXISTS photo_content_hash text;
+
+-- Normalize legacy one-L spelling to the canonical value used by the public UI.
+UPDATE public.gigs SET status = 'cancelled' WHERE status = 'canceled';
 
 CREATE UNIQUE INDEX IF NOT EXISTS gigs_bandsintown_id_unique
   ON public.gigs (bandsintown_id)

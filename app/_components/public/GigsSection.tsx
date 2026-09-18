@@ -10,6 +10,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
+import { GigStatusBadge } from '@/components/overlays/GigStatusBadge'
 import { ArrowRight, CalendarBlank, MapPin } from '@phosphor-icons/react'
 
 interface GigsSectionProps {
@@ -82,6 +83,11 @@ function GigList({
                   <h3 className="font-mono text-xl font-bold uppercase text-primary">
                     {headline}
                   </h3>
+                  <GigStatusBadge
+                    status={gig.status}
+                    soldOut={gig.sold_out}
+                    eventDate={gig.event_date}
+                  />
                   <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
                     {location ? (
                       <span className="flex items-center gap-2">

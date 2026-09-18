@@ -8,6 +8,7 @@ import YouTubeEmbed from '@/components/YouTubeEmbed'
 import { useLocale } from '@/contexts/LocaleContext'
 import type { MediaFile } from '@/lib/types'
 import { downloadFile, type DownloadProgress } from '@/lib/download'
+import { OverlayItem, OverlayReveal } from '@/components/motion/overlay-motion'
 
 function extractYouTubeId(url: string): string | null {
   const match = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/)
@@ -252,14 +253,28 @@ function FileDetailPanel({ file, allFiles }: { file: MediaFile | null; allFiles:
   )
 }
 
-export function MediaExplorerBody({ files }: { files: MediaFile[] }) {
+export function MediaExplorerBody({
+  files,
+  closing,
+}: {
+  files: MediaFile[]
+  closing?: boolean
+}) {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null)
   const { t } = useLocale()
 
   return (
-    <div className="-mx-4 mt-2 flex min-h-[min(280px,50svh)] flex-col border-t border-primary/20 md:-mx-12 md:min-h-[min(420px,60dvh)] md:flex-row">
-      <div className="max-h-[200px] overflow-y-auto border-b border-primary/20 p-3 md:max-h-none md:w-2/5 md:border-b-0 md:border-r">
+    <OverlayReveal
+      className="-mx-4 mt-2 flex min-h-[min(280px,50svh)] flex-col border-t border-primary/20 md:-mx-12 md:min-h-[min(420px,60dvh)] md:flex-row"
+      closing={closing}
+      stagger={0.08}
+    >
+      <OverlayItem
+        className="max-h-[200px] overflow-y-auto border-b border-primary/20 p-3 md:max-h-none md:w-2/5 md:border-b-0 md:border-r"
+        variant="slideLeft"
+        delay={0}
+      >
         <div className="mb-2 px-2 text-[9px] tracking-wider text-primary/40">{t('media.directory')}</div>
         <FileTreeView
           files={files}
@@ -268,11 +283,15 @@ export function MediaExplorerBody({ files }: { files: MediaFile[] }) {
           selectedFile={selectedFile}
           onSelectFile={setSelectedFile}
         />
-      </div>
-      <div className="flex-1 overflow-y-auto md:w-3/5">
+      </OverlayItem>
+      <OverlayItem
+        className="flex-1 overflow-y-auto md:w-3/5"
+        variant="slideRight"
+        delay={0.08}
+      >
         <FileDetailPanel file={selectedFile} allFiles={files} />
-      </div>
-    </div>
+      </OverlayItem>
+    </OverlayReveal>
   )
 }
 

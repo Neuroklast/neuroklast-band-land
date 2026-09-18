@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import type { Release } from '@/lib/app-types'
 import type { SectionLabels } from '@/lib/types'
@@ -9,11 +8,18 @@ import { parseTrackTitle } from '@/lib/track-parser'
 import { displayReleaseType } from '@/lib/release-type'
 import { getVisibleStreamingLinks, formatStreamingPlatformLabel } from '@/lib/streaming-platforms'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import {
+  OverlayFrame,
+  OverlayItem,
+  OverlayReveal,
+  OverlayScanImage,
+} from '@/components/motion/overlay-motion'
 
 interface ReleaseOverlayContentProps {
   data: Release
   sectionLabels?: SectionLabels
   mainArtistName?: string
+  closing?: boolean
 }
 
 /**
@@ -104,7 +110,12 @@ function buildTrackArtistLine(
   return allArtists
 }
 
-export function ReleaseOverlayContent({ data, sectionLabels, mainArtistName = '' }: ReleaseOverlayContentProps) {
+export function ReleaseOverlayContent({
+  data,
+  sectionLabels,
+  mainArtistName = '',
+  closing,
+}: ReleaseOverlayContentProps) {
   const showType = sectionLabels?.releaseShowType !== false
   const showYear = sectionLabels?.releaseShowYear !== false
   const showDescription = sectionLabels?.releaseShowDescription !== false
@@ -122,135 +133,125 @@ export function ReleaseOverlayContent({ data, sectionLabels, mainArtistName = ''
   const showReleaseArtists = releaseArtists.length > 1
 
   return (
-    <motion.div
+    <OverlayReveal
       data-theme-color="card border accent"
       className="mt-8"
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      transition={{ duration: 0.3 }}
+      closing={closing}
+      stagger={0.05}
     >
-      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-8">
-        <motion.div
-          className="aspect-square bg-muted relative cyber-card border border-primary/30"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[300px_1fr] md:gap-8">
+        <OverlayItem
+          className="cyber-card relative aspect-square overflow-hidden border border-primary/30 bg-muted"
+          delay={0}
         >
-          {data.artwork && (
-            <img
+          {data.artwork ? (
+            <OverlayScanImage
               src={toDirectImageUrl(data.artwork) || data.artwork}
               alt={data.title}
-              className="w-full h-full object-cover glitch-image"
+              className="glitch-image h-full w-full object-cover"
               loading="lazy"
               decoding="async"
               onError={(e) => {
                 void onMediaImageError(e)
               }}
             />
-          )}
-        </motion.div>
+          ) : null}
+          <OverlayFrame />
+        </OverlayItem>
 
-        <div className="space-y-6 min-w-0">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="data-label mb-2">{infoLabel}</div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase font-mono mb-2 hover-chromatic crt-flash-in break-words" data-text={cleanReleaseTitle}>
-              {cleanReleaseTitle}
-            </h2>
+        <div className="min-w-0 space-y-6">
+          <div>
+            <OverlayItem delay={0.08}>
+              <div className="data-label mb-2">{infoLabel}</div>
+            </OverlayItem>
+            <OverlayItem delay={0.12}>
+              <h2
+                className="mb-2 break-words font-mono text-2xl font-bold uppercase hover-chromatic crt-flash-in sm:text-3xl md:text-4xl"
+                data-text={cleanReleaseTitle}
+              >
+                {cleanReleaseTitle}
+              </h2>
+            </OverlayItem>
             {showReleaseArtists && (
-              <p className="text-sm font-mono mt-1">
-                {releaseArtists.map((artist, i) => (
-                  <span key={artist}>
-                    {i === 0 ? (
-                      <span className="text-primary font-bold">{artist}</span>
-                    ) : (
-                      <span className="text-muted-foreground">{artist}</span>
-                    )}
-                    {i < releaseArtists.length - 1 && <span className="text-muted-foreground">, </span>}
-                  </span>
-                ))}
-              </p>
+              <OverlayItem delay={0.16}>
+                <p className="mt-1 font-mono text-sm">
+                  {releaseArtists.map((artist, i) => (
+                    <span key={artist}>
+                      {i === 0 ? (
+                        <span className="font-bold text-primary">{artist}</span>
+                      ) : (
+                        <span className="text-muted-foreground">{artist}</span>
+                      )}
+                      {i < releaseArtists.length - 1 && (
+                        <span className="text-muted-foreground">, </span>
+                      )}
+                    </span>
+                  ))}
+                </p>
+              </OverlayItem>
             )}
             {showYear && (
-              <p className="text-xl text-muted-foreground font-mono">
-                {formatReleaseDate(data.releaseDate, data.year)}
-              </p>
+              <OverlayItem delay={0.2}>
+                <p className="font-mono text-xl text-muted-foreground">
+                  {formatReleaseDate(data.releaseDate, data.year)}
+                </p>
+              </OverlayItem>
             )}
             {showType && data.type && (
-              <span className="inline-block mt-1 px-2 py-0.5 text-xs font-mono uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                {displayReleaseType(data.type)}
-              </span>
+              <OverlayItem delay={0.24}>
+                <span className="mt-1 inline-block border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-xs uppercase tracking-wider text-primary">
+                  {displayReleaseType(data.type)}
+                </span>
+              </OverlayItem>
             )}
-          </motion.div>
+          </div>
 
           {showDescription && data.description && !showReleaseArtists && (
-            <motion.div
-              className="cyber-grid p-4"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 }}
-            >
-              <p className="text-sm text-foreground/80 font-mono">{data.description}</p>
-            </motion.div>
+            <OverlayItem className="cyber-grid p-4" delay={0.28}>
+              <p className="font-mono text-sm text-foreground/80">{data.description}</p>
+            </OverlayItem>
           )}
 
           {data.customLinks && data.customLinks.length > 0 && (
-            <motion.div
-              className="cyber-grid p-4"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.28 }}
-            >
+            <OverlayItem className="cyber-grid p-4" delay={0.3}>
               <div className="flex flex-wrap gap-4">
                 {data.customLinks.map((link, i) => (
-                  <Button key={i} asChild variant="outline" className="font-mono min-h-[44px]">
+                  <Button key={i} asChild variant="outline" className="min-h-[44px] font-mono">
                     <a href={sanitizeExternalHref(link.url)} target="_blank" rel="noopener noreferrer">
                       <span className="hover-chromatic">{link.label}</span>
                     </a>
                   </Button>
                 ))}
               </div>
-            </motion.div>
+            </OverlayItem>
           )}
 
           {hasStreamLinks && (
-          <motion.div
-            className="cyber-grid p-4"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="data-label mb-3">{streamLabel}</div>
-            <div className="flex flex-wrap gap-3">
-              {streamingLinks.map((link) => (
-                <Button
-                  key={`${link.platform}-${link.url}`}
-                  asChild
-                  variant="outline"
-                  className="font-mono min-h-[44px]"
-                >
-                  <a href={sanitizeExternalHref(link.url)} target="_blank" rel="noopener noreferrer">
-                    <span className="hover-chromatic">{formatStreamingPlatformLabel(link.platform)}</span>
-                  </a>
-                </Button>
-              ))}
-            </div>
-          </motion.div>
+            <OverlayItem className="cyber-grid p-4" delay={0.34}>
+              <div className="data-label mb-3">{streamLabel}</div>
+              <div className="flex flex-wrap gap-3">
+                {streamingLinks.map((link) => (
+                  <Button
+                    key={`${link.platform}-${link.url}`}
+                    asChild
+                    variant="outline"
+                    className="min-h-[44px] font-mono"
+                  >
+                    <a href={sanitizeExternalHref(link.url)} target="_blank" rel="noopener noreferrer">
+                      <span className="hover-chromatic">
+                        {formatStreamingPlatformLabel(link.platform)}
+                      </span>
+                    </a>
+                  </Button>
+                ))}
+              </div>
+            </OverlayItem>
           )}
 
           {showTracks && data.tracks && data.tracks.length > 0 && (
-            <motion.div
-              className="cyber-grid p-4"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
-            >
+            <OverlayItem className="cyber-grid p-4" delay={0.38}>
               <div className="data-label mb-3">{tracksLabel}</div>
-              <ol className="space-y-2 md:space-y-1 max-h-[40vh] md:max-h-none overflow-y-auto overscroll-contain pr-1">
+              <ol className="max-h-[40vh] space-y-2 overflow-y-auto overscroll-contain pr-1 md:max-h-none md:space-y-1">
                 {data.tracks.map((track, i) => {
                   const rawTitle = typeof track?.title === 'string' ? track.title : ''
                   if (!rawTitle.trim()) return null
@@ -259,50 +260,55 @@ export function ReleaseOverlayContent({ data, sectionLabels, mainArtistName = ''
                   const allFeaturedArtists = [...(track.featuredArtists || []), ...extractedArtists]
 
                   return (
-                  <li key={`${i}-${rawTitle}`} className="flex items-start gap-3 text-sm md:text-sm font-mono text-foreground/80 py-1">
-                    <span className="text-primary/50 w-5 text-right shrink-0 mt-0.5">{i + 1}.</span>
-                    <div className="flex-1 min-w-0">
-                      <span className="block">{cleanTitle}</span>
-                      {(() => {
-                        const artistLine = buildTrackArtistLine(track.artist, allFeaturedArtists, mainArtistName)
-                        if (!artistLine || artistLine.length === 0) return null
-                        return (
-                          <span className="flex flex-wrap gap-x-0.5 text-xs mt-0.5">
-                            {artistLine.map((artist, ai) => (
-                              <span key={artist}>
-                                {artist.trim().toLowerCase() === mainArtistName.trim().toLowerCase() ? (
-                                  <span className="text-primary font-bold">{artist}</span>
-                                ) : (
-                                  <span className="text-muted-foreground">{artist}</span>
-                                )}
-                                {ai < artistLine.length - 1 && <span className="text-muted-foreground">, </span>}
-                              </span>
-                            ))}
-                          </span>
-                        )
-                      })()}
-                    </div>
-                    {track.duration && (
-                      <span className="text-muted-foreground text-xs shrink-0 mt-0.5">{track.duration}</span>
-                    )}
-                  </li>
+                    <li
+                      key={`${i}-${rawTitle}`}
+                      className="flex items-start gap-3 py-1 font-mono text-sm text-foreground/80 md:text-sm"
+                    >
+                      <span className="mt-0.5 w-5 shrink-0 text-right text-primary/50">{i + 1}.</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="block">{cleanTitle}</span>
+                        {(() => {
+                          const artistLine = buildTrackArtistLine(
+                            track.artist,
+                            allFeaturedArtists,
+                            mainArtistName,
+                          )
+                          if (!artistLine || artistLine.length === 0) return null
+                          return (
+                            <span className="mt-0.5 flex flex-wrap gap-x-0.5 text-xs">
+                              {artistLine.map((artist, ai) => (
+                                <span key={artist}>
+                                  {artist.trim().toLowerCase() === mainArtistName.trim().toLowerCase() ? (
+                                    <span className="font-bold text-primary">{artist}</span>
+                                  ) : (
+                                    <span className="text-muted-foreground">{artist}</span>
+                                  )}
+                                  {ai < artistLine.length - 1 && (
+                                    <span className="text-muted-foreground">, </span>
+                                  )}
+                                </span>
+                              ))}
+                            </span>
+                          )
+                        })()}
+                      </div>
+                      {track.duration && (
+                        <span className="mt-0.5 shrink-0 text-xs text-muted-foreground">
+                          {track.duration}
+                        </span>
+                      )}
+                    </li>
                   )
                 })}
               </ol>
-            </motion.div>
+            </OverlayItem>
           )}
 
-          <motion.div
-            className="pt-4 border-t border-border"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <OverlayItem className="border-t border-border pt-4" delay={0.44}>
             <div className="data-label">{statusLabel}</div>
-          </motion.div>
+          </OverlayItem>
         </div>
       </div>
-    </motion.div>
+    </OverlayReveal>
   )
 }
-

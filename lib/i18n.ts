@@ -213,6 +213,11 @@ const translations: Record<string, Record<string, string>> = {
   'gigs.support':              { en: 'Support:', de: 'Support:', uk: 'Поддержка:', it: 'Supporto:', es: 'Soporte:', pt: 'Suporte:', ja: 'サポート:', ko: '서포트:' },
   'gigs.showLess':             { en: 'Show Less', de: 'Weniger anzeigen', uk: 'Показать меньше', it: 'Mostra meno', es: 'Mostrar menos', pt: 'Mostrar menos', ja: '表示を減らす', ko: '덜 보기' },
   'gigs.seeMore':              { en: 'See More', de: 'Mehr sehen', uk: 'Посмотреть больше', it: 'Vedi altro', es: 'Ver más', pt: 'Ver mais', ja: 'もっと見る', ko: '더 보기' },
+  'gigs.statusConfirmed':      { en: 'Confirmed', de: 'Bestätigt', uk: 'Підтверджено', it: 'Confermato', es: 'Confirmado', pt: 'Confirmado', ja: '確定', ko: '확정' },
+  'gigs.statusAnnounced':      { en: 'Announced', de: 'Angekündigt', uk: 'Анонсовано', it: 'Annunciato', es: 'Anunciado', pt: 'Anunciado', ja: '発表済み', ko: '발표됨' },
+  'gigs.statusCancelled':      { en: 'Cancelled', de: 'Abgesagt', uk: 'Скасовано', it: 'Annullato', es: 'Cancelado', pt: 'Cancelado', ja: '中止', ko: '취소됨' },
+  'gigs.statusSoldOut':        { en: 'Sold out', de: 'Ausverkauft', uk: 'Розпродано', it: 'Sold out', es: 'Agotado', pt: 'Esgotado', ja: '完売', ko: '매진' },
+  'gigs.statusLive':           { en: 'Live', de: 'Live', uk: 'Наживо', it: 'Live', es: 'En vivo', pt: 'Ao vivo', ja: 'ライブ中', ko: '라이브' },
 
   // ── Media downloads ─────────────────────────────────────────────────
   'media.empty':               { en: 'Downloads coming soon', de: 'Downloads folgen in Kürze', uk: 'Загрузки скоро', it: 'Download in arrivo', es: 'Descargas pronto', pt: 'Downloads em breve', ja: 'ダウンロード近日公開', ko: '다운로드 준비 중' },

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { GigOverlayContent } from '@/components/overlays/GigOverlayContent'
 import { mapGigRowToOverlayGig } from '@/lib/gig-public-mapper'
+import { LocaleProvider } from '@/contexts/LocaleContext'
 
 describe('GigOverlayContent', () => {
   it('shows the event name large and the club in the location line', () => {
@@ -17,7 +18,11 @@ describe('GigOverlayContent', () => {
       gig_type: 'dj',
     })
 
-    render(<GigOverlayContent data={data} artistName="NEUROKLAST" />)
+    render(
+      <LocaleProvider>
+        <GigOverlayContent data={data} artistName="NEUROKLAST" />
+      </LocaleProvider>,
+    )
 
     const heading = screen.getByRole('heading', { level: 2 })
     expect(heading).toHaveTextContent('Samhain Ritual')

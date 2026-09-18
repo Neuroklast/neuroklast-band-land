@@ -31,6 +31,8 @@ describe('mapBandsintownEventToGigRow', () => {
     })
     expect(row?.event_date).toContain('2026-09-15')
     expect(row?.description).toContain('Lineup: Neuroklast, Guest')
+    expect(row?.sold_out).toBe(true)
+    expect(row?.description).not.toContain('Sold out')
   })
 
   it('returns null when id or datetime is missing', () => {

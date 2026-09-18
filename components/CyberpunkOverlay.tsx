@@ -11,7 +11,8 @@ import {
   OVERLAY_GLITCH_PHASE_DELAY_MS,
   OVERLAY_REVEAL_PHASE_DELAY_MS,
 } from '@/lib/config'
-import { overlayAnimationPoolKey, pickOverlayAnimationFromPool } from '@/lib/overlay-animations'
+import { overlayAnimationPoolKey } from '@/lib/overlay-animations'
+import { pickOverlayAnimationForType } from '@/lib/overlay-choreography'
 import { getOverlaySessionKey } from '@/lib/overlay-session'
 import { PhaseCrossfade } from '@/components/motion/PhaseCrossfade'
 import { useLinearProgress } from '@/hooks/use-linear-progress'
@@ -29,6 +30,7 @@ import { SecretTerminalContent } from '@/components/overlays/SecretTerminalConte
 import { PartnerOverlayContent } from '@/components/overlays/PartnerOverlayContent'
 import { OverlayBootInterior } from '@/components/overlays/OverlayBootInterior'
 import { OverlayShellLoader } from '@/components/overlays/OverlayShellLoader'
+import { OverlaySkeletonBoot } from '@/components/overlays/OverlaySkeletonBoot'
 import { useLenisContext } from '@/contexts/LenisContext'
 
 const OVERLAY_LOADING_TEXTS = [
@@ -74,8 +76,12 @@ export default function CyberpunkOverlay({
   const poolKey = overlayAnimationPoolKey(overlayAnimations)
   const anim = useMemo(() => {
     void overlaySessionKey
-    return pickOverlayAnimationFromPool(poolKey ? poolKey.split('|') : undefined, reducedMotion)
-  }, [overlaySessionKey, poolKey, reducedMotion])
+    return pickOverlayAnimationForType({
+      type: overlay?.type,
+      pool: poolKey ? poolKey.split('|') : undefined,
+      reducedMotion,
+    })
+  }, [overlaySessionKey, poolKey, reducedMotion, overlay?.type])
   const [heldAnim, setHeldAnim] = useState(anim)
   const displayAnim = overlay ? anim : heldAnim
 
@@ -305,7 +311,9 @@ export default function CyberpunkOverlay({
                   progress={handoff}
                   holdIncoming={overlayPhase === 'revealed' || skipBoot}
                   outgoing={
-                    displayAnim.interior ? (
+                    !poolKey ? (
+                      <OverlaySkeletonBoot type={displayOverlay.type} />
+                    ) : displayAnim.interior ? (
                       <OverlayBootInterior interior={displayAnim.interior} />
                     ) : (
                       <OverlayShellLoader
@@ -318,15 +326,28 @@ export default function CyberpunkOverlay({
                   incoming={
                     <div className="p-4 pt-14 md:p-12 md:pt-12">
                       {displayOverlay.type === 'contact' && (
-                        <ContactOverlayContent adminSettings={adminSettings} decorativeTexts={decorativeTexts} />
+                        <ContactOverlayContent
+                          adminSettings={adminSettings}
+                          decorativeTexts={decorativeTexts}
+                          closing={closing}
+                        />
                       )}
 
                       {displayOverlay.type === 'member' && displayOverlay.data && (
-                        <MemberOverlayContent data={displayOverlay.data} decorativeTexts={decorativeTexts} />
+                        <MemberOverlayContent
+                          data={displayOverlay.data}
+                          decorativeTexts={decorativeTexts}
+                          closing={closing}
+                        />
                       )}
 
                       {displayOverlay.type === 'gig' && displayOverlay.data && (
-                        <GigOverlayContent data={displayOverlay.data} artistName={artistName} decorativeTexts={decorativeTexts} />
+                        <GigOverlayContent
+                          data={displayOverlay.data}
+                          artistName={artistName}
+                          decorativeTexts={decorativeTexts}
+                          closing={closing}
+                        />
                       )}
 
                       {displayOverlay.type === 'release' && displayOverlay.data && (
@@ -334,6 +355,7 @@ export default function CyberpunkOverlay({
                           data={displayOverlay.data}
                           sectionLabels={adminSettings?.labels}
                           mainArtistName={artistName}
+                          closing={closing}
                         />
                       )}
 
@@ -342,19 +364,22 @@ export default function CyberpunkOverlay({
                       )}
 
                       {displayOverlay.type === 'gallery' && displayOverlay.data && (
-                        <GalleryOverlayContent data={displayOverlay.data} />
+                        <GalleryOverlayContent data={displayOverlay.data} closing={closing} />
                       )}
 
                       {displayOverlay.type === 'media' && displayOverlay.data && (
-                        <MediaOverlayContent data={displayOverlay.data} />
+                        <MediaOverlayContent data={displayOverlay.data} closing={closing} />
                       )}
 
                       {displayOverlay.type === 'news' && displayOverlay.data && (
-                        <NewsOverlayContent data={displayOverlay.data} />
+                        <NewsOverlayContent data={displayOverlay.data} closing={closing} />
                       )}
 
                       {displayOverlay.type === 'explorer' && displayOverlay.data && (
-                        <MediaExplorerBody files={toExplorerFiles(displayOverlay.data.items)} />
+                        <MediaExplorerBody
+                          files={toExplorerFiles(displayOverlay.data.items)}
+                          closing={closing}
+                        />
                       )}
 
                       {displayOverlay.type === 'terminal' && (
@@ -362,7 +387,7 @@ export default function CyberpunkOverlay({
                       )}
 
                       {displayOverlay.type === 'partner' && displayOverlay.data && (
-                        <PartnerOverlayContent data={displayOverlay.data} />
+                        <PartnerOverlayContent data={displayOverlay.data} closing={closing} />
                       )}
                     </div>
                   }

@@ -30,6 +30,16 @@ Regression guard: `src/test/public-mobile.test.tsx`, `src/test/nav-links.test.ts
 
 Public content SSR: `createPublicClient()` (cookie-less), not session `createClient()`.
 
+### Event status badges
+
+`gigs.status` (`confirmed` / `announced` / `cancelled`) plus the independent `gigs.sold_out` flag are surfaced publicly:
+
+- Canonical status + derived badge kind live in `lib/gig-status.ts` (`normalizeGigStatus`, `resolveGigStatusKind`). Precedence: **cancelled > sold out > live > announced > confirmed**. Legacy `canceled` / `soldout` values are normalized on read; `supabase/schema.sql` also rewrites `canceled` → `cancelled` on deploy.
+- "Live" is derived from `event_date` / `starts_at` and resolved **client-only** via `hooks/use-gig-status-kind.ts` (`useSyncExternalStore`) so SSR and hydration agree. Never compute `new Date()` during render.
+- `components/overlays/GigStatusBadge.tsx` renders the chip on homepage + `/gigs` cards and in `GigOverlayContent` (header + `// SYSTEM.STATUS` footer). Labels are i18n keys `gigs.status*` in `lib/i18n.ts` (all 8 locales).
+- Public read path: `GIG_PUBLIC_COLUMNS`, `PublicGigRow`, `mapGigRowToOverlayGig`, homepage gig select. Add new columns in all four.
+- Bandsintown sync writes `sold_out` to the column (not into `description`).
+
 ---
 
 ## CyberpunkOverlay (single modal system)
@@ -56,6 +66,7 @@ Rules:
 4. Content components own **only** inner body (no second fixed fullscreen chrome).
 5. Gallery: swipe/dots/arrows in `GalleryOverlayContent` — not a parallel lightbox component for production UI.
 6. Media download images use overlay type `media` (preview + download). Do **not** run those files through the partner white-silhouette pipeline — they are download originals.
+7. **Per-type choreography:** `lib/overlay-choreography.ts` maps each overlay type to a deterministic shell animation; when no admin pool is configured the shell boots an `OverlaySkeletonBoot` that mirrors the content skeleton. An explicit Look & Feel animation pool still overrides this. Content bodies use `components/motion/overlay-motion.tsx` (`OverlayReveal` / `OverlayItem` / `OverlayScanImage` / `OverlayFrame`) and receive `closing` so they play reverse-stagger on close. Variants are pure in `lib/overlay-motion.ts`; reduced motion collapses them to no-ops.
 
 **Forbidden:** shipping a one-off `fixed inset-0` lightbox that only “sort of” matches releases/events.
 

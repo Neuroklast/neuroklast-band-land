@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,90 +7,101 @@ import { toast } from 'sonner'
 import type { AdminSettings, DecorativeTexts } from '@/lib/types'
 import { submitContact } from '@/app/_actions/contact'
 import { contactFormSchema } from '@/lib/contact-form'
+import { OverlayItem, OverlayReveal } from '@/components/motion/overlay-motion'
 
 interface ContactOverlayContentProps {
   adminSettings: AdminSettings | undefined
   decorativeTexts?: DecorativeTexts
+  closing?: boolean
 }
 
-export function ContactOverlayContent({ adminSettings, decorativeTexts }: ContactOverlayContentProps) {
+export function ContactOverlayContent({
+  adminSettings,
+  decorativeTexts,
+  closing,
+}: ContactOverlayContentProps) {
   const streamLabel = decorativeTexts?.contactStreamLabel ?? '// CONTACT.INTERFACE'
   const formLabel = decorativeTexts?.contactFormLabel ?? '// CONTACT.FORM'
   const statusLabel = decorativeTexts?.contactStatusLabel ?? '// SYSTEM.STATUS: [ACTIVE]'
   return (
-    <motion.div
+    <OverlayReveal
       data-theme-color="card border input ring"
       className="mt-8 space-y-6"
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      transition={{ duration: 0.3 }}
+      closing={closing}
+      stagger={0.05}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <div className="data-label mb-2">{streamLabel}</div>
-        <h2 className="text-4xl md:text-5xl font-bold uppercase font-mono mb-4 hover-chromatic crt-flash-in" data-text="CONTACT">
-          CONTACT
-        </h2>
-      </motion.div>
+      <div>
+        <OverlayItem delay={0.04}>
+          <div className="data-label mb-2">{streamLabel}</div>
+        </OverlayItem>
+        <OverlayItem delay={0.08}>
+          <h2
+            className="mb-4 font-mono text-4xl font-bold uppercase hover-chromatic crt-flash-in md:text-5xl"
+            data-text="CONTACT"
+          >
+            CONTACT
+          </h2>
+        </OverlayItem>
+      </div>
 
       <div className="space-y-6 text-foreground/90">
         {(adminSettings?.contact?.managementName || adminSettings?.contact?.managementEmail) && (
-          <motion.div
-            className="cyber-grid p-4"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+          <OverlayItem className="cyber-grid p-4" delay={0.14}>
             <div className="data-label mb-3">Management</div>
             <div className="space-y-2 font-mono text-sm">
               {adminSettings?.contact?.managementName && (
                 <p>{adminSettings.contact.managementName}</p>
               )}
               {adminSettings?.contact?.managementEmail && (
-                <p>E-Mail: <a href={`mailto:${adminSettings.contact.managementEmail}`} className="text-primary hover:underline">{adminSettings.contact.managementEmail}</a></p>
+                <p>
+                  E-Mail:{' '}
+                  <a
+                    href={`mailto:${adminSettings.contact.managementEmail}`}
+                    className="text-primary hover:underline"
+                  >
+                    {adminSettings.contact.managementEmail}
+                  </a>
+                </p>
               )}
             </div>
-          </motion.div>
+          </OverlayItem>
         )}
 
         {adminSettings?.contact?.bookingEmail && (
-          <motion.div
-            className="cyber-grid p-4"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
+          <OverlayItem className="cyber-grid p-4" delay={0.18}>
             <div className="data-label mb-3">Booking</div>
             <div className="space-y-2 font-mono text-sm">
-              <p>E-Mail: <a href={`mailto:${adminSettings.contact.bookingEmail}`} className="text-primary hover:underline">{adminSettings.contact.bookingEmail}</a></p>
+              <p>
+                E-Mail:{' '}
+                <a
+                  href={`mailto:${adminSettings.contact.bookingEmail}`}
+                  className="text-primary hover:underline"
+                >
+                  {adminSettings.contact.bookingEmail}
+                </a>
+              </p>
             </div>
-          </motion.div>
+          </OverlayItem>
         )}
 
         {adminSettings?.contact?.pressEmail && (
-          <motion.div
-            className="cyber-grid p-4"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.35 }}
-          >
+          <OverlayItem className="cyber-grid p-4" delay={0.22}>
             <div className="data-label mb-3">Press / Media</div>
             <div className="space-y-2 font-mono text-sm">
-              <p>E-Mail: <a href={`mailto:${adminSettings.contact.pressEmail}`} className="text-primary hover:underline">{adminSettings.contact.pressEmail}</a></p>
+              <p>
+                E-Mail:{' '}
+                <a
+                  href={`mailto:${adminSettings.contact.pressEmail}`}
+                  className="text-primary hover:underline"
+                >
+                  {adminSettings.contact.pressEmail}
+                </a>
+              </p>
             </div>
-          </motion.div>
+          </OverlayItem>
         )}
 
-        <motion.div
-          className="cyber-grid p-6"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.45 }}
-        >
+        <OverlayItem className="cyber-grid p-6" delay={0.28}>
           <div className="data-label mb-4">{formLabel}</div>
           <form
             onSubmit={async (e) => {
@@ -136,55 +146,97 @@ export function ContactOverlayContent({ adminSettings, decorativeTexts }: Contac
             className="space-y-4"
           >
             {/* Honeypot field — hidden from real users */}
-            <input type="text" name="_hp" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="_hp"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
+            />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label className="font-mono text-xs uppercase tracking-wide">{adminSettings?.contact?.formNameLabel || 'Name'}</Label>
-                <Input name="name" required maxLength={100} placeholder={adminSettings?.contact?.formNamePlaceholder || 'Your name'} className="bg-card border-border font-mono mt-1" />
+                <Label className="font-mono text-xs uppercase tracking-wide">
+                  {adminSettings?.contact?.formNameLabel || 'Name'}
+                </Label>
+                <Input
+                  name="name"
+                  required
+                  maxLength={100}
+                  placeholder={adminSettings?.contact?.formNamePlaceholder || 'Your name'}
+                  className="mt-1 border-border bg-card font-mono"
+                />
               </div>
               <div>
-                <Label className="font-mono text-xs uppercase tracking-wide">{adminSettings?.contact?.formEmailLabel || 'Email'}</Label>
-                <Input name="email" type="email" required maxLength={254} placeholder={adminSettings?.contact?.formEmailPlaceholder || 'your@email.com'} className="bg-card border-border font-mono mt-1" />
+                <Label className="font-mono text-xs uppercase tracking-wide">
+                  {adminSettings?.contact?.formEmailLabel || 'Email'}
+                </Label>
+                <Input
+                  name="email"
+                  type="email"
+                  required
+                  maxLength={254}
+                  placeholder={adminSettings?.contact?.formEmailPlaceholder || 'your@email.com'}
+                  className="mt-1 border-border bg-card font-mono"
+                />
               </div>
             </div>
             <div>
-              <Label className="font-mono text-xs uppercase tracking-wide">{adminSettings?.contact?.formSubjectLabel || 'Subject'}</Label>
-              {adminSettings?.contact?.contactSubjects && adminSettings.contact.contactSubjects.length > 0 ? (
+              <Label className="font-mono text-xs uppercase tracking-wide">
+                {adminSettings?.contact?.formSubjectLabel || 'Subject'}
+              </Label>
+              {adminSettings?.contact?.contactSubjects &&
+              adminSettings.contact.contactSubjects.length > 0 ? (
                 <select
                   name="subject"
                   required
                   defaultValue=""
-                  className="w-full bg-card border border-border font-mono text-sm mt-1 px-3 py-2 rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="mt-1 w-full rounded-md border border-border bg-card px-3 py-2 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="" disabled>{adminSettings?.contact?.formSubjectPlaceholder || 'Select a subject...'}</option>
+                  <option value="" disabled>
+                    {adminSettings?.contact?.formSubjectPlaceholder || 'Select a subject...'}
+                  </option>
                   {adminSettings.contact.contactSubjects.map((s, i) => (
-                    <option key={i} value={s}>{s}</option>
+                    <option key={i} value={s}>
+                      {s}
+                    </option>
                   ))}
                 </select>
               ) : (
-                <Input name="subject" required maxLength={200} placeholder={adminSettings?.contact?.formSubjectPlaceholder || 'Subject'} className="bg-card border-border font-mono mt-1" />
+                <Input
+                  name="subject"
+                  required
+                  maxLength={200}
+                  placeholder={adminSettings?.contact?.formSubjectPlaceholder || 'Subject'}
+                  className="mt-1 border-border bg-card font-mono"
+                />
               )}
             </div>
             <div>
-              <Label className="font-mono text-xs uppercase tracking-wide">{adminSettings?.contact?.formMessageLabel || 'Message'}</Label>
-              <Textarea name="message" required maxLength={5000} placeholder={adminSettings?.contact?.formMessagePlaceholder || 'Your message...'} className="bg-card border-border font-mono mt-1 min-h-[120px]" />
+              <Label className="font-mono text-xs uppercase tracking-wide">
+                {adminSettings?.contact?.formMessageLabel || 'Message'}
+              </Label>
+              <Textarea
+                name="message"
+                required
+                maxLength={5000}
+                placeholder={adminSettings?.contact?.formMessagePlaceholder || 'Your message...'}
+                className="mt-1 min-h-[120px] border-border bg-card font-mono"
+              />
             </div>
-            <Button type="submit" className="w-full uppercase font-mono hover-glitch">
-              <PaperPlaneTilt className="w-5 h-5 mr-2" />
-              <span className="hover-chromatic">{adminSettings?.contact?.formButtonText || 'Send Message'}</span>
+            <Button type="submit" className="w-full font-mono uppercase hover-glitch">
+              <PaperPlaneTilt className="mr-2 h-5 w-5" />
+              <span className="hover-chromatic">
+                {adminSettings?.contact?.formButtonText || 'Send Message'}
+              </span>
             </Button>
           </form>
-        </motion.div>
+        </OverlayItem>
       </div>
 
-      <motion.div
-        className="pt-6 border-t border-border"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-      >
+      <OverlayItem className="border-t border-border pt-6" delay={0.36}>
         <div className="data-label">{statusLabel}</div>
-      </motion.div>
-    </motion.div>
+      </OverlayItem>
+    </OverlayReveal>
   )
 }
