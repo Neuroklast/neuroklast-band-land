@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createPublicClient } from '@/lib/supabaseServer'
+import { buildGigSlugMap } from '@/lib/gig-slug'
 
 /** Rebuild periodically so new news posts appear without redeploy. */
 export const revalidate = 3600
@@ -75,9 +76,74 @@ async function fetchNewsUrls(): Promise<SitemapUrl[]> {
   }
 }
 
+async function fetchContentStamp(): Promise<string | undefined> {
+  try {
+    // Single row read: reflects the newest site_config change and is cheap
+    // enough for the hourly sitemap regeneration.
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from('site_config')
+      .select('updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+
+    const stamp = (data ?? [])[0]?.updated_at as string | null | undefined
+    return stamp ? new Date(stamp).toISOString().slice(0, 10) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+async function fetchGigUrls(): Promise<SitemapUrl[]> {
+  try {
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from('gigs')
+      .select('id, title, festival_name, venue, city, event_date')
+      .eq('active', true)
+      .order('event_date', { ascending: true })
+
+    const rows = (data ?? []) as Array<{
+      id: string
+      title: string
+      festival_name: string | null
+      venue: string | null
+      city: string | null
+      event_date: string
+    }>
+
+    const slugById = buildGigSlugMap(rows)
+    const entries: SitemapUrl[] = []
+    for (const row of rows) {
+      const slug = slugById.get(row.id)
+      if (!slug) continue
+      // No lastmod here: gigs have no updated_at, and the event date is not a
+      // modification date. GET() applies the site_config content stamp instead.
+      entries.push({
+        loc: `${BASE_URL}/gigs/${slug}`,
+        changefreq: 'weekly',
+        priority: '0.7',
+      })
+    }
+    return entries
+  } catch {
+    return []
+  }
+}
+
 export async function GET(): Promise<NextResponse> {
-  const newsUrls = await fetchNewsUrls()
-  const xml = buildSitemap([...STATIC_URLS, ...newsUrls])
+  const [newsUrls, gigUrls, contentStamp] = await Promise.all([
+    fetchNewsUrls(),
+    fetchGigUrls(),
+    fetchContentStamp(),
+  ])
+  const staticUrls = STATIC_URLS.map((url) =>
+    url.lastmod ? url : { ...url, lastmod: contentStamp },
+  )
+  const datedGigUrls = gigUrls.map((url) =>
+    url.lastmod ? url : { ...url, lastmod: contentStamp },
+  )
+  const xml = buildSitemap([...staticUrls, ...datedGigUrls, ...newsUrls])
   return new NextResponse(xml, {
     status: 200,
     headers: {

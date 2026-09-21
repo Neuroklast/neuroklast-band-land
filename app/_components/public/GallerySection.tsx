@@ -10,6 +10,7 @@ import { useOverlay } from '@/contexts/OverlayContext'
 import { resolveGalleryTileAspect } from '@/lib/gallery-aspect-ratio'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { onMediaImageError } from '@/lib/media-fallback'
+import { CdnImage } from './CdnImage'
 
 interface GalleryItem {
   id: string
@@ -98,8 +99,6 @@ export function GallerySection({
               style={{ gap: gap || undefined }}
             >
               {capped.map((item, index) => {
-                const thumb =
-                  toDirectImageUrl(item.imageUrl, { w: 640, q: 75 }) || item.imageUrl || ''
                 return (
                   <m.div
                     key={item.id}
@@ -124,10 +123,12 @@ export function GallerySection({
                       lightbox ? `Open ${item.alt ?? 'gallery image'} in lightbox` : undefined
                     }
                   >
-                    <img
-                      src={thumb}
+                    <CdnImage
+                      src={item.imageUrl}
                       alt={item.alt ?? ''}
-                       className="h-full w-full object-cover"
+                      widths={[320, 480, 640, 960]}
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 360px"
+                      className="h-full w-full object-cover"
                       loading="lazy"
                       decoding="async"
                       onError={(e) => void onMediaImageError(e)}

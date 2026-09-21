@@ -12,8 +12,8 @@ import {
   type ReleaseTypeFilter,
 } from '@/lib/release-browse'
 import { displayReleaseType } from '@/lib/release-type'
-import { toDirectImageUrl } from '@/lib/image-cache'
 import { onMediaImageError } from '@/lib/media-fallback'
+import { CdnImage } from './CdnImage'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
@@ -164,9 +164,11 @@ export function ReleasesSection({
                   >
                     <div className="aspect-square bg-muted overflow-hidden">
                       {release.coverUrl ? (
-                        <img
-                          src={toDirectImageUrl(release.coverUrl, { w: 640 }) || release.coverUrl}
+                        <CdnImage
+                          src={release.coverUrl}
                           alt={release.title}
+                          widths={[240, 320, 480, 640]}
+                          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 320px"
                           className="glitch-image h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                           loading="lazy"
                           decoding="async"

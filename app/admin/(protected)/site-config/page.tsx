@@ -31,6 +31,7 @@ export default async function SiteConfigPage() {
           footerValue={(rowMap['footer'] ?? {}) as Record<string, unknown>}
           loadingScreenValue={(rowMap['loadingScreen'] ?? {}) as Record<string, unknown>}
           terminalValue={(rowMap['terminal'] ?? {}) as Record<string, unknown>}
+          imageCdnValue={(rowMap['imageCdn'] ?? {}) as Record<string, unknown>}
           advancedConfigs={[]}
         />
       </Suspense>

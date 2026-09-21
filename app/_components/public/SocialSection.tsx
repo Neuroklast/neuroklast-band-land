@@ -2,6 +2,7 @@
 
 import { m } from 'framer-motion'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { CdnImage } from './CdnImage'
 import {
   InstagramLogo,
   FacebookLogo,
@@ -73,11 +74,10 @@ function SocialButton({ link }: { link: SocialLink }) {
       style={{ '--icon-color': color } as React.CSSProperties}
     >
       {link.logoUrl ? (
-        <img
+        <CdnImage
           src={link.logoUrl}
           alt=""
           className="h-5 w-5 object-contain"
-          aria-hidden="true"
         />
       ) : (
         <Icon size={20} weight="bold" style={{ color }} aria-hidden="true" />

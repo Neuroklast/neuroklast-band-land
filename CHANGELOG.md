@@ -10,6 +10,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **External media in `CdnImage`** — the component bypassed the Google Drive/lh3
+  canonicalization that `ProgressiveImage` applied, so Drive-hosted gallery, news or
+  merch images reached the CDN as unfetchable share links. Both components now share
+  `lib/image-url.ts` (`canonicalImageUrl`), which also drops legacy Supabase Storage URLs.
+- **SVG logos are no longer proxied** — `resolveCdnImageUrl`/`buildImageSrcSet` return
+  vector sources untouched instead of rasterizing them to WebP.
+- **`ProgressiveImage` re-render loop** — an inline `widths` array in the effect
+  dependency list could reset the loading state on every render; the width list is now
+  memoized on its joined value.
+- **Sitemap `lastmod`** — gig detail URLs no longer claim the *event date* as their
+  modification date; they use the `site_config` content stamp like the other routes.
+- **Canonical scope** — the `'/'` default moved from the root layout to the homepage, so
+  404/terminal routes no longer declare the homepage as their canonical URL.
+- **News breadcrumb** — dropped the `/#news` fragment entry (fragments are not valid
+  breadcrumb targets for crawlers).
+- **Gig share link** — the detail page now shares its canonical page URL instead of the
+  OG image endpoint (the overlay keeps sharing the flyer).
+
+### Added
+
+- **Structured data** — `lib/structured-data.ts` (pure builders) plus the `JsonLd`
+  server component. Homepage emits `WebSite` + `MusicGroup` (with `sameAs` from
+  `social_links`), sub-pages emit `BreadcrumbList`, gig detail pages emit `MusicEvent`.
+- **Gig detail pages** — `/gigs/[slug]` (ISR, `generateStaticParams`) with
+  `MusicEvent` + breadcrumb JSON-LD, ticket CTA, calendar download (`lib/gig-ics`),
+  share action and Open Graph image. Slugs come from `lib/gig-slug.ts` (deterministic,
+  collision-safe). Linked from the homepage gig section, the `/gigs` browse cards and
+  the sitemap.
+- **Image CDN switch** — `lib/image-cdn.ts` resolves every remote image through
+  `site_config.imageCdn.mode`: `wsrv` (default), `vercel` or `direct`. New admin tab
+  **Images** (`ImageCdnEditor`) with a warning that Vercel mode needs
+  `NEXT_PUBLIC_IMAGE_OPTIMIZATION=on` plus image quota. `CdnImage` renders responsive
+  `srcset`/`sizes`; `ProgressiveImage` honours the same mode.
+- **`security-headers.mjs`** — single source of truth for CSP/HSTS/etc. imported by
+  `next.config.mjs`; `vercel.json` no longer duplicates the CSP.
+- **Sitemap** — `lastmod` for static routes and all gig detail URLs.
+- **Tests** — `structured-data`, `image-cdn`, `gig-slug`; `csp-parity` rewritten to
+  guard the single-source CSP contract.
+
+### Changed
+
+- **Homepage is statically cached again** — removed the `searchParams` read that forced
+  request-dynamic rendering (`Cache-Control: private, no-cache, no-store`). Admin live
+  preview (`?adminPreview=1`) is now detected client-side in `AdminDraftListener`; all
+  sections render server-side and invisible ones stay `display:none` via
+  `DraftSectionShell`.
+- **`vercel.json`** — serverless functions pinned to `fra1` (European visitors no longer
+  hit `iad1`).
+- **CSP** — `unsafe-eval` is development-only now.
+- **Canonical URLs** on every public page; `www.neuroklast.net` 308-redirects to the apex
+  domain.
+- **Homepage hero** — the wordmark image now sits inside an `h1` (previously the page had
+  no H1 at all).
+- **Image call sites** — gallery, media, releases, news, social and merch grids render
+  through `CdnImage` with width descriptors instead of fixed-size wsrv URLs.
+
+### Fixed
+
 - Overlay frame glow animates opacity on a `::after` layer (no `box-shadow` keyframes / extra panel blur).
 - Overlay close plays reverse boot then clip exit; frame glow pulses; panel is translucent.
 - Spotify/YouTube consent is one HUD click (no latch); Spotify embed uses pixel height so the player fills LISTEN.

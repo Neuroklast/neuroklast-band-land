@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
-import { toDirectImageUrl } from '@/lib/image-cache'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { CdnImage } from './CdnImage'
 
 interface GridItem {
   id: string
@@ -27,9 +27,11 @@ function GridItemTile({
   const imageBlock = (
     <div className="relative aspect-square overflow-hidden border border-border bg-muted transition-colors group-hover:border-primary/40">
       {item.imageUrl ? (
-        <img
-          src={toDirectImageUrl(item.imageUrl, { w: 640 }) || item.imageUrl}
+        <CdnImage
+          src={item.imageUrl}
           alt={item.title}
+          widths={[240, 320, 480, 640]}
+          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 300px"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
           decoding="async"

@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useMemo } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { HOMEPAGE_GIG_LIMIT } from '@/lib/browse-pagination'
+import { buildGigSlugMap } from '@/lib/gig-slug'
 import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -33,10 +35,12 @@ function GigList({
   gigs,
   heading,
   onGigClick,
+  slugById,
 }: {
   gigs: PublicGigRow[]
   heading: string
   onGigClick: (gig: PublicGigRow) => void
+  slugById: Map<string, string>
 }) {
   const prefersReducedMotion = useReducedMotion()
   const visibleGigs = gigs.slice(0, HOMEPAGE_GIG_LIMIT)
@@ -102,16 +106,26 @@ function GigList({
                   </div>
                 </div>
 
-                {gig.ticket_url ? (
-                  <a
-                    href={sanitizeExternalHref(gig.ticket_url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="nk-os-btn nk-os-btn--fill pointer-events-auto relative z-[3] shrink-0 tracking-[0.25em]"
-                  >
-                    Tickets
-                  </a>
-                ) : null}
+                <div className="pointer-events-auto relative z-[3] flex shrink-0 flex-wrap items-center gap-2">
+                  {slugById.get(gig.id) ? (
+                    <Link
+                      href={`/gigs/${slugById.get(gig.id)}`}
+                      className="nk-os-btn tracking-[0.25em]"
+                    >
+                      Details
+                    </Link>
+                  ) : null}
+                  {gig.ticket_url ? (
+                    <a
+                      href={sanitizeExternalHref(gig.ticket_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nk-os-btn nk-os-btn--fill tracking-[0.25em]"
+                    >
+                      Tickets
+                    </a>
+                  ) : null}
+                </div>
               </div>
             </div>
           </m.article>
@@ -127,6 +141,7 @@ export function GigsSection({ upcoming, past, heading, intro }: GigsSectionProps
   const { openOverlay } = useOverlay()
   const hasUpcoming = upcoming.length > 0
   const title = resolveSectionHeading(heading, 'gigs', t)
+  const slugById = useMemo(() => buildGigSlugMap([...upcoming, ...past]), [upcoming, past])
   const showViewAll =
     upcoming.length > HOMEPAGE_GIG_LIMIT ||
     (hasUpcoming && past.length > HOMEPAGE_GIG_LIMIT) ||
@@ -156,8 +171,8 @@ export function GigsSection({ upcoming, past, heading, intro }: GigsSectionProps
 
         {hasUpcoming ? (
           <div className="space-y-10">
-            <GigList gigs={upcoming} heading={t('gigs.upcoming').toUpperCase()} onGigClick={handleGigClick} />
-            <GigList gigs={past} heading={t('gigs.past').toUpperCase()} onGigClick={handleGigClick} />
+            <GigList gigs={upcoming} heading={t('gigs.upcoming').toUpperCase()} onGigClick={handleGigClick} slugById={slugById} />
+            <GigList gigs={past} heading={t('gigs.past').toUpperCase()} onGigClick={handleGigClick} slugById={slugById} />
             {viewAllLink}
           </div>
         ) : (

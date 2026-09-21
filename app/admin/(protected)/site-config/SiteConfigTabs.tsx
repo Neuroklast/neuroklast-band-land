@@ -7,15 +7,16 @@ import { LoadingScreenEditor } from './LoadingScreenEditor'
 import { BackgroundConfigEditor } from './BackgroundConfigEditor'
 import { AppearanceEditor } from './AppearanceEditor'
 import { SimpleTextConfigEditor } from './SimpleTextConfigEditor'
+import { ImageCdnEditor } from './ImageCdnEditor'
 import SiteConfigEditor from './SiteConfigEditor'
 import { AdminPreviewPane } from '@/app/admin/_components/AdminPreviewPane'
 import { SectionsSortable } from '@/app/admin/(protected)/sections/SectionsSortable'
 import { parseSections, type SectionConfig } from '@/lib/site-config-sections'
 import { TerminalConfigEditor } from './TerminalConfigEditor'
 
-type TabId = 'hero' | 'background' | 'theme' | 'sections' | 'text' | 'loader' | 'terminal' | 'advanced'
+type TabId = 'hero' | 'background' | 'theme' | 'sections' | 'text' | 'loader' | 'terminal' | 'images' | 'advanced'
 
-const VALID_TAB_IDS: TabId[] = ['hero', 'background', 'theme', 'sections', 'text', 'loader', 'terminal', 'advanced']
+const VALID_TAB_IDS: TabId[] = ['hero', 'background', 'theme', 'sections', 'text', 'loader', 'terminal', 'images', 'advanced']
 
 function isTabId(value: string | null): value is TabId {
   return value !== null && (VALID_TAB_IDS as string[]).includes(value)
@@ -30,6 +31,7 @@ interface SiteConfigTabsProps {
   footerValue: Record<string, unknown>
   loadingScreenValue: Record<string, unknown>
   terminalValue: Record<string, unknown>
+  imageCdnValue: Record<string, unknown>
   advancedConfigs: Array<{
     key: string
     label: string
@@ -45,6 +47,7 @@ const BASE_TABS: { id: TabId; label: string }[] = [
   { id: 'hero', label: 'Hero' },
   { id: 'loader', label: 'Loader' },
   { id: 'sections', label: 'Sections' },
+  { id: 'images', label: 'Images' },
   { id: 'text', label: 'Site Text' },
   { id: 'terminal', label: 'Terminal' },
 ]
@@ -58,6 +61,7 @@ export function SiteConfigTabs({
   footerValue,
   loadingScreenValue,
   terminalValue,
+  imageCdnValue,
   advancedConfigs,
 }: SiteConfigTabsProps) {
   const router = useRouter()
@@ -128,6 +132,7 @@ export function SiteConfigTabs({
             <SectionsSortable initialSections={sections as SectionConfig[]} />
           </div>
         )}
+        {activeTab === 'images' && <ImageCdnEditor currentValue={imageCdnValue} />}
         {activeTab === 'terminal' && <TerminalConfigEditor currentValue={terminalValue} />}
         {activeTab === 'text' && (
           <div className="space-y-6">

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { unstable_cache } from 'next/cache'
 import { createPublicClient } from '@/lib/supabaseServer'
@@ -5,6 +6,9 @@ import { resolveImageUrl, resolvePublicAssetUrl } from '@/lib/r2'
 import { splitGigsByDate } from '@/lib/gig-browse'
 import { PageLayout } from '@/layouts/PageLayout'
 import { CookieConsent } from '@/components/CookieConsent'
+import { JsonLd } from './_components/public/JsonLd'
+import { getSiteOrigin } from '@/lib/og-share'
+import { absoluteUrl, buildMusicGroupSchema, buildWebSiteSchema } from '@/lib/structured-data'
 
 import { GallerySection } from './_components/public/GallerySection'
 import { MediaSection } from './_components/public/MediaSection'
@@ -49,6 +53,12 @@ import {
 } from '@/lib/site-config-sections'
 // Revalidate at most once per minute for quick admin updates
 export const revalidate = 60
+
+// Canonical lives on the page, not the root layout: a layout-level default would
+// leak onto 404/terminal routes that must not claim the homepage as canonical.
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 // ─── Type helpers ────────────────────────────────────────────────────────────
 interface SiteConfigRow { key: string; value: Record<string, unknown> }
@@ -280,13 +290,7 @@ const fetchAllCached = unstable_cache(fetchAll, ['homepage-site-data'], {
   tags: ['site-config', 'homepage-site-data'],
 })
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ adminPreview?: string }>
-}) {
-  const { adminPreview } = await searchParams
-  const isAdminPreview = adminPreview === '1'
+export default async function HomePage() {
   const {
     configRows, bio, bioAchievements, bioCollabs, members, gigs, releases, partners,
     musicHighlights, merch, soundpacks, gallery, mediaDownloads, social, newsPosts,
@@ -300,9 +304,9 @@ export default async function HomePage({
   const allSections = withoutExcludedSections(
     parseSections(sectionsRaw).sort((a, b) => a.order - b.order),
   )
-  const sections = isAdminPreview
-    ? allSections
-    : allSections.filter((s) => s.visible)
+  // Every section is rendered; invisible ones stay display:none via
+  // DraftSectionShell so the admin preview can toggle them client-side.
+  const sections = allSections
 
   // Extract section style overrides from site_config (centralized helper to avoid repetition)
   // Note: sections config can be array of sections or object with styleOverrides
@@ -398,7 +402,6 @@ export default async function HomePage({
   const { upcoming, past } = splitGigsByDate(gigs)
 
   function wrapForPreview(content: ReactNode, section: SectionConfig) {
-    if (!isAdminPreview) return content
     return (
       <DraftSectionShell
         key={section.id}
@@ -454,6 +457,38 @@ export default async function HomePage({
     logoUrl: resolveImageUrl(link.logo_storage_path ?? null, link.logo_url ?? null),
   }))
 
+  const heroLogoUrl =
+    resolvePublicAssetUrl(
+      typeof heroConfig.logoImageStoragePath === 'string' ? heroConfig.logoImageStoragePath : null,
+      typeof heroConfig.logoUrl === 'string'
+        ? heroConfig.logoUrl
+        : typeof heroConfig.logoImageUrl === 'string'
+          ? heroConfig.logoImageUrl
+          : '/brand/nk-logo-red-bold.png',
+    ) ?? '/brand/nk-logo-red-bold.png'
+
+  const heroTitleImageUrl =
+    resolvePublicAssetUrl(
+      typeof heroConfig.titleImageStoragePath === 'string' ? heroConfig.titleImageStoragePath : null,
+      typeof heroConfig.titleImageUrl === 'string'
+        ? heroConfig.titleImageUrl
+        : '/brand/neuroklast-wordmark-red.svg',
+    ) ?? '/brand/neuroklast-wordmark-red.svg'
+
+  const siteOrigin = getSiteOrigin()
+  const homeJsonLd = [
+    buildWebSiteSchema({ name: siteName, url: absoluteUrl(siteOrigin, '/') }),
+    buildMusicGroupSchema({
+      name: siteName,
+      url: absoluteUrl(siteOrigin, '/'),
+      description: heroTagline || undefined,
+      genres: heroGenres,
+      imageUrl: heroTitleImageUrl,
+      logoUrl: heroLogoUrl,
+      sameAs: socialWithLogos.map((link) => link.url),
+    }),
+  ].filter(Boolean)
+
   const footerSlot = (
     <LookFooter
       lookId={lookId}
@@ -470,7 +505,7 @@ export default async function HomePage({
   const systemSlot = (
     <>
       <PublicBoot lookId={lookId} loadingScreen={getConfig(configRows, 'loadingScreen')} />
-      <AdminDraftListener enableDrafts={isAdminPreview} />
+      <AdminDraftListener />
       <CookieConsent privacyPolicyUrl={privacyPolicyUrl} />
     </>
   )
@@ -489,7 +524,8 @@ export default async function HomePage({
       system={systemSlot}
     >
       {/* Main content – sections rendered in DB-controlled order (inside PageLayout <main>) */}
-      {sections.map((section, idx) => {
+      <JsonLd data={homeJsonLd} />
+      {sections.map((section) => {
         const divider = null
         switch (section.id) {
           case 'hero':
@@ -500,24 +536,8 @@ export default async function HomePage({
                   name={siteName}
                   tagline={heroTagline}
                   genres={heroGenres}
-                  logoUrl={
-                    resolvePublicAssetUrl(
-                      typeof heroConfig.logoImageStoragePath === 'string' ? heroConfig.logoImageStoragePath : null,
-                      typeof heroConfig.logoUrl === 'string'
-                        ? heroConfig.logoUrl
-                        : typeof heroConfig.logoImageUrl === 'string'
-                          ? heroConfig.logoImageUrl
-                          : '/brand/nk-logo-red-bold.png',
-                    ) ?? '/brand/nk-logo-red-bold.png'
-                  }
-                  titleImageUrl={
-                    resolvePublicAssetUrl(
-                      typeof heroConfig.titleImageStoragePath === 'string' ? heroConfig.titleImageStoragePath : null,
-                      typeof heroConfig.titleImageUrl === 'string'
-                        ? heroConfig.titleImageUrl
-                        : '/brand/neuroklast-wordmark-red.svg',
-                    ) ?? '/brand/neuroklast-wordmark-red.svg'
-                  }
+                  logoUrl={heroLogoUrl}
+                  titleImageUrl={heroTitleImageUrl}
                   logoWidthPercent={
                     typeof heroConfig.logoWidthPercent === 'number' ? heroConfig.logoWidthPercent : undefined
                   }

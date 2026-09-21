@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { applyAppearanceConfig } from '@/lib/apply-appearance-config'
 import { applySectionsDraft } from '@/lib/apply-sections-draft'
@@ -159,11 +159,23 @@ function applyFooterDraft(value: Record<string, unknown>) {
 
 /**
  * Appearance drafts apply on any open public tab so color/opacity sliders are live.
- * Other drafts only apply in the admin preview iframe (`?adminPreview=1`).
- * Save still revalidates + broadcastAdminRefresh for RSC props.
+ * Other drafts only apply in the admin preview iframe.
+ *
+ * Preview mode is detected in the browser (`?adminPreview=1`) instead of on the
+ * server: the homepage is statically cached, so it must not read `searchParams`.
  */
-export function AdminDraftListener({ enableDrafts = false }: { enableDrafts?: boolean }) {
+export function AdminDraftListener({ enableDrafts }: { enableDrafts?: boolean }) {
   const router = useRouter()
+  const [draftsEnabled, setDraftsEnabled] = useState(enableDrafts === true)
+
+  useEffect(() => {
+    if (enableDrafts === true) {
+      setDraftsEnabled(true)
+      return
+    }
+    const params = new URLSearchParams(window.location.search)
+    setDraftsEnabled(params.get('adminPreview') === '1')
+  }, [enableDrafts])
 
   const onDraft = useCallback(
     (key: AdminDraftKey, value: Record<string, unknown>) => {
@@ -171,7 +183,7 @@ export function AdminDraftListener({ enableDrafts = false }: { enableDrafts?: bo
         applyAppearanceConfig(value)
         return
       }
-      if (!enableDrafts) return
+      if (!draftsEnabled) return
       switch (key) {
         case 'hero':
           applyHeroDraft(value)
@@ -195,7 +207,7 @@ export function AdminDraftListener({ enableDrafts = false }: { enableDrafts?: bo
           break
       }
     },
-    [enableDrafts],
+    [draftsEnabled],
   )
 
   const onRefresh = useCallback(() => {

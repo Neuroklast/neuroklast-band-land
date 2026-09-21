@@ -214,6 +214,23 @@ A state-of-the-art admin security center provides full visibility and control:
 9. **Log Monitoring**: Monitor `[HONEYTOKEN ALERT]` entries in server logs for intrusion detection
 10. **Seed Honeytokens**: Call `GET /api/admin/seed-security` once after initial deployment to activate the honeytoken trap
 
+## DNS & Email Hardening (ops runbook)
+
+These items live in the domain's DNS zone (Vercel nameservers), not in this repository.
+Status as of the 2026-09 audit:
+
+| Record | Status | Action |
+| --- | --- | --- |
+| CAA | ✅ present (`letsencrypt.org`, `pki.goog`, `sectigo.com`) | none |
+| SPF | ✅ `v=spf1 include:mailgun.org ~all` | none |
+| DMARC | ⚠️ present but `p=none` | collect `rua` reports for 2–4 weeks, then move to `p=quarantine`, later `p=reject` |
+| DKIM | ❓ not verified for the sending domains | enable DKIM in Mailgun (and Brevo if used for marketing) and publish the selector TXT records |
+| DNSSEC | ❌ not enabled | enable DNSSEC at the registrar/Vercel DNS, then verify with a DS lookup |
+| `security.txt` | ❌ missing | optional: publish `/.well-known/security.txt` with the reporting contact |
+
+Order matters: never raise DMARC to `reject` before DKIM is signing and aligned, or
+legitimate mail will bounce.
+
 ## ⚖️ Legal Notice — Unauthorized Access
 
 Unauthorized access to this system or its security test infrastructure is a criminal offense

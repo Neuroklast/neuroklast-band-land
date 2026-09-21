@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from 'react'
 
-import { toDirectImageUrl } from '@/lib/image-cache'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { onMediaImageError } from '@/lib/media-fallback'
 import type { Release } from '@/lib/app-types'
 import { ReleasesSection } from './ReleasesSection'
+import { CdnImage } from './CdnImage'
 import { ReleasesSwipeLayout } from '@/components/releases/ReleasesSwipeLayout'
 import { Releases3DCarouselLayout } from '@/components/releases/Releases3DCarouselLayout'
 import {
@@ -57,9 +57,11 @@ function PublicReleaseCard({ item, onClick }: { item: PublicReleaseCardItem; onC
     >
       <div className="relative aspect-square overflow-hidden bg-black">
         {item.coverUrl ? (
-          <img
-            src={toDirectImageUrl(item.coverUrl, { w: 640 }) || item.coverUrl}
+          <CdnImage
+            src={item.coverUrl}
             alt={item.title}
+            widths={[240, 320, 480, 640]}
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 320px"
             className="glitch-image h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
             decoding="async"

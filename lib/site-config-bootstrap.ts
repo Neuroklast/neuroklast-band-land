@@ -7,6 +7,7 @@ import type { AppearanceConfigInput } from '@/lib/apply-appearance-config'
 import type { AppearanceTheme } from '@/lib/appearance-presets'
 import { parseTerminalConfig, type TerminalConfig } from '@/lib/terminal-config'
 import { parseOverlayAnimationPool } from '@/lib/overlay-animations'
+import { parseImageCdnMode, type ImageCdnMode } from '@/lib/image-cdn'
 
 export interface PublicSiteBootstrap {
   customTranslations: CustomTranslations
@@ -16,6 +17,8 @@ export interface PublicSiteBootstrap {
   appearance: AppearanceConfigInput
   terminal: TerminalConfig
   artistName: string
+  /** Admin-selected image delivery mode (`site_config.imageCdn.mode`). */
+  imageCdnMode: ImageCdnMode
 }
 
 function parseArtistName(raw: unknown): string {
@@ -60,7 +63,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
     const { data } = await supabase
       .from('site_config')
       .select('key, value')
-      .in('key', ['translations', 'analytics', 'languages', 'appearance', 'terminal', 'hero'])
+      .in('key', ['translations', 'analytics', 'languages', 'appearance', 'terminal', 'hero', 'imageCdn'])
 
     const rows = (data ?? []) as Array<{ key: string; value: unknown }>
     const rowMap = Object.fromEntries(rows.map((row) => [row.key, row.value]))
@@ -71,6 +74,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       appearance: parseAppearanceBootstrap(rowMap.appearance),
       terminal: parseTerminalConfig(rowMap.terminal),
       artistName: parseArtistName(rowMap.hero),
+      imageCdnMode: parseImageCdnMode(rowMap.imageCdn),
     }
   } catch {
     return {
@@ -80,6 +84,7 @@ export async function getPublicSiteBootstrap(): Promise<PublicSiteBootstrap> {
       appearance: {},
       terminal: parseTerminalConfig(null),
       artistName: 'NEUROKLAST',
+      imageCdnMode: parseImageCdnMode(null),
     }
   }
 }

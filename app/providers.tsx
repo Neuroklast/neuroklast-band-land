@@ -12,6 +12,8 @@ import { parseTerminalConfig, type TerminalConfig } from '@/lib/terminal-config'
 import { OverlayHost } from '@/app/_components/public/OverlayHost'
 import { AnalyticsTracker } from '@/components/AnalyticsTracker'
 import { AppearanceBridge } from '@/app/_components/public/AppearanceBridge'
+import { ImageCdnProvider } from '@/contexts/ImageCdnContext'
+import { DEFAULT_IMAGE_CDN_MODE, type ImageCdnMode } from '@/lib/image-cdn'
 import type { AppearanceConfigInput } from '@/lib/apply-appearance-config'
 import type { AnalyticsConfig } from '@/lib/analytics-config'
 import type { SiteLanguage } from '@/lib/i18n'
@@ -46,6 +48,8 @@ interface ProvidersProps {
   appearance?: AppearanceConfigInput
   terminal?: TerminalConfig
   artistName?: string
+  /** Admin-selected image CDN mode from `site_config.imageCdn`. */
+  imageCdnMode?: ImageCdnMode
 }
 
 export function Providers({
@@ -56,6 +60,7 @@ export function Providers({
   appearance = {},
   terminal,
   artistName = 'NEUROKLAST',
+  imageCdnMode = DEFAULT_IMAGE_CDN_MODE,
 }: ProvidersProps) {
   const [queryClient] = useState(
     () =>
@@ -74,13 +79,15 @@ export function Providers({
             <QueryClientProvider client={queryClient}>
               <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <TerminalConfigProvider value={terminal ?? parseTerminalConfig(null)}>
-                  <AppearanceBridge config={appearance} />
-                  {children}
-                  <OverlayHost
-                    lookId={appearance.lookId}
-                    overlayAnimations={appearance.overlayAnimations}
-                    artistName={artistName}
-                  />
+                  <ImageCdnProvider mode={imageCdnMode}>
+                    <AppearanceBridge config={appearance} />
+                    {children}
+                    <OverlayHost
+                      lookId={appearance.lookId}
+                      overlayAnimations={appearance.overlayAnimations}
+                      artistName={artistName}
+                    />
+                  </ImageCdnProvider>
                 </TerminalConfigProvider>
               </ErrorBoundary>
             </QueryClientProvider>
