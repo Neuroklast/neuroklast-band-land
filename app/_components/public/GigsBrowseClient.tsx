@@ -13,6 +13,7 @@ import {
   type GigTimingFilter,
 } from '@/lib/gig-browse'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
+import { buildGigSlugMap } from '@/lib/gig-slug'
 import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useLocale } from '@/contexts/LocaleContext'
 import { GigStatusBadge } from '@/components/overlays/GigStatusBadge'
@@ -36,9 +37,11 @@ function formatDisplayDate(eventDate: string) {
 function GigBrowseCard({
   gig,
   onClick,
+  slug,
 }: {
   gig: PublicGigRow
   onClick: () => void
+  slug?: string
 }) {
   const prefersReducedMotion = useReducedMotion()
   const location = formatGigLocation(gig)
@@ -84,16 +87,26 @@ function GigBrowseCard({
             </div>
           </div>
 
-          {gig.ticket_url ? (
-            <a
-              href={sanitizeExternalHref(gig.ticket_url)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cyber-border hover-glitch pointer-events-auto relative z-[3] inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
-            >
-              Tickets
-            </a>
-          ) : null}
+          <div className="pointer-events-auto relative z-[3] flex shrink-0 flex-wrap items-center gap-2">
+            {slug ? (
+              <Link
+                href={`/gigs/${slug}`}
+                className="cyber-border hover-glitch inline-flex min-h-[44px] items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
+              >
+                Details
+              </Link>
+            ) : null}
+            {gig.ticket_url ? (
+              <a
+                href={sanitizeExternalHref(gig.ticket_url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cyber-border hover-glitch inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 py-2 font-mono text-xs uppercase tracking-[0.25em]"
+              >
+                Tickets
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
     </m.article>
@@ -113,6 +126,7 @@ export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
   )
 
   const pagination = useMemo(() => paginateItems(filteredGigs, page), [filteredGigs, page])
+  const slugById = useMemo(() => buildGigSlugMap(gigs), [gigs])
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
@@ -163,7 +177,12 @@ export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
         <>
           <div className="space-y-4">
             {pagination.items.map((gig) => (
-              <GigBrowseCard key={gig.id} gig={gig} onClick={() => handleGigClick(gig)} />
+              <GigBrowseCard
+                key={gig.id}
+                gig={gig}
+                slug={slugById.get(gig.id)}
+                onClick={() => handleGigClick(gig)}
+              />
             ))}
           </div>
 

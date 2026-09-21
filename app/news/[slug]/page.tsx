@@ -5,6 +5,9 @@ import { createPublicClient } from '@/lib/supabaseServer'
 import { resolveImageUrl } from '@/lib/r2'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
+import { JsonLd } from '@/app/_components/public/JsonLd'
+import { getSiteOrigin } from '@/lib/og-share'
+import { absoluteUrl, buildBreadcrumbSchema } from '@/lib/structured-data'
 
 interface NewsPostRow {
   id: string
@@ -47,6 +50,7 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.excerpt ?? undefined,
+    alternates: { canonical: `/news/${slug}` },
     openGraph: {
       title: post.title,
       description: post.excerpt ?? undefined,
@@ -92,6 +96,12 @@ export default async function NewsPostPage({
 
   return (
     <LegalPageShell>
+      <JsonLd
+        data={buildBreadcrumbSchema([
+          { name: 'Home', url: absoluteUrl(getSiteOrigin(), '/') },
+          { name: post.title, url: absoluteUrl(getSiteOrigin(), `/news/${post.slug}`) },
+        ])}
+      />
       <article className="mx-auto max-w-3xl px-card pt-[calc(var(--nk-nav-h)+1.5rem)] pb-section">
         <Link
           href="/#news"

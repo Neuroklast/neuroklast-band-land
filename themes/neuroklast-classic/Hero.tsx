@@ -100,23 +100,27 @@ export default function NeuroklastClassicHero({
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
           {titleImageUrl ? (
-            <div className="hero-logo-glitch">
-              <HeroPowerGlitchMark
-                src={titleImageUrl}
-                alt={name}
-                imgClassName="h-auto w-full"
-                config={powerGlitch}
-              />
-            </div>
+            <h1 className="w-full">
+              <div className="hero-logo-glitch">
+                <HeroPowerGlitchMark
+                  src={titleImageUrl}
+                  alt={name}
+                  imgClassName="h-auto w-full"
+                  config={powerGlitch}
+                />
+              </div>
+            </h1>
           ) : logoUrl ? (
-            <div className="hero-logo-glitch">
-              <HeroPowerGlitchMark
-                src={logoUrl}
-                alt={name}
-                imgClassName="h-auto w-full"
-                config={powerGlitch}
-              />
-            </div>
+            <h1 className="w-full">
+              <div className="hero-logo-glitch">
+                <HeroPowerGlitchMark
+                  src={logoUrl}
+                  alt={name}
+                  imgClassName="h-auto w-full"
+                  config={powerGlitch}
+                />
+              </div>
+            </h1>
           ) : (
             <div className="nk-crt-mark nk-crt-mark--word">
               <h1

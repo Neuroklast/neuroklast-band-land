@@ -10,15 +10,25 @@ export function getGigShareUrl(gigId: string, origin?: string): string {
   return `${base}/api/og?type=gig&id=${encodeURIComponent(gigId)}`
 }
 
-export function buildGigSharePayload(gig: Gig, artistName: string, origin?: string) {
-  const url = getGigShareUrl(gig.id, origin)
+export function buildGigSharePayload(
+  gig: Gig,
+  artistName: string,
+  origin?: string,
+  /** Canonical page URL to share. Defaults to the OG image endpoint (overlay flyer). */
+  shareUrl?: string,
+) {
+  const url = shareUrl?.trim() || getGigShareUrl(gig.id, origin)
   const title = gig.title ? `${artistName} — ${gig.title}` : `${artistName} @ ${gig.venue}`
   const text = [formatIsoDateLong(gig.date), gig.location].filter(Boolean).join(' — ')
   return { title, text, url }
 }
 
-export async function shareGigEvent(gig: Gig, artistName: string): Promise<'shared' | 'copied'> {
-  const payload = buildGigSharePayload(gig, artistName)
+export async function shareGigEvent(
+  gig: Gig,
+  artistName: string,
+  options?: { shareUrl?: string },
+): Promise<'shared' | 'copied'> {
+  const payload = buildGigSharePayload(gig, artistName, undefined, options?.shareUrl)
 
   if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {

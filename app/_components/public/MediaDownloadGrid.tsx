@@ -2,9 +2,9 @@
 
 import { m, useReducedMotion } from 'framer-motion'
 import { DownloadSimple, FilePdf, FileZip, FileAudio, File as FileIcon } from '@phosphor-icons/react'
-import { toDirectImageUrl } from '@/lib/image-cache'
 import { onMediaImageError } from '@/lib/media-fallback'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { CdnImage } from './CdnImage'
 import { useLocale } from '@/contexts/LocaleContext'
 import {
   formatFileSize,
@@ -33,10 +33,7 @@ export function MediaDownloadGrid({ items, onImageClick }: MediaDownloadGridProp
       {items.map((item, index) => {
         const kind = mediaKindFromMime(item.fileMime, item.originalFilename)
         const sizeLabel = formatFileSize(item.fileSizeBytes)
-        const thumb =
-          kind === 'image' && item.fileUrl
-            ? toDirectImageUrl(item.fileUrl, { w: 640, q: 75 }) || item.fileUrl
-            : null
+        const thumb = kind === 'image' && item.fileUrl ? item.fileUrl : null
 
         return (
           <m.article
@@ -57,9 +54,11 @@ export function MediaDownloadGrid({ items, onImageClick }: MediaDownloadGridProp
                 aria-label={`${t('media.preview')}: ${item.title}`}
               >
                 <div className="relative mb-3 aspect-square overflow-hidden border border-border bg-muted">
-                  <img
+                  <CdnImage
                     src={thumb}
                     alt={item.title}
+                    widths={[240, 320, 480, 640]}
+                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 300px"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                     decoding="async"

@@ -3,9 +3,9 @@
 import { useLocale } from '@/contexts/LocaleContext'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { resolveSectionHeading } from '@/lib/section-display'
-import { toDirectImageUrl } from '@/lib/image-cache'
 import { formatIsoDateLong } from '@/lib/format-display-date'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
+import { CdnImage } from './CdnImage'
 
 export interface NewsPostCard {
   id: string
@@ -53,9 +53,11 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
             >
               <div className="relative aspect-video overflow-hidden bg-muted">
                 {post.coverUrl ? (
-                  <img
-                    src={toDirectImageUrl(post.coverUrl, { w: 800 }) || post.coverUrl}
-                     alt={post.title}
+                  <CdnImage
+                    src={post.coverUrl}
+                    alt={post.title}
+                    widths={[320, 480, 800]}
+                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 400px"
                     className="h-full w-full object-cover"
                     loading="lazy"
                     decoding="async"
