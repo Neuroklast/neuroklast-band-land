@@ -22,7 +22,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const result = await advanceSyncJob(id)
-    if (!result.done && result.job.status === 'running') {
+    if (!result.done && !result.busy && result.job.status === 'running') {
       continueSyncJob(id)
     }
 

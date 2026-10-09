@@ -207,4 +207,13 @@ describe('buildAppearanceInlineCss', () => {
     expect(css).toContain('--surface-section-bg: oklch(0.05 0 0 / 0.4);')
     expect(css).toContain('--surface-section-backdrop: blur(4px);')
   })
+
+  it('keeps a style-breaking value inside the declaration', () => {
+    const css = buildAppearanceInlineCss({
+      theme: { headingFontSize: '1rem}</style><script>alert(1)</script>' },
+    })
+    expect(css).not.toContain('</style>')
+    expect(css).not.toContain('<script>')
+    expect(css).toContain('\\3c ')
+  })
 })

@@ -15,6 +15,14 @@ export default async function ProtectedAdminLayout({
     if (!user) {
       redirect('/admin/login')
     }
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    if (error || (profile as { role?: string } | null)?.role !== 'admin') {
+      redirect('/admin/login?error=forbidden')
+    }
   } catch (error) {
     if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
       throw error // rethrow Next.js redirect

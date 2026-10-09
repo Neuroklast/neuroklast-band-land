@@ -1,13 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/lib/rate-limit', () => ({
+  consumeRateLimitForRequest: vi.fn(async () => ({ allowed: true, namespace: 'partner-logo' })),
+}))
+
 vi.mock('@/lib/ssrf-guard', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/ssrf-guard')>()
   return {
     ...actual,
-    assertSafeRemoteUrl: vi.fn(async (url: string) => new URL(url)),
+    fetchUrlWithResolvedCheck: vi.fn(async (url: string, init?: RequestInit) => fetch(url, init)),
   }
 })
 
+import { consumeRateLimitForRequest } from '@/lib/rate-limit'
+import { fetchUrlWithResolvedCheck } from '@/lib/ssrf-guard'
 import { GET } from '@/app/api/partner-logo/route'
 
 describe('GET /api/partner-logo', () => {
@@ -23,6 +29,16 @@ describe('GET /api/partner-logo', () => {
       ),
     )
     expect(res.status).toBe(400)
+  })
+
+  it('returns 429 when the limiter throws', async () => {
+    vi.mocked(consumeRateLimitForRequest).mockRejectedValueOnce(new Error('db down'))
+    const target = 'https://pub-example.r2.dev/partners/logos/baby.svg'
+    const res = await GET(
+      new Request(`http://local.test/api/partner-logo?url=${encodeURIComponent(target)}`),
+    )
+    expect(res.status).toBe(429)
+    expect(fetchUrlWithResolvedCheck).not.toHaveBeenCalled()
   })
 
   it('rejects missing url', async () => {

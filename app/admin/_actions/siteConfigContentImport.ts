@@ -13,7 +13,7 @@ import {
   extractGoogleDriveFolderId,
 } from '@/lib/drive-migrate'
 import { extractGoogleDriveFileId, extensionFromContentType } from '@/lib/remote-image-url'
-import { assertSafeRemoteUrl } from '@/lib/ssrf-guard'
+import { fetchUrlWithResolvedCheck } from '@/lib/ssrf-guard'
 import {
   buildImportRows,
   collectMediaUrls,
@@ -47,8 +47,7 @@ async function downloadRemoteFile(url: string): Promise<{ bytes: Buffer; content
   }
 
   try {
-    await assertSafeRemoteUrl(url)
-    const response = await fetch(url, { redirect: 'follow' })
+    const response = await fetchUrlWithResolvedCheck(url)
     if (!response.ok) return null
     const contentType = response.headers.get('content-type')?.split(';')[0].trim() || 'application/octet-stream'
     const bytes = Buffer.from(await response.arrayBuffer())

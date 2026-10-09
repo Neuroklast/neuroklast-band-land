@@ -108,18 +108,34 @@ describe('middleware admin auth', () => {
     expect(response.cookies.get('sb-refresh-token')?.value).toBe('fresh-refresh-token')
   })
 
-  it('allows request when profile lookup returns null after valid auth', async () => {
+  it('forbids a signed-in user when the profile lookup returns an error', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'admin-user' } },
+      error: null,
+    })
+    mockSingle.mockResolvedValue({
+      data: { role: 'admin' },
+      error: { message: 'permission denied' },
+    })
+
+    const response = await proxy(createRequest('/admin/releases'))
+
+    expect(response.headers.get('location')).toBe('https://example.com/admin/login?error=forbidden')
+  })
+
+  it('forbids a signed-in user when the profile row is missing', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'admin-user' } },
       error: null,
     })
     mockSingle.mockResolvedValue({
       data: null,
+      error: { message: '0 rows' },
     })
 
     const response = await proxy(createRequest('/admin/releases'))
 
-    expect(response.headers.get('location')).toBeNull()
+    expect(response.headers.get('location')).toBe('https://example.com/admin/login?error=forbidden')
   })
 
   it('redirects to forbidden when authenticated user is not admin', async () => {
@@ -136,7 +152,7 @@ describe('middleware admin auth', () => {
     expect(response.headers.get('location')).toBe('https://example.com/admin/login?error=forbidden')
   })
 
-  it('allows request when profile lookup throws after valid auth', async () => {
+  it('forbids the request when profile lookup throws', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'admin-user' } },
       error: null,
@@ -145,7 +161,7 @@ describe('middleware admin auth', () => {
 
     const response = await proxy(createRequest('/admin/releases'))
 
-    expect(response.headers.get('location')).toBeNull()
+    expect(response.headers.get('location')).toBe('https://example.com/admin/login?error=forbidden')
   })
 
   it('applies cache-control headers from @supabase/ssr to the response', async () => {

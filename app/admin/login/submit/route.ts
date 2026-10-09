@@ -12,6 +12,26 @@ import { shouldForceInsecureCookies } from '@/lib/supabaseServer'
  * - This guarantees cookies are present before middleware or protected layout run.
  * - setAll passes options UNCHANGED and forwards the headers arg (ssr>=0.12).
  */
+/** Same-origin path only. `//evil.com` and `/\evil.com` are other hosts after URL parsing. */
+export function safeAdminRedirect(value: string, base: string): string {
+  const fallback = '/admin'
+  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\') || value.includes('\0')) {
+    return fallback
+  }
+  try {
+    const origin = new URL(base).origin
+    const url = new URL(value, base)
+    if (url.origin !== origin) return fallback
+    const path = `${url.pathname}${url.search}${url.hash}`
+    // `/.//evil.com` serializes to pathname `//evil.com`, which the next parse treats as another host.
+    if (!path.startsWith('/') || path.startsWith('//')) return fallback
+    if (new URL(path, base).origin !== origin) return fallback
+    return path
+  } catch {
+    return fallback
+  }
+}
+
 export async function POST(request: Request) {
   const formData = await request.formData()
   const rawIdentifier =
@@ -20,7 +40,7 @@ export async function POST(request: Request) {
       .map((value) => String(value).trim())
       .find((value) => value.includes('@')) ?? ''
   const password = String(formData.get('password') || '')
-  const redirectTo = String(formData.get('redirectTo') || '/admin')
+  const redirectTo = safeAdminRedirect(String(formData.get('redirectTo') || '/admin'), request.url)
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -76,8 +96,7 @@ export async function POST(request: Request) {
   const signInPayload = { email: rawIdentifier, password }
 
   // Prepare the final redirect response FIRST so setAll can attach cookies to it.
-  const finalRedirectUrl = redirectTo.startsWith('/') ? redirectTo : '/admin'
-  const response = NextResponse.redirect(new URL(finalRedirectUrl, request.url), 303)
+  const response = NextResponse.redirect(new URL(redirectTo, request.url), 303)
 
   // Register the attempt with Supabase (writes cookies on success). We create the
   // client directly so cookies are attached to the SAME 303 response the browser

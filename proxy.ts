@@ -115,21 +115,18 @@ export async function proxy(request: NextRequest) {
     return redirectWithCookies(loginUrl)
   }
 
-  // Admin-Role Check (tolerant if no profiles row yet — submit handler does best-effort upsert)
-  let profile: { role?: string } | null = null
+  // Missing row or a failed lookup is not admin. Role is set in Supabase, never inferred.
+  const forbiddenUrl = new URL('/admin/login?error=forbidden', request.url)
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
-    profile = data ?? null
+    if (error || (data as { role?: string } | null)?.role !== 'admin') {
+      return redirectWithCookies(forbiddenUrl)
+    }
   } catch {
-    profile = null
-  }
-
-  if (profile !== null && profile.role !== 'admin') {
-    const forbiddenUrl = new URL('/admin/login?error=forbidden', request.url)
     return redirectWithCookies(forbiddenUrl)
   }
 
