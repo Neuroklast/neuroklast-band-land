@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { parsePartnerLogoProxyUrl, rewriteSvgForHiResRaster } from '@/lib/partner-logo-white'
 import { canonicalizeR2MediaUrl } from '@/lib/r2-url-rewrite'
-import { assertSafeRemoteUrl } from '@/lib/ssrf-guard'
+import { fetchUrlWithResolvedCheck } from '@/lib/ssrf-guard'
 import { consumeRateLimitForRequest } from '@/lib/rate-limit'
 
 const MAX_LOGO_BYTES = 8 * 1024 * 1024
@@ -41,7 +41,8 @@ export async function GET(request: Request) {
       return new NextResponse('Rate limited', { status: 429 })
     }
   } catch (err) {
-    console.warn('[partner-logo] rate limit unavailable, continuing:', err)
+    console.warn('[partner-logo] rate limit unavailable, rejecting (fail-closed):', err)
+    return new NextResponse('Rate limited', { status: 429 })
   }
 
   const target = canonicalizeR2MediaUrl(requested)
@@ -50,8 +51,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    await assertSafeRemoteUrl(target)
-    const upstream = await fetch(target, {
+    const upstream = await fetchUrlWithResolvedCheck(target, {
       headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif,image/svg+xml,*/*' },
       cache: 'force-cache',
     })

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
-import { fetchBandsintownEventsFromApi } from '@/lib/bandsintown-sync'
+import { fetchBandsintownEventsFromApi, resolveBandsintownArtistName } from '@/lib/bandsintown-sync'
 import { consumeRateLimitForRequest } from '@/lib/rate-limit'
+import { createPublicClient } from '@/lib/supabaseServer'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,8 +53,10 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Ignore the query artist. Callers must not spend the site key on other names.
+    const artistName = await resolveBandsintownArtistName(createPublicClient())
     const events = await fetchBandsintownEventsFromApi(
-      parsed.data.artist,
+      artistName,
       apiKey,
       parsed.data.include_past,
     )

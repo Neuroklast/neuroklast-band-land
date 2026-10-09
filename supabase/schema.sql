@@ -816,6 +816,11 @@ CREATE TABLE IF NOT EXISTS public.rate_limits (
 CREATE INDEX IF NOT EXISTS rate_limits_reset_at_idx
   ON public.rate_limits (reset_at);
 
+-- No policies: the public anon key must not read or wipe counters.
+-- consume_rate_limit is SECURITY DEFINER, so the app limiter still works.
+ALTER TABLE public.rate_limits ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.rate_limits FROM PUBLIC, anon, authenticated;
+
 -- Atomic fixed-window counter. SECURITY DEFINER + service-role only; the
 -- anon/authenticated roles cannot invoke it (they could otherwise hammer it).
 -- Keys are already hashed IPs (SHA-256 + RATE_LIMIT_SALT) — never raw IPs.
@@ -838,21 +843,43 @@ BEGIN
     RETURN jsonb_build_object('count', 0, 'reset_at', 0);
   END IF;
 
-  -- Opportunistic cleanup of expired buckets (indexed by reset_at).
-  DELETE FROM public.rate_limits WHERE reset_at <= v_now;
-
   INSERT INTO public.rate_limits (key, count, reset_at)
   VALUES (p_key, 1, v_now + make_interval(secs => p_window_seconds))
-  ON CONFLICT (key) DO UPDATE SET
-    count = CASE
-      WHEN public.rate_limits.reset_at <= v_now THEN 1
-      ELSE public.rate_limits.count + 1
-    END,
-    reset_at = CASE
-      WHEN public.rate_limits.reset_at <= v_now THEN v_now + make_interval(secs => p_window_seconds)
-      ELSE public.rate_limits.reset_at
-    END
+  ON CONFLICT (key) DO NOTHING
   RETURNING count, reset_at INTO v_count, v_reset_at;
+
+  IF NOT FOUND THEN
+    UPDATE public.rate_limits SET
+      count = CASE
+        WHEN reset_at <= v_now THEN 1
+        ELSE count + 1
+      END,
+      reset_at = CASE
+        WHEN reset_at <= v_now THEN v_now + make_interval(secs => p_window_seconds)
+        ELSE reset_at
+      END
+    WHERE key = p_key
+    RETURNING count, reset_at INTO v_count, v_reset_at;
+
+    -- A sweep from another new key can delete this expired row before the update.
+    IF NOT FOUND THEN
+      INSERT INTO public.rate_limits (key, count, reset_at)
+      VALUES (p_key, 1, v_now + make_interval(secs => p_window_seconds))
+      ON CONFLICT (key) DO UPDATE SET
+        count = CASE
+          WHEN public.rate_limits.reset_at <= v_now THEN 1
+          ELSE public.rate_limits.count + 1
+        END,
+        reset_at = CASE
+          WHEN public.rate_limits.reset_at <= v_now THEN v_now + make_interval(secs => p_window_seconds)
+          ELSE public.rate_limits.reset_at
+        END
+      RETURNING count, reset_at INTO v_count, v_reset_at;
+    END IF;
+  ELSE
+    -- Sweep expired keys only when a new key appears, not on every hit.
+    DELETE FROM public.rate_limits WHERE reset_at <= v_now AND key <> p_key;
+  END IF;
 
   RETURN jsonb_build_object(
     'count', v_count,
@@ -865,5 +892,72 @@ REVOKE EXECUTE ON FUNCTION public.consume_rate_limit(text, integer, integer)
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.consume_rate_limit(text, integer, integer)
   TO service_role, postgres;
+
+-- Claim a sync tick without replacing the rest of the payload.
+CREATE OR REPLACE FUNCTION public.claim_sync_job_tick(p_id uuid, p_stale_before bigint)
+RETURNS public.sync_jobs
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_row public.sync_jobs;
+BEGIN
+  UPDATE public.sync_jobs
+  SET
+    payload = jsonb_set(
+      jsonb_set(COALESCE(payload, '{}'::jsonb), '{processing}', 'true'::jsonb, true),
+      '{processingSince}',
+      to_jsonb((extract(epoch FROM clock_timestamp()) * 1000)::bigint),
+      true
+    ),
+    updated_at = now()
+  WHERE id = p_id
+    AND status IN ('pending', 'running')
+    AND (
+      payload->>'processing' IS NULL
+      OR payload->>'processing' = 'false'
+      OR COALESCE(NULLIF(payload->>'processingSince', '')::bigint, 0) < p_stale_before
+    )
+  RETURNING * INTO v_row;
+
+  RETURN v_row;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.claim_sync_job_tick(uuid, bigint) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.claim_sync_job_tick(uuid, bigint) TO service_role, postgres;
+
+-- Compare JSON in Postgres. A PostgREST eq filter stringifies objects as "[object Object]".
+CREATE OR REPLACE FUNCTION public.claim_site_config_run(
+  p_key text,
+  p_previous jsonb,
+  p_next jsonb
+) RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_count integer;
+BEGIN
+  IF p_previous IS NULL THEN
+    INSERT INTO public.site_config (key, value, updated_at)
+    VALUES (p_key, p_next, now())
+    ON CONFLICT (key) DO NOTHING;
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    RETURN v_count > 0;
+  END IF;
+
+  UPDATE public.site_config
+  SET value = p_next, updated_at = now()
+  WHERE key = p_key AND value = p_previous;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN v_count > 0;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.claim_site_config_run(text, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.claim_site_config_run(text, jsonb, jsonb) TO service_role, postgres;
 
 

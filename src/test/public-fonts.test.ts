@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   resolvePublicFonts,
   buildPublicFontCssVars,
+  escapeCssDeclarationValue,
   remoteFontFamiliesToLoad,
   SYSTEM_FONT_BODY,
 } from '@/lib/public-fonts'
@@ -32,5 +33,16 @@ describe('public-fonts', () => {
     expect(css).toContain('--font-body:')
     expect(css).toContain('Roboto')
     expect(css).not.toContain('Orbitron')
+  })
+
+  it('keeps a style breakout inside a font declaration', () => {
+    const css = buildPublicFontCssVars({
+      fontHeading: '1rem}</style><script>alert(1)</script>',
+      fontBody: SYSTEM_FONT_BODY,
+      fontMono: SYSTEM_FONT_BODY,
+    })
+    expect(css).not.toContain('</style>')
+    expect(css).not.toContain('<script>')
+    expect(escapeCssDeclarationValue('</style>')).toBe('\\3c /style\\3e ')
   })
 })

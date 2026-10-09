@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { isAdminSession } from '@/lib/api-admin-auth'
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { shouldForceInsecureCookies } from '@/lib/supabaseServer'
 import { parseCatalogueSyncConfig } from '@/lib/catalogue-sync-config'
 import {
   buildReleaseEnrichmentUpdate,
@@ -16,39 +14,6 @@ const ENRICHMENT_SELECT =
   'id, title, tracks, manually_edited, spotify_id, discogs_id, itunes_id, tracks_source, last_enriched_at, streaming_links'
 
 const CRON_BATCH_LIMIT = 15
-
-async function isAdminSession(): Promise<boolean> {
-  const cookieStore = await cookies()
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!url || !anonKey) return false
-
-  const supabase = createServerClient(url, anonKey, {
-    cookies: {
-      getAll: () => cookieStore.getAll(),
-      setAll: (cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) => {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          const finalOptions = { ...options }
-          if (shouldForceInsecureCookies(null)) finalOptions.secure = false
-          cookieStore.set(name, value, finalOptions)
-        })
-      },
-    },
-  })
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  return (profile as { role?: string } | null)?.role === 'admin'
-}
 
 export async function POST(_request: Request) {
   const admin = await isAdminSession()

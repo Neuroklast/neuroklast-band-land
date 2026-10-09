@@ -8,7 +8,7 @@ import {
   resolveCssColorValue,
 } from '@/lib/color-utils'
 import type { AppearanceTheme } from '@/lib/appearance-presets'
-import { resolvePublicFonts } from '@/lib/public-fonts'
+import { escapeCssDeclarationValue, resolvePublicFonts } from '@/lib/public-fonts'
 import { CLASSIC_OVERLAY_EFFECTS, CLASSIC_THEME, parseLookId } from '@/lib/looks'
 
 export interface AppearanceConfigInput {
@@ -328,7 +328,7 @@ export function buildAppearanceInlineCss(config: AppearanceConfigInput): string 
   setVar(fakeRoot, '--section-grid-opacity', String(sectionGridOpacity), applied)
 
   const decls = Object.entries(applied)
-    .map(([prop, value]) => `${prop}: ${value};`)
+    .map(([prop, value]) => `${prop}: ${escapeCssDeclarationValue(value)};`)
     .join(' ')
   return decls ? `:root { ${decls} }` : ''
 }

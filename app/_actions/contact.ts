@@ -45,7 +45,10 @@ export async function submitContact(
   const contactEmail = process.env.CONTACT_EMAIL ?? 'booking@neuroklast.net'
 
   if (!resendKey) {
-    // Dev / unconfigured – log only non-PII fields
+    if (process.env.NODE_ENV === 'production') {
+      return { error: 'send_failed' }
+    }
+    // Local dev without a key: do not pretend a booking was delivered in production.
     console.info('[contact] message accepted (Resend not configured)', {
       subjectLength: subject.length,
       messageLength: message.length,

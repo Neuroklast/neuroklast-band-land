@@ -31,16 +31,29 @@ describe('ProtectedAdminLayout', () => {
     vi.clearAllMocks()
   })
 
-  it('renders without redirect when middleware-authenticated user exists', async () => {
-    const mockFrom = vi.fn()
+  function mockClient(
+    user: { id: string } | null,
+    profile?: { data: unknown; error?: unknown } | 'throw',
+  ) {
     mockCreateActionClient.mockResolvedValue({
       auth: {
-        getUser: vi.fn().mockResolvedValue({
-          data: { user: { id: 'admin-user' } },
-        }),
+        getUser: vi.fn().mockResolvedValue({ data: { user } }),
       },
-      from: mockFrom,
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single:
+              profile === 'throw'
+                ? vi.fn().mockRejectedValue(new Error('temporary lookup failure'))
+                : vi.fn().mockResolvedValue(profile ?? { data: { role: 'admin' } }),
+          }),
+        }),
+      }),
     })
+  }
+
+  it('renders when the signed-in user is an admin', async () => {
+    mockClient({ id: 'admin-user' }, { data: { role: 'admin' } })
 
     const result = await ProtectedAdminLayout({
       children: <div>secure content</div>,
@@ -49,18 +62,50 @@ describe('ProtectedAdminLayout', () => {
     expect(result).toBeTruthy()
     expect((result as ReactElement).props.children).toBeTruthy()
     expect(mockRedirect).not.toHaveBeenCalled()
-    expect(mockFrom).not.toHaveBeenCalled()
+  })
+
+  it('redirects when a signed-in user has no admin profile', async () => {
+    mockClient({ id: 'user' }, { data: null, error: { message: '0 rows' } })
+
+    await expect(
+      ProtectedAdminLayout({
+        children: <div>secure content</div>,
+      }),
+    ).rejects.toThrow('NEXT_REDIRECT:/admin/login?error=forbidden')
+  })
+
+  it('redirects when the signed-in user is not an admin', async () => {
+    mockClient({ id: 'user' }, { data: { role: 'fan' } })
+
+    await expect(
+      ProtectedAdminLayout({
+        children: <div>secure content</div>,
+      }),
+    ).rejects.toThrow('NEXT_REDIRECT:/admin/login?error=forbidden')
+  })
+
+  it('redirects when the profile lookup returns an error', async () => {
+    mockClient({ id: 'admin-user' }, { data: { role: 'admin' }, error: { message: 'permission denied' } })
+
+    await expect(
+      ProtectedAdminLayout({
+        children: <div>secure content</div>,
+      }),
+    ).rejects.toThrow('NEXT_REDIRECT:/admin/login?error=forbidden')
+  })
+
+  it('does not render when the profile lookup throws', async () => {
+    mockClient({ id: 'admin-user' }, 'throw')
+
+    await expect(
+      ProtectedAdminLayout({
+        children: <div>secure content</div>,
+      }),
+    ).rejects.toThrow('NEXT_REDIRECT:/admin/login?error=config')
   })
 
   it('redirects to login when fallback user lookup fails', async () => {
-    mockCreateActionClient.mockResolvedValue({
-      auth: {
-        getUser: vi.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-      from: vi.fn(),
-    })
+    mockClient(null)
 
     await expect(
       ProtectedAdminLayout({

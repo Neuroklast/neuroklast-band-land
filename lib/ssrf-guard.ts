@@ -1,4 +1,5 @@
 import { resolve4, resolve6 } from 'node:dns/promises'
+import { Agent, type Dispatcher } from 'undici'
 
 export const BLOCKED_HOST_PATTERNS = [
   /^localhost$/i,
@@ -26,7 +27,7 @@ export const BLOCKED_IP_PATTERNS = [
   /^0\./,
   /^169\.254\./,
   /^::1$/,
-  /^::ffff:(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i,
+  /^::ffff:(127\.|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i,
   /^fe80:/i,
   /^fc/i,
   /^fd/i,
@@ -86,10 +87,55 @@ export async function assertSafeRemoteUrl(url: string): Promise<URL> {
   return parsed
 }
 
+/** DNS lookup that returns the address already approved. No second resolve. */
+export function lookupPinnedTo(ip: string) {
+  const family = ip.includes(':') ? 6 : 4
+  return (
+    _hostname: string,
+    options: { all?: boolean },
+    callback: (
+      err: NodeJS.ErrnoException | null,
+      address: string | Array<{ address: string; family: number }>,
+      family?: number,
+    ) => void,
+  ) => {
+    if (options.all) {
+      callback(null, [{ address: ip, family }])
+      return
+    }
+    callback(null, ip, family)
+  }
+}
+
+function agentPinnedTo(ip: string): Dispatcher {
+  const family = ip.includes(':') ? 6 : 4
+  return new Agent({
+    keepAliveTimeout: 1_000,
+    keepAliveMaxTimeout: 1_000,
+    connect: {
+      family,
+      autoSelectFamily: false,
+      lookup: lookupPinnedTo(ip),
+    },
+  })
+}
+
 export async function fetchUrlWithResolvedCheck(
   url: string,
   init?: RequestInit,
 ): Promise<Response> {
-  await assertSafeRemoteUrl(url)
-  return fetch(url, init)
+  const parsed = await assertSafeRemoteUrl(url)
+  const addresses = await resolvePublicAddresses(parsed.hostname)
+  const ip = addresses.find((address) => !isBlockedResolvedIp(address))?.replace(/^\[|\]$/g, '')
+  if (!ip || isBlockedResolvedIp(ip)) throw new Error('Blocked host')
+
+  const response = await fetch(parsed.toString(), {
+    ...init,
+    redirect: 'manual',
+    dispatcher: agentPinnedTo(ip),
+  } as RequestInit)
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error('Blocked redirect')
+  }
+  return response
 }

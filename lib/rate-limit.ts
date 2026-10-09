@@ -10,9 +10,8 @@ import { createAdminClient } from '@/lib/supabaseAdmin'
  *   service-role only). This is globally consistent across all serverless instances.
  * - Privacy (GDPR): the client IP is hashed with SHA-256 + `RATE_LIMIT_SALT`
  *   before use; only the hash is ever persisted. No plaintext IPs are stored.
- * - Resilience: if the Postgres call fails (network/DB down), a per-instance
- *   in-memory sliding-window counter is used as a backstop so the limit is still
- *   enforced (never silently bypassed).
+ * - Resilience: if the Postgres call fails, this throws. Callers deny the
+ *   request. A per-process memory counter would reset on every cold start.
  */
 
 export interface RateLimitResult {
@@ -65,7 +64,7 @@ function clientIpFrom(headers: Headers): string {
 
 /**
  * Atomic fixed-window counter via Supabase Postgres.
- * Throws when the RPC errors; caller falls back to the in-memory backstop.
+ * Throws when the RPC errors. Callers deny the request.
  */
 async function consumeSupabase(
   namespace: string,
@@ -86,7 +85,10 @@ async function consumeSupabase(
     count?: number
     reset_at?: number
   }
-  const count = typeof payload.count === 'number' ? payload.count : 0
+  if (typeof payload.count !== 'number') {
+    return { namespace, allowed: false, retryAfter: windowSeconds }
+  }
+  const count = payload.count
   const resetAt =
     typeof payload.reset_at === 'number' && payload.reset_at > 0
       ? payload.reset_at
@@ -100,51 +102,9 @@ async function consumeSupabase(
   }
 }
 
-interface MemoryEntry {
-  count: number
-  resetAt: number
-}
-
-const memory = new Map<string, MemoryEntry>()
-const MEMORY_MAX_ENTRIES = 20_000
-
 /**
- * Per-instance sliding-window backstop used when the Postgres RPC is unavailable.
- * Not globally consistent, but still enforces the limit within this instance.
- */
-function consumeMemory(
-  namespace: string,
-  ipHash: string,
-  limit: number,
-  windowSeconds: number,
-): RateLimitResult {
-  const key = `${namespace}:${ipHash}`
-  const now = Date.now()
-
-  if (memory.size > MEMORY_MAX_ENTRIES) {
-    for (const [k, e] of memory) {
-      if (e.resetAt <= now) memory.delete(k)
-    }
-  }
-
-  const entry = memory.get(key)
-  if (!entry || entry.resetAt <= now) {
-    memory.set(key, { count: 1, resetAt: now + windowSeconds * 1000 })
-    return { namespace, allowed: true }
-  }
-
-  entry.count += 1
-  const allowed = entry.count <= limit
-  return {
-    namespace,
-    allowed,
-    retryAfter: allowed ? undefined : Math.max(0, Math.ceil((entry.resetAt - now) / 1000)),
-  }
-}
-
-/**
- * Consume one rate-limit unit. Returns whether the request is allowed.
- * Never bypasses: Postgres first, in-memory backstop on infra failure.
+ * Consume one rate-limit unit. Throws when Postgres cannot be consulted.
+ * Callers must deny the request. A memory counter would not survive a new process.
  */
 export async function consumeRequestRateLimit(
   options: RateLimitOptions,
@@ -152,13 +112,7 @@ export async function consumeRequestRateLimit(
   const { namespace, limit, windowSeconds } = options
   const ip = options.ip ?? clientIpFrom(options.headers ?? (await nextHeaders()))
   const ipHash = hashIp(ip)
-
-  try {
-    return await consumeSupabase(namespace, ipHash, limit, windowSeconds)
-  } catch (err) {
-    console.warn(`[rate-limit] Postgres limiter unavailable, using in-memory backstop:`, err)
-    return consumeMemory(namespace, ipHash, limit, windowSeconds)
-  }
+  return consumeSupabase(namespace, ipHash, limit, windowSeconds)
 }
 
 /** Convenience for callers that already have a `request` (Route Handlers). */

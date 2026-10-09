@@ -6,7 +6,7 @@ import {
   isAllowedImageContentType,
   resolveRemoteImageUrl,
 } from '@/lib/remote-image-url'
-import { assertSafeRemoteUrl } from '@/lib/ssrf-guard'
+import { fetchUrlWithResolvedCheck } from '@/lib/ssrf-guard'
 import { shouldOpenImageEditor } from '@/lib/image-crop-math'
 
 export interface FetchRemoteImageForEditResult {
@@ -30,12 +30,8 @@ export async function fetchRemoteImageForEdit(
     const timeout = setTimeout(() => controller.abort(), 20_000)
 
     try {
-      // DNS-resolve + private/loopback IP blocking before the outbound fetch.
-      await assertSafeRemoteUrl(resolved.url)
-
-      const response = await fetch(resolved.url, {
+      const response = await fetchUrlWithResolvedCheck(resolved.url, {
         method: 'GET',
-        redirect: 'follow',
         signal: controller.signal,
         headers: {
           Accept: 'image/*,application/octet-stream',

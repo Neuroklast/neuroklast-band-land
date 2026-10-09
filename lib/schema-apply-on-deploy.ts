@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import postgres from 'postgres'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 
 export const SCHEMA_APPLY_DEPLOY_KEY = 'schema_apply_deploy'
@@ -64,6 +65,36 @@ function resolveDbUrl(): string | null {
   return url || null
 }
 
+/**
+ * One instance wins. The compare happens in Postgres (`value = p_previous`).
+ * A PostgREST `.eq('value', object)` filter would send `[object Object]`.
+ */
+export async function claimSiteConfigRun(
+  supabase: SupabaseClient,
+  key: string,
+  previous: unknown,
+  next: unknown,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc('claim_site_config_run', {
+    p_key: key,
+    p_previous: previous,
+    p_next: next,
+  })
+  if (error) throw new Error(error.message)
+  return data === true
+}
+
+export function isMissingClaimRpc(message: string): boolean {
+  return message.includes('claim_site_config_run') || message.includes('PGRST202')
+}
+
+export function isMissingSiteConfigTable(message: string): boolean {
+  return (
+    /site_config/i.test(message) &&
+    /does not exist|schema cache|42P01|PGRST205/i.test(message)
+  )
+}
+
 export async function applyIdempotentSchema(dbUrl: string, schemaSql: string): Promise<void> {
   const sql = postgres(dbUrl, {
     max: 1,
@@ -120,11 +151,30 @@ export async function runProductionDeploySchemaApply(): Promise<void> {
   if (!decided.run || !sha) return
 
   const startedAt = new Date().toISOString()
-  await supabase.from('site_config').upsert({
-    key: SCHEMA_APPLY_DEPLOY_KEY,
-    value: { sha, status: 'running', startedAt } satisfies SchemaApplyDeployState,
-    updated_at: startedAt,
-  })
+  if (readError && !isMissingSiteConfigTable(readError.message)) {
+    console.info('[schema-apply] skip: cannot read deploy state')
+    return
+  }
+  if (!readError) {
+    try {
+      const claimed = await claimSiteConfigRun(supabase, SCHEMA_APPLY_DEPLOY_KEY, data?.value ?? null, {
+        sha,
+        status: 'running',
+        startedAt,
+      } satisfies SchemaApplyDeployState)
+      if (!claimed) {
+        console.info('[schema-apply] skip: another instance claimed this deploy')
+        return
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'claim failed'
+      if (!isMissingClaimRpc(message)) {
+        console.error('[schema-apply] claim failed:', message)
+        return
+      }
+      console.info('[schema-apply] claim function missing; applying schema once')
+    }
+  }
 
   try {
     const schemaSql = await loadSchemaSql()

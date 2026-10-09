@@ -13,9 +13,9 @@ Spotify, YouTube, SoundCloud: **never** auto-load. Two-click consent before `<if
 
 Distributed, durable rate limiting runs on the **existing Supabase Postgres** (`lib/rate-limit.ts` → `public.rate_limits` + `consume_rate_limit()` in `supabase/schema.sql`).
 - Keys are SHA-256(`RATE_LIMIT_SALT` + IP) — never raw IPs (GDPR).
-- **Fail-closed** on infra errors; a per-instance in-memory backstop keeps the limit enforced (no silent bypass).
+- **Fail-closed** on infra errors. Callers deny the request when Postgres is down. A per-process memory counter would reset on every cold start.
 - Set `RATE_LIMIT_SALT` in production — `lib/rate-limit.ts` throws if missing.
-- Throttled: admin login, analytics POST, newsletter, contact, `/api/media-fix`, `/api/partner-logo`, `/api/bandsintown`.
+- Throttled: admin login, analytics POST, contact, `/api/media-fix`, `/api/partner-logo`, `/api/bandsintown`.
 
 ## Storage & consent
 

@@ -8,7 +8,7 @@ export function continueSyncJob(jobId: string): void {
     after(async () => {
       try {
         const result = await advanceSyncJob(jobId)
-        if (!result.done && result.job.status === 'running') {
+        if (!result.done && !result.busy && result.job.status === 'running') {
           continueSyncJob(jobId)
         }
       } catch (error) {

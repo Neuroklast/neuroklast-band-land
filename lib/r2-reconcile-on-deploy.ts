@@ -1,5 +1,6 @@
 import { listAllR2ObjectKeys } from '@/lib/r2-inventory'
 import { applyR2MediaReconcile } from '@/lib/r2-reconcile'
+import { claimSiteConfigRun, isMissingClaimRpc } from '@/lib/schema-apply-on-deploy'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import type { MediaRewriteClient } from '@/lib/r2-url-rewrite'
 
@@ -98,11 +99,26 @@ export async function runProductionDeployR2Reconcile(): Promise<void> {
   if (!decided.run || !sha) return
 
   const startedAt = new Date().toISOString()
-  await supabase.from('site_config').upsert({
-    key: R2_RECONCILE_DEPLOY_KEY,
-    value: { sha, status: 'running', startedAt } satisfies R2ReconcileDeployState,
-    updated_at: startedAt,
-  })
+  let claimed = false
+  try {
+    claimed = await claimSiteConfigRun(supabase, R2_RECONCILE_DEPLOY_KEY, data?.value ?? null, {
+      sha,
+      status: 'running',
+      startedAt,
+    } satisfies R2ReconcileDeployState)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'claim failed'
+    console.info(
+      isMissingClaimRpc(message)
+        ? '[r2-reconcile] skip: claim function not installed yet'
+        : `[r2-reconcile] claim failed: ${message}`,
+    )
+    return
+  }
+  if (!claimed) {
+    console.info('[r2-reconcile] skip: another instance claimed this deploy')
+    return
+  }
 
   try {
     const objectKeys = await listAllR2ObjectKeys({

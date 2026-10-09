@@ -65,6 +65,8 @@ const PROCESSING_STALE_MS = 15 * 60 * 1000
 export interface AdvanceSyncJobResult {
   job: SyncJobRow
   done: boolean
+  /** Another tick holds the lock. Do not schedule a new one. */
+  busy?: boolean
 }
 
 async function loadCatalogueSyncConfig(): Promise<CatalogueSyncConfig> {
@@ -603,19 +605,10 @@ async function acquireProcessingLock(job: SyncJobRow): Promise<SyncJobRow | null
   }
 
   const supabase = createAdminClient()
-  const staleCutoff = Date.now() - PROCESSING_STALE_MS
-  const { data, error } = await supabase
-    .from('sync_jobs')
-    .update({
-      payload: { ...job.payload, processing: true, processingSince: Date.now() },
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', job.id)
-    .or(
-      `payload->>processing.is.null,payload->>processing.eq.false,and(payload->>processing.eq.true,payload->>processingSince.lt.${staleCutoff})`,
-    )
-    .select('*')
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('claim_sync_job_tick', {
+    p_id: job.id,
+    p_stale_before: Date.now() - PROCESSING_STALE_MS,
+  })
 
   if (error) throw new Error(error.message)
   return (data as SyncJobRow | null) ?? null
@@ -677,7 +670,7 @@ export async function advanceSyncJob(jobId: string): Promise<AdvanceSyncJobResul
 
   const locked = await acquireProcessingLock(job)
   if (!locked) {
-    return { job, done: false }
+    return { job, done: false, busy: true }
   }
 
   try {
@@ -691,14 +684,15 @@ export async function advanceSyncJob(jobId: string): Promise<AdvanceSyncJobResul
     return result
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Sync job failed'
+    const current = await getSyncJob(jobId)
     const failed = await updateSyncJob(jobId, {
       status: 'failed',
       payload: {
-        ...job.payload,
+        ...(current?.payload ?? {}),
         processing: false,
         processingSince: undefined,
       },
-      progress: mergeProgress(job.progress, { errors: [message] }),
+      progress: mergeProgress(current?.progress ?? job.progress, { errors: [message] }),
       completed_at: new Date().toISOString(),
     })
     return { job: failed, done: true }
