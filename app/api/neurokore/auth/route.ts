@@ -20,3 +20,13 @@ export async function POST(request: Request) {
     return json({ ok: true })
   } catch { return unavailable() }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    sameOrigin(request)
+    const client: SupabaseClient = await createActionClient()
+    const { error } = await client.auth.signOut({ scope: 'local' })
+    if (error) return unavailable()
+    return json({ ok: true })
+  } catch { return unavailable() }
+}

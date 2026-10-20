@@ -33,6 +33,15 @@ export function LicenseAccount({ salesEnabled }: { salesEnabled: boolean }) {
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Please retry.') }
     finally { setBusy(false) }
   }
+  async function signOut() {
+    setBusy(true)
+    try {
+      const response = await fetch('/api/neurokore/auth', { method: 'DELETE' })
+      if (!response.ok) throw new Error('Sign-out failed. Please retry.')
+      setAccount(null); setSent(false); setToken(''); setEmail(''); setMessage('')
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Please retry.') }
+    finally { setBusy(false) }
+  }
   async function checkout() {
     setBusy(true); setMessage('')
     try {
@@ -55,6 +64,7 @@ export function LicenseAccount({ salesEnabled }: { salesEnabled: boolean }) {
       {sent && <button type="button" disabled={busy} onClick={() => { setSent(false); setToken('') }}>Use another email / resend</button>}
     </form> : <>
       <p>Signed in as {account.email}</p>
+      <button disabled={busy} className={control} onClick={() => void signOut()}>Sign out</button>
       <p>After checkout, refresh this list. Your key appears once payment is confirmed.</p>
       <button className={control} disabled={busy} onClick={() => void refresh().catch(() => setMessage('Please retry.'))}>Refresh licenses</button>
       {account.licenses.map(license => <article key={license.id} className="space-y-3 border border-current/30 p-5">

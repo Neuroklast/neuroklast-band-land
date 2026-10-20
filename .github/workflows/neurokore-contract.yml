@@ -46,3 +46,4 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -c 'CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY);'
       - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/202610200001_neurokore_licenses.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/neurokore.sql
+      - run: node supabase/tests/neurokore-concurrency.mjs
