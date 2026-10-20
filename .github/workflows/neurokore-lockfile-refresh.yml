@@ -1,0 +1,30 @@
+name: Refresh vulnerable lockfile entries
+on:
+  push:
+    branches: ['codex/neurokore-licensing']
+    paths: ['.github/workflows/neurokore-lockfile-refresh.yml']
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: codex/neurokore-licensing
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Resolve patched versions within existing ranges
+        run: npm audit fix --package-lock-only --ignore-scripts
+      - name: Require clean security audit
+        run: npm audit --audit-level=moderate
+      - name: Commit only the generated lockfile on this implementation branch
+        run: |
+          if git diff --quiet -- package-lock.json; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package-lock.json
+          git commit -m "Update vulnerable dependencies within existing version ranges"
+          git push origin HEAD:codex/neurokore-licensing
