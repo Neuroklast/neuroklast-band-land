@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- NEUROKORE product/account pages, free alpha-key admin, Stripe Checkout and verified fulfillment, device-bound Ed25519 activation API and private Supabase tables. Sales remain disabled until deployment and end-to-end launch checks in `docs/NEUROKORE_COMMERCE.md` are complete.
+
+
 ### Fixed
 
 - **External media in `CdnImage`** — the component bypassed the Google Drive/lh3
