@@ -29,3 +29,19 @@ export const safeExternalUrlOptional = safeExternalUrl
 
 /** Nullable http(s) URL (no empty-string alternative). */
 export const safeExternalUrlNullable = safeExternalUrl.nullable().optional()
+
+/** Same-origin path or http(s) URL for product cards. */
+export const safeProductHref = z
+  .string()
+  .max(2000)
+  .refine((value) => Boolean(sanitizeExternalHref(value) || (
+    value.startsWith('/') &&
+    !value.startsWith('//') &&
+    !value.includes('\\') &&
+    !value.includes(':')
+  )), 'Link must be a site path or http(s) URL')
+
+export const safeProductHrefOptional = safeProductHref
+  .optional()
+  .nullable()
+  .or(z.literal(''))

@@ -108,6 +108,13 @@ export const MEDIA_HOST_REWRITE_TABLES: readonly MediaHostRewriteTableTarget[] =
     hashColumn: 'image_content_hash',
   },
   {
+    table: 'products',
+    idColumn: 'id',
+    urlColumns: ['image_url'],
+    pathColumn: 'image_storage_path',
+    hashColumn: 'image_content_hash',
+  },
+  {
     table: 'media_downloads',
     idColumn: 'id',
     urlColumns: ['file_url'],

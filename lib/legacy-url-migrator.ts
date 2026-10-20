@@ -44,6 +44,7 @@ export const LEGACY_URL_TABLE_TARGETS: LegacyUrlTableTarget[] = [
   { table: 'media_downloads', idColumn: 'id', storageColumn: 'file_storage_path', urlColumn: 'file_url', label: 'Media downloads', fallbackPrefix: 'media' },
   { table: 'merchandise', idColumn: 'id', storageColumn: 'image_storage_path', urlColumn: 'image_url', label: 'Merchandise', fallbackPrefix: 'merch' },
   { table: 'soundpacks', idColumn: 'id', storageColumn: 'image_storage_path', urlColumn: 'image_url', label: 'Soundpacks', fallbackPrefix: 'soundpacks' },
+  { table: 'products', idColumn: 'id', storageColumn: 'image_storage_path', urlColumn: 'image_url', label: 'Products', fallbackPrefix: 'products' },
   { table: 'partners', idColumn: 'id', storageColumn: 'logo_storage_path', urlColumn: 'logo_url', label: 'Partner logos', fallbackPrefix: 'partners/logos' },
   { table: 'members', idColumn: 'id', storageColumn: 'photo_storage_path', urlColumn: 'photo_url', label: 'Member photos', fallbackPrefix: 'members/photos' },
   { table: 'social_links', idColumn: 'id', storageColumn: 'logo_storage_path', urlColumn: 'logo_url', label: 'Social logos', fallbackPrefix: 'social/logos' },

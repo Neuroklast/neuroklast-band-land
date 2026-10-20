@@ -1,6 +1,6 @@
 
 import { z } from 'zod'
-import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
+import { decryptKey, encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
 import { admin, body, db, json, limit, required, sameOrigin, unavailable } from '@/lib/neurokore/server'
 export async function POST(request: Request) {
   try {
@@ -9,6 +9,7 @@ export async function POST(request: Request) {
     const createdBy = await admin()
     const input = z.discriminatedUnion('action', [
       z.object({ action: z.literal('issue'), email: z.email(), days: z.number().int().min(1).max(365) }).strict(),
+      z.object({ action: z.literal('reveal'), id: z.uuid() }).strict(),
       z.object({ action: z.literal('revoke'), id: z.uuid() }).strict(),
       z.object({ action: z.literal('reset'), id: z.uuid() }).strict(),
     ]).parse(await body(request))
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
       }).select('id').single()
       if (error) throw error
       return json({ id: data.id, key })
+    }
+    if (input.action === 'reveal') {
+      const { data, error } = await client.from('neurokore_licenses').select('key_cipher').eq('id', input.id).single()
+      if (error) throw error
+      const row = z.object({ key_cipher: z.string() }).parse(data)
+      return json({ key: decryptKey(row.key_cipher, required('NEUROKORE_KEY_ENCRYPTION_SECRET')) })
     }
     if (input.action === 'revoke') {
       const { error } = await client.from('neurokore_licenses').update({ revoked_at: new Date().toISOString() }).eq('id', input.id)

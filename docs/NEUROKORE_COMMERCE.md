@@ -4,17 +4,18 @@ Implementation branch; sales are disabled by default. This does not publish a te
 
 ## Routes
 
-- /neurokore: product entry, existing public PageLayout through LegalPageShell.
-- /neurokore/account: email-code sign-in, owned keys and download, Stripe Checkout.
-- /admin/neurokore: existing admin authentication/MFA; issue free expiring alpha keys, revoke, reset seats.
-- POST /api/license/v1/activate: key + device; signed v2 activation document, two seats, idempotent per device.
+- /admin/products: CMS for product cards and the public Products section toggle (`site_config.sections` id `products`, default hidden). Items can link to `/neurokore` or an http(s) URL.
+- /neurokore: product entry, existing public PageLayout through LegalPageShell. 404 while the Products section is off.
+- /neurokore/account: email-code sign-in, owned keys and download, Stripe Checkout. 404 while the Products section is off.
+- /admin/neurokore: existing admin authentication/MFA; issue free expiring alpha keys, revoke, reset seats. Works with the Products section off.
+- POST /api/license/v1/activate: key + device; signed v2 activation document, two seats, idempotent per device. **Always available** — NeuroCore (`D:\Git\NeuroCore`, `LICENSE_ACTIVATE_URL`) calls this URL. Do not gate it on the Products section or sales flag.
 - POST /api/neurokore/webhook: Stripe raw-body HMAC verification, payment and line-item lookup, transactionally idempotent fulfillment.
 
 Alpha issuance never calls Stripe. Customers sign in with the same verified email used for the alpha key or purchase. Admin lists show the most recent 100 licenses. Keys are SHA-256 indexed and encrypted with a separate AES-256-GCM key for owner retrieval.
 
 ## Setup order
 
-1. Apply supabase/migrations/202610200001_neurokore_licenses.sql to the existing Supabase project. The normal schema bootstrap does not apply this new migration automatically. Existing rate-limit schema and RATE_LIMIT_SALT are required.
+1. Apply supabase/migrations/202610200001_neurokore_licenses.sql and supabase/migrations/202610210001_products.sql to the existing Supabase project. The normal schema bootstrap does not apply these new migrations automatically. Existing rate-limit schema and RATE_LIMIT_SALT are required.
 2. In Supabase Auth, enable email sign-in and configure transactional SMTP. The Magic Link email template must show {{ .Token }} for this code-entry flow. Configure the site's URL and allowed redirects. Never auto-promote customers to admins.
 3. Generate an Ed25519 key pair in a trusted operator environment. Store the PKCS8 PEM private key as NEUROKORE_SIGNING_PRIVATE_KEY in Vercel; literal escaped newlines are supported. Export the raw 32-byte public key as 64 hex characters for the plugin CMake option NEUROKORE_LICENSE_PUBLIC_KEY_HEX. Never put the private key in GitHub, browser bundles, downloads or the plugin.
 4. Generate an independent random 32-byte encryption secret (64 hex characters) for NEUROKORE_KEY_ENCRYPTION_SECRET. Back it up securely: rotating it requires re-encrypting stored keys. Keep staging and production Supabase/Stripe/signing material separate.
@@ -23,7 +24,7 @@ Alpha issuance never calls Stripe. Customers sign in with the same verified emai
 7. Configure Stripe in TEST mode first: one-time Price, STRIPE_SECRET_KEY, STRIPE_NEUROKORE_PRICE_ID. Enable/configure automatic tax and the business terms URL in Stripe; checkout requires acceptance. Price, currency and tax presentation come from Stripe, not client input.
 8. Register https://neuroklast.net/api/neurokore/webhook for checkout.session.completed and checkout.session.async_payment_succeeded. Set that endpoint's STRIPE_WEBHOOK_SECRET. Use the API version pinned in lib/neurokore/stripe.ts. Failed fulfillment returns 500 for Stripe retries.
 9. Deploy with NEUROKORE_SALES_ENABLED=false. Issue and activate alpha keys first. Test purchase flow in an isolated deployment with test credentials and sales enabled, then test webhook retries and account download.
-10. Complete the launch checks below before enabling production sales. Put the /neurokore link into the site's existing content/navigation configuration when ready.
+10. Complete the launch checks below before enabling production sales. Add a product in Admin → Products (link `/neurokore`) and turn the Products section on when the public page should go live.
 
 ## Signed license protocol
 

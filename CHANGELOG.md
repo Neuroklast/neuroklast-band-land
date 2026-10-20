@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - NEUROKORE product/account pages, free alpha-key admin, Stripe Checkout and verified fulfillment, device-bound Ed25519 activation API and private Supabase tables. Sales remain disabled until deployment and end-to-end launch checks in `docs/NEUROKORE_COMMERCE.md` are complete.
+- Admin **Products** CMS (`/admin/products`): toggle the public Products section, then create/edit/hide items with R2 images, copy, optional price label, and a site path or http(s) link. Section defaults to hidden. Plugin activation (`POST /api/license/v1/activate`) stays up for NeuroCore even while the section is off.
 
 
 ### Fixed

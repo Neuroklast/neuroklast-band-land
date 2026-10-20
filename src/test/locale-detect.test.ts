@@ -60,6 +60,7 @@ describe('locale-detect', () => {
       'releases',
       'merchandise',
       'soundpacks',
+      'products',
       'gigs',
       'news',
       'newsletter',

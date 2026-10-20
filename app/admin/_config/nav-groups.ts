@@ -41,6 +41,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
       { href: '/admin/gigs', label: 'Events', countKey: 'gigs' },
       { href: '/admin/news', label: 'News / Blog', countKey: 'news' },
       { href: '/admin/merchandise', label: 'Merchandise', countKey: 'merchandise' },
+      { href: '/admin/products', label: 'Products', countKey: 'products' },
       { href: '/admin/neurokore', label: 'NEUROKORE Licenses' },
       { href: '/admin/soundpacks', label: 'Soundpacks', countKey: 'soundpacks' },
       { href: '/admin/music-highlights', label: 'Music Highlights', countKey: 'musicHighlights' },

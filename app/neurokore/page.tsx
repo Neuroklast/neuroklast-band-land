@@ -1,9 +1,19 @@
-
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
-export const metadata = { title: 'NEUROKORE', description: 'NEUROKORE audio plugin, licenses and downloads.' }
+import { loadProductsSectionPublished } from '@/lib/products-visibility'
+
 export const revalidate = 60
-export default function NeurokorePage() {
+
+export async function generateMetadata() {
+  if (!(await loadProductsSectionPublished())) {
+    return { title: 'Not found', robots: { index: false, follow: false } }
+  }
+  return { title: 'NEUROKORE', description: 'NEUROKORE audio plugin, licenses and downloads.' }
+}
+
+export default async function NeurokorePage() {
+  if (!(await loadProductsSectionPublished())) notFound()
   return <LegalPageShell><section className="mx-auto max-w-3xl space-y-8 px-6 py-32">
     <p className="font-mono text-sm tracking-widest">NEUROKLAST AUDIO</p>
     <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">NEUROKORE</h1>

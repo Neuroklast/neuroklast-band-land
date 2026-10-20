@@ -5,6 +5,7 @@ export const runtime = 'nodejs'
 export async function OPTIONS() { return json({}, 200, true) }
 export async function POST(request: Request) {
   try {
+    // Ungated: NeuroCore activates here even when the public Products section is off.
     await limit(request, 'neurokore-activate')
     const input = activationSchema.parse(await body(request))
     // Validate signing configuration before reserving a seat.

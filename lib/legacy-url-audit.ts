@@ -15,6 +15,7 @@ export const LEGACY_URL_SCAN_TARGETS = [
   { table: 'media_downloads', column: 'file_url' },
   { table: 'merchandise', column: 'image_url' },
   { table: 'soundpacks', column: 'image_url' },
+  { table: 'products', column: 'image_url' },
   { table: 'partners', column: 'logo_url' },
   { table: 'social_links', column: 'logo_url' },
 ] as const

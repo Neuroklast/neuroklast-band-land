@@ -22,6 +22,7 @@ export const DEFAULT_SECTIONS: SectionConfig[] = [
   { id: 'gigs', label: 'Events', visible: true, order: 10 },
   { id: 'news', label: 'News', visible: true, order: 11 },
   { id: 'contact', label: 'Contact', visible: true, order: 12 },
+  { id: 'products', label: 'Products', visible: false, order: 13 },
 ]
 
 export const EXCLUDED_HOME_SECTION_IDS = new Set(['social', 'connect'])
@@ -48,6 +49,10 @@ function coerceVisible(value: unknown): boolean {
   if (value === false || value === 0 || value === 'false' || value === '0') return false
   if (value === true || value === 1 || value === 'true' || value === '1') return true
   return true
+}
+
+export function isProductsSectionVisible(sections: SectionConfig[]): boolean {
+  return sections.some((section) => section.id === 'products' && section.visible)
 }
 
 export function parseSections(raw: unknown): SectionConfig[] {

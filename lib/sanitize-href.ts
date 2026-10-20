@@ -12,3 +12,18 @@ export function sanitizeExternalHref(raw: string | null | undefined): string | u
   }
   return undefined
 }
+
+/** Product cards may link to a same-origin path (`/neurokore`) or an http(s) URL. */
+export function sanitizeProductHref(raw: string | null | undefined): string | undefined {
+  if (!raw) return undefined
+  const trimmed = raw.trim()
+  if (
+    trimmed.startsWith('/') &&
+    !trimmed.startsWith('//') &&
+    !trimmed.includes('\\') &&
+    !trimmed.includes(':')
+  ) {
+    return trimmed
+  }
+  return sanitizeExternalHref(trimmed)
+}

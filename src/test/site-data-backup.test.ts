@@ -180,6 +180,7 @@ describe('buildSiteBackup + applySiteBackup', () => {
       music_highlights: [],
       merchandise: [],
       soundpacks: [],
+      products: [],
       media_downloads: [],
       site_config: [{ key: 'hero', value: { headline: 'NEUROKLAST' } }],
     })
@@ -202,6 +203,7 @@ describe('buildSiteBackup + applySiteBackup', () => {
       music_highlights: [],
       merchandise: [],
       soundpacks: [],
+      products: [],
       media_downloads: [],
       site_config: [],
     }

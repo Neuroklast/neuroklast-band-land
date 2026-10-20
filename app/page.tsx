@@ -21,6 +21,7 @@ import { PublicPageClient } from './_components/public/PublicPageClient'
 import { AdminDraftListener } from './_components/public/AdminDraftListener'
 import { DraftSectionShell } from './_components/public/DraftSectionShell'
 import { MerchandiseSection } from './_components/public/MerchandiseSection'
+import { ProductsSection } from './_components/public/ProductsSection'
 import { SoundpacksSection } from './_components/public/SoundpacksSection'
 import { GigsSection } from './_components/public/GigsSection'
 import { NewsSection } from './_components/public/NewsSection'
@@ -108,6 +109,15 @@ interface CommerceItemRow {
   id: string; title: string
   image_storage_path: string | null; image_url: string | null; external_url: string | null
 }
+interface ProductItemRow {
+  id: string
+  title: string
+  description: string | null
+  image_storage_path: string | null
+  image_url: string | null
+  href: string | null
+  price_label: string | null
+}
 interface GalleryItemRow {
   id: string; alt: string | null
   storage_path: string | null; image_url: string | null
@@ -191,6 +201,7 @@ async function fetchAll() {
       musicResult,
       merchResult,
       soundpackResult,
+      productResult,
       galleryResult,
       mediaResult,
       socialResult,
@@ -205,6 +216,7 @@ async function fetchAll() {
       supabase.from('music_highlights').select('id, title, youtube_url, description').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('merchandise').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('soundpacks').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
+      supabase.from('products').select('id, title, description, image_storage_path, image_url, href, price_label').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('gallery').select('id, alt, storage_path, image_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('media_downloads').select('id, title, description, category, file_storage_path, file_url, file_mime, file_size_bytes, original_filename, display_order').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('social_links').select('id, platform, url, label, logo_storage_path, logo_url').order('display_order', { ascending: true }),
@@ -227,6 +239,7 @@ async function fetchAll() {
     logQueryError('music_highlights', musicResult.error)
     logQueryError('merchandise', merchResult.error)
     logQueryError('soundpacks', soundpackResult.error)
+    logQueryError('products', productResult.error)
     logQueryError('gallery', galleryResult.error)
     logQueryError('media_downloads', mediaResult.error)
     logQueryError('social_links', socialResult.error)
@@ -246,6 +259,7 @@ async function fetchAll() {
       musicHighlights: (musicResult.data ?? []) as MusicHighlightRow[],
       merch: (merchResult.data ?? []) as CommerceItemRow[],
       soundpacks: (soundpackResult.data ?? []) as CommerceItemRow[],
+      products: (productResult.data ?? []) as ProductItemRow[],
       gallery: (galleryResult.data ?? []) as GalleryItemRow[],
       mediaDownloads: ((mediaResult.data ?? []) as MediaDownloadRow[]).map(mapMediaDownloadRow),
       social: (socialResult.data ?? []) as SocialRow[],
@@ -265,6 +279,7 @@ async function fetchAll() {
       musicHighlights: [] as MusicHighlightRow[],
       merch: [] as CommerceItemRow[],
       soundpacks: [] as CommerceItemRow[],
+      products: [] as ProductItemRow[],
       gallery: [] as GalleryItemRow[],
       mediaDownloads: [],
       social: [] as SocialRow[],
@@ -293,7 +308,7 @@ const fetchAllCached = unstable_cache(fetchAll, ['homepage-site-data'], {
 export default async function HomePage() {
   const {
     configRows, bio, bioAchievements, bioCollabs, members, gigs, releases, partners,
-    musicHighlights, merch, soundpacks, gallery, mediaDownloads, social, newsPosts,
+    musicHighlights, merch, soundpacks, products, gallery, mediaDownloads, social, newsPosts,
   } = await fetchAllCached()
 
   const heroConfig = getConfig(configRows, 'hero')
@@ -391,6 +406,14 @@ export default async function HomePage() {
     title: row.title,
     imageUrl: resolveImageUrl(row.image_storage_path, row.image_url),
     externalUrl: row.external_url,
+  })
+  const productItemMap = (row: ProductItemRow) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    imageUrl: resolveImageUrl(row.image_storage_path, row.image_url),
+    href: row.href,
+    priceLabel: row.price_label,
   })
   const galleryItemMap = (row: GalleryItemRow) => ({
     id: row.id,
@@ -702,6 +725,18 @@ export default async function HomePage() {
                 {divider}
                 <SoundpacksSection
                   items={soundpacks.map(commerceItemMap)}
+                  heading={section.label}
+                  intro={section.intro}
+                />
+              </SectionErrorBoundary>,
+              section,
+            )
+          case 'products':
+            return wrapForPreview(
+              <SectionErrorBoundary key="products" sectionName="Products">
+                {divider}
+                <ProductsSection
+                  items={products.map(productItemMap)}
                   heading={section.label}
                   intro={section.intro}
                 />
