@@ -987,4 +987,102 @@ $$;
 REVOKE ALL ON FUNCTION public.claim_site_config_run(text, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.claim_site_config_run(text, jsonb, jsonb) TO service_role, postgres;
 
+-- ============================================================
+-- NEUROKORE licensing (service_role only; plugin activate RPC)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.neurokore_licenses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL CHECK (email = lower(email)),
+  key_hash text NOT NULL UNIQUE,
+  key_cipher text NOT NULL,
+  tier text NOT NULL CHECK (tier IN ('alpha', 'full')),
+  max_devices integer NOT NULL DEFAULT 2 CHECK (max_devices BETWEEN 1 AND 5),
+  expires_at timestamptz,
+  revoked_at timestamptz,
+  stripe_session text UNIQUE,
+  created_by uuid REFERENCES auth.users(id),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS neurokore_licenses_email_idx
+  ON public.neurokore_licenses (email);
+
+CREATE TABLE IF NOT EXISTS public.neurokore_devices (
+  license_id uuid NOT NULL REFERENCES public.neurokore_licenses(id) ON DELETE CASCADE,
+  device text NOT NULL CHECK (device ~ '^v2:[a-f0-9]{64}$'),
+  activated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (license_id, device)
+);
+
+CREATE TABLE IF NOT EXISTS public.neurokore_orders (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id),
+  email text NOT NULL,
+  price_id text NOT NULL,
+  stripe_session text UNIQUE,
+  payment_intent text UNIQUE,
+  license_id uuid REFERENCES public.neurokore_licenses(id),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.neurokore_licenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.neurokore_devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.neurokore_orders ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.neurokore_licenses, public.neurokore_devices, public.neurokore_orders
+  FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.neurokore_licenses, public.neurokore_devices, public.neurokore_orders
+  TO service_role;
+
+CREATE OR REPLACE FUNCTION public.neurokore_activate(p_key_hash text, p_device text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  l public.neurokore_licenses;
+BEGIN
+  SELECT * INTO l FROM public.neurokore_licenses WHERE key_hash = p_key_hash FOR UPDATE;
+  IF NOT FOUND OR l.revoked_at IS NOT NULL OR (l.expires_at IS NOT NULL AND l.expires_at <= now()) THEN
+    RAISE EXCEPTION 'License unavailable';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.neurokore_devices WHERE license_id = l.id AND device = p_device) THEN
+    IF (SELECT count(*) FROM public.neurokore_devices WHERE license_id = l.id) >= l.max_devices THEN
+      RAISE EXCEPTION 'Device limit reached';
+    END IF;
+    INSERT INTO public.neurokore_devices (license_id, device) VALUES (l.id, p_device);
+  END IF;
+  RETURN jsonb_build_object('id', l.id, 'email', l.email, 'tier', l.tier, 'expires_at', l.expires_at);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.neurokore_fulfill(p_order uuid, p_session text, p_intent text, p_key_hash text, p_key_cipher text)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  o public.neurokore_orders;
+  result uuid;
+BEGIN
+  SELECT * INTO o FROM public.neurokore_orders WHERE id = p_order FOR UPDATE;
+  IF NOT FOUND OR o.stripe_session IS DISTINCT FROM p_session THEN
+    RAISE EXCEPTION 'Order mismatch';
+  END IF;
+  IF o.license_id IS NOT NULL THEN
+    RETURN o.license_id;
+  END IF;
+  INSERT INTO public.neurokore_licenses (email, key_hash, key_cipher, tier, stripe_session)
+  VALUES (o.email, p_key_hash, p_key_cipher, 'full', p_session)
+  RETURNING id INTO result;
+  UPDATE public.neurokore_orders SET license_id = result, payment_intent = p_intent WHERE id = p_order;
+  RETURN result;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.neurokore_activate(text, text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.neurokore_fulfill(uuid, text, text, text, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.neurokore_activate(text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.neurokore_fulfill(uuid, text, text, text, text) TO service_role;
+
 

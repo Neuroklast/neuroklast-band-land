@@ -1,5 +1,5 @@
 
--- Execute only in the disposable CI database AFTER the migration.
+-- Execute only in the disposable CI database AFTER supabase/schema.sql.
 do $$
 declare v_license_id uuid; fulfilled uuid; again uuid; v_order_id uuid; v_user_id uuid;
 begin

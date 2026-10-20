@@ -15,7 +15,7 @@ Alpha issuance never calls Stripe. Customers sign in with the same verified emai
 
 ## Setup order
 
-1. Apply supabase/migrations/202610200001_neurokore_licenses.sql and supabase/migrations/202610210001_products.sql to the existing Supabase project. The normal schema bootstrap does not apply these new migrations automatically. Existing rate-limit schema and RATE_LIMIT_SALT are required.
+1. Apply the single idempotent `supabase/schema.sql` (Production deploy already does this). It includes products and NEUROKORE license tables/RPCs. Existing rate-limit schema and RATE_LIMIT_SALT are required.
 2. In Supabase Auth, enable email sign-in and configure transactional SMTP. The Magic Link email template must show {{ .Token }} for this code-entry flow. Configure the site's URL and allowed redirects. Never auto-promote customers to admins.
 3. Generate an Ed25519 key pair in a trusted operator environment. Store the PKCS8 PEM private key as NEUROKORE_SIGNING_PRIVATE_KEY in Vercel; literal escaped newlines are supported. Export the raw 32-byte public key as 64 hex characters for the plugin CMake option NEUROKORE_LICENSE_PUBLIC_KEY_HEX. Never put the private key in GitHub, browser bundles, downloads or the plugin.
 4. Generate an independent random 32-byte encryption secret (64 hex characters) for NEUROKORE_KEY_ENCRYPTION_SECRET. Back it up securely: rotating it requires re-encrypting stored keys. Keep staging and production Supabase/Stripe/signing material separate.
@@ -43,7 +43,7 @@ Activation uses the plugin WebView's HTTPS fetch with no cookies, no redirects a
 ## Launch checks (not yet executed in a live environment)
 
 - [ ] All repository CI gates green; native Windows/macOS binaries and embedded web UI tested.
-- [ ] PostgreSQL migration applied; concurrent requests cannot allocate a third seat.
+- [ ] `supabase/schema.sql` applied; concurrent requests cannot allocate a third seat.
 - [ ] Valid alpha activation, repeated activation, third device refusal, wrong device, tamper, expired and revoked key tested.
 - [ ] Email code delivery, customer A/B isolation, no anonymous/admin bypass, MFA enforcement.
 - [ ] Stripe test success, cancellation, delayed payment, invalid signature, duplicate and out-of-order events.
