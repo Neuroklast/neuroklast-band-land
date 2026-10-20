@@ -60,3 +60,7 @@ No secrets were created or deployed by this change. SQL and cryptographic tests 
 Two device seats are locked atomically per license. Admin reset frees server seats, but existing offline certificates remain usable until expiry/reload. This inherent offline window also applies to revoked keys and refunds. Customer self-service transfers, automatic renewals, automated refund handling, receipts beyond Stripe, key rotation and pagination are future extensions.
 
 License ownership follows verified email rather than anonymous checkout. An email change needs an operator-assisted transfer. Preserve accounting/fulfillment records according to the applicable retention policy; document Supabase/Stripe and device hash processing in the site's privacy notice before launch.
+
+## Implementation validation
+
+Focused website contracts passed in GitHub Actions, including PostgreSQL seat allocation under concurrent requests and payment retry idempotency. Native Ed25519 and Node interoperability contracts passed in the companion repository. The dependency audit initially blocked CI on existing packages; the lockfile was refreshed within its existing ranges and the subsequent audit found zero vulnerabilities. Full final-commit CI and configured launch checks remain separate gates.

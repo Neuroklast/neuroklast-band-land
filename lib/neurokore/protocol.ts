@@ -49,3 +49,9 @@ export function decryptKey(value: string, secret: string): string {
   decipher.setAuthTag(bytes.subarray(12, 28))
   return Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString('utf8')
 }
+
+export function validateLicenseConfiguration(pem: string, encryptionSecret: string): void {
+  const key = createPrivateKey(pem.replace(/\\n/g, '\n'))
+  if (key.asymmetricKeyType !== 'ed25519' || !/^[a-f0-9]{64}$/i.test(encryptionSecret))
+    throw new Error('Invalid licensing configuration')
+}

@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { generateKeyPairSync } from 'node:crypto'
-import { signLicense, verifyLicense, newKey, keyHash, encryptKey, decryptKey, activationSchema } from '../../lib/neurokore/protocol'
+import { signLicense, verifyLicense, newKey, keyHash, encryptKey, decryptKey, activationSchema, validateLicenseConfiguration } from '../../lib/neurokore/protocol'
 describe('NEUROKORE activation contract', () => {
+  it('refuses checkout configuration that cannot issue retrievable licenses', () => {
+    const pem = generateKeyPairSync('ed25519').privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+    expect(() => validateLicenseConfiguration(pem, 'ab'.repeat(32))).not.toThrow()
+    expect(() => validateLicenseConfiguration(pem, 'invalid')).toThrow()
+    expect(() => validateLicenseConfiguration('invalid pem', 'ab'.repeat(32))).toThrow()
+  })
   it('verifies signed payload bytes and rejects tampering or another signing key', () => {
     const keys = generateKeyPairSync('ed25519')
     const privateKey = keys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()

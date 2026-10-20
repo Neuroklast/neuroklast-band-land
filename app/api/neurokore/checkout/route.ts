@@ -2,6 +2,7 @@
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
+import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
 import { stripe } from '@/lib/neurokore/stripe'
 export const runtime = 'nodejs'
 export async function POST(request: Request) {
@@ -10,8 +11,7 @@ export async function POST(request: Request) {
     await limit(request, 'neurokore-checkout', 5)
     const buyer = await user()
     if (process.env.NEUROKORE_SALES_ENABLED !== 'true') return json({ error: 'Sales are not open yet.' }, 503)
-    required('NEUROKORE_SIGNING_PRIVATE_KEY')
-    required('NEUROKORE_KEY_ENCRYPTION_SECRET')
+    validateLicenseConfiguration(required('NEUROKORE_SIGNING_PRIVATE_KEY'), required('NEUROKORE_KEY_ENCRYPTION_SECRET'))
     required('STRIPE_WEBHOOK_SECRET')
     const download = new URL(required('NEUROKORE_DOWNLOAD_URL'))
     if (download.protocol !== 'https:') throw new Error('Download unavailable')

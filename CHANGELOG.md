@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Refresh vulnerable lockfile entries within existing dependency ranges. The dependency audit reports zero vulnerabilities after the update.
+
+
 - **External media in `CdnImage`** — the component bypassed the Google Drive/lh3
   canonicalization that `ProgressiveImage` applied, so Drive-hosted gallery, news or
   merch images reached the CDN as unfetchable share links. Both components now share
