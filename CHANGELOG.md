@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Keep browser-side media URL normalization free of Node DNS/Undici imports by sharing the pure host policy with the server SSRF guard. Server DNS pinning and redirect rejection remain intact.
+
+
 - Refresh vulnerable lockfile entries within existing dependency ranges. The dependency audit reports zero vulnerabilities after the update.
 
 
