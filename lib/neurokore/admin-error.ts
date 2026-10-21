@@ -11,8 +11,10 @@ export function adminFailureMessage(error: unknown): string {
   if (message === 'Invalid origin' || message === 'HTTPS required') {
     return 'Origin mismatch. Set NEUROKORE_SITE_URL or SITE_URL to https://neuroklast.net and redeploy.'
   }
-  if (message === 'Licensing configuration incomplete' || message === 'Invalid license encryption key') {
-    return 'Set NEUROKORE_KEY_ENCRYPTION_SECRET (64 hex chars, not the PEM) and NEUROKORE_SIGNING_PRIVATE_KEY, then redeploy.'
+  if (message === 'Licensing configuration incomplete' || message.startsWith('Invalid license encryption key')) {
+    return message.startsWith('Invalid license encryption key')
+      ? `${message}. In Vercel: no quotes, no spaces, exactly 64 characters 0-9a-f. Then redeploy.`
+      : 'Set NEUROKORE_KEY_ENCRYPTION_SECRET (64 hex chars, not the PEM) and NEUROKORE_SIGNING_PRIVATE_KEY, then redeploy.'
   }
   if (message === 'MFA required') return 'Complete MFA, then retry.'
   if (message === 'Administrator required') return 'Administrator sign-in required.'
