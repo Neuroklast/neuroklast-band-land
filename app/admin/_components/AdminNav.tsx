@@ -27,6 +27,8 @@ import {
   Newspaper,
   Lock,
   Scroll,
+  Cpu,
+  Cube,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import {
@@ -51,6 +53,8 @@ const NAV_ICONS: Record<string, Icon> = {
   '/admin/releases/sync': Disc,
   '/admin/gigs': Calendar,
   '/admin/merchandise': TShirt,
+  '/admin/products': Cube,
+  '/admin/neurokore': Cpu,
   '/admin/soundpacks': Package,
   '/admin/news': Newspaper,
   '/admin/social': Share,

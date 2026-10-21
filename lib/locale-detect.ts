@@ -55,6 +55,7 @@ export const NAV_LABEL_I18N_KEYS: Record<string, string> = {
   releases: 'nav.releases',
   merchandise: 'nav.merch',
   soundpacks: 'nav.soundpacks',
+  products: 'nav.products',
   gigs: 'nav.gigs',
   news: 'nav.news',
   spotify: 'nav.music',

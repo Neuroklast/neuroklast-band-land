@@ -1,6 +1,6 @@
 const MAX_REMOTE_IMAGE_BYTES = 10 * 1024 * 1024
 
-import { isBlockedHost } from '@/lib/ssrf-guard'
+import { isBlockedHost } from '@/lib/remote-host-policy'
 
 export function extractGoogleDriveFileId(url: string): string | null {
   const trimmed = url.trim()

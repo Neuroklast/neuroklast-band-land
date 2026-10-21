@@ -4,6 +4,18 @@ Entries are in **reverse chronological order** (newest first).
 
 ---
 
+## Session: 2026-10-21 — Products CMS + section toggle (NEUROKORE)
+
+**Agent:** grok-4.6
+**Branch:** `codex/neurokore-licensing`
+
+### Done
+- Admin `/admin/products`: section on/off (`site_config.sections` id `products`, default hidden) plus CRUD for product cards (R2 image, description, site path or http(s) href, price label, per-item visibility).
+- Homepage Products section; `/neurokore` and `/neurokore/account` follow that toggle.
+- Plugin licensing unchanged: NeuroCore still activates at `POST /api/license/v1/activate` (Ed25519 v2). Admin can issue keys with the public section off. `NEUROKORE_SALES_ENABLED` remains the Stripe-only env flag.
+
+---
+
 ## Session: 2026-09-18 — Overlay close, click embeds, frame glow
 
 **Agent:** grok-4.6

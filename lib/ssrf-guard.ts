@@ -1,23 +1,8 @@
 import { resolve4, resolve6 } from 'node:dns/promises'
 import { Agent, type Dispatcher } from 'undici'
 
-export const BLOCKED_HOST_PATTERNS = [
-  /^localhost$/i,
-  /^127\./,
-  /^10\./,
-  /^172\.(1[6-9]|2\d|3[01])\./,
-  /^192\.168\./,
-  /^0\./,
-  /^169\.254\./,
-  /^\[::1\]/,
-  /^\[::ffff:/i,
-  /^\[fe80:/i,
-  /^\[fc/i,
-  /^\[fd/i,
-  /^metadata\.google\.internal$/i,
-  /^0x[0-9a-f]+$/i,
-  /^0[0-7]+\./,
-]
+import { isBlockedHost } from './remote-host-policy'
+export { isBlockedHost, BLOCKED_HOST_PATTERNS } from './remote-host-policy'
 
 export const BLOCKED_IP_PATTERNS = [
   /^127\./,
@@ -34,13 +19,6 @@ export const BLOCKED_IP_PATTERNS = [
 ]
 
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
-
-export function isBlockedHost(hostname: string): boolean {
-  if (BLOCKED_HOST_PATTERNS.some((pattern) => pattern.test(hostname))) return true
-  if (/^\d+$/.test(hostname)) return true
-  if (!hostname.includes('.') && !hostname.startsWith('[')) return true
-  return false
-}
 
 export function isBlockedResolvedIp(ip: string): boolean {
   return BLOCKED_IP_PATTERNS.some((pattern) => pattern.test(ip))

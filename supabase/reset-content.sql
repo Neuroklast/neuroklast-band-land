@@ -16,7 +16,7 @@
 --
 -- DELETED:
 --   releases, gigs, gallery, partners, social_links, news_posts,
---   music_highlights, merchandise, soundpacks, media_downloads,
+--   music_highlights, merchandise, soundpacks, products, media_downloads,
 --   sync_jobs
 --
 -- Irreversible. Export a full JSON backup from /admin/data first.
@@ -33,6 +33,7 @@ DELETE FROM public.news_posts;
 DELETE FROM public.music_highlights;
 DELETE FROM public.merchandise;
 DELETE FROM public.soundpacks;
+DELETE FROM public.products;
 DELETE FROM public.media_downloads;
 DELETE FROM public.sync_jobs;
 

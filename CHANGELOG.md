@@ -8,7 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- NEUROKORE product/account pages, free alpha-key admin, Stripe Checkout and verified fulfillment, device-bound Ed25519 activation API and private Supabase tables. Sales remain disabled until deployment and end-to-end launch checks in `docs/NEUROKORE_COMMERCE.md` are complete.
+- Admin **Products** CMS (`/admin/products`): toggle the public Products section, then create/edit/hide items with R2 images, copy, optional price label, and a site path or http(s) link. Section defaults to hidden. Plugin activation (`POST /api/license/v1/activate`) stays up for NeuroCore even while the section is off. Products and NEUROKORE license tables live in the single idempotent `supabase/schema.sql`.
+
+
 ### Fixed
+
+- Keep browser-side media URL normalization free of Node DNS/Undici imports by sharing the pure host policy with the server SSRF guard. Server DNS pinning and redirect rejection remain intact.
+
+
+- Refresh vulnerable lockfile entries within existing dependency ranges. The dependency audit reports zero vulnerabilities after the update.
+- Pin Vite to 8.3.3+ (dev) so `npm audit --audit-level=moderate` is clean.
+
 
 - **External media in `CdnImage`** — the component bypassed the Google Drive/lh3
   canonicalization that `ProgressiveImage` applied, so Drive-hosted gallery, news or

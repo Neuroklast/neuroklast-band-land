@@ -1,0 +1,57 @@
+
+name: NEUROKORE contract
+on:
+  push:
+    branches: ['codex/neurokore-licensing']
+  pull_request:
+    paths:
+      - 'lib/neurokore/**'
+      - 'app/**/neurokore/**'
+      - 'app/api/license/**'
+      - 'supabase/schema.sql'
+      - 'supabase/tests/neurokore.sql'
+      - 'src/test/neurokore*'
+      - '.github/workflows/neurokore-contract.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: license_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: test
+      PGDATABASE: license_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx eslint lib/neurokore app/neurokore app/api/neurokore app/api/license 'app/admin/(protected)/neurokore' src/test/neurokore*.test.ts
+      - run: npx vitest run src/test/neurokore-protocol.test.ts src/test/neurokore-stripe.test.ts
+      - name: Disposable Supabase role and auth fixtures
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE anon;
+          CREATE ROLE authenticated;
+          CREATE ROLE service_role;
+          CREATE SCHEMA auth;
+          CREATE TABLE auth.users(id uuid PRIMARY KEY);
+          CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
+          SQL
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/neurokore.sql
+      - run: node supabase/tests/neurokore-concurrency.mjs

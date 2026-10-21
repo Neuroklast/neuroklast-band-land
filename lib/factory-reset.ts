@@ -24,6 +24,7 @@ export const FACTORY_RESET_TABLES: readonly string[] = [
   'music_highlights',
   'merchandise',
   'soundpacks',
+  'products',
   'media_downloads',
 ]
 
@@ -80,6 +81,7 @@ export const FACTORY_RESET_SITE_CONFIG: readonly FactorySiteConfigSeed[] = [
       { id: 'soundpacks', label: 'Soundpacks', visible: true, order: 10 },
       { id: 'gigs', label: 'Events', visible: true, order: 11 },
       { id: 'contact', label: 'Contact', visible: true, order: 12 },
+      { id: 'products', label: 'Products', visible: false, order: 13 },
     ],
   },
   { key: 'social', value: { spotify: '', instagram: '', facebook: '', youtube: '', soundcloud: '', tiktok: '' } },

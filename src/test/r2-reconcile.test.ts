@@ -59,6 +59,7 @@ function emptyTables(
     social_links: [],
     merchandise: [],
     soundpacks: [],
+    products: [],
     media_downloads: [],
     news_posts: [],
     bio: [],

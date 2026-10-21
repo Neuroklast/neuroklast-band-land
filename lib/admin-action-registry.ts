@@ -332,6 +332,39 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     },
   }),
 
+  create_product: register({
+    id: 'create_product',
+    label: 'Create Product',
+    schema: z.object({ title: z.string().min(1) }),
+    minDisclosure: 'basic',
+    execute(_input, { supabaseAdmin }) {
+      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
+      return { ok: true }
+    },
+  }),
+
+  update_product: register({
+    id: 'update_product',
+    label: 'Update Product',
+    schema: z.object({ id: z.string().min(1) }).passthrough(),
+    minDisclosure: 'basic',
+    execute(_input, { supabaseAdmin }) {
+      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
+      return { ok: true }
+    },
+  }),
+
+  delete_product: register({
+    id: 'delete_product',
+    label: 'Delete Product',
+    schema: z.object({ id: z.string().min(1) }),
+    minDisclosure: 'basic',
+    execute(_input, { supabaseAdmin }) {
+      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
+      return { ok: true }
+    },
+  }),
+
   create_media_download: register({
     id: 'create_media_download',
     label: 'Create Media Download',
