@@ -8,7 +8,7 @@ on:
       - 'lib/neurokore/**'
       - 'app/**/neurokore/**'
       - 'app/api/license/**'
-      - 'supabase/migrations/202610200001_neurokore_licenses.sql'
+      - 'supabase/schema.sql'
       - 'supabase/tests/neurokore.sql'
       - 'src/test/neurokore*'
       - '.github/workflows/neurokore-contract.yml'
@@ -43,7 +43,15 @@ jobs:
       - run: npx eslint lib/neurokore app/neurokore app/api/neurokore app/api/license 'app/admin/(protected)/neurokore' src/test/neurokore*.test.ts
       - run: npx vitest run src/test/neurokore-protocol.test.ts src/test/neurokore-stripe.test.ts
       - name: Disposable Supabase role and auth fixtures
-        run: psql -v ON_ERROR_STOP=1 -c 'CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY);'
-      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/202610200001_neurokore_licenses.sql
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE anon;
+          CREATE ROLE authenticated;
+          CREATE ROLE service_role;
+          CREATE SCHEMA auth;
+          CREATE TABLE auth.users(id uuid PRIMARY KEY);
+          CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
+          SQL
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/neurokore.sql
       - run: node supabase/tests/neurokore-concurrency.mjs
