@@ -1,7 +1,8 @@
 
 import { z } from 'zod'
 import { decryptKey, encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
-import { admin, body, db, json, limit, required, sameOrigin, unavailable } from '@/lib/neurokore/server'
+import { adminFailureMessage } from '@/lib/neurokore/admin-error'
+import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
 export async function POST(request: Request) {
   try {
     sameOrigin(request)
@@ -39,7 +40,10 @@ export async function POST(request: Request) {
       if (error) throw error
     }
     return json({ ok: true })
-  } catch { return unavailable() }
+  } catch (error) {
+    console.error('[neurokore-admin]', error)
+    return json({ error: adminFailureMessage(error) }, 400)
+  }
 }
 export async function GET(request: Request) {
   try {
@@ -49,5 +53,8 @@ export async function GET(request: Request) {
       .select('id,email,tier,expires_at,revoked_at,created_at').order('created_at', { ascending: false }).limit(100)
     if (error) throw error
     return json({ licenses: data })
-  } catch { return unavailable() }
+  } catch (error) {
+    console.error('[neurokore-admin]', error)
+    return json({ error: adminFailureMessage(error) }, 400)
+  }
 }

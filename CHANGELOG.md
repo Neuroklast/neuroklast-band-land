@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Refresh vulnerable lockfile entries within existing dependency ranges. The dependency audit reports zero vulnerabilities after the update.
 - Pin Vite to 8.3.3+ (dev) so `npm audit --audit-level=moderate` is clean.
+- Admin license issue/reveal returns the real configuration error (missing encryption secret, origin, or schema) instead of a generic 400.
+- Explicit Data API `GRANT`s in `schema.sql` for CMS tables (including `products`). New public tables after 2026-10-30 are no longer auto-granted. License tables stay service_role-only.
 
 
 - **External media in `CdnImage`** — the component bypassed the Google Drive/lh3

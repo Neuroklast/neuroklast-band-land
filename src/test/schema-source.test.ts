@@ -10,5 +10,8 @@ describe('supabase schema source', () => {
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.neurokore_licenses')
     expect(sql).toContain('CREATE OR REPLACE FUNCTION public.neurokore_activate')
     expect(sql).toContain('CREATE OR REPLACE FUNCTION public.neurokore_fulfill')
+    expect(sql).toMatch(/GRANT SELECT ON TABLE[\s\S]*public\.products[\s\S]*TO anon;/)
+    expect(sql).toMatch(/GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE[\s\S]*public\.products[\s\S]*TO authenticated, service_role;/)
+    expect(sql).not.toMatch(/GRANT SELECT ON TABLE[\s\S]*public\.neurokore_licenses[\s\S]*TO anon;/)
   })
 })

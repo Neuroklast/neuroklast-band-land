@@ -53,12 +53,21 @@ export function LicenseAdmin({
 
   async function refresh() {
     const response = await fetch('/api/neurokore/admin', { cache: 'no-store' })
-    if (!response.ok) throw new Error('Administrator sign-in required.')
-    setRows(rowsSchema.parse(await response.json()).licenses)
+    const payload: unknown = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const detail =
+        payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
+          ? payload.error
+          : 'Administrator sign-in required.'
+      throw new Error(detail)
+    }
+    setRows(rowsSchema.parse(payload).licenses)
   }
 
   useEffect(() => {
-    void refresh().catch(() => setMessage('Could not load licenses. Check your admin session.'))
+    void refresh().catch((error) =>
+      setMessage(error instanceof Error ? error.message : 'Could not load licenses. Check your admin session.'),
+    )
   }, [])
 
   async function mutate(input: object) {
@@ -75,10 +84,15 @@ export function LicenseAdmin({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       })
+      const payload: unknown = await response.json().catch(() => ({}))
       if (!response.ok) {
-        throw new Error('Action failed. Check your session, MFA and licensing configuration.')
+        const detail =
+          payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
+            ? payload.error
+            : 'Action failed. Check your session, MFA and licensing configuration.'
+        throw new Error(detail)
       }
-      const result = mutateSchema.parse(await response.json())
+      const result = mutateSchema.parse(payload)
       if (result.key) {
         setKey(result.key)
         if (action === 'reveal' && 'id' in input && typeof input.id === 'string') {

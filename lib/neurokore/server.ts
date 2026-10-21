@@ -16,7 +16,9 @@ export function db() {
     { auth: { persistSession: false, autoRefreshToken: false } })
 }
 export function origin(): string {
-  const url = new URL(required('NEUROKORE_SITE_URL'))
+  const raw = process.env.NEUROKORE_SITE_URL || process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL
+  if (!raw) throw new Error('Licensing configuration incomplete')
+  const url = new URL(raw)
   if (url.protocol !== 'https:' || url.username || url.password) throw new Error('HTTPS required')
   return url.origin
 }
