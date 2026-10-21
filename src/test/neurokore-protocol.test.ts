@@ -11,12 +11,14 @@ describe('NEUROKORE activation contract', () => {
   it('verifies signed payload bytes and rejects tampering or another signing key', () => {
     const keys = generateKeyPairSync('ed25519')
     const privateKey = keys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+    const derB64 = keys.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64')
     const publicKey = keys.publicKey.export({ type: 'spki', format: 'pem' }).toString()
     const payload = { version: 2 as const, product: 'NEUROKORE' as const,
       licenseId: '11111111-1111-4111-8111-111111111111', device: 'v2:' + 'a'.repeat(64),
       tier: 'alpha' as const, email: 'tester@example.com', issuedAt: 1000, expiresAt: 2000 }
     const doc = signLicense(payload, privateKey)
     expect(verifyLicense(doc, publicKey)).toEqual(payload)
+    expect(verifyLicense(signLicense(payload, derB64), publicKey)).toEqual(payload)
     const bad = JSON.parse(doc)
     bad.payload = Buffer.from(JSON.stringify({ ...payload, tier: 'full' })).toString('base64')
     expect(() => verifyLicense(JSON.stringify(bad), publicKey)).toThrow()
@@ -29,6 +31,8 @@ describe('NEUROKORE activation contract', () => {
     expect(keyHash(key)).not.toContain(key)
     const encrypted = encryptKey(key, secret)
     expect(decryptKey(encrypted, secret)).toBe(key)
+    expect(decryptKey(encrypted, `"${secret}"\n`)).toBe(key)
     expect(() => decryptKey(encrypted, 'cd'.repeat(32))).toThrow()
+    expect(() => encryptKey(key, 'abc')).toThrow(/got 3/)
   })
 })
