@@ -558,6 +558,49 @@ CREATE INDEX IF NOT EXISTS news_posts_slug_idx ON public.news_posts (slug);
 CREATE INDEX IF NOT EXISTS news_posts_published_idx ON public.news_posts (published_at DESC);
 -- news_posts: optional external article link (from site-config-content import)
 ALTER TABLE public.news_posts ADD COLUMN IF NOT EXISTS link text;
+
+-- ============================================================
+-- Data API grants
+--
+-- Supabase stops auto-granting new public-schema tables on
+-- 2026-10-30. Existing tables keep current grants, but this
+-- file is re-runnable (fresh projects, preview branches,
+-- `supabase db reset`), so grant explicitly here too.
+-- RLS policies still enforce row-level access; GRANT only
+-- opens the table-level gate for the Data API roles.
+-- ============================================================
+
+-- anon: public read only
+grant select on
+  public.releases, public.gigs, public.gallery, public.bio,
+  public.members, public.social_links, public.partners,
+  public.site_config, public.music_highlights, public.merchandise,
+  public.soundpacks, public.products, public.media_downloads,
+  public.news_posts
+to anon;
+
+-- anon: consent-gated telemetry insert (policy: anon insert analytics)
+grant insert on public.analytics_events to anon;
+
+-- authenticated + service_role: full CRUD (RLS restricts rows)
+grant select, insert, update, delete on
+  public.releases, public.gigs, public.gallery, public.bio,
+  public.members, public.social_links, public.partners,
+  public.site_config, public.music_highlights, public.merchandise,
+  public.soundpacks, public.products, public.media_downloads,
+  public.news_posts, public.profiles, public.sync_jobs,
+  public.analytics_events
+to authenticated;
+
+grant select, insert, update, delete on
+  public.releases, public.gigs, public.gallery, public.bio,
+  public.members, public.social_links, public.partners,
+  public.site_config, public.music_highlights, public.merchandise,
+  public.soundpacks, public.products, public.media_downloads,
+  public.news_posts, public.profiles, public.sync_jobs,
+  public.analytics_events
+to service_role;
+
 -- ============================================================
 -- Row Level Security
 -- ============================================================
@@ -1084,5 +1127,51 @@ REVOKE ALL ON FUNCTION public.neurokore_activate(text, text) FROM PUBLIC, anon, 
 REVOKE ALL ON FUNCTION public.neurokore_fulfill(uuid, text, text, text, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.neurokore_activate(text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.neurokore_fulfill(uuid, text, text, text, text) TO service_role;
+
+-- ============================================================
+-- Data API table grants (idempotent)
+-- From 2026-10-30 Supabase no longer auto-grants new public tables to
+-- anon / authenticated / service_role. RLS still filters rows.
+-- Keep rate_limits and neurokore_* service_role-only (already REVOKEd).
+-- ============================================================
+GRANT SELECT ON TABLE
+  public.releases,
+  public.gigs,
+  public.gallery,
+  public.bio,
+  public.members,
+  public.social_links,
+  public.partners,
+  public.site_config,
+  public.music_highlights,
+  public.merchandise,
+  public.soundpacks,
+  public.products,
+  public.media_downloads,
+  public.news_posts
+TO anon;
+
+GRANT INSERT ON TABLE public.analytics_events TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
+  public.profiles,
+  public.releases,
+  public.gigs,
+  public.gallery,
+  public.bio,
+  public.members,
+  public.social_links,
+  public.partners,
+  public.site_config,
+  public.api_secrets,
+  public.music_highlights,
+  public.merchandise,
+  public.soundpacks,
+  public.products,
+  public.media_downloads,
+  public.sync_jobs,
+  public.analytics_events,
+  public.news_posts
+TO authenticated, service_role;
 
 
