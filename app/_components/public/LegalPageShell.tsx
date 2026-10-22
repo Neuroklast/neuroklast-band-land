@@ -5,13 +5,7 @@ import { CookieConsent } from '@/components/CookieConsent'
 import { navItemsFromSections } from '@/lib/nav-links'
 import type { SectionConfig } from '@/lib/site-config-sections'
 import { parseLookId } from '@/lib/looks'
-import {
-  DEFAULT_SITE_BACKGROUND_VIDEO,
-  parseBackgroundVideoEnabled,
-  parseBackgroundVideoOpacity,
-  resolveSiteBackgroundVideoSrc,
-} from '@/lib/background-config'
-import { LookBackground, LookEffects, LookFooter, LookNav } from './LookChrome'
+import { LookFooter, LookNav } from './LookChrome'
 
 interface LegalPageShellProps {
   children: React.ReactNode
@@ -53,19 +47,13 @@ export async function LegalPageShell({ children }: LegalPageShellProps) {
   return (
     <PageLayout
       backgroundLayers={
-        <LookBackground
-          lookId={lookId}
-          siteName={siteName}
-          videoUrl={
-            resolveSiteBackgroundVideoSrc(
-              pageData.background.video_storage_path,
-              pageData.background.video_url,
-            ) ?? DEFAULT_SITE_BACKGROUND_VIDEO
-          }
-          videoOpacity={parseBackgroundVideoOpacity(pageData.background.backgroundVideoOpacity)}
-          videoEnabled={parseBackgroundVideoEnabled(pageData.background.backgroundVideoEnabled, true)}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 bg-black"
+          style={{ zIndex: 'var(--z-bg-video)' }}
         />
       }
+      contentClassName="bg-black"
       nav={
         <LookNav
           lookId={lookId}
@@ -83,7 +71,6 @@ export async function LegalPageShell({ children }: LegalPageShellProps) {
           privacyPolicyUrl={privacyUrl}
         />
       }
-      globalEffects={<LookEffects lookId={lookId} />}
       system={
         <CookieConsent privacyPolicyUrl={privacyUrl} />
       }
