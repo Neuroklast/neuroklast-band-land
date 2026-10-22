@@ -222,8 +222,24 @@ export async function POST(request: Request) {
         }
       }
       await audit(client, actor, input.id, 'product.delete', { slug: product.data.slug, title: product.data.title })
-      const { error } = await client.rpc('plugin_delete_product', { p_product: input.id })
-      if (error) throw error
+      const rpc = await client.rpc('plugin_delete_product', { p_product: input.id })
+      if (rpc.error) {
+        if (!/Could not find the function|does not exist/i.test(rpc.error.message)) throw rpc.error
+        // The database has not received the latest schema yet. Delete the same
+        // rows step by step so the admin is not blocked by a deployment order.
+        const events = await client.from('plugin_download_events').delete().eq('product_id', input.id)
+        if (events.error) throw events.error
+        if (releaseIds.length > 0) {
+          const artifacts = await client.from('plugin_release_artifacts').delete().in('release_id', releaseIds)
+          if (artifacts.error) throw artifacts.error
+        }
+        const releasesDelete = await client.from('plugin_releases').delete().eq('product_id', input.id)
+        if (releasesDelete.error) throw releasesDelete.error
+        const secrets = await client.from('plugin_product_secrets').delete().eq('product_id', input.id)
+        if (secrets.error) throw secrets.error
+        const productDelete = await client.from('products').delete().eq('id', input.id)
+        if (productDelete.error) throw productDelete.error
+      }
       revalidateProductSurface(product.data.slug ?? '')
       return json({ ok: true })
     }
@@ -260,6 +276,7 @@ export async function POST(request: Request) {
     await audit(client, actor, product.data.id, 'product.key.import', { slug: product.data.slug })
     return json({ public_key_hex: publicHex })
   } catch (error) {
+    console.error('[plugins-api]', error)
     return json({ error: adminFailureMessage(error) }, 400)
   }
 }

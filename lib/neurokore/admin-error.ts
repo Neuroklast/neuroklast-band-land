@@ -18,8 +18,17 @@ export function adminFailureMessage(error: unknown): string {
   }
   if (message === 'MFA required') return 'Complete MFA, then retry.'
   if (message === 'Administrator required') return 'Administrator sign-in required.'
+  if (message === 'Product has licences or orders') {
+    return 'This product has licences or orders and cannot be deleted. Revoke the licences first, or keep it for accounting.'
+  }
+  if (/violates foreign key constraint/i.test(message)) {
+    return 'This product is still referenced by another record. Remove or detach that record first.'
+  }
+  if (/Could not find the function|plugin_delete_product|plugin_public_catalog/i.test(message)) {
+    return 'The database is missing the latest plugin function. Apply supabase/schema.sql (needs SUPABASE_DB_URL) and redeploy.'
+  }
   if (/plugin_licenses|plugin_releases|plugin_orders|neurokore_licenses|schema cache|does not exist/i.test(message)) {
-    return 'Licence tables are missing. Production must apply supabase/schema.sql (needs SUPABASE_DB_URL).'
+    return 'Database schema is out of date. Apply supabase/schema.sql (needs SUPABASE_DB_URL) and redeploy.'
   }
   return 'Request unavailable. Check your sign-in, licence and configuration, then retry.'
 }
