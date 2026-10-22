@@ -136,7 +136,7 @@ begin
   insert into public.products(title,slug,kind,active)
   values ('Paid Plugin','paid-plugin','plugin',false) returning id into paid;
   insert into public.plugin_licenses(product_id,email,key_hash,key_cipher,tier,license_format)
-  values (paid,'paid@example.com','paid-hash','cipher','full','v3') returning id into paid_license;
+  values (paid,'paid@example.com','paid-product-hash','cipher','full','v3') returning id into paid_license;
   insert into public.plugin_orders(product_id,user_id,email,price_id,stripe_session,license_id)
   values (paid,v_user_id,'paid@example.com','price_paid','cs_paid',paid_license);
   begin
@@ -146,6 +146,7 @@ begin
     if sqlerrm <> 'Product has paid orders' then raise; end if;
   end;
 end $$;
+
 
 
 
