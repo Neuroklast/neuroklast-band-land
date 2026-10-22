@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
+import { getApiSecret } from '@/lib/api-secrets'
 import { db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
 import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
 import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
@@ -64,6 +65,10 @@ export async function POST(request: Request, context: RouteContext) {
     )
     validateLicenseConfiguration(pem, encryptionSecret)
     required('STRIPE_WEBHOOK_SECRET')
+    // A sale must not start if we cannot send the contract confirmation.
+    if (!await getApiSecret('resend_api_key')) {
+      return json({ error: 'Sales unavailable: contract email service is not configured.' }, 503)
+    }
 
     const id = randomUUID()
     const insert = await client.from('plugin_orders').insert({
