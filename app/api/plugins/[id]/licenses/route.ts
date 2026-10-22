@@ -24,7 +24,7 @@ const inputSchema = z.discriminatedUnion('action', [
 
 async function loadProduct(client: ReturnType<typeof db>, productId: string) {
   const { data, error } = await client.from('products').select('id,slug,license_format')
-    .eq('id', productId).eq('kind', 'plugin').maybeSingle()
+    .eq('id', productId).maybeSingle()
   if (error) throw error
   return data
 }
@@ -123,3 +123,4 @@ export async function POST(request: Request, context: RouteContext) {
     return json({ error: adminFailureMessage(error) }, 400)
   }
 }
+

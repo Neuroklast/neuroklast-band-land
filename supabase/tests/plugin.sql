@@ -10,6 +10,9 @@ declare
   again uuid;
   tmp uuid;
   tmp_release uuid;
+  tmp_license uuid;
+  paid uuid;
+  paid_license uuid;
 begin
   select id into nk from public.products where slug = 'neurokore';
   if nk is null then raise exception 'TEST FAILED: NEUROKORE product missing'; end if;
@@ -83,9 +86,10 @@ begin
   if has_function_privilege('anon','public.plugin_public_catalog()','EXECUTE') is not true then
     raise exception 'TEST FAILED: public catalogue must be readable';
   end if;
-  -- Deleting a product without licences/orders removes its releases and files' metadata.
-  insert into public.products(title,slug,kind)
-  values ('Temp Plugin','temp-plugin','plugin') returning id into tmp;
+  -- Hidden product with an alpha licence, audit rows, a release and an abandoned
+  -- checkout: everything goes, including the audit rows and the licence.
+  insert into public.products(title,slug,kind,active)
+  values ('Temp Plugin','temp-plugin','plugin',false) returning id into tmp;
   insert into public.plugin_releases(product_id,version,channel,status)
   values (tmp,'1.0.0','stable','draft') returning id into tmp_release;
   insert into public.plugin_release_artifacts(release_id,platform,architecture,package_type,filename,storage_key,filesize_bytes,sha256,validation_status)
@@ -93,6 +97,14 @@ begin
           'releases/temp-plugin/v1.0.0/windows-x64/temp.exe',1024,repeat('b',64),'validated');
   insert into public.plugin_download_events(product_id,release_id,platform,channel)
   values (tmp,tmp_release,'windows-x64','stable');
+  insert into public.plugin_licenses(product_id,email,key_hash,key_cipher,tier,license_format)
+  values (tmp,'temp@example.com','temp-hash','cipher','alpha','v3') returning id into tmp_license;
+  insert into public.plugin_devices(license_id,device)
+  values (tmp_license,'v2:'||repeat('c',64));
+  insert into public.plugin_orders(product_id,user_id,email,price_id,stripe_session)
+  values (tmp,v_user_id,'temp@example.com','price_temp','cs_temp');
+  insert into public.plugin_admin_audit(product_id,action) values (tmp,'test.audit');
+
   perform public.plugin_delete_product(tmp);
   if exists (select 1 from public.products where id = tmp) then
     raise exception 'TEST FAILED: product not deleted';
@@ -100,12 +112,41 @@ begin
   if exists (select 1 from public.plugin_releases where id = tmp_release) then
     raise exception 'TEST FAILED: releases not deleted';
   end if;
+  if exists (select 1 from public.plugin_licenses where id = tmp_license) then
+    raise exception 'TEST FAILED: licences not deleted';
+  end if;
+  if exists (select 1 from public.plugin_orders where stripe_session = 'cs_temp') then
+    raise exception 'TEST FAILED: abandoned order not deleted';
+  end if;
+  if exists (select 1 from public.plugin_admin_audit where product_id = tmp) then
+    raise exception 'TEST FAILED: audit rows not deleted';
+  end if;
 
+  -- A public product cannot be deleted.
+  update public.products set active = true where id = other;
   begin
     perform public.plugin_delete_product(other);
-    raise exception 'TEST FAILED: product with licence deleted';
+    raise exception 'TEST FAILED: public product deleted';
   exception when others then
-    if sqlerrm <> 'Product has licences or orders' then raise; end if;
+    if sqlerrm <> 'Hide the product before deleting it' then raise; end if;
+  end;
+  update public.products set active = false where id = other;
+
+  -- A product with a paid (fulfilled) order cannot be deleted.
+  insert into public.products(title,slug,kind,active)
+  values ('Paid Plugin','paid-plugin','plugin',false) returning id into paid;
+  insert into public.plugin_licenses(product_id,email,key_hash,key_cipher,tier,license_format)
+  values (paid,'paid@example.com','paid-product-hash','cipher','full','v3') returning id into paid_license;
+  insert into public.plugin_orders(product_id,user_id,email,price_id,stripe_session,license_id)
+  values (paid,v_user_id,'paid@example.com','price_paid','cs_paid',paid_license);
+  begin
+    perform public.plugin_delete_product(paid);
+    raise exception 'TEST FAILED: paid product deleted';
+  exception when others then
+    if sqlerrm <> 'Product has paid orders' then raise; end if;
   end;
 end $$;
+
+
+
 

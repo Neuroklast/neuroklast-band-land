@@ -80,7 +80,7 @@ async function audit(
 
 async function loadProduct(client: ReturnType<typeof db>, id: string) {
   const { data, error } = await client.from('products').select('id,slug,title').eq('id', id)
-    .eq('kind', 'plugin').maybeSingle()
+    .maybeSingle()
   if (error) throw error
   return data
 }
@@ -267,5 +267,6 @@ export async function POST(request: Request, context: RouteContext) {
     return json({ error: adminFailureMessage(error) }, 400)
   }
 }
+
 
 
