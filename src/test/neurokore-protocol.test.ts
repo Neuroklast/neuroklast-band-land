@@ -36,3 +36,37 @@ describe('NEUROKORE activation contract', () => {
     expect(() => encryptKey(key, 'abc')).toThrow(/got 3/)
   })
 })
+
+describe('generic v3 licence contract', () => {
+  it('signs per-product documents and rejects a foreign key or format', async () => {
+    const { createPublicKey } = await import('node:crypto')
+    const { signLicenseV3, verifyLicenseV3, generateSigningKeyPair } = await import('../../lib/neurokore/protocol')
+    const first = generateSigningKeyPair()
+    const second = generateSigningKeyPair()
+    const publicFromHex = (hex: string) => createPublicKey({
+      key: { kty: 'OKP', crv: 'Ed25519', x: Buffer.from(hex, 'hex').toString('base64url') },
+      format: 'jwk',
+    }).export({ type: 'spki', format: 'pem' }).toString()
+    const payload = {
+      version: 3 as const, product: 'neurometer',
+      licenseId: '22222222-2222-4222-8222-222222222222', device: 'v2:' + 'b'.repeat(64),
+      tier: 'full' as const, email: 'buyer@example.com', issuedAt: 1000, expiresAt: 2000,
+    }
+    const doc = signLicenseV3(payload, first.privatePem)
+    expect(verifyLicenseV3(doc, publicFromHex(first.publicHex))).toEqual(payload)
+    expect(() => verifyLicenseV3(doc, publicFromHex(second.publicHex))).toThrow()
+    expect(first.publicHex).toMatch(/^[a-f0-9]{64}$/)
+    const wrong = JSON.parse(doc)
+    wrong.format = 'NEUROKORE LICENSE'
+    expect(() => verifyLicenseV3(JSON.stringify(wrong), publicFromHex(first.publicHex))).toThrow()
+  })
+
+  it('binds encrypted signing keys to their product AAD', async () => {
+    const { encryptKey, decryptKey } = await import('../../lib/neurokore/protocol')
+    const secret = 'ef'.repeat(32)
+    const value = 'private-key-material'
+    const cipher = encryptKey(value, secret, 'plugin-signing-key-v1:neurometer')
+    expect(decryptKey(cipher, secret, 'plugin-signing-key-v1:neurometer')).toBe(value)
+    expect(() => decryptKey(cipher, secret, 'plugin-signing-key-v1:neurokore')).toThrow()
+  })
+})

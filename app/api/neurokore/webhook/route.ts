@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const session = sessionSchema.parse(await stripe(
       'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY')))
     const client = db()
-    const orderResult = await client.from('neurokore_orders').select('id,email,price_id,stripe_session')
+    const orderResult = await client.from('plugin_orders').select('id,email,price_id,stripe_session')
       .eq('id', session.client_reference_id).single()
     if (orderResult.error) throw orderResult.error
     const order = z.object({ id: z.uuid(), email: z.email(), price_id: z.string(), stripe_session: z.string().nullable() })
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     if (order.stripe_session !== session.id || order.email !== session.customer_email.toLowerCase() ||
       order.price_id !== session.line_items.data[0].price.id) throw new Error('Order mismatch')
     const key = newKey()
-    const { error } = await client.rpc('neurokore_fulfill', {
+    const { error } = await client.rpc('plugin_fulfill', {
       p_order: order.id, p_session: session.id, p_intent: session.payment_intent,
       p_key_hash: keyHash(key), p_key_cipher: encryptKey(key, required('NEUROKORE_KEY_ENCRYPTION_SECRET')),
     })

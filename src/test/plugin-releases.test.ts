@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   artifactsByPlatform,
+  findProduct,
   formatBytes,
+  isFreeDownload,
   latestByChannel,
+  parsePublicCatalog,
   parsePublicReleases,
   pickArtifact,
   releaseArtifactsReady,
@@ -11,7 +14,7 @@ import {
   safeReleaseStorageKey,
   type ArtifactLike,
   type PublicRelease,
-} from '../../lib/neurokore/releases'
+} from '../../lib/plugins/releases'
 
 const sha = 'a'.repeat(64)
 
@@ -84,7 +87,7 @@ describe('pickArtifact', () => {
 
 describe('storage paths', () => {
   it('builds a canonical key and accepts it', () => {
-    const key = releaseStorageKey('1.4.0', 'windows-x64', 'NEUROKORE-1.4.0-Windows.exe')
+    const key = releaseStorageKey('neurokore', '1.4.0', 'windows-x64', 'NEUROKORE-1.4.0-Windows.exe')
     expect(key).toBe('releases/neurokore/v1.4.0/windows-x64/NEUROKORE-1.4.0-Windows.exe')
     expect(safeReleaseStorageKey(key)).toBe(true)
   })
@@ -100,8 +103,8 @@ describe('storage paths', () => {
   })
 
   it('refuses unsafe filenames when deriving a key', () => {
-    expect(() => releaseStorageKey('1.0.0', 'linux-x64', '../x.deb')).toThrow()
-    expect(() => releaseStorageKey('1.0.0 beta', 'linux-x64', 'x.deb')).toThrow()
+    expect(() => releaseStorageKey('neurokore', '1.0.0', 'linux-x64', '../x.deb')).toThrow()
+    expect(() => releaseStorageKey('neurokore', '1.0.0 beta', 'linux-x64', 'x.deb')).toThrow()
   })
 })
 
@@ -154,5 +157,51 @@ describe('public catalogue shaping', () => {
     expect(formatBytes(1024)).toBe('1 KB')
     expect(formatBytes(5 * 1024 * 1024)).toBe('5 MB')
     expect(formatBytes(0)).toBe('-')
+  })
+})
+
+
+describe('public catalog', () => {
+  const product = {
+    id: '00000000-0000-4000-8000-000000000000',
+    slug: 'neurokore',
+    title: 'NEUROKORE',
+    short_description: null,
+    description: null,
+    features: [{ title: 'Circuit', body: 'Board' }],
+    system_requirements: ['Windows 10'],
+    media: [{ kind: 'image', url: 'https://cdn.example/a.png' }],
+    pricing_mode: 'paid',
+    sales_enabled: false,
+    demo_downloads_enabled: true,
+    license_required: true,
+    default_channel: 'stable',
+    display_order: 0,
+    releases: [{
+      id: '00000000-0000-4000-8000-000000000001',
+      version: '1.0.0',
+      channel: 'stable',
+      title: null,
+      changelog: null,
+      release_notes: null,
+      published_at: null,
+      artifacts: [],
+    }],
+  }
+
+  it('parses a catalog payload and finds a product by slug', () => {
+    const catalog = parsePublicCatalog([product])
+    expect(catalog).toHaveLength(1)
+    expect(findProduct(catalog, 'neurokore')?.title).toBe('NEUROKORE')
+    expect(findProduct(catalog, 'missing')).toBeNull()
+  })
+
+  it('rejects an invalid pricing mode or slug', () => {
+    expect(() => parsePublicCatalog([{ ...product, pricing_mode: 'donation' }])).toThrow()
+    expect(() => parsePublicCatalog([{ ...product, slug: 'Neuro Kore' }])).toThrow()
+  })
+
+  it('treats free products as no-licence downloads', () => {
+    expect(isFreeDownload(parsePublicCatalog([{ ...product, pricing_mode: 'free', license_required: false }])[0])).toBe(true)
   })
 })

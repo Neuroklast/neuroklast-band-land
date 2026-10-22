@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabaseServer'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ProductForm } from '../ProductForm'
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -7,6 +7,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const supabase = await createClient()
   const { data } = await supabase.from('products').select('*').eq('id', id).single()
   if (!data) notFound()
+  if (data.kind === 'plugin') redirect(`/admin/plugins/${id}`)
 
   return (
     <div className="max-w-lg">

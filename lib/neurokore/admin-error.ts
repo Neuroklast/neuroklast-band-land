@@ -18,8 +18,8 @@ export function adminFailureMessage(error: unknown): string {
   }
   if (message === 'MFA required') return 'Complete MFA, then retry.'
   if (message === 'Administrator required') return 'Administrator sign-in required.'
-  if (/neurokore_licenses|schema cache|does not exist/i.test(message)) {
-    return 'License tables are missing. Production must apply supabase/schema.sql (needs SUPABASE_DB_URL).'
+  if (/plugin_licenses|plugin_releases|plugin_orders|neurokore_licenses|schema cache|does not exist/i.test(message)) {
+    return 'Licence tables are missing. Production must apply supabase/schema.sql (needs SUPABASE_DB_URL).'
   }
-  return 'Request unavailable. Check your sign-in, license and configuration, then retry.'
+  return 'Request unavailable. Check your sign-in, licence and configuration, then retry.'
 }

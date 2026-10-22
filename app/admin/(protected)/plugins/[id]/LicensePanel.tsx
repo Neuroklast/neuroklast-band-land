@@ -36,15 +36,10 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
-export function LicenseAdmin({
-  publicEnabled,
-  salesEnabled,
-}: {
-  publicEnabled: boolean
-  salesEnabled: boolean
-}) {
+export function LicensePanel({ productId }: { productId: string }) {
   const [rows, setRows] = useState<z.infer<typeof rowsSchema>['licenses']>([])
   const [email, setEmail] = useState('')
+  const [tier, setTier] = useState<'alpha' | 'full'>('alpha')
   const [days, setDays] = useState(90)
   const [message, setMessage] = useState('')
   const [key, setKey] = useState('')
@@ -52,7 +47,7 @@ export function LicenseAdmin({
   const [busy, setBusy] = useState(false)
 
   async function refresh() {
-    const response = await fetch('/api/neurokore/admin', { cache: 'no-store' })
+    const response = await fetch('/api/plugins/' + productId + '/licenses', { cache: 'no-store' })
     const payload: unknown = await response.json().catch(() => ({}))
     if (!response.ok) {
       const detail =
@@ -79,7 +74,7 @@ export function LicenseAdmin({
       setRevealedId('')
     }
     try {
-      const response = await fetch('/api/neurokore/admin', {
+      const response = await fetch('/api/plugins/' + productId + '/licenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
@@ -115,20 +110,9 @@ export function LicenseAdmin({
         className="rounded border border-zinc-800 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-400"
       >
         <p>
-          Public Products section:{' '}
-          <span className={publicEnabled ? 'text-amber-300' : 'text-zinc-200'}>
-            {publicEnabled ? 'on — /neurokore is live' : 'off'}
-          </span>
-          . Sales:{' '}
-          <span className={salesEnabled ? 'text-amber-300' : 'text-zinc-200'}>
-            {salesEnabled ? 'open' : 'closed'}
-          </span>
-          .
-        </p>
-        <p className="mt-1">
-          Keys issued here activate the plugin even while the Products section stays off.
-          Plugin activate at <code className="font-mono text-xs">/api/license/v1/activate</code> stays
-          available. Turn the section on under Admin → Products.
+          Licences are scoped to this plugin only. Activation at{' '}
+          <code className="font-mono text-xs">/api/license/v1/activate</code> stays available even while the
+          public page is off.
         </p>
       </div>
 
@@ -136,17 +120,17 @@ export function LicenseAdmin({
         className="space-y-4 rounded border border-zinc-800 bg-zinc-950/60 p-4"
         onSubmit={(event) => {
           event.preventDefault()
-          void mutate({ action: 'issue', email, days })
+          void mutate({ action: 'issue', email, tier, days: tier === 'full' ? null : days })
         }}
       >
-        <h2 className="text-sm font-semibold text-zinc-200">Generate test key</h2>
+        <h2 className="text-sm font-semibold text-zinc-200">Issue a license</h2>
         <p className="text-xs text-zinc-500">
-          Creates an alpha key and shows it only in this admin screen. Nothing is added to the
-          public site.
+          Alpha keys expire on the date below. Full keys do not expire. The key is shown once here and can
+          be revealed again later from this list.
         </p>
         <div className="flex flex-wrap items-end gap-4">
           <label className="min-w-[16rem] flex-1 text-sm text-zinc-300">
-            Tester email
+            Customer email
             <input
               required
               type="email"
@@ -157,19 +141,31 @@ export function LicenseAdmin({
             />
           </label>
           <label className="w-32 text-sm text-zinc-300">
+            Type
+            <select
+              className={inputClass + ' mt-1 block'}
+              value={tier}
+              onChange={(event) => setTier(event.target.value as 'alpha' | 'full')}
+            >
+              <option value="alpha">Alpha</option>
+              <option value="full">Full</option>
+            </select>
+          </label>
+          <label className="w-32 text-sm text-zinc-300">
             Valid for days
             <input
-              required
+              required={tier === 'alpha'}
+              disabled={tier === 'full'}
               type="number"
               min={1}
-              max={365}
+              max={3650}
               className={inputClass + ' mt-1 block'}
               value={days}
               onChange={(event) => setDays(Number(event.target.value))}
             />
           </label>
           <button disabled={busy} className={primaryButton}>
-            {busy ? 'Working…' : 'Generate key'}
+            {busy ? 'Working…' : 'Issue key'}
           </button>
         </div>
       </form>

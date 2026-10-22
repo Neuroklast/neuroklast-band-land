@@ -61,6 +61,8 @@ export async function body(request: Request): Promise<unknown> {
 export const licenseRow = z.object({
   id: z.uuid(), email: z.email(), tier: z.enum(['alpha', 'full']),
   expires_at: z.string().nullable(),
+  license_format: z.enum(['v2', 'v3']),
+  product_slug: z.string(),
 })
 export function json(value: unknown, status = 200, cors = false) {
   return Response.json(value, { status, headers: {
