@@ -6,6 +6,7 @@ import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { formatProductPrice, loadProductPriceForProduct } from '@/lib/plugins/price'
 import { CHANNEL_LABEL, latestByChannel } from '@/lib/plugins/releases'
 import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
+import { PurchasePanel } from './PurchasePanel'
 
 export const revalidate = 60
 
@@ -44,27 +45,30 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
               >
                 {product.pricing_mode === 'free' ? 'Free Download' : 'Free Download (demo)'}
               </Link>
-              {salesOpen && price ? (
-                <Link
-                  className="inline-flex min-h-11 items-center border border-current/40 px-5 py-3 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  href="/neurokore/account"
-                >
+              {salesOpen && price && !price.recurring ? (
+                <a className="inline-flex min-h-11 items-center border border-current/40 px-5 py-3 hover:opacity-80" href="#purchase">
                   Buy License — {formatProductPrice(price)}
-                  {price.recurring ? ' / period' : ''}
-                </Link>
-              ) : salesOpen ? (
-                <Link className="inline-flex min-h-11 items-center border border-current/40 px-5 py-3 hover:opacity-80"
-                  href="/neurokore/account">
-                  Buy License
-                </Link>
+                </a>
               ) : null}
             </div>
-            {salesOpen && price && <p className="text-sm opacity-70">Tax is calculated at checkout.</p>}
+            {salesOpen && price && <p className="text-sm opacity-70">The displayed price includes applicable taxes. No physical shipping. The final total is confirmed in Stripe Checkout.</p>}
             <p className="text-sm opacity-70">
               {stable ? `Latest stable build: ${stable.version} (${CHANNEL_LABEL[stable.channel]}).` : 'No public build has been published yet.'}
             </p>
           </div>
         </header>
+
+        {salesOpen && price && !price.recurring && (
+          <div id="purchase" className="scroll-mt-32">
+            <PurchasePanel slug={product.slug} productTitle={product.title}
+              price={formatProductPrice(price)} recurring={price.recurring} />
+          </div>
+        )}
+        {salesOpen && price?.recurring && (
+          <p role="status" className="border border-white/20 p-4">
+            Subscription checkout is not available yet. Contact us for current licensing options.
+          </p>
+        )}
 
         {product.media.some((item) => item.kind === 'image') && (
           <section className="grid gap-4 sm:grid-cols-2">

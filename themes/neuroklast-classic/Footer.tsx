@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, useReducedMotion } from 'framer-motion'
+import Link from 'next/link'
 import { ArrowUp } from '@phosphor-icons/react'
 import type { FooterSlotProps } from '@/lib/types'
 import { CookiePreferencesButton } from '@/components/CookieConsent'
@@ -88,6 +89,18 @@ export default function NeuroklastClassicFooter({
                   {t('footer.privacy')}
                 </button>
               )}
+              <Link href="/withdrawal" className="nk-os-nav min-h-[44px] inline-flex items-center font-semibold">
+                Vertrag widerrufen
+              </Link>
+              <Link href="/withdrawal-policy" className="nk-os-nav min-h-[44px] inline-flex items-center">
+                Widerrufsbelehrung
+              </Link>
+              <Link href="/purchase-info" className="nk-os-nav min-h-[44px] inline-flex items-center">
+                Softwarekauf
+              </Link>
+              <Link href="/license-terms" className="nk-os-nav min-h-[44px] inline-flex items-center">
+                Lizenzbedingungen
+              </Link>
               <CookiePreferencesButton
                 privacyPolicyUrl={privacyPolicyUrl}
                 className="nk-os-nav min-h-[44px] inline-flex items-center"

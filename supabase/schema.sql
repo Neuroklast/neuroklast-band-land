@@ -1133,6 +1133,9 @@ CREATE TABLE IF NOT EXISTS public.plugin_orders (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Contract confirmation is sent on a durable medium after Stripe fulfilment.
+ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS confirmation_sent_at timestamptz;
+
 CREATE TABLE IF NOT EXISTS public.plugin_releases (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,

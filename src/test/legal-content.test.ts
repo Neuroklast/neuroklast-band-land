@@ -138,8 +138,10 @@ describe('buildPrivacyPolicySections', () => {
       privacyPolicyCustom: '1. Datenschutz auf einen Blick',
     })
     const de = buildPrivacyPolicySections(config, 'de')
-    expect(de).toHaveLength(1)
+    expect(de).toHaveLength(2)
     expect(de[0].paragraphs[0]).toContain('Datenschutz auf einen Blick')
+    expect(de[1].id).toBe('digital-commerce')
+    expect(de[1].paragraphs.join(' ')).toContain('Stripe')
 
     const es = buildPrivacyPolicySections(config, 'es')
     expect(es.find((s) => s.id === 'overview')?.title).toMatch(/Protección de datos/i)
