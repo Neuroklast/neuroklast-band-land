@@ -6,6 +6,8 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { resolveLegalLocale } from '@/lib/legal-templates'
 import { COMMERCE_ACTIONS } from '@/lib/commerce-actions-i18n'
 import { COMMERCE_LEGAL_COPY } from '@/lib/commerce-legal-copy'
+import { WITHDRAWAL_RECEIPT_PENDING } from '@/lib/legal-withdrawal-i18n'
+import { localizedLegalPath } from '@/lib/legal-routes'
 
 type WithdrawalData = { name: string; email: string; orderReference: string }
 const EMPTY: WithdrawalData = { name: '', email: '', orderReference: '' }
@@ -57,10 +59,8 @@ export function WithdrawalForm() {
       {confirmationSent
         ? <p>{labels.receipt}</p>
         : <p role="alert">
-            {lang === 'de'
-              ? 'Deine Erklärung wurde gespeichert. Die E-Mail-Eingangsbestätigung konnte noch nicht versendet werden. Bewahre die Referenz auf und kontaktiere den Betreiber gegebenenfalls über das Impressum.'
-              : 'Your declaration has been recorded, but the email confirmation is still pending. Keep this reference and contact the seller through the Legal Notice if necessary.'}
-            {' '}<Link href="/legal-notice" className="underline">{legal.notice}</Link>
+            {WITHDRAWAL_RECEIPT_PENDING[lang]}
+            {' '}<Link href={localizedLegalPath(lang, "legal-notice")} className="underline">{legal.notice}</Link>
           </p>}
       <p>{labels.notDecision}</p>
       <Link href="/" className="inline-block underline">Home</Link>
@@ -86,7 +86,7 @@ export function WithdrawalForm() {
               value={details.orderReference} onChange={event => setDetails({ ...details, orderReference: event.target.value })} />
           </label>
           <p className="text-sm text-white/70">
-            <Link className="underline" href="/privacy-policy">{legal.privacy}</Link>
+            <Link className="underline" href={localizedLegalPath(lang, "privacy-policy")}>{legal.privacy}</Link>
           </p>
           <button type="submit" className={buttonStyle}>{labels.submit}</button>
         </form>
