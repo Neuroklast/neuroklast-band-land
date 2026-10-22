@@ -15,6 +15,12 @@ export type PackageType = (typeof PACKAGE_TYPES)[number]
 export const SIGNING_STATUSES = ['unsigned', 'signed', 'notarized'] as const
 export type SigningStatus = (typeof SIGNING_STATUSES)[number]
 
+/** Browser uploads: direct to R2, multipart above 8 MB, hard cap 2 GB. */
+export const MAX_RELEASE_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024
+export const MAX_AUTO_SHA_BYTES = 256 * 1024 * 1024
+export const MULTIPART_THRESHOLD_BYTES = 8 * 1024 * 1024
+export const RELEASE_FILE_EXTENSIONS = ['zip', 'exe', 'msi', 'pkg', 'dmg', 'deb', 'tar', 'gz', 'vst3', 'au'] as const
+
 /** Download preference: a single installable package beats loose plugin binaries. */
 const PACKAGE_PRIORITY: readonly PackageType[] = ['installer', 'bundle', 'vst3', 'au', 'standalone']
 

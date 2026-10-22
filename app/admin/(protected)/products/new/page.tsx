@@ -1,10 +1,5 @@
-import { ProductForm } from '../ProductForm'
+import { redirect } from 'next/navigation'
 
-export default function NewProductPage() {
-  return (
-    <div className="max-w-lg">
-      <h1 className="text-xl font-bold mb-6">New Product</h1>
-      <ProductForm />
-    </div>
-  )
+export default function NewProductRedirect() {
+  redirect('/admin/plugins')
 }

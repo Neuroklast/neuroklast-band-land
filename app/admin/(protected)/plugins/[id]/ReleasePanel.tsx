@@ -1,46 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { z } from 'zod'
 import {
   PLATFORMS,
   PACKAGE_TYPES,
   RELEASE_CHANNELS,
   SIGNING_STATUSES,
   PLATFORM_META,
+  MAX_RELEASE_UPLOAD_BYTES,
+  MAX_AUTO_SHA_BYTES,
+  MULTIPART_THRESHOLD_BYTES,
+  RELEASE_FILE_EXTENSIONS,
   formatBytes,
 } from '@/lib/plugins/releases'
-
-const artifactSchema = z.object({
-  id: z.string(),
-  platform: z.string(),
-  architecture: z.string(),
-  package_type: z.string(),
-  filename: z.string(),
-  storage_key: z.string().default(''),
-  filesize_bytes: z.number(),
-  sha256: z.string(),
-  signing_status: z.string(),
-  validation_status: z.string(),
-})
-
-const releaseSchema = z.object({
-  id: z.string(),
-  version: z.string(),
-  channel: z.string(),
-  status: z.string(),
-  title: z.string().nullable(),
-  changelog: z.string().nullable(),
-  release_notes: z.string().nullable(),
-  git_commit_sha: z.string().nullable(),
-  created_at: z.string(),
-  validated_at: z.string().nullable(),
-  published_at: z.string().nullable(),
-  withdrawn_at: z.string().nullable(),
-  neurokore_release_artifacts: z.array(artifactSchema).default([]),
-})
-
-type Release = z.infer<typeof releaseSchema>
+import { releasesResponseSchema, type Release } from '@/lib/plugins/release-schema'
+import { createSignedUploadUrl } from '@/app/admin/_actions/r2Upload'
+import { prepareReleaseUpload } from '@/app/admin/_actions/pluginReleaseUpload'
+import { useR2MultipartUpload } from '@/hooks/useR2MultipartUpload'
+import { describeR2UploadError } from '@/lib/r2-upload-error'
 
 const STATUS_LABEL: Record<string, string> = {
   draft: 'Draft',
@@ -71,21 +48,35 @@ async function api(productId: string, body?: object): Promise<unknown> {
   return payload
 }
 
-function ReleaseCard({ release, productId, onChanged }: { release: Release; productId: string; onChanged: () => Promise<void> }) {
+function fileExtension(name: string): string {
+  return name.split('.').pop()?.toLowerCase() ?? ''
+}
+
+async function sha256Hex(file: File): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer())
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+function ReleaseCard({ release, productId, onChanged }: {
+  release: Release
+  productId: string
+  onChanged: () => Promise<void>
+}) {
   const [title, setTitle] = useState(release.title ?? '')
   const [changelog, setChangelog] = useState(release.changelog ?? '')
   const [notes, setNotes] = useState(release.release_notes ?? '')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
-  const [artifact, setArtifact] = useState({
+  const [file, setFile] = useState<File | null>(null)
+  const [manualSha, setManualSha] = useState('')
+  const [progress, setProgress] = useState(0)
+  const [uploading, setUploading] = useState(false)
+  const [upload, setUpload] = useState({
     platform: 'windows-x64' as (typeof PLATFORMS)[number],
-    architecture: 'x64',
     package_type: 'installer' as (typeof PACKAGE_TYPES)[number],
-    filename: '',
-    filesize_bytes: '',
-    sha256: '',
     signing_status: 'unsigned' as (typeof SIGNING_STATUSES)[number],
   })
+  const multipart = useR2MultipartUpload()
 
   async function run(action: () => Promise<unknown>, ok: string) {
     setBusy(true)
@@ -101,13 +92,94 @@ function ReleaseCard({ release, productId, onChanged }: { release: Release; prod
     }
   }
 
+  function pickFile(next: File | null) {
+    setFile(next)
+    setProgress(0)
+    setMessage('')
+    if (!next) return
+    if (next.size > MAX_RELEASE_UPLOAD_BYTES) {
+      setMessage('File too large (max 2 GB).')
+      setFile(null)
+      return
+    }
+    if (!(RELEASE_FILE_EXTENSIONS as readonly string[]).includes(fileExtension(next.name))) {
+      setMessage('Use a ZIP, EXE, MSI, PKG, DMG, DEB, TAR/GZ, VST3 or AU file.')
+      setFile(null)
+      return
+    }
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(next.name)) {
+      setMessage('Rename the file: only letters, digits, dots, dashes and underscores (no spaces).')
+      setFile(null)
+      return
+    }
+  }
+
+  async function uploadFile() {
+    if (!file) return
+    setUploading(true)
+    setMessage('')
+    setProgress(0)
+    try {
+      const checksum = file.size <= MAX_AUTO_SHA_BYTES
+        ? await sha256Hex(file)
+        : manualSha.trim().toLowerCase()
+      if (!/^[a-f0-9]{64}$/.test(checksum)) {
+        throw new Error('Checksum missing. Run sha256sum and paste the 64 hex characters.')
+      }
+
+      const prepared = await prepareReleaseUpload({
+        productId,
+        releaseId: release.id,
+        platform: upload.platform,
+        filename: file.name,
+        filesizeBytes: file.size,
+      })
+      if ('error' in prepared) throw new Error(prepared.error)
+      const storageKey = prepared.storageKey
+
+      if (file.size >= MULTIPART_THRESHOLD_BYTES) {
+        const key = await multipart.upload(file, 'releases', storageKey)
+        if (!key) throw new Error(multipart.error ?? 'Upload failed')
+      } else {
+        const signed = await createSignedUploadUrl(storageKey)
+        const response = await fetch(signed.url, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        })
+        if (!response.ok) throw new Error('Upload failed (' + response.status + ')')
+      }
+      setProgress(1)
+
+      await api(productId, {
+        action: 'artifact',
+        release_id: release.id,
+        platform: upload.platform,
+        architecture: upload.platform === 'macos-arm64' ? 'arm64' : 'x64',
+        package_type: upload.package_type,
+        filename: file.name,
+        filesize_bytes: file.size,
+        sha256: checksum,
+        signing_status: upload.signing_status,
+      })
+      await onChanged()
+      setFile(null)
+      setManualSha('')
+      setMessage('Uploaded and registered. Mark the version as ready, then publish.')
+    } catch (error) {
+      setMessage(describeR2UploadError(error, 'Upload'))
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const artifacts = release.plugin_release_artifacts
   const unpublished = release.status === 'draft' || release.status === 'validated'
-  const unsigned = release.neurokore_release_artifacts.some((item) => item.signing_status === 'unsigned')
-  const macUnsigned = release.neurokore_release_artifacts.some(
+  const unsigned = artifacts.some((item) => item.signing_status === 'unsigned')
+  const macUnsigned = artifacts.some(
     (item) => item.platform.startsWith('macos') && item.signing_status !== 'notarized',
   )
-  const ready = release.neurokore_release_artifacts.length > 0 &&
-    release.neurokore_release_artifacts.every((item) => item.validation_status === 'validated')
+  const ready = artifacts.length > 0 && artifacts.every((item) => item.validation_status === 'validated')
 
   return (
     <li className="space-y-4 rounded border border-zinc-800 bg-zinc-950/60 p-4">
@@ -131,7 +203,7 @@ function ReleaseCard({ release, productId, onChanged }: { release: Release; prod
         </p>
       )}
       {!ready && unpublished && (
-        <p className="text-xs text-zinc-400">Add at least one download, then mark the version as ready.</p>
+        <p className="text-xs text-zinc-400">Upload at least one file, then mark the version as ready.</p>
       )}
 
       <details className="rounded border border-zinc-800 p-3">
@@ -164,13 +236,13 @@ function ReleaseCard({ release, productId, onChanged }: { release: Release; prod
         </div>
       </details>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         <h3 className="text-sm font-semibold text-zinc-200">Downloads</h3>
-        {release.neurokore_release_artifacts.length === 0 ? (
-          <p className="text-sm text-zinc-500">No downloads registered yet.</p>
+        {artifacts.length === 0 ? (
+          <p className="text-sm text-zinc-500">No downloads uploaded yet.</p>
         ) : (
           <ul className="space-y-2">
-            {release.neurokore_release_artifacts.map((item) => (
+            {artifacts.map((item) => (
               <li key={item.id} className="rounded border border-zinc-800 p-3 text-sm text-zinc-300">
                 <div className="flex flex-wrap items-baseline gap-2">
                   <span className="text-zinc-100">{PLATFORM_META[item.platform as keyof typeof PLATFORM_META]?.label ?? item.platform}</span>
@@ -180,91 +252,108 @@ function ReleaseCard({ release, productId, onChanged }: { release: Release; prod
                     {item.validation_status === 'validated' ? 'Checked' : 'Needs check'}
                   </span>
                   <span className="text-xs text-zinc-500">{item.signing_status}</span>
+                  {unpublished && (
+                    <button
+                      type="button"
+                      className="ml-auto text-xs text-red-400 hover:text-red-300"
+                      disabled={busy || uploading}
+                      onClick={() => {
+                        if (window.confirm('Delete this download and its file?')) {
+                          void run(
+                            () => api(productId, { action: 'delete_artifact', release_id: release.id, artifact_id: item.id }),
+                            'Download deleted.',
+                          )
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
                 <p className="mt-1 break-all font-mono text-xs text-zinc-500">{item.filename}</p>
-                {item.storage_key && (
-                  <p className="mt-1 break-all font-mono text-[11px] text-zinc-600">Storage: {item.storage_key}</p>
-                )}
                 <p className="mt-1 break-all font-mono text-[11px] text-zinc-600">SHA-256 {item.sha256}</p>
               </li>
             ))}
           </ul>
         )}
+
         {unpublished && (
-          <form
-            className="grid gap-2 rounded border border-zinc-800 p-3 sm:grid-cols-2"
-            onSubmit={(event) => {
-              event.preventDefault()
-              void run(() => api(productId, {
-                action: 'artifact',
-                release_id: release.id,
-                platform: artifact.platform,
-                architecture: artifact.platform === 'macos-arm64' ? 'arm64' : 'x64',
-                package_type: artifact.package_type,
-                filename: artifact.filename,
-                filesize_bytes: Number(artifact.filesize_bytes),
-                sha256: artifact.sha256.trim().toLowerCase(),
-                signing_status: artifact.signing_status,
-              }), 'Download registered. Check the checksum, then mark the version ready.')
-            }}
-          >
-            <label className="text-sm text-zinc-300">
-              Platform
-              <select className={inputClass + ' mt-1'} value={artifact.platform}
-                onChange={(event) => setArtifact({ ...artifact, platform: event.target.value as typeof artifact.platform })}>
-                {PLATFORMS.map((platform) => <option key={platform} value={platform}>{PLATFORM_META[platform].label}</option>)}
-              </select>
-            </label>
-            <label className="text-sm text-zinc-300">
-              File type
-              <select className={inputClass + ' mt-1'} value={artifact.package_type}
-                onChange={(event) => setArtifact({ ...artifact, package_type: event.target.value as typeof artifact.package_type })}>
-                {PACKAGE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-              </select>
-            </label>
-            <label className="text-sm text-zinc-300">
-              File name
-              <input required className={inputClass + ' mt-1'} value={artifact.filename}
-                placeholder="NEUROKORE-1.4.0-Windows.exe"
-                onChange={(event) => setArtifact({ ...artifact, filename: event.target.value })} />
-            </label>
-            <label className="text-sm text-zinc-300">
-              Size in bytes
-              <input required type="number" min={1} className={inputClass + ' mt-1'} value={artifact.filesize_bytes}
-                onChange={(event) => setArtifact({ ...artifact, filesize_bytes: event.target.value })} />
-            </label>
-            <label className="text-sm text-zinc-300 sm:col-span-2">
-              SHA-256
-              <input required pattern="[a-fA-F0-9]{64}" className={inputClass + ' mt-1 font-mono'} value={artifact.sha256}
-                onChange={(event) => setArtifact({ ...artifact, sha256: event.target.value })} />
-            </label>
-            <label className="text-sm text-zinc-300">
-              Signature
-              <select className={inputClass + ' mt-1'} value={artifact.signing_status}
-                onChange={(event) => setArtifact({ ...artifact, signing_status: event.target.value as typeof artifact.signing_status })}>
-                {SIGNING_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
-              </select>
-            </label>
-            <div className="flex items-end">
-              <button className={secondaryButton} disabled={busy}>Add download</button>
+          <div className="space-y-3 rounded border border-zinc-800 p-3">
+            <p className="text-sm font-medium text-zinc-200">Upload a build</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="text-sm text-zinc-300">
+                Platform
+                <select className={inputClass + ' mt-1'} value={upload.platform}
+                  onChange={(event) => setUpload({ ...upload, platform: event.target.value as typeof upload.platform })}>
+                  {PLATFORMS.map((platform) => <option key={platform} value={platform}>{PLATFORM_META[platform].label}</option>)}
+                </select>
+              </label>
+              <label className="text-sm text-zinc-300">
+                File type
+                <select className={inputClass + ' mt-1'} value={upload.package_type}
+                  onChange={(event) => setUpload({ ...upload, package_type: event.target.value as typeof upload.package_type })}>
+                  {PACKAGE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                </select>
+              </label>
+              <label className="text-sm text-zinc-300 sm:col-span-2">
+                File (max 2 GB)
+                <input
+                  type="file"
+                  className={inputClass + ' mt-1'}
+                  onChange={(event) => pickFile(event.target.files?.[0] ?? null)}
+                />
+              </label>
+              {file && (
+                <p className="text-xs text-zinc-400 sm:col-span-2">
+                  {file.name} · {formatBytes(file.size)}
+                  {file.size > MAX_AUTO_SHA_BYTES && ' · checksum required below'}
+                </p>
+              )}
+              <label className="text-sm text-zinc-300 sm:col-span-2">
+                SHA-256 {file && file.size <= MAX_AUTO_SHA_BYTES ? '(computed automatically)' : '(sha256sum <file>)'}
+                <input
+                  className={inputClass + ' mt-1 font-mono'}
+                  value={manualSha}
+                  placeholder={file && file.size <= MAX_AUTO_SHA_BYTES ? 'computed on upload' : '64 hex characters'}
+                  onChange={(event) => setManualSha(event.target.value)}
+                />
+              </label>
+              <label className="text-sm text-zinc-300">
+                Signature
+                <select className={inputClass + ' mt-1'} value={upload.signing_status}
+                  onChange={(event) => setUpload({ ...upload, signing_status: event.target.value as typeof upload.signing_status })}>
+                  {SIGNING_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+                </select>
+              </label>
+              <div className="flex items-end">
+                <button type="button" className={secondaryButton} disabled={!file || uploading || busy}
+                  onClick={() => void uploadFile()}>
+                  {uploading ? `Uploading ${Math.round(progress * 100)}%` : 'Upload'}
+                </button>
+              </div>
             </div>
-          </form>
+            {uploading && progress > 0 && (
+              <div className="h-1 w-full overflow-hidden rounded bg-zinc-800">
+                <div className="h-full bg-red-600 transition-all" style={{ width: `${Math.round(progress * 100)}%` }} />
+              </div>
+            )}
+          </div>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
         <button
           className={secondaryButton}
-          disabled={busy || !unpublished || release.neurokore_release_artifacts.length === 0}
+          disabled={busy || !unpublished || artifacts.length === 0}
           onClick={() => void run(() => api(productId, { action: 'validate', id: release.id }), 'Version is ready to publish.')}
         >
           Mark as ready
         </button>
         <button
           className={primaryButton}
-          disabled={busy || release.status === 'published' || release.neurokore_release_artifacts.length === 0}
+          disabled={busy || release.status === 'published' || artifacts.length === 0}
           onClick={() => {
-            if (window.confirm(`Publish NEUROKORE ${release.version} (${release.channel}) to the public download page?`)) {
+            if (window.confirm(`Publish version ${release.version} (${release.channel}) to the public page?`)) {
               void run(() => api(productId, { action: 'publish', id: release.id }), 'Version published.')
             }
           }}
@@ -275,7 +364,7 @@ function ReleaseCard({ release, productId, onChanged }: { release: Release; prod
           className={secondaryButton}
           disabled={busy || release.status !== 'published'}
           onClick={() => {
-            if (window.confirm('Withdraw this version? It will stop being offered, but its files stay available for support.')) {
+            if (window.confirm('Withdraw this version? It stops being offered, but its files stay in storage.')) {
               void run(() => api(productId, { action: 'withdraw', id: release.id }), 'Version withdrawn.')
             }
           }}
@@ -298,7 +387,7 @@ export function ReleasePanel({ productId }: { productId: string }) {
 
   async function refresh() {
     const payload = await api(productId)
-    setReleases(z.object({ releases: z.array(releaseSchema) }).parse(payload).releases)
+    setReleases(releasesResponseSchema.parse(payload).releases)
   }
 
   useEffect(() => {
@@ -319,7 +408,7 @@ export function ReleasePanel({ productId }: { productId: string }) {
             .then(async () => {
               setVersion('')
               await refresh()
-              setMessage('Version created. Register its downloads next.')
+              setMessage('Version created. Upload its builds next.')
             })
             .catch((error) => setMessage(error instanceof Error ? error.message : 'Please retry.'))
             .finally(() => setBusy(false))
@@ -346,7 +435,7 @@ export function ReleasePanel({ productId }: { productId: string }) {
 
       {releases.length === 0 ? (
         <p className="rounded border border-zinc-800 p-4 text-sm text-zinc-500">
-          No versions yet. Create one to register a validated build.
+          No versions yet. Create one to upload a build.
         </p>
       ) : (
         <ul className="space-y-4">
@@ -358,3 +447,5 @@ export function ReleasePanel({ productId }: { productId: string }) {
     </div>
   )
 }
+
+

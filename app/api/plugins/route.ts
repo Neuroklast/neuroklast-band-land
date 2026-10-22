@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { adminFailureMessage } from '@/lib/neurokore/admin-error'
 import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
@@ -38,6 +39,7 @@ const inputSchema = z.discriminatedUnion('action', [
     pricing_mode: z.enum(['paid', 'free']).default('paid'),
   }).strict(),
   z.object({ action: z.literal('update'), id: z.uuid(), ...settings }).strict(),
+  z.object({ action: z.literal('set_active'), id: z.uuid(), active: z.boolean() }).strict(),
   z.object({ action: z.literal('generate_key'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('import_key'), id: z.uuid(), private_pem: z.string().min(32).max(4096) }).strict(),
 ])
@@ -56,8 +58,15 @@ async function audit(
   }
 }
 
+function revalidateProductSurface(slug: string) {
+  revalidatePath('/plugins')
+  revalidatePath('/plugins/' + slug)
+  revalidatePath('/plugins/' + slug + '/download')
+  revalidatePath('/')
+}
+
 const productColumns =
-  'id,slug,title,short_description,description,features,system_requirements,media,default_channel,pricing_mode,sales_enabled,demo_downloads_enabled,license_required,license_format,display_order,active,created_at'
+  'id,slug,kind,title,short_description,description,features,system_requirements,media,default_channel,pricing_mode,sales_enabled,demo_downloads_enabled,license_required,license_format,display_order,active,created_at'
 
 export async function GET(request: Request) {
   try {
@@ -65,7 +74,7 @@ export async function GET(request: Request) {
     await admin()
     const client = db()
     const { data, error } = await client.from('products').select(productColumns)
-      .eq('kind', 'plugin').order('display_order', { ascending: true }).order('title')
+      .order('display_order', { ascending: true }).order('title')
     if (error) throw error
     const products = data ?? []
     if (products.length === 0) return json({ products: [] })
@@ -123,7 +132,7 @@ export async function POST(request: Request) {
     if (input.action === 'update') {
       const { stripe_price_id, ...product } = input
       const { id } = product
-      const existing = await client.from('products').select('slug').eq('id', id).eq('kind', 'plugin').maybeSingle()
+      const existing = await client.from('products').select('slug,kind').eq('id', id).maybeSingle()
       if (existing.error) throw existing.error
       if (!existing.data) return json({ error: 'Plugin not found.' }, 404)
       if (existing.data.slug !== product.slug) {
@@ -138,6 +147,7 @@ export async function POST(request: Request) {
         }
       }
       const patch = {
+        kind: 'plugin',
         title: product.title,
         slug: product.slug,
         short_description: product.short_description,
@@ -161,11 +171,23 @@ export async function POST(request: Request) {
           { onConflict: 'product_id' })
       if (secretError) throw secretError
       await audit(client, actor, id, 'product.update', { pricing_mode: input.pricing_mode, active: input.active })
+      revalidateProductSurface(product.slug)
       return json({ ok: true })
     }
 
+    if (input.action === 'set_active') {
+      const existing = await client.from('products').select('slug').eq('id', input.id).maybeSingle()
+      if (existing.error) throw existing.error
+      if (!existing.data) return json({ error: 'Product not found.' }, 404)
+      const { error } = await client.from('products').update({ active: input.active }).eq('id', input.id)
+      if (error) throw error
+      await audit(client, actor, input.id, 'product.visibility', { active: input.active })
+      revalidateProductSurface(existing.data.slug)
+      return json({ ok: true, active: input.active })
+    }
+
     const product = await client.from('products').select('id,slug,title').eq('id', input.id)
-      .eq('kind', 'plugin').maybeSingle()
+      .maybeSingle()
     if (product.error) throw product.error
     if (!product.data) return json({ error: 'Plugin not found.' }, 404)
 
@@ -204,3 +226,4 @@ export async function POST(request: Request) {
     return json({ error: adminFailureMessage(error) }, 400)
   }
 }
+
