@@ -18,7 +18,6 @@ export async function GET(request: Request) {
     const licenses = rows.map(({ key_cipher, ...row }) => ({
       ...row, key: decryptKey(key_cipher, required('NEUROKORE_KEY_ENCRYPTION_SECRET')),
     }))
-    const active = rows.some(row => !row.revoked_at && (!row.expires_at || Date.parse(row.expires_at) > Date.now()))
-    return json({ email: buyer.email, licenses, download: active ? (process.env.NEUROKORE_DOWNLOAD_URL || null) : null })
+    return json({ email: buyer.email, licenses, download: '/neurokore/download' })
   } catch { return json({ error: 'Please sign in to view your licenses.' }, 401) }
 }

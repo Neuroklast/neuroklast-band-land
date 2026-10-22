@@ -1129,6 +1129,177 @@ GRANT EXECUTE ON FUNCTION public.neurokore_activate(text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.neurokore_fulfill(uuid, text, text, text, text) TO service_role;
 
 -- ============================================================
+-- NEUROKORE releases and downloads (service_role only)
+-- Draft -> validated -> published -> withdrawn. Only published releases are
+-- downloadable; storage keys never leave the server.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.neurokore_releases (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  version text NOT NULL CHECK (version ~ '^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$'),
+  channel text NOT NULL DEFAULT 'stable' CHECK (channel IN ('stable', 'beta', 'alpha')),
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'validated', 'published', 'withdrawn')),
+  title text,
+  changelog text,
+  release_notes text,
+  git_commit_sha text CHECK (git_commit_sha IS NULL OR git_commit_sha ~ '^[a-f0-9]{7,64}$'),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  validated_at timestamptz,
+  published_at timestamptz,
+  published_by uuid REFERENCES auth.users(id),
+  withdrawn_at timestamptz,
+  UNIQUE (version, channel)
+);
+
+CREATE TABLE IF NOT EXISTS public.neurokore_release_artifacts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  release_id uuid NOT NULL REFERENCES public.neurokore_releases(id) ON DELETE RESTRICT,
+  platform text NOT NULL CHECK (platform IN ('windows-x64', 'macos-arm64', 'macos-x64', 'linux-x64')),
+  architecture text NOT NULL CHECK (architecture IN ('x64', 'arm64')),
+  package_type text NOT NULL CHECK (package_type IN ('installer', 'vst3', 'au', 'standalone', 'bundle')),
+  filename text NOT NULL CHECK (length(filename) BETWEEN 1 AND 255 AND position('/' in filename) = 0),
+  storage_key text NOT NULL CHECK (storage_key LIKE 'releases/%' AND position('..' in storage_key) = 0),
+  filesize_bytes bigint NOT NULL CHECK (filesize_bytes > 0),
+  sha256 text NOT NULL CHECK (sha256 ~ '^[a-f0-9]{64}$'),
+  signing_status text NOT NULL DEFAULT 'unsigned' CHECK (signing_status IN ('unsigned', 'signed', 'notarized')),
+  validation_status text NOT NULL DEFAULT 'pending' CHECK (validation_status IN ('pending', 'validated', 'failed')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (release_id, platform, package_type)
+);
+
+CREATE INDEX IF NOT EXISTS neurokore_releases_published_idx
+  ON public.neurokore_releases (channel, published_at DESC) WHERE status = 'published';
+CREATE INDEX IF NOT EXISTS neurokore_release_artifacts_release_idx
+  ON public.neurokore_release_artifacts (release_id);
+
+-- Anonymous download statistics: no account, license or buyer reference.
+CREATE TABLE IF NOT EXISTS public.neurokore_download_events (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  release_id uuid NOT NULL REFERENCES public.neurokore_releases(id) ON DELETE RESTRICT,
+  artifact_id uuid REFERENCES public.neurokore_release_artifacts(id) ON DELETE SET NULL,
+  platform text NOT NULL,
+  channel text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS neurokore_download_events_created_idx
+  ON public.neurokore_download_events (created_at DESC);
+
+-- Administrative mutations: who changed which record. No secrets, keys or hashes.
+CREATE TABLE IF NOT EXISTS public.neurokore_admin_audit (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  actor uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  action text NOT NULL,
+  target text,
+  detail jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS neurokore_admin_audit_created_idx
+  ON public.neurokore_admin_audit (created_at DESC);
+
+ALTER TABLE public.neurokore_releases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.neurokore_release_artifacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.neurokore_download_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.neurokore_admin_audit ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.neurokore_releases, public.neurokore_release_artifacts, public.neurokore_download_events
+  FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON TABLE public.neurokore_admin_audit FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.neurokore_releases, public.neurokore_release_artifacts, public.neurokore_download_events
+  TO service_role;
+GRANT ALL ON TABLE public.neurokore_admin_audit TO service_role;
+GRANT USAGE, SELECT ON SEQUENCE public.neurokore_download_events_id_seq TO service_role;
+GRANT USAGE, SELECT ON SEQUENCE public.neurokore_admin_audit_id_seq TO service_role;
+
+-- Publishing checks completeness atomically. Withdrawing keeps the row and files
+-- for support and restoration; a later publish of the same row is allowed.
+CREATE OR REPLACE FUNCTION public.neurokore_publish_release(p_release uuid, p_admin uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  r public.neurokore_releases;
+  total integer;
+  ready integer;
+BEGIN
+  SELECT * INTO r FROM public.neurokore_releases WHERE id = p_release FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Release not found';
+  END IF;
+  IF r.status NOT IN ('draft', 'validated', 'withdrawn') THEN
+    RAISE EXCEPTION 'Release cannot be published from its current state';
+  END IF;
+  SELECT count(*) INTO total FROM public.neurokore_release_artifacts WHERE release_id = r.id;
+  SELECT count(*) INTO ready FROM public.neurokore_release_artifacts
+    WHERE release_id = r.id AND validation_status = 'validated';
+  IF total = 0 OR ready <> total THEN
+    RAISE EXCEPTION 'Release artifacts are incomplete or unvalidated';
+  END IF;
+  UPDATE public.neurokore_releases
+    SET status = 'published', published_at = now(), published_by = p_admin,
+        withdrawn_at = NULL, validated_at = COALESCE(validated_at, now())
+    WHERE id = r.id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.neurokore_withdraw_release(p_release uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  UPDATE public.neurokore_releases
+    SET status = 'withdrawn', withdrawn_at = now()
+    WHERE id = p_release AND status = 'published';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Release is not published';
+  END IF;
+END;
+$$;
+
+-- Public catalogue: published release metadata and artifact checksums only.
+-- storage_key and admin identities are never exposed.
+CREATE OR REPLACE FUNCTION public.neurokore_public_releases()
+RETURNS jsonb
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = ''
+STABLE
+AS $$
+  SELECT COALESCE(jsonb_agg(jsonb_build_object(
+    'id', r.id,
+    'version', r.version,
+    'channel', r.channel,
+    'title', r.title,
+    'changelog', r.changelog,
+    'release_notes', r.release_notes,
+    'published_at', r.published_at,
+    'artifacts', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'platform', a.platform,
+        'architecture', a.architecture,
+        'package_type', a.package_type,
+        'filename', a.filename,
+        'filesize_bytes', a.filesize_bytes,
+        'sha256', a.sha256,
+        'signing_status', a.signing_status
+      ) ORDER BY a.platform, a.package_type)
+      FROM public.neurokore_release_artifacts a
+      WHERE a.release_id = r.id AND a.validation_status = 'validated'
+    ), '[]'::jsonb)
+  ) ORDER BY r.published_at DESC), '[]'::jsonb)
+  FROM public.neurokore_releases r
+  WHERE r.status = 'published' AND r.withdrawn_at IS NULL;
+$$;
+
+REVOKE ALL ON FUNCTION public.neurokore_publish_release(uuid, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.neurokore_withdraw_release(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.neurokore_public_releases() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.neurokore_publish_release(uuid, uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.neurokore_withdraw_release(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.neurokore_public_releases() TO anon, authenticated, service_role;
+
+-- ============================================================
 -- Data API table grants (idempotent)
 -- From 2026-10-30 Supabase no longer auto-grants new public tables to
 -- anon / authenticated / service_role. RLS still filters rows.
