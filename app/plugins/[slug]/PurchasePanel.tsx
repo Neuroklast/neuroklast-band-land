@@ -65,6 +65,7 @@ export function PurchasePanel({
       <div className="flex flex-wrap gap-4 text-sm">
         <Link className="underline" href="/legal-notice">Anbieter</Link>
         <Link className="underline" href="/privacy-policy">Datenschutz</Link>
+        <Link className="underline" href="/purchase-info">Kaufbedingungen</Link>
         <Link className="underline" href="/withdrawal">Vertrag widerrufen</Link>
       </div>
       {recurring ? (
