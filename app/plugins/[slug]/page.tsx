@@ -51,7 +51,7 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                 </a>
               ) : null}
             </div>
-            {salesOpen && price && <p className="text-sm opacity-70">Applicable taxes and final total are displayed before payment in Stripe Checkout.</p>}
+            {salesOpen && price && <p className="text-sm opacity-70">The displayed price includes applicable taxes. No physical shipping. The final total is confirmed in Stripe Checkout.</p>}
             <p className="text-sm opacity-70">
               {stable ? `Latest stable build: ${stable.version} (${CHANNEL_LABEL[stable.channel]}).` : 'No public build has been published yet.'}
             </p>
