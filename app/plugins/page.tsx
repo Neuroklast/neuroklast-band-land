@@ -1,52 +1,68 @@
 import Link from 'next/link'
+import { CdnImage } from '@/app/_components/public/CdnImage'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { loadPublicCatalog } from '@/lib/plugins/public-catalog'
-import { CHANNEL_LABEL, latestByChannel } from '@/lib/plugins/releases'
+import { availablePublicDownload } from '@/lib/plugins/public-download'
+import { CHANNEL_LABEL } from '@/lib/plugins/releases'
 
 export const revalidate = 60
 
 export const metadata = {
-  title: 'Plugins',
-  description: 'Audio plugins by NEUROKLAST: free downloads, demos and licences.',
+  title: 'Audio plugins',
+  description: 'Audio plugins by NEUROKLAST: public builds, demos and licences.',
 }
 
 export default async function PluginsIndexPage() {
   const catalog = await loadPublicCatalog()
   return (
     <LegalPageShell>
-      <section className="mx-auto max-w-4xl space-y-10 px-6 py-32">
+      <section className="mx-auto w-full max-w-6xl space-y-9 px-5 pb-24 pt-20 text-white sm:px-7 md:pt-28 lg:px-10">
         <header className="space-y-3">
-          <p className="font-mono text-sm tracking-widest">NEUROKLAST AUDIO</p>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Plugins</h1>
-          <p className="max-w-2xl text-lg">
-            Free downloads, demos and licences for every NEUROKLAST plugin. No account is needed to
-            download and try a plugin.
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-red-400">NEUROKLAST AUDIO</p>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Audio plugins</h1>
+          <p className="max-w-2xl text-base leading-relaxed text-zinc-300 sm:text-lg">
+            Explore our audio software. Published downloads and demos are available without an account.
           </p>
         </header>
-
         {catalog.length === 0 ? (
-          <p className="border border-current/30 p-6">No plugin has been published yet.</p>
+          <p className="border border-white/20 bg-zinc-950 p-6">No plugins are publicly listed yet.</p>
         ) : (
-          <ul className="grid gap-5 sm:grid-cols-2">
-            {catalog.map((product) => {
-              const stable = latestByChannel(product.releases).find((release) => release.channel === 'stable')
+          <ul className="grid gap-5">
+            {catalog.map(product => {
+              const cover = product.media.find(item => item.kind === 'image' && item.url)
+              const download = availablePublicDownload(product)
               return (
-                <li key={product.id} className="border border-current/30 p-6">
-                  <h2 className="text-2xl font-semibold">{product.title}</h2>
-                  {product.short_description && <p className="mt-2 opacity-80">{product.short_description}</p>}
-                  <p className="mt-3 font-mono text-xs uppercase tracking-widest opacity-70">
-                    {product.pricing_mode === 'free' ? 'Free' : 'Paid'}
-                    {stable ? ` · ${CHANNEL_LABEL[stable.channel]} ${stable.version}` : ' · no public build yet'}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <Link className="inline-flex min-h-11 items-center border border-current px-4 py-2 text-sm hover:opacity-80"
-                      href={`/plugins/${product.slug}`}>
-                      Details
-                    </Link>
-                    <Link className="inline-flex min-h-11 items-center border border-current/40 px-4 py-2 text-sm hover:opacity-80"
-                      href={`/plugins/${product.slug}/download`}>
-                      Download
-                    </Link>
+                <li key={product.id} className="grid overflow-hidden border border-white/15 bg-zinc-950 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)]">
+                  {cover ? (
+                    <div className="flex aspect-[16/10] items-center justify-center bg-black p-3 sm:p-5 md:aspect-auto md:min-h-64">
+                      <CdnImage src={cover.url} alt={product.title + ' image'}
+                        widths={[400, 640, 960]} sizes="(max-width: 768px) 90vw, 42vw"
+                        className="h-full w-full object-contain" loading="lazy" />
+                    </div>
+                  ) : (
+                    <div className="flex min-h-48 items-center justify-center bg-black font-mono text-xs text-zinc-500">
+                      Product preview unavailable
+                    </div>
+                  )}
+                  <div className="flex flex-col justify-center gap-4 p-6 sm:p-9">
+                    <h2 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">{product.title}</h2>
+                    {product.short_description && (
+                      <p className="text-sm leading-relaxed text-zinc-300 sm:text-base">{product.short_description}</p>
+                    )}
+                    <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+                      {product.pricing_mode === 'free' ? 'Free plugin' : 'Licensed plugin'}
+                      {download ? ' · ' + CHANNEL_LABEL[download.channel] + ' ' + download.version : ' · No public build yet'}
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <Link className="inline-flex min-h-11 items-center border border-white/40 px-5 py-3 text-sm font-semibold transition-colors hover:border-red-500"
+                        href={'/plugins/' + product.slug}>View plugin</Link>
+                      {download && (
+                        <Link className="inline-flex min-h-11 items-center border border-red-600 bg-red-700/20 px-5 py-3 text-sm font-semibold transition-colors hover:bg-red-700/35"
+                          href={'/plugins/' + product.slug + '/download'}>
+                          {product.pricing_mode === 'free' ? 'Free download' : 'Download demo'}
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </li>
               )
