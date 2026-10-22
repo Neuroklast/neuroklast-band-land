@@ -5,7 +5,7 @@ import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { LegalDocumentContent } from '@/app/_components/public/LegalDocumentContent'
 import { LEGAL_LOCALES, NOTICE_DOC_TITLE, PRIVACY_DOC_TITLE, INCOMPLETE_NOTICE } from '@/lib/legal-i18n'
 import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
-import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
+import { withdrawalLegalSections } from '@/lib/withdrawal-legal-sections'
 import { buildLegalNoticeSections, buildPrivacyPolicySections } from '@/lib/legal-templates'
 import { getLegalCompleteness, loadLegalConfig, DEFAULT_LEGAL_CONFIG } from '@/lib/legal-content'
 import { createPublicClient } from '@/lib/supabaseServer'
@@ -65,20 +65,14 @@ export default async function LocalizedLegalPage({ params }: { params: Promise<P
     const key = document === 'terms' ? 'terms' : document === 'purchase-info' ? 'purchase'
       : document === 'license-terms' ? 'license' : 'withdrawal'
     title = translations.docs[key]
-    sections = commerceSections(key, locale)
-    if (key === 'withdrawal') {
-      const notice = WITHDRAWAL_COPY[locale]
-      sections = [
-        { id: 'full-withdrawal', title: notice.heading,
-          paragraphs: [notice.period, notice.refunds, notice.exception, notice.details] },
-        ...sections,
-      ]
-    }
+    sections = key === 'withdrawal'
+      ? withdrawalLegalSections(locale, config)
+      : commerceSections(key, locale)
   }
   const incomplete = getLegalCompleteness(config).complete === false
   return (
     <LegalPageShell>
-      <main lang={locale} className="bg-black text-white">
+      <div lang={locale} className="bg-black text-white">
         <nav aria-label="Legal language versions" className="mx-auto flex max-w-3xl flex-wrap gap-3 px-4 pt-24 sm:px-6">
           {LEGAL_LOCALES.map(lang => (
             <Link key={lang} href={localizedLegalPath(lang, document)}
@@ -107,7 +101,7 @@ export default async function LocalizedLegalPage({ params }: { params: Promise<P
           ))}
           <Link className="underline underline-offset-4" href="/withdrawal">{translations.links.withdrawal}</Link>
         </nav>
-      </main>
+      </div>
     </LegalPageShell>
   )
 }
