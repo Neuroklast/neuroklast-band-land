@@ -169,7 +169,7 @@ const ACTION_ENTRIES: AdminHelpEntry[] = [
     id: 'products-new',
     title: 'Add Product',
     description: 'Add a software or plugin product with image, description, site path or URL, and display order.',
-    href: '/admin/products/new',
+    href: '/admin/plugins',
     group: 'Content',
     keywords: ['product', 'plugin', 'neurokore', 'store', 'new', 'add'],
     priority: 50,
@@ -385,7 +385,7 @@ function navDescription(href: string, label: string): string {
     '/admin/gigs': 'Upcoming and past events; Bandsintown sync available.',
     '/admin/merchandise': 'Merch grid items with store links and images.',
     '/admin/products': 'Software and plugin products on the public Products section. Toggle the whole section, then add or edit items.',
-    '/admin/plugins': 'Every VST/AU plugin: product page, versions and downloads, signing key, licences and pricing.',
+    '/admin/plugins': 'Products & Plugins: one list for every product. Open a product to edit its page, upload versions and manage its signing key and licences.',
     '/admin/soundpacks': 'Downloadable soundpacks with previews and purchase URLs.',
     '/admin/social': 'Social media profile links shown on the site.',
     '/admin/analytics': 'Site traffic and visitor statistics.',
@@ -429,3 +429,4 @@ export const ADMIN_HELP_GROUPS: string[] = [
   'Content',
   'System',
 ]
+

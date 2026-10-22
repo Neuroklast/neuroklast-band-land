@@ -112,6 +112,8 @@ interface CommerceItemRow {
 interface ProductItemRow {
   id: string
   title: string
+  slug: string | null
+  kind: string | null
   description: string | null
   image_storage_path: string | null
   image_url: string | null
@@ -216,7 +218,7 @@ async function fetchAll() {
       supabase.from('music_highlights').select('id, title, youtube_url, description').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('merchandise').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('soundpacks').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
-      supabase.from('products').select('id, title, description, image_storage_path, image_url, href, price_label').eq('active', true).order('display_order', { ascending: true }),
+      supabase.from('products').select('id, title, slug, kind, description, image_storage_path, image_url, href, price_label').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('gallery').select('id, alt, storage_path, image_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('media_downloads').select('id, title, description, category, file_storage_path, file_url, file_mime, file_size_bytes, original_filename, display_order').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('social_links').select('id, platform, url, label, logo_storage_path, logo_url').order('display_order', { ascending: true }),
@@ -412,7 +414,7 @@ export default async function HomePage() {
     title: row.title,
     description: row.description,
     imageUrl: resolveImageUrl(row.image_storage_path, row.image_url),
-    href: row.href,
+    href: row.slug ? '/plugins/' + row.slug : row.href,
     priceLabel: row.price_label,
   })
   const galleryItemMap = (row: GalleryItemRow) => ({
@@ -799,3 +801,4 @@ export default async function HomePage() {
     </PageLayout>
   )
 }
+

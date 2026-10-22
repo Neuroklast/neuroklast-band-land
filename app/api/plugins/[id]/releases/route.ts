@@ -1,5 +1,8 @@
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { adminFailureMessage } from '@/lib/neurokore/admin-error'
+import { MEDIA_BUCKET } from '@/lib/constants'
+import { headR2Object, r2StorageProvider } from '@/lib/storage/r2'
 import { admin, body, db, json, limit, sameOrigin } from '@/lib/neurokore/server'
 import {
   PLATFORMS,
@@ -45,12 +48,20 @@ const inputSchema = z.discriminatedUnion('action', [
     sha256: sha256Schema,
     signing_status: z.enum(SIGNING_STATUSES),
   }).strict(),
+  z.object({ action: z.literal('delete_artifact'), release_id: z.uuid(), artifact_id: z.uuid() }).strict(),
   z.object({ action: z.literal('validate'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('publish'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('withdraw'), id: z.uuid() }).strict(),
 ])
 
 const artifactColumns = 'id,platform,architecture,package_type,filename,storage_key,filesize_bytes,sha256,signing_status,validation_status'
+
+function revalidateProduct(slug: string) {
+  revalidatePath('/plugins')
+  revalidatePath('/plugins/' + slug)
+  revalidatePath('/plugins/' + slug + '/download')
+  revalidatePath('/')
+}
 
 async function audit(
   client: ReturnType<typeof db>,
@@ -150,13 +161,19 @@ export async function POST(request: Request, context: RouteContext) {
       if (release.status === 'published') {
         return json({ error: 'Withdraw the version before changing its downloads.' }, 409)
       }
+      const storageKey = releaseStorageKey(product.slug, release.version, input.platform, input.filename)
+      const object = await headR2Object(MEDIA_BUCKET, storageKey)
+      if (!object) return json({ error: 'The file is not in storage yet. Upload it first.' }, 409)
+      if (object.size !== input.filesize_bytes) {
+        return json({ error: 'The uploaded file size does not match. Upload it again.' }, 409)
+      }
       const { error } = await client.from('plugin_release_artifacts').upsert({
         release_id: input.release_id,
         platform: input.platform,
         architecture: input.architecture,
         package_type: input.package_type,
         filename: input.filename,
-        storage_key: releaseStorageKey(product.slug, release.version, input.platform, input.filename),
+        storage_key: storageKey,
         filesize_bytes: input.filesize_bytes,
         sha256: input.sha256,
         signing_status: input.signing_status,
@@ -167,6 +184,34 @@ export async function POST(request: Request, context: RouteContext) {
         platform: input.platform,
         package_type: input.package_type,
       })
+      return json({ ok: true })
+    }
+
+    if (input.action === 'delete_artifact') {
+      const { data: release, error: releaseError } = await client.from('plugin_releases')
+        .select('status').eq('id', input.release_id).eq('product_id', productId).maybeSingle()
+      if (releaseError) throw releaseError
+      if (!release) return json({ error: 'Version not found.' }, 404)
+      if (release.status === 'published') {
+        return json({ error: 'Withdraw the version before deleting its downloads.' }, 409)
+      }
+      const { data: artifact, error: artifactError } = await client
+        .from('plugin_release_artifacts')
+        .select('id,storage_key')
+        .eq('id', input.artifact_id)
+        .eq('release_id', input.release_id)
+        .maybeSingle()
+      if (artifactError) throw artifactError
+      if (!artifact) return json({ error: 'Download not found.' }, 404)
+      const { error: deleteError } = await client.from('plugin_release_artifacts')
+        .delete().eq('id', input.artifact_id)
+      if (deleteError) throw deleteError
+      try {
+        await r2StorageProvider.deleteObject(MEDIA_BUCKET, artifact.storage_key)
+      } catch {
+        // The database row is gone; an orphaned object must not block the admin.
+      }
+      await audit(client, actor, productId, 'artifact.delete', input.release_id, { artifact: input.artifact_id })
       return json({ ok: true })
     }
 
@@ -188,6 +233,7 @@ export async function POST(request: Request, context: RouteContext) {
       const { error } = await client.rpc('plugin_publish_release', { p_release: input.id, p_admin: actor })
       if (error) throw error
       await audit(client, actor, productId, 'release.publish', input.id)
+      revalidateProduct(product.slug)
       return json({ ok: true })
     }
 
@@ -195,6 +241,7 @@ export async function POST(request: Request, context: RouteContext) {
       const { error } = await client.rpc('plugin_withdraw_release', { p_release: input.id })
       if (error) throw error
       await audit(client, actor, productId, 'release.withdraw', input.id)
+      revalidateProduct(product.slug)
       return json({ ok: true })
     }
 
@@ -220,3 +267,5 @@ export async function POST(request: Request, context: RouteContext) {
     return json({ error: adminFailureMessage(error) }, 400)
   }
 }
+
+

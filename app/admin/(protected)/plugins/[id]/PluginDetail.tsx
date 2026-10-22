@@ -11,7 +11,7 @@ const mediaSchema = z.object({ kind: z.enum(['image', 'video', 'audio']), url: z
 
 const productSchema = z.object({
   id: z.string(),
-  slug: z.string(),
+  slug: z.string().nullable(),
   title: z.string(),
   short_description: z.string().nullable(),
   description: z.string().nullable(),
@@ -128,7 +128,7 @@ export function PluginDetail({ productId }: { productId: string }) {
         license_format: String(data.get('license_format') ?? 'v3'),
         stripe_price_id: String(data.get('stripe_price_id') ?? '') || null,
         display_order: Number(data.get('display_order') ?? 0),
-        active: data.get('active') === 'on',
+        active: product.active,
       })
       await refresh()
       setMessage('Saved. The public page uses these values after revalidation.')
@@ -143,9 +143,46 @@ export function PluginDetail({ productId }: { productId: string }) {
     return <p role="status" className="text-sm text-zinc-400">{message || 'Loading plugin…'}</p>
   }
 
+  async function setPublic(active: boolean) {
+    if (!product) return
+    setBusy(true)
+    setMessage('')
+    try {
+      await api({ action: 'set_active', id: product.id, active })
+      await refresh()
+      setMessage(active
+        ? 'Page is public. The product and its published downloads are now reachable.'
+        : 'Page hidden. The public page and downloads return 404 until you make it public again.')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Please retry.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
       <p role="status" className="min-h-6 text-sm text-zinc-400">{message}</p>
+
+      <div className={`rounded border p-4 text-sm ${product.active ? 'border-emerald-900/60 bg-emerald-950/20 text-emerald-200' : 'border-amber-900/60 bg-amber-950/20 text-amber-200'}`}>
+        <p className="font-medium">
+          {product.active ? 'Public page is live' : 'Not public – the page returns 404'}
+        </p>
+        <p className="mt-1 text-xs opacity-80">
+          {product.slug
+            ? <>URL: <a className="underline" href={`/plugins/${product.slug}`} target="_blank" rel="noreferrer">/plugins/{product.slug}</a></>
+            : 'Set a URL slug below to create the page address.'}
+          {' '}· Sales and free/paid do not control visibility. Only this switch does.
+        </p>
+        <button
+          type="button"
+          className={secondaryButton + ' mt-3'}
+          disabled={busy || !product.slug}
+          onClick={() => void setPublic(!product.active)}
+        >
+          {product.active ? 'Hide page' : 'Make public'}
+        </button>
+      </div>
 
       <form
         className="space-y-5"
@@ -163,7 +200,7 @@ export function PluginDetail({ productId }: { productId: string }) {
             </label>
             <label className="text-sm text-zinc-300">
               URL slug
-              <input name="slug" required pattern="[a-z0-9][a-z0-9-]*" defaultValue={product.slug}
+              <input name="slug" required pattern="[a-z0-9][a-z0-9-]*" defaultValue={product.slug ?? ''}
                 className={inputClass + ' mt-1 font-mono'} />
             </label>
           </div>
@@ -229,9 +266,6 @@ export function PluginDetail({ productId }: { productId: string }) {
             </label>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
-            <label className="flex items-center gap-2 text-sm text-zinc-300">
-              <input type="checkbox" name="active" defaultChecked={product.active} /> Public page visible
-            </label>
             <label className="flex items-center gap-2 text-sm text-zinc-300">
               <input type="checkbox" name="demo_downloads_enabled" defaultChecked={product.demo_downloads_enabled} /> Downloads enabled
             </label>
@@ -336,3 +370,4 @@ export function PluginDetail({ productId }: { productId: string }) {
     </div>
   )
 }
+

@@ -6,7 +6,8 @@ import { z } from 'zod'
 
 const productSchema = z.object({
   id: z.string(),
-  slug: z.string(),
+  slug: z.string().nullable(),
+  kind: z.enum(['plugin', 'other']),
   title: z.string(),
   pricing_mode: z.enum(['paid', 'free']),
   sales_enabled: z.boolean(),
@@ -129,10 +130,13 @@ export function PluginsAdmin() {
                 <Link href={`/admin/plugins/${product.id}`} className="text-lg font-semibold text-zinc-100 hover:underline">
                   {product.title}
                 </Link>
-                <span className="font-mono text-xs text-zinc-500">/plugins/{product.slug}</span>
-                <span className={`rounded border px-2 py-0.5 text-xs ${product.active ? 'border-emerald-800 text-emerald-300' : 'border-zinc-700 text-zinc-400'}`}>
-                  {product.active ? 'Public' : 'Hidden'}
+                <span className="font-mono text-xs text-zinc-500">{product.slug ? '/plugins/' + product.slug : 'No URL slug yet'}</span>
+                <span className={`rounded border px-2 py-0.5 text-xs ${product.active ? 'border-emerald-800 text-emerald-300' : 'border-amber-800 text-amber-300'}`}>
+                  {product.active ? 'Public' : 'Not public (404)'}
                 </span>
+                {product.kind === 'other' && (
+                  <span className="rounded border border-zinc-700 px-2 py-0.5 text-xs text-zinc-400">Needs page setup</span>
+                )}
                 <span className="rounded border border-zinc-700 px-2 py-0.5 text-xs text-zinc-300">
                   {product.pricing_mode === 'free' ? 'Free' : product.sales_enabled ? 'On sale' : 'Paid · sale off'}
                 </span>
@@ -147,9 +151,15 @@ export function PluginsAdmin() {
                 {product.published_count} published / {product.release_count} versions · {product.license_count} licences
                 {product.demo_downloads_enabled ? ' · downloads on' : ' · downloads off'}
               </p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <Link className={secondaryButton} href={`/admin/plugins/${product.id}`}>Manage</Link>
-                <Link className={secondaryButton} href={`/plugins/${product.slug}`} target="_blank">View page</Link>
+                {product.active && product.slug ? (
+                  <Link className={secondaryButton} href={`/plugins/${product.slug}`} target="_blank">View page</Link>
+                ) : (
+                  <span className={`${secondaryButton} cursor-not-allowed opacity-50`} aria-disabled="true">
+                    Not public yet
+                  </span>
+                )}
               </div>
             </li>
           ))}
@@ -158,3 +168,5 @@ export function PluginsAdmin() {
     </div>
   )
 }
+
+

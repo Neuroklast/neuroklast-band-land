@@ -34,11 +34,11 @@ export function useR2MultipartUpload() {
   const abortRef = useRef<{ key: string; uploadId: string } | null>(null)
 
   const upload = useCallback(
-    async (file: File, keyPrefix: string): Promise<string | null> => {
+    async (file: File, keyPrefix: string, exactKey?: string): Promise<string | null> => {
       setState({ status: 'uploading', progress: 0, objectKey: null, error: null })
 
       const ext = file.name.split('.').pop() ?? 'bin'
-      const key = await contentObjectKey({ prefix: keyPrefix, data: await file.arrayBuffer(), extension: ext })
+      const key = exactKey ?? await contentObjectKey({ prefix: keyPrefix, data: await file.arrayBuffer(), extension: ext })
 
       let uploadId: string | null = null
 
@@ -116,3 +116,4 @@ export function useR2MultipartUpload() {
 
   return { ...state, upload, abort, reset }
 }
+

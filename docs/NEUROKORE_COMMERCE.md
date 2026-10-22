@@ -9,9 +9,9 @@ Multi-product catalogue for NEUROKLAST audio plugins. NEUROKORE is the first pro
 - `/plugins/<slug>/download`: anonymous downloads for published builds.
 - `/neurokore`, `/neurokore/download`: permanent redirects to the NEUROKORE plugin pages.
 - `/neurokore/account`: email-code sign-in, all owned licences, per-plugin downloads.
-- `/admin/plugins`: every plugin product (list, create).
+- `/admin/plugins`: **Products & Plugins** — one list for every product (plugins and legacy cards).
 - `/admin/plugins/<id>`: product page settings, pricing, visibility, signing key, versions, licences.
-- `/admin/products`: public "Products" section cards; plugin products are excluded and redirect to `/admin/plugins/<id>`.
+- `/admin/products` and `/admin/products/new`: redirect to `/admin/plugins`; the old card editor is retired.
 - `GET /api/plugins/<slug>/download?platform=windows-x64&channel=stable`: resolves the newest published build, records an anonymous counter, redirects to a 120-second R2 URL.
 - `POST /api/license/v1/activate`: key + device + optional `product` slug (default `neurokore`). Always available.
 - `POST /api/plugins/<slug>/checkout`: Stripe Checkout for that product.
@@ -43,6 +43,26 @@ Product secrets live in `plugin_product_secrets` (service-role only): `stripe_pr
 - The download route redirects to an R2 signed URL; binaries never stream through Vercel.
 
 Legacy `neurokore_*` tables are renamed in place to `plugin_*` by the idempotent `schema.sql`; existing licences, orders and releases are preserved and backfilled to the NEUROKORE product.
+
+### Uploading a build
+
+Admin → Products & Plugins → product → Versions & downloads → **Upload a build**:
+
+1. Choose platform, file type, file and signature status.
+2. The browser computes SHA-256 for files up to 256 MB. Larger files need the checksum pasted (`sha256sum <file>`).
+3. The file goes directly to R2 under `releases/<slug>/v<version>/<platform>/<filename>` (single PUT below 8 MB, multipart above, hard cap 2 GB). Binaries never pass through Vercel.
+4. Registration re-derives the key, verifies the object size with an R2 HEAD and stores name, size and checksum.
+5. **Mark as ready** → **Publish**. Published versions appear on `/plugins/<slug>/download`.
+
+`Delete` removes the database row and the R2 object. Published versions must be withdrawn before their downloads can be edited.
+
+### Visibility, downloads and sales are separate
+
+- **Public page** (`products.active`): controls whether `/plugins/<slug>` exists at all. A hidden product returns 404. New products start hidden; use **Make public** on the product page.
+- **Downloads** (`demo_downloads_enabled`): controls whether the download route serves the published build.
+- **Sales** (`sales_enabled` + global `NEUROKORE_SALES_ENABLED`): controls only the checkout. Turning sales off never hides the page or demo downloads.
+
+`/neurokore` permanently redirects to `/plugins/neurokore`; another plugin lives at its own slug.
 
 ## Signing keys and licence formats
 

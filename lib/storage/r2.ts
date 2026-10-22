@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   ListObjectsV2Command,
+  HeadObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createR2S3Client } from '@/lib/r2-s3-client'
@@ -72,4 +73,17 @@ export const r2StorageProvider: StorageProvider = {
       lastModified: item.LastModified ?? new Date(),
     }))
   },
+}
+/** Size/content type of an object, or null when it does not exist or R2 is not configured. */
+export async function headR2Object(
+  bucket: string,
+  key: string,
+): Promise<{ size: number; contentType: string | null } | null> {
+  try {
+    const client = getR2Client()
+    const response = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }))
+    return { size: response.ContentLength ?? 0, contentType: response.ContentType ?? null }
+  } catch {
+    return null
+  }
 }
