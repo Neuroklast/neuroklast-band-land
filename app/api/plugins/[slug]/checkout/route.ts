@@ -6,6 +6,7 @@ import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
 import { signingKeyFor } from '@/lib/plugins/signing'
 import { slugSchema } from '@/lib/plugins/releases'
 import { stripe } from '@/lib/neurokore/stripe'
+import { loadLegalConfig, getLegalCompleteness } from '@/lib/legal-content'
 
 export const runtime = 'nodejs'
 
@@ -23,6 +24,11 @@ export async function POST(request: Request, context: RouteContext) {
     if (!isNeurokoreSalesEnabled()) return json({ error: 'Sales are not open yet.' }, 503)
 
     const client = db()
+    // Do not accept money while mandatory legal operator details are missing.
+    const legal = await loadLegalConfig(client)
+    if (!getLegalCompleteness(legal).complete) {
+      return json({ error: 'Checkout unavailable: complete legal operator details in admin first.' }, 503)
+    }
     const productResult = await client.from('products')
       .select('id,slug,pricing_mode,sales_enabled,license_required,license_format')
       .eq('slug', slug).eq('kind', 'plugin').eq('active', true).maybeSingle()
@@ -38,6 +44,17 @@ export async function POST(request: Request, context: RouteContext) {
     if (secretResult.error) throw secretResult.error
     const price = secretResult.data?.stripe_price_id
     if (!price) return json({ error: 'This plugin has no price configured.' }, 503)
+    // The checkout is deliberately one-time only. Never charge recurring prices
+    // through a payment-mode session or present a misleading one-off price.
+    const stripePrice = z.object({
+      active: z.boolean(),
+      type: z.enum(['one_time', 'recurring']),
+      currency: z.string(),
+      unit_amount: z.number().int().nonnegative().nullable(),
+    }).parse(await stripe('prices/' + encodeURIComponent(price), required('STRIPE_SECRET_KEY')))
+    if (!stripePrice.active || stripePrice.type !== 'one_time' || stripePrice.unit_amount === null) {
+      return json({ error: 'This product has no valid one-time price.' }, 409)
+    }
 
     const encryptionSecret = required('NEUROKORE_KEY_ENCRYPTION_SECRET')
     const pem = signingKeyFor(
@@ -63,6 +80,7 @@ export async function POST(request: Request, context: RouteContext) {
       'automatic_tax[enabled]': 'true',
       'billing_address_collection': 'required',
       'consent_collection[terms_of_service]': 'required',
+      'custom_text[submit][message]': 'The final total including applicable taxes is shown before payment. Information on withdrawal: ' + origin() + '/withdrawal-policy',
     })
     const session = z.object({ id: z.string(), url: z.url() }).parse(
       await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id))
