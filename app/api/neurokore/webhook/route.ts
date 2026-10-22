@@ -7,6 +7,8 @@ import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
 import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
 import { LEGAL_LOCALES } from '@/lib/legal-i18n'
+import { localizedLegalPath } from '@/lib/legal-routes'
+import { COMMERCE_TERMS_VERSION } from '@/lib/commerce-version'
 
 export const runtime = 'nodejs'
 
@@ -60,7 +62,7 @@ async function sendContractConfirmation(
     .map(section => section.title + '\\n' + section.paragraphs.join('\\n')).join('\\n\\n')
   const text = [
     'NEUROKLAST AUDIO | ' + translations.docs.purchase,
-    'Contract terms version: ' + (session.metadata?.terms_version ?? '2026-10-22'),
+    'Contract terms version: ' + (session.metadata?.terms_version ?? COMMERCE_TERMS_VERSION),
     '',
     'Order reference: ' + order.id,
     'Date: ' + new Date().toISOString(),
@@ -75,7 +77,7 @@ async function sendContractConfirmation(
     'Product: ' + siteUrl + '/plugins/' + product.slug,
     '',
     translations.sections.seller[0] + ':',
-    operator || siteUrl + '/legal-notice',
+    operator || siteUrl + localizedLegalPath(locale, 'legal-notice'),
     'Email: ' + (legal.email || siteUrl + '/legal-notice'),
     '',
     translations.docs.withdrawal,
@@ -83,7 +85,7 @@ async function sendContractConfirmation(
     withdrawal.refunds,
     withdrawal.exception,
     'Online withdrawal: ' + siteUrl + '/withdrawal',
-    'Withdrawal information: ' + siteUrl + '/withdrawal-policy',
+    'Withdrawal information: ' + siteUrl + localizedLegalPath(locale, 'withdrawal-policy'),
     '',
     translations.docs.terms,
     termsText,
@@ -91,8 +93,8 @@ async function sendContractConfirmation(
     translations.docs.license,
     licenceText,
     '',
-    siteUrl + '/purchase-info',
-    siteUrl + '/privacy-policy',
+    siteUrl + localizedLegalPath(locale, 'purchase-info'),
+    siteUrl + localizedLegalPath(locale, 'privacy-policy'),
     siteUrl + '/legal-notice',
   ].join('\\n')
   const response = await fetch('https://api.resend.com/emails', {
