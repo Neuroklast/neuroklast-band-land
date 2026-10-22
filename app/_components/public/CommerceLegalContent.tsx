@@ -7,7 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { resolveLegalLocale } from '@/lib/legal-templates'
 import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
 import { localizedLegalPath } from '@/lib/legal-routes'
-import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
+import { withdrawalLegalSections } from '@/lib/withdrawal-legal-sections'
 import { LegalDocumentContent } from './LegalDocumentContent'
 
 type Doc = 'terms' | 'purchase' | 'withdrawal' | 'license'
@@ -24,24 +24,9 @@ export function CommerceLegalContent({ document, config }: { document: Doc; conf
   const { locale } = useLocale()
   const lang = resolveLegalLocale(locale)
   const copy = COMMERCE_LEGAL_COPY[lang]
-  const sections = commerceSections(document, lang)
-  if (document === 'withdrawal') {
-    const address = config ? formatServiceAddress(config) : ''
-    const translated = WITHDRAWAL_COPY[lang]
-    sections.unshift({
-      id: 'withdrawal-process',
-      title: translated.heading,
-      paragraphs: [translated.period, translated.refunds, translated.exception, translated.details],
-    })
-    sections.push({
-      id: 'withdrawal-address',
-      title: copy.links.notice,
-      paragraphs: [
-        address || copy.sections.seller[1],
-        config?.email || copy.sections.support[1],
-      ],
-    })
-  }
+  const sections = document === 'withdrawal'
+    ? withdrawalLegalSections(lang, config)
+    : commerceSections(document, lang)
   return (
     <>
       <LegalDocumentContent title={copy.docs[document]} streamLabel={'// SOFTWARE.' + document.toUpperCase()}
