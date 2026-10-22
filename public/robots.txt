@@ -61,8 +61,7 @@ Disallow: /
 User-agent: Google-Extended
 Disallow: /
 
-User-agent: FacebookBot
-Disallow: /
+# Meta/Facebook share agents may fetch social link previews.
 
 User-agent: Bytespider
 Disallow: /
