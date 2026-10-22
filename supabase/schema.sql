@@ -871,6 +871,34 @@ ALTER TABLE public.partners          ADD COLUMN IF NOT EXISTS logo_content_hash 
 ALTER TABLE public.merchandise       ADD COLUMN IF NOT EXISTS image_content_hash text;
 ALTER TABLE public.soundpacks        ADD COLUMN IF NOT EXISTS image_content_hash text;
 ALTER TABLE public.products          ADD COLUMN IF NOT EXISTS image_content_hash text;
+-- Plugin catalogue fields. Free products need no license; paid products use Stripe.
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS slug text;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'other';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS short_description text;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS features jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS system_requirements jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS media jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS default_channel text NOT NULL DEFAULT 'stable';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS demo_downloads_enabled boolean NOT NULL DEFAULT true;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sales_enabled boolean NOT NULL DEFAULT false;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS pricing_mode text NOT NULL DEFAULT 'paid';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS license_required boolean NOT NULL DEFAULT false;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS license_format text NOT NULL DEFAULT 'v3';
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_kind_check') THEN
+    ALTER TABLE public.products ADD CONSTRAINT products_kind_check CHECK (kind IN ('plugin', 'other'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_pricing_mode_check') THEN
+    ALTER TABLE public.products ADD CONSTRAINT products_pricing_mode_check CHECK (pricing_mode IN ('paid', 'free'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_license_format_check') THEN
+    ALTER TABLE public.products ADD CONSTRAINT products_license_format_check CHECK (license_format IN ('v2', 'v3'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_default_channel_check') THEN
+    ALTER TABLE public.products ADD CONSTRAINT products_default_channel_check CHECK (default_channel IN ('stable', 'beta', 'alpha'));
+  END IF;
+END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS products_slug_key ON public.products (slug) WHERE slug IS NOT NULL;
 ALTER TABLE public.media_downloads   ADD COLUMN IF NOT EXISTS file_content_hash text;
 ALTER TABLE public.news_posts        ADD COLUMN IF NOT EXISTS cover_content_hash text;
 
@@ -1031,14 +1059,53 @@ REVOKE ALL ON FUNCTION public.claim_site_config_run(text, jsonb, jsonb) FROM PUB
 GRANT EXECUTE ON FUNCTION public.claim_site_config_run(text, jsonb, jsonb) TO service_role, postgres;
 
 -- ============================================================
--- NEUROKORE licensing (service_role only; plugin activate RPC)
+-- Plugin catalogue (service_role only; public RPC for downloads)
+-- Legacy neurokore_* tables are renamed in place so existing data,
+-- licences and orders survive. No destructive migration.
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.neurokore_licenses (
+DO $$
+BEGIN
+  IF to_regclass('public.neurokore_licenses') IS NOT NULL AND to_regclass('public.plugin_licenses') IS NULL THEN
+    ALTER TABLE public.neurokore_licenses RENAME TO plugin_licenses;
+  END IF;
+  IF to_regclass('public.neurokore_devices') IS NOT NULL AND to_regclass('public.plugin_devices') IS NULL THEN
+    ALTER TABLE public.neurokore_devices RENAME TO plugin_devices;
+  END IF;
+  IF to_regclass('public.neurokore_orders') IS NOT NULL AND to_regclass('public.plugin_orders') IS NULL THEN
+    ALTER TABLE public.neurokore_orders RENAME TO plugin_orders;
+  END IF;
+  IF to_regclass('public.neurokore_releases') IS NOT NULL AND to_regclass('public.plugin_releases') IS NULL THEN
+    ALTER TABLE public.neurokore_releases RENAME TO plugin_releases;
+  END IF;
+  IF to_regclass('public.neurokore_release_artifacts') IS NOT NULL AND to_regclass('public.plugin_release_artifacts') IS NULL THEN
+    ALTER TABLE public.neurokore_release_artifacts RENAME TO plugin_release_artifacts;
+  END IF;
+  IF to_regclass('public.neurokore_download_events') IS NOT NULL AND to_regclass('public.plugin_download_events') IS NULL THEN
+    ALTER TABLE public.neurokore_download_events RENAME TO plugin_download_events;
+  END IF;
+  IF to_regclass('public.neurokore_admin_audit') IS NOT NULL AND to_regclass('public.plugin_admin_audit') IS NULL THEN
+    ALTER TABLE public.neurokore_admin_audit RENAME TO plugin_admin_audit;
+  END IF;
+END $$;
+
+-- Canonical NEUROKORE product. Existing cards without a slug adopt it.
+UPDATE public.products SET slug = 'neurokore', kind = 'plugin'
+  WHERE slug IS NULL AND upper(title) = 'NEUROKORE';
+INSERT INTO public.products (title, slug, kind, short_description, active, pricing_mode, license_required, license_format)
+SELECT 'NEUROKORE', 'neurokore', 'plugin', 'Modular distortion and sound design plugin.', false, 'paid', true, 'v2'
+WHERE NOT EXISTS (SELECT 1 FROM public.products WHERE slug = 'neurokore');
+-- NEUROKORE keeps the v2 document format its shipped plugin verifies.
+UPDATE public.products SET kind = 'plugin', pricing_mode = 'paid', license_required = true, license_format = 'v2'
+  WHERE slug = 'neurokore';
+
+CREATE TABLE IF NOT EXISTS public.plugin_licenses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
   email text NOT NULL CHECK (email = lower(email)),
   key_hash text NOT NULL UNIQUE,
   key_cipher text NOT NULL,
   tier text NOT NULL CHECK (tier IN ('alpha', 'full')),
+  license_format text NOT NULL DEFAULT 'v3' CHECK (license_format IN ('v2', 'v3')),
   max_devices integer NOT NULL DEFAULT 2 CHECK (max_devices BETWEEN 1 AND 5),
   expires_at timestamptz,
   revoked_at timestamptz,
@@ -1046,95 +1113,29 @@ CREATE TABLE IF NOT EXISTS public.neurokore_licenses (
   created_by uuid REFERENCES auth.users(id),
   created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS neurokore_licenses_email_idx
-  ON public.neurokore_licenses (email);
 
-CREATE TABLE IF NOT EXISTS public.neurokore_devices (
-  license_id uuid NOT NULL REFERENCES public.neurokore_licenses(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS public.plugin_devices (
+  license_id uuid NOT NULL REFERENCES public.plugin_licenses(id) ON DELETE CASCADE,
   device text NOT NULL CHECK (device ~ '^v2:[a-f0-9]{64}$'),
   activated_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (license_id, device)
 );
 
-CREATE TABLE IF NOT EXISTS public.neurokore_orders (
+CREATE TABLE IF NOT EXISTS public.plugin_orders (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
   user_id uuid NOT NULL REFERENCES auth.users(id),
   email text NOT NULL,
   price_id text NOT NULL,
   stripe_session text UNIQUE,
   payment_intent text UNIQUE,
-  license_id uuid REFERENCES public.neurokore_licenses(id),
+  license_id uuid REFERENCES public.plugin_licenses(id),
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.neurokore_licenses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.neurokore_devices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.neurokore_orders ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.neurokore_licenses, public.neurokore_devices, public.neurokore_orders
-  FROM PUBLIC, anon, authenticated;
-GRANT ALL ON TABLE public.neurokore_licenses, public.neurokore_devices, public.neurokore_orders
-  TO service_role;
-
-CREATE OR REPLACE FUNCTION public.neurokore_activate(p_key_hash text, p_device text)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-DECLARE
-  l public.neurokore_licenses;
-BEGIN
-  SELECT * INTO l FROM public.neurokore_licenses WHERE key_hash = p_key_hash FOR UPDATE;
-  IF NOT FOUND OR l.revoked_at IS NOT NULL OR (l.expires_at IS NOT NULL AND l.expires_at <= now()) THEN
-    RAISE EXCEPTION 'License unavailable';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.neurokore_devices WHERE license_id = l.id AND device = p_device) THEN
-    IF (SELECT count(*) FROM public.neurokore_devices WHERE license_id = l.id) >= l.max_devices THEN
-      RAISE EXCEPTION 'Device limit reached';
-    END IF;
-    INSERT INTO public.neurokore_devices (license_id, device) VALUES (l.id, p_device);
-  END IF;
-  RETURN jsonb_build_object('id', l.id, 'email', l.email, 'tier', l.tier, 'expires_at', l.expires_at);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.neurokore_fulfill(p_order uuid, p_session text, p_intent text, p_key_hash text, p_key_cipher text)
-RETURNS uuid
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-DECLARE
-  o public.neurokore_orders;
-  result uuid;
-BEGIN
-  SELECT * INTO o FROM public.neurokore_orders WHERE id = p_order FOR UPDATE;
-  IF NOT FOUND OR o.stripe_session IS DISTINCT FROM p_session THEN
-    RAISE EXCEPTION 'Order mismatch';
-  END IF;
-  IF o.license_id IS NOT NULL THEN
-    RETURN o.license_id;
-  END IF;
-  INSERT INTO public.neurokore_licenses (email, key_hash, key_cipher, tier, stripe_session)
-  VALUES (o.email, p_key_hash, p_key_cipher, 'full', p_session)
-  RETURNING id INTO result;
-  UPDATE public.neurokore_orders SET license_id = result, payment_intent = p_intent WHERE id = p_order;
-  RETURN result;
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.neurokore_activate(text, text) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.neurokore_fulfill(uuid, text, text, text, text) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.neurokore_activate(text, text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.neurokore_fulfill(uuid, text, text, text, text) TO service_role;
-
--- ============================================================
--- NEUROKORE releases and downloads (service_role only)
--- Draft -> validated -> published -> withdrawn. Only published releases are
--- downloadable; storage keys never leave the server.
--- ============================================================
-CREATE TABLE IF NOT EXISTS public.neurokore_releases (
+CREATE TABLE IF NOT EXISTS public.plugin_releases (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
   version text NOT NULL CHECK (version ~ '^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$'),
   channel text NOT NULL DEFAULT 'stable' CHECK (channel IN ('stable', 'beta', 'alpha')),
   status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'validated', 'published', 'withdrawn')),
@@ -1146,13 +1147,12 @@ CREATE TABLE IF NOT EXISTS public.neurokore_releases (
   validated_at timestamptz,
   published_at timestamptz,
   published_by uuid REFERENCES auth.users(id),
-  withdrawn_at timestamptz,
-  UNIQUE (version, channel)
+  withdrawn_at timestamptz
 );
 
-CREATE TABLE IF NOT EXISTS public.neurokore_release_artifacts (
+CREATE TABLE IF NOT EXISTS public.plugin_release_artifacts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  release_id uuid NOT NULL REFERENCES public.neurokore_releases(id) ON DELETE RESTRICT,
+  release_id uuid NOT NULL REFERENCES public.plugin_releases(id) ON DELETE RESTRICT,
   platform text NOT NULL CHECK (platform IN ('windows-x64', 'macos-arm64', 'macos-x64', 'linux-x64')),
   architecture text NOT NULL CHECK (architecture IN ('x64', 'arm64')),
   package_type text NOT NULL CHECK (package_type IN ('installer', 'vst3', 'au', 'standalone', 'bundle')),
@@ -1166,89 +1166,216 @@ CREATE TABLE IF NOT EXISTS public.neurokore_release_artifacts (
   UNIQUE (release_id, platform, package_type)
 );
 
-CREATE INDEX IF NOT EXISTS neurokore_releases_published_idx
-  ON public.neurokore_releases (channel, published_at DESC) WHERE status = 'published';
-CREATE INDEX IF NOT EXISTS neurokore_release_artifacts_release_idx
-  ON public.neurokore_release_artifacts (release_id);
-
--- Anonymous download statistics: no account, license or buyer reference.
-CREATE TABLE IF NOT EXISTS public.neurokore_download_events (
+-- Anonymous download statistics: no account, licence or buyer reference.
+CREATE TABLE IF NOT EXISTS public.plugin_download_events (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  release_id uuid NOT NULL REFERENCES public.neurokore_releases(id) ON DELETE RESTRICT,
-  artifact_id uuid REFERENCES public.neurokore_release_artifacts(id) ON DELETE SET NULL,
+  product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
+  release_id uuid NOT NULL REFERENCES public.plugin_releases(id) ON DELETE RESTRICT,
+  artifact_id uuid REFERENCES public.plugin_release_artifacts(id) ON DELETE SET NULL,
   platform text NOT NULL,
   channel text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS neurokore_download_events_created_idx
-  ON public.neurokore_download_events (created_at DESC);
 
 -- Administrative mutations: who changed which record. No secrets, keys or hashes.
-CREATE TABLE IF NOT EXISTS public.neurokore_admin_audit (
+CREATE TABLE IF NOT EXISTS public.plugin_admin_audit (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  product_id uuid REFERENCES public.products(id) ON DELETE SET NULL,
   actor uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   action text NOT NULL,
   target text,
   detail jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS neurokore_admin_audit_created_idx
-  ON public.neurokore_admin_audit (created_at DESC);
 
-ALTER TABLE public.neurokore_releases ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.neurokore_release_artifacts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.neurokore_download_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.neurokore_admin_audit ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.neurokore_releases, public.neurokore_release_artifacts, public.neurokore_download_events
-  FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON TABLE public.neurokore_admin_audit FROM PUBLIC, anon, authenticated;
-GRANT ALL ON TABLE public.neurokore_releases, public.neurokore_release_artifacts, public.neurokore_download_events
-  TO service_role;
-GRANT ALL ON TABLE public.neurokore_admin_audit TO service_role;
-GRANT USAGE, SELECT ON SEQUENCE public.neurokore_download_events_id_seq TO service_role;
-GRANT USAGE, SELECT ON SEQUENCE public.neurokore_admin_audit_id_seq TO service_role;
+-- Service-role-only product secrets. Kept out of public.products so the
+-- Data API can never expose signing material or Stripe price IDs.
+CREATE TABLE IF NOT EXISTS public.plugin_product_secrets (
+  product_id uuid PRIMARY KEY REFERENCES public.products(id) ON DELETE CASCADE,
+  stripe_price_id text,
+  signing_key_cipher text,
+  signing_public_key_hex text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 
--- Publishing checks completeness atomically. Withdrawing keeps the row and files
--- for support and restoration; a later publish of the same row is allowed.
-CREATE OR REPLACE FUNCTION public.neurokore_publish_release(p_release uuid, p_admin uuid)
+-- Backfill product ownership on pre-existing NEUROKORE rows.
+DO $$
+DECLARE
+  nk uuid;
+BEGIN
+  SELECT id INTO nk FROM public.products WHERE slug = 'neurokore';
+
+  ALTER TABLE public.plugin_licenses ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id);
+  ALTER TABLE public.plugin_licenses ADD COLUMN IF NOT EXISTS license_format text DEFAULT 'v3';
+  UPDATE public.plugin_licenses SET product_id = nk WHERE product_id IS NULL;
+  ALTER TABLE public.plugin_licenses ALTER COLUMN product_id SET NOT NULL;
+  UPDATE public.plugin_licenses SET license_format = 'v2' WHERE product_id = nk AND license_format = 'v3';
+
+  ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id);
+  UPDATE public.plugin_orders SET product_id = nk WHERE product_id IS NULL;
+  ALTER TABLE public.plugin_orders ALTER COLUMN product_id SET NOT NULL;
+
+  ALTER TABLE public.plugin_releases ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id);
+  UPDATE public.plugin_releases SET product_id = nk WHERE product_id IS NULL;
+  ALTER TABLE public.plugin_releases ALTER COLUMN product_id SET NOT NULL;
+
+  ALTER TABLE public.plugin_download_events ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id);
+  UPDATE public.plugin_download_events e SET product_id = r.product_id
+    FROM public.plugin_releases r WHERE e.release_id = r.id AND e.product_id IS NULL;
+  ALTER TABLE public.plugin_download_events ALTER COLUMN product_id SET NOT NULL;
+
+  ALTER TABLE public.plugin_admin_audit ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id);
+END $$;
+
+-- One release per product/version/channel (replaces the old global unique).
+ALTER TABLE public.plugin_releases DROP CONSTRAINT IF EXISTS neurokore_releases_version_channel_key;
+ALTER TABLE public.plugin_releases DROP CONSTRAINT IF EXISTS plugin_releases_version_channel_key;
+CREATE UNIQUE INDEX IF NOT EXISTS plugin_releases_product_version_channel_key
+  ON public.plugin_releases (product_id, version, channel);
+
+CREATE INDEX IF NOT EXISTS plugin_licenses_email_idx ON public.plugin_licenses (email);
+CREATE INDEX IF NOT EXISTS plugin_licenses_product_idx ON public.plugin_licenses (product_id);
+CREATE INDEX IF NOT EXISTS plugin_orders_product_idx ON public.plugin_orders (product_id);
+CREATE INDEX IF NOT EXISTS plugin_releases_published_idx
+  ON public.plugin_releases (product_id, channel, published_at DESC) WHERE status = 'published';
+CREATE INDEX IF NOT EXISTS plugin_release_artifacts_release_idx
+  ON public.plugin_release_artifacts (release_id);
+CREATE INDEX IF NOT EXISTS plugin_download_events_created_idx
+  ON public.plugin_download_events (created_at DESC);
+CREATE INDEX IF NOT EXISTS plugin_admin_audit_created_idx
+  ON public.plugin_admin_audit (created_at DESC);
+
+ALTER TABLE public.plugin_licenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plugin_devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plugin_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plugin_releases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plugin_release_artifacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plugin_download_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plugin_admin_audit ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plugin_product_secrets ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.plugin_licenses, public.plugin_devices, public.plugin_orders,
+  public.plugin_releases, public.plugin_release_artifacts, public.plugin_download_events,
+  public.plugin_admin_audit, public.plugin_product_secrets FROM PUBLIC, anon, authenticated;
+GRANT ALL ON TABLE public.plugin_licenses, public.plugin_devices, public.plugin_orders,
+  public.plugin_releases, public.plugin_release_artifacts, public.plugin_download_events,
+  public.plugin_admin_audit, public.plugin_product_secrets TO service_role;
+DO $$
+BEGIN
+  IF to_regclass('public.plugin_download_events_id_seq') IS NOT NULL THEN
+    EXECUTE 'GRANT USAGE, SELECT ON SEQUENCE public.plugin_download_events_id_seq TO service_role';
+  ELSIF to_regclass('public.neurokore_download_events_id_seq') IS NOT NULL THEN
+    EXECUTE 'GRANT USAGE, SELECT ON SEQUENCE public.neurokore_download_events_id_seq TO service_role';
+  END IF;
+  IF to_regclass('public.plugin_admin_audit_id_seq') IS NOT NULL THEN
+    EXECUTE 'GRANT USAGE, SELECT ON SEQUENCE public.plugin_admin_audit_id_seq TO service_role';
+  ELSIF to_regclass('public.neurokore_admin_audit_id_seq') IS NOT NULL THEN
+    EXECUTE 'GRANT USAGE, SELECT ON SEQUENCE public.neurokore_admin_audit_id_seq TO service_role';
+  END IF;
+END $$;
+
+DROP FUNCTION IF EXISTS public.neurokore_activate(text, text);
+DROP FUNCTION IF EXISTS public.neurokore_fulfill(uuid, text, text, text, text);
+DROP FUNCTION IF EXISTS public.neurokore_publish_release(uuid, uuid);
+DROP FUNCTION IF EXISTS public.neurokore_withdraw_release(uuid);
+DROP FUNCTION IF EXISTS public.neurokore_public_releases();
+
+CREATE OR REPLACE FUNCTION public.plugin_activate(p_key_hash text, p_device text, p_product_slug text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  p public.products;
+  l public.plugin_licenses;
+BEGIN
+  SELECT * INTO p FROM public.products WHERE slug = p_product_slug AND kind = 'plugin';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product unavailable';
+  END IF;
+  SELECT * INTO l FROM public.plugin_licenses
+    WHERE key_hash = p_key_hash AND product_id = p.id FOR UPDATE;
+  IF NOT FOUND OR l.revoked_at IS NOT NULL OR (l.expires_at IS NOT NULL AND l.expires_at <= now()) THEN
+    RAISE EXCEPTION 'License unavailable';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.plugin_devices WHERE license_id = l.id AND device = p_device) THEN
+    IF (SELECT count(*) FROM public.plugin_devices WHERE license_id = l.id) >= l.max_devices THEN
+      RAISE EXCEPTION 'Device limit reached';
+    END IF;
+    INSERT INTO public.plugin_devices (license_id, device) VALUES (l.id, p_device);
+  END IF;
+  RETURN jsonb_build_object(
+    'id', l.id, 'email', l.email, 'tier', l.tier, 'expires_at', l.expires_at,
+    'license_format', l.license_format, 'product_slug', p.slug);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.plugin_fulfill(p_order uuid, p_session text, p_intent text, p_key_hash text, p_key_cipher text)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  o public.plugin_orders;
+  p public.products;
+  result uuid;
+BEGIN
+  SELECT * INTO o FROM public.plugin_orders WHERE id = p_order FOR UPDATE;
+  IF NOT FOUND OR o.stripe_session IS DISTINCT FROM p_session THEN
+    RAISE EXCEPTION 'Order mismatch';
+  END IF;
+  IF o.license_id IS NOT NULL THEN
+    RETURN o.license_id;
+  END IF;
+  SELECT * INTO p FROM public.products WHERE id = o.product_id;
+  INSERT INTO public.plugin_licenses (product_id, email, key_hash, key_cipher, tier, license_format, stripe_session)
+  VALUES (o.product_id, o.email, p_key_hash, p_key_cipher, 'full', p.license_format, p_session)
+  RETURNING id INTO result;
+  UPDATE public.plugin_orders SET license_id = result, payment_intent = p_intent WHERE id = p_order;
+  RETURN result;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.plugin_publish_release(p_release uuid, p_admin uuid)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-  r public.neurokore_releases;
+  r public.plugin_releases;
   total integer;
   ready integer;
 BEGIN
-  SELECT * INTO r FROM public.neurokore_releases WHERE id = p_release FOR UPDATE;
+  SELECT * INTO r FROM public.plugin_releases WHERE id = p_release FOR UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Release not found';
   END IF;
   IF r.status NOT IN ('draft', 'validated', 'withdrawn') THEN
     RAISE EXCEPTION 'Release cannot be published from its current state';
   END IF;
-  SELECT count(*) INTO total FROM public.neurokore_release_artifacts WHERE release_id = r.id;
-  SELECT count(*) INTO ready FROM public.neurokore_release_artifacts
+  SELECT count(*) INTO total FROM public.plugin_release_artifacts WHERE release_id = r.id;
+  SELECT count(*) INTO ready FROM public.plugin_release_artifacts
     WHERE release_id = r.id AND validation_status = 'validated';
   IF total = 0 OR ready <> total THEN
     RAISE EXCEPTION 'Release artifacts are incomplete or unvalidated';
   END IF;
-  UPDATE public.neurokore_releases
+  UPDATE public.plugin_releases
     SET status = 'published', published_at = now(), published_by = p_admin,
         withdrawn_at = NULL, validated_at = COALESCE(validated_at, now())
     WHERE id = r.id;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.neurokore_withdraw_release(p_release uuid)
+CREATE OR REPLACE FUNCTION public.plugin_withdraw_release(p_release uuid)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-  UPDATE public.neurokore_releases
+  UPDATE public.plugin_releases
     SET status = 'withdrawn', withdrawn_at = now()
     WHERE id = p_release AND status = 'published';
   IF NOT FOUND THEN
@@ -1257,9 +1384,9 @@ BEGIN
 END;
 $$;
 
--- Public catalogue: published release metadata and artifact checksums only.
--- storage_key and admin identities are never exposed.
-CREATE OR REPLACE FUNCTION public.neurokore_public_releases()
+-- Public catalogue: product page fields plus published release metadata and
+-- artifact checksums. storage_key, price IDs and signing material never leave.
+CREATE OR REPLACE FUNCTION public.plugin_public_catalog()
 RETURNS jsonb
 LANGUAGE sql
 SECURITY DEFINER
@@ -1267,43 +1394,67 @@ SET search_path = ''
 STABLE
 AS $$
   SELECT COALESCE(jsonb_agg(jsonb_build_object(
-    'id', r.id,
-    'version', r.version,
-    'channel', r.channel,
-    'title', r.title,
-    'changelog', r.changelog,
-    'release_notes', r.release_notes,
-    'published_at', r.published_at,
-    'artifacts', COALESCE((
+    'id', p.id,
+    'slug', p.slug,
+    'title', p.title,
+    'short_description', p.short_description,
+    'description', p.description,
+    'features', p.features,
+    'system_requirements', p.system_requirements,
+    'media', p.media,
+    'pricing_mode', p.pricing_mode,
+    'sales_enabled', p.sales_enabled,
+    'demo_downloads_enabled', p.demo_downloads_enabled,
+    'license_required', p.license_required,
+    'default_channel', p.default_channel,
+    'display_order', p.display_order,
+    'releases', COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
-        'platform', a.platform,
-        'architecture', a.architecture,
-        'package_type', a.package_type,
-        'filename', a.filename,
-        'filesize_bytes', a.filesize_bytes,
-        'sha256', a.sha256,
-        'signing_status', a.signing_status
-      ) ORDER BY a.platform, a.package_type)
-      FROM public.neurokore_release_artifacts a
-      WHERE a.release_id = r.id AND a.validation_status = 'validated'
+        'id', r.id,
+        'version', r.version,
+        'channel', r.channel,
+        'title', r.title,
+        'changelog', r.changelog,
+        'release_notes', r.release_notes,
+        'published_at', r.published_at,
+        'artifacts', COALESCE((
+          SELECT jsonb_agg(jsonb_build_object(
+            'platform', a.platform,
+            'architecture', a.architecture,
+            'package_type', a.package_type,
+            'filename', a.filename,
+            'filesize_bytes', a.filesize_bytes,
+            'sha256', a.sha256,
+            'signing_status', a.signing_status
+          ) ORDER BY a.platform, a.package_type)
+          FROM public.plugin_release_artifacts a
+          WHERE a.release_id = r.id AND a.validation_status = 'validated'
+        ), '[]'::jsonb)
+      ) ORDER BY r.published_at DESC)
+      FROM public.plugin_releases r
+      WHERE r.product_id = p.id AND r.status = 'published' AND r.withdrawn_at IS NULL
     ), '[]'::jsonb)
-  ) ORDER BY r.published_at DESC), '[]'::jsonb)
-  FROM public.neurokore_releases r
-  WHERE r.status = 'published' AND r.withdrawn_at IS NULL;
+  ) ORDER BY p.display_order, p.title), '[]'::jsonb)
+  FROM public.products p
+  WHERE p.active = true AND p.kind = 'plugin' AND p.slug IS NOT NULL;
 $$;
 
-REVOKE ALL ON FUNCTION public.neurokore_publish_release(uuid, uuid) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.neurokore_withdraw_release(uuid) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.neurokore_public_releases() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.neurokore_publish_release(uuid, uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.neurokore_withdraw_release(uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.neurokore_public_releases() TO anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.plugin_activate(text, text, text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.plugin_publish_release(uuid, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.plugin_withdraw_release(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.plugin_public_catalog() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.plugin_activate(text, text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_publish_release(uuid, uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_withdraw_release(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_public_catalog() TO anon, authenticated, service_role;
 
 -- ============================================================
 -- Data API table grants (idempotent)
 -- From 2026-10-30 Supabase no longer auto-grants new public tables to
 -- anon / authenticated / service_role. RLS still filters rows.
--- Keep rate_limits and neurokore_* service_role-only (already REVOKEd).
+-- Keep rate_limits and plugin_* service_role-only (already REVOKEd).
 -- ============================================================
 GRANT SELECT ON TABLE
   public.releases,
@@ -1344,5 +1495,3 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
   public.analytics_events,
   public.news_posts
 TO authenticated, service_role;
-
-

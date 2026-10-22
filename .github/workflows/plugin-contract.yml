@@ -1,17 +1,19 @@
-
-name: NEUROKORE contract
+name: Plugin commerce contract
 on:
   push:
     branches: ['codex/neurokore-licensing']
   pull_request:
     paths:
       - 'lib/neurokore/**'
+      - 'lib/plugins/**'
       - 'app/**/neurokore/**'
+      - 'app/**/plugins/**'
       - 'app/api/license/**'
       - 'supabase/schema.sql'
-      - 'supabase/tests/neurokore.sql'
+      - 'supabase/tests/plugin.sql'
       - 'src/test/neurokore*'
-      - '.github/workflows/neurokore-contract.yml'
+      - 'src/test/plugin*'
+      - '.github/workflows/plugin-contract.yml'
 permissions:
   contents: read
 jobs:
@@ -40,8 +42,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
-      - run: npx eslint lib/neurokore app/neurokore app/api/neurokore app/api/license 'app/admin/(protected)/neurokore' src/test/neurokore*.test.ts
-      - run: npx vitest run src/test/neurokore-protocol.test.ts src/test/neurokore-stripe.test.ts
+      - run: >-
+          npx eslint lib/neurokore lib/plugins app/neurokore app/plugins
+          app/api/neurokore app/api/plugins app/api/license
+          'app/admin/(protected)/plugins' src/test/neurokore*.test.ts src/test/plugin*.test.ts
+      - run: npx vitest run src/test/neurokore-protocol.test.ts src/test/neurokore-stripe.test.ts src/test/plugin-releases.test.ts src/test/plugin-download-route.test.ts
       - name: Disposable Supabase role and auth fixtures
         run: |
           psql -v ON_ERROR_STOP=1 <<'SQL'
@@ -53,5 +58,15 @@ jobs:
           CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
           SQL
       - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
-      - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/neurokore.sql
-      - run: node supabase/tests/neurokore-concurrency.mjs
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin.sql
+      - run: node supabase/tests/plugin-concurrency.mjs
+      - name: Reset public schema for the migration path
+        run: psql -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+      - name: Seed the pre-migration NEUROKORE schema
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin-legacy.sql
+      - name: Apply the schema to legacy data, twice, to prove idempotency
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - name: Assert legacy data survived and was backfilled
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin-migration.sql

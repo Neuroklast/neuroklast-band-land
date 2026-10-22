@@ -24,6 +24,7 @@ export default async function ProductsPage() {
       supabase
         .from('products')
         .select('id, title, href, display_order, active')
+        .neq('kind', 'plugin')
         .order('display_order', { ascending: true }),
       supabase.from('site_config').select('value').eq('key', 'sections').maybeSingle(),
     ])

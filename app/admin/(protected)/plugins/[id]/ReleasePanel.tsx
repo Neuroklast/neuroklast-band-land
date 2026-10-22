@@ -9,7 +9,7 @@ import {
   SIGNING_STATUSES,
   PLATFORM_META,
   formatBytes,
-} from '@/lib/neurokore/releases'
+} from '@/lib/plugins/releases'
 
 const artifactSchema = z.object({
   id: z.string(),
@@ -56,8 +56,8 @@ const primaryButton =
 const secondaryButton =
   'rounded border border-zinc-700 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px]'
 
-async function api(body?: object): Promise<unknown> {
-  const response = await fetch('/api/neurokore/releases', body
+async function api(productId: string, body?: object): Promise<unknown> {
+  const response = await fetch('/api/plugins/' + productId + '/releases', body
     ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     : { cache: 'no-store' })
   const payload: unknown = await response.json().catch(() => ({}))
@@ -71,7 +71,7 @@ async function api(body?: object): Promise<unknown> {
   return payload
 }
 
-function ReleaseCard({ release, onChanged }: { release: Release; onChanged: () => Promise<void> }) {
+function ReleaseCard({ release, productId, onChanged }: { release: Release; productId: string; onChanged: () => Promise<void> }) {
   const [title, setTitle] = useState(release.title ?? '')
   const [changelog, setChangelog] = useState(release.changelog ?? '')
   const [notes, setNotes] = useState(release.release_notes ?? '')
@@ -155,7 +155,7 @@ function ReleaseCard({ release, onChanged }: { release: Release; onChanged: () =
             className={secondaryButton}
             disabled={busy || release.status === 'published'}
             onClick={() => void run(
-              () => api({ action: 'update', id: release.id, title: title || null, changelog: changelog || null, release_notes: notes || null }),
+              () => api(productId, { action: 'update', id: release.id, title: title || null, changelog: changelog || null, release_notes: notes || null }),
               'Release notes saved.',
             )}
           >
@@ -195,7 +195,7 @@ function ReleaseCard({ release, onChanged }: { release: Release; onChanged: () =
             className="grid gap-2 rounded border border-zinc-800 p-3 sm:grid-cols-2"
             onSubmit={(event) => {
               event.preventDefault()
-              void run(() => api({
+              void run(() => api(productId, {
                 action: 'artifact',
                 release_id: release.id,
                 platform: artifact.platform,
@@ -256,7 +256,7 @@ function ReleaseCard({ release, onChanged }: { release: Release; onChanged: () =
         <button
           className={secondaryButton}
           disabled={busy || !unpublished || release.neurokore_release_artifacts.length === 0}
-          onClick={() => void run(() => api({ action: 'validate', id: release.id }), 'Version is ready to publish.')}
+          onClick={() => void run(() => api(productId, { action: 'validate', id: release.id }), 'Version is ready to publish.')}
         >
           Mark as ready
         </button>
@@ -265,7 +265,7 @@ function ReleaseCard({ release, onChanged }: { release: Release; onChanged: () =
           disabled={busy || release.status === 'published' || release.neurokore_release_artifacts.length === 0}
           onClick={() => {
             if (window.confirm(`Publish NEUROKORE ${release.version} (${release.channel}) to the public download page?`)) {
-              void run(() => api({ action: 'publish', id: release.id }), 'Version published.')
+              void run(() => api(productId, { action: 'publish', id: release.id }), 'Version published.')
             }
           }}
         >
@@ -276,7 +276,7 @@ function ReleaseCard({ release, onChanged }: { release: Release; onChanged: () =
           disabled={busy || release.status !== 'published'}
           onClick={() => {
             if (window.confirm('Withdraw this version? It will stop being offered, but its files stay available for support.')) {
-              void run(() => api({ action: 'withdraw', id: release.id }), 'Version withdrawn.')
+              void run(() => api(productId, { action: 'withdraw', id: release.id }), 'Version withdrawn.')
             }
           }}
         >
@@ -289,7 +289,7 @@ function ReleaseCard({ release, onChanged }: { release: Release; onChanged: () =
   )
 }
 
-export function ReleaseAdmin({ publicEnabled, salesEnabled }: { publicEnabled: boolean; salesEnabled: boolean }) {
+export function ReleasePanel({ productId }: { productId: string }) {
   const [releases, setReleases] = useState<Release[]>([])
   const [version, setVersion] = useState('')
   const [channel, setChannel] = useState('stable')
@@ -297,7 +297,7 @@ export function ReleaseAdmin({ publicEnabled, salesEnabled }: { publicEnabled: b
   const [message, setMessage] = useState('')
 
   async function refresh() {
-    const payload = await api()
+    const payload = await api(productId)
     setReleases(z.object({ releases: z.array(releaseSchema) }).parse(payload).releases)
   }
 
@@ -305,23 +305,17 @@ export function ReleaseAdmin({ publicEnabled, salesEnabled }: { publicEnabled: b
     void refresh().catch((error) =>
       setMessage(error instanceof Error ? error.message : 'Could not load versions.'),
     )
-  }, [])
+  }, [productId])
 
   return (
     <div className="space-y-6">
-      <div role="status" className="rounded border border-zinc-800 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-400">
-        Public product section: <span className={publicEnabled ? 'text-amber-300' : 'text-zinc-200'}>{publicEnabled ? 'on' : 'off'}</span>.
-        {' '}Sales: <span className={salesEnabled ? 'text-amber-300' : 'text-zinc-200'}>{salesEnabled ? 'open' : 'closed'}</span>.
-        {' '}Downloads work without sales or sign-in.
-      </div>
-
       <form
         className="space-y-3 rounded border border-zinc-800 bg-zinc-950/60 p-4"
         onSubmit={(event) => {
           event.preventDefault()
           setBusy(true)
           setMessage('')
-          void api({ action: 'create', version, channel })
+          void api(productId, { action: 'create', version, channel })
             .then(async () => {
               setVersion('')
               await refresh()
@@ -357,7 +351,7 @@ export function ReleaseAdmin({ publicEnabled, salesEnabled }: { publicEnabled: b
       ) : (
         <ul className="space-y-4">
           {releases.map((release) => (
-            <ReleaseCard key={release.id} release={release} onChanged={refresh} />
+            <ReleaseCard key={release.id} release={release} productId={productId} onChanged={refresh} />
           ))}
         </ul>
       )}

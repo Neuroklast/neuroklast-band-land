@@ -77,6 +77,45 @@ export function parsePublicReleases(value: unknown): PublicRelease[] {
   return z.array(publicReleaseSchema).parse(value ?? [])
 }
 
+export const slugSchema = z
+  .string()
+  .min(2)
+  .max(64)
+  .regex(/^[a-z0-9][a-z0-9-]*$/, 'Use lowercase letters, digits and dashes')
+
+export const publicProductSchema = z.object({
+  id: z.uuid(),
+  slug: slugSchema,
+  title: z.string().min(1),
+  short_description: z.string().nullable(),
+  description: z.string().nullable(),
+  features: z.array(z.object({ title: z.string(), body: z.string() })).default([]),
+  system_requirements: z.array(z.string()).default([]),
+  media: z.array(z.object({ kind: z.string(), url: z.string() })).default([]),
+  pricing_mode: z.enum(['paid', 'free']),
+  sales_enabled: z.boolean(),
+  demo_downloads_enabled: z.boolean(),
+  license_required: z.boolean(),
+  default_channel: z.enum(RELEASE_CHANNELS),
+  display_order: z.number(),
+  releases: z.array(publicReleaseSchema),
+})
+
+export type PublicProduct = z.infer<typeof publicProductSchema>
+
+export function parsePublicCatalog(value: unknown): PublicProduct[] {
+  return z.array(publicProductSchema).parse(value ?? [])
+}
+
+export function findProduct(catalog: readonly PublicProduct[], slug: string): PublicProduct | null {
+  return catalog.find((product) => product.slug === slug) ?? null
+}
+
+/** Free and demo downloads do not require a licence. */
+export function isFreeDownload(product: PublicProduct): boolean {
+  return product.pricing_mode === 'free'
+}
+
 export type ArtifactLike = {
   platform: Platform
   package_type: PackageType
@@ -128,10 +167,11 @@ export function safeReleaseStorageKey(key: string): boolean {
 }
 
 /** Canonical key for an uploaded build. The admin never types a path. */
-export function releaseStorageKey(version: string, platform: Platform, filename: string): string {
-  const safe = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
-  if (!safe.test(version) || !safe.test(filename)) throw new Error('Invalid release path')
-  return `releases/neurokore/v${version}/${platform}/${filename}`
+export function releaseStorageKey(slug: string, version: string, platform: Platform, filename: string): string {
+  const safe = /^[a-z0-9][a-z0-9-]*$/
+  const safePart = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
+  if (!safe.test(slug) || !safePart.test(version) || !safePart.test(filename)) throw new Error('Invalid release path')
+  return `releases/${slug}/v${version}/${platform}/${filename}`
 }
 
 /** Group artifacts by platform in a stable order for the public download page. */
