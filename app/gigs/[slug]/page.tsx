@@ -45,7 +45,7 @@ export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
 export async function generateMetadata({ params }: GigPageParams): Promise<Metadata> {
   const { slug } = await params
   const loaded = await loadGig(slug)
-  if (!loaded) return { title: 'Event' }
+  if (!loaded) return { title: 'Event', robots: { index: false, follow: false } }
 
   const { gig } = loaded
   const headline = eventDisplayName(gig)
@@ -63,6 +63,12 @@ export async function generateMetadata({ params }: GigPageParams): Promise<Metad
       description,
       type: 'website',
       images: [{ url: `/share/gig/${gig.id}` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${headline} — ${formatIsoDateLong(gig.event_date)}`,
+      description,
+      images: [`/share/gig/${gig.id}`],
     },
   }
 }
