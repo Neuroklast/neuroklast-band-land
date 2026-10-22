@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CdnImage } from '@/app/_components/public/CdnImage'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
@@ -7,9 +8,22 @@ import { CHANNEL_LABEL } from '@/lib/plugins/releases'
 
 export const revalidate = 60
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Audio plugins',
-  description: 'Audio plugins by NEUROKLAST: public builds, demos and licences.',
+  description: 'Discover NEUROKLAST audio software, available plugin downloads, demos and licences.',
+  alternates: { canonical: '/plugins' },
+  openGraph: {
+    title: 'NEUROKLAST AUDIO | Plugins',
+    description: 'Audio plugins and software by NEUROKLAST.',
+    type: 'website',
+    url: 'https://neuroklast.net/plugins',
+    images: [{ url: '/og-image.png' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NEUROKLAST AUDIO | Plugins',
+    images: ['/og-image.png'],
+  },
 }
 
 export default async function PluginsIndexPage() {
