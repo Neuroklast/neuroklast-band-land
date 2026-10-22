@@ -55,6 +55,7 @@ const NAV_ICONS: Record<string, Icon> = {
   '/admin/merchandise': TShirt,
   '/admin/products': Cube,
   '/admin/neurokore': Cpu,
+  '/admin/neurokore/releases': Package,
   '/admin/soundpacks': Package,
   '/admin/news': Newspaper,
   '/admin/social': Share,

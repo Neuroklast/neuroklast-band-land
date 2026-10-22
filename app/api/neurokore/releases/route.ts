@@ -1,0 +1,190 @@
+import { z } from 'zod'
+import { adminFailureMessage } from '@/lib/neurokore/admin-error'
+import { admin, body, db, json, limit, sameOrigin } from '@/lib/neurokore/server'
+import {
+  PLATFORMS,
+  PACKAGE_TYPES,
+  RELEASE_CHANNELS,
+  SIGNING_STATUSES,
+  releaseArtifactsReady,
+  releaseStorageKey,
+  sha256Schema,
+  versionSchema,
+  type ArtifactLike,
+} from '@/lib/neurokore/releases'
+
+export const runtime = 'nodejs'
+
+const metadata = {
+  title: z.string().trim().max(200).nullable().optional(),
+  changelog: z.string().trim().max(20000).nullable().optional(),
+  release_notes: z.string().trim().max(20000).nullable().optional(),
+  git_commit_sha: z.string().regex(/^[a-f0-9]{7,64}$/).nullable().optional(),
+}
+
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('create'),
+    version: versionSchema,
+    channel: z.enum(RELEASE_CHANNELS).default('stable'),
+    ...metadata,
+  }).strict(),
+  z.object({ action: z.literal('update'), id: z.uuid(), ...metadata }).strict(),
+  z.object({
+    action: z.literal('artifact'),
+    release_id: z.uuid(),
+    platform: z.enum(PLATFORMS),
+    architecture: z.enum(['x64', 'arm64']),
+    package_type: z.enum(PACKAGE_TYPES),
+    filename: z.string().trim().min(1).max(200).regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/),
+    filesize_bytes: z.number().int().positive(),
+    sha256: sha256Schema,
+    signing_status: z.enum(SIGNING_STATUSES),
+  }).strict(),
+  z.object({ action: z.literal('validate'), id: z.uuid() }).strict(),
+  z.object({ action: z.literal('publish'), id: z.uuid() }).strict(),
+  z.object({ action: z.literal('withdraw'), id: z.uuid() }).strict(),
+])
+
+async function audit(
+  client: ReturnType<typeof db>,
+  actor: string,
+  action: string,
+  target: string,
+  detail: Record<string, unknown> = {},
+) {
+  try {
+    await client.from('neurokore_admin_audit').insert({ actor, action, target, detail })
+  } catch {
+    // Audit is best-effort; the primary mutation already succeeded.
+  }
+}
+
+const artifactColumns = 'id,platform,architecture,package_type,filename,storage_key,filesize_bytes,sha256,signing_status,validation_status'
+
+export async function GET(request: Request) {
+  try {
+    await limit(request, 'neurokore-releases-read', 60)
+    await admin()
+    const { data, error } = await db()
+      .from('neurokore_releases')
+      .select(`id,version,channel,status,title,changelog,release_notes,git_commit_sha,created_at,validated_at,published_at,withdrawn_at,neurokore_release_artifacts(${artifactColumns})`)
+      .order('created_at', { ascending: false })
+      .limit(100)
+    if (error) throw error
+    return json({ releases: data ?? [] })
+  } catch (error) {
+    return json({ error: adminFailureMessage(error) }, 400)
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    sameOrigin(request)
+    await limit(request, 'neurokore-releases-write', 30)
+    const actor = await admin()
+    const input = inputSchema.parse(await body(request))
+    const client = db()
+
+    if (input.action === 'create') {
+      const { data, error } = await client.from('neurokore_releases').insert({
+        version: input.version,
+        channel: input.channel,
+        title: input.title ?? null,
+        changelog: input.changelog ?? null,
+        release_notes: input.release_notes ?? null,
+        git_commit_sha: input.git_commit_sha ?? null,
+      }).select('id').single()
+      if (error) throw error
+      await audit(client, actor, 'release.create', data.id, { version: input.version, channel: input.channel })
+      return json({ id: data.id })
+    }
+
+    if (input.action === 'update') {
+      const patch: Record<string, unknown> = {}
+      for (const key of ['title', 'changelog', 'release_notes', 'git_commit_sha'] as const) {
+        if (input[key] !== undefined) patch[key] = input[key]
+      }
+      if (Object.keys(patch).length === 0) return json({ ok: true })
+      const { error } = await client.from('neurokore_releases').update(patch).eq('id', input.id)
+      if (error) throw error
+      await audit(client, actor, 'release.update', input.id, { fields: Object.keys(patch) })
+      return json({ ok: true })
+    }
+
+    if (input.action === 'artifact') {
+      const { data: release, error: releaseError } = await client
+        .from('neurokore_releases')
+        .select('version,status')
+        .eq('id', input.release_id)
+        .maybeSingle()
+      if (releaseError) throw releaseError
+      if (!release) return json({ error: 'Release not found.' }, 404)
+      if (release.status === 'published') {
+        return json({ error: 'Withdraw the release before changing its downloads.' }, 409)
+      }
+      const { error } = await client.from('neurokore_release_artifacts').upsert({
+        release_id: input.release_id,
+        platform: input.platform,
+        architecture: input.architecture,
+        package_type: input.package_type,
+        filename: input.filename,
+        storage_key: releaseStorageKey(release.version, input.platform, input.filename),
+        filesize_bytes: input.filesize_bytes,
+        sha256: input.sha256,
+        signing_status: input.signing_status,
+        validation_status: 'pending',
+      }, { onConflict: 'release_id,platform,package_type' })
+      if (error) throw error
+      await audit(client, actor, 'artifact.register', input.release_id, {
+        platform: input.platform,
+        package_type: input.package_type,
+      })
+      return json({ ok: true })
+    }
+
+    const { data: artifacts, error: artifactError } = await client
+      .from('neurokore_release_artifacts')
+      .select(artifactColumns)
+      .eq('release_id', input.id)
+    if (artifactError) throw artifactError
+
+    if (input.action === 'publish') {
+      if (!releaseArtifactsReady((artifacts ?? []) as ArtifactLike[])) {
+        return json({ error: 'Add and validate at least one download before publishing.' }, 409)
+      }
+      const { error } = await client.rpc('neurokore_publish_release', { p_release: input.id, p_admin: actor })
+      if (error) throw error
+      await audit(client, actor, 'release.publish', input.id)
+      return json({ ok: true })
+    }
+
+    if (input.action === 'withdraw') {
+      const { error } = await client.rpc('neurokore_withdraw_release', { p_release: input.id })
+      if (error) throw error
+      await audit(client, actor, 'release.withdraw', input.id)
+      return json({ ok: true })
+    }
+
+    if ((artifacts ?? []).length === 0) {
+      return json({ error: 'Add at least one download before validating.' }, 409)
+    }
+    if ((artifacts ?? []).some((artifact) => artifact.validation_status === 'failed')) {
+      return json({ error: 'Fix or remove failed downloads before validating.' }, 409)
+    }
+    const { error: artifactUpdateError } = await client.from('neurokore_release_artifacts')
+      .update({ validation_status: 'validated' })
+      .eq('release_id', input.id)
+      .eq('validation_status', 'pending')
+    if (artifactUpdateError) throw artifactUpdateError
+    const { error: releaseError } = await client.from('neurokore_releases')
+      .update({ status: 'validated', validated_at: new Date().toISOString() })
+      .eq('id', input.id)
+      .in('status', ['draft', 'validated'])
+    if (releaseError) throw releaseError
+    await audit(client, actor, 'release.validate', input.id)
+    return json({ ok: true })
+  } catch (error) {
+    return json({ error: adminFailureMessage(error) }, 400)
+  }
+}
