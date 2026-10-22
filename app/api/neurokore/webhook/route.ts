@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
 import { loadLegalConfig, formatServiceAddress } from '@/lib/legal-content'
 import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
-import { db, json, origin } from '@/lib/neurokore/server'
+import { db, json, origin, required } from '@/lib/neurokore/server'
 import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 
 export const runtime = 'nodejs'
