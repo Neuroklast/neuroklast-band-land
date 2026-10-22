@@ -26,6 +26,7 @@ This checklist is a technical readiness aid, not a declaration of legal complian
 - [ ] Check the legally required withdrawal function and notice under § 356a BGB (in force since 19 June 2026).
 - [ ] Confirm BFSG applicability, including the microenterprise service exception if claimed, and test keyboard/mobile accessibility.
 - [ ] Review GDPR deletion and retention jobs, data subject requests and backup retention. Prose must match actual execution.
+- [ ] Align the packaged EULA.txt and LICENSE.txt in the released installer/ZIP with the public /license-terms. Uploaded earlier versions contain blanket AS-IS/no-warranty/no-liability clauses that cannot override mandatory German consumer rights.
 - [ ] Have the actual EULA, B2C contract notices and withdrawal text reviewed for the seller's business structure and jurisdictions.
 - [ ] Test footer links, checkout on mobile, Stripe final total and its payment obligation label.
 - [ ] Verify any local laws and translated notices for non-German buyers.
