@@ -77,7 +77,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     operator: { title: 'Information pursuant to § 5 DDG (Digital Services Act)', paragraphs: [] },
     responsible: { title: 'Responsible for editorial content pursuant to § 18 (2) MStV', paragraphs: [] },
     dispute: {
-      title: 'EU dispute resolution',
+      title: 'Consumer dispute resolution',
       paragraphs: [
         'We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.',
       ],
@@ -109,7 +109,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
     operator: { title: 'Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)', paragraphs: [] },
     responsible: { title: 'Verantwortlich für journalistisch-redaktionelle Inhalte gemäß § 18 Abs. 2 MStV', paragraphs: [] },
     dispute: {
-      title: 'EU-Streitschlichtung',
+      title: 'Verbraucherstreitbeilegung',
       paragraphs: [
         'Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
       ],
@@ -1134,12 +1134,13 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
   },
 }
 
+// Legal notices do not require blanket liability disclaimers. The former
+// liability sections cited repealed/misapplied DDG provisions (§§ 8–10).
+// Keep operator, editorial responsibility, dispute information and copyright.
 export const NOTICE_SECTION_ORDER = [
   'operator',
   'responsible',
   'dispute',
-  'liability-content',
-  'liability-links',
   'copyright',
 ] as const
 
