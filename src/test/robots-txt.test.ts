@@ -12,7 +12,7 @@ describe('public/robots.txt', () => {
   })
 
   it('does not block Meta link preview bots', () => {
-    expect(robots).not.toMatch(/User-agent:\\s*FacebookBot\\s*\\nDisallow:\\s*\\//)
+    expect(robots).not.toContain('User-agent: FacebookBot')
   })
 
   it('disallows admin and API crawls', () => {
