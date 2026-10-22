@@ -6,6 +6,7 @@ import { formatServiceAddress } from '@/lib/legal-content'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveLegalLocale } from '@/lib/legal-templates'
 import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
+import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
 import { LegalDocumentContent } from './LegalDocumentContent'
 
 type Doc = 'terms' | 'purchase' | 'withdrawal' | 'license'
@@ -25,29 +26,18 @@ export function CommerceLegalContent({ document, config }: { document: Doc; conf
   const sections = commerceSections(document, lang)
   if (document === 'withdrawal') {
     const address = config ? formatServiceAddress(config) : ''
-    const english = lang === 'en'
-    const german = lang === 'de'
+    const translated = WITHDRAWAL_COPY[lang]
     sections.unshift({
       id: 'withdrawal-process',
-      title: german ? 'Frist und Erklärung' : english ? 'Period and notification' : copy.docs.withdrawal,
-      paragraphs: [
-        german
-          ? 'Verbraucher können einen Vertrag über digitale Inhalte grundsätzlich innerhalb von vierzehn Tagen ab Vertragsschluss ohne Angabe von Gründen widerrufen. Zur Fristwahrung genügt die rechtzeitige Absendung einer eindeutigen Erklärung, zum Beispiel über das Online-Formular oder per E-Mail.'
-          : 'Consumers can generally withdraw from a contract for digital content within fourteen days after the contract is concluded, without giving reasons. Sending a clear declaration before the deadline is sufficient. You may use the online form or email.',
-        german
-          ? 'Wenn der Widerruf wirksam ist, werden erhaltene Zahlungen unverzüglich und spätestens vierzehn Tage nach Eingang des Widerrufs grundsätzlich über dasselbe Zahlungsmittel zurückerstattet. Hierfür werden keine Entgelte berechnet.'
-          : 'Following a valid withdrawal, payments received will generally be refunded using the original payment method without fees, promptly and no later than fourteen days after receipt of the withdrawal notice.',
-        german
-          ? 'Bei nicht auf einem körperlichen Datenträger gelieferten digitalen Inhalten kann das Widerrufsrecht vorzeitig erlöschen, wenn sämtliche gesetzlichen Voraussetzungen des § 356 Abs. 6 BGB erfüllt sind. Ein Download allein genügt dafür nicht.'
-          : 'For digital content not supplied on a tangible medium, early loss of the withdrawal right is possible only if all statutory conditions under § 356(6) BGB are satisfied. Downloading alone is not sufficient.',
-      ],
+      title: translated.heading,
+      paragraphs: [translated.period, translated.refunds, translated.exception, translated.details],
     })
     sections.push({
       id: 'withdrawal-address',
       title: copy.links.notice,
       paragraphs: [
-        address || (german ? 'Verkäuferanschrift siehe Impressum.' : 'Seller address: see Legal Notice.'),
-        config?.email || (german ? 'Kontakt-E-Mail siehe Impressum.' : 'Contact email: see Legal Notice.'),
+        address || copy.sections.seller[1],
+        config?.email || copy.sections.support[1],
       ],
     })
   }
