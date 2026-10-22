@@ -4,7 +4,9 @@ import { loadLegalConfig, formatServiceAddress } from '@/lib/legal-content'
 import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
 import { db, json, origin, required } from '@/lib/neurokore/server'
 import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
-import { softwareLicenseEmailText } from '@/lib/plugins/consumer-license-terms'
+import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
+import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
+import { LEGAL_LOCALES } from '@/lib/legal-i18n'
 
 export const runtime = 'nodejs'
 
@@ -17,6 +19,7 @@ const sessionSchema = z.object({
   customer_email: z.email(),
   amount_total: z.number().int().nonnegative(),
   currency: z.string().min(3).max(3),
+  metadata: z.object({ locale: z.enum(LEGAL_LOCALES).optional(), terms_version: z.string().optional() }).nullable().optional(),
   line_items: z.object({
     has_more: z.literal(false),
     data: z.array(z.object({
@@ -26,8 +29,8 @@ const sessionSchema = z.object({
   }),
 })
 
-function formatChargedAmount(amount: number, currency: string): string {
-  const formatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: currency.toUpperCase() })
+function formatChargedAmount(amount: number, currency: string, locale: string): string {
+  const formatter = new Intl.NumberFormat(locale, { style: 'currency', currency: currency.toUpperCase() })
   const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2
   return formatter.format(amount / Math.pow(10, digits))
 }
@@ -48,41 +51,50 @@ async function sendContractConfirmation(
   const product = productResult.data
   const operator = formatServiceAddress(legal)
   const siteUrl = origin()
+  const locale = session.metadata?.locale ?? 'en'
+  const translations = COMMERCE_LEGAL_COPY[locale]
+  const withdrawal = WITHDRAWAL_COPY[locale]
+  const termsText = commerceSections('terms', locale)
+    .map(section => section.title + '\\n' + section.paragraphs.join('\\n')).join('\\n\\n')
+  const licenceText = commerceSections('license', locale)
+    .map(section => section.title + '\\n' + section.paragraphs.join('\\n')).join('\\n\\n')
   const text = [
-    'NEUROKLAST – Bestätigung deiner Softwarebestellung',
+    'NEUROKLAST AUDIO | ' + translations.docs.purchase,
+    'Contract terms version: ' + (session.metadata?.terms_version ?? '2026-10-22'),
     '',
-    'Bestellung: ' + order.id,
-    'Datum: ' + new Date().toISOString(),
-    'Produkt: ' + product.title,
-    'Produktdetails: ' + (product.short_description || 'Digitale Audio-Software'),
-    'Systemvoraussetzungen: ' + (Array.isArray(product.system_requirements) ? product.system_requirements.join('; ') : 'Siehe Produktseite'),
-    'Zahlungsart: Stripe Checkout',
-    'Gezahlter Gesamtbetrag inklusive anfallender Steuern: ' + formatChargedAmount(session.amount_total, session.currency),
-    'Bereitstellung: digitaler Download, kein physischer Versand.',
-    'Deine Lizenz wird nach bestätigtem Zahlungseingang deinem Kundenkonto zugeordnet.',
-    'Lizenzkonto: ' + siteUrl + '/neurokore/account',
-    'Produktseite: ' + siteUrl + '/plugins/' + product.slug,
+    'Order reference: ' + order.id,
+    'Date: ' + new Date().toISOString(),
+    'Product: ' + product.title,
+    'Description: ' + (product.short_description || product.title),
+    'System requirements: ' + (Array.isArray(product.system_requirements) ? product.system_requirements.join('; ') : 'See product page'),
+    'Payment provider: Stripe',
+    'Total charged including applicable tax: ' + formatChargedAmount(session.amount_total, session.currency, locale),
+    'Digital delivery. No physical shipment.',
+    'Your software licence is assigned to your account after payment confirmation.',
+    'Account: ' + siteUrl + '/neurokore/account',
+    'Product: ' + siteUrl + '/plugins/' + product.slug,
     '',
-    'Verkäufer:',
-    operator || 'Siehe Impressum: ' + siteUrl + '/legal-notice',
-    'Kontakt: ' + (legal.email || 'siehe Impressum'),
+    translations.sections.seller[0] + ':',
+    operator || siteUrl + '/legal-notice',
+    'Email: ' + (legal.email || siteUrl + '/legal-notice'),
     '',
-    'Widerrufsbelehrung',
-    'Sofern du Verbraucher bist, kannst du diesen Vertrag binnen vierzehn Tagen ohne Angabe von Gründen widerrufen. Die Frist beginnt mit Vertragsschluss.',
-    'Du kannst deinen Widerruf durch eine eindeutige Erklärung an die angegebene Kontaktadresse oder online unter ' + siteUrl + '/withdrawal übermitteln. Die rechtzeitige Absendung reicht zur Fristwahrung.',
-    'Bei einem wirksamen Widerruf erstatten wir die erhaltenen Zahlungen unverzüglich, spätestens innerhalb von vierzehn Tagen nach Eingang der Erklärung, grundsätzlich mit demselben Zahlungsmittel und ohne zusätzliche Erstattungsentgelte.',
-    'Für digitale Inhalte kann das Widerrufsrecht nur unter den Voraussetzungen des § 356 Abs. 6 BGB erlöschen. Dieser Checkout verlangt keine Erklärung eines solchen Verzichts.',
-    'Vollständige Widerrufsinformation und Musterformular: ' + siteUrl + '/withdrawal-policy',
+    translations.docs.withdrawal,
+    withdrawal.period,
+    withdrawal.refunds,
+    withdrawal.exception,
+    'Online withdrawal: ' + siteUrl + '/withdrawal',
+    'Withdrawal information: ' + siteUrl + '/withdrawal-policy',
     '',
-    'Lizenzbedingungen (Kopie für deine Unterlagen):',
-    softwareLicenseEmailText(),
+    translations.docs.terms,
+    termsText,
     '',
-    'Weitere Informationen: ' + siteUrl + '/purchase-info',
-    'Datenschutz: ' + siteUrl + '/privacy-policy',
-    'Impressum: ' + siteUrl + '/legal-notice',
+    translations.docs.license,
+    licenceText,
     '',
-    'Bitte bewahre diese Bestätigung für deine Unterlagen auf.',
-  ].join('\n')
+    siteUrl + '/purchase-info',
+    siteUrl + '/privacy-policy',
+    siteUrl + '/legal-notice',
+  ].join('\\n')
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     cache: 'no-store',
@@ -96,7 +108,7 @@ async function sendContractConfirmation(
     body: JSON.stringify({
       from: process.env.CONTACT_FROM_EMAIL || 'NEUROKLAST <noreply@neuroklast.net>',
       to: [order.email],
-      subject: 'Bestätigung deiner Bestellung – ' + product.title,
+      subject: translations.docs.purchase + ' – ' + product.title,
       text,
     }),
   })
