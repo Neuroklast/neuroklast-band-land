@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { buildGigSlugMap } from '@/lib/gig-slug'
+import { LEGAL_LOCALES } from '@/lib/legal-i18n'
+import { LEGAL_DOCUMENTS, localizedLegalPath } from '@/lib/legal-routes'
 
 /** Rebuild periodically so new news posts appear without redeploy. */
 export const revalidate = 300
@@ -15,14 +17,22 @@ const STATIC_URLS: SitemapUrl[] = [
   { loc: `${BASE_URL}/gigs`, changefreq: 'weekly', priority: '0.8' },
   { loc: `${BASE_URL}/media`, changefreq: 'weekly', priority: '0.7' },
   { loc: `${BASE_URL}/plugins`, changefreq: 'weekly', priority: '0.8' },
-  { loc: `${BASE_URL}/terms`, changefreq: 'monthly', priority: '0.5' },
-  { loc: `${BASE_URL}/license-terms`, changefreq: 'monthly', priority: '0.5' },
-  { loc: `${BASE_URL}/purchase-info`, changefreq: 'monthly', priority: '0.4' },
-  { loc: `${BASE_URL}/withdrawal-policy`, changefreq: 'monthly', priority: '0.4' },
+
+
+
+
   { loc: `${BASE_URL}/withdrawal`, changefreq: 'monthly', priority: '0.3' },
-  { loc: `${BASE_URL}/legal-notice`, changefreq: 'monthly', priority: '0.3' },
-  { loc: `${BASE_URL}/privacy-policy`, changefreq: 'monthly', priority: '0.3' },
+
+
 ]
+
+const LOCALIZED_LEGAL_URLS: SitemapUrl[] = LEGAL_LOCALES.flatMap(locale =>
+  LEGAL_DOCUMENTS.map(document => ({
+    loc: BASE_URL + localizedLegalPath(locale, document),
+    changefreq: 'monthly',
+    priority: '0.4',
+  })),
+)
 
 function escapeXml(value: string): string {
   return value
@@ -169,7 +179,7 @@ export async function GET(): Promise<NextResponse> {
   const datedGigUrls = gigUrls.map((url) =>
     url.lastmod ? url : { ...url, lastmod: contentStamp },
   )
-  const xml = buildSitemap([...staticUrls, ...pluginUrls, ...datedGigUrls, ...newsUrls])
+  const xml = buildSitemap([...staticUrls, ...LOCALIZED_LEGAL_URLS, ...pluginUrls, ...datedGigUrls, ...newsUrls])
   return new NextResponse(xml, {
     status: 200,
     headers: {

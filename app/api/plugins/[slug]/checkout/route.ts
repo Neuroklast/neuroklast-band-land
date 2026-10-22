@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { LEGAL_LOCALES } from '@/lib/legal-i18n'
+import { localizedLegalPath } from '@/lib/legal-routes'
+import { COMMERCE_TERMS_VERSION } from '@/lib/commerce-version'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
 import { body, db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
@@ -88,7 +90,7 @@ export async function POST(request: Request, context: RouteContext) {
       mode: 'payment', customer_email: buyer.email, client_reference_id: id,
       'metadata[plugin_order]': id,
       'metadata[locale]': locale,
-      'metadata[terms_version]': '2026-10-22',
+      'metadata[terms_version]': COMMERCE_TERMS_VERSION,
       locale: stripeLocale,
       'line_items[0][price]': price, 'line_items[0][quantity]': '1',
       success_url: origin() + '/neurokore/account?checkout=success',
@@ -96,7 +98,7 @@ export async function POST(request: Request, context: RouteContext) {
       'automatic_tax[enabled]': 'true',
       'billing_address_collection': 'required',
       'consent_collection[terms_of_service]': 'required',
-      'custom_text[submit][message]': 'Terms: ' + origin() + '/terms | Withdrawal: ' + origin() + '/withdrawal-policy',
+      'custom_text[submit][message]': 'Terms: ' + origin() + localizedLegalPath(locale, 'terms') + ' | Withdrawal: ' + origin() + localizedLegalPath(locale, 'withdrawal-policy'),
     })
     const session = z.object({ id: z.string(), url: z.url() }).parse(
       await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id))

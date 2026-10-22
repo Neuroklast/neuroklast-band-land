@@ -1,3 +1,4 @@
+import { legalLanguageAlternates, localizedLegalPath } from '@/lib/legal-routes'
 import type { Metadata } from 'next'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { DEFAULT_LEGAL_CONFIG, loadLegalConfig, type LegalConfig } from '@/lib/legal-content'
@@ -10,7 +11,7 @@ import { absoluteUrl, buildBreadcrumbSchema } from '@/lib/structured-data'
 export const metadata: Metadata = {
   title: 'Legal Notice',
   description: 'Legal notice and operator information for this website.',
-  alternates: { canonical: '/legal-notice' },
+  alternates: { canonical: localizedLegalPath('en', 'legal-notice'), languages: legalLanguageAlternates('legal-notice') },
 }
 
 export const revalidate = 60

@@ -6,6 +6,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { resolveLegalLocale } from '@/lib/legal-templates'
 import { COMMERCE_ACTIONS } from '@/lib/commerce-actions-i18n'
 import { COMMERCE_LEGAL_COPY } from '@/lib/commerce-legal-copy'
+import { localizedLegalPath } from '@/lib/legal-routes'
 
 export function PurchasePanel({
   slug, productTitle, price, recurring,
@@ -57,12 +58,12 @@ export function PurchasePanel({
       <p className="font-semibold">{productTitle}: {price}</p>
       <p className="text-sm text-white/80">{copy.pricing}</p>
       <div className="flex flex-wrap gap-4 text-sm">
-        <Link className="underline" href="/legal-notice">{links.notice}</Link>
-        <Link className="underline" href="/privacy-policy">{links.privacy}</Link>
-        <Link className="underline" href="/terms">{links.terms}</Link>
-        <Link className="underline" href="/purchase-info">{links.purchase}</Link>
-        <Link className="underline" href="/license-terms">{links.licence}</Link>
-        <Link className="underline" href="/withdrawal-policy">{COMMERCE_LEGAL_COPY[language].docs.withdrawal}</Link>
+        <Link className="underline" href={localizedLegalPath(language, 'legal-notice')}>{links.notice}</Link>
+        <Link className="underline" href={localizedLegalPath(language, 'privacy-policy')}>{links.privacy}</Link>
+        <Link className="underline" href={localizedLegalPath(language, 'terms')}>{links.terms}</Link>
+        <Link className="underline" href={localizedLegalPath(language, 'purchase-info')}>{links.purchase}</Link>
+        <Link className="underline" href={localizedLegalPath(language, 'license-terms')}>{links.licence}</Link>
+        <Link className="underline" href={localizedLegalPath(language, 'withdrawal-policy')}>{COMMERCE_LEGAL_COPY[language].docs.withdrawal}</Link>
       </div>
       {recurring ? (
         <p role="alert">Recurring subscriptions are not currently available for this product.</p>
