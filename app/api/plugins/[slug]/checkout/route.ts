@@ -52,9 +52,10 @@ export async function POST(request: Request, context: RouteContext) {
       type: z.enum(['one_time', 'recurring']),
       currency: z.string(),
       unit_amount: z.number().int().nonnegative().nullable(),
+      tax_behavior: z.enum(['inclusive', 'exclusive', 'unspecified']).nullable(),
     }).parse(await stripe('prices/' + encodeURIComponent(price), required('STRIPE_SECRET_KEY')))
-    if (!stripePrice.active || stripePrice.type !== 'one_time' || stripePrice.unit_amount === null) {
-      return json({ error: 'This product has no valid one-time price.' }, 409)
+    if (!stripePrice.active || stripePrice.type !== 'one_time' || stripePrice.unit_amount === null || stripePrice.tax_behavior !== 'inclusive') {
+      return json({ error: 'This product requires an active tax-inclusive one-time Stripe price.' }, 409)
     }
 
     const encryptionSecret = required('NEUROKORE_KEY_ENCRYPTION_SECRET')
