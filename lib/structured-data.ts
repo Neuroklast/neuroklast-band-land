@@ -209,3 +209,41 @@ export function buildMusicEventSchema(input: MusicEventInput): JsonLdObject | nu
 
   return schema
 }
+
+/** Audio software schema, without fabricated reviews, availability or prices. */
+export function buildSoftwareApplicationSchema(input: {
+  name: string
+  url: string
+  description?: string | null
+  imageUrl?: string | null
+  version?: string | null
+  downloadUrl?: string | null
+  platforms?: string[]
+  offer?: { amount: number; currency: string }
+}): JsonLdObject | null {
+  if (!input.name?.trim() || !isHttpsUrl(input.url)) return null
+  const app: JsonLdObject = {
+    '@context': SCHEMA,
+    '@type': 'SoftwareApplication',
+    name: input.name.trim(),
+    applicationCategory: 'MultimediaApplication',
+    url: input.url.trim(),
+  }
+  if (input.description?.trim()) app.description = input.description.trim()
+  if (isHttpsUrl(input.imageUrl)) app.image = input.imageUrl.trim()
+  if (input.version?.trim()) app.softwareVersion = input.version.trim()
+  if (isHttpsUrl(input.downloadUrl)) app.downloadUrl = input.downloadUrl.trim()
+  if (input.platforms?.length) app.operatingSystem = [...new Set(input.platforms)]
+  if (input.offer && Number.isInteger(input.offer.amount) && input.offer.amount >= 0 &&
+      /^[A-Z]{3}$/.test(input.offer.currency)) {
+    const digits = new Intl.NumberFormat('en', { style: 'currency', currency: input.offer.currency })
+      .resolvedOptions().maximumFractionDigits ?? 2
+    app.offers = {
+      '@type': 'Offer',
+      url: input.url.trim(),
+      price: (input.offer.amount / (10 ** digits)).toFixed(digits),
+      priceCurrency: input.offer.currency,
+    }
+  }
+  return app
+}
