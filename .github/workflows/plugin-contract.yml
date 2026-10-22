@@ -60,3 +60,13 @@ jobs:
       - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin.sql
       - run: node supabase/tests/plugin-concurrency.mjs
+      - name: Reset public schema for the migration path
+        run: psql -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+      - name: Seed the pre-migration NEUROKORE schema
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin-legacy.sql
+      - name: Apply the schema to legacy data, twice, to prove idempotency
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - name: Assert legacy data survived and was backfilled
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin-migration.sql

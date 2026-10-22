@@ -69,7 +69,6 @@ begin
     raise exception 'TEST FAILED: paid NEUROKORE licence must be v2';
   end if;
 
-  dev := 'v2:'||repeat('f',64);
   if has_table_privilege('anon','public.plugin_licenses','SELECT') then
     raise exception 'TEST FAILED: anon can read keys';
   end if;
