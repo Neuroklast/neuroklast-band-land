@@ -186,7 +186,7 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
         <div>
           <h2 className="text-sm font-semibold text-zinc-200">Privacy Policy</h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Leave empty to use the built-in GDPR-compliant template. Enter custom text to override the entire policy.
+            Leave empty to use the built-in starter template. Verify that it matches the actual services, data flows, and retention periods before publishing. Custom text overrides the entire policy.
           </p>
         </div>
         <textarea

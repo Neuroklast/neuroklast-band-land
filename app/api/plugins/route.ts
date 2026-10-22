@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { adminFailureMessage } from '@/lib/neurokore/admin-error'
 import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
@@ -62,6 +62,7 @@ async function audit(
 }
 
 function revalidateProductSurface(slug: string) {
+  revalidateTag('homepage-site-data', 'max')
   revalidatePath('/plugins')
   if (slug) {
     revalidatePath('/plugins/' + slug)

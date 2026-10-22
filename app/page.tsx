@@ -115,8 +115,10 @@ interface ProductItemRow {
   slug: string | null
   kind: string | null
   description: string | null
+  short_description: string | null
   image_storage_path: string | null
   image_url: string | null
+  media: Array<{ kind: string; url: string }> | null
   href: string | null
   price_label: string | null
 }
@@ -218,7 +220,7 @@ async function fetchAll() {
       supabase.from('music_highlights').select('id, title, youtube_url, description').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('merchandise').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('soundpacks').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
-      supabase.from('products').select('id, title, slug, kind, description, image_storage_path, image_url, href, price_label').eq('active', true).order('display_order', { ascending: true }),
+      supabase.from('products').select('id, title, slug, kind, description, short_description, image_storage_path, image_url, media, href, price_label').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('gallery').select('id, alt, storage_path, image_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('media_downloads').select('id, title, description, category, file_storage_path, file_url, file_mime, file_size_bytes, original_filename, display_order').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('social_links').select('id, platform, url, label, logo_storage_path, logo_url').order('display_order', { ascending: true }),
@@ -409,14 +411,22 @@ export default async function HomePage() {
     imageUrl: resolveImageUrl(row.image_storage_path, row.image_url),
     externalUrl: row.external_url,
   })
-  const productItemMap = (row: ProductItemRow) => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    imageUrl: resolveImageUrl(row.image_storage_path, row.image_url),
-    href: row.slug ? '/plugins/' + row.slug : row.href,
-    priceLabel: row.price_label,
-  })
+  const productItemMap = (row: ProductItemRow) => {
+    // Plugin uploads are saved in products.media by /admin/plugins.
+    // The legacy cover columns belong to the older product editor and may be empty.
+    const pluginImageUrl = row.kind === 'plugin' && Array.isArray(row.media)
+      ? row.media.find((entry) => entry?.kind === 'image' && typeof entry.url === 'string' && entry.url.trim())?.url
+      : undefined
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.short_description || row.description,
+      imageUrl: (pluginImageUrl ? resolveImageUrl(null, pluginImageUrl) : null)
+        ?? resolveImageUrl(row.image_storage_path, row.image_url),
+      href: row.slug ? '/plugins/' + row.slug : row.href,
+      priceLabel: row.price_label,
+    }
+  }
   const galleryItemMap = (row: GalleryItemRow) => ({
     id: row.id,
     alt: row.alt,
