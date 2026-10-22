@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
 import { loadLegalConfig, formatServiceAddress } from '@/lib/legal-content'
 import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
-import { db, json, required } from '@/lib/neurokore/server'
+import { db, json, origin } from '@/lib/neurokore/server'
 import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 
 export const runtime = 'nodejs'
@@ -27,7 +27,7 @@ const sessionSchema = z.object({
 
 function formatChargedAmount(amount: number, currency: string): string {
   const formatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: currency.toUpperCase() })
-  const digits = formatter.resolvedOptions().maximumFractionDigits
+  const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2
   return formatter.format(amount / Math.pow(10, digits))
 }
 
@@ -46,7 +46,7 @@ async function sendContractConfirmation(
 
   const product = productResult.data
   const operator = formatServiceAddress(legal)
-  const siteUrl = required('NEUROKORE_SITE_URL').replace(/\/+$/, '')
+  const siteUrl = origin()
   const text = [
     'NEUROKLAST – Bestätigung deiner Softwarebestellung',
     '',
