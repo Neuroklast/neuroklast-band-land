@@ -9,6 +9,7 @@ import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
 import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
 import { signingKeyFor } from '@/lib/plugins/signing'
 import { slugSchema } from '@/lib/plugins/releases'
+import { hasSellableRelease, saleReleaseSchema } from '@/lib/plugins/sale-readiness'
 import { stripe } from '@/lib/neurokore/stripe'
 import { loadLegalConfig, getLegalCompleteness } from '@/lib/legal-content'
 
@@ -48,6 +49,21 @@ export async function POST(request: Request, context: RouteContext) {
     if (product.pricing_mode !== 'paid') return json({ error: 'This plugin is free.' }, 409)
     if (!product.sales_enabled) return json({ error: 'Sales are not open for this plugin.' }, 409)
     if (!product.license_required) return json({ error: 'This plugin does not need a license.' }, 409)
+
+    // Query release records directly; anonymous download availability is a separate switch.
+    // No paid checkout until at least one validated binary is actually published.
+    const releaseResult = await client.from('plugin_releases')
+      .select('id,status,withdrawn_at,plugin_release_artifacts(id,validation_status,storage_key,filesize_bytes,sha256)')
+      .eq('product_id', product.id)
+      .eq('status', 'published')
+      .is('withdrawn_at', null)
+      .order('published_at', { ascending: false })
+      .limit(25)
+    if (releaseResult.error) throw releaseResult.error
+    const releases = z.array(saleReleaseSchema).parse(releaseResult.data ?? [])
+    if (!hasSellableRelease(releases)) {
+      return json({ error: 'Sales are unavailable until a validated plugin build has been published.' }, 409)
+    }
 
     const secretResult = await client.from('plugin_product_secrets')
       .select('stripe_price_id,signing_key_cipher').eq('product_id', product.id).maybeSingle()
