@@ -13,7 +13,7 @@ export default function PurchaseInfoPage() {
         <h1 className="text-3xl font-semibold">Informationen zum Softwarekauf</h1>
         <section className="space-y-2">
           <h2 className="text-xl font-semibold">Anbieter und Produkte</h2>
-          <p>Der Verkäufer ist der im <Link href="/legal-notice" className="underline">Impressum</Link> genannte Websitebetreiber. Produktbeschreibung, Funktionen, Systemvoraussetzungen, Lizenzmodell und gegebenenfalls die Dauer einer Lizenz findest du auf der jeweiligen Produktseite. Bitte prüfe diese Angaben vor dem Kauf.</p>
+          <p>Der Verkäufer ist der im <Link href="/legal-notice" className="underline">Impressum</Link> genannte Websitebetreiber. Produktbeschreibung, Funktionen, Systemvoraussetzungen, Lizenzmodell und gegebenenfalls die Dauer einer Lizenz findest du auf der jeweiligen Produktseite. Bitte prüfe diese Angaben vor dem Kauf. Die <Link href="/license-terms" className="underline">Lizenzbedingungen</Link> findest du ebenfalls auf dieser Website.</p>
         </section>
         <section className="space-y-2">
           <h2 className="text-xl font-semibold">Bestellung und Bezahlung</h2>
