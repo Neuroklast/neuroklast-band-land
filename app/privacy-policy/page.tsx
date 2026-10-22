@@ -1,3 +1,4 @@
+import { legalLanguageAlternates, localizedLegalPath } from '@/lib/legal-routes'
 import type { Metadata } from 'next'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { DEFAULT_LEGAL_CONFIG, loadLegalConfig, type LegalConfig } from '@/lib/legal-content'
@@ -10,7 +11,7 @@ import { absoluteUrl, buildBreadcrumbSchema } from '@/lib/structured-data'
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'Privacy policy and data protection information for this website.',
-  alternates: { canonical: '/privacy-policy' },
+  alternates: { canonical: localizedLegalPath('en', 'privacy-policy'), languages: legalLanguageAlternates('privacy-policy') },
 }
 
 export const revalidate = 60
