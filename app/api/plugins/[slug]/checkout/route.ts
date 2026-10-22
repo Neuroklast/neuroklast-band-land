@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
+import { LEGAL_LOCALES } from '@/lib/legal-i18n'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
-import { db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
+import { body, db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
 import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
 import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
 import { signingKeyFor } from '@/lib/plugins/signing'
@@ -20,6 +21,12 @@ export async function POST(request: Request, context: RouteContext) {
     sameOrigin(request)
     await limit(request, 'plugin-checkout', 5)
     const { slug } = await context.params
+    const requested = z.object({ locale: z.enum(LEGAL_LOCALES).default('en') }).strict()
+      .safeParse(await body(request))
+    if (!requested.success) return json({ error: 'Invalid checkout request.' }, 400)
+    const locale = requested.data.locale
+    // Stripe Checkout does not provide Ukrainian UI at present; EN is fallback.
+    const stripeLocale = locale === 'uk' ? 'en' : locale
     if (!slugSchema.safeParse(slug).success) return json({ error: 'Plugin not found.' }, 404)
     const buyer = await user()
     if (!isNeurokoreSalesEnabled()) return json({ error: 'Sales are not open yet.' }, 503)
@@ -80,13 +87,16 @@ export async function POST(request: Request, context: RouteContext) {
     const params = new URLSearchParams({
       mode: 'payment', customer_email: buyer.email, client_reference_id: id,
       'metadata[plugin_order]': id,
+      'metadata[locale]': locale,
+      'metadata[terms_version]': '2026-10-22',
+      locale: stripeLocale,
       'line_items[0][price]': price, 'line_items[0][quantity]': '1',
       success_url: origin() + '/neurokore/account?checkout=success',
       cancel_url: origin() + '/plugins/' + product.slug + '?checkout=cancelled',
       'automatic_tax[enabled]': 'true',
       'billing_address_collection': 'required',
       'consent_collection[terms_of_service]': 'required',
-      'custom_text[submit][message]': 'The final total including applicable taxes is shown before payment. Information on withdrawal: ' + origin() + '/withdrawal-policy',
+      'custom_text[submit][message]': 'Terms: ' + origin() + '/terms | Withdrawal: ' + origin() + '/withdrawal-policy',
     })
     const session = z.object({ id: z.string(), url: z.url() }).parse(
       await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id))
