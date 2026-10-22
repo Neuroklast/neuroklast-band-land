@@ -9,6 +9,7 @@ const priceSchema = z.object({
   currency: z.string().min(3).max(3),
   type: z.enum(['one_time', 'recurring']),
   active: z.boolean(),
+  tax_behavior: z.enum(['inclusive', 'exclusive', 'unspecified']).nullable(),
 })
 
 export type ProductPrice = { amount: number; currency: string; recurring: boolean }
@@ -24,7 +25,8 @@ export async function loadProductPrice(priceId: string | null): Promise<ProductP
     const price = priceSchema.parse(
       await stripe(`prices/${encodeURIComponent(priceId)}`, required('STRIPE_SECRET_KEY')),
     )
-    if (!price.active) return null
+    // B2C storefronts must show the tax-inclusive total, not a net price.
+    if (!price.active || price.tax_behavior !== 'inclusive') return null
     return { amount: price.unit_amount, currency: price.currency.toUpperCase(), recurring: price.type === 'recurring' }
   } catch {
     return null
