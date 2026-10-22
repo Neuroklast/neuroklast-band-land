@@ -4,7 +4,8 @@ import { CdnImage } from '@/app/_components/public/CdnImage'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { formatProductPrice, loadProductPriceForProduct } from '@/lib/plugins/price'
-import { CHANNEL_LABEL, latestByChannel } from '@/lib/plugins/releases'
+import { CHANNEL_LABEL } from '@/lib/plugins/releases'
+import { availablePublicDownload } from '@/lib/plugins/public-download'
 import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
 import { PurchasePanel } from './PurchasePanel'
 
@@ -25,10 +26,8 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
   const product = await loadPublicProduct(slug)
   if (!product) notFound()
 
-  const releases = latestByChannel(product.releases)
-  const displayedRelease = releases.find(release => release.channel === 'stable') ?? releases[0]
-  const downloadAvailable = product.demo_downloads_enabled &&
-    releases.some(release => release.artifacts.length > 0)
+  const displayedRelease = availablePublicDownload(product)
+  const downloadAvailable = displayedRelease !== null
   const images = product.media.filter(item => item.kind === 'image' && item.url)
   const cover = images[0]
   const price = product.pricing_mode === 'paid' && product.sales_enabled
