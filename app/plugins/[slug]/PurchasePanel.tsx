@@ -66,6 +66,7 @@ export function PurchasePanel({
         <Link className="underline" href="/legal-notice">Anbieter</Link>
         <Link className="underline" href="/privacy-policy">Datenschutz</Link>
         <Link className="underline" href="/purchase-info">Kaufbedingungen</Link>
+        <Link className="underline" href="/license-terms">Lizenzbedingungen</Link>
         <Link className="underline" href="/withdrawal">Vertrag widerrufen</Link>
       </div>
       {recurring ? (
@@ -82,7 +83,7 @@ export function PurchasePanel({
         <>
           <label className="flex cursor-pointer items-start gap-3 text-sm">
             <input type="checkbox" className="mt-1 h-5 w-5 shrink-0" checked={reviewed} onChange={event => setReviewed(event.target.checked)} />
-            <span>Ich habe die Widerrufsbelehrung und die Informationen zur Verarbeitung meiner Kaufdaten gelesen. Damit erkläre ich keinen Verzicht auf das Widerrufsrecht.</span>
+            <span>Ich habe die Widerrufsbelehrung, Lizenzbedingungen und Informationen zur Verarbeitung meiner Kaufdaten gelesen. Damit erkläre ich keinen Verzicht auf das Widerrufsrecht.</span>
           </label>
           <button className="min-h-11 border border-red-600 bg-red-900/30 px-5 py-3 font-semibold hover:bg-red-900/50 disabled:opacity-50"
             disabled={!reviewed || busy} onClick={() => void checkout()}>
