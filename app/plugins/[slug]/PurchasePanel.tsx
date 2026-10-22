@@ -55,7 +55,7 @@ export function PurchasePanel({
       <p className="font-semibold">{productTitle}: {price}{recurring ? ' / Abrechnungszeitraum' : ' einmalig'}</p>
       <p className="text-sm text-white/80">
         Ein digital bereitgestellter Lizenzschlüssel für die Vollversion.
-        Anfallende Steuern und der verbindliche Gesamtbetrag werden vor der Zahlung im Stripe-Checkout ausgewiesen.
+        Der angezeigte Preis enthält anfallende Steuern. Der verbindliche Gesamtbetrag wird vor der Zahlung im Stripe-Checkout ausgewiesen.
         Es erfolgt kein Versand physischer Waren.
       </p>
       <p className="text-sm text-white/80">
