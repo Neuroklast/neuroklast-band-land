@@ -5,6 +5,7 @@ import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
 import { db, json, origin, required } from '@/lib/neurokore/server'
 import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
+import { contractDocumentText, contractEmailText } from '@/lib/neurokore/email-format'
 import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
 import { LEGAL_LOCALES } from '@/lib/legal-i18n'
 import { localizedLegalPath } from '@/lib/legal-routes'
@@ -56,11 +57,9 @@ async function sendContractConfirmation(
   const locale = session.metadata?.locale ?? 'en'
   const translations = COMMERCE_LEGAL_COPY[locale]
   const withdrawal = WITHDRAWAL_COPY[locale]
-  const termsText = commerceSections('terms', locale)
-    .map(section => section.title + '\\n' + section.paragraphs.join('\\n')).join('\\n\\n')
-  const licenceText = commerceSections('license', locale)
-    .map(section => section.title + '\\n' + section.paragraphs.join('\\n')).join('\\n\\n')
-  const text = [
+  const termsText = contractDocumentText(commerceSections('terms', locale))
+  const licenceText = contractDocumentText(commerceSections('license', locale))
+  const text = contractEmailText([
     'NEUROKLAST AUDIO | ' + translations.docs.purchase,
     'Contract terms version: ' + (session.metadata?.terms_version ?? COMMERCE_TERMS_VERSION),
     '',
@@ -96,7 +95,7 @@ async function sendContractConfirmation(
     siteUrl + localizedLegalPath(locale, 'purchase-info'),
     siteUrl + localizedLegalPath(locale, 'privacy-policy'),
     siteUrl + '/legal-notice',
-  ].join('\\n')
+  ])
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     cache: 'no-store',
