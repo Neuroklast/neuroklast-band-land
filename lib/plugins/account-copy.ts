@@ -1,0 +1,108 @@
+import type { LegalLocale } from '@/lib/legal-i18n'
+
+export type AccountCopy = {
+  title: string; email: string; code: string; signIn: string; sendCode: string; sending: string
+  checkEmail: string; authError: string; loadError: string; signedIn: string; signOut: string
+  noLicences: string; refresh: string; licence: string; alpha: string; full: string
+  revoked: string; expires: string; unlimited: string; activations: string
+  showKey: string; hideKey: string; copyKey: string; copied: string
+  download: string; transfer: string; support: string; changeEmail: string
+}
+export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
+  de: {
+    title: 'Meine Lizenzen', email: 'E-Mail-Adresse', code: 'Anmeldecode', signIn: 'Anmelden',
+    sendCode: 'Code senden', sending: 'Bitte warten…', checkEmail: 'Prüfe dein E-Mail-Postfach.',
+    authError: 'Anmeldung fehlgeschlagen. Prüfe deinen Code und versuche es erneut.',
+    loadError: 'Lizenzen konnten nicht geladen werden.', signedIn: 'Angemeldet als', signOut: 'Abmelden',
+    noLicences: 'Noch keine Lizenzen vorhanden.', refresh: 'Aktualisieren', licence: 'Lizenzschlüssel',
+    alpha: 'Alpha-Zugang', full: 'Vollversion', revoked: 'Widerrufen', expires: 'Gültig bis',
+    unlimited: 'Ohne Ablaufdatum', activations: 'Aktivierte Geräte', showKey: 'Schlüssel anzeigen',
+    hideKey: 'Schlüssel verbergen', copyKey: 'Kopieren', copied: 'Schlüssel kopiert.',
+    download: 'Produkt herunterladen', transfer: 'Zum Gerätewechsel kontaktiere bitte den Support.',
+    support: 'Support kontaktieren', changeEmail: 'Andere E-Mail verwenden',
+  },
+  en: {
+    title: 'My licences', email: 'Email address', code: 'Email code', signIn: 'Sign in',
+    sendCode: 'Send sign-in code', sending: 'Please wait…', checkEmail: 'Check your email for your sign-in code.',
+    authError: 'Sign-in failed. Check your email and code, then retry.',
+    loadError: 'Could not load your licences.', signedIn: 'Signed in as', signOut: 'Sign out',
+    noLicences: 'No licences yet.', refresh: 'Refresh', licence: 'Licence key',
+    alpha: 'Alpha access', full: 'Full version', revoked: 'Revoked', expires: 'Expires',
+    unlimited: 'No expiry', activations: 'Activated devices', showKey: 'Show key',
+    hideKey: 'Hide key', copyKey: 'Copy', copied: 'Key copied.',
+    download: 'Download product', transfer: 'Contact support to change activated devices.',
+    support: 'Contact support', changeEmail: 'Use a different email',
+  },
+  uk: {
+    title: 'Мої ліцензії', email: 'Електронна пошта', code: 'Код з листа', signIn: 'Увійти',
+    sendCode: 'Надіслати код', sending: 'Зачекайте…', checkEmail: 'Перевірте електронну пошту.',
+    authError: 'Не вдалося увійти. Перевірте код.', loadError: 'Не вдалося завантажити ліцензії.',
+    signedIn: 'Обліковий запис', signOut: 'Вийти', noLicences: 'Ліцензій поки немає.',
+    refresh: 'Оновити', licence: 'Ключ ліцензії', alpha: 'Альфа-доступ', full: 'Повна версія',
+    revoked: 'Відкликано', expires: 'Діє до', unlimited: 'Безстроково',
+    activations: 'Активовані пристрої', showKey: 'Показати ключ', hideKey: 'Приховати ключ',
+    copyKey: 'Копіювати', copied: 'Ключ скопійовано.', download: 'Завантажити продукт',
+    transfer: 'Для зміни пристрою зверніться до підтримки.', support: 'Підтримка',
+    changeEmail: 'Інша адреса',
+  },
+  it: {
+    title: 'Le mie licenze', email: 'Email', code: 'Codice email', signIn: 'Accedi',
+    sendCode: 'Invia codice', sending: 'Attendere…', checkEmail: 'Controlla la posta.',
+    authError: 'Accesso non riuscito. Verifica il codice.', loadError: 'Impossibile caricare le licenze.',
+    signedIn: 'Connesso come', signOut: 'Esci', noLicences: 'Nessuna licenza.',
+    refresh: 'Aggiorna', licence: 'Chiave di licenza', alpha: 'Accesso alfa', full: 'Versione completa',
+    revoked: 'Revocata', expires: 'Scade il', unlimited: 'Senza scadenza',
+    activations: 'Dispositivi attivati', showKey: 'Mostra chiave', hideKey: 'Nascondi chiave',
+    copyKey: 'Copia', copied: 'Chiave copiata.', download: 'Scarica prodotto',
+    transfer: 'Contatta il supporto per cambiare dispositivo.', support: 'Supporto',
+    changeEmail: 'Usa un’altra email',
+  },
+  es: {
+    title: 'Mis licencias', email: 'Correo electrónico', code: 'Código recibido', signIn: 'Iniciar sesión',
+    sendCode: 'Enviar código', sending: 'Espera…', checkEmail: 'Revisa tu correo.',
+    authError: 'Error de acceso. Comprueba el código.', loadError: 'No se pudieron cargar las licencias.',
+    signedIn: 'Sesión de', signOut: 'Cerrar sesión', noLicences: 'Aún no hay licencias.',
+    refresh: 'Actualizar', licence: 'Clave de licencia', alpha: 'Acceso alfa', full: 'Versión completa',
+    revoked: 'Revocada', expires: 'Caduca el', unlimited: 'Sin caducidad',
+    activations: 'Dispositivos activados', showKey: 'Mostrar clave', hideKey: 'Ocultar clave',
+    copyKey: 'Copiar', copied: 'Clave copiada.', download: 'Descargar producto',
+    transfer: 'Contacta con soporte para cambiar el dispositivo.', support: 'Soporte',
+    changeEmail: 'Otra dirección de correo',
+  },
+  pt: {
+    title: 'As minhas licenças', email: 'Email', code: 'Código de acesso', signIn: 'Entrar',
+    sendCode: 'Enviar código', sending: 'Aguarde…', checkEmail: 'Verifique o seu email.',
+    authError: 'Erro ao entrar. Confirme o código.', loadError: 'Não foi possível carregar licenças.',
+    signedIn: 'Sessão iniciada como', signOut: 'Sair', noLicences: 'Ainda não existem licenças.',
+    refresh: 'Atualizar', licence: 'Chave de licença', alpha: 'Acesso alfa', full: 'Versão completa',
+    revoked: 'Revogada', expires: 'Expira em', unlimited: 'Sem validade limite',
+    activations: 'Dispositivos ativados', showKey: 'Mostrar chave', hideKey: 'Ocultar chave',
+    copyKey: 'Copiar', copied: 'Chave copiada.', download: 'Transferir produto',
+    transfer: 'Contacte o suporte para alterar dispositivos.', support: 'Suporte',
+    changeEmail: 'Outro email',
+  },
+  ja: {
+    title: 'ライセンス一覧', email: 'メールアドレス', code: 'メール認証コード', signIn: 'ログイン',
+    sendCode: 'コードを送信', sending: '処理中…', checkEmail: 'メールを確認してください。',
+    authError: 'ログインできません。コードをご確認ください。', loadError: 'ライセンスを読み込めませんでした。',
+    signedIn: 'ログイン中', signOut: 'ログアウト', noLicences: 'ライセンスはまだありません。',
+    refresh: '更新', licence: 'ライセンスキー', alpha: 'アルファ版', full: '製品版',
+    revoked: '無効', expires: '有効期限', unlimited: '期限なし',
+    activations: '認証済み端末', showKey: 'キーを表示', hideKey: 'キーを隠す',
+    copyKey: 'コピー', copied: 'コピーしました。', download: '製品をダウンロード',
+    transfer: '端末を変更するにはサポートへお問い合わせください。', support: 'サポート',
+    changeEmail: '別のメールアドレス',
+  },
+  ko: {
+    title: '내 라이선스', email: '이메일', code: '이메일 코드', signIn: '로그인',
+    sendCode: '코드 보내기', sending: '처리 중…', checkEmail: '이메일을 확인하세요.',
+    authError: '로그인 실패. 코드를 확인하세요.', loadError: '라이선스를 불러올 수 없습니다.',
+    signedIn: '로그인한 계정', signOut: '로그아웃', noLicences: '라이선스가 없습니다.',
+    refresh: '새로고침', licence: '라이선스 키', alpha: '알파 접근', full: '정식 버전',
+    revoked: '취소됨', expires: '만료일', unlimited: '만료 없음',
+    activations: '활성화된 기기', showKey: '키 표시', hideKey: '키 숨기기',
+    copyKey: '복사', copied: '키 복사됨.', download: '제품 다운로드',
+    transfer: '기기를 변경하려면 지원팀에 문의하세요.', support: '지원',
+    changeEmail: '다른 이메일 사용',
+  },
+}
