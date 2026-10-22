@@ -75,6 +75,7 @@ export async function updateSiteConfig(formData: FormData) {
     revalidatePath('/gigs')
     revalidatePath('/legal-notice')
     revalidatePath('/privacy-policy')
+    revalidatePath('/withdrawal-policy')
     revalidatePath('/admin')
     revalidatePath('/admin/site-config')
     revalidatePath('/admin/legal')
