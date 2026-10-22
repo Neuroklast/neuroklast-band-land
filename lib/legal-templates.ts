@@ -1,4 +1,5 @@
 import type { LegalConfig, LegalSection } from '@/lib/legal-content'
+import { COMMERCE_PRIVACY } from '@/lib/commerce-privacy-i18n'
 import {
   formatServiceAddress,
   getDataControllerLabel,
@@ -102,32 +103,9 @@ export function buildLegalNoticeSections(
 }
 
 
-/** Checkout and withdrawal processing must be disclosed even with custom policy copy. */
+/** Checkout and withdrawal processing is localized even with custom DE policy. */
 function commercePrivacySection(locale: LegalLocale): LegalSection {
-  if (locale === 'de') {
-    return {
-      id: 'digital-commerce',
-      title: 'Kundenkonto, Software-Lizenzen, Zahlungen und Widerruf',
-      paragraphs: [
-        'Beim Anmelden am Lizenzkonto verarbeiten wir deine E-Mail-Adresse und eine von Supabase verwaltete Benutzerkennung. Der Einmalcode dient der Anmeldung. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO zur Verwaltung deiner Lizenz und zur Durchführung vorvertraglicher Maßnahmen.',
-        'Bei Bestellungen speichern wir die Zuordnung zum Produkt, Kundenkennung, E-Mail-Adresse, Preisreferenz, Bestellstatus sowie Stripe-Checkout- und Zahlungsreferenzen. Bei Lizenzaktivierung verarbeiten wir Lizenzkennung, Lizenzstatus, Aktivierungszeitpunkte und gerätebezogene Kennungen. Das dient der Vertragserfüllung und dem Schutz gegen unberechtigte Mehrfachaktivierungen (Art. 6 Abs. 1 lit. b DSGVO).',
-        'Zahlungen werden über Stripe abgewickelt. Stripe erhält die zur Zahlungsabwicklung notwendigen Bestell-, Kontakt- und Rechnungsdaten und erhebt gegebenenfalls weitere Zahlungsdaten direkt. Wir speichern keine vollständigen Kartendaten. Hinweise zur eigenständigen Datenverarbeitung durch Stripe findest du unter https://stripe.com/de/privacy. Abhängig von der Verarbeitung können Daten in Drittländer übertragen werden.',
-        'Bestell- und Rechnungsunterlagen werden nach den jeweils geltenden handels- und steuerrechtlichen Aufbewahrungspflichten gespeichert. Lizenz- und Gerätedaten werden grundsätzlich für die Vertragsdauer sowie die notwendige Abwicklung verbleibender Ansprüche benötigt. Nicht mehr benötigte Kundendaten werden gelöscht, soweit keine Aufbewahrungspflichten entgegenstehen. Für Lösch-, Auskunfts- und Berichtigungsanfragen gilt die Kontaktadresse im Impressum.',
-        'Bei einer elektronischen Widerrufserklärung verarbeiten wir Name, E-Mail-Adresse, Vertragsidentifikationsdaten, Eingangszeitpunkt und eine Referenznummer zur Bearbeitung und Nachweisführung gemäß Art. 6 Abs. 1 lit. c DSGVO in Verbindung mit den verbraucherrechtlichen Pflichten. Die Eingangsbestätigung und die Benachrichtigung an den Anbieter werden über Resend per E-Mail versendet. Diese Korrespondenz wird nach dem notwendigen Bearbeitungs- und Aufbewahrungszeitraum gelöscht.',
-      ],
-    }
-  }
-  return {
-    id: 'digital-commerce',
-    title: 'Customer accounts, digital licences, payments and withdrawal',
-    paragraphs: [
-      'Email-based customer sign-in uses a Supabase user identifier and your email address. Sign-in codes enable access to licence management. Legal basis: Art. 6(1)(b) GDPR (contract performance and pre-contractual steps).',
-      'Orders associate the product, user ID, email, price reference, order status and Stripe payment/session references. Licence management processes licence IDs, status, activation timestamps and device identifiers to provide the licensed software and enforce activation limits. Legal basis: Art. 6(1)(b) GDPR.',
-      'Stripe handles payments and receives billing, contact and order information necessary to process them. Payment card details are collected by Stripe, not stored by us. Stripe information: https://stripe.com/privacy. Cross-border processing may occur.',
-      'Orders and invoicing records are retained where applicable law requires. Licence and activation records are held for the relevant contractual period and any necessary handling of outstanding claims. Other personal data is deleted when no longer necessary, unless statutory retention duties apply. Requests for access or deletion can be sent to the contact in our Legal Notice.',
-      'When submitting an online withdrawal, we process your name, email, contract identifier, timestamp and reference number to receive and document the declaration (Art. 6(1)(c) GDPR). Resend sends the provider notification and customer receipt. Related correspondence is retained only for the necessary processing and statutory retention period.',
-    ],
-  }
+  return { id: 'digital-commerce', ...COMMERCE_PRIVACY[locale] }
 }
 
 export function buildPrivacyPolicySections(
