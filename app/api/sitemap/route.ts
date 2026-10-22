@@ -3,7 +3,7 @@ import { createPublicClient } from '@/lib/supabaseServer'
 import { buildGigSlugMap } from '@/lib/gig-slug'
 
 /** Rebuild periodically so new news posts appear without redeploy. */
-export const revalidate = 3600
+export const revalidate = 300
 
 const BASE_URL = process.env.SITE_URL?.replace(/\/$/, '') || 'https://neuroklast.net'
 
@@ -14,6 +14,12 @@ const STATIC_URLS: SitemapUrl[] = [
   { loc: `${BASE_URL}/releases`, changefreq: 'weekly', priority: '0.8' },
   { loc: `${BASE_URL}/gigs`, changefreq: 'weekly', priority: '0.8' },
   { loc: `${BASE_URL}/media`, changefreq: 'weekly', priority: '0.7' },
+  { loc: `${BASE_URL}/plugins`, changefreq: 'weekly', priority: '0.8' },
+  { loc: `${BASE_URL}/terms`, changefreq: 'monthly', priority: '0.5' },
+  { loc: `${BASE_URL}/license-terms`, changefreq: 'monthly', priority: '0.5' },
+  { loc: `${BASE_URL}/purchase-info`, changefreq: 'monthly', priority: '0.4' },
+  { loc: `${BASE_URL}/withdrawal-policy`, changefreq: 'monthly', priority: '0.4' },
+  { loc: `${BASE_URL}/withdrawal`, changefreq: 'monthly', priority: '0.3' },
   { loc: `${BASE_URL}/legal-notice`, changefreq: 'monthly', priority: '0.3' },
   { loc: `${BASE_URL}/privacy-policy`, changefreq: 'monthly', priority: '0.3' },
 ]
@@ -131,10 +137,30 @@ async function fetchGigUrls(): Promise<SitemapUrl[]> {
   }
 }
 
+/** Only public plugin pages may be discoverable; hidden products must not leak. */
+async function fetchPluginUrls(): Promise<SitemapUrl[]> {
+  try {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase.from('products')
+      .select('slug').eq('kind', 'plugin').eq('active', true).limit(250)
+    if (error) return []
+    return (data ?? [])
+      .filter((item) => typeof item.slug === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(item.slug))
+      .map((item) => ({
+        loc: `${BASE_URL}/plugins/${item.slug}`,
+        changefreq: 'weekly',
+        priority: '0.8',
+      }))
+  } catch {
+    return []
+  }
+}
+
 export async function GET(): Promise<NextResponse> {
-  const [newsUrls, gigUrls, contentStamp] = await Promise.all([
+  const [newsUrls, gigUrls, pluginUrls, contentStamp] = await Promise.all([
     fetchNewsUrls(),
     fetchGigUrls(),
+    fetchPluginUrls(),
     fetchContentStamp(),
   ])
   const staticUrls = STATIC_URLS.map((url) =>
@@ -143,12 +169,12 @@ export async function GET(): Promise<NextResponse> {
   const datedGigUrls = gigUrls.map((url) =>
     url.lastmod ? url : { ...url, lastmod: contentStamp },
   )
-  const xml = buildSitemap([...staticUrls, ...datedGigUrls, ...newsUrls])
+  const xml = buildSitemap([...staticUrls, ...pluginUrls, ...datedGigUrls, ...newsUrls])
   return new NextResponse(xml, {
     status: 200,
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      'Cache-Control': 'public, max-age=300, s-maxage=300',
     },
   })
 }

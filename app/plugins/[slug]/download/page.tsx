@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { loadPublicProduct } from '@/lib/plugins/public-catalog'
+import { availablePublicDownload } from '@/lib/plugins/public-download'
+import { pluginCanonicalPath, pluginPreviewPath } from '@/lib/plugins/seo'
 import {
   CHANNEL_LABEL,
   PACKAGE_LABEL,
@@ -17,9 +19,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const product = await loadPublicProduct(slug)
   if (!product) return { title: 'Not found', robots: { index: false, follow: false } }
+  const available = availablePublicDownload(product)
+  const productPath = pluginCanonicalPath(slug)
   return {
     title: `Download ${product.title}`,
-    description: `Download ${product.title} for Windows, macOS or Linux. No account required.`,
+    description: available
+      ? `Get the available ${product.title} audio plugin builds, version details and checksums.`
+      : `Download status and release information for ${product.title}.`,
+    robots: available ? { index: true, follow: true } : { index: false, follow: true },
+    alternates: { canonical: available ? productPath + '/download' : productPath },
+    openGraph: {
+      title: `Download ${product.title} | NEUROKLAST AUDIO`,
+      description: available ? `Available downloads for ${product.title}.` : `${product.title} release information.`,
+      images: [{ url: pluginPreviewPath(slug), width: 1200, height: 630 }],
+    },
+    twitter: { card: 'summary_large_image', images: [pluginPreviewPath(slug)] },
   }
 }
 

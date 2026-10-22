@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CdnImage } from '@/app/_components/public/CdnImage'
@@ -8,16 +9,38 @@ import { CHANNEL_LABEL } from '@/lib/plugins/releases'
 import { availablePublicDownload } from '@/lib/plugins/public-download'
 import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
 import { PurchasePanel } from './PurchasePanel'
+import { JsonLd } from '@/app/_components/public/JsonLd'
+import { getSiteOrigin } from '@/lib/og-share'
+import { absoluteUrl, buildBreadcrumbSchema, buildSoftwareApplicationSchema } from '@/lib/structured-data'
+import { pluginCanonicalPath, pluginPreviewPath, pluginPrimaryImage, pluginSeoDescription } from '@/lib/plugins/seo'
 
 export const revalidate = 60
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const product = await loadPublicProduct(slug)
   if (!product) return { title: 'Not found', robots: { index: false, follow: false } }
+  const description = pluginSeoDescription(product)
+  const canonical = pluginCanonicalPath(slug)
+  const preview = pluginPreviewPath(slug)
   return {
     title: product.title,
-    description: product.short_description ?? product.title + ' audio plugin by NEUROKLAST.',
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: product.title + ' | NEUROKLAST AUDIO',
+      description,
+      type: 'website',
+      url: absoluteUrl(getSiteOrigin(), canonical),
+      siteName: 'NEUROKLAST',
+      images: [{ url: preview, width: 1200, height: 630, alt: product.title + ' by NEUROKLAST' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.title + ' | NEUROKLAST AUDIO',
+      description,
+      images: [{ url: preview, alt: product.title + ' by NEUROKLAST' }],
+    },
   }
 }
 
@@ -36,8 +59,29 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
   const salesOpen = isNeurokoreSalesEnabled() && product.sales_enabled &&
     product.pricing_mode === 'paid'
 
+  const canonicalUrl = absoluteUrl(getSiteOrigin(), pluginCanonicalPath(slug))
+  const softwareSchema = buildSoftwareApplicationSchema({
+    name: product.title,
+    url: canonicalUrl,
+    description: pluginSeoDescription(product),
+    imageUrl: pluginPrimaryImage(product),
+    version: displayedRelease?.version,
+    downloadUrl: downloadAvailable ? canonicalUrl + '/download' : undefined,
+    offer: product.pricing_mode === 'free' && downloadAvailable
+      ? { amount: 0, currency: 'EUR' }
+      : salesOpen && price && !price.recurring
+        ? { amount: price.amount, currency: price.currency }
+        : undefined,
+  })
+  const breadcrumbs = buildBreadcrumbSchema([
+    { name: 'Home', url: absoluteUrl(getSiteOrigin(), '/') },
+    { name: 'Audio plugins', url: absoluteUrl(getSiteOrigin(), '/plugins') },
+    { name: product.title, url: canonicalUrl },
+  ])
+
   return (
     <LegalPageShell>
+      <JsonLd data={[softwareSchema, breadcrumbs]} />
       <div className="w-full bg-black text-white">
         <div className="mx-auto w-full max-w-6xl space-y-10 px-5 pb-24 pt-20 sm:px-7 md:pt-28 lg:px-10">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 font-mono text-xs text-zinc-400">

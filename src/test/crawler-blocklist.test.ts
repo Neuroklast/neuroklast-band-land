@@ -18,6 +18,7 @@ describe('crawler blocklist', () => {
     expect(isBlockedCrawlerUserAgent('Mozilla/5.0 (compatible; DuckDuckGoBot/1.0)')).toBe(false)
     expect(isBlockedCrawlerUserAgent('facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)')).toBe(false)
     expect(isBlockedCrawlerUserAgent('Twitterbot/1.0')).toBe(false)
+    expect(isBlockedCrawlerUserAgent('FacebookBot/1.0')).toBe(false)
   })
 
   it('keeps real visitors and null UAs untouched', () => {

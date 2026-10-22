@@ -11,6 +11,10 @@ describe('public/robots.txt', () => {
     expect(robots).toMatch(/Sitemap:\s*https:\/\/neuroklast\.net\/sitemap\.xml/)
   })
 
+  it('does not block Meta link preview bots', () => {
+    expect(robots).not.toContain('User-agent: FacebookBot')
+  })
+
   it('disallows admin and API crawls', () => {
     expect(robots).toMatch(/Disallow:\s*\/admin\//)
     expect(robots).toMatch(/Disallow:\s*\/api\//)

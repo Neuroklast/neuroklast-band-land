@@ -335,6 +335,15 @@ export function PluginDetail({ productId }: { productId: string }) {
     setMedia((prev) => prev.filter((m) => m.id !== id))
   }
 
+  function moveMedia(id: string, direction: -1 | 1) {
+    setMedia((prev) => {
+      const index = prev.findIndex(item => item.id === id)
+      const next = index + direction
+      if (index < 0 || next < 0 || next >= prev.length) return prev
+      return arrayMove(prev, index, next)
+    })
+  }
+
   function resolveMedia(id: string, storagePath: string, publicUrl?: string) {
     setMedia((prev) => prev.map((m) => m.id === id ? { ...m, url: publicUrl ?? m.url, storagePath } : m))
   }
@@ -457,13 +466,35 @@ export function PluginDetail({ productId }: { productId: string }) {
 
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Media</h3>
-            <p className="text-xs text-zinc-500">Upload images (stored in R2) or paste video/audio URLs.</p>
+            <p className="text-xs text-zinc-400">
+              The first image is the product cover used on the homepage and in 1200 × 630 social link previews.
+              Change the order with the arrow controls below. Save changes to update the public preview.
+            </p>
+            {publicLive && product.slug && (
+              <a className="inline-flex min-h-11 items-center text-xs text-red-300 underline underline-offset-4"
+                href={`/plugins/${product.slug}/opengraph-image`} target="_blank" rel="noopener noreferrer">
+                Open social preview image
+              </a>
+            )}
             <div className="space-y-2">
               {media.map((item) => (
                 <div
                   key={item.id}
                   className="rounded border border-zinc-800 bg-zinc-900 p-3 space-y-2"
                 >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono text-xs text-zinc-400">
+                      {item.kind === 'image' && !media.slice(0, media.indexOf(item)).some(m => m.kind === 'image')
+                        ? 'Primary image / social preview'
+                        : item.kind.toUpperCase()}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button type="button" className={secondaryButton} aria-label="Move media up"
+                        disabled={media.indexOf(item) === 0} onClick={() => moveMedia(item.id, -1)}>↑</button>
+                      <button type="button" className={secondaryButton} aria-label="Move media down"
+                        disabled={media.indexOf(item) === media.length - 1} onClick={() => moveMedia(item.id, 1)}>↓</button>
+                    </div>
+                  </div>
                   {item.kind === 'image' ? (
                     <MediaSourcePicker
                       label="Image"

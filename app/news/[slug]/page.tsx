@@ -45,7 +45,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const post = await loadPost(slug)
-  if (!post) return { title: 'News' }
+  if (!post) return { title: 'News', robots: { index: false, follow: false } }
   const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
   return {
     title: post.title,
@@ -55,7 +55,16 @@ export async function generateMetadata({
       title: post.title,
       description: post.excerpt ?? undefined,
       type: 'article',
-      images: cover ? [{ url: cover }] : undefined,
+      url: `https://neuroklast.net/news/${slug}`,
+      siteName: 'NEUROKLAST',
+      images: [{ url: cover || '/og-image.png' }],
+      publishedTime: post.published_at ?? undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt ?? undefined,
+      images: [cover || '/og-image.png'],
     },
   }
 }

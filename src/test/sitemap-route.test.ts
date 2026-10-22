@@ -4,7 +4,18 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/supabaseServer', () => ({
   createPublicClient: () => ({
-    from: () => ({
+    from: (table: string) => table === 'products' ? ({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            limit: async () => ({
+              data: [{ slug: 'neurometer' }, { slug: 'neurokore' }],
+              error: null,
+            }),
+          }),
+        }),
+      }),
+    }) : ({
       select: () => ({
         eq: () => ({
           order: () => ({
@@ -38,6 +49,9 @@ describe('GET /api/sitemap', () => {
     const xml = await res.text()
     expect(xml).toContain('https://neuroklast.net/</loc>')
     expect(xml).toContain('/releases')
+    expect(xml).toContain('https://neuroklast.net/plugins</loc>')
+    expect(xml).toContain('https://neuroklast.net/plugins/neurometer</loc>')
+    expect(xml).toContain('https://neuroklast.net/plugins/neurokore</loc>')
     expect(xml).toContain('/gigs')
     expect(xml).toContain('/legal-notice')
     expect(xml).toContain('/privacy-policy')
