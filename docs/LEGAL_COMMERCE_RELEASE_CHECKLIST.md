@@ -14,7 +14,7 @@ Engineering checklist, October 22, 2026. This is not legal certification.
 
 ## Go-live checklist
 
-1. Apply and VERIFY the Supabase migration at supabase/migrations/20261022194500_withdrawal_notices.sql before publishing the new withdrawal form.
+1. Apply and VERIFY the idempotent additions to the canonical Supabase schema at supabase/schema.sql before publishing the new withdrawal form. This repository deliberately has no separate SQL migration files.
 2. Configure verified CONTACT_FROM_EMAIL and the actual operator contact email. Test Resend delivery to buyer and operator.
 3. Verify receipt timestamps, idempotent retries, invalid input handling, database RLS and accessibility of withdrawal without login.
 4. Alert an administrator to pending email receipts. An endpoint alone does not satisfy the need for prompt confirmation.
