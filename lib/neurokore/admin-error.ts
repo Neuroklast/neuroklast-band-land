@@ -25,10 +25,11 @@ export function adminFailureMessage(error: unknown): string {
     return 'This product is still referenced by another record. Remove or detach that record first.'
   }
   if (/Could not find the function|plugin_delete_product|plugin_public_catalog/i.test(message)) {
-    return 'The database is missing the latest plugin function. Apply supabase/schema.sql (needs SUPABASE_DB_URL) and redeploy.'
+    return 'The database is missing the latest plugin function. Open Admin -> Products & Plugins -> Apply schema.sql (needs SUPABASE_DB_URL).'
   }
   if (/plugin_licenses|plugin_releases|plugin_orders|neurokore_licenses|schema cache|does not exist/i.test(message)) {
-    return 'Database schema is out of date. Apply supabase/schema.sql (needs SUPABASE_DB_URL) and redeploy.'
+    return 'Database schema is out of date. Open Admin -> Products & Plugins -> Apply schema.sql (needs SUPABASE_DB_URL).'
   }
   return 'Request unavailable. Check your sign-in, licence and configuration, then retry.'
 }
+
