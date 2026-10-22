@@ -90,14 +90,16 @@ export function ProductsSection({ items, heading, intro }: ProductsSectionProps)
 
   return (
     <SectionWrapper id="products" data-theme-color="foreground card border primary"
-      className="py-10 md:py-14">
-      <SectionHeading sectionId="products" dataText={title}>{title}</SectionHeading>
-      <SectionIntro sectionId="products">{intro}</SectionIntro>
-      {items.length > 0 ? (
-        <div className={'grid gap-5 ' + (featured ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3')}>
-          {items.map(item => <ProductCard key={item.id} item={item} featured={featured} />)}
-        </div>
-      ) : <SectionEmpty label={t('section.empty')} />}
+      className="py-10 md:py-14" withPanel={false}>
+      <div className="w-full border border-white/10 bg-black/95 p-6 sm:p-8">
+        <SectionHeading sectionId="products" dataText={title}>{title}</SectionHeading>
+        <SectionIntro sectionId="products">{intro}</SectionIntro>
+        {items.length > 0 ? (
+          <div className={'grid gap-5 ' + (featured ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3')}>
+            {items.map(item => <ProductCard key={item.id} item={item} featured={featured} />)}
+          </div>
+        ) : <SectionEmpty label={t('section.empty')} />}
+      </div>
     </SectionWrapper>
   )
 }
