@@ -95,6 +95,9 @@ export default function NeuroklastClassicFooter({
               <Link href="/withdrawal-policy" className="nk-os-nav min-h-[44px] inline-flex items-center">
                 Widerrufsbelehrung
               </Link>
+              <Link href="/purchase-info" className="nk-os-nav min-h-[44px] inline-flex items-center">
+                Softwarekauf
+              </Link>
               <CookiePreferencesButton
                 privacyPolicyUrl={privacyPolicyUrl}
                 className="nk-os-nav min-h-[44px] inline-flex items-center"
