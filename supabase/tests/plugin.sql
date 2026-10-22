@@ -88,8 +88,8 @@ begin
   end if;
   -- Hidden product with an alpha licence, audit rows, a release and an abandoned
   -- checkout: everything goes, including the audit rows and the licence.
-  insert into public.products(title,slug,kind)
-  values ('Temp Plugin','temp-plugin','plugin') returning id into tmp;
+  insert into public.products(title,slug,kind,active)
+  values ('Temp Plugin','temp-plugin','plugin',false) returning id into tmp;
   insert into public.plugin_releases(product_id,version,channel,status)
   values (tmp,'1.0.0','stable','draft') returning id into tmp_release;
   insert into public.plugin_release_artifacts(release_id,platform,architecture,package_type,filename,storage_key,filesize_bytes,sha256,validation_status)
@@ -133,8 +133,8 @@ begin
   update public.products set active = false where id = other;
 
   -- A product with a paid (fulfilled) order cannot be deleted.
-  insert into public.products(title,slug,kind)
-  values ('Paid Plugin','paid-plugin','plugin') returning id into paid;
+  insert into public.products(title,slug,kind,active)
+  values ('Paid Plugin','paid-plugin','plugin',false) returning id into paid;
   insert into public.plugin_licenses(product_id,email,key_hash,key_cipher,tier,license_format)
   values (paid,'paid@example.com','paid-hash','cipher','full','v3') returning id into paid_license;
   insert into public.plugin_orders(product_id,user_id,email,price_id,stripe_session,license_id)
@@ -146,5 +146,6 @@ begin
     if sqlerrm <> 'Product has paid orders' then raise; end if;
   end;
 end $$;
+
 
 
