@@ -4,6 +4,7 @@ import { loadLegalConfig, formatServiceAddress } from '@/lib/legal-content'
 import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
 import { db, json, origin, required } from '@/lib/neurokore/server'
 import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
+import { softwareLicenseEmailText } from '@/lib/plugins/consumer-license-terms'
 
 export const runtime = 'nodejs'
 
@@ -72,6 +73,9 @@ async function sendContractConfirmation(
     'Bei einem wirksamen Widerruf erstatten wir die erhaltenen Zahlungen unverzüglich, spätestens innerhalb von vierzehn Tagen nach Eingang der Erklärung, grundsätzlich mit demselben Zahlungsmittel und ohne zusätzliche Erstattungsentgelte.',
     'Für digitale Inhalte kann das Widerrufsrecht nur unter den Voraussetzungen des § 356 Abs. 6 BGB erlöschen. Dieser Checkout verlangt keine Erklärung eines solchen Verzichts.',
     'Vollständige Widerrufsinformation und Musterformular: ' + siteUrl + '/withdrawal-policy',
+    '',
+    'Lizenzbedingungen (Kopie für deine Unterlagen):',
+    softwareLicenseEmailText(),
     '',
     'Weitere Informationen: ' + siteUrl + '/purchase-info',
     'Datenschutz: ' + siteUrl + '/privacy-policy',
