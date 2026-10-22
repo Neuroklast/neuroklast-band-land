@@ -21,7 +21,10 @@ export default async function PluginOrdersPage() {
       .order('created_at', { ascending: false })
       .limit(100)
     if (error) throw error
-    orders = (data ?? []) as Order[]
+    orders = (data ?? []).map(row => ({
+      ...row,
+      products: Array.isArray(row.products) ? (row.products[0] ?? null) : row.products ?? null,
+    })) as Order[]
   } catch {
     errorMessage = 'Orders could not be loaded. Verify that the canonical Supabase schema is deployed and accessible.'
   }
