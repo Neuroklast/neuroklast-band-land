@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
+import { COMMERCE_ACTIONS } from '@/lib/commerce-actions-i18n'
+import { LEGAL_LOCALES } from '@/lib/legal-i18n'
 import { body, json, limit, sameOrigin } from '@/lib/neurokore/server'
 
 export const runtime = 'nodejs'
@@ -10,6 +12,7 @@ const inputSchema = z.object({
   name: z.string().trim().min(2).max(160),
   email: z.email().max(254).transform(value => value.toLowerCase()),
   orderReference: z.string().trim().min(3).max(500),
+  locale: z.enum(LEGAL_LOCALES).default('en'),
 }).strict()
 
 /**
@@ -31,7 +34,8 @@ export async function POST(request: Request) {
   const from = process.env.CONTACT_FROM_EMAIL || 'NEUROKLAST <noreply@neuroklast.net>'
   if (!key) return json({ error: 'Widerruf vorübergehend nicht erreichbar. Bitte per E-Mail Kontakt aufnehmen.' }, 503)
 
-  const { name, email, orderReference } = parsed.data
+  const { name, email, orderReference, locale } = parsed.data
+  const translation = COMMERCE_ACTIONS[locale]
   const receivedAt = new Date().toISOString()
   const reference = randomUUID()
   const bodyText = [
@@ -42,8 +46,8 @@ export async function POST(request: Request) {
     'E-Mail: ' + email,
     'Vertrag / Order: ' + orderReference,
     '',
-    'Erklärung: Ich widerrufe den bezeichneten Vertrag.',
-    'Dies ist eine Eingangsbestätigung, keine Entscheidung über die rechtliche Wirksamkeit.',
+    translation.declaration,
+    translation.notDecision,
   ].join('\n')
 
   try {
@@ -58,7 +62,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify([
         { from, to: [operator], reply_to: email, subject: '[Widerruf] ' + reference, text: bodyText },
-        { from, to: [email], subject: 'Eingangsbestätigung deines Widerrufs – NEUROKLAST', text: bodyText },
+        { from, to: [email], subject: translation.done + ' – NEUROKLAST', text: bodyText },
       ]),
     })
     if (!response.ok) return json({ error: 'Übermittlung nicht möglich. Bitte per E-Mail widerrufen.' }, 503)
