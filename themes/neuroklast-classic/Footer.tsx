@@ -98,6 +98,9 @@ export default function NeuroklastClassicFooter({
               <Link href="/purchase-info" className="nk-os-nav min-h-[44px] inline-flex items-center">
                 Softwarekauf
               </Link>
+              <Link href="/license-terms" className="nk-os-nav min-h-[44px] inline-flex items-center">
+                Lizenzbedingungen
+              </Link>
               <CookiePreferencesButton
                 privacyPolicyUrl={privacyPolicyUrl}
                 className="nk-os-nav min-h-[44px] inline-flex items-center"
