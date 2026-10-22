@@ -1,10 +1,28 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { CSS } from '@dnd-kit/utilities'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { RELEASE_CHANNELS, slugifyProductTitle } from '@/lib/plugins/releases'
 import { LicensePanel } from './LicensePanel'
 import { ReleasePanel } from './ReleasePanel'
+import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
 
 const featureSchema = z.object({ title: z.string(), body: z.string() })
 const mediaSchema = z.object({ kind: z.enum(['image', 'video', 'audio']), url: z.string() })
@@ -36,6 +54,19 @@ const productSchema = z.object({
 
 type Product = z.infer<typeof productSchema>
 
+interface FeatureItem {
+  id: string
+  title: string
+  body: string
+}
+
+interface MediaItem {
+  id: string
+  kind: 'image' | 'video' | 'audio'
+  url: string
+  storagePath?: string
+}
+
 const inputClass =
   'w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600'
 const primaryButton =
@@ -62,14 +93,100 @@ function lines(value: string): string[] {
   return value.split('\n').map((line) => line.trim()).filter(Boolean)
 }
 
+function FeatureRow({
+  feature,
+  onUpdate,
+  onRemove,
+}: {
+  feature: FeatureItem
+  onUpdate: (id: string, field: 'title' | 'body', value: string) => void
+  onRemove: (id: string) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: feature.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="rounded border border-zinc-800 bg-zinc-900 p-3 space-y-2"
+    >
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          aria-label={`Drag to reorder feature`}
+          className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing touch-none shrink-0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 256 256"
+            aria-hidden="true"
+            fill="currentColor"
+          >
+            <path d="M108,60a16,16,0,1,1-16-16A16,16,0,0,1,108,60Zm56,16a16,16,0,1,0-16-16A16,16,0,0,0,164,76ZM92,112a16,16,0,1,0,16,16A16,16,0,0,0,92,112Zm72,0a16,16,0,1,0,16,16A16,16,0,0,0,164,112ZM92,176a16,16,0,1,0,16,16A16,16,0,0,0,92,176Zm72,0a16,16,0,1,0,16,16A16,16,0,0,0,164,176Z" />
+          </svg>
+        </button>
+        <input
+          value={feature.title}
+          onChange={(e) => onUpdate(feature.id, 'title', e.target.value)}
+          placeholder="Feature title"
+          className="flex-1 min-w-0 font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200 focus:outline-none focus:border-zinc-600"
+        />
+        <button
+          type="button"
+          onClick={() => onRemove(feature.id)}
+          className="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:text-red-300 hover:bg-red-950/30 transition-colors"
+          aria-label="Remove feature"
+        >
+          ✕
+        </button>
+      </div>
+      <textarea
+        value={feature.body}
+        onChange={(e) => onUpdate(feature.id, 'body', e.target.value)}
+        rows={2}
+        placeholder="Description (optional)"
+        className="w-full font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-2 py-1.5 text-zinc-400 focus:outline-none focus:border-zinc-600"
+      />
+    </div>
+  )
+}
+
 export function PluginDetail({ productId }: { productId: string }) {
   const [product, setProduct] = useState<Product | null>(null)
-  const [features, setFeatures] = useState('')
+  const [description, setDescription] = useState('')
   const [requirements, setRequirements] = useState('')
-  const [media, setMedia] = useState('')
+  const [features, setFeatures] = useState<FeatureItem[]>([])
+  const [media, setMedia] = useState<MediaItem[]>([])
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [importPem, setImportPem] = useState('')
+
+  const [newFeatureTitle, setNewFeatureTitle] = useState('')
+  const [newFeatureBody, setNewFeatureBody] = useState('')
+  const [newMediaKind, setNewMediaKind] = useState<'image' | 'video' | 'audio'>('image')
+  const [newMediaUrl, setNewMediaUrl] = useState('')
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   async function refresh() {
     const payload = await api()
@@ -77,9 +194,10 @@ export function PluginDetail({ productId }: { productId: string }) {
     const found = all.find((item) => item.id === productId) ?? null
     setProduct(found)
     if (found) {
-      setFeatures(found.features.map((feature) => `${feature.title} | ${feature.body}`).join('\n'))
+      setDescription(found.description ?? '')
       setRequirements(found.system_requirements.join('\n'))
-      setMedia(found.media.map((item) => `${item.kind}|${item.url}`).join('\n'))
+      setFeatures(found.features.map((feature) => ({ id: crypto.randomUUID(), title: feature.title, body: feature.body })))
+      setMedia(found.media.map((item) => ({ id: crypto.randomUUID(), kind: item.kind, url: item.url })))
     }
   }
 
@@ -88,21 +206,6 @@ export function PluginDetail({ productId }: { productId: string }) {
       setMessage(error instanceof Error ? error.message : 'Could not load plugin.'),
     )
   }, [productId])
-
-  const parsedFeatures = useMemo(() => lines(features).map((line) => {
-    const [title, ...rest] = line.split('|')
-    return { title: title.trim(), body: rest.join('|').trim() }
-  }).filter((feature) => feature.title), [features])
-
-  const parsedRequirements = useMemo(() => lines(requirements), [requirements])
-
-  const parsedMedia = useMemo(() => lines(media).flatMap((line) => {
-    const [kind, ...rest] = line.split('|')
-    const url = rest.join('|').trim()
-    const allowed = ['image', 'video', 'audio'] as const
-    if (!allowed.includes(kind.trim() as (typeof allowed)[number]) || !url) return []
-    return [{ kind: kind.trim() as (typeof allowed)[number], url }]
-  }), [media])
 
   async function save(form: HTMLFormElement) {
     if (!product) return
@@ -124,9 +227,9 @@ export function PluginDetail({ productId }: { productId: string }) {
         slug: slugValue,
         short_description: String(data.get('short_description') ?? '') || null,
         description: String(data.get('description') ?? '') || null,
-        features: parsedFeatures,
-        system_requirements: parsedRequirements,
-        media: parsedMedia,
+        features: features.map(({ title, body }) => ({ title, body })),
+        system_requirements: lines(requirements),
+        media: media.map(({ kind, url }) => ({ kind, url })).filter((item) => item.url),
         default_channel: String(data.get('default_channel') ?? 'stable'),
         pricing_mode: String(data.get('pricing_mode') ?? 'paid'),
         sales_enabled: data.get('sales_enabled') === 'on',
@@ -190,6 +293,56 @@ export function PluginDetail({ productId }: { productId: string }) {
 
   const publicLive = product.active && Boolean(product.slug)
 
+  function handleFeatureDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setFeatures((prev) => {
+      const oldIndex = prev.findIndex((f) => f.id === active.id)
+      const newIndex = prev.findIndex((f) => f.id === over.id)
+      return arrayMove(prev, oldIndex, newIndex)
+    })
+  }
+
+  function addFeature() {
+    const title = newFeatureTitle.trim()
+    const body = newFeatureBody.trim()
+    if (!title) return
+    setFeatures([...features, { id: crypto.randomUUID(), title, body }])
+    setNewFeatureTitle('')
+    setNewFeatureBody('')
+  }
+
+  function updateFeature(id: string, field: 'title' | 'body', value: string) {
+    setFeatures((prev) => prev.map((f) => f.id === id ? { ...f, [field]: value } : f))
+  }
+
+  function removeFeature(id: string) {
+    setFeatures((prev) => prev.filter((f) => f.id !== id))
+  }
+
+  function addMedia() {
+    const url = newMediaUrl.trim()
+    if (!url) return
+    setMedia([...media, { id: crypto.randomUUID(), kind: newMediaKind, url }])
+    setNewMediaUrl('')
+  }
+
+  function updateMediaUrl(id: string, url: string) {
+    setMedia((prev) => prev.map((m) => m.id === id ? { ...m, url } : m))
+  }
+
+  function removeMedia(id: string) {
+    setMedia((prev) => prev.filter((m) => m.id !== id))
+  }
+
+  function resolveMedia(id: string, storagePath: string, publicUrl?: string) {
+    setMedia((prev) => prev.map((m) => m.id === id ? { ...m, url: publicUrl ?? m.url, storagePath } : m))
+  }
+
+  function clearMedia(id: string) {
+    setMedia((prev) => prev.filter((m) => m.id !== id))
+  }
+
   return (
     <div className="space-y-8">
       <p role="status" className="min-h-6 text-sm text-zinc-400">{message}</p>
@@ -246,24 +399,143 @@ export function PluginDetail({ productId }: { productId: string }) {
           </label>
           <label className="block text-sm text-zinc-300">
             Long description
-            <textarea name="description" rows={5} maxLength={8000} defaultValue={product.description ?? ''}
+            <textarea name="description" rows={5} maxLength={8000} defaultValue={description}
+              onChange={(e) => setDescription(e.target.value)}
               className={inputClass + ' mt-1'} />
           </label>
-          <label className="block text-sm text-zinc-300">
-            Features — one per line as <code className="font-mono text-xs">Title | description</code>
-            <textarea value={features} onChange={(event) => setFeatures(event.target.value)}
-              rows={5} className={inputClass + ' mt-1'} />
-          </label>
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Features</h3>
+            <p className="text-xs text-zinc-500">Drag to reorder, edit title and body, or remove.</p>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleFeatureDragEnd}
+            >
+              <SortableContext items={features.map((f) => f.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
+                  {features.map((feature) => (
+                    <FeatureRow
+                      key={feature.id}
+                      feature={feature}
+                      onUpdate={updateFeature}
+                      onRemove={removeFeature}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            <div className="flex gap-2">
+              <input
+                value={newFeatureTitle}
+                onChange={(e) => setNewFeatureTitle(e.target.value)}
+                placeholder="Feature title"
+                className="flex-1 min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
+              />
+              <input
+                value={newFeatureBody}
+                onChange={(e) => setNewFeatureBody(e.target.value)}
+                placeholder="Description"
+                className="flex-1 min-w-0 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
+              />
+              <button
+                type="button"
+                onClick={addFeature}
+                disabled={!newFeatureTitle.trim()}
+                className={secondaryButton}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
           <label className="block text-sm text-zinc-300">
             System requirements — one per line
             <textarea value={requirements} onChange={(event) => setRequirements(event.target.value)}
               rows={3} className={inputClass + ' mt-1'} />
           </label>
-          <label className="block text-sm text-zinc-300">
-            Media — one per line as <code className="font-mono text-xs">image|https://…</code> (image, video or audio)
-            <textarea value={media} onChange={(event) => setMedia(event.target.value)}
-              rows={3} className={inputClass + ' mt-1'} />
-          </label>
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Media</h3>
+            <p className="text-xs text-zinc-500">Upload images (stored in R2) or paste video/audio URLs.</p>
+            <div className="space-y-2">
+              {media.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded border border-zinc-800 bg-zinc-900 p-3 space-y-2"
+                >
+                  {item.kind === 'image' ? (
+                    <MediaSourcePicker
+                      label="Image"
+                      currentUrl={item.url}
+                      currentStoragePath={item.storagePath ?? null}
+                      storagePrefix="plugins"
+                      onResolved={(storagePath, publicUrl) => resolveMedia(item.id, storagePath, publicUrl)}
+                      onCleared={() => clearMedia(item.id)}
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-zinc-500 uppercase tracking-widest">{item.kind}</span>
+                        <input
+                          value={item.url}
+                          onChange={(e) => updateMediaUrl(item.id, e.target.value)}
+                          placeholder="https://…"
+                          className="flex-1 min-w-0 font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-2 py-1.5 text-zinc-300 focus:outline-none focus:border-zinc-600"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeMedia(item.id)}
+                          className="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:text-red-300 hover:bg-red-950/30 transition-colors"
+                          aria-label="Remove media"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <p className="text-xs text-zinc-500">Paste a direct video or audio URL.</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <select
+                  value={newMediaKind}
+                  onChange={(e) => setNewMediaKind(e.target.value as 'image' | 'video' | 'audio')}
+                  className="rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
+                >
+                  <option value="image">Image</option>
+                  <option value="video">Video</option>
+                  <option value="audio">Audio</option>
+                </select>
+                <input
+                  value={newMediaUrl}
+                  onChange={(e) => setNewMediaUrl(e.target.value)}
+                  placeholder={newMediaKind === 'image' ? 'Upload via button below' : 'https://…'}
+                  className="flex-1 min-w-0 font-mono text-xs bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-100 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
+                />
+                <button
+                  type="button"
+                  onClick={addMedia}
+                  disabled={!newMediaUrl.trim()}
+                  className={secondaryButton}
+                >
+                  Add
+                </button>
+              </div>
+              {newMediaKind === 'image' && (
+                <MediaSourcePicker
+                  label="Add image"
+                  currentUrl={null}
+                  currentStoragePath={null}
+                  storagePrefix="plugins"
+                  onResolved={(storagePath, publicUrl) => {
+                    setMedia([...media, { id: crypto.randomUUID(), kind: 'image', url: publicUrl ?? '', storagePath }])
+                  }}
+                  onCleared={() => {}}
+                />
+              )}
+            </div>
+          </div>
         </section>
 
         <section className="space-y-4 rounded border border-zinc-800 bg-zinc-950/60 p-4">
@@ -421,5 +693,3 @@ export function PluginDetail({ productId }: { productId: string }) {
     </div>
   )
 }
-
-
