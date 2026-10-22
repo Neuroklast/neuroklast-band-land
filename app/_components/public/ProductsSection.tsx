@@ -48,7 +48,7 @@ function ProductCard({ item }: { item: PublicProductItem }) {
       {imageBlock}
       <p className="mt-3 font-mono text-sm text-foreground">{item.title}</p>
       {item.description ? (
-        <p className="mt-1 text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-body, inherit)' }}>
+        <p className="mt-1 line-clamp-4 text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-body, inherit)' }}>
           {item.description}
         </p>
       ) : null}
