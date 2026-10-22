@@ -59,3 +59,16 @@ export const WITHDRAWAL_COPY: Record<LegalLocale, { heading: string; period: str
     details: '철회 사유는 필요하지 않습니다. 온라인 양식은 로그인 없이 이용할 수 있습니다.',
   },
 }
+
+
+/** Shown when a withdrawal was persisted but email acceptance is pending. */
+export const WITHDRAWAL_RECEIPT_PENDING: Record<LegalLocale, string> = {
+  de: 'Dein Widerruf wurde gespeichert, die E-Mail-Eingangsbestätigung steht aber noch aus. Bewahre die Referenz auf und nutze bei Bedarf die Kontaktadresse im Impressum.',
+  en: 'Your withdrawal has been recorded, but the email receipt is still pending. Keep the reference and contact the seller using the Legal Notice if necessary.',
+  uk: 'Вашу відмову записано, але підтвердження електронною поштою ще очікується. Збережіть номер звернення та за потреби звʼяжіться з продавцем за контактами у правовій інформації.',
+  it: 'La dichiarazione è stata registrata, ma la conferma via email è ancora in sospeso. Conserva il riferimento e, se necessario, contatta il venditore attraverso le Note legali.',
+  es: 'Tu desistimiento se ha registrado, pero la confirmación por correo todavía está pendiente. Conserva la referencia y, si es necesario, contacta con el vendedor mediante el Aviso legal.',
+  pt: 'A declaração foi registada, mas a confirmação por email ainda está pendente. Guarde a referência e, se necessário, contacte o vendedor pelos dados do Aviso legal.',
+  ja: '契約撤回の申告は記録されましたが、メールでの受領確認はまだ送信されていません。参照番号を保管し、必要に応じて法的表示の連絡先から販売者にお問い合わせください。',
+  ko: '계약 철회 의사가 기록되었지만 이메일 수신 확인은 아직 전송되지 않았습니다. 참조 번호를 보관하고 필요한 경우 법적 고지의 연락처로 판매자에게 문의하세요.',
+}
