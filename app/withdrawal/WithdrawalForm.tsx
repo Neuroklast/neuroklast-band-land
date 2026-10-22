@@ -2,11 +2,19 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useLocale } from '@/contexts/LocaleContext'
+import { resolveLegalLocale } from '@/lib/legal-templates'
+import { COMMERCE_ACTIONS } from '@/lib/commerce-actions-i18n'
+import { COMMERCE_LEGAL_COPY } from '@/lib/commerce-legal-copy'
 
 type WithdrawalData = { name: string; email: string; orderReference: string }
 const EMPTY: WithdrawalData = { name: '', email: '', orderReference: '' }
 
 export function WithdrawalForm() {
+  const { locale } = useLocale()
+  const lang = resolveLegalLocale(locale)
+  const labels = COMMERCE_ACTIONS[lang]
+  const legal = COMMERCE_LEGAL_COPY[lang].links
   const [details, setDetails] = useState<WithdrawalData>(EMPTY)
   const [step, setStep] = useState<'edit' | 'review' | 'sent'>('edit')
   const [busy, setBusy] = useState(false)
@@ -21,14 +29,14 @@ export function WithdrawalForm() {
       const response = await fetch('/api/withdrawal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(details),
+        body: JSON.stringify({ ...details, locale: lang }),
       })
-      if (!response.ok) throw new Error('Übermittlung fehlgeschlagen. Bitte erneut versuchen oder den Widerruf per E-Mail erklären.')
+      if (!response.ok) throw new Error('Transmission failed. Please retry or contact the seller by email.')
       const result: { receivedAt: string } = await response.json()
       setReceivedAt(result.receivedAt)
       setStep('sent')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Übermittlung fehlgeschlagen.')
+      setError(cause instanceof Error ? cause.message : 'Transmission failed.')
     } finally {
       setBusy(false)
     }
@@ -39,10 +47,11 @@ export function WithdrawalForm() {
 
   if (step === 'sent') return (
     <section role="status" className="space-y-4 border border-white/30 bg-zinc-950 p-6">
-      <h2 className="text-2xl font-semibold">Widerruf übermittelt</h2>
-      <p>Wir haben deine Widerrufserklärung am {new Date(receivedAt).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })} entgegengenommen und eine Eingangsbestätigung an {details.email} gesendet.</p>
-      <p>Die Eingangsbestätigung dokumentiert deine Erklärung, sie ist noch keine Entscheidung über die Wirksamkeit des Widerrufs oder eine Rückerstattungszusage.</p>
-      <Link href="/" className="inline-block underline">Zur Startseite</Link>
+      <h2 className="text-2xl font-semibold">{labels.done}</h2>
+      <p>{new Date(receivedAt).toLocaleString(lang, { timeZone: 'Europe/Berlin' })} · {details.email}</p>
+      <p>{labels.receipt}</p>
+      <p>{labels.notDecision}</p>
+      <Link href="/" className="inline-block underline">Home</Link>
     </section>
   )
 
@@ -50,36 +59,38 @@ export function WithdrawalForm() {
     <div className="max-w-2xl border border-white/25 bg-zinc-950 p-5 sm:p-8">
       {step === 'edit' ? (
         <form className="space-y-5" onSubmit={event => { event.preventDefault(); setError(''); setStep('review') }}>
-          <p>Du kannst deinen Widerruf ohne Anmeldung erklären. Ein Grund ist nicht erforderlich.</p>
-          <label className="block">Vollständiger Name
+          <p>{labels.intro}</p>
+          <label className="block">{labels.name}
             <input autoComplete="name" required maxLength={160} className={inputStyle}
               value={details.name} onChange={event => setDetails({ ...details, name: event.target.value })} />
           </label>
-          <label className="block">E-Mail-Adresse für die Eingangsbestätigung
+          <label className="block">{labels.email}
             <input type="email" autoComplete="email" required maxLength={254} className={inputStyle}
               value={details.email} onChange={event => setDetails({ ...details, email: event.target.value })} />
           </label>
-          <label className="block">Bestellnummer oder andere Angaben zur Identifizierung des Vertrags
+          <label className="block">{labels.order}
             <textarea required rows={3} maxLength={500} className={inputStyle}
-              placeholder="Zum Beispiel Bestellnummer, Produkt und ungefährer Kaufzeitpunkt"
+              placeholder={labels.placeholder}
               value={details.orderReference} onChange={event => setDetails({ ...details, orderReference: event.target.value })} />
           </label>
-          <p className="text-sm text-white/70">Deine Angaben werden ausschließlich für die Bearbeitung dieser Erklärung und die Eingangsbestätigung genutzt. Weitere Informationen stehen in der <Link className="underline" href="/privacy-policy">Datenschutzerklärung</Link>.</p>
-          <button type="submit" className={buttonStyle}>Weiter zur Bestätigung</button>
+          <p className="text-sm text-white/70">
+            <Link className="underline" href="/privacy-policy">{legal.privacy}</Link>
+          </p>
+          <button type="submit" className={buttonStyle}>{labels.submit}</button>
         </form>
       ) : (
         <section className="space-y-5">
-          <h2 className="text-xl font-semibold">Widerruf prüfen</h2>
-          <p>Ich widerrufe den nachfolgend bezeichneten Vertrag.</p>
+          <h2 className="text-xl font-semibold">{labels.review}</h2>
+          <p>{labels.declaration}</p>
           <dl className="space-y-3 break-words">
-            <div><dt className="text-white/60">Name</dt><dd>{details.name}</dd></div>
-            <div><dt className="text-white/60">E-Mail-Adresse</dt><dd>{details.email}</dd></div>
-            <div><dt className="text-white/60">Vertrag</dt><dd className="whitespace-pre-wrap">{details.orderReference}</dd></div>
+            <div><dt className="text-white/60">{labels.name}</dt><dd>{details.name}</dd></div>
+            <div><dt className="text-white/60">{labels.email}</dt><dd>{details.email}</dd></div>
+            <div><dt className="text-white/60">{labels.order}</dt><dd className="whitespace-pre-wrap">{details.orderReference}</dd></div>
           </dl>
           <div className="flex flex-wrap gap-3">
-            <button className={buttonStyle} type="button" onClick={() => setStep('edit')} disabled={busy}>Angaben bearbeiten</button>
+            <button className={buttonStyle} type="button" onClick={() => setStep('edit')} disabled={busy}>{labels.edit}</button>
             <button className={buttonStyle + ' border-red-600 bg-red-800/30'} type="button" onClick={() => void submit()} disabled={busy}>
-              {busy ? 'Wird übermittelt…' : 'Widerruf bestätigen'}
+              {busy ? labels.sending : labels.confirm}
             </button>
           </div>
         </section>
