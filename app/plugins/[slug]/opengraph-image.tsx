@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 import { notFound } from 'next/navigation'
 import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { pluginPrimaryImage, pluginSeoDescription } from '@/lib/plugins/seo'
-import { currentR2PublicOrigin } from '@/lib/r2-url-rewrite'
+import { canonicalizeR2MediaUrl, currentR2PublicOrigin } from '@/lib/r2-url-rewrite'
 import sharp from 'sharp'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,7 @@ export const contentType = 'image/png'
  */
 function allowedPublicImage(value: string): URL | null {
   try {
-    const url = new URL(value)
+    const url = new URL(canonicalizeR2MediaUrl(value))
     if (url.protocol !== 'https:' || url.username || url.password) return null
     const configured = currentR2PublicOrigin()
     if (!configured || url.origin !== new URL(configured).origin) return null
