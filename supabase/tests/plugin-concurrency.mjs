@@ -21,8 +21,12 @@ try {
     sql`select public.plugin_activate('race-hash', ${accepted}, 'neurokore')`));
   const [retryCount] = await sql`select count(*)::integer as n from public.plugin_devices where license_id=${row.id}`;
   assert.equal(retryCount.n, 2);
-  const [cross] = await sql`select public.plugin_activate('race-hash', ${accepted}, 'neurometer')`
-    .then(() => [false]).catch(() => [true]);
-  assert.equal(cross[0], true, 'cross-product activation must be refused');
+  let crossRefused = false;
+  try {
+    await sql`select public.plugin_activate('race-hash', ${accepted}, 'neurometer')`;
+  } catch {
+    crossRefused = true;
+  }
+  assert.equal(crossRefused, true, 'cross-product activation must be refused');
   console.log('Concurrent seat allocation, retry and product isolation contracts passed');
 } finally { await sql.end(); }
