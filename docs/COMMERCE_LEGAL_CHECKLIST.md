@@ -18,6 +18,7 @@ This checklist is a technical readiness aid, not a declaration of legal complian
 - [ ] Verify how personal, device and order data is really processed; hosting location and actual processors / data transfer safeguards / DPAs (Vercel, Supabase, Resend, R2, Stripe, remote fonts/CDN).
 - [ ] Enable Resend with a verified sender domain; verify CONTACT_FROM_EMAIL and WITHDRAWAL_EMAIL/CONTACT_EMAIL in Vercel.
 - [ ] Configure Stripe public business info, terms-of-service URL, statement descriptor, tax registrations and receipts in dashboard.
+- [ ] Stripe B2C prices must use tax_behavior=inclusive; otherwise checkout stays disabled so no misleading net prices are advertised.
 - [ ] Check EU consumer tax handling (including reverse-charge and location rules) with an accountant; automatic tax does not replace registrations.
 - [ ] Confirm descriptions, system requirements, price type, licence limitations, demo restrictions, licence updates and support promises against each shipping build and applicable EULA.
 - [ ] Test full checkout and both Stripe webhooks in **test mode**, including retries, emails, duplicates and withdrawal requests without login.
