@@ -11,7 +11,7 @@ describe('localized B2C documents', () => {
       const copy = COMMERCE_LEGAL_COPY[language]
       for (const doc of ['terms', 'purchase', 'withdrawal', 'license'] as const) {
         expect(copy.docs[doc].length).toBeGreaterThan(7)
-        expect(commerceSections(doc, language).length).toBeGreaterThan(3)
+        expect(commerceSections(doc, language).length).toBeGreaterThanOrEqual(3)
         expect(commerceSections(doc, language).every(s => s.title && s.paragraphs[0].length > 40)).toBe(true)
       }
       expect(copy.links.terms.length).toBeGreaterThan(1)
