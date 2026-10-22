@@ -41,7 +41,7 @@ export const CRAWLER_BLOCKLIST: readonly string[] = [
   'cohere-ai',
   'perplexitybot',
   'perplexity-user',
-  'facebookbot',
+  // Meta's share/preview agents must be allowed to fetch OG images.
 ]
 
 /**
