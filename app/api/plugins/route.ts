@@ -64,8 +64,11 @@ async function audit(
 function revalidateProductSurface(slug: string) {
   revalidateTag('homepage-site-data', 'max')
   revalidatePath('/plugins')
+  revalidatePath('/api/sitemap')
+  revalidatePath('/sitemap.xml')
   if (slug) {
     revalidatePath('/plugins/' + slug)
+    revalidatePath('/plugins/' + slug + '/opengraph-image')
     revalidatePath('/plugins/' + slug + '/download')
   }
   revalidatePath('/')
