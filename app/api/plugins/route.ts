@@ -5,6 +5,8 @@ import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurok
 import { generateSigningKeyPair, normalizeSigningPem, signingPublicHex } from '@/lib/neurokore/protocol'
 import { encryptSigningKey } from '@/lib/plugins/signing'
 import { RELEASE_CHANNELS, slugSchema } from '@/lib/plugins/releases'
+import { MEDIA_BUCKET } from '@/lib/constants'
+import { r2StorageProvider } from '@/lib/storage/r2'
 
 export const runtime = 'nodejs'
 
@@ -40,6 +42,7 @@ const inputSchema = z.discriminatedUnion('action', [
   }).strict(),
   z.object({ action: z.literal('update'), id: z.uuid(), ...settings }).strict(),
   z.object({ action: z.literal('set_active'), id: z.uuid(), active: z.boolean() }).strict(),
+  z.object({ action: z.literal('delete_product'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('generate_key'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('import_key'), id: z.uuid(), private_pem: z.string().min(32).max(4096) }).strict(),
 ])
@@ -60,8 +63,10 @@ async function audit(
 
 function revalidateProductSurface(slug: string) {
   revalidatePath('/plugins')
-  revalidatePath('/plugins/' + slug)
-  revalidatePath('/plugins/' + slug + '/download')
+  if (slug) {
+    revalidatePath('/plugins/' + slug)
+    revalidatePath('/plugins/' + slug + '/download')
+  }
   revalidatePath('/')
 }
 
@@ -191,6 +196,38 @@ export async function POST(request: Request) {
     if (product.error) throw product.error
     if (!product.data) return json({ error: 'Plugin not found.' }, 404)
 
+    if (input.action === 'delete_product') {
+      const [licenses, orders] = await Promise.all([
+        client.from('plugin_licenses').select('id', { count: 'exact', head: true }).eq('product_id', input.id),
+        client.from('plugin_orders').select('id', { count: 'exact', head: true }).eq('product_id', input.id),
+      ])
+      if ((licenses.count ?? 0) > 0 || (orders.count ?? 0) > 0) {
+        return json({
+          error: 'This product has licences or orders. Keep it for accounting, or revoke the licences first.',
+        }, 409)
+      }
+      const { data: releases, error: releasesError } = await client.from('plugin_releases')
+        .select('id').eq('product_id', input.id)
+      if (releasesError) throw releasesError
+      const releaseIds = (releases ?? []).map((release) => release.id)
+      if (releaseIds.length > 0) {
+        const { data: artifacts } = await client.from('plugin_release_artifacts')
+          .select('storage_key').in('release_id', releaseIds)
+        for (const artifact of artifacts ?? []) {
+          try {
+            await r2StorageProvider.deleteObject(MEDIA_BUCKET, artifact.storage_key)
+          } catch {
+            // An orphaned object must not block deleting the product.
+          }
+        }
+      }
+      await audit(client, actor, input.id, 'product.delete', { slug: product.data.slug, title: product.data.title })
+      const { error } = await client.rpc('plugin_delete_product', { p_product: input.id })
+      if (error) throw error
+      revalidateProductSurface(product.data.slug ?? '')
+      return json({ ok: true })
+    }
+
     if (input.action === 'generate_key') {
       if (product.data.slug === 'neurokore') {
         return json({
@@ -226,4 +263,6 @@ export async function POST(request: Request) {
     return json({ error: adminFailureMessage(error) }, 400)
   }
 }
+
+
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
-import { RELEASE_CHANNELS } from '@/lib/plugins/releases'
+import { RELEASE_CHANNELS, slugifyProductTitle } from '@/lib/plugins/releases'
 import { LicensePanel } from './LicensePanel'
 import { ReleasePanel } from './ReleasePanel'
 
@@ -107,14 +107,21 @@ export function PluginDetail({ productId }: { productId: string }) {
   async function save(form: HTMLFormElement) {
     if (!product) return
     const data = new FormData(form)
+    const titleValue = String(data.get('title') ?? '').trim()
+    const rawSlug = String(data.get('slug') ?? '').trim()
+    const slugValue = rawSlug || slugifyProductTitle(titleValue)
+    if (!slugValue) {
+      setMessage('Add a title or a URL slug.')
+      return
+    }
     setBusy(true)
     setMessage('')
     try {
       await api({
         action: 'update',
         id: product.id,
-        title: String(data.get('title') ?? ''),
-        slug: String(data.get('slug') ?? ''),
+        title: titleValue,
+        slug: slugValue,
         short_description: String(data.get('short_description') ?? '') || null,
         description: String(data.get('description') ?? '') || null,
         features: parsedFeatures,
@@ -160,24 +167,47 @@ export function PluginDetail({ productId }: { productId: string }) {
     }
   }
 
+  async function removeProduct() {
+    if (!product) return
+    if (!window.confirm(
+      `Delete "${product.title}" permanently?\n\nVersions, downloads and the stored build files are removed. ` +
+      'This is refused if the product already has licences or orders.',
+    )) return
+    setBusy(true)
+    setMessage('')
+    try {
+      await api({ action: 'delete_product', id: product.id })
+      window.location.assign('/admin/plugins')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Please retry.')
+      setBusy(false)
+    }
+  }
+
+  const publicLive = product.active && Boolean(product.slug)
+
   return (
     <div className="space-y-8">
       <p role="status" className="min-h-6 text-sm text-zinc-400">{message}</p>
 
-      <div className={`rounded border p-4 text-sm ${product.active ? 'border-emerald-900/60 bg-emerald-950/20 text-emerald-200' : 'border-amber-900/60 bg-amber-950/20 text-amber-200'}`}>
+      <div className={`rounded border p-4 text-sm ${publicLive ? 'border-emerald-900/60 bg-emerald-950/20 text-emerald-200' : 'border-amber-900/60 bg-amber-950/20 text-amber-200'}`}>
         <p className="font-medium">
-          {product.active ? 'Public page is live' : 'Not public – the page returns 404'}
+          {publicLive
+            ? 'Public: the product page and downloads are reachable.'
+            : product.slug
+              ? 'Not public: the product page returns 404.'
+              : 'No page yet: add a URL slug and save.'}
         </p>
         <p className="mt-1 text-xs opacity-80">
           {product.slug
             ? <>URL: <a className="underline" href={`/plugins/${product.slug}`} target="_blank" rel="noreferrer">/plugins/{product.slug}</a></>
-            : 'Set a URL slug below to create the page address.'}
-          {' '}· Sales and free/paid do not control visibility. Only this switch does.
+            : 'The slug is generated from the name when you leave it empty.'}
+          {' '}Sales and the free/paid choice are separate: they never hide the page or the demo download.
         </p>
         <button
           type="button"
           className={secondaryButton + ' mt-3'}
-          disabled={busy || !product.slug}
+          disabled={busy || (!product.slug && !product.active)}
           onClick={() => void setPublic(!product.active)}
         >
           {product.active ? 'Hide page' : 'Make public'}
@@ -199,8 +229,9 @@ export function PluginDetail({ productId }: { productId: string }) {
               <input name="title" required defaultValue={product.title} className={inputClass + ' mt-1'} />
             </label>
             <label className="text-sm text-zinc-300">
-              URL slug
-              <input name="slug" required pattern="[a-z0-9][a-z0-9-]*" defaultValue={product.slug ?? ''}
+              URL slug (leave empty to generate)
+              <input name="slug" pattern="[a-z0-9][a-z0-9-]*" defaultValue={product.slug ?? ''}
+                placeholder="generated from the name"
                 className={inputClass + ' mt-1 font-mono'} />
             </label>
           </div>
@@ -367,7 +398,24 @@ export function PluginDetail({ productId }: { productId: string }) {
         <h2 className="mb-3 text-lg font-semibold text-zinc-100">Licences</h2>
         <LicensePanel productId={product.id} />
       </section>
+
+      <section className="space-y-3 rounded border border-red-900/60 bg-red-950/10 p-4">
+        <h2 className="text-sm font-semibold text-red-300">Delete product</h2>
+        <p className="text-xs text-zinc-400">
+          Removes this product, its versions, downloads and stored build files. Refused if the product
+          already has licences or orders; keep those for accounting instead.
+        </p>
+        <button
+          type="button"
+          className="min-h-[44px] rounded border border-red-800 px-4 py-2 text-sm font-semibold text-red-300 transition-colors hover:bg-red-950/40 disabled:cursor-not-allowed disabled:opacity-40"
+          disabled={busy}
+          onClick={() => void removeProduct()}
+        >
+          Delete “{product.title}”
+        </button>
+      </section>
     </div>
   )
 }
+
 

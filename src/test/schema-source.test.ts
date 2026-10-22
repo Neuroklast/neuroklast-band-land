@@ -14,6 +14,7 @@ describe('supabase schema source', () => {
     expect(sql).toContain('CREATE OR REPLACE FUNCTION public.plugin_activate')
     expect(sql).toContain('CREATE OR REPLACE FUNCTION public.plugin_fulfill')
     expect(sql).toContain('CREATE OR REPLACE FUNCTION public.plugin_publish_release')
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.plugin_delete_product')
     expect(sql).toContain('CREATE OR REPLACE FUNCTION public.plugin_public_catalog')
     expect(sql).toMatch(/GRANT SELECT ON TABLE[\s\S]*public\.products[\s\S]*TO anon;/)
     expect(sql).toMatch(/GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE[\s\S]*public\.products[\s\S]*TO authenticated, service_role;/)
@@ -28,3 +29,4 @@ describe('supabase schema source', () => {
     expect(sql).not.toMatch(/DROP TABLE[^;]*neurokore/i)
   })
 })
+

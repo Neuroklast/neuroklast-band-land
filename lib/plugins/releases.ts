@@ -213,3 +213,7 @@ export function formatBytes(bytes: number): string {
   }
   return `${value >= 10 || Number.isInteger(value) ? Math.round(value) : value.toFixed(1)} ${units[unit]}`
 }
+/** URL slug generated from a product name when the admin leaves it empty. */
+export function slugifyProductTitle(title: string): string {
+  return title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64)
+}

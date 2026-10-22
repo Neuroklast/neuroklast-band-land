@@ -12,6 +12,7 @@ import {
   releaseDownloadable,
   releaseStorageKey,
   safeReleaseStorageKey,
+  slugifyProductTitle,
   type ArtifactLike,
   type PublicRelease,
 } from '../../lib/plugins/releases'
@@ -205,3 +206,12 @@ describe('public catalog', () => {
     expect(isFreeDownload(parsePublicCatalog([{ ...product, pricing_mode: 'free', license_required: false }])[0])).toBe(true)
   })
 })
+describe('slug generation', () => {
+  it('derives a safe slug from a product name', () => {
+    expect(slugifyProductTitle('NEUROMETER')).toBe('neurometer')
+    expect(slugifyProductTitle('  Neuro Boost 2.0  ')).toBe('neuro-boost-2-0')
+    expect(slugifyProductTitle('Neuro / Sub')).toBe('neuro-sub')
+    expect(slugifyProductTitle('---')).toBe('')
+  })
+})
+
