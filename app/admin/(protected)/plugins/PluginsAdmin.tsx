@@ -59,6 +59,40 @@ export function PluginsAdmin() {
     setProducts(z.object({ products: z.array(productSchema) }).parse(payload).products)
   }
 
+  async function toggle(product: Product) {
+    setBusy(true)
+    setMessage('')
+    try {
+      await api({ action: 'set_active', id: product.id, active: !product.active })
+      await refresh()
+      setMessage(!product.active
+        ? 'Public. The product page and its published downloads are reachable.'
+        : 'Hidden. The product page returns 404 until you make it public again.')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Please retry.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove(product: Product) {
+    if (!window.confirm(
+      `Delete "${product.title}" permanently?\n\nVersions, downloads and the stored build files are removed. ` +
+      'This is refused if the product already has licences or orders.',
+    )) return
+    setBusy(true)
+    setMessage('')
+    try {
+      await api({ action: 'delete_product', id: product.id })
+      await refresh()
+      setMessage(`"${product.title}" deleted.`)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Please retry.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   useEffect(() => {
     void refresh().catch((error) =>
       setMessage(error instanceof Error ? error.message : 'Could not load plugins.'),
@@ -120,23 +154,22 @@ export function PluginsAdmin() {
 
       {products.length === 0 ? (
         <p className="rounded border border-zinc-800 p-4 text-sm text-zinc-500">
-          No plugins yet. Create one to add versions and downloads.
+          No products yet. Create one to add its page, versions and downloads.
         </p>
       ) : (
         <ul className="space-y-3">
-          {products.map((product) => (
+          {products.map((product) => {
+            const isPublic = product.active && !!product.slug
+            return (
             <li key={product.id} className="rounded border border-zinc-800 bg-zinc-950/60 p-4">
               <div className="flex flex-wrap items-baseline gap-3">
                 <Link href={`/admin/plugins/${product.id}`} className="text-lg font-semibold text-zinc-100 hover:underline">
                   {product.title}
                 </Link>
                 <span className="font-mono text-xs text-zinc-500">{product.slug ? '/plugins/' + product.slug : 'No URL slug yet'}</span>
-                <span className={`rounded border px-2 py-0.5 text-xs ${product.active ? 'border-emerald-800 text-emerald-300' : 'border-amber-800 text-amber-300'}`}>
-                  {product.active ? 'Public' : 'Not public (404)'}
+                <span className={`rounded border px-2 py-0.5 text-xs ${isPublic ? 'border-emerald-800 text-emerald-300' : 'border-amber-800 text-amber-300'}`}>
+                  {isPublic ? 'Public' : product.slug ? 'Not public (404)' : 'No page yet'}
                 </span>
-                {product.kind === 'other' && (
-                  <span className="rounded border border-zinc-700 px-2 py-0.5 text-xs text-zinc-400">Needs page setup</span>
-                )}
                 <span className="rounded border border-zinc-700 px-2 py-0.5 text-xs text-zinc-300">
                   {product.pricing_mode === 'free' ? 'Free' : product.sales_enabled ? 'On sale' : 'Paid · sale off'}
                 </span>
@@ -153,20 +186,31 @@ export function PluginsAdmin() {
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link className={secondaryButton} href={`/admin/plugins/${product.id}`}>Manage</Link>
-                {product.active && product.slug ? (
-                  <Link className={secondaryButton} href={`/plugins/${product.slug}`} target="_blank">View page</Link>
-                ) : (
-                  <span className={`${secondaryButton} cursor-not-allowed opacity-50`} aria-disabled="true">
-                    Not public yet
-                  </span>
+                {product.slug && (
+                  <button type="button" className={secondaryButton} disabled={busy} onClick={() => void toggle(product)}>
+                    {product.active ? 'Hide' : 'Make public'}
+                  </button>
                 )}
+                {isPublic && (
+                  <Link className={secondaryButton} href={`/plugins/${product.slug}`} target="_blank">View page</Link>
+                )}
+                <button
+                  type="button"
+                  className="min-h-[44px] rounded border border-red-900 px-3 py-2 text-sm text-red-300 transition-colors hover:bg-red-950/40 disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={busy}
+                  onClick={() => void remove(product)}
+                >
+                  Delete
+                </button>
               </div>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
     </div>
   )
 }
+
 
 

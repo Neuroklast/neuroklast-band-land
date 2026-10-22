@@ -1384,6 +1384,31 @@ BEGIN
 END;
 $$;
 
+-- Deletes a product that has no licences or orders. Releases, artifacts and
+-- download counters go with it; R2 objects are removed by the admin API.
+CREATE OR REPLACE FUNCTION public.plugin_delete_product(p_product uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM public.plugin_licenses WHERE product_id = p_product)
+     OR EXISTS (SELECT 1 FROM public.plugin_orders WHERE product_id = p_product) THEN
+    RAISE EXCEPTION 'Product has licences or orders';
+  END IF;
+  DELETE FROM public.plugin_download_events WHERE product_id = p_product;
+  DELETE FROM public.plugin_release_artifacts
+    WHERE release_id IN (SELECT id FROM public.plugin_releases WHERE product_id = p_product);
+  DELETE FROM public.plugin_releases WHERE product_id = p_product;
+  DELETE FROM public.plugin_product_secrets WHERE product_id = p_product;
+  DELETE FROM public.products WHERE id = p_product;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product not found';
+  END IF;
+END;
+$$;
+
 -- Public catalogue: product page fields plus published release metadata and
 -- artifact checksums. storage_key, price IDs and signing material never leave.
 CREATE OR REPLACE FUNCTION public.plugin_public_catalog()
@@ -1443,11 +1468,13 @@ REVOKE ALL ON FUNCTION public.plugin_activate(text, text, text) FROM PUBLIC, ano
 REVOKE ALL ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_publish_release(uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_withdraw_release(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.plugin_delete_product(uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_public_catalog() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.plugin_activate(text, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_publish_release(uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_withdraw_release(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_delete_product(uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_public_catalog() TO anon, authenticated, service_role;
 
 -- ============================================================

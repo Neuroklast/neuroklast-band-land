@@ -8,6 +8,8 @@ declare
   v_user_id uuid;
   fulfilled uuid;
   again uuid;
+  tmp uuid;
+  tmp_release uuid;
 begin
   select id into nk from public.products where slug = 'neurokore';
   if nk is null then raise exception 'TEST FAILED: NEUROKORE product missing'; end if;
@@ -81,4 +83,29 @@ begin
   if has_function_privilege('anon','public.plugin_public_catalog()','EXECUTE') is not true then
     raise exception 'TEST FAILED: public catalogue must be readable';
   end if;
+  -- Deleting a product without licences/orders removes its releases and files' metadata.
+  insert into public.products(title,slug,kind)
+  values ('Temp Plugin','temp-plugin','plugin') returning id into tmp;
+  insert into public.plugin_releases(product_id,version,channel,status)
+  values (tmp,'1.0.0','stable','draft') returning id into tmp_release;
+  insert into public.plugin_release_artifacts(release_id,platform,architecture,package_type,filename,storage_key,filesize_bytes,sha256,validation_status)
+  values (tmp_release,'windows-x64','x64','installer','temp.exe',
+          'releases/temp-plugin/v1.0.0/windows-x64/temp.exe',1024,repeat('b',64),'validated');
+  insert into public.plugin_download_events(product_id,release_id,platform,channel)
+  values (tmp,tmp_release,'windows-x64','stable');
+  perform public.plugin_delete_product(tmp);
+  if exists (select 1 from public.products where id = tmp) then
+    raise exception 'TEST FAILED: product not deleted';
+  end if;
+  if exists (select 1 from public.plugin_releases where id = tmp_release) then
+    raise exception 'TEST FAILED: releases not deleted';
+  end if;
+
+  begin
+    perform public.plugin_delete_product(other);
+    raise exception 'TEST FAILED: product with licence deleted';
+  exception when others then
+    if sqlerrm <> 'Product has licences or orders' then raise; end if;
+  end;
 end $$;
+

@@ -6,10 +6,11 @@ export default async function PluginDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="max-w-5xl">
       <AdminPageHeader
-        title="Plugin"
-        description="Product page content, pricing, licensing key and downloads for this plugin."
+        title="Product"
+        description="Page content, visibility, pricing, signing key, versions, downloads and licences."
       />
       <PluginDetail productId={id} />
     </div>
   )
 }
+
