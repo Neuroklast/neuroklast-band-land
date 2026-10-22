@@ -11,7 +11,7 @@ export const metadata = {
 export default function WithdrawalPage() {
   return (
     <LegalPageShell>
-      <main className="mx-auto w-full max-w-4xl space-y-6 px-6 py-32 text-white">
+      <section className="mx-auto w-full max-w-4xl space-y-6 px-6 py-32 text-white">
         <h1 className="text-3xl font-semibold">Vertrag widerrufen</h1>
         <p>Hier kannst du gemäß § 356a BGB eine Widerrufserklärung zu einer Online-Bestellung übermitteln. Eine Anmeldung ist dafür nicht erforderlich.</p>
         <WithdrawalForm />
@@ -19,7 +19,7 @@ export default function WithdrawalPage() {
           Der Widerruf ist auch formlos möglich. Informationen zum gesetzlichen Widerrufsrecht findest du in unserer
           {' '}<Link href="/withdrawal-policy" className="underline">Widerrufsbelehrung</Link>.
         </p>
-      </main>
+      </section>
     </LegalPageShell>
   )
 }
