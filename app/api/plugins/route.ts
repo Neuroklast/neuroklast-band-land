@@ -260,6 +260,7 @@ export async function POST(request: Request) {
     await audit(client, actor, product.data.id, 'product.key.import', { slug: product.data.slug })
     return json({ public_key_hex: publicHex })
   } catch (error) {
+    console.error('[plugins-api]', error)
     return json({ error: adminFailureMessage(error) }, 400)
   }
 }
