@@ -10,6 +10,7 @@ import { sanitizeExternalHref } from '@/lib/sanitize-href'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveLegalLocale } from '@/lib/legal-templates'
 import { COMMERCE_LEGAL_COPY } from '@/lib/commerce-legal-copy'
+import { localizedLegalPath } from '@/lib/legal-routes'
 import { useLenisContext } from '@/contexts/LenisContext'
 import './styles.css'
 
@@ -23,7 +24,8 @@ export default function NeuroklastClassicFooter({
   onDatenschutz,
 }: FooterSlotProps) {
   const { t, locale } = useLocale()
-  const shopLinks = COMMERCE_LEGAL_COPY[resolveLegalLocale(locale)].links
+  const legalLocale = resolveLegalLocale(locale)
+  const shopLinks = COMMERCE_LEGAL_COPY[legalLocale].links
   const { scrollTo } = useLenisContext()
   const prefersReducedMotion = useReducedMotion()
 
@@ -95,16 +97,16 @@ export default function NeuroklastClassicFooter({
               <Link href="/withdrawal" className="nk-os-nav min-h-[44px] inline-flex items-center font-semibold">
                 {shopLinks.withdrawal}
               </Link>
-              <Link href="/withdrawal-policy" className="nk-os-nav min-h-[44px] inline-flex items-center">
-                {COMMERCE_LEGAL_COPY[resolveLegalLocale(locale)].docs.withdrawal}
+              <Link href={localizedLegalPath(legalLocale, "withdrawal-policy")} className="nk-os-nav min-h-[44px] inline-flex items-center">
+                {COMMERCE_LEGAL_COPY[legalLocale].docs.withdrawal}
               </Link>
-              <Link href="/purchase-info" className="nk-os-nav min-h-[44px] inline-flex items-center">
+              <Link href={localizedLegalPath(legalLocale, "purchase-info")} className="nk-os-nav min-h-[44px] inline-flex items-center">
                 {shopLinks.purchase}
               </Link>
-              <Link href="/license-terms" className="nk-os-nav min-h-[44px] inline-flex items-center">
+              <Link href={localizedLegalPath(legalLocale, "license-terms")} className="nk-os-nav min-h-[44px] inline-flex items-center">
                 {shopLinks.licence}
               </Link>
-              <Link href="/terms" className="nk-os-nav min-h-[44px] inline-flex items-center">
+              <Link href={localizedLegalPath(legalLocale, "terms")} className="nk-os-nav min-h-[44px] inline-flex items-center">
                 {shopLinks.terms}
               </Link>
               <CookiePreferencesButton
