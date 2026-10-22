@@ -20,6 +20,8 @@ export function WithdrawalForm() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [receivedAt, setReceivedAt] = useState('')
+  const [reference, setReference] = useState('')
+  const [confirmationSent, setConfirmationSent] = useState(false)
 
   async function submit() {
     if (busy) return
@@ -32,7 +34,9 @@ export function WithdrawalForm() {
         body: JSON.stringify({ ...details, locale: lang }),
       })
       if (!response.ok) throw new Error('Transmission failed. Please retry or contact the seller by email.')
-      const result: { receivedAt: string } = await response.json()
+      const result: { receivedAt: string; reference: string; confirmationSent: boolean } = await response.json()
+      setReference(result.reference)
+      setConfirmationSent(result.confirmationSent)
       setReceivedAt(result.receivedAt)
       setStep('sent')
     } catch (cause) {
@@ -49,7 +53,15 @@ export function WithdrawalForm() {
     <section role="status" className="space-y-4 border border-white/30 bg-zinc-950 p-6">
       <h2 className="text-2xl font-semibold">{labels.done}</h2>
       <p>{new Date(receivedAt).toLocaleString(lang, { timeZone: 'Europe/Berlin' })} · {details.email}</p>
-      <p>{labels.receipt}</p>
+      <p className="font-mono text-xs break-all">Reference: {reference}</p>
+      {confirmationSent
+        ? <p>{labels.receipt}</p>
+        : <p role="alert">
+            {lang === 'de'
+              ? 'Deine Erklärung wurde gespeichert. Die E-Mail-Eingangsbestätigung konnte noch nicht versendet werden. Bewahre die Referenz auf und kontaktiere den Betreiber gegebenenfalls über das Impressum.'
+              : 'Your declaration has been recorded, but the email confirmation is still pending. Keep this reference and contact the seller through the Legal Notice if necessary.'}
+            {' '}<Link href="/legal-notice" className="underline">{legal.notice}</Link>
+          </p>}
       <p>{labels.notDecision}</p>
       <Link href="/" className="inline-block underline">Home</Link>
     </section>
