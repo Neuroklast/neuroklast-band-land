@@ -33,35 +33,37 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
     <LegalPageShell>
       <section className="mx-auto max-w-4xl space-y-16 px-6 py-32">
         <header className="space-y-5">
-          <p className="font-mono text-sm tracking-widest">NEUROKLAST AUDIO</p>
-          <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">{product.title}</h1>
-          {product.short_description && <p className="max-w-2xl text-xl">{product.short_description}</p>}
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              className="inline-flex min-h-11 items-center border border-current px-5 py-3 font-medium hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              href={`/plugins/${product.slug}/download`}
-            >
-              {product.pricing_mode === 'free' ? 'Free Download' : 'Free Download (demo)'}
-            </Link>
-            {salesOpen && price ? (
+          <div className="relative rounded border border-white/10 bg-black/40 p-6 md:p-10">
+            <p className="font-mono text-sm tracking-widest">NEUROKLAST AUDIO</p>
+            <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">{product.title}</h1>
+            {product.short_description && <p className="max-w-2xl text-xl">{product.short_description}</p>}
+            <div className="flex flex-wrap items-center gap-3">
               <Link
-                className="inline-flex min-h-11 items-center border border-current/40 px-5 py-3 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                href="/neurokore/account"
+                className="inline-flex min-h-11 items-center border border-current px-5 py-3 font-medium hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                href={`/plugins/${product.slug}/download`}
               >
-                Buy License — {formatProductPrice(price)}
-                {price.recurring ? ' / period' : ''}
+                {product.pricing_mode === 'free' ? 'Free Download' : 'Free Download (demo)'}
               </Link>
-            ) : salesOpen ? (
-              <Link className="inline-flex min-h-11 items-center border border-current/40 px-5 py-3 hover:opacity-80"
-                href="/neurokore/account">
-                Buy License
-              </Link>
-            ) : null}
+              {salesOpen && price ? (
+                <Link
+                  className="inline-flex min-h-11 items-center border border-current/40 px-5 py-3 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  href="/neurokore/account"
+                >
+                  Buy License — {formatProductPrice(price)}
+                  {price.recurring ? ' / period' : ''}
+                </Link>
+              ) : salesOpen ? (
+                <Link className="inline-flex min-h-11 items-center border border-current/40 px-5 py-3 hover:opacity-80"
+                  href="/neurokore/account">
+                  Buy License
+                </Link>
+              ) : null}
+            </div>
+            {salesOpen && price && <p className="text-sm opacity-70">Tax is calculated at checkout.</p>}
+            <p className="text-sm opacity-70">
+              {stable ? `Latest stable build: ${stable.version} (${CHANNEL_LABEL[stable.channel]}).` : 'No public build has been published yet.'}
+            </p>
           </div>
-          {salesOpen && price && <p className="text-sm opacity-70">Tax is calculated at checkout.</p>}
-          <p className="text-sm opacity-70">
-            {stable ? `Latest stable build: ${stable.version} (${CHANNEL_LABEL[stable.channel]}).` : 'No public build has been published yet.'}
-          </p>
         </header>
 
         {product.media.some((item) => item.kind === 'image') && (
@@ -75,14 +77,14 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
         )}
 
         {product.description && (
-          <section className="space-y-3">
+          <section className="space-y-3 rounded border border-white/10 bg-black/40 p-6 md:p-8">
             <h2 className="text-3xl font-semibold">About</h2>
             <p className="whitespace-pre-line opacity-90">{product.description}</p>
           </section>
         )}
 
         {product.features.length > 0 && (
-          <section className="space-y-6">
+          <section className="space-y-6 rounded border border-white/10 bg-black/40 p-6 md:p-8">
             <h2 className="text-3xl font-semibold">Features</h2>
             <ul className="grid gap-4 sm:grid-cols-2">
               {product.features.map((feature) => (
