@@ -197,33 +197,26 @@ export async function POST(request: Request) {
     if (!product.data) return json({ error: 'Plugin not found.' }, 404)
 
     if (input.action === 'delete_product') {
-      const [licenses, orders] = await Promise.all([
-        client.from('plugin_licenses').select('id', { count: 'exact', head: true }).eq('product_id', input.id),
-        client.from('plugin_orders').select('id', { count: 'exact', head: true }).eq('product_id', input.id),
-      ])
-      if ((licenses.count ?? 0) > 0 || (orders.count ?? 0) > 0) {
-        return json({
-          error: 'This product has licences or orders. Keep it for accounting, or revoke the licences first.',
-        }, 409)
-      }
       const { data: releases, error: releasesError } = await client.from('plugin_releases')
         .select('id').eq('product_id', input.id)
       if (releasesError) throw releasesError
       const releaseIds = (releases ?? []).map((release) => release.id)
+      let storageKeys: string[] = []
       if (releaseIds.length > 0) {
         const { data: artifacts } = await client.from('plugin_release_artifacts')
           .select('storage_key').in('release_id', releaseIds)
-        for (const artifact of artifacts ?? []) {
-          try {
-            await r2StorageProvider.deleteObject(MEDIA_BUCKET, artifact.storage_key)
-          } catch {
-            // An orphaned object must not block deleting the product.
-          }
-        }
+        storageKeys = (artifacts ?? []).map((artifact) => artifact.storage_key)
       }
-      await audit(client, actor, input.id, 'product.delete', { slug: product.data.slug, title: product.data.title })
+      // The RPC enforces "hidden and no paid orders" before anything is removed.
       const { error } = await client.rpc('plugin_delete_product', { p_product: input.id })
       if (error) throw error
+      for (const key of storageKeys) {
+        try {
+          await r2StorageProvider.deleteObject(MEDIA_BUCKET, key)
+        } catch {
+          // The product is gone; an orphaned object must not fail the request.
+        }
+      }
       revalidateProductSurface(product.data.slug ?? '')
       return json({ ok: true })
     }

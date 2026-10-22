@@ -52,7 +52,6 @@ export function PluginsAdmin() {
   const [slug, setSlug] = useState('')
   const [pricing, setPricing] = useState<'paid' | 'free'>('paid')
   const [busy, setBusy] = useState(false)
-  const [schemaBusy, setSchemaBusy] = useState(false)
   const [message, setMessage] = useState('')
 
   async function refresh() {
@@ -77,10 +76,14 @@ export function PluginsAdmin() {
   }
 
   async function remove(product: Product) {
-    if (!window.confirm(
-      `Delete "${product.title}" permanently?\n\nVersions, downloads and the stored build files are removed. ` +
-      'This is refused if the product already has licences or orders.',
-    )) return
+    const expected = product.slug ?? product.title
+    const typed = window.prompt(
+      `Delete "${product.title}" permanently?\n\n` +
+      'Removes versions, downloads, licences, audit rows and stored build files.\n' +
+      'Only allowed while the product is hidden and has no paid orders.\n\n' +
+      `Type ${expected} to confirm:`,
+    )
+    if (typed !== expected) return
     setBusy(true)
     setMessage('')
     try {
@@ -100,43 +103,9 @@ export function PluginsAdmin() {
     )
   }, [])
 
-  async function applySchema() {
-    if (!window.confirm('Apply supabase/schema.sql to the database now? The file is idempotent.')) return
-    setSchemaBusy(true)
-    setMessage('')
-    try {
-      const response = await fetch('/api/admin/apply-schema', { method: 'POST' })
-      const payload: unknown = await response.json().catch(() => ({}))
-      if (!response.ok) {
-        throw new Error(
-          payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
-            ? payload.error
-            : 'Schema apply failed.',
-        )
-      }
-      await refresh()
-      setMessage('Database schema applied from supabase/schema.sql.')
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Schema apply failed.')
-    } finally {
-      setSchemaBusy(false)
-    }
-  }
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 rounded border border-zinc-800 bg-zinc-950/60 p-4">
-        <p className="text-sm font-semibold text-zinc-200">Database schema</p>
-        <p className="text-xs text-zinc-500">
-          Missing database functions (for example after a preview deploy) come from the database, not
-          the app. Apply the current <code className="font-mono">supabase/schema.sql</code> here. It is
-          idempotent and keeps all existing data.
-        </p>
-        <button type="button" className={secondaryButton} disabled={schemaBusy} onClick={() => void applySchema()}>
-          {schemaBusy ? 'Applying…' : 'Apply schema.sql'}
-        </button>
-      </div>
-
       <form
         className="space-y-3 rounded border border-zinc-800 bg-zinc-950/60 p-4"
         onSubmit={(event) => {

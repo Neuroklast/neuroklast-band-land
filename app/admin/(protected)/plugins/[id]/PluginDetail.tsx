@@ -169,10 +169,14 @@ export function PluginDetail({ productId }: { productId: string }) {
 
   async function removeProduct() {
     if (!product) return
-    if (!window.confirm(
-      `Delete "${product.title}" permanently?\n\nVersions, downloads and the stored build files are removed. ` +
-      'This is refused if the product already has licences or orders.',
-    )) return
+    const expected = product.slug ?? product.title
+    const typed = window.prompt(
+      `Delete "${product.title}" permanently?\n\n` +
+      'Removes versions, downloads, licences, audit rows and stored build files.\n' +
+      'Only allowed while the product is hidden and has no paid orders.\n\n' +
+      `Type ${expected} to confirm:`,
+    )
+    if (typed !== expected) return
     setBusy(true)
     setMessage('')
     try {
@@ -402,8 +406,8 @@ export function PluginDetail({ productId }: { productId: string }) {
       <section className="space-y-3 rounded border border-red-900/60 bg-red-950/10 p-4">
         <h2 className="text-sm font-semibold text-red-300">Delete product</h2>
         <p className="text-xs text-zinc-400">
-          Removes this product, its versions, downloads and stored build files. Refused if the product
-          already has licences or orders; keep those for accounting instead.
+          Removes versions, downloads, licences, audit rows and stored build files. Allowed while the
+          product is hidden and has no paid orders. Hide it first if it is public.
         </p>
         <button
           type="button"

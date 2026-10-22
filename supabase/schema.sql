@@ -1227,6 +1227,26 @@ BEGIN
   ALTER TABLE public.plugin_admin_audit ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id);
 END $$;
 
+-- Migrated audit tables got this FK without ON DELETE SET NULL. Recreate it
+-- so deleting a product detaches the audit history instead of failing.
+DO $$
+DECLARE c_name text;
+BEGIN
+  FOR c_name IN
+    SELECT conname FROM pg_constraint
+    WHERE conrelid = 'public.plugin_admin_audit'::regclass
+      AND contype = 'f'
+      AND conkey = ARRAY[(SELECT attnum FROM pg_attribute
+                          WHERE attrelid = 'public.plugin_admin_audit'::regclass
+                            AND attname = 'product_id')]
+  LOOP
+    EXECUTE format('ALTER TABLE public.plugin_admin_audit DROP CONSTRAINT %I', c_name);
+  END LOOP;
+  ALTER TABLE public.plugin_admin_audit
+    ADD CONSTRAINT plugin_admin_audit_product_id_fkey
+    FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE SET NULL;
+END $$;
+
 -- One release per product/version/channel (replaces the old global unique).
 ALTER TABLE public.plugin_releases DROP CONSTRAINT IF EXISTS neurokore_releases_version_channel_key;
 ALTER TABLE public.plugin_releases DROP CONSTRAINT IF EXISTS plugin_releases_version_channel_key;
@@ -1392,20 +1412,34 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
+DECLARE
+  is_public boolean;
 BEGIN
-  IF EXISTS (SELECT 1 FROM public.plugin_licenses WHERE product_id = p_product)
-     OR EXISTS (SELECT 1 FROM public.plugin_orders WHERE product_id = p_product) THEN
-    RAISE EXCEPTION 'Product has licences or orders';
+  SELECT active INTO is_public FROM public.products WHERE id = p_product;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product not found';
   END IF;
+  IF COALESCE(is_public, false) THEN
+    RAISE EXCEPTION 'Hide the product before deleting it';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.plugin_orders
+    WHERE product_id = p_product AND license_id IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Product has paid orders';
+  END IF;
+
   DELETE FROM public.plugin_download_events WHERE product_id = p_product;
   DELETE FROM public.plugin_release_artifacts
     WHERE release_id IN (SELECT id FROM public.plugin_releases WHERE product_id = p_product);
   DELETE FROM public.plugin_releases WHERE product_id = p_product;
+  DELETE FROM public.plugin_devices
+    WHERE license_id IN (SELECT id FROM public.plugin_licenses WHERE product_id = p_product);
+  DELETE FROM public.plugin_licenses WHERE product_id = p_product;
+  DELETE FROM public.plugin_orders WHERE product_id = p_product;
   DELETE FROM public.plugin_product_secrets WHERE product_id = p_product;
+  DELETE FROM public.plugin_admin_audit WHERE product_id = p_product;
   DELETE FROM public.products WHERE id = p_product;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Product not found';
-  END IF;
 END;
 $$;
 

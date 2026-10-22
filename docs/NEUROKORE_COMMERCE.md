@@ -56,6 +56,10 @@ Admin → Products & Plugins → product → Versions & downloads → **Upload a
 
 `Delete` removes the database row and the R2 object. Published versions must be withdrawn before their downloads can be edited.
 
+### Deleting a product
+
+Deletion is allowed only while the product is hidden (`active = false`) and has **no paid orders** (`plugin_orders.license_id IS NULL`). It removes the product, releases, artifacts, download events, licences, devices, abandoned checkouts, the encrypted signing key and all audit rows for that product, then deletes the R2 files. No audit row is written for the deletion itself. A public product must be hidden first; a product with a fulfilled order stays for accounting.
+
 ### Visibility, downloads and sales are separate
 
 - **Public page** (`products.active`): controls whether `/plugins/<slug>` exists at all. A hidden product returns 404. New products start hidden; use **Make public** on the product page.
