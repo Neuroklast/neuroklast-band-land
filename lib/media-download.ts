@@ -213,3 +213,12 @@ export function browseMediaDownloads(
 
 export const MEDIA_ACCEPT =
   'image/jpeg,image/png,image/webp,image/gif,application/pdf,application/zip,.zip,audio/mpeg,audio/wav,.mp3,.wav'
+
+export function fileMatchesAccept(accept: string, file: { type: string; name: string }): boolean {
+  const tokens = accept.split(',').map((token) => token.trim().toLowerCase())
+  const type = file.type.toLowerCase()
+  const ext = '.' + (file.name.split('.').pop()?.toLowerCase() ?? '')
+  if (tokens.some((token) => token === type || token === ext)) return true
+  const normalized = normalizeMime(file.type, file.name)
+  return normalized != null && tokens.includes(normalized)
+}

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import {
   MEDIA_ACCEPT,
   MEDIA_MULTIPART_THRESHOLD_BYTES,
+  fileMatchesAccept,
   mediaKindFromMime,
   validateMediaUpload,
 } from '@/lib/media-download'
@@ -27,6 +28,7 @@ interface FileSourcePickerProps {
   currentMime?: string | null
   currentFilename?: string | null
   storagePrefix?: string
+  accept?: string
   onResolved: (result: FileSourceResolved) => void
   onCleared?: () => void
   onError?: (message: string) => void
@@ -39,6 +41,7 @@ export function FileSourcePicker({
   currentMime = null,
   currentFilename = null,
   storagePrefix = 'media-downloads',
+  accept = MEDIA_ACCEPT,
   onResolved,
   onCleared,
   onError,
@@ -72,6 +75,14 @@ export function FileSourcePicker({
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
+
+    if (!fileMatchesAccept(accept, file)) {
+      const msg = 'Unsupported file type.'
+      onError?.(msg)
+      setStatus(msg)
+      if (inputRef.current) inputRef.current.value = ''
+      return
+    }
 
     const check = validateMediaUpload(file.type, file.size, file.name)
     if (!check.ok) {
@@ -209,11 +220,12 @@ export function FileSourcePicker({
           </button>
         ) : null}
       </div>
-      <input ref={inputRef} type="file" accept={MEDIA_ACCEPT} onChange={handleFileChange} className="hidden" />
-      <p className="text-xs text-zinc-500">
-        JPEG, PNG, WebP, GIF, PDF, ZIP, MP3, WAV. Images 25 MB, PDF 25 MB, ZIP 100 MB, audio 50 MB. Stored as original
-        files (no WebP conversion).
-      </p>
+        <input ref={inputRef} type="file" accept={accept} onChange={handleFileChange} className="hidden" />
+        <p className="text-xs text-zinc-500">
+          {accept === MEDIA_ACCEPT
+            ? 'JPEG, PNG, WebP, GIF, PDF, ZIP, MP3, WAV. Images 25 MB, PDF 25 MB, ZIP 100 MB, audio 50 MB. Stored as original files (no WebP conversion).'
+            : 'Original file upload. Size limits still apply.'}
+        </p>
       {status ? <p className="text-xs text-zinc-400">{status}</p> : null}
     </div>
   )

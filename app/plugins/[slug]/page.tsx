@@ -13,6 +13,7 @@ import { JsonLd } from '@/app/_components/public/JsonLd'
 import { getSiteOrigin } from '@/lib/og-share'
 import { absoluteUrl, buildBreadcrumbSchema, buildSoftwareApplicationSchema } from '@/lib/structured-data'
 import { pluginCanonicalPath, pluginPreviewPath, pluginPrimaryImage, pluginSeoDescription } from '@/lib/plugins/seo'
+import { isLegacySupabaseStorageUrl } from '@/lib/r2'
 
 export const revalidate = 60
 
@@ -52,6 +53,8 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
   const displayedRelease = availablePublicDownload(product)
   const downloadAvailable = displayedRelease !== null
   const images = product.media.filter(item => item.kind === 'image' && item.url)
+  const videos = product.media.filter(item => item.kind === 'video' && item.url && !isLegacySupabaseStorageUrl(item.url))
+  const audios = product.media.filter(item => item.kind === 'audio' && item.url && !isLegacySupabaseStorageUrl(item.url))
   const cover = images[0]
   const price = product.pricing_mode === 'paid' && product.sales_enabled
     ? await loadProductPriceForProduct(product.id)
@@ -175,6 +178,44 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                       widths={[480, 800, 1200]} sizes="(max-width: 640px) 92vw, 45vw"
                       className="h-full w-full object-contain" loading="lazy" />
                   </figure>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {videos.length > 0 && (
+            <section aria-labelledby="plugin-videos" className="space-y-4">
+              <h2 id="plugin-videos" className="text-2xl font-semibold tracking-tight">Videos</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {videos.map((item, index) => (
+                  <figure key={item.url} className="border border-white/15 bg-zinc-950 p-3">
+                    <video
+                      src={item.url}
+                      controls
+                      preload="metadata"
+                      playsInline
+                      className="w-full"
+                      aria-label={product.title + ' video ' + (index + 1)}
+                    />
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {audios.length > 0 && (
+            <section aria-labelledby="plugin-audio" className="space-y-4">
+              <h2 id="plugin-audio" className="text-2xl font-semibold tracking-tight">Audio</h2>
+              <div className="space-y-3">
+                {audios.map((item, index) => (
+                  <audio
+                    key={item.url}
+                    src={item.url}
+                    controls
+                    preload="none"
+                    className="w-full"
+                    aria-label={product.title + ' audio ' + (index + 1)}
+                  />
                 ))}
               </div>
             </section>

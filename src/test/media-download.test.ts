@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   browseMediaDownloads,
+  fileMatchesAccept,
   filterMediaByCategory,
   formatFileSize,
   mapMediaDownloadRow,
@@ -53,6 +54,16 @@ describe('mediaKindFromMime', () => {
     expect(mediaKindFromMime('audio/mpeg')).toBe('audio')
     expect(mediaKindFromMime('application/pdf')).toBe('document')
     expect(mediaKindFromMime('application/zip', 'photos.zip')).toBe('document')
+  })
+})
+
+describe('fileMatchesAccept', () => {
+  it('matches mime or extension and rejects the rest', () => {
+    const audio = 'audio/mpeg,audio/wav,.mp3,.wav'
+    expect(fileMatchesAccept(audio, { type: 'audio/mpeg', name: 'demo.mp3' })).toBe(true)
+    expect(fileMatchesAccept(audio, { type: '', name: 'demo.WAV' })).toBe(true)
+    expect(fileMatchesAccept(audio, { type: 'audio/mp3', name: 'demo.mp3' })).toBe(true)
+    expect(fileMatchesAccept(audio, { type: 'image/png', name: 'cover.png' })).toBe(false)
   })
 })
 
