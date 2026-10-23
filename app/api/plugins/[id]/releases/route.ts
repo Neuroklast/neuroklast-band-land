@@ -36,7 +36,12 @@ const inputSchema = z.discriminatedUnion('action', [
     channel: z.enum(RELEASE_CHANNELS).default('stable'),
     ...metadata,
   }).strict(),
-  z.object({ action: z.literal('update'), id: z.uuid(), ...metadata }).strict(),
+  z.object({
+    action: z.literal('update'),
+    id: z.uuid(),
+    version: versionSchema.optional(),
+    ...metadata,
+  }).strict(),
   z.object({
     action: z.literal('artifact'),
     release_id: z.uuid(),
@@ -128,23 +133,33 @@ export async function POST(request: Request, context: RouteContext) {
         release_notes: input.release_notes ?? null,
         git_commit_sha: input.git_commit_sha ?? null,
       }).select('id').single()
-      if (error) throw error
+      if (error) {
+        if (error.code === '23505') return json({ error: 'That version already exists on this channel.' }, 409)
+        throw error
+      }
       await audit(client, actor, productId, 'release.create', data.id, { version: input.version, channel: input.channel })
       return json({ id: data.id })
     }
 
     if (input.action === 'update') {
       const { data: existing, error: findError } = await client.from('plugin_releases')
-        .select('id').eq('id', input.id).eq('product_id', productId).maybeSingle()
+        .select('id,status').eq('id', input.id).eq('product_id', productId).maybeSingle()
       if (findError) throw findError
       if (!existing) return json({ error: 'Version not found.' }, 404)
+      if (input.version !== undefined && existing.status === 'published') {
+        return json({ error: 'Withdraw the version before changing its number.' }, 409)
+      }
       const patch: Record<string, unknown> = {}
+      if (input.version !== undefined) patch.version = input.version
       for (const key of ['title', 'changelog', 'release_notes', 'git_commit_sha'] as const) {
         if (input[key] !== undefined) patch[key] = input[key]
       }
       if (Object.keys(patch).length === 0) return json({ ok: true })
       const { error } = await client.from('plugin_releases').update(patch).eq('id', input.id)
-      if (error) throw error
+      if (error) {
+        if (error.code === '23505') return json({ error: 'That version already exists on this channel.' }, 409)
+        throw error
+      }
       await audit(client, actor, productId, 'release.update', input.id, { fields: Object.keys(patch) })
       return json({ ok: true })
     }
@@ -167,6 +182,13 @@ export async function POST(request: Request, context: RouteContext) {
       if (object.size !== input.filesize_bytes) {
         return json({ error: 'The uploaded file size does not match. Upload it again.' }, 409)
       }
+      const { data: previous, error: previousError } = await client.from('plugin_release_artifacts')
+        .select('storage_key')
+        .eq('release_id', input.release_id)
+        .eq('platform', input.platform)
+        .eq('package_type', input.package_type)
+        .maybeSingle()
+      if (previousError) throw previousError
       const { error } = await client.from('plugin_release_artifacts').upsert({
         release_id: input.release_id,
         platform: input.platform,
@@ -180,6 +202,20 @@ export async function POST(request: Request, context: RouteContext) {
         validation_status: 'pending',
       }, { onConflict: 'release_id,platform,package_type' })
       if (error) throw error
+      if (release.status === 'validated' || release.status === 'withdrawn') {
+        const { error: demoteError } = await client.from('plugin_releases')
+          .update({ status: 'draft' })
+          .eq('id', input.release_id)
+          .in('status', ['validated', 'withdrawn'])
+        if (demoteError) throw demoteError
+      }
+      if (previous?.storage_key && previous.storage_key !== storageKey) {
+        try {
+          await r2StorageProvider.deleteObject(MEDIA_BUCKET, previous.storage_key)
+        } catch {
+          // The new file is registered; an orphaned object must not block the admin.
+        }
+      }
       await audit(client, actor, productId, 'artifact.register', input.release_id, {
         platform: input.platform,
         package_type: input.package_type,
@@ -259,7 +295,7 @@ export async function POST(request: Request, context: RouteContext) {
     const { error: releaseError } = await client.from('plugin_releases')
       .update({ status: 'validated', validated_at: new Date().toISOString() })
       .eq('id', input.id)
-      .in('status', ['draft', 'validated'])
+      .in('status', ['draft', 'validated', 'withdrawn'])
     if (releaseError) throw releaseError
     await audit(client, actor, productId, 'release.validate', input.id)
     return json({ ok: true })

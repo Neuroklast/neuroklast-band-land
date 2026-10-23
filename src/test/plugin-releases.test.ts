@@ -10,6 +10,7 @@ import {
   pickArtifact,
   releaseArtifactsReady,
   releaseDownloadable,
+  releaseEditable,
   releaseStorageKey,
   safeReleaseStorageKey,
   slugifyProductTitle,
@@ -67,6 +68,13 @@ describe('artifact readiness', () => {
     expect(releaseDownloadable('draft', [artifact()])).toBe(false)
     expect(releaseDownloadable('validated', [artifact()])).toBe(false)
     expect(releaseDownloadable('withdrawn', [artifact()])).toBe(false)
+  })
+
+  it('lets unpublished versions replace files and the version number', () => {
+    expect(releaseEditable('draft')).toBe(true)
+    expect(releaseEditable('validated')).toBe(true)
+    expect(releaseEditable('withdrawn')).toBe(true)
+    expect(releaseEditable('published')).toBe(false)
   })
 })
 

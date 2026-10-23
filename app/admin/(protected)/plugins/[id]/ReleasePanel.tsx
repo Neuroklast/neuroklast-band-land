@@ -12,6 +12,7 @@ import {
   MULTIPART_THRESHOLD_BYTES,
   RELEASE_FILE_EXTENSIONS,
   formatBytes,
+  releaseEditable,
 } from '@/lib/plugins/releases'
 import { releasesResponseSchema, type Release } from '@/lib/plugins/release-schema'
 import { createSignedUploadUrl } from '@/app/admin/_actions/r2Upload'
@@ -62,6 +63,7 @@ function ReleaseCard({ release, productId, onChanged }: {
   productId: string
   onChanged: () => Promise<void>
 }) {
+  const [versionNumber, setVersionNumber] = useState(release.version)
   const [title, setTitle] = useState(release.title ?? '')
   const [changelog, setChangelog] = useState(release.changelog ?? '')
   const [notes, setNotes] = useState(release.release_notes ?? '')
@@ -174,7 +176,7 @@ function ReleaseCard({ release, productId, onChanged }: {
   }
 
   const artifacts = release.plugin_release_artifacts
-  const unpublished = release.status === 'draft' || release.status === 'validated'
+  const editable = releaseEditable(release.status)
   const unsigned = artifacts.some((item) => item.signing_status === 'unsigned')
   const macUnsigned = artifacts.some(
     (item) => item.platform.startsWith('macos') && item.signing_status !== 'notarized',
@@ -184,7 +186,31 @@ function ReleaseCard({ release, productId, onChanged }: {
   return (
     <li className="space-y-4 rounded border border-zinc-800 bg-zinc-950/60 p-4">
       <div className="flex flex-wrap items-baseline gap-3">
-        <h2 className="text-lg font-semibold text-zinc-100">{release.version}</h2>
+        {editable ? (
+          <label className="flex items-center gap-2 text-sm text-zinc-300">
+            Version
+            <input
+              className={inputClass + ' w-36'}
+              value={versionNumber}
+              onChange={(event) => setVersionNumber(event.target.value)}
+            />
+          </label>
+        ) : (
+          <h2 className="text-lg font-semibold text-zinc-100">{release.version}</h2>
+        )}
+        {editable && (
+          <button
+            type="button"
+            className={secondaryButton}
+            disabled={busy || uploading || versionNumber.trim() === release.version}
+            onClick={() => void run(
+              () => api(productId, { action: 'update', id: release.id, version: versionNumber.trim() }),
+              'Version number saved.',
+            )}
+          >
+            Save version
+          </button>
+        )}
         <span className="text-xs uppercase tracking-widest text-zinc-500">{release.channel}</span>
         <span className="rounded border border-zinc-700 px-2 py-0.5 text-xs text-zinc-300">
           {STATUS_LABEL[release.status] ?? release.status}
@@ -202,7 +228,7 @@ function ReleaseCard({ release, productId, onChanged }: {
           macOS builds are not notarized. Keep this out of Stable until they are signed and notarized.
         </p>
       )}
-      {!ready && unpublished && (
+      {!ready && editable && (
         <p className="text-xs text-zinc-400">Upload at least one file, then mark the version as ready.</p>
       )}
 
@@ -252,22 +278,39 @@ function ReleaseCard({ release, productId, onChanged }: {
                     {item.validation_status === 'validated' ? 'Checked' : 'Needs check'}
                   </span>
                   <span className="text-xs text-zinc-500">{item.signing_status}</span>
-                  {unpublished && (
-                    <button
-                      type="button"
-                      className="ml-auto text-xs text-red-400 hover:text-red-300"
-                      disabled={busy || uploading}
-                      onClick={() => {
-                        if (window.confirm('Delete this download and its file?')) {
-                          void run(
-                            () => api(productId, { action: 'delete_artifact', release_id: release.id, artifact_id: item.id }),
-                            'Download deleted.',
-                          )
-                        }
-                      }}
-                    >
-                      Delete
-                    </button>
+                  {editable && (
+                    <span className="ml-auto flex gap-3">
+                      <button
+                        type="button"
+                        className="text-xs text-zinc-400 hover:text-zinc-200"
+                        disabled={busy || uploading}
+                        onClick={() => {
+                          setUpload({
+                            ...upload,
+                            platform: item.platform as typeof upload.platform,
+                            package_type: item.package_type as typeof upload.package_type,
+                          })
+                          setMessage('Choose a new file below to replace this download.')
+                        }}
+                      >
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        className="text-xs text-red-400 hover:text-red-300"
+                        disabled={busy || uploading}
+                        onClick={() => {
+                          if (window.confirm('Delete this download and its file?')) {
+                            void run(
+                              () => api(productId, { action: 'delete_artifact', release_id: release.id, artifact_id: item.id }),
+                              'Download deleted.',
+                            )
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </span>
                   )}
                 </div>
                 <p className="mt-1 break-all font-mono text-xs text-zinc-500">{item.filename}</p>
@@ -277,9 +320,10 @@ function ReleaseCard({ release, productId, onChanged }: {
           </ul>
         )}
 
-        {unpublished && (
+        {editable && (
           <div className="space-y-3 rounded border border-zinc-800 p-3">
-            <p className="text-sm font-medium text-zinc-200">Upload a build</p>
+            <p className="text-sm font-medium text-zinc-200">Upload or replace a build</p>
+            <p className="text-xs text-zinc-500">Same platform and file type replaces the current download.</p>
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="text-sm text-zinc-300">
                 Platform
@@ -344,7 +388,7 @@ function ReleaseCard({ release, productId, onChanged }: {
       <div className="flex flex-wrap gap-2">
         <button
           className={secondaryButton}
-          disabled={busy || !unpublished || artifacts.length === 0}
+          disabled={busy || !editable || artifacts.length === 0}
           onClick={() => void run(() => api(productId, { action: 'validate', id: release.id }), 'Version is ready to publish.')}
         >
           Mark as ready
