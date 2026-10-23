@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLenisContext } from '@/contexts/LenisContext'
 import { useTerminalConfig } from '@/contexts/TerminalConfigContext'
@@ -14,6 +14,7 @@ import {
   parseLoadingScreenConfig,
   type LoadingScreenConfig,
 } from '@/lib/loading-screen-config'
+import { hasCompletedPublicBoot, markPublicBootComplete } from '@/lib/public-boot-session'
 
 import ClassicNav from '@/themes/neuroklast-classic/Navigation'
 import ClassicHero from '@/themes/neuroklast-classic/Hero'
@@ -134,6 +135,10 @@ export function LookEffects({ lookId }: { lookId?: string }) {
   return <OverlayEffectsLayer effects={look.overlayEffects} />
 }
 
+function subscribePublicBoot(): () => void {
+  return () => {}
+}
+
 export function PublicBoot({
   lookId: _lookId,
   loadingScreen,
@@ -142,9 +147,22 @@ export function PublicBoot({
   loadingScreen?: Record<string, unknown>
 }) {
   const config = parseLoadingScreenConfig(loadingScreen)
-  const [ready, setReady] = useState(!config.enabled)
-  if (ready) return null
-  return <LookBootScreen config={config} onComplete={() => setReady(true)} />
+  const already = useSyncExternalStore(subscribePublicBoot, hasCompletedPublicBoot, () => false)
+  const [finished, setFinished] = useState(!config.enabled)
+  const showing = config.enabled && !already && !finished
+
+  useEffect(() => {
+    if (showing) markPublicBootComplete()
+  }, [showing])
+
+  if (!showing) return null
+
+  return (
+    <LookBootScreen
+      config={config}
+      onComplete={() => setFinished(true)}
+    />
+  )
 }
 
 export function LookBootGate({ lookId: _lookId, children }: { lookId?: string; children: React.ReactNode }) {

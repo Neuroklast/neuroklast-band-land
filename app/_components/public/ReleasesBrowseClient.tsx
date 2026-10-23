@@ -1,11 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import Link from 'next/link'
 import { m } from 'framer-motion'
 import {
   ApplePodcastsLogo,
-  ArrowLeft,
   Link as LinkIcon,
   MusicNote,
   SoundcloudLogo,
@@ -31,6 +29,7 @@ import type { PublicReleaseCardItem } from '@/lib/public-fetch'
 import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
+import { PublicBackLink } from './PublicBackLink'
 import { SectionEmpty } from './SectionWrapper'
 
 interface ReleasesBrowseClientProps {
@@ -211,13 +210,7 @@ export function ReleasesBrowseClient({ releases }: ReleasesBrowseClientProps) {
 
   return (
     <>
-      <Link
-        href="/#releases"
-        className="mb-8 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t('newsletter.backHome')}
-      </Link>
+      <PublicBackLink href="/#releases" />
 
       <BrowseToolbar
         searchQuery={searchQuery}

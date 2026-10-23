@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
+import { PublicBackLink } from '@/app/_components/public/PublicBackLink'
 import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { availablePublicDownload } from '@/lib/plugins/public-download'
 import { pluginCanonicalPath, pluginPreviewPath } from '@/lib/plugins/seo'
@@ -107,6 +108,7 @@ export default async function PluginDownloadPage({ params }: { params: Promise<{
     <LegalPageShell>
       <section className="mx-auto max-w-4xl space-y-8 px-6 py-32">
         <header className="space-y-3">
+          <PublicBackLink href={pluginCanonicalPath(product.slug)} label={product.title} />
           <p className="font-mono text-sm tracking-widest">NEUROKLAST AUDIO</p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Download {product.title}</h1>
           <p className="max-w-2xl text-lg">
