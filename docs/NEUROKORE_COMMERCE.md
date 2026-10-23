@@ -37,7 +37,7 @@ Product secrets live in `plugin_product_secrets` (service-role only): `stripe_pr
 
 - Publishing requires at least one artifact and every artifact must be validated with a 64-hex checksum and positive size (`plugin_publish_release`).
 - Only `status = published` with `withdrawn_at IS NULL` is downloadable.
-- Withdrawal keeps rows and files; publishing the same row again restores it.
+- Withdrawal keeps rows and files. After withdraw you can change the version number or replace a download, then mark as ready and publish again.
 - Storage keys are derived as `releases/<slug>/v<version>/<platform>/<filename>`; admins never type a path.
 - The public RPC `plugin_public_catalog()` returns product fields, published releases and checksums only.
 - The download route redirects to an R2 signed URL; binaries never stream through Vercel.
@@ -46,15 +46,15 @@ Legacy `neurokore_*` tables are renamed in place to `plugin_*` by the idempotent
 
 ### Uploading a build
 
-Admin → Products & Plugins → product → Versions & downloads → **Upload a build**:
+Admin → Products & Plugins → product → Versions & downloads → **Upload or replace a build**:
 
-1. Choose platform, file type, file and signature status.
+1. Choose platform, file type, file and signature status. Same platform + file type replaces the existing download.
 2. The browser computes SHA-256 for files up to 256 MB. Larger files need the checksum pasted (`sha256sum <file>`).
 3. The file goes directly to R2 under `releases/<slug>/v<version>/<platform>/<filename>` (single PUT below 8 MB, multipart above, hard cap 2 GB). Binaries never pass through Vercel.
-4. Registration re-derives the key, verifies the object size with an R2 HEAD and stores name, size and checksum.
+4. Registration re-derives the key, verifies the object size with an R2 HEAD and stores name, size and checksum. A replaced file with a new name deletes the previous R2 object.
 5. **Mark as ready** → **Publish**. Published versions appear on `/plugins/<slug>/download`.
 
-`Delete` removes the database row and the R2 object. Published versions must be withdrawn before their downloads can be edited.
+`Delete` removes the database row and the R2 object. Published versions must be withdrawn before their downloads or version number can be edited. After a replace, mark as ready again, then publish.
 
 ### Deleting a product
 

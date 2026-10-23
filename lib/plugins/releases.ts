@@ -150,6 +150,11 @@ export function releaseDownloadable(status: ReleaseStatus, artifacts: readonly A
   return status === 'published' && releaseArtifactsReady(artifacts)
 }
 
+/** Draft, validated and withdrawn builds can change files or the version number. */
+export function releaseEditable(status: string): boolean {
+  return status !== 'published'
+}
+
 /** Choose the best artifact for a platform, or null when none is ready. */
 export function pickArtifact<T extends ArtifactLike>(artifacts: readonly T[], platform: Platform): T | null {
   const ready = artifacts.filter((artifact) => artifact.platform === platform && artifactReady(artifact))
