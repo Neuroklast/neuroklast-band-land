@@ -42,11 +42,11 @@ export async function changeAdminPassword(formData: FormData) {
 
   const identifier = user.email || user.phone || ''
 
-  if (identifier.includes('@')) {
-    const { error: verifyError } = await supabase.auth.signInWithPassword({
-      email: identifier,
-      password: current,
-    })
+  if (identifier) {
+    const isPhone = !identifier.includes('@') && /^\+?\d[\d\s\-()]*$/.test(identifier)
+    const { error: verifyError } = await supabase.auth.signInWithPassword(
+      isPhone ? { phone: identifier, password: current } : { email: identifier, password: current },
+    )
 
     if (verifyError) {
       const message = verifyError.message || ''

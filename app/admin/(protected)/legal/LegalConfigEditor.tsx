@@ -186,7 +186,11 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
         <div>
           <h2 className="text-sm font-semibold text-zinc-200">Privacy Policy</h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Leave empty to use the built-in starter template. Verify hosting, Stripe, Resend, retention periods and every active integration before publishing. A custom text replaces the base template; shop and withdrawal privacy details remain appended.
+            Leave empty to use the built-in starter template. Verify hosting, Stripe, Resend,
+            retention periods and every active integration before publishing. A custom text
+            replaces the base template; shop and withdrawal privacy details remain appended.
+            Custom copy is published for the German locale only; other locales keep their
+            translated templates.
           </p>
         </div>
         <textarea
@@ -200,6 +204,25 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
       </section>
 
       <section className="border border-zinc-800 rounded p-4 sm:p-6 space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-zinc-200">AGB / Geschäftsbedingungen</h2>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Allgemeinen Geschäftsbedingungen für den Verkauf und die Nutzung von Produkten (z. B.
+            NEUROKORE). Leer lassen, um den statischen Fallback zu verwenden. Der Text wird einzeilig
+            auf /terms veröffentlicht.
+          </p>
+        </div>
+        <textarea
+          id="legal-termsText"
+          value={values.termsText ?? ''}
+          onChange={(e) => updateField('termsText', e.target.value)}
+          rows={14}
+          placeholder="AGB-Text hier einfügen…"
+          className="w-full font-mono text-sm bg-zinc-950 border border-zinc-800 rounded px-3 py-2.5 text-zinc-300 focus:outline-none focus:border-zinc-600 resize-y min-h-[240px]"
+        />
+      </section>
+
+      <section className="border border-zinc-800 rounded p-4 sm:p-6 space-y-4">
         <button
           type="button"
           onClick={() => setShowExpert((v) => !v)}
@@ -209,14 +232,20 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
           {showExpert ? '− Hide' : '+ Show'} expert: custom legal notice override
         </button>
         {showExpert && (
-          <textarea
-            id="legal-legalNoticeCustom"
-            value={values.legalNoticeCustom ?? ''}
-            onChange={(e) => updateField('legalNoticeCustom', e.target.value)}
-            rows={10}
-            placeholder="Optional: full custom legal notice text (overrides structured fields)…"
-            className="w-full font-mono text-sm bg-zinc-950 border border-zinc-800 rounded px-3 py-2.5 text-zinc-300 focus:outline-none focus:border-zinc-600 resize-y min-h-[160px]"
-          />
+          <>
+            <textarea
+              id="legal-legalNoticeCustom"
+              value={values.legalNoticeCustom ?? ''}
+              onChange={(e) => updateField('legalNoticeCustom', e.target.value)}
+              rows={10}
+              placeholder="Optional: full custom legal notice text (overrides structured fields)…"
+              className="w-full font-mono text-sm bg-zinc-950 border border-zinc-800 rounded px-3 py-2.5 text-zinc-300 focus:outline-none focus:border-zinc-600 resize-y min-h-[160px]"
+            />
+            <p className="text-xs text-zinc-500">
+              Custom legal notice is published for the German locale only; other locales keep their
+              translated templates.
+            </p>
+          </>
         )}
       </section>
 

@@ -14,6 +14,8 @@ export interface LegalConfig {
   responsibleAddress?: string
   privacyPolicyCustom?: string
   legalNoticeCustom?: string
+  /** AGB / terms of service text, editable in Admin → Legal & Privacy. */
+  termsText?: string
 }
 
 export interface FooterConfig {
@@ -62,6 +64,7 @@ export function parseLegalConfig(raw: unknown): LegalConfig {
     responsibleAddress: str(obj.responsibleAddress),
     privacyPolicyCustom: str(obj.privacyPolicyCustom),
     legalNoticeCustom: str(obj.legalNoticeCustom),
+    termsText: str(obj.termsText),
   }
 }
 
@@ -132,12 +135,12 @@ export function getLegalCompleteness(config: LegalConfig): LegalCompleteness {
     const v = config[key]
     return typeof v !== 'string' || !v.trim()
   })
-  const hasResponsible = Boolean(
-    (config.responsibleName && config.responsibleName.trim()) ||
-      (config.operatorName && config.operatorName.trim()),
-  )
+  // The public MStV / editorial-responsible block renders only when both a
+  // named person and their address are set (§ 18 Abs. 2 MStV). It is optional
+  // for a band promo site and must not gate the § 5 DDG completeness check.
+  const hasResponsible = hasEditorialResponsible(config)
   return {
-    complete: missing.length === 0 && hasResponsible,
+    complete: missing.length === 0,
     missing,
     hasResponsible,
   }

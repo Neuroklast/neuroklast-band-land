@@ -13,6 +13,23 @@ const schema = z.object({
   value: z.string().min(1),
 })
 
+// § 5 DDG required operator fields; anything else is optional. Rejecting a
+// malformed legal blob here prevents a broken public Impressum / Privacy Policy.
+const legalConfigSchema = z.object({
+  operatorName: z.string().min(1, 'Operator name is required'),
+  street: z.string().min(1, 'Street & number is required'),
+  zipCity: z.string().min(1, 'ZIP + city is required'),
+  email: z.string().email('Valid email is required'),
+  careOf: z.string().optional(),
+  country: z.string().optional(),
+  phone: z.string().optional(),
+  vatId: z.string().optional(),
+  responsibleName: z.string().optional(),
+  responsibleAddress: z.string().optional(),
+  privacyPolicyCustom: z.string().optional(),
+  legalNoticeCustom: z.string().optional(),
+})
+
 export async function updateSiteConfig(formData: FormData) {
   const raw = {
     key: formData.get('key'),
@@ -26,6 +43,13 @@ export async function updateSiteConfig(formData: FormData) {
     parsedJson = JSON.parse(parsed.data.value)
   } catch {
     return { error: 'Value must be valid JSON' }
+  }
+
+  if (parsed.data.key === 'legal') {
+    const legalParse = legalConfigSchema.safeParse(parsedJson)
+    if (!legalParse.success) {
+      return { error: `Legal config invalid: ${legalParse.error.message}` }
+    }
   }
 
   const supabaseAdmin = createAdminClient()
@@ -73,6 +97,14 @@ export async function updateSiteConfig(formData: FormData) {
     revalidatePath('/')
     revalidatePath('/releases')
     revalidatePath('/gigs')
+    revalidatePath('/news')
+    revalidatePath('/media')
+    revalidatePath('/plugins')
+    revalidatePath('/products')
+    revalidatePath('/soundpacks')
+    revalidatePath('/members')
+    revalidatePath('/gallery')
+    revalidatePath('/partners')
     revalidatePath('/legal-notice')
     revalidatePath('/privacy-policy')
     revalidatePath('/legal', 'layout')
