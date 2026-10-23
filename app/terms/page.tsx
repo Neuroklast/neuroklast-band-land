@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { loadLegalConfig, DEFAULT_LEGAL_CONFIG, type LegalConfig } from '@/lib/legal-content'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
-import Link from 'next/link'
+import { PublicBackLink } from '@/app/_components/public/PublicBackLink'
 
 export const metadata: Metadata = {
   title: 'Terms of Service – NEUROKORE',
@@ -52,6 +52,7 @@ export default async function TermsPage() {
   return (
     <LegalPageShell>
       <section className="mx-auto max-w-3xl space-y-6 px-6 py-32">
+        <PublicBackLink />
         <p className="font-mono text-sm tracking-widest">NEUROKLAST AUDIO — TERMS OF SERVICE</p>
         <h1 className="text-3xl font-bold">AGB — Verkauf &amp; Lizenz NEUROKORE</h1>
         {terms.split(/\n\n+/).map((block, i) => {

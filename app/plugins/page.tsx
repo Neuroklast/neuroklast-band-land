@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CdnImage } from '@/app/_components/public/CdnImage'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
+import { PublicBackLink } from '@/app/_components/public/PublicBackLink'
 import { loadPublicCatalog } from '@/lib/plugins/public-catalog'
 import { availablePublicDownload } from '@/lib/plugins/public-download'
 import { CHANNEL_LABEL } from '@/lib/plugins/releases'
@@ -32,6 +33,7 @@ export default async function PluginsIndexPage() {
     <LegalPageShell>
       <section className="mx-auto w-full max-w-6xl space-y-9 px-5 pb-24 pt-20 text-white sm:px-7 md:pt-28 lg:px-10">
         <header className="space-y-3">
+          <PublicBackLink />
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-red-400">NEUROKLAST AUDIO</p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Audio plugins</h1>
           <p className="max-w-2xl text-base leading-relaxed text-zinc-300 sm:text-lg">

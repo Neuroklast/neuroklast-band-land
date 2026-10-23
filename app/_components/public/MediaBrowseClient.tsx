@@ -1,8 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import Link from 'next/link'
-import { ArrowLeft } from '@phosphor-icons/react'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { paginateItems } from '@/lib/browse-pagination'
 import {
@@ -16,6 +14,7 @@ import { toDirectImageUrl } from '@/lib/image-cache'
 import { useLocale } from '@/contexts/LocaleContext'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
+import { PublicBackLink } from './PublicBackLink'
 import { SectionEmpty } from './SectionWrapper'
 import { MediaDownloadGrid } from './MediaDownloadGrid'
 
@@ -78,13 +77,7 @@ export function MediaBrowseClient({ items }: MediaBrowseClientProps) {
 
   return (
     <>
-      <Link
-        href="/#media"
-        className="mb-8 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t('newsletter.backHome')}
-      </Link>
+      <PublicBackLink href="/#media" />
       <BrowseToolbar
         searchQuery={query}
         onSearchChange={handleSearchChange}

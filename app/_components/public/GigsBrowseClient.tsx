@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { m, useReducedMotion } from 'framer-motion'
-import { ArrowLeft, CalendarBlank, MapPin } from '@phosphor-icons/react'
+import { CalendarBlank, MapPin } from '@phosphor-icons/react'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { paginateItems } from '@/lib/browse-pagination'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
@@ -19,6 +19,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { GigStatusBadge } from '@/components/overlays/GigStatusBadge'
 import { BrowsePagination } from './BrowsePagination'
 import { BrowseToolbar } from './BrowseToolbar'
+import { PublicBackLink } from './PublicBackLink'
 import { SectionEmpty } from './SectionWrapper'
 
 interface GigsBrowseClientProps {
@@ -144,13 +145,7 @@ export function GigsBrowseClient({ gigs }: GigsBrowseClientProps) {
 
   return (
     <>
-      <Link
-        href="/#gigs"
-        className="mb-8 inline-flex min-h-[44px] items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t('newsletter.backHome')}
-      </Link>
+      <PublicBackLink href="/#gigs" />
 
       <BrowseToolbar
         searchQuery={searchQuery}
