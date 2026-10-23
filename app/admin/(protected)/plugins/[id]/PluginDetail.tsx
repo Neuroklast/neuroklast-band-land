@@ -22,7 +22,12 @@ import {
 import { RELEASE_CHANNELS, slugifyProductTitle } from '@/lib/plugins/releases'
 import { LicensePanel } from './LicensePanel'
 import { ReleasePanel } from './ReleasePanel'
+import { FileSourcePicker } from '@/app/admin/_components/FileSourcePicker'
 import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
+import { VideoUploader } from '@/app/admin/_components/VideoUploader'
+import { deletePreviousR2ObjectIfReplaced } from '@/app/admin/_lib/deletePreviousR2Object'
+
+const PLUGIN_AUDIO_ACCEPT = 'audio/mpeg,audio/wav,.mp3,.wav'
 
 const featureSchema = z.object({ title: z.string(), body: z.string() })
 const mediaSchema = z.object({ kind: z.enum(['image', 'video', 'audio']), url: z.string() })
@@ -181,7 +186,6 @@ export function PluginDetail({ productId }: { productId: string }) {
   const [newFeatureTitle, setNewFeatureTitle] = useState('')
   const [newFeatureBody, setNewFeatureBody] = useState('')
   const [newMediaKind, setNewMediaKind] = useState<'image' | 'video' | 'audio'>('image')
-  const [newMediaUrl, setNewMediaUrl] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -320,19 +324,13 @@ export function PluginDetail({ productId }: { productId: string }) {
     setFeatures((prev) => prev.filter((f) => f.id !== id))
   }
 
-  function addMedia() {
-    const url = newMediaUrl.trim()
-    if (!url) return
-    setMedia([...media, { id: crypto.randomUUID(), kind: newMediaKind, url }])
-    setNewMediaUrl('')
-  }
-
-  function updateMediaUrl(id: string, url: string) {
-    setMedia((prev) => prev.map((m) => m.id === id ? { ...m, url } : m))
-  }
-
   function removeMedia(id: string) {
     setMedia((prev) => prev.filter((m) => m.id !== id))
+  }
+
+  function appendMedia(kind: MediaItem['kind'], storagePath: string, publicUrl?: string) {
+    if (!publicUrl) return
+    setMedia((prev) => [...prev, { id: crypto.randomUUID(), kind, url: publicUrl, storagePath }])
   }
 
   function moveMedia(id: string, direction: -1 | 1) {
@@ -348,8 +346,11 @@ export function PluginDetail({ productId }: { productId: string }) {
     setMedia((prev) => prev.map((m) => m.id === id ? { ...m, url: publicUrl ?? m.url, storagePath } : m))
   }
 
-  function clearMedia(id: string) {
-    setMedia((prev) => prev.filter((m) => m.id !== id))
+  function replaceVideo(id: string, previousPath: string | undefined, storagePath: string, publicUrl?: string) {
+    resolveMedia(id, storagePath, publicUrl)
+    void deletePreviousR2ObjectIfReplaced(previousPath, storagePath).then((cleanup) => {
+      if (cleanup.error) setMessage(`Uploaded — previous file not deleted: ${cleanup.error}`)
+    })
   }
 
   return (
@@ -467,6 +468,7 @@ export function PluginDetail({ productId }: { productId: string }) {
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Media</h3>
             <p className="text-xs text-zinc-400">
+              Upload images, video (MP4/WebM) and audio (MP3/WAV) to R2. No URLs.
               The first image is the product cover used on the homepage and in 1200 × 630 social link previews.
               Change the order with the arrow controls below. Save changes to update the public preview.
             </p>
@@ -493,6 +495,14 @@ export function PluginDetail({ productId }: { productId: string }) {
                         disabled={media.indexOf(item) === 0} onClick={() => moveMedia(item.id, -1)}>↑</button>
                       <button type="button" className={secondaryButton} aria-label="Move media down"
                         disabled={media.indexOf(item) === media.length - 1} onClick={() => moveMedia(item.id, 1)}>↓</button>
+                      <button
+                        type="button"
+                        onClick={() => removeMedia(item.id)}
+                        className="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:text-red-300 hover:bg-red-950/30 transition-colors"
+                        aria-label="Remove media"
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
                   {item.kind === 'image' ? (
@@ -502,29 +512,29 @@ export function PluginDetail({ productId }: { productId: string }) {
                       currentStoragePath={item.storagePath ?? null}
                       storagePrefix="plugins"
                       onResolved={(storagePath, publicUrl) => resolveMedia(item.id, storagePath, publicUrl)}
-                      onCleared={() => clearMedia(item.id)}
+                      onCleared={() => removeMedia(item.id)}
+                    />
+                  ) : item.kind === 'video' ? (
+                    <VideoUploader
+                      label="Replace video"
+                      currentUrl={item.url}
+                      storagePrefix="plugins"
+                      onUpload={(path, publicUrl) => replaceVideo(item.id, item.storagePath, path, publicUrl)}
+                      onError={setMessage}
                     />
                   ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-500 uppercase tracking-widest">{item.kind}</span>
-                        <input
-                          value={item.url}
-                          onChange={(e) => updateMediaUrl(item.id, e.target.value)}
-                          placeholder="https://…"
-                          className="flex-1 min-w-0 font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-2 py-1.5 text-zinc-300 focus:outline-none focus:border-zinc-600"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeMedia(item.id)}
-                          className="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:text-red-300 hover:bg-red-950/30 transition-colors"
-                          aria-label="Remove media"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <p className="text-xs text-zinc-500">Paste a direct video or audio URL.</p>
-                    </div>
+                    <FileSourcePicker
+                      label="Audio"
+                      currentUrl={item.url}
+                      currentStoragePath={item.storagePath ?? null}
+                      storagePrefix="plugins"
+                      accept={PLUGIN_AUDIO_ACCEPT}
+                      onResolved={(result) => {
+                        if (!result.mime.startsWith('audio/')) return
+                        resolveMedia(item.id, result.storagePath, result.publicUrl)
+                      }}
+                      onCleared={() => removeMedia(item.id)}
+                    />
                   )}
                 </div>
               ))}
@@ -538,20 +548,6 @@ export function PluginDetail({ productId }: { productId: string }) {
                   <option value="video">Video</option>
                   <option value="audio">Audio</option>
                 </select>
-                <input
-                  value={newMediaUrl}
-                  onChange={(e) => setNewMediaUrl(e.target.value)}
-                  placeholder={newMediaKind === 'image' ? 'Upload via button below' : 'https://…'}
-                  className="flex-1 min-w-0 font-mono text-xs bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-100 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
-                />
-                <button
-                  type="button"
-                  onClick={addMedia}
-                  disabled={!newMediaUrl.trim()}
-                  className={secondaryButton}
-                >
-                  Add
-                </button>
               </div>
               {newMediaKind === 'image' && (
                 <MediaSourcePicker
@@ -559,10 +555,31 @@ export function PluginDetail({ productId }: { productId: string }) {
                   currentUrl={null}
                   currentStoragePath={null}
                   storagePrefix="plugins"
-                  onResolved={(storagePath, publicUrl) => {
-                    setMedia([...media, { id: crypto.randomUUID(), kind: 'image', url: publicUrl ?? '', storagePath }])
-                  }}
+                  onResolved={(storagePath, publicUrl) => appendMedia('image', storagePath, publicUrl)}
                   onCleared={() => {}}
+                />
+              )}
+              {newMediaKind === 'video' && (
+                <VideoUploader
+                  key="add-video"
+                  label="Add video"
+                  storagePrefix="plugins"
+                  onUpload={(path, publicUrl) => appendMedia('video', path, publicUrl)}
+                  onError={setMessage}
+                />
+              )}
+              {newMediaKind === 'audio' && (
+                <FileSourcePicker
+                  key="add-audio"
+                  label="Add audio"
+                  currentUrl={null}
+                  currentStoragePath={null}
+                  storagePrefix="plugins"
+                  accept={PLUGIN_AUDIO_ACCEPT}
+                  onResolved={(result) => {
+                    if (!result.mime.startsWith('audio/')) return
+                    appendMedia('audio', result.storagePath, result.publicUrl)
+                  }}
                 />
               )}
             </div>
