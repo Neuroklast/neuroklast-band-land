@@ -397,7 +397,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'To improve loading speed, images may be delivered via wsrv.nl (Images.weserv.nl). When your browser requests an image, wsrv.nl may temporarily process your IP address to deliver the content.',
         'wsrv.nl does not set tracking cookies. Legal basis: Art. 6(1)(f) GDPR (legitimate interest in fast image delivery). More information: https://wsrv.nl',
-        'Default website fonts (JetBrains Mono, Space Grotesk) are self-hosted with the site build (next/font). If the site operator selects additional typefaces in Appearance, those may be loaded from Google Fonts when applied. Legal basis for optional remote fonts: Art. 6(1)(f) GDPR (presentation of the website as configured by the operator).',
+        'Default website fonts (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono and Space Mono) are self-hosted at build time. Choosing other fonts in the appearance settings does not load external Google Fonts; local fallbacks are used instead.',
       ],
     },
     embeds: {
@@ -497,7 +497,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Zur Performance-Optimierung können Bilder über wsrv.nl ausgeliefert werden. Dabei kann Ihre IP-Adresse kurzzeitig verarbeitet werden.',
         'wsrv.nl setzt keine Tracking-Cookies. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: https://wsrv.nl',
-        'Standard-Webfonts (JetBrains Mono, Space Grotesk) werden mit dem Website-Build self-hosted (next/font). Wählt der Betreiber unter Appearance weitere Schriften, können diese bei Anwendung von Google Fonts geladen werden. Rechtsgrundlage für optionale Remote-Fonts: Art. 6 Abs. 1 lit. f DSGVO (Darstellung der Website wie vom Betreiber konfiguriert).',
+        'Die Standardschriften (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono und Space Mono) werden beim Build lokal eingebunden. Für andere Schriftwahlen im Design wird keine Verbindung zu Google Fonts aufgebaut, sondern eine lokal verfügbare Ersatzschrift verwendet.',
       ],
     },
     embeds: {
@@ -597,7 +597,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Для швидкості зображення можуть доставлятися через wsrv.nl. При цьому IP може короткочасно оброблятися.',
         'wsrv.nl не встановлює трекінгових cookies. Підстава: ст. 6(1)(f) GDPR. Деталі: https://wsrv.nl',
-        'Стандартні шрифти (JetBrains Mono, Space Grotesk) self-hosted (next/font). Додаткові шрифти з Appearance можуть завантажуватися з Google Fonts. Підстава: ст. 6(1)(f) GDPR.',
+        'Стандартні шрифти (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono, Space Mono) розміщені локально. Інші налаштування використовують локальні резервні шрифти без запитів до Google Fonts.',
       ],
     },
     embeds: {
@@ -697,7 +697,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Per la velocità le immagini possono essere consegnate via wsrv.nl. L’IP può essere trattato temporaneamente.',
         'wsrv.nl non imposta cookie di tracciamento. Base: art. 6(1)(f) GDPR. Info: https://wsrv.nl',
-        'I font predefiniti (JetBrains Mono, Space Grotesk) sono self-hosted (next/font). Font aggiuntivi da Appearance possono essere caricati da Google Fonts. Base: art. 6(1)(f) GDPR.',
+        'I font standard (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono e Space Mono) sono ospitati localmente. Le altre selezioni usano font sostitutivi locali e non caricano Google Fonts.',
       ],
     },
     embeds: {
@@ -797,7 +797,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Para la velocidad, las imágenes pueden servirse vía wsrv.nl. La IP puede tratarse temporalmente.',
         'wsrv.nl no establece cookies de seguimiento. Base: art. 6(1)(f) RGPD. Más información: https://wsrv.nl',
-        'Las fuentes predeterminadas (JetBrains Mono, Space Grotesk) son self-hosted (next/font). Fuentes adicionales de Appearance pueden cargarse desde Google Fonts. Base: art. 6(1)(f) RGPD.',
+        'Las fuentes estándar (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono y Space Mono) se alojan localmente. Otras fuentes utilizan alternativas locales sin cargar Google Fonts.',
       ],
     },
     embeds: {
@@ -897,7 +897,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Para a velocidade, as imagens podem ser servidas via wsrv.nl. O IP pode ser tratado temporariamente.',
         'A wsrv.nl não define cookies de rastreio. Base: art. 6.º(1)(f) RGPD. Mais informações: https://wsrv.nl',
-        'Os tipos de letra predefinidos (JetBrains Mono, Space Grotesk) são self-hosted (next/font). Tipos adicionais de Appearance podem ser carregados do Google Fonts. Base: art. 6.º(1)(f) RGPD.',
+        'As fontes padrão (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono e Space Mono) são alojadas localmente. Outras escolhas usam alternativas locais, sem ligação ao Google Fonts.',
       ],
     },
     embeds: {
@@ -997,7 +997,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '表示速度のため、画像は wsrv.nl 経由で配信される場合があります。その際IPが一時処理されることがあります。',
         'wsrv.nl はトラッキングCookieを設定しません。根拠: GDPR第6条1項(f)。詳細: https://wsrv.nl',
-        '既定フォント（JetBrains Mono、Space Grotesk）は self-hosted（next/font）です。Appearanceで追加フォントを選ぶと Google Fonts から読み込まれる場合があります。根拠: GDPR第6条1項(f)。',
+        '既定フォント（JetBrains Mono、Space Grotesk、Orbitron、Share Tech Mono、Space Mono）はサイト内で提供します。その他のフォント設定にはローカルの代替フォントを使用し、Google Fontsを外部から読み込みません。',
       ],
     },
     embeds: {
@@ -1097,7 +1097,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '속도 향상을 위해 이미지가 wsrv.nl을 통해 전달될 수 있습니다. 이때 IP가 일시적으로 처리될 수 있습니다.',
         'wsrv.nl은 추적 쿠키를 설정하지 않습니다. 근거: GDPR 제6조 1항 (f). 자세한 내용: https://wsrv.nl',
-        '기본 글꼴(JetBrains Mono, Space Grotesk)은 self-hosted(next/font)입니다. Appearance에서 추가 글꼴을 선택하면 Google Fonts에서 로드될 수 있습니다. 근거: GDPR 제6조 1항 (f).',
+        '기본 글꼴(JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono, Space Mono)은 자체 호스팅됩니다. 다른 설정은 Google Fonts 요청 없이 로컬 대체 글꼴을 사용합니다.',
       ],
     },
     embeds: {
