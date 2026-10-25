@@ -5,6 +5,7 @@ import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton
 import { deleteNewsPost, toggleNewsPostVisibility } from '@/app/admin/_actions/news'
 import { resolveImageUrl } from '@/lib/r2'
 import { toDirectImageUrl } from '@/lib/image-cache'
+import { NewsShareActions } from '@/components/news/NewsShareActions'
 
 export default async function NewsAdminPage() {
   let posts: Array<{
@@ -39,7 +40,7 @@ export default async function NewsAdminPage() {
     <div>
       <AdminPageHeader
         title="News / Blog"
-        description="Homepage news cards open in the overlay. Share URLs remain at /news/[slug]."
+        description="Edit posts, open published articles and copy their share links."
         action={
           <Link
             href="/admin/news/new"
@@ -114,7 +115,20 @@ export default async function NewsAdminPage() {
                       </form>
                     </td>
                     <td className="py-2 text-right">
-                      <div className="flex justify-end gap-3">
+                      <div className="flex flex-wrap items-center justify-end gap-3">
+                        {post.active ? (
+                          <>
+                            <Link
+                              href={'/news/' + encodeURIComponent(post.slug)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex min-h-10 items-center text-xs text-zinc-300 hover:text-white"
+                            >
+                              View
+                            </Link>
+                            <NewsShareActions slug={post.slug} title={post.title} variant="admin" />
+                          </>
+                        ) : null}
                         <Link
                           href={`/admin/news/${post.id}`}
                           className="text-xs text-zinc-400 hover:text-white"
