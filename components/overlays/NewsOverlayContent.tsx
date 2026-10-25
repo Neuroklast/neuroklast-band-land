@@ -1,8 +1,7 @@
-import { ArrowSquareOut } from '@phosphor-icons/react'
 import type { NewsOverlayData } from '@/lib/app-types'
 import { formatIsoDateLong } from '@/lib/format-display-date'
 import { toDirectImageUrl } from '@/lib/image-cache'
-import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { NewsExternalLink } from '@/components/news/NewsExternalLink'
 import { NewsShareActions } from '@/components/news/NewsShareActions'
 import { NewsBodyText } from '@/components/news/NewsBodyText'
 import {
@@ -18,7 +17,6 @@ interface NewsOverlayContentProps {
 }
 
 export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
-  const href = sanitizeExternalHref(data.link)
   const cover = data.coverUrl ? toDirectImageUrl(data.coverUrl, { w: 1200 }) || data.coverUrl : null
   const body = (data.body ?? data.excerpt ?? '').trim()
 
@@ -55,6 +53,11 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
             {data.title}
           </h2>
         </OverlayItem>
+        {data.link ? (
+          <OverlayItem delay={0.18}>
+            <NewsExternalLink href={data.link} />
+          </OverlayItem>
+        ) : null}
         {body ? (
           <OverlayItem delay={0.2}>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 md:text-base">
@@ -70,19 +73,6 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
             Open full article
           </a>
         </OverlayItem>
-        {href ? (
-          <OverlayItem delay={0.26}>
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 inline-flex min-h-[44px] items-center gap-2 border border-primary/40 bg-primary/10 px-4 py-2 font-mono text-xs uppercase tracking-wider text-primary transition-colors hover:bg-primary/20"
-            >
-              <ArrowSquareOut className="h-4 w-4" aria-hidden />
-              Open link
-            </a>
-          </OverlayItem>
-        ) : null}
         <OverlayItem delay={0.3}>
           <NewsShareActions slug={data.slug} title={data.title} excerpt={data.excerpt} />
         </OverlayItem>
