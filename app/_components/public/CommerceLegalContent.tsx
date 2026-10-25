@@ -26,7 +26,7 @@ export function CommerceLegalContent({ document, config }: { document: Doc; conf
   const copy = COMMERCE_LEGAL_COPY[lang]
   const sections = document === 'withdrawal'
     ? withdrawalLegalSections(lang, config)
-    : commerceSections(document, lang)
+    : commerceSections(document, lang, config?.termsText)
   return (
     <>
       <LegalDocumentContent title={copy.docs[document]} streamLabel={'// SOFTWARE.' + document.toUpperCase()}
