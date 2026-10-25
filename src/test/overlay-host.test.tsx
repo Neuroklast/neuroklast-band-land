@@ -58,7 +58,7 @@ describe('overlay host', () => {
                 slug: 'let-rage-commence',
                 excerpt: 'New frontwoman',
                 body: 'New frontwoman',
-                link: null,
+                link: 'https://example.org/press/article',
                 coverUrl: null,
                 publishedAt: '2026-01-18',
               },
@@ -68,6 +68,11 @@ describe('overlay host', () => {
         </LocaleProvider>
       </OverlayProvider>,
     )
+
+    const externalLink = screen.getByRole('link', { name: /open external link on example.org/i })
+    expect(externalLink).toHaveAttribute('href', 'https://example.org/press/article')
+    expect(externalLink).toHaveAttribute('target', '_blank')
+    expect(externalLink).toHaveAttribute('rel', 'noopener noreferrer')
 
     fireEvent.click(screen.getByRole('button', { name: /open let rage commence/i }))
     expect(screen.getByTestId('overlay-type')).toHaveTextContent('news')
