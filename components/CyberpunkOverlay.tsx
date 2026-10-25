@@ -24,6 +24,7 @@ import { ReleaseOverlayContent } from '@/components/overlays/ReleaseOverlayConte
 import { GalleryOverlayContent } from '@/components/overlays/GalleryOverlayContent'
 import { MediaOverlayContent } from '@/components/overlays/MediaOverlayContent'
 import { NewsOverlayContent } from '@/components/overlays/NewsOverlayContent'
+import { NewsShareActions } from '@/components/news/NewsShareActions'
 import { MediaExplorerBody } from '@/app/_components/public/MediaOverlay'
 import { toExplorerFiles } from '@/app/_components/public/MediaExplorer'
 import { SecretTerminalContent } from '@/components/overlays/SecretTerminalContent'
@@ -406,6 +407,22 @@ export default function CyberpunkOverlay({
                   </div>
                 ) : null}
               </div>
+
+              {displayOverlay.type === 'news' && displayOverlay.data && (overlayPhase === 'revealed' || skipBoot) ? (
+                <div
+                  className="relative z-10 shrink-0 border-t border-primary/30 bg-background px-4 py-3 md:px-12 md:py-4"
+                  aria-label="News share footer"
+                >
+                  <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Share this news
+                  </p>
+                  <NewsShareActions
+                    slug={displayOverlay.data.slug}
+                    title={displayOverlay.data.title}
+                    excerpt={displayOverlay.data.excerpt}
+                  />
+                </div>
+              ) : null}
             </motion.div>
           </div>
         </motion.div>

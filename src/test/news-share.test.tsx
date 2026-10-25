@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { NewsBodyText } from '@/components/news/NewsBodyText'
+import { NewsExternalLink } from '@/components/news/NewsExternalLink'
 import { getNewsArticleUrl, NewsShareActions } from '@/components/news/NewsShareActions'
 
 afterEach(() => {
@@ -48,6 +49,19 @@ describe('news sharing', () => {
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
       expect(link.getAttribute('href')).toContain(encodeURIComponent(getNewsArticleUrl('new-beta')))
     }
+  })
+
+  it('renders the external destination as a clickable, safe link', () => {
+    render(<NewsExternalLink href="https://www.example.com/download?platform=windows" compact />)
+    const link = screen.getByRole('link', { name: /open external link on example.com/i })
+    expect(link).toHaveAttribute('href', 'https://www.example.com/download?platform=windows')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(screen.getByText('example.com')).toBeInTheDocument()
+  })
+
+  it('never renders unsafe external destinations', () => {
+    const { container } = render(<NewsExternalLink href="javascript:alert(1)" />)
+    expect(container.firstChild).toBeNull()
   })
 
   it('renders safe plain-text body links without swallowing punctuation', () => {

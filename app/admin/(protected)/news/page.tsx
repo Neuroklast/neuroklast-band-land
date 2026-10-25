@@ -6,12 +6,14 @@ import { deleteNewsPost, toggleNewsPostVisibility } from '@/app/admin/_actions/n
 import { resolveImageUrl } from '@/lib/r2'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { NewsShareActions } from '@/components/news/NewsShareActions'
+import { sanitizeExternalHref } from '@/lib/sanitize-href'
 
 export default async function NewsAdminPage() {
   let posts: Array<{
     id: string
     title: string
     slug: string
+    link: string | null
     excerpt: string | null
     cover_storage_path: string | null
     cover_url: string | null
@@ -26,7 +28,7 @@ export default async function NewsAdminPage() {
     const { data, error } = await supabase
       .from('news_posts')
       .select(
-        'id, title, slug, excerpt, cover_storage_path, cover_url, published_at, active, display_order',
+        'id, title, slug, excerpt, link, cover_storage_path, cover_url, published_at, active, display_order',
       )
       .order('display_order', { ascending: true })
       .order('published_at', { ascending: false })
@@ -71,6 +73,7 @@ export default async function NewsAdminPage() {
                 <th className="py-2 pr-4">Cover</th>
                 <th className="py-2 pr-4">Title</th>
                 <th className="py-2 pr-4">Slug</th>
+                <th className="py-2 pr-4">External link</th>
                 <th className="py-2 pr-4">Published</th>
                 <th className="py-2 pr-4">Active</th>
                 <th className="py-2 text-right">Actions</th>
@@ -79,6 +82,7 @@ export default async function NewsAdminPage() {
             <tbody>
               {posts.map((post) => {
                 const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
+                const externalHref = sanitizeExternalHref(post.link)
                 return (
                   <tr key={post.id} className="border-b border-zinc-800/50">
                     <td className="py-2 pr-4">
@@ -94,6 +98,18 @@ export default async function NewsAdminPage() {
                     </td>
                     <td className="py-2 pr-4 text-zinc-200">{post.title}</td>
                     <td className="py-2 pr-4 font-mono text-xs text-zinc-500">{post.slug}</td>
+                    <td className="py-2 pr-4 text-xs">
+                      {externalHref ? (
+                        <a href={externalHref} target="_blank" rel="noopener noreferrer"
+                          className="inline-block max-w-44 truncate align-middle text-zinc-300 underline hover:text-white"
+                          title={externalHref}
+                        >
+                          {new URL(externalHref).hostname}
+                        </a>
+                      ) : (
+                        <span className="text-zinc-600">—</span>
+                      )}
+                    </td>
                     <td className="py-2 pr-4 text-zinc-400">
                       {post.published_at
                         ? new Date(post.published_at).toLocaleDateString()
