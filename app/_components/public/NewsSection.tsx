@@ -7,6 +7,7 @@ import { formatIsoDateLong } from '@/lib/format-display-date'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
 import { CdnImage } from './CdnImage'
 import { NewsShareActions } from '@/components/news/NewsShareActions'
+import { NewsExternalLink } from '@/components/news/NewsExternalLink'
 
 export interface NewsPostCard {
   id: string
@@ -94,6 +95,11 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
                 </span>
               </div>
               </button>
+              {post.link ? (
+                <div className="px-4 pb-3">
+                  <NewsExternalLink href={post.link} compact />
+                </div>
+              ) : null}
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/50 px-4 py-3">
                 <a
                   href={'/news/' + encodeURIComponent(post.slug)}
