@@ -36,6 +36,12 @@ const OPERATOR_FIELDS: FieldDef[] = [
   { key: 'phone', label: 'Phone', type: 'tel', placeholder: '+49 123 456789' },
   { key: 'email', label: 'Email', type: 'email', placeholder: 'info@example.com' },
   { key: 'vatId', label: 'VAT ID (optional)', placeholder: 'DE123456789' },
+  { key: 'businessId', label: 'Wirtschafts-ID (falls vorhanden)', placeholder: 'DE...' },
+  { key: 'legalForm', label: 'Rechtsform (falls zutreffend)', placeholder: 'Einzelunternehmer / GmbH / ...' },
+  { key: 'representative', label: 'Vertretungsberechtigte Person (falls zutreffend)', placeholder: 'Name' },
+  { key: 'registerName', label: 'Registergericht / Register (falls eingetragen)', placeholder: 'Amtsgericht ...' },
+  { key: 'registerNumber', label: 'Registernummer (falls eingetragen)', placeholder: 'HRB ...' },
+  { key: 'supervisoryAuthority', label: 'Aufsichtsbehörde (falls erforderlich)', placeholder: 'Behörde' },
 ]
 
 const RESPONSIBLE_FIELDS: FieldDef[] = [
@@ -207,9 +213,10 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
         <div>
           <h2 className="text-sm font-semibold text-zinc-200">AGB / Geschäftsbedingungen</h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Allgemeinen Geschäftsbedingungen für den Verkauf und die Nutzung von Produkten (z. B.
-            NEUROKORE). Leer lassen, um den statischen Fallback zu verwenden. Der Text wird einzeilig
-            auf /terms veröffentlicht.
+            Deutsche Geschäftsbedingungen für den Softwareverkauf. Leer lassen, um die Standardvorlage zu verwenden.
+            Der Text wird auf /terms und /legal/de/terms veröffentlicht. Bei neuen Bestellungen wird
+            die gültige Fassung gespeichert und in der Vertragsbestätigung verwendet. Die anderen
+            Sprachfassungen nutzen ihre eigenen Vorlagen.
           </p>
         </div>
         <textarea

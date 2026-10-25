@@ -1579,3 +1579,27 @@ CREATE INDEX IF NOT EXISTS plugin_withdrawal_receipts_pending_idx
 ALTER TABLE public.plugin_withdrawal_notices ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.plugin_withdrawal_notices FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT, UPDATE ON TABLE public.plugin_withdrawal_notices TO service_role;
+
+
+-- Betroffenenanfragen: track request status, not copies of sensitive exports.
+-- Apply the canonical schema before using /admin/privacy.
+CREATE TABLE IF NOT EXISTS public.privacy_requests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL CHECK (length(email) BETWEEN 3 AND 254),
+  request_type text NOT NULL DEFAULT 'access' CHECK (request_type IN ('access', 'erasure', 'rectification', 'portability', 'objection')),
+  status text NOT NULL DEFAULT 'exported' CHECK (status IN ('open', 'exported', 'answered')),
+  identity_verified_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  exported_at timestamptz,
+  responded_at timestamptz,
+  completed_by uuid REFERENCES auth.users(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS privacy_requests_created_at_idx ON public.privacy_requests (created_at DESC);
+ALTER TABLE public.privacy_requests ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.privacy_requests FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.privacy_requests TO service_role;
+
+-- Preserve the precise text shown during checkout for the contractual record.
+ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_snapshot text;
+ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS licence_snapshot text;
+ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_version text;

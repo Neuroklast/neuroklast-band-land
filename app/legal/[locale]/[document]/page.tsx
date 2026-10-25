@@ -67,7 +67,7 @@ export default async function LocalizedLegalPage({ params }: { params: Promise<P
     title = translations.docs[key]
     sections = key === 'withdrawal'
       ? withdrawalLegalSections(locale, config)
-      : commerceSections(key, locale)
+      : commerceSections(key, locale, config.termsText)
   }
   const incomplete = getLegalCompleteness(config).complete === false
   return (

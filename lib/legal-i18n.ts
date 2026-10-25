@@ -82,20 +82,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         'We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.',
       ],
     },
-    'liability-content': {
-      title: 'Liability for content',
-      paragraphs: [
-        'As a service provider, we are responsible for our own content on these pages in accordance with § 7 (1) DDG and general laws. According to §§ 8 to 10 DDG, we are not obliged as a service provider to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity.',
-        'Obligations to remove or block the use of information under general laws remain unaffected. Liability in this regard is only possible from the time of knowledge of a specific infringement. Upon becoming aware of corresponding legal violations, we will remove such content immediately.',
-      ],
-    },
-    'liability-links': {
-      title: 'Liability for links',
-      paragraphs: [
-        'Our website contains links to external third-party websites over whose content we have no control. Therefore, we cannot accept liability for this third-party content. The respective provider or operator of the linked pages is always responsible for their content.',
-        'Linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognisable at that time. Permanent monitoring of linked pages without concrete evidence of a violation is unreasonable. Upon notification of violations, we will remove such links immediately.',
-      ],
-    },
     copyright: {
       title: 'Copyright',
       paragraphs: [
@@ -112,20 +98,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'Verbraucherstreitbeilegung',
       paragraphs: [
         'Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
-      ],
-    },
-    'liability-content': {
-      title: 'Haftung für Inhalte',
-      paragraphs: [
-        'Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.',
-        'Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben unberührt. Eine diesbezügliche Haftung ist erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.',
-      ],
-    },
-    'liability-links': {
-      title: 'Haftung für Links',
-      paragraphs: [
-        'Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.',
-        'Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.',
       ],
     },
     copyright: {
@@ -146,20 +118,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         'Ми не зобов’язані і не згодні брати участь у процедурах вирішення спорів перед споживчим арбітражем.',
       ],
     },
-    'liability-content': {
-      title: 'Відповідальність за контент',
-      paragraphs: [
-        'Як постачальник послуг ми відповідаємо за власний контент цих сторінок згідно з § 7 (1) DDG та загальним законодавством. Згідно з §§ 8–10 DDG ми не зобов’язані моніторити передану чи збережену сторонню інформацію або розслідувати ознаки протиправної діяльності.',
-        'Обов’язки щодо видалення чи блокування інформації за загальним правом залишаються чинними. Відповідальність настає лише з моменту знання про конкретне порушення. Після отримання відомостей про порушення ми негайно видалимо відповідний контент.',
-      ],
-    },
-    'liability-links': {
-      title: 'Відповідальність за посилання',
-      paragraphs: [
-        'Сайт містить посилання на зовнішні сайти третіх осіб, на контент яких ми не впливаємо. Тому ми не несемо відповідальності за цей сторонній контент. Відповідальним є відповідний оператор сторінки.',
-        'Посилання перевірялися на можливі порушення на момент розміщення. Постійний моніторинг без конкретних підстав є нерозумним. Після повідомлення про порушення ми негайно видалимо такі посилання.',
-      ],
-    },
     copyright: {
       title: 'Авторське право',
       paragraphs: [
@@ -176,20 +134,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'Risoluzione delle controversie UE',
       paragraphs: [
         'Non siamo obbligati né disponibili a partecipare a procedimenti dinanzi a un organismo di conciliazione dei consumatori.',
-      ],
-    },
-    'liability-content': {
-      title: 'Responsabilità per i contenuti',
-      paragraphs: [
-        'In qualità di prestatore di servizi siamo responsabili dei contenuti propri di queste pagine ai sensi del § 7 (1) DDG e delle leggi generali. Ai sensi dei §§ 8–10 DDG non siamo obbligati a monitorare informazioni di terzi trasmesse o memorizzate né a indagare circostanze che indichino attività illecite.',
-        'Restano salvi gli obblighi di rimozione o blocco previsti dalla legge. La responsabilità sorge solo dal momento della conoscenza di una violazione specifica. In tal caso rimuoveremo immediatamente i contenuti.',
-      ],
-    },
-    'liability-links': {
-      title: 'Responsabilità per i link',
-      paragraphs: [
-        'Il sito contiene link a siti di terzi sui cui contenuti non abbiamo controllo. Non possiamo quindi assumere responsabilità per tali contenuti. Ne è responsabile il rispettivo operatore.',
-        'I link sono stati verificati al momento dell’inserimento. Un controllo permanente senza indizi concreti non è esigibile. In caso di segnalazione rimuoveremo i link immediatamente.',
       ],
     },
     copyright: {
@@ -210,20 +154,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         'No estamos dispuestos ni obligados a participar en procedimientos ante una junta arbitral de consumo.',
       ],
     },
-    'liability-content': {
-      title: 'Responsabilidad por el contenido',
-      paragraphs: [
-        'Como prestador de servicios somos responsables de nuestro propio contenido en estas páginas conforme al § 7 (1) DDG y a las leyes generales. Conforme a los §§ 8 a 10 DDG no estamos obligados a supervisar información de terceros transmitida o almacenada ni a investigar indicios de actividad ilícita.',
-        'Las obligaciones de retirada o bloqueo según la ley general no se ven afectadas. La responsabilidad solo es posible desde el conocimiento de una infracción concreta. En ese caso eliminaremos el contenido de inmediato.',
-      ],
-    },
-    'liability-links': {
-      title: 'Responsabilidad por enlaces',
-      paragraphs: [
-        'El sitio contiene enlaces a sitios de terceros sobre cuyo contenido no tenemos control. Por ello no asumimos responsabilidad por ese contenido ajeno. El responsable es siempre el operador de la página enlazada.',
-        'Los enlaces se comprobaron en el momento de su inclusión. Un control permanente sin indicios concretos no es exigible. Ante notificaciones de infracciones eliminaremos esos enlaces de inmediato.',
-      ],
-    },
     copyright: {
       title: 'Derechos de autor',
       paragraphs: [
@@ -240,20 +170,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'Resolução de litígios da UE',
       paragraphs: [
         'Não estamos dispostos nem obrigados a participar em processos perante um centro de arbitragem de consumo.',
-      ],
-    },
-    'liability-content': {
-      title: 'Responsabilidade pelo conteúdo',
-      paragraphs: [
-        'Como prestador de serviços somos responsáveis pelos nossos próprios conteúdos nestas páginas nos termos do § 7 (1) DDG e da lei geral. Nos termos dos §§ 8 a 10 DDG não estamos obrigados a monitorizar informação de terceiros transmitida ou armazenada nem a investigar indícios de atividade ilícita.',
-        'As obrigações de remoção ou bloqueio nos termos da lei geral mantêm-se. A responsabilidade só existe a partir do conhecimento de uma infração concreta. Nesse caso removeremos o conteúdo de imediato.',
-      ],
-    },
-    'liability-links': {
-      title: 'Responsabilidade por ligações',
-      paragraphs: [
-        'O sítio contém ligações a sítios de terceiros cujo conteúdo não controlamos. Por isso não assumimos responsabilidade por esse conteúdo. O responsável é sempre o operador da página ligada.',
-        'As ligações foram verificadas no momento da inclusão. Um controlo permanente sem indícios concretos não é exigível. Após notificação de infrações removeremos essas ligações de imediato.',
       ],
     },
     copyright: {
@@ -274,20 +190,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         '消費者仲裁機関における紛争解決手続に参加する意思も義務もありません。',
       ],
     },
-    'liability-content': {
-      title: 'コンテンツに関する責任',
-      paragraphs: [
-        'サービス提供者として、DDG第7条第1項および一般法に基づき、本ページの自己コンテンツに責任を負います。DDG第8条から第10条により、送信・保存された第三者情報を監視したり、違法行為を示す事情を調査する義務はありません。',
-        '一般法に基づく削除・遮断義務は影響を受けません。具体的な権利侵害を知った時点からのみ責任が生じます。該当する違反を認識した場合、直ちに当該コンテンツを削除します。',
-      ],
-    },
-    'liability-links': {
-      title: 'リンクに関する責任',
-      paragraphs: [
-        '本サイトには第三者が運営する外部サイトへのリンクが含まれます。その内容を管理できないため、当該第三者コンテンツについて責任を負いません。責任は常にリンク先の運営者にあります。',
-        'リンク設定時に違法性を確認しました。具体的な侵害の兆候なく常時監視することは合理的ではありません。侵害の通知があれば直ちにリンクを削除します。',
-      ],
-    },
     copyright: {
       title: '著作権',
       paragraphs: [
@@ -304,20 +206,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'EU 분쟁 해결',
       paragraphs: [
         '소비자 중재 기구의 분쟁 해결 절차에 참여할 의사나 의무가 없습니다.',
-      ],
-    },
-    'liability-content': {
-      title: '콘텐츠에 대한 책임',
-      paragraphs: [
-        '서비스 제공자로서 DDG 제7조 제1항 및 일반 법령에 따라 이 페이지의 자체 콘텐츠에 책임을 집니다. DDG 제8조부터 제10조에 따라 전송·저장된 제3자 정보를 감시하거나 위법 행위를 조사할 의무는 없습니다.',
-        '일반법에 따른 삭제·차단 의무는 영향을 받지 않습니다. 구체적인 침해를 인지한 시점부터만 책임이 발생합니다. 해당 위반을 알게 되면 즉시 콘텐츠를 삭제합니다.',
-      ],
-    },
-    'liability-links': {
-      title: '링크에 대한 책임',
-      paragraphs: [
-        '본 사이트에는 당사가 통제할 수 없는 제3자 웹사이트 링크가 포함됩니다. 따라서 해당 제3자 콘텐츠에 대해 책임을 지지 않습니다. 책임은 항상 링크된 페이지의 운영자에게 있습니다.',
-        '링크 시점에는 법적 위반 여부를 확인했습니다. 구체적 침해 정황 없이 상시 모니터링하는 것은 합리적이지 않습니다. 침해 통지가 있으면 즉시 링크를 삭제합니다.',
       ],
     },
     copyright: {
@@ -347,7 +235,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'This website is hosted by Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. When you visit our website, personal data such as your IP address may be processed on Vercel servers. This may involve transfers to the USA. See Vercel\'s privacy policy: https://vercel.com/legal/privacy-policy',
         'The legal basis is Art. 6(1)(f) GDPR (legitimate interest in reliable website presentation).',
-        'We use Supabase (database and authentication for the admin area), Cloudflare R2 (media files; EU jurisdiction where configured), and Resend (transactional email for the contact form only — no mailing list) as processors. Data processing agreements (DPAs) and storage regions should be configured in each provider dashboard. These providers process data only as necessary to operate the website.',
+        'We use Supabase (database and authentication for the admin area), Cloudflare R2 (media files; EU jurisdiction where configured), and Resend (transactional emails for contact requests, purchase confirmations and withdrawal receipts — no mailing list) as processors. Data processing agreements (DPAs) and storage regions should be configured in each provider dashboard. These providers process data only as necessary to operate the website.',
       ],
     },
     controller: {
@@ -365,7 +253,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
         'We store your cookie consent preferences in localStorage (key: zd-cookie-consent). This is technically necessary to remember your choice. Legal basis: Art. 6(1)(f) GDPR and § 25(2) TDDDG.',
         'Functional preferences (language, theme, sound mute state) may be stored in localStorage without analytics consent because they are strictly necessary for your chosen experience. Legal basis: Art. 6(1)(f) GDPR.',
         'An IndexedDB image cache may store compressed images locally to improve performance. No personal profiles are created. Legal basis: Art. 6(1)(f) GDPR.',
-        'If you consent to analytics, we may store first-party usage events (page views, section views, clicks with relative coordinates) on our servers (Supabase table analytics_events). No advertising network is involved. Retention: events are kept for up to 90 days for reporting, then should be deleted or aggregated by the operator; you may request earlier erasure. You can revoke consent at any time via "Cookie Preferences" in the footer.',
+        'If you consent to analytics, we may store first-party usage events (page views, section views, clicks with relative coordinates) on our servers (Supabase table analytics_events). No advertising network is involved. Retention: events are kept for up to 90 days for reporting, then removed through a protected daily retention job when configured; you may request earlier erasure. You can revoke consent at any time via "Cookie Preferences" in the footer.',
         'Admin authentication uses HttpOnly session cookies (Supabase). These are not set for regular visitors.',
       ],
     },
@@ -382,7 +270,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. No newsletter',
       paragraphs: [
-        'This website does not offer a newsletter, mailing list, or email subscription. Contact is handled only through the contact form (Resend email delivery). We do not store subscriber addresses.',
+        'This website does not offer a newsletter, mailing list, or email subscription. Contact requests are delivered through Resend email. We do not store subscriber addresses.',
       ],
     },
     news: {
@@ -397,7 +285,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'To improve loading speed, images may be delivered via wsrv.nl (Images.weserv.nl). When your browser requests an image, wsrv.nl may temporarily process your IP address to deliver the content.',
         'wsrv.nl does not set tracking cookies. Legal basis: Art. 6(1)(f) GDPR (legitimate interest in fast image delivery). More information: https://wsrv.nl',
-        'Default website fonts (JetBrains Mono, Space Grotesk) are self-hosted with the site build (next/font). If the site operator selects additional typefaces in Appearance, those may be loaded from Google Fonts when applied. Legal basis for optional remote fonts: Art. 6(1)(f) GDPR (presentation of the website as configured by the operator).',
+        'Default website fonts (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono and Space Mono) are self-hosted at build time. Choosing other fonts in the appearance settings does not load external Google Fonts; local fallbacks are used instead.',
       ],
     },
     embeds: {
@@ -447,7 +335,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Besuch der Website können personenbezogene Daten wie Ihre IP-Adresse auf Servern von Vercel verarbeitet werden; dies kann eine Übermittlung in die USA beinhalten. Datenschutzerklärung von Vercel: https://vercel.com/legal/privacy-policy',
         'Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer zuverlässigen Bereitstellung der Website).',
-        'Als weitere Auftragsverarbeiter nutzen wir Supabase (Datenbank und Admin-Authentifizierung), Cloudflare R2 (Mediendateien; EU-Jurisdiction soweit konfiguriert) und Resend (nur transaktionale E-Mail für das Kontaktformular — keine Mailingliste). Auftragsverarbeitungsverträge (AVV/DPA) und Speicherregionen sind in den jeweiligen Anbieter-Dashboards zu konfigurieren.',
+        'Als weitere Auftragsverarbeiter nutzen wir Supabase (Datenbank und Admin-Authentifizierung), Cloudflare R2 (Mediendateien; EU-Jurisdiction soweit konfiguriert) und Resend (transaktionale E-Mails für Kontaktanfragen, Kaufbestätigungen und Widerrufsbestätigungen — keine Mailingliste). Auftragsverarbeitungsverträge (AVV/DPA) und Speicherregionen sind in den jeweiligen Anbieter-Dashboards zu konfigurieren.',
       ],
     },
     controller: {
@@ -465,7 +353,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
         'Ihre Cookie-Einstellungen speichern wir in localStorage (Schlüssel: zd-cookie-consent). Das ist technisch erforderlich, um Ihre Wahl zu merken. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO und § 25 Abs. 2 TDDDG.',
         'Funktionale Einstellungen (Sprache, Theme, Ton) können ohne Analytics-Einwilligung in localStorage gespeichert werden, weil sie für die von Ihnen gewählte Nutzung erforderlich sind. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.',
         'Ein IndexedDB-Bildcache kann komprimierte Bilder lokal speichern, um die Performance zu verbessern. Es werden keine Personenprofile gebildet. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.',
-        'Wenn Sie Analytics zustimmen, können wir First-Party-Nutzungsereignisse (Seitenaufrufe, Abschnittsansichten, Klicks mit relativen Koordinaten) auf unseren Servern speichern (Supabase-Tabelle analytics_events). Es ist kein Werbenetzwerk beteiligt. Speicherdauer: bis zu 90 Tage für Auswertungen, danach Löschung oder Aggregation durch den Betreiber; frühere Löschung auf Anfrage. Widerruf jederzeit über „Cookie-Einstellungen“ im Footer.',
+        'Wenn Sie Analytics zustimmen, können wir First-Party-Nutzungsereignisse (Seitenaufrufe, Abschnittsansichten, Klicks mit relativen Koordinaten) auf unseren Servern speichern (Supabase-Tabelle analytics_events). Es ist kein Werbenetzwerk beteiligt. Speicherdauer: bis zu 90 Tage für Auswertungen, danach automatische Bereinigung durch einen geschützten täglichen Auftrag, sofern konfiguriert; frühere Löschung auf Anfrage. Widerruf jederzeit über „Cookie-Einstellungen“ im Footer.',
         'Admin-Authentifizierung nutzt HttpOnly-Session-Cookies (Supabase). Für normale Besucher werden diese nicht gesetzt.',
       ],
     },
@@ -482,7 +370,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Kein Newsletter',
       paragraphs: [
-        'Diese Website bietet keinen Newsletter, keine Mailingliste und kein E-Mail-Abo. Kontakt erfolgt ausschließlich über das Kontaktformular (Zustellung per Resend). Es werden keine Abonnentenadressen gespeichert.',
+        'Diese Website bietet keinen Newsletter, keine Mailingliste und kein E-Mail-Abo. Kontaktanfragen werden über Resend per E-Mail zugestellt. Es werden keine Abonnentenadressen gespeichert.',
       ],
     },
     news: {
@@ -497,7 +385,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Zur Performance-Optimierung können Bilder über wsrv.nl ausgeliefert werden. Dabei kann Ihre IP-Adresse kurzzeitig verarbeitet werden.',
         'wsrv.nl setzt keine Tracking-Cookies. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: https://wsrv.nl',
-        'Standard-Webfonts (JetBrains Mono, Space Grotesk) werden mit dem Website-Build self-hosted (next/font). Wählt der Betreiber unter Appearance weitere Schriften, können diese bei Anwendung von Google Fonts geladen werden. Rechtsgrundlage für optionale Remote-Fonts: Art. 6 Abs. 1 lit. f DSGVO (Darstellung der Website wie vom Betreiber konfiguriert).',
+        'Die Standardschriften (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono und Space Mono) werden beim Build lokal eingebunden. Für andere Schriftwahlen im Design wird keine Verbindung zu Google Fonts aufgebaut, sondern eine lokal verfügbare Ersatzschrift verwendet.',
       ],
     },
     embeds: {
@@ -547,7 +435,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Сайт розміщено у Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, США. Під час відвідування IP-адреса може оброблятися на серверах Vercel, зокрема з передачею до США. Політика Vercel: https://vercel.com/legal/privacy-policy',
         'Правова підстава: ст. 6(1)(f) GDPR (законний інтерес у надійній роботі сайту).',
-        'Як обробники також використовуються Supabase (база даних і автентифікація адмінки), Cloudflare R2 (медіа; юрисдикція ЄС за можливості) та Resend (лише транзакційна пошта контактної форми — без розсилки). DPA та регіони зберігання налаштовуються в кабінетах провайдерів.',
+        'Як обробники також використовуються Supabase (база даних і автентифікація адмінки), Cloudflare R2 (медіа; юрисдикція ЄС за можливості) та Resend (транзакційні листи для контактів, підтверджень покупок і відкликання договорів — без розсилки). DPA та регіони зберігання налаштовуються в кабінетах провайдерів.',
       ],
     },
     controller: {
@@ -582,7 +470,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Немає розсилки',
       paragraphs: [
-        'Цей сайт не пропонує newsletter, mailing list чи e-mail-підписку. Контакт лише через форму (Resend). Адреси підписників не зберігаються.',
+        'Цей сайт не пропонує newsletter, mailing list чи e-mail-підписку. Контактні запити доставляються через Resend. Адреси підписників не зберігаються.',
       ],
     },
     news: {
@@ -597,7 +485,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Для швидкості зображення можуть доставлятися через wsrv.nl. При цьому IP може короткочасно оброблятися.',
         'wsrv.nl не встановлює трекінгових cookies. Підстава: ст. 6(1)(f) GDPR. Деталі: https://wsrv.nl',
-        'Стандартні шрифти (JetBrains Mono, Space Grotesk) self-hosted (next/font). Додаткові шрифти з Appearance можуть завантажуватися з Google Fonts. Підстава: ст. 6(1)(f) GDPR.',
+        'Стандартні шрифти (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono, Space Mono) розміщені локально. Інші налаштування використовують локальні резервні шрифти без запитів до Google Fonts.',
       ],
     },
     embeds: {
@@ -647,7 +535,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Il sito è ospitato da Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. Visitando il sito, dati come l’indirizzo IP possono essere trattati su server Vercel, anche con trasferimento negli USA. Informativa Vercel: https://vercel.com/legal/privacy-policy',
         'Base giuridica: art. 6(1)(f) GDPR (interesse legittimo a una presentazione affidabile del sito).',
-        'Utilizziamo come responsabili del trattamento Supabase (database e autenticazione admin), Cloudflare R2 (media; giurisdizione UE se configurata) e Resend (solo e-mail transazionale del modulo — nessuna mailing list). I DPA e le regioni di archiviazione vanno configurati nei pannelli dei fornitori.',
+        'Utilizziamo come responsabili del trattamento Supabase (database e autenticazione admin), Cloudflare R2 (media; giurisdizione UE se configurata) e Resend (e-mail transazionali per contatti, conferme di acquisto e recessi — nessuna mailing list). I DPA e le regioni di archiviazione vanno configurati nei pannelli dei fornitori.',
       ],
     },
     controller: {
@@ -682,7 +570,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Nessuna newsletter',
       paragraphs: [
-        'Questo sito non offre newsletter, mailing list né abbonamento e-mail. Il contatto avviene solo tramite il modulo (consegna Resend). Non memorizziamo indirizzi di iscritti.',
+        'Questo sito non offre newsletter, mailing list né abbonamento e-mail. Le richieste di contatto vengono recapitate tramite Resend. Non memorizziamo indirizzi di iscritti.',
       ],
     },
     news: {
@@ -697,7 +585,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Per la velocità le immagini possono essere consegnate via wsrv.nl. L’IP può essere trattato temporaneamente.',
         'wsrv.nl non imposta cookie di tracciamento. Base: art. 6(1)(f) GDPR. Info: https://wsrv.nl',
-        'I font predefiniti (JetBrains Mono, Space Grotesk) sono self-hosted (next/font). Font aggiuntivi da Appearance possono essere caricati da Google Fonts. Base: art. 6(1)(f) GDPR.',
+        'I font standard (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono e Space Mono) sono ospitati localmente. Le altre selezioni usano font sostitutivi locali e non caricano Google Fonts.',
       ],
     },
     embeds: {
@@ -747,7 +635,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Este sitio está alojado en Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, EE. UU. Al visitarlo, datos como tu IP pueden tratarse en servidores de Vercel, lo que puede implicar transferencias a EE. UU. Política de Vercel: https://vercel.com/legal/privacy-policy',
         'Base jurídica: art. 6(1)(f) RGPD (interés legítimo en una presentación fiable del sitio).',
-        'Usamos como encargados Supabase (base de datos y autenticación de admin), Cloudflare R2 (medios; jurisdicción UE si está configurada) y Resend (solo correo transaccional del formulario — sin lista de correo). Los DPA y las regiones de almacenamiento deben configurarse en cada proveedor.',
+        'Usamos como encargados Supabase (base de datos y autenticación de admin), Cloudflare R2 (medios; jurisdicción UE si está configurada) y Resend (correo transaccional para consultas, confirmaciones de compra y desistimientos — sin lista de correo). Los DPA y las regiones de almacenamiento deben configurarse en cada proveedor.',
       ],
     },
     controller: {
@@ -782,7 +670,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Sin boletín',
       paragraphs: [
-        'Este sitio no ofrece newsletter, lista de correo ni suscripción por e-mail. El contacto es solo por el formulario (entrega Resend). No almacenamos direcciones de suscriptores.',
+        'Este sitio no ofrece newsletter, lista de correo ni suscripción por e-mail. Los mensajes del formulario se entregan a través de Resend. No almacenamos direcciones de suscriptores.',
       ],
     },
     news: {
@@ -797,7 +685,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Para la velocidad, las imágenes pueden servirse vía wsrv.nl. La IP puede tratarse temporalmente.',
         'wsrv.nl no establece cookies de seguimiento. Base: art. 6(1)(f) RGPD. Más información: https://wsrv.nl',
-        'Las fuentes predeterminadas (JetBrains Mono, Space Grotesk) son self-hosted (next/font). Fuentes adicionales de Appearance pueden cargarse desde Google Fonts. Base: art. 6(1)(f) RGPD.',
+        'Las fuentes estándar (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono y Space Mono) se alojan localmente. Otras fuentes utilizan alternativas locales sin cargar Google Fonts.',
       ],
     },
     embeds: {
@@ -847,7 +735,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Este sítio é alojado pela Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, EUA. Ao visitá-lo, dados como o seu IP podem ser tratados em servidores da Vercel, o que pode implicar transferências para os EUA. Política da Vercel: https://vercel.com/legal/privacy-policy',
         'Base jurídica: art. 6.º(1)(f) RGPD (interesse legítimo numa apresentação fiável do sítio).',
-        'Utilizamos como subcontratantes a Supabase (base de dados e autenticação de admin), a Cloudflare R2 (média; jurisdição da UE se configurada) e a Resend (apenas e-mail transacional do formulário — sem lista de correio). Os DPA e as regiões de armazenamento devem ser configurados em cada fornecedor.',
+        'Utilizamos como subcontratantes a Supabase (base de dados e autenticação de admin), a Cloudflare R2 (média; jurisdição da UE se configurada) e a Resend (e-mails transacionais de contactos, confirmações de compra e resolução — sem lista de correio). Os DPA e as regiões de armazenamento devem ser configurados em cada fornecedor.',
       ],
     },
     controller: {
@@ -882,7 +770,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Sem newsletter',
       paragraphs: [
-        'Este sítio não oferece newsletter, lista de correio nem subscrição por e-mail. O contacto é apenas pelo formulário (entrega Resend). Não armazenamos endereços de subscritores.',
+        'Este sítio não oferece newsletter, lista de correio nem subscrição por e-mail. Os pedidos de contacto são entregues através da Resend. Não armazenamos endereços de subscritores.',
       ],
     },
     news: {
@@ -897,7 +785,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Para a velocidade, as imagens podem ser servidas via wsrv.nl. O IP pode ser tratado temporariamente.',
         'A wsrv.nl não define cookies de rastreio. Base: art. 6.º(1)(f) RGPD. Mais informações: https://wsrv.nl',
-        'Os tipos de letra predefinidos (JetBrains Mono, Space Grotesk) são self-hosted (next/font). Tipos adicionais de Appearance podem ser carregados do Google Fonts. Base: art. 6.º(1)(f) RGPD.',
+        'As fontes padrão (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono e Space Mono) são alojadas localmente. Outras escolhas usam alternativas locais, sem ligação ao Google Fonts.',
       ],
     },
     embeds: {
@@ -947,7 +835,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '本サイトは Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA でホストされています。訪問時、IPアドレス等の個人データがVercelのサーバーで処理され、米国への移転を伴う場合があります。Vercelの方針: https://vercel.com/legal/privacy-policy',
         '法的根拠: GDPR第6条1項(f)（サイトを安定して提供する正当な利益）。',
-        '処理者として Supabase（データベースと管理画面認証）、Cloudflare R2（メディア。可能な場合はEU管轄）、Resend（お問い合わせフォームのトランザクションメールのみ。メーリングリストなし）を使用します。DPAと保存地域は各プロバイダのダッシュボードで設定します。',
+        '処理者として Supabase（データベースと管理画面認証）、Cloudflare R2（メディア。可能な場合はEU管轄）、Resend（お問い合わせ、購入確認、契約撤回確認の取引メール。メーリングリストなし）を使用します。DPAと保存地域は各プロバイダのダッシュボードで設定します。',
       ],
     },
     controller: {
@@ -982,7 +870,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. ニュースレターはありません',
       paragraphs: [
-        '本サイトはニュースレター、メーリングリスト、メール購読を提供しません。連絡はお問い合わせフォーム（Resend）のみです。購読者アドレスは保存しません。',
+        '本サイトはニュースレター、メーリングリスト、メール購読を提供しません。お問い合わせは Resend 経由で送信されます。購読者アドレスは保存しません。',
       ],
     },
     news: {
@@ -997,7 +885,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '表示速度のため、画像は wsrv.nl 経由で配信される場合があります。その際IPが一時処理されることがあります。',
         'wsrv.nl はトラッキングCookieを設定しません。根拠: GDPR第6条1項(f)。詳細: https://wsrv.nl',
-        '既定フォント（JetBrains Mono、Space Grotesk）は self-hosted（next/font）です。Appearanceで追加フォントを選ぶと Google Fonts から読み込まれる場合があります。根拠: GDPR第6条1項(f)。',
+        '既定フォント（JetBrains Mono、Space Grotesk、Orbitron、Share Tech Mono、Space Mono）はサイト内で提供します。その他のフォント設定にはローカルの代替フォントを使用し、Google Fontsを外部から読み込みません。',
       ],
     },
     embeds: {
@@ -1047,7 +935,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '이 사이트는 Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA에서 호스팅됩니다. 방문 시 IP 주소 등 개인정보가 Vercel 서버에서 처리될 수 있으며 미국으로의 이전을 포함할 수 있습니다. Vercel 정책: https://vercel.com/legal/privacy-policy',
         '법적 근거: GDPR 제6조 1항 (f) (안정적인 사이트 제공에 대한 정당한 이익).',
-        '처리자로 Supabase(데이터베이스 및 관리자 인증), Cloudflare R2(미디어, 가능한 경우 EU 관할), Resend(문의 양식의 트랜잭션 메일만 — 메일링 리스트 없음)를 사용합니다. DPA와 저장 지역은 각 제공자 대시보드에서 설정합니다.',
+        '처리자로 Supabase(데이터베이스 및 관리자 인증), Cloudflare R2(미디어, 가능한 경우 EU 관할), Resend(문의, 구매 확인, 계약 철회 확인용 거래 이메일 — 메일링 리스트 없음)를 사용합니다. DPA와 저장 지역은 각 제공자 대시보드에서 설정합니다.',
       ],
     },
     controller: {
@@ -1082,7 +970,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. 뉴스레터 없음',
       paragraphs: [
-        '이 사이트는 뉴스레터, 메일링 리스트, 이메일 구독을 제공하지 않습니다. 연락은 문의 양식(Resend)만 사용합니다. 구독자 주소는 저장하지 않습니다.',
+        '이 사이트는 뉴스레터, 메일링 리스트, 이메일 구독을 제공하지 않습니다. 문의는 Resend를 통해 전달됩니다. 구독자 주소는 저장하지 않습니다.',
       ],
     },
     news: {
@@ -1097,7 +985,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '속도 향상을 위해 이미지가 wsrv.nl을 통해 전달될 수 있습니다. 이때 IP가 일시적으로 처리될 수 있습니다.',
         'wsrv.nl은 추적 쿠키를 설정하지 않습니다. 근거: GDPR 제6조 1항 (f). 자세한 내용: https://wsrv.nl',
-        '기본 글꼴(JetBrains Mono, Space Grotesk)은 self-hosted(next/font)입니다. Appearance에서 추가 글꼴을 선택하면 Google Fonts에서 로드될 수 있습니다. 근거: GDPR 제6조 1항 (f).',
+        '기본 글꼴(JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono, Space Mono)은 자체 호스팅됩니다. 다른 설정은 Google Fonts 요청 없이 로컬 대체 글꼴을 사용합니다.',
       ],
     },
     embeds: {

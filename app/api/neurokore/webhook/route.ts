@@ -41,7 +41,7 @@ function formatChargedAmount(amount: number, currency: string, locale: string): 
 /** Permanent contract confirmation. Do not claim withdrawal rights disappeared. */
 async function sendContractConfirmation(
   client: ReturnType<typeof db>,
-  order: { id: string; product_id: string; email: string },
+  order: { id: string; product_id: string; email: string; terms_snapshot: string | null; licence_snapshot: string | null; terms_version: string | null },
   session: z.infer<typeof sessionSchema>,
 ): Promise<void> {
   const [productResult, legal, resendKey] = await Promise.all([
@@ -57,11 +57,11 @@ async function sendContractConfirmation(
   const locale = session.metadata?.locale ?? 'en'
   const translations = COMMERCE_LEGAL_COPY[locale]
   const withdrawal = WITHDRAWAL_COPY[locale]
-  const termsText = contractDocumentText(commerceSections('terms', locale))
-  const licenceText = contractDocumentText(commerceSections('license', locale))
+  const termsText = order.terms_snapshot ?? contractDocumentText(commerceSections('terms', locale, legal.termsText))
+  const licenceText = order.licence_snapshot ?? contractDocumentText(commerceSections('license', locale))
   const text = contractEmailText([
     'NEUROKLAST AUDIO | ' + translations.docs.purchase,
-    'Contract terms version: ' + (session.metadata?.terms_version ?? COMMERCE_TERMS_VERSION),
+    'Contract terms version: ' + (order.terms_version ?? session.metadata?.terms_version ?? COMMERCE_TERMS_VERSION),
     '',
     'Order reference: ' + order.id,
     'Date: ' + new Date().toISOString(),
@@ -144,13 +144,16 @@ export async function POST(request: Request) {
       'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY')))
     const client = db()
     const orderResult = await client.from('plugin_orders')
-      .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at')
+      .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version')
       .eq('id', session.client_reference_id).single()
     if (orderResult.error) throw orderResult.error
     const order = z.object({
       id: z.uuid(), product_id: z.uuid(), email: z.email(),
       price_id: z.string(), stripe_session: z.string().nullable(),
       confirmation_sent_at: z.string().nullable(),
+      terms_snapshot: z.string().nullable(),
+      licence_snapshot: z.string().nullable(),
+      terms_version: z.string().nullable(),
     }).parse(orderResult.data)
     if (order.stripe_session !== session.id || order.email !== session.customer_email.toLowerCase() ||
       order.price_id !== session.line_items.data[0].price.id) throw new Error('Order mismatch')

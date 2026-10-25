@@ -15,9 +15,6 @@ export const SELF_HOSTED_FONT_NAMES = new Set([
   'Space Mono',
 ])
 
-/** Track already-injected Google Fonts stylesheet links. */
-const _loadedFonts = new Set<string>()
-
 /** Extract the first font-family name from a CSS font stack string. */
 export function extractGoogleFontName(fontValue: string): string | null {
   const systemFonts = new Set([
@@ -43,25 +40,12 @@ export function extractGoogleFontName(fontValue: string): string | null {
 }
 
 /**
- * Load a Google Font stylesheet when the operator selects a non–self-hosted family.
- * Self-hosted names are skipped (already available via next/font).
+ * Remote font CSS is intentionally disabled. The public site must not send
+ * visitors' IP addresses to Google Fonts merely because an admin selected
+ * a theme. Unknown families resolve to the CSS fallback stack.
  */
-export function loadGoogleFont(fontName: string): void {
-  if (typeof document === 'undefined') return
-  if (!fontName || SELF_HOSTED_FONT_NAMES.has(fontName)) return
-  if (_loadedFonts.has(fontName)) return
-  _loadedFonts.add(fontName)
-
-  const family = fontName.replace(/ /g, '+')
-  const href = `https://fonts.googleapis.com/css2?family=${family}:wght@300;400;500;600;700;900&display=swap`
-  const safeAttr = fontName.replace(/["\\]/g, '')
-  if (document.querySelector(`link[data-zd-font="${safeAttr}"]`)) return
-
-  const link = document.createElement('link')
-  link.rel = 'stylesheet'
-  link.href = href
-  link.setAttribute('data-zd-font', safeAttr)
-  document.head.appendChild(link)
+export function loadGoogleFont(_fontName: string): void {
+  // Only the build-bundled fonts are available without a runtime network call.
 }
 
 /** True when stack needs no remote load (system or self-hosted only). */

@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto'
 import { LEGAL_LOCALES } from '@/lib/legal-i18n'
 import { localizedLegalPath } from '@/lib/legal-routes'
 import { COMMERCE_TERMS_VERSION } from '@/lib/commerce-version'
+import { commerceSections } from '@/lib/commerce-legal-copy'
+import { contractDocumentText } from '@/lib/neurokore/email-format'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
 import { body, db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
@@ -97,8 +99,12 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const id = randomUUID()
+    const termsSnapshot = contractDocumentText(commerceSections('terms', locale, legal.termsText))
+    const licenceSnapshot = contractDocumentText(commerceSections('license', locale))
     const insert = await client.from('plugin_orders').insert({
       id, product_id: product.id, user_id: buyer.id, email: buyer.email, price_id: price,
+      terms_snapshot: termsSnapshot, licence_snapshot: licenceSnapshot,
+      terms_version: COMMERCE_TERMS_VERSION,
     })
     if (insert.error) throw insert.error
 
