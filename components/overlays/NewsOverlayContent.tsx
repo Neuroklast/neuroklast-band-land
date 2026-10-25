@@ -2,7 +2,6 @@ import type { NewsOverlayData } from '@/lib/app-types'
 import { formatIsoDateLong } from '@/lib/format-display-date'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { NewsExternalLink } from '@/components/news/NewsExternalLink'
-import { NewsShareActions } from '@/components/news/NewsShareActions'
 import { NewsBodyText } from '@/components/news/NewsBodyText'
 import {
   OverlayFrame,
@@ -72,9 +71,6 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
           >
             Open full article
           </a>
-        </OverlayItem>
-        <OverlayItem delay={0.3}>
-          <NewsShareActions slug={data.slug} title={data.title} excerpt={data.excerpt} />
         </OverlayItem>
       </div>
     </OverlayReveal>
