@@ -93,6 +93,11 @@ export function LicenseAccount() {
   return (
     <section className="space-y-6" aria-label={copy.title}>
       <h2 className="text-2xl font-semibold">{copy.title}</h2>
+      <p className="text-sm text-zinc-300">
+        <Link className="underline underline-offset-4 hover:text-red-400" href="/neurokore/activate">
+          Create an offline licence file
+        </Link>
+      </p>
       {!account ? (
         <form className="space-y-4" onSubmit={event => { event.preventDefault(); void authenticate() }}>
           <label className="block space-y-1">{copy.email}
