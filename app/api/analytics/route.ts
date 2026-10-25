@@ -60,6 +60,9 @@ export async function POST(request: Request) {
       return new NextResponse(null, { status: 204 })
     }
 
+    // Do not collect data unless the automated 90-day cleanup is configured.
+    if (!process.env.CRON_SECRET) return new NextResponse(null, { status: 204 })
+
     // Anon client + RLS INSERT policy (consent-gated), NOT the service-role client.
     const supabase = createPublicClient()
     const { error } = await supabase.from('analytics_events').insert({
