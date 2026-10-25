@@ -88,7 +88,7 @@
     "three": "^0.184.0",
     "tw-animate-css": "^1.2.4",
     "vaul": "^1.1.2",
-    "zod": "^4.5.4"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@csstools/postcss-oklab-function": "^5.0.6",
@@ -121,7 +121,7 @@
   },
   "overrides": {
     "path-to-regexp": "^8.2.0",
-    "undici": "^7.29.0",
+    "undici": "^7.30.1",
     "svix": "^1.92.2",
     "js-yaml": "4.3.2",
     "brace-expansion": "^2.0.2",
