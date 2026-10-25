@@ -18,3 +18,16 @@ export function resolveSpotifyArtistUri(
   }
   return spotifyArtistUri(fallbackId)
 }
+
+const SPOTIFY_EMBED_URI =
+  /^spotify:(artist|album|track|playlist|episode|show):([A-Za-z0-9]+)$/i
+
+/** Static embed URL. Do not use the Spotify iframe-api script — it eval()s and fails production CSP. */
+export function spotifyEmbedUrl(uri: string, theme: '0' | '1' = '0'): string | null {
+  const match = SPOTIFY_EMBED_URI.exec(uri.trim())
+  if (!match) return null
+  const type = match[1]
+  const id = match[2]
+  if (!type || !id) return null
+  return `https://open.spotify.com/embed/${type.toLowerCase()}/${id}?utm_source=generator&theme=${theme}`
+}

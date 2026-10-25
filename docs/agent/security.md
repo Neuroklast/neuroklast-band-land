@@ -2,7 +2,7 @@
 
 ## Embeds (TDDDG / GDPR)
 
-Spotify, YouTube, SoundCloud: **never** auto-load. Two-click consent before `<iframe>`.
+Spotify, YouTube, SoundCloud: **never** auto-load. Two-click consent before `<iframe>`. Spotify must be a static `open.spotify.com/embed` iframe. Do **not** load `https://open.spotify.com/embed/iframe-api/v1` — that script eval()s and production CSP forbids `unsafe-eval`.
 
 ## Public forms
 
@@ -65,7 +65,7 @@ Document and fail fast on missing security-critical env vars (`RATE_LIMIT_SALT`,
 
 ## CSP (`unsafe-inline` styles)
 
-Production CSP in `vercel.json` includes `style-src 'self' 'unsafe-inline'`. Required for Tailwind runtime classes and inline theme CSS variables. **Accepted risk** (TD-004): no third-party style injection surface; `script-src` includes `'self' 'unsafe-inline' 'unsafe-eval'` (Next runtime) — tighten when possible.
+Production CSP lives in `security-headers.mjs` (imported by `next.config.mjs`), not `vercel.json`. `style-src` includes `'unsafe-inline'` for Tailwind runtime classes and inline theme CSS variables. **Accepted risk** (TD-004). `script-src 'unsafe-eval'` is **development-only** (React Refresh / Turbopack). Production must not allow eval; third-party players that eval (Spotify iframe-api) are replaced with static iframes.
 
 ## SSRF
 

@@ -4,6 +4,15 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-10-25
+
+### What to Avoid
+
+**Do not load Spotify `embed/iframe-api/v1` under production CSP.**  
+That script (`iframe_api.*.js` on `embed-cdn.spotifycdn.com`) calls `eval()`. Production `script-src` has no `unsafe-eval` (dev-only for React Refresh). Use a static `https://open.spotify.com/embed/{type}/{id}` iframe after two-click consent (`SpotifyEmbed` + `spotifyEmbedUrl`). Adding `'unsafe-eval'` to production CSP would re-open the Next-runtime hole this policy closed.
+
+---
+
 ## Session: 2026-09-18
 
 ### What Worked

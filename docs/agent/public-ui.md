@@ -88,7 +88,7 @@ Built-ins: `help`, `clear`, `exit`, `glitch`, `matrix`. Custom commands cannot o
 
 ### Two-click embeds
 
-YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: one HUD click (no latch). Iframe / Spotify script loads **only after** that click. Spotify IFrame height is the box pixel height (232 mobile / 352 desktop), not `"100%"`. Cookie banner is **not** a hatch slider.
+YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: one HUD click (no latch). The iframe loads **only after** that click. Spotify uses a static `open.spotify.com/embed/{type}/{id}` iframe (`lib/spotify-artist.ts` `spotifyEmbedUrl`) — never the iframe-api script (it eval()s and fails production CSP). Spotify iframe height is the box pixel height (232 mobile / 352 desktop), not `"100%"`. Cookie banner is **not** a hatch slider.
 
 ---
 

@@ -8,14 +8,13 @@ function renderEmbed(ui: ReactElement) {
   return render(<LocaleProvider>{ui}</LocaleProvider>)
 }
 
-const SPOTIFY_SCRIPT_SRC = 'https://open.spotify.com/embed/iframe-api/v1'
+const ARTIST_URI = 'spotify:artist:7BqEidErPMNiUXCRE0dV2n'
+const EMBED_SRC =
+  'https://open.spotify.com/embed/artist/7BqEidErPMNiUXCRE0dV2n?utm_source=generator&theme=0'
 
 describe('SpotifyEmbed', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    delete window.SpotifyIframeApi
-    delete window.onSpotifyIframeApiReady
-    // Remove any previously injected scripts
     document.querySelectorAll('script[src*="spotify"]').forEach((s) => s.remove())
   })
 
@@ -24,184 +23,96 @@ describe('SpotifyEmbed', () => {
     document.querySelectorAll('script[src*="spotify"]').forEach((s) => s.remove())
   })
 
-  // ── Pre-consent (GDPR gate) ────────────────────────────────────────────
-
   it('renders a container div with placeholder', () => {
-    const { container, getByText } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+    const { container, getByText } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
     expect(container.firstChild).toBeInstanceOf(HTMLDivElement)
     expect(getByText(/Load Spotify player/i)).toBeInTheDocument()
   })
 
   it('applies className to the container', () => {
-    const { container } = renderEmbed(
-      <SpotifyEmbed
-        uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n"
-        className="test-class"
-      />,
-    )
+    const { container } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} className="test-class" />)
     expect(container.firstChild).toHaveClass('test-class')
   })
 
-  it('does not inject script on mount (GDPR consent required)', () => {
-    renderEmbed(<SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />)
-    const script = document.querySelector(`script[src="${SPOTIFY_SCRIPT_SRC}"]`)
-    expect(script).toBeNull()
+  it('does not inject a script or iframe on mount (GDPR consent required)', () => {
+    renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
+    expect(document.querySelector('script[src*="spotify"]')).toBeNull()
+    expect(document.querySelector('iframe[src*="open.spotify.com"]')).toBeNull()
   })
 
   it('shows consent disclosure text', () => {
-    const { getByText } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+    const { getByText } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
     expect(getByText(/your ip address may be sent to spotify/i)).toBeInTheDocument()
   })
 
   it('placeholder has role=button and aria-label', () => {
-    const { getByRole, queryByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+    const { getByRole, queryByRole } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
     const btn = getByRole('button', { name: /Load Spotify Player/i })
     expect(btn).toBeInTheDocument()
     expect(queryByRole('slider')).not.toBeInTheDocument()
   })
 
   it('placeholder is keyboard-focusable (tabIndex=0)', () => {
-    const { getByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+    const { getByRole } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
     const btn = getByRole('button', { name: /Load Spotify Player/i })
     expect(btn).toHaveAttribute('tabindex', '0')
   })
 
-  // ── Post-consent (click interaction) ──────────────────────────────────
-
-  it('injects the Spotify script after user clicks the consent button', async () => {
-    const { getByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+  it('mounts a static embed iframe after the consent click, without the iframe-api script', async () => {
+    const { getByRole } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
 
     await act(async () => {
       fireEvent.click(getByRole('button', { name: /Load Spotify Player/i }))
     })
 
     await waitFor(() => {
-      const script = document.querySelector(`script[src="${SPOTIFY_SCRIPT_SRC}"]`)
-      expect(script).not.toBeNull()
+      const iframe = document.querySelector('iframe[src*="open.spotify.com/embed/"]')
+      expect(iframe).toHaveAttribute('src', EMBED_SRC)
     })
+    expect(document.querySelector('script[src*="iframe-api"]')).toBeNull()
   })
 
-  it('injects the Spotify script after Enter keydown on the consent button', async () => {
-    const { getByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+  it('mounts the iframe after Enter keydown on the consent button', async () => {
+    const { getByRole } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
 
     await act(async () => {
       fireEvent.keyDown(getByRole('button', { name: /Load Spotify Player/i }), { key: 'Enter' })
     })
 
     await waitFor(() => {
-      const script = document.querySelector(`script[src="${SPOTIFY_SCRIPT_SRC}"]`)
-      expect(script).not.toBeNull()
+      expect(document.querySelector('iframe[src*="open.spotify.com/embed/"]')).not.toBeNull()
     })
   })
 
-  it('injects the Spotify script after Space keydown on the consent button', async () => {
-    const { getByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+  it('mounts the iframe after Space keydown on the consent button', async () => {
+    const { getByRole } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
 
     await act(async () => {
       fireEvent.keyDown(getByRole('button', { name: /Load Spotify Player/i }), { key: ' ' })
     })
 
     await waitFor(() => {
-      const script = document.querySelector(`script[src="${SPOTIFY_SCRIPT_SRC}"]`)
-      expect(script).not.toBeNull()
+      expect(document.querySelector('iframe[src*="open.spotify.com/embed/"]')).not.toBeNull()
     })
   })
 
-  it('does not inject a second script when clicked twice', async () => {
-    const { getByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
-
-    // First consent click injects the script
-    await act(async () => {
-      fireEvent.click(getByRole('button', { name: /Load Spotify Player/i }))
-    })
-
-    await waitFor(() => {
-      expect(document.querySelectorAll(`script[src="${SPOTIFY_SCRIPT_SRC}"]`)).toHaveLength(1)
-    })
-  })
-
-  it('calls createController when SpotifyIframeApi is already available at click time', async () => {
-    const createController = vi.fn()
-    window.SpotifyIframeApi = { createController } as unknown as typeof window.SpotifyIframeApi
-
-    const { getByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+  it('shows error state when the URI cannot be turned into an embed URL', async () => {
+    const { getByRole } = renderEmbed(<SpotifyEmbed uri="not-a-spotify-uri" />)
 
     await act(async () => {
       fireEvent.click(getByRole('button', { name: /Load Spotify Player/i }))
-    })
-
-    await waitFor(() => {
-      expect(createController).toHaveBeenCalledWith(
-        expect.any(HTMLElement),
-        expect.objectContaining({ uri: 'spotify:artist:7BqEidErPMNiUXCRE0dV2n' }),
-        expect.any(Function),
-      )
-    })
-  })
-
-  it('shows error state when the Spotify script fails to load', async () => {
-    // Simulate script onerror by firing the event on the injected script tag
-    const original = document.body.appendChild.bind(document.body)
-    const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((node) => {
-      const result = original(node)
-      if (node instanceof HTMLScriptElement && node.src.includes('spotify')) {
-        // Fire onerror asynchronously to let the component finish setting up the handler
-        setTimeout(() => node.onerror?.(new Event('error')), 0)
-      }
-      return result
-    })
-
-    const { getByRole } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
-
-    await act(async () => {
-      fireEvent.click(getByRole('button', { name: /Load Spotify Player/i }))
-      await new Promise<void>((r) => setTimeout(r, 20))
     })
 
     await waitFor(() => {
       expect(getByRole('alert')).toBeInTheDocument()
     })
-
-    appendChildSpy.mockRestore()
   })
 
   it('retry button resets the error state back to the consent placeholder', async () => {
-    const original = document.body.appendChild.bind(document.body)
-    const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((node) => {
-      const result = original(node)
-      if (node instanceof HTMLScriptElement && node.src.includes('spotify')) {
-        setTimeout(() => node.onerror?.(new Event('error')), 0)
-      }
-      return result
-    })
-
-    const { getByRole, getByText } = renderEmbed(
-      <SpotifyEmbed uri="spotify:artist:7BqEidErPMNiUXCRE0dV2n" />,
-    )
+    const { getByRole, getByText } = renderEmbed(<SpotifyEmbed uri="not-a-spotify-uri" />)
 
     await act(async () => {
       fireEvent.click(getByRole('button', { name: /Load Spotify Player/i }))
-      await new Promise<void>((r) => setTimeout(r, 20))
     })
 
     await waitFor(() => expect(getByRole('alert')).toBeInTheDocument())
@@ -213,7 +124,5 @@ describe('SpotifyEmbed', () => {
     await waitFor(() => {
       expect(getByRole('button', { name: /Load Spotify Player/i })).toBeInTheDocument()
     })
-
-    appendChildSpy.mockRestore()
   })
 })
