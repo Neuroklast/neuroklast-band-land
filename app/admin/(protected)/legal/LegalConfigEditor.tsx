@@ -213,9 +213,10 @@ export function LegalConfigEditor({ currentValue }: LegalConfigEditorProps) {
         <div>
           <h2 className="text-sm font-semibold text-zinc-200">AGB / Geschäftsbedingungen</h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Allgemeinen Geschäftsbedingungen für den Verkauf und die Nutzung von Produkten (z. B.
-            NEUROKORE). Leer lassen, um den statischen Fallback zu verwenden. Der Text wird einzeilig
-            auf /terms veröffentlicht.
+            Deutsche Geschäftsbedingungen für den Softwareverkauf. Leer lassen, um die Standardvorlage zu verwenden.
+            Der Text wird auf /terms und /legal/de/terms veröffentlicht. Bei neuen Bestellungen wird
+            die gültige Fassung gespeichert und in der Vertragsbestätigung verwendet. Die anderen
+            Sprachfassungen nutzen ihre eigenen Vorlagen.
           </p>
         </div>
         <textarea
