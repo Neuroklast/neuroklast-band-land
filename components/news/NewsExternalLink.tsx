@@ -1,4 +1,3 @@
-import { ArrowSquareOut } from '@phosphor-icons/react'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
 
 interface NewsExternalLinkProps {
@@ -26,7 +25,10 @@ export function NewsExternalLink({ href: rawHref, compact = false }: NewsExterna
         compact ? 'w-full' : 'mt-4',
       ].join(' ')}
     >
-      <ArrowSquareOut className="h-4 w-4 shrink-0" aria-hidden />
+      <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M13 5h6v6M19 5l-9 9" />
+        <path d="M19 13v6H5V5h6" />
+      </svg>
       <span className="min-w-0">
         <span className="block uppercase tracking-wider">External link</span>
         <span className="block break-all text-foreground/80">{hostname}</span>
