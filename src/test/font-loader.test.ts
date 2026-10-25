@@ -34,10 +34,9 @@ describe('font-loader', () => {
     expect(document.querySelectorAll('link[href*="fonts.googleapis"]')).toHaveLength(0)
   })
 
-  it('injects Google CSS once for admin-selected remote fonts (e.g. Inter for bio body)', () => {
+  it('does not send visitor requests to Google Fonts for admin-selected fonts', () => {
     loadGoogleFont('Inter')
     loadGoogleFont('Inter')
-    const links = document.querySelectorAll('link[href*="fonts.googleapis"][href*="Inter"]')
-    expect(links.length).toBe(1)
+    expect(document.querySelectorAll('link[href*="fonts.googleapis"]')).toHaveLength(0)
   })
 })
