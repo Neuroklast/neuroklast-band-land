@@ -347,7 +347,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'This website is hosted by Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. When you visit our website, personal data such as your IP address may be processed on Vercel servers. This may involve transfers to the USA. See Vercel\'s privacy policy: https://vercel.com/legal/privacy-policy',
         'The legal basis is Art. 6(1)(f) GDPR (legitimate interest in reliable website presentation).',
-        'We use Supabase (database and authentication for the admin area), Cloudflare R2 (media files; EU jurisdiction where configured), and Resend (transactional email for the contact form only — no mailing list) as processors. Data processing agreements (DPAs) and storage regions should be configured in each provider dashboard. These providers process data only as necessary to operate the website.',
+        'We use Supabase (database and authentication for the admin area), Cloudflare R2 (media files; EU jurisdiction where configured), and Resend (transactional emails for contact requests, purchase confirmations and withdrawal receipts — no mailing list) as processors. Data processing agreements (DPAs) and storage regions should be configured in each provider dashboard. These providers process data only as necessary to operate the website.',
       ],
     },
     controller: {
@@ -382,7 +382,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. No newsletter',
       paragraphs: [
-        'This website does not offer a newsletter, mailing list, or email subscription. Contact is handled only through the contact form (Resend email delivery). We do not store subscriber addresses.',
+        'This website does not offer a newsletter, mailing list, or email subscription. Contact requests are delivered through Resend email. We do not store subscriber addresses.',
       ],
     },
     news: {
@@ -447,7 +447,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Besuch der Website können personenbezogene Daten wie Ihre IP-Adresse auf Servern von Vercel verarbeitet werden; dies kann eine Übermittlung in die USA beinhalten. Datenschutzerklärung von Vercel: https://vercel.com/legal/privacy-policy',
         'Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer zuverlässigen Bereitstellung der Website).',
-        'Als weitere Auftragsverarbeiter nutzen wir Supabase (Datenbank und Admin-Authentifizierung), Cloudflare R2 (Mediendateien; EU-Jurisdiction soweit konfiguriert) und Resend (nur transaktionale E-Mail für das Kontaktformular — keine Mailingliste). Auftragsverarbeitungsverträge (AVV/DPA) und Speicherregionen sind in den jeweiligen Anbieter-Dashboards zu konfigurieren.',
+        'Als weitere Auftragsverarbeiter nutzen wir Supabase (Datenbank und Admin-Authentifizierung), Cloudflare R2 (Mediendateien; EU-Jurisdiction soweit konfiguriert) und Resend (transaktionale E-Mails für Kontaktanfragen, Kaufbestätigungen und Widerrufsbestätigungen — keine Mailingliste). Auftragsverarbeitungsverträge (AVV/DPA) und Speicherregionen sind in den jeweiligen Anbieter-Dashboards zu konfigurieren.',
       ],
     },
     controller: {
@@ -482,7 +482,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Kein Newsletter',
       paragraphs: [
-        'Diese Website bietet keinen Newsletter, keine Mailingliste und kein E-Mail-Abo. Kontakt erfolgt ausschließlich über das Kontaktformular (Zustellung per Resend). Es werden keine Abonnentenadressen gespeichert.',
+        'Diese Website bietet keinen Newsletter, keine Mailingliste und kein E-Mail-Abo. Kontaktanfragen werden über Resend per E-Mail zugestellt. Es werden keine Abonnentenadressen gespeichert.',
       ],
     },
     news: {
@@ -547,7 +547,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Сайт розміщено у Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, США. Під час відвідування IP-адреса може оброблятися на серверах Vercel, зокрема з передачею до США. Політика Vercel: https://vercel.com/legal/privacy-policy',
         'Правова підстава: ст. 6(1)(f) GDPR (законний інтерес у надійній роботі сайту).',
-        'Як обробники також використовуються Supabase (база даних і автентифікація адмінки), Cloudflare R2 (медіа; юрисдикція ЄС за можливості) та Resend (лише транзакційна пошта контактної форми — без розсилки). DPA та регіони зберігання налаштовуються в кабінетах провайдерів.',
+        'Як обробники також використовуються Supabase (база даних і автентифікація адмінки), Cloudflare R2 (медіа; юрисдикція ЄС за можливості) та Resend (транзакційні листи для контактів, підтверджень покупок і відкликання договорів — без розсилки). DPA та регіони зберігання налаштовуються в кабінетах провайдерів.',
       ],
     },
     controller: {
@@ -582,7 +582,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Немає розсилки',
       paragraphs: [
-        'Цей сайт не пропонує newsletter, mailing list чи e-mail-підписку. Контакт лише через форму (Resend). Адреси підписників не зберігаються.',
+        'Цей сайт не пропонує newsletter, mailing list чи e-mail-підписку. Контактні запити доставляються через Resend. Адреси підписників не зберігаються.',
       ],
     },
     news: {
@@ -647,7 +647,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Il sito è ospitato da Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. Visitando il sito, dati come l’indirizzo IP possono essere trattati su server Vercel, anche con trasferimento negli USA. Informativa Vercel: https://vercel.com/legal/privacy-policy',
         'Base giuridica: art. 6(1)(f) GDPR (interesse legittimo a una presentazione affidabile del sito).',
-        'Utilizziamo come responsabili del trattamento Supabase (database e autenticazione admin), Cloudflare R2 (media; giurisdizione UE se configurata) e Resend (solo e-mail transazionale del modulo — nessuna mailing list). I DPA e le regioni di archiviazione vanno configurati nei pannelli dei fornitori.',
+        'Utilizziamo come responsabili del trattamento Supabase (database e autenticazione admin), Cloudflare R2 (media; giurisdizione UE se configurata) e Resend (e-mail transazionali per contatti, conferme d'acquisto e recessi — nessuna mailing list). I DPA e le regioni di archiviazione vanno configurati nei pannelli dei fornitori.',
       ],
     },
     controller: {
@@ -682,7 +682,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Nessuna newsletter',
       paragraphs: [
-        'Questo sito non offre newsletter, mailing list né abbonamento e-mail. Il contatto avviene solo tramite il modulo (consegna Resend). Non memorizziamo indirizzi di iscritti.',
+        'Questo sito non offre newsletter, mailing list né abbonamento e-mail. Le richieste di contatto vengono recapitate tramite Resend. Non memorizziamo indirizzi di iscritti.',
       ],
     },
     news: {
@@ -747,7 +747,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Este sitio está alojado en Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, EE. UU. Al visitarlo, datos como tu IP pueden tratarse en servidores de Vercel, lo que puede implicar transferencias a EE. UU. Política de Vercel: https://vercel.com/legal/privacy-policy',
         'Base jurídica: art. 6(1)(f) RGPD (interés legítimo en una presentación fiable del sitio).',
-        'Usamos como encargados Supabase (base de datos y autenticación de admin), Cloudflare R2 (medios; jurisdicción UE si está configurada) y Resend (solo correo transaccional del formulario — sin lista de correo). Los DPA y las regiones de almacenamiento deben configurarse en cada proveedor.',
+        'Usamos como encargados Supabase (base de datos y autenticación de admin), Cloudflare R2 (medios; jurisdicción UE si está configurada) y Resend (correo transaccional para consultas, confirmaciones de compra y desistimientos — sin lista de correo). Los DPA y las regiones de almacenamiento deben configurarse en cada proveedor.',
       ],
     },
     controller: {
@@ -782,7 +782,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Sin boletín',
       paragraphs: [
-        'Este sitio no ofrece newsletter, lista de correo ni suscripción por e-mail. El contacto es solo por el formulario (entrega Resend). No almacenamos direcciones de suscriptores.',
+        'Este sitio no ofrece newsletter, lista de correo ni suscripción por e-mail. Los mensajes del formulario se entregan a través de Resend. No almacenamos direcciones de suscriptores.',
       ],
     },
     news: {
@@ -847,7 +847,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         'Este sítio é alojado pela Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, EUA. Ao visitá-lo, dados como o seu IP podem ser tratados em servidores da Vercel, o que pode implicar transferências para os EUA. Política da Vercel: https://vercel.com/legal/privacy-policy',
         'Base jurídica: art. 6.º(1)(f) RGPD (interesse legítimo numa apresentação fiável do sítio).',
-        'Utilizamos como subcontratantes a Supabase (base de dados e autenticação de admin), a Cloudflare R2 (média; jurisdição da UE se configurada) e a Resend (apenas e-mail transacional do formulário — sem lista de correio). Os DPA e as regiões de armazenamento devem ser configurados em cada fornecedor.',
+        'Utilizamos como subcontratantes a Supabase (base de dados e autenticação de admin), a Cloudflare R2 (média; jurisdição da UE se configurada) e a Resend (e-mails transacionais de contactos, confirmações de compra e resolução — sem lista de correio). Os DPA e as regiões de armazenamento devem ser configurados em cada fornecedor.',
       ],
     },
     controller: {
@@ -882,7 +882,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. Sem newsletter',
       paragraphs: [
-        'Este sítio não oferece newsletter, lista de correio nem subscrição por e-mail. O contacto é apenas pelo formulário (entrega Resend). Não armazenamos endereços de subscritores.',
+        'Este sítio não oferece newsletter, lista de correio nem subscrição por e-mail. Os pedidos de contacto são entregues através da Resend. Não armazenamos endereços de subscritores.',
       ],
     },
     news: {
@@ -947,7 +947,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '本サイトは Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA でホストされています。訪問時、IPアドレス等の個人データがVercelのサーバーで処理され、米国への移転を伴う場合があります。Vercelの方針: https://vercel.com/legal/privacy-policy',
         '法的根拠: GDPR第6条1項(f)（サイトを安定して提供する正当な利益）。',
-        '処理者として Supabase（データベースと管理画面認証）、Cloudflare R2（メディア。可能な場合はEU管轄）、Resend（お問い合わせフォームのトランザクションメールのみ。メーリングリストなし）を使用します。DPAと保存地域は各プロバイダのダッシュボードで設定します。',
+        '処理者として Supabase（データベースと管理画面認証）、Cloudflare R2（メディア。可能な場合はEU管轄）、Resend（お問い合わせ、購入確認、契約撤回確認の取引メール。メーリングリストなし）を使用します。DPAと保存地域は各プロバイダのダッシュボードで設定します。',
       ],
     },
     controller: {
@@ -982,7 +982,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. ニュースレターはありません',
       paragraphs: [
-        '本サイトはニュースレター、メーリングリスト、メール購読を提供しません。連絡はお問い合わせフォーム（Resend）のみです。購読者アドレスは保存しません。',
+        '本サイトはニュースレター、メーリングリスト、メール購読を提供しません。お問い合わせは Resend 経由で送信されます。購読者アドレスは保存しません。',
       ],
     },
     news: {
@@ -1047,7 +1047,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       paragraphs: [
         '이 사이트는 Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA에서 호스팅됩니다. 방문 시 IP 주소 등 개인정보가 Vercel 서버에서 처리될 수 있으며 미국으로의 이전을 포함할 수 있습니다. Vercel 정책: https://vercel.com/legal/privacy-policy',
         '법적 근거: GDPR 제6조 1항 (f) (안정적인 사이트 제공에 대한 정당한 이익).',
-        '처리자로 Supabase(데이터베이스 및 관리자 인증), Cloudflare R2(미디어, 가능한 경우 EU 관할), Resend(문의 양식의 트랜잭션 메일만 — 메일링 리스트 없음)를 사용합니다. DPA와 저장 지역은 각 제공자 대시보드에서 설정합니다.',
+        '처리자로 Supabase(데이터베이스 및 관리자 인증), Cloudflare R2(미디어, 가능한 경우 EU 관할), Resend(문의, 구매 확인, 계약 철회 확인용 거래 이메일 — 메일링 리스트 없음)를 사용합니다. DPA와 저장 지역은 각 제공자 대시보드에서 설정합니다.',
       ],
     },
     controller: {
@@ -1082,7 +1082,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     newsletter: {
       title: '6. 뉴스레터 없음',
       paragraphs: [
-        '이 사이트는 뉴스레터, 메일링 리스트, 이메일 구독을 제공하지 않습니다. 연락은 문의 양식(Resend)만 사용합니다. 구독자 주소는 저장하지 않습니다.',
+        '이 사이트는 뉴스레터, 메일링 리스트, 이메일 구독을 제공하지 않습니다. 문의는 Resend를 통해 전달됩니다. 구독자 주소는 저장하지 않습니다.',
       ],
     },
     news: {
