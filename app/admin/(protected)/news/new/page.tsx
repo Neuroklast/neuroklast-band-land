@@ -76,7 +76,6 @@ export default function NewNewsPostPage() {
             id="news-link-label"
             name="link_label"
             maxLength={36}
-            
             placeholder="WATCH VIDEO / DOWNLOAD / READ ARTICLE"
             className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none"
           />
