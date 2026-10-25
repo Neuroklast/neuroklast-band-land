@@ -307,7 +307,14 @@ export default function CyberpunkOverlay({
                 className="absolute top-3 right-3 z-20 md:top-4 md:right-4"
               />
 
-              <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y scrollbar-hide">
+              <div
+                data-overlay-scroll-area=""
+                data-lenis-prevent=""
+                role="region"
+                aria-label="Overlay content"
+                tabIndex={0}
+                className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y [scrollbar-gutter:stable] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
+              >
                 <PhaseCrossfade
                   progress={handoff}
                   holdIncoming={overlayPhase === 'revealed' || skipBoot}
