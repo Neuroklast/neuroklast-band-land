@@ -3,6 +3,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { resolveImageUrl } from '@/lib/r2'
+import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { NewsBodyText } from '@/components/news/NewsBodyText'
+import { NewsShareActions } from '@/components/news/NewsShareActions'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { JsonLd } from '@/app/_components/public/JsonLd'
@@ -15,6 +18,7 @@ interface NewsPostRow {
   slug: string
   excerpt: string | null
   body: string
+  link: string | null
   cover_storage_path: string | null
   cover_url: string | null
   published_at: string | null
@@ -27,7 +31,7 @@ async function loadPost(slug: string): Promise<NewsPostRow | null> {
     const { data } = await supabase
       .from('news_posts')
       .select(
-        'id, title, slug, excerpt, body, cover_storage_path, cover_url, published_at',
+        'id, title, slug, excerpt, body, link, cover_storage_path, cover_url, published_at',
       )
       .eq('slug', slug)
       .eq('active', true)
@@ -47,24 +51,27 @@ export async function generateMetadata({
   const post = await loadPost(slug)
   if (!post) return { title: 'News', robots: { index: false, follow: false } }
   const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
+  const origin = getSiteOrigin()
+  const image = absoluteUrl(origin, cover || '/og-image.png')
+  const description = post.excerpt?.trim() || post.body.slice(0, 160).trim() || undefined
   return {
     title: post.title,
-    description: post.excerpt ?? undefined,
+    description,
     alternates: { canonical: `/news/${slug}` },
     openGraph: {
       title: post.title,
-      description: post.excerpt ?? undefined,
+      description,
       type: 'article',
-      url: `https://neuroklast.net/news/${slug}`,
+      url: absoluteUrl(origin, '/news/' + encodeURIComponent(slug)),
       siteName: 'NEUROKLAST',
-      images: [{ url: cover || '/og-image.png' }],
+      images: [{ url: image, alt: post.title }],
       publishedTime: post.published_at ?? undefined,
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
-      description: post.excerpt ?? undefined,
-      images: [cover || '/og-image.png'],
+      description,
+      images: [image],
     },
   }
 }
@@ -95,6 +102,8 @@ export default async function NewsPostPage({
   if (!post) notFound()
 
   const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
+  const href = sanitizeExternalHref(post.link)
+  const articleUrl = absoluteUrl(getSiteOrigin(), '/news/' + encodeURIComponent(post.slug))
   const dateLabel = post.published_at
     ? new Date(post.published_at).toLocaleDateString(undefined, {
         year: 'numeric',
@@ -111,6 +120,16 @@ export default async function NewsPostPage({
           { name: post.title, url: absoluteUrl(getSiteOrigin(), `/news/${post.slug}`) },
         ])}
       />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: post.title,
+        description: post.excerpt || undefined,
+        mainEntityOfPage: articleUrl,
+        image: cover ? absoluteUrl(getSiteOrigin(), cover) : undefined,
+        datePublished: post.published_at || undefined,
+        publisher: { '@type': 'Organization', name: 'NEUROKLAST', url: getSiteOrigin() },
+      }} />
       <article className="mx-auto max-w-3xl px-card pt-[calc(var(--nk-nav-h)+1.5rem)] pb-section">
         <Link
           href="/#news"
@@ -155,7 +174,22 @@ export default async function NewsPostPage({
           className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90"
           style={{ fontFamily: 'var(--font-body, inherit)' }}
         >
-          {post.body}
+          <NewsBodyText text={post.body} />
+        </div>
+
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 inline-flex min-h-11 items-center border border-primary/40 bg-primary/10 px-4 py-2 font-mono text-xs uppercase tracking-wider text-primary hover:bg-primary/20"
+          >
+            Open external link
+          </a>
+        ) : null}
+
+        <div className="mt-8 border-t border-border pt-6">
+          <NewsShareActions slug={post.slug} title={post.title} excerpt={post.excerpt} />
         </div>
       </article>
     </LegalPageShell>
