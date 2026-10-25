@@ -82,20 +82,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         'We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.',
       ],
     },
-    'liability-content': {
-      title: 'Liability for content',
-      paragraphs: [
-        'As a service provider, we are responsible for our own content on these pages in accordance with § 7 (1) DDG and general laws. According to §§ 8 to 10 DDG, we are not obliged as a service provider to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity.',
-        'Obligations to remove or block the use of information under general laws remain unaffected. Liability in this regard is only possible from the time of knowledge of a specific infringement. Upon becoming aware of corresponding legal violations, we will remove such content immediately.',
-      ],
-    },
-    'liability-links': {
-      title: 'Liability for links',
-      paragraphs: [
-        'Our website contains links to external third-party websites over whose content we have no control. Therefore, we cannot accept liability for this third-party content. The respective provider or operator of the linked pages is always responsible for their content.',
-        'Linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognisable at that time. Permanent monitoring of linked pages without concrete evidence of a violation is unreasonable. Upon notification of violations, we will remove such links immediately.',
-      ],
-    },
     copyright: {
       title: 'Copyright',
       paragraphs: [
@@ -112,20 +98,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'Verbraucherstreitbeilegung',
       paragraphs: [
         'Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
-      ],
-    },
-    'liability-content': {
-      title: 'Haftung für Inhalte',
-      paragraphs: [
-        'Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.',
-        'Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben unberührt. Eine diesbezügliche Haftung ist erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.',
-      ],
-    },
-    'liability-links': {
-      title: 'Haftung für Links',
-      paragraphs: [
-        'Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.',
-        'Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.',
       ],
     },
     copyright: {
@@ -146,20 +118,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         'Ми не зобов’язані і не згодні брати участь у процедурах вирішення спорів перед споживчим арбітражем.',
       ],
     },
-    'liability-content': {
-      title: 'Відповідальність за контент',
-      paragraphs: [
-        'Як постачальник послуг ми відповідаємо за власний контент цих сторінок згідно з § 7 (1) DDG та загальним законодавством. Згідно з §§ 8–10 DDG ми не зобов’язані моніторити передану чи збережену сторонню інформацію або розслідувати ознаки протиправної діяльності.',
-        'Обов’язки щодо видалення чи блокування інформації за загальним правом залишаються чинними. Відповідальність настає лише з моменту знання про конкретне порушення. Після отримання відомостей про порушення ми негайно видалимо відповідний контент.',
-      ],
-    },
-    'liability-links': {
-      title: 'Відповідальність за посилання',
-      paragraphs: [
-        'Сайт містить посилання на зовнішні сайти третіх осіб, на контент яких ми не впливаємо. Тому ми не несемо відповідальності за цей сторонній контент. Відповідальним є відповідний оператор сторінки.',
-        'Посилання перевірялися на можливі порушення на момент розміщення. Постійний моніторинг без конкретних підстав є нерозумним. Після повідомлення про порушення ми негайно видалимо такі посилання.',
-      ],
-    },
     copyright: {
       title: 'Авторське право',
       paragraphs: [
@@ -176,20 +134,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'Risoluzione delle controversie UE',
       paragraphs: [
         'Non siamo obbligati né disponibili a partecipare a procedimenti dinanzi a un organismo di conciliazione dei consumatori.',
-      ],
-    },
-    'liability-content': {
-      title: 'Responsabilità per i contenuti',
-      paragraphs: [
-        'In qualità di prestatore di servizi siamo responsabili dei contenuti propri di queste pagine ai sensi del § 7 (1) DDG e delle leggi generali. Ai sensi dei §§ 8–10 DDG non siamo obbligati a monitorare informazioni di terzi trasmesse o memorizzate né a indagare circostanze che indichino attività illecite.',
-        'Restano salvi gli obblighi di rimozione o blocco previsti dalla legge. La responsabilità sorge solo dal momento della conoscenza di una violazione specifica. In tal caso rimuoveremo immediatamente i contenuti.',
-      ],
-    },
-    'liability-links': {
-      title: 'Responsabilità per i link',
-      paragraphs: [
-        'Il sito contiene link a siti di terzi sui cui contenuti non abbiamo controllo. Non possiamo quindi assumere responsabilità per tali contenuti. Ne è responsabile il rispettivo operatore.',
-        'I link sono stati verificati al momento dell’inserimento. Un controllo permanente senza indizi concreti non è esigibile. In caso di segnalazione rimuoveremo i link immediatamente.',
       ],
     },
     copyright: {
@@ -210,20 +154,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         'No estamos dispuestos ni obligados a participar en procedimientos ante una junta arbitral de consumo.',
       ],
     },
-    'liability-content': {
-      title: 'Responsabilidad por el contenido',
-      paragraphs: [
-        'Como prestador de servicios somos responsables de nuestro propio contenido en estas páginas conforme al § 7 (1) DDG y a las leyes generales. Conforme a los §§ 8 a 10 DDG no estamos obligados a supervisar información de terceros transmitida o almacenada ni a investigar indicios de actividad ilícita.',
-        'Las obligaciones de retirada o bloqueo según la ley general no se ven afectadas. La responsabilidad solo es posible desde el conocimiento de una infracción concreta. En ese caso eliminaremos el contenido de inmediato.',
-      ],
-    },
-    'liability-links': {
-      title: 'Responsabilidad por enlaces',
-      paragraphs: [
-        'El sitio contiene enlaces a sitios de terceros sobre cuyo contenido no tenemos control. Por ello no asumimos responsabilidad por ese contenido ajeno. El responsable es siempre el operador de la página enlazada.',
-        'Los enlaces se comprobaron en el momento de su inclusión. Un control permanente sin indicios concretos no es exigible. Ante notificaciones de infracciones eliminaremos esos enlaces de inmediato.',
-      ],
-    },
     copyright: {
       title: 'Derechos de autor',
       paragraphs: [
@@ -240,20 +170,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'Resolução de litígios da UE',
       paragraphs: [
         'Não estamos dispostos nem obrigados a participar em processos perante um centro de arbitragem de consumo.',
-      ],
-    },
-    'liability-content': {
-      title: 'Responsabilidade pelo conteúdo',
-      paragraphs: [
-        'Como prestador de serviços somos responsáveis pelos nossos próprios conteúdos nestas páginas nos termos do § 7 (1) DDG e da lei geral. Nos termos dos §§ 8 a 10 DDG não estamos obrigados a monitorizar informação de terceiros transmitida ou armazenada nem a investigar indícios de atividade ilícita.',
-        'As obrigações de remoção ou bloqueio nos termos da lei geral mantêm-se. A responsabilidade só existe a partir do conhecimento de uma infração concreta. Nesse caso removeremos o conteúdo de imediato.',
-      ],
-    },
-    'liability-links': {
-      title: 'Responsabilidade por ligações',
-      paragraphs: [
-        'O sítio contém ligações a sítios de terceiros cujo conteúdo não controlamos. Por isso não assumimos responsabilidade por esse conteúdo. O responsável é sempre o operador da página ligada.',
-        'As ligações foram verificadas no momento da inclusão. Um controlo permanente sem indícios concretos não é exigível. Após notificação de infrações removeremos essas ligações de imediato.',
       ],
     },
     copyright: {
@@ -274,20 +190,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
         '消費者仲裁機関における紛争解決手続に参加する意思も義務もありません。',
       ],
     },
-    'liability-content': {
-      title: 'コンテンツに関する責任',
-      paragraphs: [
-        'サービス提供者として、DDG第7条第1項および一般法に基づき、本ページの自己コンテンツに責任を負います。DDG第8条から第10条により、送信・保存された第三者情報を監視したり、違法行為を示す事情を調査する義務はありません。',
-        '一般法に基づく削除・遮断義務は影響を受けません。具体的な権利侵害を知った時点からのみ責任が生じます。該当する違反を認識した場合、直ちに当該コンテンツを削除します。',
-      ],
-    },
-    'liability-links': {
-      title: 'リンクに関する責任',
-      paragraphs: [
-        '本サイトには第三者が運営する外部サイトへのリンクが含まれます。その内容を管理できないため、当該第三者コンテンツについて責任を負いません。責任は常にリンク先の運営者にあります。',
-        'リンク設定時に違法性を確認しました。具体的な侵害の兆候なく常時監視することは合理的ではありません。侵害の通知があれば直ちにリンクを削除します。',
-      ],
-    },
     copyright: {
       title: '著作権',
       paragraphs: [
@@ -304,20 +206,6 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       title: 'EU 분쟁 해결',
       paragraphs: [
         '소비자 중재 기구의 분쟁 해결 절차에 참여할 의사나 의무가 없습니다.',
-      ],
-    },
-    'liability-content': {
-      title: '콘텐츠에 대한 책임',
-      paragraphs: [
-        '서비스 제공자로서 DDG 제7조 제1항 및 일반 법령에 따라 이 페이지의 자체 콘텐츠에 책임을 집니다. DDG 제8조부터 제10조에 따라 전송·저장된 제3자 정보를 감시하거나 위법 행위를 조사할 의무는 없습니다.',
-        '일반법에 따른 삭제·차단 의무는 영향을 받지 않습니다. 구체적인 침해를 인지한 시점부터만 책임이 발생합니다. 해당 위반을 알게 되면 즉시 콘텐츠를 삭제합니다.',
-      ],
-    },
-    'liability-links': {
-      title: '링크에 대한 책임',
-      paragraphs: [
-        '본 사이트에는 당사가 통제할 수 없는 제3자 웹사이트 링크가 포함됩니다. 따라서 해당 제3자 콘텐츠에 대해 책임을 지지 않습니다. 책임은 항상 링크된 페이지의 운영자에게 있습니다.',
-        '링크 시점에는 법적 위반 여부를 확인했습니다. 구체적 침해 정황 없이 상시 모니터링하는 것은 합리적이지 않습니다. 침해 통지가 있으면 즉시 링크를 삭제합니다.',
       ],
     },
     copyright: {
