@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { resolveImageUrl } from '@/lib/r2'
-import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { NewsExternalLink } from '@/components/news/NewsExternalLink'
 import { NewsBodyText } from '@/components/news/NewsBodyText'
 import { NewsShareActions } from '@/components/news/NewsShareActions'
 import { toDirectImageUrl } from '@/lib/image-cache'
@@ -102,7 +102,6 @@ export default async function NewsPostPage({
   if (!post) notFound()
 
   const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
-  const href = sanitizeExternalHref(post.link)
   const articleUrl = absoluteUrl(getSiteOrigin(), '/news/' + encodeURIComponent(post.slug))
   const dateLabel = post.published_at
     ? new Date(post.published_at).toLocaleDateString(undefined, {
@@ -170,23 +169,18 @@ export default async function NewsPostPage({
           </p>
         ) : null}
 
+        {post.link ? (
+          <div className="mb-7">
+            <NewsExternalLink href={post.link} />
+          </div>
+        ) : null}
+
         <div
           className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90"
           style={{ fontFamily: 'var(--font-body, inherit)' }}
         >
           <NewsBodyText text={post.body} />
         </div>
-
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-8 inline-flex min-h-11 items-center border border-primary/40 bg-primary/10 px-4 py-2 font-mono text-xs uppercase tracking-wider text-primary hover:bg-primary/20"
-          >
-            Open external link
-          </a>
-        ) : null}
 
         <div className="mt-8 border-t border-border pt-6">
           <NewsShareActions slug={post.slug} title={post.title} excerpt={post.excerpt} />
