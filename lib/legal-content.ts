@@ -10,6 +10,12 @@ export interface LegalConfig {
   phone?: string
   email: string
   vatId?: string
+  businessId?: string
+  legalForm?: string
+  representative?: string
+  registerName?: string
+  registerNumber?: string
+  supervisoryAuthority?: string
   responsibleName?: string
   responsibleAddress?: string
   privacyPolicyCustom?: string
@@ -60,6 +66,12 @@ export function parseLegalConfig(raw: unknown): LegalConfig {
     phone: str(obj.phone),
     email: str(obj.email) ?? '',
     vatId: str(obj.vatId),
+    businessId: str(obj.businessId),
+    legalForm: str(obj.legalForm),
+    representative: str(obj.representative),
+    registerName: str(obj.registerName),
+    registerNumber: str(obj.registerNumber),
+    supervisoryAuthority: str(obj.supervisoryAuthority),
     responsibleName: str(obj.responsibleName),
     responsibleAddress: str(obj.responsibleAddress),
     privacyPolicyCustom: str(obj.privacyPolicyCustom),
