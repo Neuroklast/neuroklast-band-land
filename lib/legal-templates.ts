@@ -70,6 +70,13 @@ export function buildLegalNoticeSections(
   if (config.phone) operatorLines.push(`${labels.phone}: ${config.phone}`)
   if (config.email) operatorLines.push(`${labels.email}: ${config.email}`)
   if (config.vatId) operatorLines.push(`${labels.vat}: ${config.vatId}`)
+  const de = locale === 'de'
+  if (config.legalForm) operatorLines.push(`${de ? 'Rechtsform' : 'Legal form'}: ${config.legalForm}`)
+  if (config.representative) operatorLines.push(`${de ? 'Vertretungsberechtigt' : 'Legal representative'}: ${config.representative}`)
+  if (config.registerName) operatorLines.push(`${de ? 'Registergericht / Register' : 'Commercial register'}: ${config.registerName}`)
+  if (config.registerNumber) operatorLines.push(`${de ? 'Registernummer' : 'Registration number'}: ${config.registerNumber}`)
+  if (config.businessId) operatorLines.push(`${de ? 'Wirtschafts-Identifikationsnummer' : 'Business ID'}: ${config.businessId}`)
+  if (config.supervisoryAuthority) operatorLines.push(`${de ? 'Aufsichtsbehörde' : 'Supervisory authority'}: ${config.supervisoryAuthority}`)
 
   const sections: LegalSection[] = []
   for (const id of NOTICE_SECTION_ORDER) {
