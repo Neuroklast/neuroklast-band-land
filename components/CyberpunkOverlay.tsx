@@ -325,7 +325,9 @@ export default function CyberpunkOverlay({
                     )
                   }
                   incoming={
-                    <div className="p-4 pt-14 md:p-12 md:pt-12">
+                    <div className={displayOverlay.type === 'news'
+                      ? 'px-4 pb-9 pt-14 md:px-10 md:pb-10 md:pt-12'
+                      : 'p-4 pt-14 md:p-12 md:pt-12'}>
                       {displayOverlay.type === 'contact' && (
                         <ContactOverlayContent
                           adminSettings={adminSettings}
@@ -410,12 +412,10 @@ export default function CyberpunkOverlay({
 
               {displayOverlay.type === 'news' && displayOverlay.data && (overlayPhase === 'revealed' || skipBoot) ? (
                 <div
-                  className="relative z-10 shrink-0 border-t border-primary/30 bg-background px-4 py-3 md:px-12 md:py-4"
+                  className="relative z-10 shrink-0 border-t border-border/60 bg-background/95 px-3 py-2 backdrop-blur-sm md:px-10 md:py-3"
                   aria-label="News share footer"
                 >
-                  <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Share this news
-                  </p>
+                  <span className="sr-only">Share this news</span>
                   <NewsShareActions
                     slug={displayOverlay.data.slug}
                     title={displayOverlay.data.title}
