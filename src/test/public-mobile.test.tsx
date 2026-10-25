@@ -46,6 +46,20 @@ describe('public mobile regression guards', () => {
     expect(src).toMatch(/100svh/)
   })
 
+  it('overlay content escapes Lenis scroll lock without moving the share footer', () => {
+    const src = readSource('components/CyberpunkOverlay.tsx')
+    const region = src.match(/<div\s+data-overlay-scroll-area=""[\s\S]*?>/)?.[0]
+    expect(region).toBeDefined()
+    // Lenis must ignore wheel/touch events inside this nested native scroll region.
+    expect(region).toContain('data-lenis-prevent')
+    expect(region).toContain('overflow-y-auto')
+    expect(region).toContain('min-h-0')
+    expect(region).toContain('tabIndex={0}')
+    // A visible scrollbar also makes the otherwise hidden article length obvious.
+    expect(region).not.toContain('scrollbar-hide')
+    expect(src.indexOf('data-overlay-scroll-area')).toBeLessThan(src.indexOf('aria-label="News share footer"'))
+  })
+
   it('OverlayHost does not duplicate page scroll lock', () => {
     const src = readSource('app/_components/public/OverlayHost.tsx')
     expect(src).not.toMatch(/overflow/)
