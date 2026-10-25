@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         .order(dateColumn, { ascending: true })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
       if (error) throw new Error('Data source unavailable: ' + table)
-      rows.push(...(data ?? []))
+      rows.push(...((data ?? []) as unknown as Record<string, unknown>[]))
       if ((data ?? []).length < PAGE_SIZE) return rows
     }
     throw new Error('Data source exceeds safe export limit: ' + table)
