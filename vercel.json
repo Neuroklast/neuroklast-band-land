@@ -1,6 +1,8 @@
 {
   "framework": "nextjs",
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -24,6 +26,12 @@
     {
       "source": "/share/:type/:id",
       "destination": "/api/og?type=:type&id=:id"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/privacy-retention",
+      "schedule": "0 3 * * *"
     }
   ]
 }
