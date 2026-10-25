@@ -22,18 +22,18 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
   return (
     <OverlayReveal
       data-theme-color="card border primary"
-      className="mt-8 space-y-6"
+      className="mt-3 space-y-5"
       closing={closing}
       stagger={0.05}
     >
       {cover ? (
-        <OverlayItem className="relative overflow-hidden border border-primary/20 bg-muted" delay={0}>
-          <OverlayScanImage src={cover} alt={data.title} className="max-h-[50vh] w-full object-contain" />
+        <OverlayItem className="relative flex max-h-[min(36vh,340px)] items-center justify-center overflow-hidden border border-border/60 bg-muted" delay={0}>
+          <OverlayScanImage src={cover} alt={data.title} className="max-h-[min(36vh,340px)] w-full object-contain" />
           <OverlayFrame />
         </OverlayItem>
       ) : null}
 
-      <div>
+      <div className="max-w-prose">
         <OverlayItem delay={0.06}>
           <div className="data-label mb-2">// NEWS.ENTRY</div>
         </OverlayItem>
@@ -46,7 +46,7 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
         ) : null}
         <OverlayItem delay={0.14}>
           <h2
-            className="mb-4 font-mono text-3xl font-bold uppercase hover-chromatic crt-flash-in sm:text-4xl"
+            className="mb-5 font-mono text-2xl font-bold uppercase leading-tight tracking-tight hover-chromatic crt-flash-in sm:text-3xl"
             data-text={data.title}
           >
             {data.title}
@@ -54,24 +54,16 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
         </OverlayItem>
         {data.link ? (
           <OverlayItem delay={0.18}>
-            <NewsExternalLink href={data.link} />
+            <NewsExternalLink href={data.link} label={data.linkLabel} />
           </OverlayItem>
         ) : null}
         {body ? (
           <OverlayItem delay={0.2}>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 md:text-base">
+            <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-foreground/90 md:text-base md:leading-8">
               <NewsBodyText text={body} />
             </p>
           </OverlayItem>
         ) : null}
-        <OverlayItem delay={0.24}>
-          <a
-            href={'/news/' + encodeURIComponent(data.slug)}
-            className="inline-flex min-h-11 items-center border border-primary/40 px-4 py-2 font-mono text-xs uppercase tracking-wider text-primary transition-colors hover:bg-primary/10"
-          >
-            Open full article
-          </a>
-        </OverlayItem>
       </div>
     </OverlayReveal>
   )

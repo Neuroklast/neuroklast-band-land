@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { resolveImageUrl } from '@/lib/r2'
 import { NewsExternalLink } from '@/components/news/NewsExternalLink'
+import { NEWS_LINK_LABELS_KEY, parseNewsLinkLabels } from '@/lib/news-link-label'
 import { NewsBodyText } from '@/components/news/NewsBodyText'
 import { NewsShareActions } from '@/components/news/NewsShareActions'
 import { toDirectImageUrl } from '@/lib/image-cache'
@@ -102,6 +103,12 @@ export default async function NewsPostPage({
   if (!post) notFound()
 
   const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
+  const { data: labelRow } = await createPublicClient()
+    .from('site_config')
+    .select('value')
+    .eq('key', NEWS_LINK_LABELS_KEY)
+    .maybeSingle()
+  const linkLabel = parseNewsLinkLabels(labelRow?.value)[post.id] ?? null
   const articleUrl = absoluteUrl(getSiteOrigin(), '/news/' + encodeURIComponent(post.slug))
   const dateLabel = post.published_at
     ? new Date(post.published_at).toLocaleDateString(undefined, {
@@ -138,11 +145,11 @@ export default async function NewsPostPage({
         </Link>
 
         {cover ? (
-          <div className="mb-8 aspect-video overflow-hidden border border-border bg-muted">
+          <div className="mb-7 flex max-h-[min(40vh,400px)] items-center justify-center overflow-hidden border border-border/60 bg-muted">
             <img
               src={toDirectImageUrl(cover, { w: 1200 }) || cover}
               alt={post.title}
-              className="h-full w-full object-cover"
+              className="max-h-[min(40vh,400px)] w-full object-contain"
             />
           </div>
         ) : null}
@@ -154,7 +161,7 @@ export default async function NewsPostPage({
         ) : null}
 
         <h1
-          className="mb-6 text-3xl font-bold uppercase tracking-tight text-foreground md:text-4xl"
+          className="mb-5 text-3xl font-bold uppercase leading-tight tracking-tight text-foreground md:text-4xl"
           style={{ fontFamily: 'var(--font-heading, inherit)' }}
         >
           {post.title}
@@ -171,12 +178,12 @@ export default async function NewsPostPage({
 
         {post.link ? (
           <div className="mb-7">
-            <NewsExternalLink href={post.link} />
+            <NewsExternalLink href={post.link} label={linkLabel} />
           </div>
         ) : null}
 
         <div
-          className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90"
+          className="whitespace-pre-wrap text-base leading-8 text-foreground/90"
           style={{ fontFamily: 'var(--font-body, inherit)' }}
         >
           <NewsBodyText text={post.body} />

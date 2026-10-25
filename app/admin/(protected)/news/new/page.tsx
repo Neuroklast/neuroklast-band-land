@@ -67,7 +67,20 @@ export default function NewNewsPostPage() {
             className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none"
           />
           <p className="mt-1 text-xs text-zinc-500">
-            This URL is displayed as an External link button on news cards and inside the article.
+            This destination appears as a compact action on news cards and inside the article.
+          </p>
+        </div>
+        <div>
+          <label htmlFor="news-link-label" className="mb-1 block text-sm text-zinc-300">External link button text (optional)</label>
+          <input
+            id="news-link-label"
+            name="link_label"
+            maxLength={36}
+            placeholder="WATCH VIDEO / DOWNLOAD / READ ARTICLE"
+            className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none"
+          />
+          <p className="mt-1 text-xs text-zinc-500">
+            Leave empty to automatically choose a label from the link destination.
           </p>
         </div>
         <div>

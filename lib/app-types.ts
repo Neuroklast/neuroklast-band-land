@@ -168,6 +168,7 @@ export interface NewsOverlayData {
   excerpt?: string | null
   body?: string | null
   link?: string | null
+  linkLabel?: string | null
   coverUrl?: string | null
   publishedAt?: string | null
 }

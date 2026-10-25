@@ -8,6 +8,7 @@ import { PageLayout } from '@/layouts/PageLayout'
 import { CookieConsent } from '@/components/CookieConsent'
 import { JsonLd } from './_components/public/JsonLd'
 import { getSiteOrigin } from '@/lib/og-share'
+import { NEWS_LINK_LABELS_KEY, parseNewsLinkLabels } from '@/lib/news-link-label'
 import { absoluteUrl, buildMusicGroupSchema, buildWebSiteSchema } from '@/lib/structured-data'
 
 import { GallerySection } from './_components/public/GallerySection'
@@ -318,6 +319,7 @@ export default async function HomePage() {
   const heroConfig = getConfig(configRows, 'hero')
   const merchandiseConfig = getConfig(configRows, 'merchandise')
   const footerConfig = getConfig(configRows, 'footer')
+  const newsLinkLabels = parseNewsLinkLabels(getConfig(configRows, NEWS_LINK_LABELS_KEY))
   const appearanceConfig = getConfig(configRows, 'appearance')
   const sectionsRaw = configRows.find((r) => r.key === 'sections')?.value
   const allSections = withoutExcludedSections(
@@ -781,6 +783,7 @@ export default async function HomePage() {
                     excerpt: post.excerpt,
                     body: post.body,
                     link: post.link,
+                    linkLabel: newsLinkLabels[post.id] ?? null,
                     coverUrl: resolveImageUrl(post.cover_storage_path, post.cover_url),
                     publishedAt: post.published_at,
                   }))}
