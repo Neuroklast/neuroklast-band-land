@@ -3,6 +3,8 @@ import type { NewsOverlayData } from '@/lib/app-types'
 import { formatIsoDateLong } from '@/lib/format-display-date'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
+import { NewsShareActions } from '@/components/news/NewsShareActions'
+import { NewsBodyText } from '@/components/news/NewsBodyText'
 import {
   OverlayFrame,
   OverlayItem,
@@ -56,10 +58,18 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
         {body ? (
           <OverlayItem delay={0.2}>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 md:text-base">
-              {body}
+              <NewsBodyText text={body} />
             </p>
           </OverlayItem>
         ) : null}
+        <OverlayItem delay={0.24}>
+          <a
+            href={'/news/' + encodeURIComponent(data.slug)}
+            className="inline-flex min-h-11 items-center border border-primary/40 px-4 py-2 font-mono text-xs uppercase tracking-wider text-primary transition-colors hover:bg-primary/10"
+          >
+            Open full article
+          </a>
+        </OverlayItem>
         {href ? (
           <OverlayItem delay={0.26}>
             <a
@@ -73,6 +83,9 @@ export function NewsOverlayContent({ data, closing }: NewsOverlayContentProps) {
             </a>
           </OverlayItem>
         ) : null}
+        <OverlayItem delay={0.3}>
+          <NewsShareActions slug={data.slug} title={data.title} excerpt={data.excerpt} />
+        </OverlayItem>
       </div>
     </OverlayReveal>
   )

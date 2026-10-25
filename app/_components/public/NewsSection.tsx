@@ -6,6 +6,7 @@ import { resolveSectionHeading } from '@/lib/section-display'
 import { formatIsoDateLong } from '@/lib/format-display-date'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
 import { CdnImage } from './CdnImage'
+import { NewsShareActions } from '@/components/news/NewsShareActions'
 
 export interface NewsPostCard {
   id: string
@@ -44,13 +45,13 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <button
-              key={post.id}
-              type="button"
-              className="nk-os-frame group block w-full cursor-pointer text-left"
-              onClick={() => openOverlay({ type: 'news', data: post })}
-              aria-label={`Open ${post.title}`}
-            >
+            <div key={post.id} className="nk-os-frame group block w-full">
+              <button
+                type="button"
+                className="block w-full cursor-pointer text-left"
+                onClick={() => openOverlay({ type: 'news', data: post })}
+                aria-label={`Open ${post.title}`}
+              >
               <div className="relative aspect-video overflow-hidden bg-muted">
                 {post.coverUrl ? (
                   <CdnImage
@@ -92,7 +93,17 @@ export function NewsSection({ posts, heading, intro }: NewsSectionProps) {
                   {t('news.readMore')}
                 </span>
               </div>
-            </button>
+              </button>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/50 px-4 py-3">
+                <a
+                  href={'/news/' + encodeURIComponent(post.slug)}
+                  className="inline-flex min-h-10 items-center font-mono text-xs uppercase tracking-wider text-primary hover:underline"
+                >
+                  Full article
+                </a>
+                <NewsShareActions slug={post.slug} title={post.title} excerpt={post.excerpt} variant="compact" />
+              </div>
+            </div>
           ))}
         </div>
       ) : (
