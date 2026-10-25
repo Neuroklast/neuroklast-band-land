@@ -139,7 +139,11 @@ export const COMMERCE_DOC_SECTIONS: Record<Doc, SectionId[]> = {
   license: ['scope', 'licence', 'delivery', 'rights', 'withdrawal', 'support'],
 }
 
-export function commerceSections(doc: Doc, locale: LegalLocale): LegalSection[] {
+export function commerceSections(doc: Doc, locale: LegalLocale, germanTerms?: string): LegalSection[] {
+  // The same text is used for localized web routes and the contract snapshot at checkout.
+  if (doc === 'terms' && locale === 'de' && germanTerms?.trim()) {
+    return [{ id: 'terms', title: COMMERCE_LEGAL_COPY.de.docs.terms, paragraphs: [germanTerms.trim()] }]
+  }
   return COMMERCE_DOC_SECTIONS[doc].map(id => ({
     id,
     title: COMMERCE_LEGAL_COPY[locale].sections[id][0],
