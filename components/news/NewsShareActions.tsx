@@ -23,12 +23,27 @@ export function NewsShareActions({
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState(false)
   const url = getNewsArticleUrl(slug)
-  const buttonClass =
-    'inline-flex min-h-10 items-center justify-center gap-2 border border-primary/30 px-3 py-2 font-mono text-xs uppercase tracking-wider text-foreground transition-colors hover:border-primary/70 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+  const buttonClass = variant === 'admin'
+    ? 'inline-flex min-h-10 items-center justify-center gap-2 border border-zinc-700 px-3 py-2 font-mono text-xs uppercase tracking-wider text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+    : 'inline-flex min-h-10 items-center justify-center gap-2 border border-primary/30 px-3 py-2 font-mono text-xs uppercase tracking-wider text-foreground transition-colors hover:border-primary/70 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 
   async function copyLink() {
     try {
-      await navigator.clipboard.writeText(url)
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+      } else {
+        const input = document.createElement('textarea')
+        input.value = url
+        input.style.position = 'fixed'
+        input.style.opacity = '0'
+        document.body.appendChild(input)
+        try {
+          input.select()
+          if (!document.execCommand('copy')) throw new Error('Copy unavailable')
+        } finally {
+          input.remove()
+        }
+      }
       setCopied(true)
       setError(false)
     } catch {
@@ -50,7 +65,7 @@ export function NewsShareActions({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label="Share this news article">
+    <div role="group" className="flex flex-wrap items-center gap-2" aria-label="Share this news article">
       {variant !== 'admin' ? (
         <button type="button" onClick={share} className={buttonClass} aria-label="Share article">
           <ShareNetwork size={16} aria-hidden />
