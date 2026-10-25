@@ -83,6 +83,7 @@ export async function createNewsPost(formData: FormData) {
     revalidatePath('/admin/news')
     revalidatePath('/')
     revalidatePath('/news')
+    revalidatePath('/news/' + row.slug)
     return { success: true }
   }, 'Unable to create news post.')
 }
@@ -95,6 +96,7 @@ export async function updateNewsPost(id: string, formData: FormData) {
 
   return runAdminAction(async () => {
     const row = { ...toRow(parsed.data), updated_at: new Date().toISOString() }
+    const { data: previous } = await supabaseAdmin.from('news_posts').select('slug').eq('id', id).maybeSingle()
     const { error } = await supabaseAdmin.from('news_posts').update(row).eq('id', id)
     if (error) return { error: error.message }
 
@@ -103,6 +105,7 @@ export async function updateNewsPost(id: string, formData: FormData) {
     revalidatePath('/')
     revalidatePath('/news')
     revalidatePath(`/news/${row.slug}`)
+    if (previous?.slug && previous.slug !== row.slug) revalidatePath('/news/' + previous.slug)
     return { success: true }
   }, 'Unable to update news post.')
 }
@@ -111,12 +114,14 @@ export async function deleteNewsPost(id: string) {
   const supabaseAdmin = createAdminClient()
 
   return runAdminAction(async () => {
+    const { data: previous } = await supabaseAdmin.from('news_posts').select('slug').eq('id', id).maybeSingle()
     const { error } = await supabaseAdmin.from('news_posts').delete().eq('id', id)
     if (error) return { error: error.message }
 
     revalidatePath('/admin/news')
     revalidatePath('/')
     revalidatePath('/news')
+    if (previous?.slug) revalidatePath('/news/' + previous.slug)
     return { success: true }
   }, 'Unable to delete news post.')
 }
@@ -125,6 +130,7 @@ export async function toggleNewsPostVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
 
   return runAdminAction(async () => {
+    const { data: previous } = await supabaseAdmin.from('news_posts').select('slug').eq('id', id).maybeSingle()
     const { error } = await supabaseAdmin
       .from('news_posts')
       .update({ active, updated_at: new Date().toISOString() })
@@ -134,6 +140,7 @@ export async function toggleNewsPostVisibility(id: string, active: boolean) {
     revalidatePath('/admin/news')
     revalidatePath('/')
     revalidatePath('/news')
+    if (previous?.slug) revalidatePath('/news/' + previous.slug)
     return { success: true }
   }, 'Unable to update news visibility.')
 }
