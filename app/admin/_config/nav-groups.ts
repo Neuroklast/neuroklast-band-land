@@ -26,6 +26,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
     items: [
       { href: '/admin/site-config', label: 'Look & Feel' },
       { href: '/admin/legal', label: 'Legal & Privacy' },
+      { href: '/admin/privacy', label: 'DSGVO-Auskunft & Export' },
     ],
   },
   {
