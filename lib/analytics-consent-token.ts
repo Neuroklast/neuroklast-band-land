@@ -19,7 +19,7 @@ export function signAnalyticsConsent(secret: string, now = Date.now()): string {
 
 export function verifyAnalyticsConsent(token: string | undefined, secret: string | undefined, now = Date.now()): boolean {
   if (!token || !secret) return false
-  const match = /^(\\d+)\\.(\\d+)\\.([a-f0-9]{64})$/.exec(token)
+  const match = /^(\d+)\.(\d+)\.([a-f0-9]{64})$/.exec(token)
   if (!match || Number(match[1]) !== ANALYTICS_CONSENT_VERSION) return false
   const issued = Number(match[2])
   const age = Math.floor(now / 1000) - issued
