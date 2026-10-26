@@ -4,12 +4,7 @@ import { createPublicClient } from '@/lib/supabaseServer'
 import { getPublicSiteBootstrap } from '@/lib/site-config-bootstrap'
 import { parseLookId } from '@/lib/looks'
 import { buildAppearanceInlineCss } from '@/lib/apply-appearance-config'
-import {
-  buildPublicFontCssVars,
-  googleFontsStylesheetHref,
-  remoteFontFamiliesToLoad,
-  resolvePublicFonts,
-} from '@/lib/public-fonts'
+import { buildPublicFontCssVars, resolvePublicFonts } from '@/lib/public-fonts'
 import { Providers } from './providers'
 import { getSiteOrigin } from '@/lib/og-share'
 import './globals.css'
@@ -130,7 +125,6 @@ export default async function RootLayout({
   const fonts = resolvePublicFonts(appearance.theme)
   const fontCss = buildPublicFontCssVars(fonts)
   const appearanceCss = buildAppearanceInlineCss(appearance)
-  const remoteFonts = remoteFontFamiliesToLoad(fonts)
   const lookId = parseLookId(appearance.lookId)
 
   return (
@@ -140,15 +134,6 @@ export default async function RootLayout({
       className={`${fontJetBrainsMono.variable} ${fontSpaceGrotesk.variable} ${fontOrbitron.variable} ${fontShareTechMono.variable} ${fontSpaceMono.variable}`}
     >
       <head>
-        {/* Admin-configured remote faces — only when theme requests them */}
-        {remoteFonts.map((name) => (
-          <link
-            key={name}
-            rel="stylesheet"
-            href={googleFontsStylesheetHref(name)}
-            data-zd-font={name}
-          />
-        ))}
         {/* SSR: apply Appearance fonts + surface opacity before paint */}
         <style dangerouslySetInnerHTML={{ __html: `${fontCss}\n${appearanceCss}` }} />
       </head>
