@@ -224,7 +224,7 @@ export function VideoSourcePicker({
           onProcessingStateChange={setProcessingUpload}
           storagePrefix={storagePrefix}
           onUpload={(path, publicUrl) => {
-            void commitNewMedia(path, publicUrl, 'Uploaded to R2')
+            void commitNewMedia(path, publicUrl, scrubVariant ? 'Optimized and uploaded to R2' : 'Uploaded to R2')
           }}
           onError={(msg) => {
             setStatus(msg)

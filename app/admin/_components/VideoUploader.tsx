@@ -52,7 +52,7 @@ export function VideoUploader({
     }
 
     if (!ALLOWED_UPLOAD_MIME.has(file.type)) {
-      onError?.('Unsupported file type. Use MP4 or WebM.')
+      onError?.('Unsupported file type. Use MP4, MOV or WebM.')
       if (inputRef.current) inputRef.current.value = ''
       return
     }
@@ -107,7 +107,7 @@ export function VideoUploader({
       <input
         ref={inputRef}
         type="file"
-        accept={accept}
+        accept={scrubVariant ? 'video/mp4,video/webm,video/quicktime,.mov' : accept}
         onChange={handleFileChange}
         className="hidden"
       />
