@@ -22,9 +22,15 @@ export const FONT_OPTIONS = [
 /** Compatibility exports: remote font loading is deliberately disabled. */
 export const loadedFonts = new Set<string>()
 export const loadedFontLinks = new Map<string, HTMLLinkElement>()
-export function loadGoogleFont(_fontLabel: string): void {}
-export function unloadUnusedGoogleFonts(_activeFontLabels: Set<string>): void {}
-export function loadAllGoogleFonts(): void {}
+export function loadGoogleFont(_fontLabel: string): void {
+  // Disabled: all public fonts are local or system provided.
+}
+export function unloadUnusedGoogleFonts(_activeFontLabels: Set<string>): void {
+  // No runtime stylesheet links exist.
+}
+export function loadAllGoogleFonts(): void {
+  // No remote font preloading.
+}
 
 /** Apply overlay effect CSS classes to root element */
 export function applyOverlayEffectsToDOM(theme: ThemeSettings | undefined) {
