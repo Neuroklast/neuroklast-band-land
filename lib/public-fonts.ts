@@ -5,7 +5,7 @@
  */
 
 import type { AppearanceTheme } from '@/lib/appearance-presets'
-import { extractGoogleFontName, loadGoogleFont, SELF_HOSTED_FONT_NAMES } from '@/lib/font-loader'
+import { extractGoogleFontName } from '@/lib/font-loader'
 
 /** Generic fallbacks only — no brand faces (Orbitron etc.) unless admin chooses them. */
 export const SYSTEM_FONT_HEADING = "var(--font-jetbrains-mono), ui-monospace, monospace"
@@ -18,12 +18,35 @@ export interface ResolvedPublicFonts {
   fontMono: string
 }
 
+const SELF_HOSTED_STACKS: Record<string, string> = {
+  'JetBrains Mono': 'var(--font-jetbrains-mono), ui-monospace, monospace',
+  'Space Grotesk': 'var(--font-space-grotesk), system-ui, sans-serif',
+  'Orbitron': 'var(--font-orbitron), sans-serif',
+  'Share Tech Mono': 'var(--font-share-tech-mono), ui-monospace, monospace',
+  'Space Mono': 'var(--font-space-mono), ui-monospace, monospace',
+}
+const SELF_HOSTED_VARIABLES = new Map(
+  Object.entries(SELF_HOSTED_STACKS).map(([name, stack]) => [stack.split(',')[0], name]),
+)
+
+/** Normalize old theme font selections to locally bundled or system fonts. */
+export function resolvePrivacySafeFontStack(value: string | undefined, fallback: string): string {
+  if (!value?.trim()) return fallback
+  const stack = value.trim()
+  const first = stack.split(',')[0].trim()
+  const localName = SELF_HOSTED_VARIABLES.get(first)
+  if (localName) return SELF_HOSTED_STACKS[localName]
+  const name = extractGoogleFontName(stack)
+  if (name) return SELF_HOSTED_STACKS[name] ?? fallback
+  return /^(system-ui|ui-monospace|ui-sans-serif|ui-serif|monospace|sans-serif|serif)(\\s*,|$)/.test(stack) ? stack : fallback
+}
+
 export function resolvePublicFonts(theme?: AppearanceTheme | null): ResolvedPublicFonts {
   const t = theme && typeof theme === 'object' ? theme : {}
   return {
-    fontHeading: (typeof t.fontHeading === 'string' && t.fontHeading.trim()) || SYSTEM_FONT_HEADING,
-    fontBody: (typeof t.fontBody === 'string' && t.fontBody.trim()) || SYSTEM_FONT_BODY,
-    fontMono: (typeof t.fontMono === 'string' && t.fontMono.trim()) || SYSTEM_FONT_MONO,
+    fontHeading: resolvePrivacySafeFontStack(t.fontHeading, SYSTEM_FONT_HEADING),
+    fontBody: resolvePrivacySafeFontStack(t.fontBody, SYSTEM_FONT_BODY),
+    fontMono: resolvePrivacySafeFontStack(t.fontMono, SYSTEM_FONT_MONO),
   }
 }
 
@@ -45,24 +68,6 @@ export function buildPublicFontCssVars(fonts: ResolvedPublicFonts): string {
   return `:root{--font-heading:${esc(fonts.fontHeading)};--font-body:${esc(fonts.fontBody)};--font-mono:${esc(fonts.fontMono)};}`
 }
 
-/** Google Font family names that need a runtime stylesheet (not next/font self-hosted). */
-export function remoteFontFamiliesToLoad(fonts: ResolvedPublicFonts): string[] {
-  const names = new Set<string>()
-  for (const stack of [fonts.fontHeading, fonts.fontBody, fonts.fontMono]) {
-    const name = extractGoogleFontName(stack)
-    if (name && !SELF_HOSTED_FONT_NAMES.has(name)) names.add(name)
-  }
-  return [...names]
-}
-
-export function googleFontsStylesheetHref(familyName: string): string {
-  const family = familyName.replace(/ /g, '+')
-  return `https://fonts.googleapis.com/css2?family=${family}:wght@300;400;500;600;700;900&display=swap`
-}
-
-/** Client: ensure remote faces for current stacks are loaded. */
-export function ensureRemoteFontsLoaded(fonts: ResolvedPublicFonts): void {
-  for (const name of remoteFontFamiliesToLoad(fonts)) {
-    loadGoogleFont(name)
-  }
-}
+/** Legacy callers may request fonts, but never trigger a runtime CDN connection. */
+export function remoteFontFamiliesToLoad(_fonts: ResolvedPublicFonts): string[] { return [] }
+export function ensureRemoteFontsLoaded(_fonts: ResolvedPublicFonts): void {}
