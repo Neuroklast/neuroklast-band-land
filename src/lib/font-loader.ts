@@ -27,8 +27,9 @@ function guessFormat(url: string): string {
 
 /** Reject remote URLs and CSS injection through custom font entries. */
 function safeLocalUrl(url: string): boolean {
+  const allowed = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_./%-'
   return url.startsWith('/') && !url.startsWith('//') &&
-    /^[a-zA-Z0-9_./%-]+$/.test(url)
+    Array.from(url).every(char => allowed.includes(char))
 }
 
 export function loadFontEntry(entry: FontEntry, slot: keyof typeof FONT_CSS_VARS): void {
