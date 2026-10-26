@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { PublicRelease } from '@/lib/plugins/releases'
 
 const state = vi.hoisted(() => ({
   product: null as Record<string, unknown> | null,
@@ -6,7 +7,10 @@ const state = vi.hoisted(() => ({
   artifacts: [] as Array<Record<string, unknown>>,
   productError: null as { message: string } | null,
   signed: 'https://media.example/signed',
+  github: [] as PublicRelease[],
 }))
+
+vi.mock('@/lib/plugins/github-releases-server', () => ({ loadNeurokoreGitHubReleases: async () => state.github }))
 
 vi.mock('@/lib/neurokore/server', () => ({
   limit: async () => undefined,
@@ -92,9 +96,50 @@ beforeEach(() => {
   state.release = { id: '00000000-0000-4000-8000-000000000001', version: '1.0.0', channel: 'stable', title: null }
   state.artifacts = [artifact()]
   state.productError = null
+  state.github = []
 })
 
 describe('public plugin download route', () => {
+  function github(version = '1.1.0'): PublicRelease {
+    return { id: 'github', source: 'github', version, channel: 'stable', title: null, changelog: null, release_notes: null,
+      published_at: '2026-10-26T00:00:00Z', artifacts: (['installer', 'bundle'] as const).map(package_type => ({
+        platform: 'windows-x64', architecture: 'x64', package_type,
+        filename: `NEUROKORE-${version}-${package_type === 'installer' ? 'Setup.exe' : 'win64.zip'}`,
+        filesize_bytes: 200000, sha256: sha, signing_status: 'unverified',
+      })) }
+  }
+
+  it('serves the newer official GitHub installer and the explicitly selected ZIP', async () => {
+    state.github = [github()]
+    const installer = await GET(request(), context())
+    expect(installer.headers.get('location')).toBe('https://github.com/Neuroklast/NeuroCore/releases/download/v1.1.0/NEUROKORE-1.1.0-Setup.exe')
+    const bundle = await GET(request('platform=windows-x64&package=bundle'), context())
+    expect(bundle.headers.get('location')).toContain('NEUROKORE-1.1.0-win64.zip')
+  })
+
+  it('does not bypass disabled downloads or replace a newer R2 installer', async () => {
+    state.github = [github('0.9.0')]
+    expect((await GET(request(), context())).headers.get('location')).toBe(state.signed)
+    state.github = [github()]
+    state.product = { ...state.product!, demo_downloads_enabled: false }
+    expect((await GET(request(), context())).status).toBe(403)
+  })
+
+  it('offers GitHub releases without a manually uploaded CMS release, only for NEUROKORE', async () => {
+    state.release = null
+    state.github = [github()]
+    expect((await GET(request(), context())).status).toBe(307)
+    state.product = { ...state.product!, slug: 'other-plugin' }
+    expect((await GET(request(), context('other-plugin'))).status).toBe(404)
+  })
+
+  it('updates legacy numeric-only beta versions on the website', async () => {
+    state.release = { ...state.release!, version: '0.8.0', channel: 'beta' }
+    state.github = [{ ...github('0.8.0-beta.1'), channel: 'beta' }]
+    const response = await GET(request('platform=windows-x64&channel=beta'), context())
+    expect(response.headers.get('location')).toContain('NEUROKORE-0.8.0-beta.1-Setup.exe')
+  })
+
   it('redirects an anonymous visitor to a short-lived R2 URL', async () => {
     const response = await GET(request(), context())
     expect(response.status).toBe(307)

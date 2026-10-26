@@ -5,12 +5,15 @@ import {
   artifactReady,
   pickArtifact,
   PLATFORMS,
+  PACKAGE_TYPES,
   RELEASE_CHANNELS,
   safeReleaseStorageKey,
   slugSchema,
   type Platform,
 } from '@/lib/plugins/releases'
 import { r2StorageProvider } from '@/lib/storage/r2'
+import { comparePublicReleaseVersions, githubArtifactUrl } from '@/lib/plugins/github-releases'
+import { loadNeurokoreGitHubReleases } from '@/lib/plugins/github-releases-server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -22,6 +25,7 @@ interface RouteContext {
 const querySchema = z.object({
   platform: z.enum(PLATFORMS),
   channel: z.enum(RELEASE_CHANNELS).optional(),
+  package: z.enum(PACKAGE_TYPES).optional(),
 })
 
 const productSchema = z.object({
@@ -35,7 +39,7 @@ const productSchema = z.object({
 const releaseSchema = z.object({
   id: z.uuid(),
   version: z.string(),
-  channel: z.string(),
+  channel: z.enum(RELEASE_CHANNELS),
   title: z.string().nullable(),
 })
 
@@ -52,8 +56,14 @@ const artifactSchema = z.object({
 
 const SIGNED_URL_SECONDS = 120
 
-/** Anonymous public download for one plugin. Resolves published artifacts
- * server-side and redirects to a short-lived R2 URL; no binary passes through Vercel. */
+function downloadRedirect(location: string): Response {
+  return new Response(null, { status: 307, headers: { Location: location, 'Cache-Control': 'no-store',
+    'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' } })
+}
+
+/**
+ * Resolves enabled downloads to R2 or official NEUROKORE release assets.
+ */
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { slug } = await context.params
@@ -62,6 +72,7 @@ export async function GET(request: Request, context: RouteContext) {
     const parsed = querySchema.safeParse({
       platform: url.searchParams.get('platform'),
       channel: url.searchParams.get('channel') ?? undefined,
+      package: url.searchParams.get('package') ?? undefined,
     })
     if (!parsed.success) return json({ error: 'Unknown platform or channel.' }, 400)
     await limit(request, 'plugin-download', 30)
@@ -89,16 +100,25 @@ export async function GET(request: Request, context: RouteContext) {
       .limit(1)
       .maybeSingle()
     if (releaseResult.error) return json({ error: 'Downloads are temporarily unavailable.' }, 503)
-    if (!releaseResult.data) return json({ error: 'No published build for this platform yet.' }, 404)
-    const release = releaseSchema.parse(releaseResult.data)
+    const release = releaseResult.data ? releaseSchema.parse(releaseResult.data) : null
 
-    const artifactsResult = await client
+    const artifactsResult = release ? await client
       .from('plugin_release_artifacts')
       .select('id,platform,package_type,filename,storage_key,filesize_bytes,sha256,validation_status')
-      .eq('release_id', release.id)
+      .eq('release_id', release.id) : { data: [], error: null }
     if (artifactsResult.error) return json({ error: 'Downloads are temporarily unavailable.' }, 503)
     const artifacts = z.array(artifactSchema).parse(artifactsResult.data ?? [])
-    const chosen = pickArtifact(artifacts, parsed.data.platform as Platform)
+    const candidates = parsed.data.package ? artifacts.filter(item => item.package_type === parsed.data.package) : artifacts
+    const chosen = pickArtifact(candidates, parsed.data.platform as Platform)
+    if (product.slug === 'neurokore' && parsed.data.platform === 'windows-x64') {
+      const github = (await loadNeurokoreGitHubReleases()).find(item => item.channel === channel
+        && githubArtifactUrl(item, parsed.data.platform, parsed.data.package))
+      if (github && (!chosen || !release || comparePublicReleaseVersions(github, release) > 0)) {
+        const url = githubArtifactUrl(github, parsed.data.platform, parsed.data.package)
+        if (url) return downloadRedirect(url)
+      }
+    }
+    if (!release) return json({ error: 'No published build for this platform yet.' }, 404)
     if (!chosen) return json({ error: 'No published build for this platform yet.' }, 404)
     if (!safeReleaseStorageKey(chosen.storage_key) || !artifactReady(chosen)) {
       return json({ error: 'This build is not available right now.' }, 409)
@@ -117,15 +137,7 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     const signed = await r2StorageProvider.createSignedDownloadUrl(MEDIA_BUCKET, chosen.storage_key, SIGNED_URL_SECONDS)
-    return new Response(null, {
-      status: 307,
-      headers: {
-        Location: signed,
-        'Cache-Control': 'no-store',
-        'Referrer-Policy': 'no-referrer',
-        'X-Content-Type-Options': 'nosniff',
-      },
-    })
+    return downloadRedirect(signed)
   } catch {
     return json({ error: 'Download unavailable. Please try again later.' }, 503)
   }

@@ -11,6 +11,8 @@ Official Neuroklast website: Next.js App Router, Supabase, Cloudflare R2, Resend
 
 ## Public site
 
+- NEUROKORE Windows downloads follow published public GitHub releases automatically, with a five-minute server cache and existing CMS/R2 fallback. See [release behavior](docs/NEUROKORE_COMMERCE.md#automatic-neurokore-releases).
+
 - Languages: English, Deutsch, Українська, Italiano, Español, Português, 日本語, 한국어 (footer language chips)
 - Spotify **Listen** section: Neuroklast artist player, two-click consent (GDPR)
 - Legal: `/legal-notice`, `/privacy-policy`

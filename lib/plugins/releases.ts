@@ -62,10 +62,11 @@ export const publicArtifactSchema = z.object({
   filename: z.string().min(1).max(255),
   filesize_bytes: z.number().int().positive(),
   sha256: sha256Schema,
-  signing_status: z.enum(SIGNING_STATUSES),
+  signing_status: z.enum([...SIGNING_STATUSES, 'unverified']),
 })
 
 export const publicReleaseSchema = z.object({
+  source: z.literal('github').optional(),
   id: z.uuid(),
   version: z.string().min(1),
   channel: z.enum(RELEASE_CHANNELS),

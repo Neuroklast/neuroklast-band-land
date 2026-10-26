@@ -40,7 +40,17 @@ Product secrets live in `plugin_product_secrets` (service-role only): `stripe_pr
 - Withdrawal keeps rows and files. After withdraw you can change the version number or replace a download, then mark as ready and publish again.
 - Storage keys are derived as `releases/<slug>/v<version>/<platform>/<filename>`; admins never type a path.
 - The public RPC `plugin_public_catalog()` returns product fields, published releases and checksums only.
-- The download route redirects to an R2 signed URL; binaries never stream through Vercel.
+- CMS downloads redirect to an R2 signed URL; binaries never stream through Vercel.
+
+### Automatic NEUROKORE releases
+
+Published Windows releases from the fixed public repository `Neuroklast/NeuroCore` are discovered server-side. The GitHub response is cached for five minutes; public page revalidation can add a short delay. Publishing with NeuroCore's local `publish_release.bat` updates the public download catalogue without another website deployment, webhook or scheduled job. No GitHub token or visitor-side API request is needed.
+
+Only published, non-draft versions with the expected installer, matching checksum asset, positive bounded sizes, GitHub SHA-256 digests and exact official download URLs are accepted. A ZIP is shown only with its own checksum asset. Stable, beta and alpha channels remain separate; RC tags use the beta channel. Legacy numeric-only CMS betas are compared using their channel, so `0.8.0` in beta does not hide a newer `0.8.0-beta.1`.
+
+The newest download is selected per channel/platform/package. CMS artifacts win at an identical version, and existing R2 macOS downloads retain their own version labels. Other products keep their CMS release policy. Hidden products and disabled public downloads remain blocked. Installer and ZIP links include an explicit `package` parameter so they cannot resolve to the same file accidentally.
+
+GitHub downloads redirect directly to the allowlisted release asset and are not copied into R2 or written as synthetic CMS releases. Their SHA-256 and size are public metadata; signature status is shown as **Not independently verified**, since GitHub asset metadata does not prove Authenticode signing. GitHub redirects do not create `plugin_download_events` rows for nonexistent CMS artifact IDs. Licences and checkout are unchanged. A GitHub outage falls back to existing CMS/R2 downloads. To withdraw a GitHub-provided version, withdraw/delete that release on GitHub as well; CMS withdrawal alone affects only its R2 copy.
 
 Legacy `neurokore_*` tables are renamed in place to `plugin_*` by the idempotent `schema.sql`; existing licences, orders and releases are preserved and backfilled to the NEUROKORE product.
 
