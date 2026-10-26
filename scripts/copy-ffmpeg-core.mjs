@@ -15,7 +15,9 @@ for (const name of ['ffmpeg-core.js', 'ffmpeg-core.wasm']) {
 }
 // Serve the UMD wrapper and its Worker directly: Turbopack cannot bundle
 // @ffmpeg/ffmpeg's dynamic ESM Worker URL during production builds.
-const wrapperDir = dirname(require.resolve('@ffmpeg/ffmpeg'))
+// Node's conditional export resolves the empty ESM entry; locate the package's UMD assets explicitly.
+const wrapperPackageRoot = dirname(dirname(dirname(require.resolve('@ffmpeg/ffmpeg'))))
+const wrapperDir = join(wrapperPackageRoot, 'dist/umd')
 for (const name of ['ffmpeg.js', '814.ffmpeg.js']) {
   const source = join(wrapperDir, name)
   if (!existsSync(source)) throw new Error('Missing @ffmpeg/ffmpeg asset: ' + source)
