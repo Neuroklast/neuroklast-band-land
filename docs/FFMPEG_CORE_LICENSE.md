@@ -4,7 +4,7 @@ The admin build uses @ffmpeg/ffmpeg 0.12.15 (MIT) with @ffmpeg/core 0.12.10
 (GPL-2.0-or-later), including the GPL-licensed x264 video encoder.
 
 The prebuild/predev script copies the unmodified @ffmpeg/core dist/umd runtime
-into public/vendor/ffmpeg-core, so users downloading the encoder receive GPL
+into public/vendor/ffmpeg-core alongside the MIT-licensed wrapper, so users downloading the encoder receive GPL
 binary code. Keep the upstream copyright and license notices and make the
 complete corresponding source code and build scripts available as required by
 GPL-2.0-or-later before distributing this runtime in production.

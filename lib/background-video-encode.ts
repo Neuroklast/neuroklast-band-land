@@ -8,6 +8,50 @@ import {
 
 export type EncodeVideoProgress = (message: string, percentage?: number) => void
 
+interface FFmpegInstance {
+  on: (event: 'progress', callback: (event: { progress: number }) => void) => void
+  load: (options: {
+    coreURL: string
+    wasmURL: string
+    workerLoadURL: string
+  }) => Promise<boolean>
+  writeFile: (path: string, data: Uint8Array) => Promise<boolean>
+  exec: (arguments_: string[]) => Promise<number>
+  readFile: (path: string) => Promise<string | Uint8Array>
+  terminate: () => void
+}
+type FFmpegConstructor = new () => FFmpegInstance
+
+declare global {
+  interface Window {
+    FFmpegWASM?: { FFmpeg: FFmpegConstructor }
+  }
+}
+
+let wrapperPromise: Promise<FFmpegConstructor> | null = null
+
+function loadBrowserFFmpeg(): Promise<FFmpegConstructor> {
+  if (window.FFmpegWASM?.FFmpeg) return Promise.resolve(window.FFmpegWASM.FFmpeg)
+  if (wrapperPromise) return wrapperPromise
+
+  wrapperPromise = new Promise<FFmpegConstructor>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = '/vendor/ffmpeg-core/ffmpeg.js'
+    script.async = true
+    script.onload = () => {
+      const ffmpeg = window.FFmpegWASM?.FFmpeg
+      if (ffmpeg) resolve(ffmpeg)
+      else reject(new Error('FFmpeg browser wrapper failed to initialize.'))
+    }
+    script.onerror = () => reject(new Error('FFmpeg browser wrapper could not be loaded.'))
+    document.head.appendChild(script)
+  }).catch((error: unknown) => {
+    wrapperPromise = null
+    throw error
+  })
+  return wrapperPromise
+}
+
 /**
  * Encode on the admin's machine, not inside a short-lived Vercel function.
  * The single-threaded FFmpeg core is copied to the same origin during
@@ -23,7 +67,7 @@ export async function encodeBackgroundVideo(
   }
 
   onProgress?.('Loading video encoder…')
-  const { FFmpeg } = await import('@ffmpeg/ffmpeg')
+  const FFmpeg = await loadBrowserFFmpeg()
   const ffmpeg = new FFmpeg()
   const suffix = input.name.split('.').pop()?.toLowerCase()
   const inputName = 'input.' + (suffix === 'mov' || suffix === 'webm' ? suffix : 'mp4')
@@ -38,6 +82,7 @@ export async function encodeBackgroundVideo(
     await ffmpeg.load({
       coreURL: '/vendor/ffmpeg-core/ffmpeg-core.js',
       wasmURL: '/vendor/ffmpeg-core/ffmpeg-core.wasm',
+      workerLoadURL: '/vendor/ffmpeg-core/814.ffmpeg.js',
     })
     onProgress?.('Optimizing video for scrolling…', 0)
     await ffmpeg.writeFile(inputName, new Uint8Array(await input.arrayBuffer()))

@@ -13,4 +13,12 @@ for (const name of ['ffmpeg-core.js', 'ffmpeg-core.wasm']) {
   if (!existsSync(source)) throw new Error('Missing @ffmpeg/core asset: ' + source)
   copyFileSync(source, join(outputDir, name))
 }
-console.log('Prepared same-origin FFmpeg core for background video encoding.')
+// Serve the UMD wrapper and its Worker directly: Turbopack cannot bundle
+// @ffmpeg/ffmpeg's dynamic ESM Worker URL during production builds.
+const wrapperDir = dirname(require.resolve('@ffmpeg/ffmpeg'))
+for (const name of ['ffmpeg.js', '814.ffmpeg.js']) {
+  const source = join(wrapperDir, name)
+  if (!existsSync(source)) throw new Error('Missing @ffmpeg/ffmpeg asset: ' + source)
+  copyFileSync(source, join(outputDir, name))
+}
+console.log('Prepared same-origin FFmpeg wrapper, worker, and core assets.')

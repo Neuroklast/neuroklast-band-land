@@ -17,7 +17,7 @@ The desktop and separate-mobile selectors in Background use VideoSourcePicker(sc
 The admin browser transcodes MP4/WebM/MOV with @ffmpeg/ffmpeg (single-threaded
 @ffmpeg/core 0.12.10) to 30 fps H.264/yuv420p MP4 with a 6-frame GOP, no B-frames
 and faststart. The build-time prebuild/predev script copies core assets into
-public/vendor/ffmpeg-core so neither third-party scripts nor FFmpeg services
+public/vendor/ffmpeg-core (UMD wrapper, worker and core) so neither third-party scripts nor FFmpeg services
 run on the public site. This works on Vercel without invoking FFmpeg server-side.
 Maximum input/output is 50 MB. Encoding can consume significant browser CPU
 and memory. On failure the old video remains selected and raw input is NOT published.
