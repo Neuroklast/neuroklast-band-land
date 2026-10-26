@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Fix production-build boundaries: legacy import validation and API-key field definitions no longer import Node crypto into admin browser bundles, and the login redirect helper lives outside the route-handler export surface.
+
+- Add an authenticated NEUROKORE release import that copies and verifies all four official GitHub assets into immutable R2 keys, registers a version in Products, publishes only complete versions and refreshes public/admin views. Retries preserve existing files and withdrawn releases.
+
 - NEUROKORE downloads automatically discover published Windows GitHub releases, retain R2 downloads for other platforms and distinguish installer/ZIP targets.
 
 - Background video uploads and URL imports now transcode automatically to scroll-scrubbable H.264 MP4 in the admin browser before activation.

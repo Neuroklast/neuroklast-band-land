@@ -10,14 +10,9 @@
  */
 
 import { createHash } from 'node:crypto'
-
-export interface SiteConfigContentFile {
-  exportVersion?: string
-  exportScope?: string
-  templateVersion?: string
-  siteName?: string
-  data: Record<string, unknown>
-}
+import { asRecord, asString, isPlainObject } from './site-config-content-parser'
+export { parseSiteConfigContentPayload } from './site-config-content-parser'
+export type { SiteConfigContentFile, ParseContentResult, ParseContentError } from './site-config-content-parser'
 
 export interface ImportMediaEntry {
   storagePath: string
@@ -32,28 +27,6 @@ export interface BuildImportRowsResult {
   rows: Record<string, SiteConfigContentRow[]>
   mediaUrls: string[]
   summary: Record<string, number>
-}
-
-export interface ParseContentResult {
-  ok: true
-  data: SiteConfigContentFile
-}
-
-export interface ParseContentError {
-  ok: false
-  error: string
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return isPlainObject(value) ? value : null
-}
-
-function asString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
 function asStringArray(value: unknown): string[] {
@@ -120,25 +93,6 @@ function recordArrayFromKeys(data: Record<string, unknown>, keys: string[]): Rec
     if (rows.length > 0) return rows
   }
   return []
-}
-
-export function parseSiteConfigContentPayload(input: unknown): ParseContentResult | ParseContentError {
-  const root = asRecord(input)
-  if (!root) return { ok: false, error: 'Site config content must be a JSON object' }
-
-  const data = asRecord(root.data)
-  if (!data) return { ok: false, error: 'Missing "data" object' }
-
-  return {
-    ok: true,
-    data: {
-      exportVersion: asString(root.exportVersion) ?? undefined,
-      exportScope: asString(root.exportScope) ?? undefined,
-      templateVersion: asString(root.templateVersion) ?? undefined,
-      siteName: asString(root.siteName) ?? undefined,
-      data,
-    },
-  }
 }
 
 /** Derive a stable UUID from a seed so re-imports upsert instead of duplicating. */

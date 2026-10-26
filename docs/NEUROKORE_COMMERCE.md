@@ -112,6 +112,10 @@ Activation is product-scoped: a key issued for one plugin cannot activate anothe
 
 ## Operational limits
 
-Two device seats per licence, locked atomically. Admin reset frees server seats; offline certificates remain usable until expiry/reload. There is no automatic refund revocation, self-service device transfer, background renewal or machine-authenticated build registration yet. The build pipeline must register releases through an admin session until a machine-token endpoint exists.
+Two device seats per licence, locked atomically. Admin reset frees server seats; offline certificates remain usable until expiry/reload. There is no automatic refund revocation, self-service device transfer, background renewal or background renewal. Machine-authenticated NEUROKORE release registration is available through the fixed release-sync endpoint below. Other products continue using Admin → Plugins.
 
 No secrets were created or deployed by this change. Unit/route tests cover release readiness, product scoping, public catalogue parsing, download refusal paths and licence crypto; no live database, R2 bucket, Stripe account or DAW was exercised.
+
+## Release Manager product sync
+
+The same server-only 64-hex `NEUROKORE_RELEASE_SYNC_TOKEN` is configured in Vercel Production and locally in the manager (`build/release-manager/website-sync.json`, token field, ignored by Git; alternatively its environment variable). `/api/plugins/neurokore/release-sync` imports only an official, complete, published GitHub release. All four files are hashed and copied to immutable, version-specific R2 keys before Installer/Bundle artifacts are registered and the version is published under the existing active NEUROKORE product. Existing published/withdrawn versions cannot be replaced. Authenticated GET with a version query checks readiness; POST with a version imports or retries. The manager completes only after the website confirms the product version. The homepage, product/download pages and admin version views are revalidated. No database migration is required.

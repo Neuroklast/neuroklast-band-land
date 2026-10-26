@@ -53,3 +53,5 @@ npm run lint && npm run typecheck && npm run test
 ```
 
 Admin: `/admin/login`
+
+NEUROKORE Release Manager publishes verified GitHub releases into the existing Products version history and R2 storage through the authenticated release-sync endpoint. See [product release sync](docs/NEUROKORE_COMMERCE.md#release-manager-product-sync).
