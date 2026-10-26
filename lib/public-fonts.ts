@@ -70,4 +70,6 @@ export function buildPublicFontCssVars(fonts: ResolvedPublicFonts): string {
 
 /** Legacy callers may request fonts, but never trigger a runtime CDN connection. */
 export function remoteFontFamiliesToLoad(_fonts: ResolvedPublicFonts): string[] { return [] }
-export function ensureRemoteFontsLoaded(_fonts: ResolvedPublicFonts): void {}
+export function ensureRemoteFontsLoaded(_fonts: ResolvedPublicFonts): void {
+  // Runtime third-party font loading is deliberately disabled.
+}
