@@ -39,7 +39,63 @@ export function loadFontEntry(entry: FontEntry, slot: keyof typeof FONT_CSS_VARS
 
   if (entry.source === 'local' && entry.localUrls?.length) {
     const srcParts = entry.localUrls
-      .filter(url => /^\\/(?!\\/)[a-zA-Z0-9_./%\\-]+$/.test(url))
+      .filter(url => url.startsWith('/') && !url.startsWith('//') && new RegExp('^[a-zA-Z0-9_./%-]+
+      .map((url) => `url('${url}') format('${guessFormat(url)}')`)
+      .join(',\n    ')
+    if (srcParts.length === 0) return
+    const css = `@font-face {
+  font-family: '${entry.family}';
+  src: ${srcParts};
+  font-display: swap;
+}`
+    injectStyleTag(css, id)
+  }
+  // 'system' fonts need no loading
+}
+
+/** Guess the CSS font format from a file extension */
+function guessFormat(url: string): string {
+  const ext = url.split('.').pop()?.toLowerCase() ?? ''
+  const map: Record<string, string> = {
+    woff2: 'woff2',
+    woff: 'woff',
+    ttf: 'truetype',
+    otf: 'opentype',
+    eot: 'embedded-opentype',
+    svg: 'svg',
+  }
+  return map[ext] ?? 'woff2'
+}
+
+// ─── CSS custom property application ─────────────────────────────────────────
+
+/**
+ * Apply font families as CSS custom properties on `:root` (browser only).
+ * Accepts partial config – only defined slots are updated.
+ */
+export function applyFontCssVars(config: FontConfig): void {
+  if (typeof document === 'undefined') return
+  const root = document.documentElement
+  if (config.heading) root.style.setProperty(FONT_CSS_VARS.heading, config.heading.family)
+  if (config.body) root.style.setProperty(FONT_CSS_VARS.body, config.body.family)
+  if (config.mono) root.style.setProperty(FONT_CSS_VARS.mono, config.mono.family)
+}
+
+// ─── Main entry point ─────────────────────────────────────────────────────────
+
+/**
+ * Load all fonts defined in `FontConfig` and apply the corresponding CSS
+ * custom properties.  Safe to call in a React effect.
+ */
+export function applyFontConfig(config: FontConfig): void {
+  const slots = ['heading', 'body', 'mono'] as const
+  for (const slot of slots) {
+    const entry = config[slot]
+    if (entry) loadFontEntry(entry, slot)
+  }
+  applyFontCssVars(config)
+}
+).test(url))
       .map((url) => `url('${url}') format('${guessFormat(url)}')`)
       .join(',\n    ')
     if (srcParts.length === 0) return
