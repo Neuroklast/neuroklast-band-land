@@ -13,7 +13,9 @@ describe('signed analytics opt-in', () => {
     const token = signAnalyticsConsent(secret, now)
     expect(verifyAnalyticsConsent(token, secret, now)).toBe(true)
     expect(verifyAnalyticsConsent(token, 'another-secret', now)).toBe(false)
-    expect(verifyAnalyticsConsent(token.replace(/.$/, '0'), secret, now)).toBe(false)
+    const [version, issued, mac] = token.split('.')
+    const modified = version + '.' + issued + '.' + (mac[0] === 'a' ? 'b' : 'a') + mac.slice(1)
+    expect(verifyAnalyticsConsent(modified, secret, now)).toBe(false)
     expect(verifyAnalyticsConsent(undefined, secret, now)).toBe(false)
   })
 
