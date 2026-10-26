@@ -47,10 +47,12 @@ describe('CSP single source of truth', () => {
     expect(headersSource).not.toMatch(/img-src[^;]*http:/)
   })
 
-  it('allows the Google Fonts stylesheet', () => {
-    expect(headersSource).toContain(
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    )
+  it('blocks runtime Google Fonts requests', () => {
+    expect(headersSource).not.toContain('fonts.googleapis.com')
+    expect(headersSource).not.toContain('fonts.gstatic.com')
+    expect(readSource('app/layout.tsx')).not.toContain('googleFontsStylesheetHref')
+    expect(readSource('public/theme-restore.js')).not.toContain('fonts.googleapis.com')
+    expect(readSource('src/lib/theme-application.ts')).not.toContain('fonts.googleapis.com')
   })
 
   it('allows the R2 and Supabase connect targets', () => {
