@@ -133,12 +133,6 @@ export const HEADING_FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'Orbitron', value: "var(--font-orbitron), 'Orbitron', sans-serif" },
   { label: 'Space Mono', value: "var(--font-space-mono), 'Space Mono', monospace" },
   { label: 'Share Tech Mono', value: "var(--font-share-tech-mono), 'Share Tech Mono', monospace" },
-  { label: 'Rajdhani', value: "'Rajdhani', sans-serif" },
-  { label: 'Exo 2', value: "'Exo 2', sans-serif" },
-  { label: 'Audiowide', value: "'Audiowide', sans-serif" },
-  { label: 'Share Tech', value: "'Share Tech', sans-serif" },
-  { label: 'Bebas Neue', value: "'Bebas Neue', sans-serif" },
-  { label: 'Oswald', value: "'Oswald', sans-serif" },
   { label: 'system-ui', value: 'system-ui, sans-serif' },
 ]
 
@@ -147,18 +141,12 @@ export const BODY_FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'Space Mono', value: "var(--font-space-mono), 'Space Mono', monospace" },
   { label: 'Share Tech Mono', value: "var(--font-share-tech-mono), 'Share Tech Mono', monospace" },
   { label: 'system-ui', value: 'system-ui, sans-serif' },
-  { label: 'Inter', value: "'Inter', sans-serif" },
-  { label: 'Roboto', value: "'Roboto', sans-serif" },
-  { label: 'Rajdhani', value: "'Rajdhani', sans-serif" },
 ]
 
 export const MONO_FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'JetBrains Mono (default)', value: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace" },
   { label: 'Share Tech Mono', value: "var(--font-share-tech-mono), 'Share Tech Mono', monospace" },
   { label: 'Space Mono', value: "var(--font-space-mono), 'Space Mono', monospace" },
-  { label: 'Fira Code', value: "'Fira Code', monospace" },
-  { label: 'Source Code Pro', value: "'Source Code Pro', monospace" },
-  { label: 'VT323', value: "'VT323', monospace" },
 ]
 
 export type FontSizeThemeKey = 'headingFontSize' | 'bodyFontSize' | 'monoFontSize'
