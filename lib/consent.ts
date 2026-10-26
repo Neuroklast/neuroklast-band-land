@@ -30,7 +30,7 @@ export function readStoredConsent(): ConsentPreferences | null {
     const raw = localStorage.getItem(CONSENT_STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as ConsentPreferences
-    if (!parsed.version || parsed.version < CONSENT_VERSION) return null
+    if (parsed.version !== CONSENT_VERSION || parsed.essential !== true || typeof parsed.analytics !== 'boolean' || !Number.isFinite(parsed.timestamp) || parsed.timestamp > Date.now() || parsed.timestamp <= 0) return null
     return parsed
   } catch {
     return null
