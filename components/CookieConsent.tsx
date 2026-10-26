@@ -174,7 +174,6 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
                 <div className="flex flex-wrap gap-2 shrink-0">
                   <Button
                     onClick={handleRejectAll}
-                    variant="outline"
                     className="font-mono min-h-[44px]"
                   >
                     {t('cookie.rejectAll')}
@@ -268,7 +267,7 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
                     />
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <Button onClick={handleRejectAll} variant="ghost" className="font-mono min-h-[44px]">
+                    <Button onClick={handleRejectAll} className="font-mono min-h-[44px]">
                       {t('cookie.rejectAll')}
                     </Button>
                     <Button onClick={handleSaveCustom} variant="outline" className="font-mono min-h-[44px]">
