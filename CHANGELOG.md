@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- NEUROKORE downloads automatically discover published Windows GitHub releases, retain R2 downloads for other platforms and distinguish installer/ZIP targets.
+
 - Background video uploads and URL imports now transcode automatically to scroll-scrubbable H.264 MP4 in the admin browser before activation.
 
 ### Added

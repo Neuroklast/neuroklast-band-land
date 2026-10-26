@@ -4,6 +4,10 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-10-26
+
+GitHub asset SHA-256 digests establish download identity, not Authenticode signing. Public release imports must keep signature status unverified, validate exact repository asset URLs and retain the existing product visibility/download gates. Legacy CMS beta versions can omit their suffix; compare them using their declared channel before selecting a newer external release.
+
 ## Session: 2026-10-25
 
 ### What to Avoid

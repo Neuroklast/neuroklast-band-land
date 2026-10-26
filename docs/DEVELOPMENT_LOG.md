@@ -2,6 +2,13 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-26 — Automatic NEUROKORE download releases
+
+**Agent:** Codex
+**Branch:** `codex/automatic-neurokore-releases`
+
+Added server-cached discovery of the fixed public NEUROKORE GitHub feed to the existing catalogue and gated download route. Preserved other plugins, CMS controls and R2 platform builds; corrected distinct installer/ZIP selection and legacy numeric beta ordering. No database, licence, media or payment mutations are introduced. Checks and production verification are recorded in the delivery summary.
+
 ---
 
 ## Session: 2026-10-21 — Products CMS + section toggle (NEUROKORE)

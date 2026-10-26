@@ -66,7 +66,7 @@ function DownloadCard({ slug, release }: { slug: string; release: PublicRelease 
                 <li key={artifact.package_type}>
                   <a
                     className="inline-flex min-h-11 items-center border border-current px-4 py-2 text-sm hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    href={`/api/plugins/${slug}/download?platform=${platform}&channel=${release.channel}`}
+                    href={`/api/plugins/${slug}/download?platform=${platform}&channel=${release.channel}&package=${artifact.package_type}`}
                   >
                     Download {PACKAGE_LABEL[artifact.package_type]}
                   </a>
@@ -76,7 +76,7 @@ function DownloadCard({ slug, release }: { slug: string; release: PublicRelease 
                       <div><dt className="inline">File: </dt><dd className="inline break-all">{artifact.filename}</dd></div>
                       <div><dt className="inline">Size: </dt><dd className="inline">{formatBytes(artifact.filesize_bytes)}</dd></div>
                       <div><dt className="inline">SHA-256: </dt><dd className="inline break-all">{artifact.sha256}</dd></div>
-                      <div><dt className="inline">Signature: </dt><dd className="inline">{artifact.signing_status}</dd></div>
+                      <div><dt className="inline">Signature: </dt><dd className="inline">{artifact.signing_status === 'unverified' ? 'Not independently verified' : artifact.signing_status}</dd></div>
                     </dl>
                   </details>
                 </li>
@@ -100,8 +100,8 @@ export default async function PluginDownloadPage({ params }: { params: Promise<{
   const { slug } = await params
   const product = await loadPublicProduct(slug)
   if (!product) notFound()
-  const releases = latestByChannel(product.releases)
-  const stable = releases.find((release) => release.channel === 'stable')
+  const releases = product.releases.some(release => release.source === 'github') ? product.releases : latestByChannel(product.releases)
+  const stable = releases.filter((release) => release.channel === 'stable')
   const others = releases.filter((release) => release.channel !== 'stable')
 
   return (
@@ -118,8 +118,8 @@ export default async function PluginDownloadPage({ params }: { params: Promise<{
           </p>
         </header>
 
-        {stable ? (
-          <DownloadCard slug={product.slug} release={stable} />
+        {stable.length ? (
+          stable.map(release => <DownloadCard key={release.id} slug={product.slug} release={release} />)
         ) : (
           <p className="border border-current/30 p-6">
             There is no published build for the stable channel yet. Check back soon.
