@@ -81,7 +81,9 @@ function sanitizedReferrer(): string | undefined {
 
 function isSensitiveAnalyticsPage(): boolean {
   if (typeof window === 'undefined') return true
-  return /^\\/(admin|neurokore\\/account|withdrawal|login|register)(\\/|$)/.test(window.location.pathname)
+  const path = window.location.pathname
+  return ['/admin', '/neurokore/account', '/withdrawal', '/login', '/register']
+    .some(prefix => path === prefix || path.startsWith(prefix + '/'))
 }
 
 function buildMeta(): AnalyticsEventPayload['meta'] {
