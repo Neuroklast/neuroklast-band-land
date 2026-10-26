@@ -38,7 +38,7 @@ export function resolvePrivacySafeFontStack(value: string | undefined, fallback:
   if (localName) return SELF_HOSTED_STACKS[localName]
   const name = extractGoogleFontName(stack)
   if (name) return SELF_HOSTED_STACKS[name] ?? fallback
-  return /^(system-ui|ui-monospace|ui-sans-serif|ui-serif|monospace|sans-serif|serif)(\\s*,|$)/.test(stack) ? stack : fallback
+  return /^(system-ui|ui-monospace|ui-sans-serif|ui-serif|monospace|sans-serif|serif)(\s*,|$)/.test(stack) ? stack : fallback
 }
 
 export function resolvePublicFonts(theme?: AppearanceTheme | null): ResolvedPublicFonts {
