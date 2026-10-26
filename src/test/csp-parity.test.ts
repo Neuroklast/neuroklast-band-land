@@ -14,7 +14,7 @@ function readSource(file: string): string {
 }
 
 function extractDirective(csp: string, directive: string): string[] {
-  const match = csp.match(new RegExp(`${directive}\\s+([^;]+)`))
+  const match = csp.match(new RegExp(`${directive}\\s+([^\"\\n]+)`))
   if (!match) return []
   return match[1].trim().split(/\s+/)
 }
