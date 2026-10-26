@@ -11,6 +11,26 @@ New public-facing config → **Supabase `site_config`**, not KV.
 
 Look & Feel tabs: Theme, Background, Hero, Loader, Sections, Site Text, **Terminal**. Terminal JSON key: `terminal` (`commands`, `secretCode`, `morseCode`) via `lib/terminal-config.ts`. Command files upload to R2 (`fileStoragePath`); included in full `site_config` backups and legacy `site-config-content` import (`terminalCommands` / `secretCode` / `terminalMorseCode`).
 
+## Auto-optimized scroll background videos
+
+The desktop and separate-mobile selectors in Background use VideoSourcePicker(scrubVariant).
+The admin browser transcodes MP4/WebM/MOV with @ffmpeg/ffmpeg (single-threaded
+@ffmpeg/core 0.12.10) to 30 fps H.264/yuv420p MP4 with a 6-frame GOP, no B-frames
+and faststart. The build-time prebuild/predev script copies core assets into
+public/vendor/ffmpeg-core so neither third-party scripts nor FFmpeg services
+run on the public site. This works on Vercel without invoking FFmpeg server-side.
+Maximum input/output is 50 MB. Encoding can consume significant browser CPU
+and memory. On failure the old video remains selected and raw input is NOT published.
+
+URL/Drive imports are fetched by the existing SSRF-guarded cache action into a
+random temporary R2 key, read through an admin-authenticated same-origin streaming
+route, then optimized and uploaded; the temporary object is deleted in finally.
+Regular product video uploads are NOT transcoded. A separate manual Save background
+is still required to persist the selected URL in site_config.
+
+@ffmpeg/core is GPL-2.0-or-later. See docs/FFMPEG_CORE_LICENSE.md and comply with
+the source/license distribution requirements before deploying.
+
 ## Site config mutations
 
 `updateSiteConfig` in `app/admin/_actions/siteConfig.ts` dispatches `update_site_config` via `lib/admin-action-registry.ts`.

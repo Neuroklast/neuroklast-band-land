@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { contentObjectKey } from '@/lib/r2-object-key'
+import { uploadVideoFileToR2 } from '@/lib/video-upload-client'
+import { encodeBackgroundVideo } from '@/lib/background-video-encode'
+import type { BackgroundVideoVariant } from '@/lib/background-video-encoding-config'
 import { describeR2UploadError } from '@/lib/r2-upload-error'
 import { REMOTE_VIDEO_MAX_BYTES } from '@/lib/remote-video-url'
 
@@ -18,6 +20,8 @@ interface VideoUploaderProps {
   onUpload: (storagePath: string, publicUrl?: string) => void
   onError?: (error: string) => void
   accept?: string
+  scrubVariant?: BackgroundVideoVariant
+  onProcessingStateChange?: (busy: boolean) => void
 }
 
 export function VideoUploader({
@@ -27,9 +31,12 @@ export function VideoUploader({
   onUpload,
   onError,
   accept = 'video/mp4,video/webm',
+  scrubVariant,
+  onProcessingStateChange,
 }: VideoUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
+  const [phase, setPhase] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(currentUrl ?? null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -51,30 +58,18 @@ export function VideoUploader({
     }
 
     setUploading(true)
+    onProcessingStateChange?.(true)
     setProgress(0)
     try {
-      const { createSignedUploadUrl } = await import('@/app/admin/_actions/r2Upload')
-      const ext = file.name.split('.').pop()?.toLowerCase() ?? 'mp4'
-      const safePrefix = storagePrefix.replace(/[^a-z0-9/_-]/gi, '').replace(/^\/+|\/+$/g, '') || 'uploads/videos'
-      const objectKey = await contentObjectKey({ prefix: safePrefix, data: await file.arrayBuffer(), extension: ext })
-      const { url, objectPath, publicUrl } = await createSignedUploadUrl(objectKey)
-
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('PUT', url)
-        xhr.setRequestHeader('Content-Type', file.type)
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            setProgress(Math.round((event.loaded / event.total) * 100))
-          }
-        }
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve()
-          else reject(new Error('Upload failed'))
-        }
-        xhr.onerror = () => reject(new Error('Upload failed'))
-        xhr.send(file)
-      })
+      const optimized = scrubVariant
+        ? await encodeBackgroundVideo(file, scrubVariant, (message, percent) => {
+            setPhase(message)
+            setProgress(percent ?? null)
+          })
+        : file
+      setPhase('Uploading to storage…')
+      setProgress(0)
+      const { objectPath, publicUrl } = await uploadVideoFileToR2(optimized, storagePrefix, setProgress)
 
       if (publicUrl) setPreview(publicUrl)
       onUpload(objectPath, publicUrl)
@@ -83,6 +78,8 @@ export function VideoUploader({
       onError?.(msg)
     } finally {
       setUploading(false)
+      onProcessingStateChange?.(false)
+      setPhase(null)
       setProgress(null)
       if (inputRef.current) inputRef.current.value = ''
     }
@@ -105,7 +102,7 @@ export function VideoUploader({
         disabled={uploading}
         className="px-3 py-1.5 text-sm rounded bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50"
       >
-        {uploading ? `Uploading…${progress != null ? ` ${progress}%` : ''}` : label}
+        {uploading ? (phase || 'Uploading…') + (progress != null ? ' ' + progress + '%' : '') : label}
       </button>
       <input
         ref={inputRef}

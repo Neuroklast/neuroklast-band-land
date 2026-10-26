@@ -8,3 +8,7 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] `/admin/products` section toggle off: homepage has no Products block, `/neurokore` is 404, plugin activate still returns a signed v2 license.
 - [ ] `/admin/products` section toggle on: homepage Products section appears, `/neurokore` and `/neurokore/account` load.
 - [ ] Create/edit/hide/delete a product with R2 image, description, `/neurokore` path or https URL, optional price label.
+
+- [ ] In Admin → Look & Feel → Background, upload MP4/MOV/WebM on desktop and separate-mobile. Confirm encode/upload progress and scroll seeking at top/middle/bottom.
+- [ ] Import a public video URL and a Google Drive video. Confirm temporary R2 source cleanup and only encoded MP4 is selected.
+- [ ] Test an unsupported/oversized/corrupt video. Existing live background must remain unchanged, errors must be visible.

@@ -260,8 +260,8 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
           <div>
             <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Desktop video</p>
             <p className="text-xs text-zinc-500 mt-1">
-              Scroll-synced background video (faststart MP4 recommended). Use the switch to turn it off without
-              deleting the file.
+              Upload MP4, MOV or WebM. Videos are automatically converted to fast-seeking MP4 for scroll scrubbing.
+              Use the switch to turn video off without deleting the file.
             </p>
           </div>
           <button
@@ -290,6 +290,7 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
           currentUrl={videoUrl || null}
           currentStoragePath={videoStoragePath || null}
           storagePrefix="background/videos"
+          scrubVariant="desktop"
           onResolved={(path, publicUrl) => {
             setVideoStoragePath(path)
             if (publicUrl) setVideoUrl(publicUrl)
@@ -357,6 +358,7 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
             currentUrl={mobileVideoUrl || null}
             currentStoragePath={mobileVideoStoragePath || null}
             storagePrefix="background/videos/mobile"
+            scrubVariant="mobile"
             onResolved={(path, publicUrl) => {
               setMobileVideoStoragePath(path)
               if (publicUrl) setMobileVideoUrl(publicUrl)

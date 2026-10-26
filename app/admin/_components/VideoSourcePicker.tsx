@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { VideoUploader } from '@/app/admin/_components/VideoUploader'
 import { cacheRemoteVideoToR2 } from '@/app/admin/_actions/cacheRemoteVideo'
 import { deletePreviousR2ObjectIfReplaced } from '@/app/admin/_lib/deletePreviousR2Object'
+import { encodeBackgroundVideo } from '@/lib/background-video-encode'
+import { uploadVideoFileToR2 } from '@/lib/video-upload-client'
+import type { BackgroundVideoVariant } from '@/lib/background-video-encoding-config'
 
 type SourceMode = 'upload' | 'url' | 'drive'
 
@@ -15,6 +18,7 @@ interface VideoSourcePickerProps {
   onResolved: (storagePath: string, publicUrl?: string) => void
   onCleared?: () => void
   onError?: (message: string) => void
+  scrubVariant?: BackgroundVideoVariant
 }
 
 export function VideoSourcePicker({
@@ -25,6 +29,7 @@ export function VideoSourcePicker({
   onResolved,
   onCleared,
   onError,
+  scrubVariant,
 }: VideoSourcePickerProps) {
   const [mode, setMode] = useState<SourceMode>('upload')
   const [preview, setPreview] = useState<string | null>(currentUrl ?? null)
@@ -33,6 +38,7 @@ export function VideoSourcePicker({
   const [caching, setCaching] = useState(false)
   const [removing, setRemoving] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
+  const [processingUpload, setProcessingUpload] = useState(false)
 
   async function commitNewMedia(
     storagePath: string,
@@ -65,18 +71,44 @@ export function VideoSourcePicker({
     setCaching(true)
     setStatus(null)
     try {
-      const result = await cacheRemoteVideoToR2(trimmed, { prefix: storagePrefix })
+      const result = await cacheRemoteVideoToR2(trimmed, {
+        prefix: scrubVariant ? 'temporary/background-video/' + crypto.randomUUID() : storagePrefix,
+      })
       if (!result.ok || !result.storagePath) {
         const msg = result.error ?? 'Failed to cache video'
         setStatus(msg)
         onError?.(msg)
         return
       }
-      await commitNewMedia(
-        result.storagePath,
-        result.publicUrl,
-        `${sourceLabel} cached to R2`,
-      )
+      if (!scrubVariant) {
+        await commitNewMedia(result.storagePath, result.publicUrl, sourceLabel + ' cached to R2')
+      } else {
+        // Imported originals are temporary: only commit the encoded MP4.
+        try {
+          setStatus('Downloading video for optimization…')
+          const response = await fetch('/api/admin/background-video-temporary?key=' + encodeURIComponent(result.storagePath), {
+            cache: 'no-store',
+          })
+          if (!response.ok) throw new Error('Unable to read temporary video (HTTP ' + response.status + ').')
+          const inputBlob = await response.blob()
+          const extension = result.storagePath.split('.').pop() ?? 'mp4'
+          const input = new File([inputBlob], 'background.' + extension, {
+            type: inputBlob.type || 'video/mp4',
+          })
+          const optimized = await encodeBackgroundVideo(input, scrubVariant, (message, percent) => {
+            setStatus(message + (percent != null ? ' ' + percent + '%' : ''))
+          })
+          setStatus('Uploading optimized video…')
+          const uploaded = await uploadVideoFileToR2(optimized, storagePrefix, (percent) => {
+            setStatus('Uploading optimized video… ' + percent + '%')
+          })
+          await commitNewMedia(uploaded.objectPath, uploaded.publicUrl, sourceLabel + ' optimized and uploaded')
+        } finally {
+          const { deleteR2MediaObject } = await import('@/app/admin/_actions/r2Upload')
+          const cleanup = await deleteR2MediaObject(result.storagePath)
+          if (!cleanup.ok) onError?.('Temporary video cleanup failed: ' + cleanup.error)
+        }
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to cache video'
       setStatus(msg)
@@ -112,6 +144,8 @@ export function VideoSourcePicker({
       setRemoving(false)
     }
   }
+
+  const busy = caching || removing || processingUpload
 
   const tabs: { id: SourceMode; label: string }[] = [
     { id: 'upload', label: 'Upload' },
@@ -153,7 +187,7 @@ export function VideoSourcePicker({
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                disabled={removing}
+                disabled={busy}
                 onClick={() => void handleRemove(false)}
                 className="px-2.5 py-1 text-xs rounded border border-zinc-700 text-zinc-300 hover:text-white disabled:opacity-50"
               >
@@ -162,7 +196,7 @@ export function VideoSourcePicker({
               {activePath ? (
                 <button
                   type="button"
-                  disabled={removing}
+                  disabled={busy}
                   onClick={() => {
                     if (
                       typeof window !== 'undefined' &&
@@ -186,6 +220,8 @@ export function VideoSourcePicker({
         <VideoUploader
           label="Choose file"
           currentUrl={preview}
+          scrubVariant={scrubVariant}
+          onProcessingStateChange={setProcessingUpload}
           storagePrefix={storagePrefix}
           onUpload={(path, publicUrl) => {
             void commitNewMedia(path, publicUrl, 'Uploaded to R2')
@@ -207,11 +243,11 @@ export function VideoSourcePicker({
             className="w-full font-mono text-xs bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-300"
           />
           <p className="text-xs text-zinc-500">
-            Video is downloaded server-side and stored in R2 (max 50 MB).
+            {scrubVariant ? 'Imported video is automatically optimized for scroll scrubbing (max 50 MB).' : 'Video is downloaded server-side and stored in R2 (max 50 MB).'}
           </p>
           <button
             type="button"
-            disabled={caching}
+            disabled={busy}
             onClick={() => handleCacheLink(linkInput, 'Video')}
             className="px-3 py-1.5 text-xs rounded bg-zinc-800 border border-zinc-700 text-zinc-200 hover:text-white disabled:opacity-50"
           >
@@ -234,7 +270,7 @@ export function VideoSourcePicker({
           </p>
           <button
             type="button"
-            disabled={caching}
+            disabled={busy}
             onClick={() => handleCacheLink(linkInput, 'Google Drive file')}
             className="px-3 py-1.5 text-xs rounded bg-zinc-800 border border-zinc-700 text-zinc-200 hover:text-white disabled:opacity-50"
           >
