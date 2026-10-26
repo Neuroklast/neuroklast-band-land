@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { Label } from '@/components/ui/label'
-import { loadGoogleFont } from '@/lib/font-loader'
 import type { ThemeSettings } from '@/lib/types'
 import { FONT_OPTIONS } from '@/components/theme-customizer/theme-utils'
 
@@ -13,7 +12,7 @@ export function ThemeFontsTab({ draft, setDraft }: ThemeFontsTabProps) {
   return (
     <div className="space-y-4">
       <p className="mb-3 font-mono text-xs text-muted-foreground/60">
-        Choose from local and Google Fonts. Font previews are shown below each selector.
+        Only bundled and system fonts are available. Font previews are shown below each selector.
       </p>
       {[
         { key: 'fontHeading' as const, label: 'Heading Font' },
@@ -25,8 +24,6 @@ export function ThemeFontsTab({ draft, setDraft }: ThemeFontsTabProps) {
           <select
             value={draft[key] || FONT_OPTIONS[0].value}
             onChange={e => {
-              const option = FONT_OPTIONS.find(font => font.value === e.target.value)
-              if (option?.google) loadGoogleFont(option.label)
               setDraft(prev => ({ ...prev, [key]: e.target.value }))
             }}
             className="h-9 w-full rounded border border-primary/20 bg-card px-3 text-xs text-foreground"
