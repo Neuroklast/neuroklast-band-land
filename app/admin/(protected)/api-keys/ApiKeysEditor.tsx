@@ -6,7 +6,7 @@ import { updateApiSecrets } from '@/app/admin/_actions/apiSecrets'
 import {
   API_SECRET_GROUPS,
   type ApiSecretKey,
-} from '@/lib/api-secrets'
+} from '@/lib/api-secret-fields'
 
 interface ApiKeysEditorProps {
   initialStatus: Record<ApiSecretKey, boolean>

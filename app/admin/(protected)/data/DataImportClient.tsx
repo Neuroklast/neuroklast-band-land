@@ -9,7 +9,7 @@ import {
   parseSiteBackupPayload,
   pickSectionRows,
 } from '@/lib/site-data-backup'
-import { parseSiteConfigContentPayload } from '@/lib/site-config-content-import'
+import { parseSiteConfigContentPayload } from '@/lib/site-config-content-parser'
 
 export function DataImportClient() {
   const inputRef = useRef<HTMLInputElement>(null)

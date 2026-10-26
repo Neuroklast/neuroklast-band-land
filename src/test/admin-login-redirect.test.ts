@@ -23,7 +23,8 @@ vi.mock('@supabase/ssr', () => ({
   })),
 }))
 
-import { POST, safeAdminRedirect } from '@/app/admin/login/submit/route'
+import { POST } from '@/app/admin/login/submit/route'
+import { safeAdminRedirect } from '@/lib/admin-login-redirect'
 
 const base = 'https://neuroklast.net/admin/login/submit'
 

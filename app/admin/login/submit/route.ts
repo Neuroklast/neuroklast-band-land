@@ -1,3 +1,4 @@
+import { safeAdminRedirect } from '@/lib/admin-login-redirect'
 import { NextResponse } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -12,26 +13,6 @@ import { shouldForceInsecureCookies } from '@/lib/supabaseServer'
  * - This guarantees cookies are present before middleware or protected layout run.
  * - setAll passes options UNCHANGED and forwards the headers arg (ssr>=0.12).
  */
-/** Same-origin path only. `//evil.com` and `/\evil.com` are other hosts after URL parsing. */
-export function safeAdminRedirect(value: string, base: string): string {
-  const fallback = '/admin'
-  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\') || value.includes('\0')) {
-    return fallback
-  }
-  try {
-    const origin = new URL(base).origin
-    const url = new URL(value, base)
-    if (url.origin !== origin) return fallback
-    const path = `${url.pathname}${url.search}${url.hash}`
-    // `/.//evil.com` serializes to pathname `//evil.com`, which the next parse treats as another host.
-    if (!path.startsWith('/') || path.startsWith('//')) return fallback
-    if (new URL(path, base).origin !== origin) return fallback
-    return path
-  } catch {
-    return fallback
-  }
-}
-
 export async function POST(request: Request) {
   const formData = await request.formData()
   const rawIdentifier =
