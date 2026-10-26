@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CdnImage } from '@/app/_components/public/CdnImage'
+import { BrandedVideoPlayer } from '@/components/BrandedVideoPlayer'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { formatProductPrice, loadProductPriceForProduct } from '@/lib/plugins/price'
@@ -189,13 +190,11 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
               <div className="grid gap-4 sm:grid-cols-2">
                 {videos.map((item, index) => (
                   <figure key={item.url} className="border border-white/15 bg-zinc-950 p-3">
-                    <video
+                    <BrandedVideoPlayer
                       src={item.url}
-                      controls
-                      preload="metadata"
-                      playsInline
+                      poster={cover?.url}
+                      title={product.title + ' video ' + (index + 1)}
                       className="w-full"
-                      aria-label={product.title + ' video ' + (index + 1)}
                     />
                   </figure>
                 ))}
