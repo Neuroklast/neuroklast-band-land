@@ -39,8 +39,10 @@ export function loadFontEntry(entry: FontEntry, slot: keyof typeof FONT_CSS_VARS
 
   if (entry.source === 'local' && entry.localUrls?.length) {
     const srcParts = entry.localUrls
+      .filter(url => /^\\/(?!\\/)[a-zA-Z0-9_./%\\-]+$/.test(url))
       .map((url) => `url('${url}') format('${guessFormat(url)}')`)
       .join(',\n    ')
+    if (srcParts.length === 0) return
     const css = `@font-face {
   font-family: '${entry.family}';
   src: ${srcParts};
