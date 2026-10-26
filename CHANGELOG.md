@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Background video uploads and URL imports now transcode automatically to scroll-scrubbable H.264 MP4 in the admin browser before activation.
+
 ### Added
 
 - Admin plugin versions: after withdraw, replace the download file or change the version number, then mark as ready and publish again.
