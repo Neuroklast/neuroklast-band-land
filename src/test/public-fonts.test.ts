@@ -26,6 +26,18 @@ describe('public-fonts', () => {
     expect(remoteFontFamiliesToLoad(fonts)).toEqual([])
   })
 
+  it('preserves self-hosted families and never schedules CDN downloads', () => {
+    const fonts = resolvePublicFonts({
+      fontHeading: "'Orbitron', sans-serif",
+      fontBody: "var(--font-space-grotesk), system-ui, sans-serif",
+      fontMono: "'Share Tech Mono', monospace",
+    })
+    expect(fonts.fontHeading).toContain('--font-orbitron')
+    expect(fonts.fontBody).toContain('--font-space-grotesk')
+    expect(fonts.fontMono).toContain('--font-share-tech-mono')
+    expect(remoteFontFamiliesToLoad(fonts)).toEqual([])
+  })
+
   it('builds SSR css vars without brand hardcodes', () => {
     const css = buildPublicFontCssVars(resolvePublicFonts({ fontBody: "'Roboto', sans-serif" }))
     expect(css).toContain('--font-body:')
