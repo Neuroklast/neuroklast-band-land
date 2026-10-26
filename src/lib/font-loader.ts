@@ -1,5 +1,5 @@
 /**
- * Font loading utility – dynamically injects Google Fonts `<link>` tags or
+ * Font loading utility – injects
  * `@font-face` declarations and applies fonts via CSS custom properties.
  *
  * Related issue: #158
@@ -15,49 +15,7 @@ export const FONT_CSS_VARS = {
   mono: '--font-mono',
 } as const
 
-// ─── Google Fonts URL builder ────────────────────────────────────────────────
-
-/**
- * Build a Google Fonts v2 URL for a single font family with the requested
- * weights and optional italic axis.
- *
- * @example
- *   buildGoogleFontsUrl('Inter', ['400', '700'], true)
- *   // → 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;1,400;1,700&display=swap'
- */
-export function buildGoogleFontsUrl(
-  family: string,
-  weights: string[] = ['400', '700'],
-  italic = false,
-): string {
-  const encoded = family.replace(/ /g, '+')
-  let axisTag: string
-  let tuples: string
-
-  if (italic) {
-    axisTag = 'ital,wght'
-    const regular = weights.map((w) => `0,${w}`).join(';')
-    const italics = weights.map((w) => `1,${w}`).join(';')
-    tuples = `${regular};${italics}`
-  } else {
-    axisTag = 'wght'
-    tuples = weights.join(';')
-  }
-
-  return `https://fonts.googleapis.com/css2?family=${encoded}:${axisTag}@${tuples}&display=swap`
-}
-
 // ─── Injection helpers (browser-only) ────────────────────────────────────────
-
-function injectLinkTag(href: string, id: string): void {
-  if (typeof document === 'undefined') return
-  if (document.getElementById(id)) return // already injected
-  const link = document.createElement('link')
-  link.id = id
-  link.rel = 'stylesheet'
-  link.href = href
-  document.head.appendChild(link)
-}
 
 function injectStyleTag(css: string, id: string): void {
   if (typeof document === 'undefined') return
@@ -72,18 +30,14 @@ function injectStyleTag(css: string, id: string): void {
 
 /**
  * Load a single `FontEntry` into the document (browser only).
- * For Google Fonts, injects a `<link>` tag.
+ * Remote fonts are deliberately ignored, never fetched from third parties.
  * For local fonts, injects a `<style>` tag with `@font-face` declarations.
  * System fonts need no loading.
  */
 export function loadFontEntry(entry: FontEntry, slot: keyof typeof FONT_CSS_VARS): void {
   const id = `font-loader-${slot}`
 
-  if (entry.source === 'google') {
-    const weights = entry.weights ?? ['400', '700']
-    const url = buildGoogleFontsUrl(entry.family, weights, entry.italic ?? false)
-    injectLinkTag(url, id)
-  } else if (entry.source === 'local' && entry.localUrls?.length) {
+  if (entry.source === 'local' && entry.localUrls?.length) {
     const srcParts = entry.localUrls
       .map((url) => `url('${url}') format('${guessFormat(url)}')`)
       .join(',\n    ')
