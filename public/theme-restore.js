@@ -35,9 +35,9 @@
     '--accent-g':                '153',
     '--accent-b':                '166',
     '--spotify-hue-rotate':      '79deg',
-    '--font-heading':            "'Orbitron', sans-serif",
-    '--font-body':               "'Share Tech Mono', monospace",
-    '--font-mono':               "'Share Tech Mono', monospace",
+    '--font-heading':            "var(--font-orbitron), sans-serif",
+    '--font-body':               "var(--font-share-tech-mono), monospace",
+    '--font-mono':               "var(--font-share-tech-mono), monospace",
   };
 
   function _resolveColor(value) {
@@ -70,30 +70,8 @@
           _root.style.setProperty(_key, _val);
         }
 
-        // Preload custom Google Fonts as early as possible so fonts are
-        // available before React mounts, preventing a Flash of Unstyled Text
-        // (FOUT) where the browser briefly renders the fallback font.
-        var _systemFonts = new Set([
-          'system-ui','ui-monospace','ui-sans-serif','ui-serif',
-          'monospace','sans-serif','serif','cursive','fantasy',
-          'SFMono-Regular','Menlo','Monaco','Consolas','Courier New',
-          'Georgia','Cambria','Times New Roman','Times','Arial',
-          'Helvetica Neue','Helvetica','Share Tech Mono','Orbitron'
-        ]);
-        var _preloadedFonts = new Set();
-        var _fontVarKeys = ['--font-body', '--font-heading', '--font-mono'];
-        for (var _fi = 0; _fi < _fontVarKeys.length; _fi++) {
-          var _fv = _vars[_fontVarKeys[_fi]];
-          if (!_fv) continue;
-          // Extract the first font name from a CSS font stack like "'Rajdhani', sans-serif"
-          var _fname = _fv.replace(/['"]/g, '').split(',')[0].trim();
-          if (!_fname || _systemFonts.has(_fname) || _preloadedFonts.has(_fname)) continue;
-          _preloadedFonts.add(_fname);
-          var _link = document.createElement('link');
-          _link.rel = 'stylesheet';
-          _link.href = 'https://fonts.googleapis.com/css2?family=' + _fname.replace(/ /g, '+') + ':wght@300;400;500;700;900&display=swap';
-          document.head.appendChild(_link);
-        }
+        // Fonts are bundled at build time. No third-party font network requests.
+
       }
     }
   } catch(e) { /* ignore – private browsing or parse error */ }

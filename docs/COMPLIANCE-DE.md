@@ -21,6 +21,10 @@ Root `GDPR_COMPLIANCE.md` is historical (pre-App-Router / KV). When it conflicts
 - Cite Art. 6 Abs. 1 DSGVO for personal data and § 25 TDDDG for non-essential cookies / similar tech.
 - NEVER auto-load Spotify / YouTube / SoundCloud iframes.
 - Functional prefs (theme, locale, sound) may run without analytics consent.
+- Analytics opt-in is mirrored in a signed HttpOnly SameSite=Lax first-party cookie via /api/analytics/consent. The cookie is a gate, not a complete legal consent audit trail.
+- /api/analytics requires that signed opt-in, valid event schema and IP rate limiting, then inserts server-side. Direct anon/authenticated Data API INSERT privileges and the old permissive anon policy are REVOKEd in supabase/schema.sql.
+- Runtime Google Fonts requests are disabled. Five next/font families are bundled at build time; legacy non-bundled theme selections gracefully fall back to system/bundled fonts. Never reintroduce dynamic Google Fonts CDN links.
+- Analytics referrers exclude query/fragment; interaction targets exclude button text and URL query strings. Account/admin/withdrawal pages are not tracked.
 - Contact: honeypot `_hp` + Zod + Resend. Prefer honeypot over a cookie-heavy CAPTCHA.
 
 ## BFSG (since 28 June 2025)
@@ -38,3 +42,12 @@ If the public site is a consumer-facing service in scope: keyboard, focus, contr
 - [x] Contact form does not log PII
 - [x] `robots.txt` + dynamic `/sitemap.xml` (`/api/sitemap`; do not restore `public/sitemap.xml`)
 - [x] Custom 404 (`app/not-found.tsx`); root metadata title/description/favicon/OG
+
+## Outstanding production checks (not automatically certified)
+
+- [ ] Confirm the live database applied the current schema, including analytics INSERT revocation, RLS on every exposed table and least-privilege role grants. Database apply may run automatically on production deploy only when SUPABASE_DB_URL/DATABASE_URL, admin access and VERCEL commit metadata are configured.
+- [ ] In a clean browser, confirm no fonts.googleapis.com / fonts.gstatic.com or other unconsented analytics requests appear in Network before or after clicking Reject.
+- [ ] Check every uploaded photo, release cover, logo, screenshot, font and graphic for a documented origin, author, license or permission and any required attribution. Code cannot independently establish ownership.
+- [ ] Conduct human keyboard, screen-reader, mobile and contrast checks and confirm BFSG applicability for the actual seller and service.
+- [ ] Verify correct operator data and privacy policy disclosures for all actual data flows, processors and retention periods.
+- [ ] Complete Stripe test-mode orders and signed-webhook/idempotent-fulfillment tests with delivery emails and generated license.

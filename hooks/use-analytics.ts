@@ -68,10 +68,28 @@ function detectBrowser(): string {
   return 'other'
 }
 
+/** Never send query strings, URL fragments or account-specific pages to telemetry. */
+function sanitizedReferrer(): string | undefined {
+  if (!document.referrer) return undefined
+  try {
+    const url = new URL(document.referrer)
+    return url.origin === window.location.origin ? url.origin + url.pathname : url.origin
+  } catch {
+    return undefined
+  }
+}
+
+function isSensitiveAnalyticsPage(): boolean {
+  if (typeof window === 'undefined') return true
+  const path = window.location.pathname
+  return ['/admin', '/neurokore/account', '/withdrawal', '/login', '/register']
+    .some(prefix => path === prefix || path.startsWith(prefix + '/'))
+}
+
 function buildMeta(): AnalyticsEventPayload['meta'] {
   if (typeof window === 'undefined') return undefined
   return {
-    referrer: document.referrer || undefined,
+    referrer: sanitizedReferrer(),
     device: detectDevice(),
     browser: detectBrowser(),
     screenResolution: `${window.screen.width}x${window.screen.height}`,
@@ -86,7 +104,7 @@ export function useAnalytics(config: AnalyticsConfig) {
 
   const track = useCallback(
     (payload: AnalyticsEventPayload) => {
-      if (!hasConsent || !isAnalyticsTrackingAllowed(config, payload.type)) return
+      if (!hasConsent || isSensitiveAnalyticsPage() || !isAnalyticsTrackingAllowed(config, payload.type)) return
 
       const dedupeKey = `${payload.type}:${payload.target ?? ''}:${payload.heatmap?.x ?? ''}:${payload.heatmap?.y ?? ''}`
       if (inflightRef.current.has(dedupeKey)) return
@@ -120,5 +138,5 @@ export function useAnalytics(config: AnalyticsConfig) {
     [config, hasConsent],
   )
 
-  return { track, canTrack: hasConsent && config.enabled }
+  return { track, canTrack: hasConsent && config.enabled && !isSensitiveAnalyticsPage() }
 }

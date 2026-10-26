@@ -579,8 +579,7 @@ grant select on
   public.news_posts
 to anon;
 
--- anon: consent-gated telemetry insert (policy: anon insert analytics)
-grant insert on public.analytics_events to anon;
+-- Anonymous telemetry writes are intentionally not exposed through the Data API.
 
 -- authenticated + service_role: full CRUD (RLS restricts rows)
 grant select, insert, update, delete on
@@ -803,13 +802,9 @@ DO $$ BEGIN
   END IF;
 END; $$;
 
--- Consent-gated public analytics INSERT (App Router /api/analytics). Read and
--- mutate remain admin-only; anon may only append an event.
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='analytics_events' AND policyname='anon insert analytics') THEN
-    EXECUTE 'CREATE POLICY "anon insert analytics" ON public.analytics_events FOR INSERT TO anon WITH CHECK (true)';
-  END IF;
-END; $$;
+-- The /api/analytics endpoint enforces signed consent and inserts via service role.
+-- Remove the previous bypassable anonymous Data API INSERT policy.
+DROP POLICY IF EXISTS "anon insert analytics" ON public.analytics_events;
 
 -- ============================================================
 -- Auth trigger
@@ -1537,8 +1532,6 @@ GRANT SELECT ON TABLE
   public.news_posts
 TO anon;
 
-GRANT INSERT ON TABLE public.analytics_events TO anon;
-
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
   public.profiles,
   public.releases,
@@ -1560,6 +1553,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
   public.news_posts
 TO authenticated, service_role;
 
+-- Defense in depth: even older Supabase projects may have broad default grants.
+-- Anon and authenticated clients must never insert telemetry directly.
+REVOKE INSERT ON TABLE public.analytics_events FROM PUBLIC, anon, authenticated;
 
 -- Electronically submitted withdrawal declarations are business records, not
 -- anonymous analytics. Only the server's service-role credential may access them.

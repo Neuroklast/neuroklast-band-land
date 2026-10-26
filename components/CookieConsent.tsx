@@ -3,7 +3,7 @@
  * GDPR/ePrivacy-compliant consent management.
  *
  * Design principles:
- * - Consent is stored in localStorage ONLY (no server-side call needed to check consent)
+ * - Preferences are stored locally; an HttpOnly signed cookie gates analytics API writes
  * - Analytics tracking is blocked until explicit consent is given
  * - "Reject All" and "Accept All" have equal visual prominence (no dark patterns)
  * - Analytics is NOT pre-checked (opt-in, not opt-out)
@@ -78,6 +78,22 @@ function PrivacyPolicyLink({
   return null
 }
 
+/** Synchronize the local analytics preference with a signed first-party cookie. */
+async function syncServerConsent(analytics: boolean): Promise<boolean> {
+  try {
+    const response = await fetch('/api/analytics/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      cache: 'no-store',
+      body: JSON.stringify({ analytics, version: CONSENT_VERSION }),
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privacyPolicyUrl }: CookieConsentProps) {
@@ -92,8 +108,17 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
     const stored = readStoredConsent()
     if (stored) {
       onPreferencesChange?.(stored)
-      dispatchConsentEvent(stored)
+      if (stored.analytics) {
+        void syncServerConsent(true).then(ok => {
+          dispatchConsentEvent(ok ? stored : { ...stored, analytics: false })
+        })
+      } else {
+        dispatchConsentEvent(stored)
+        void syncServerConsent(false)
+      }
     } else {
+      // Clear an old server cookie if local consent was removed.
+      void syncServerConsent(false)
       // Show banner after a short delay so the page can render first
       const timer = setTimeout(() => setShowBanner(true), 800)
       return () => clearTimeout(timer)
@@ -122,7 +147,16 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
     setShowBanner(false)
     setShowDetails(false)
     onPreferencesChange?.(prefs)
-    dispatchConsentEvent(prefs)
+    if (prefs.analytics) {
+      // Never activate telemetry before the server acknowledges this opt-in.
+      void syncServerConsent(true).then(ok => {
+        dispatchConsentEvent(ok ? prefs : { ...prefs, analytics: false })
+      })
+    } else {
+      // Disable immediately, even if the network is unavailable.
+      dispatchConsentEvent(prefs)
+      void syncServerConsent(false)
+    }
   }, [onPreferencesChange])
 
   const handleAcceptAll = useCallback(() => {
@@ -306,6 +340,9 @@ export function CookiePreferencesButton({ onPreferencesChange, onOpenPrivacyPoli
 
   const handleOpen = useCallback(() => {
     removeStoredConsent()
+    const rejected: ConsentPreferences = { essential: true, analytics: false, timestamp: Date.now(), version: CONSENT_VERSION }
+    dispatchConsentEvent(rejected)
+    void syncServerConsent(false)
     setShowBanner(true)
   }, [])
 

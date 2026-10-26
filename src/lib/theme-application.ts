@@ -9,59 +9,27 @@ import { getTheme } from '@/lib/theme-registry'
 import { ensureContrast } from './color-utils'
 
 export const FONT_OPTIONS = [
-  { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace", google: false },
-  { label: 'Space Grotesk', value: "'Space Grotesk', sans-serif", google: false },
-  { label: 'System Mono', value: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace", google: false },
-  { label: 'System Sans', value: "ui-sans-serif, system-ui, sans-serif", google: false },
-  { label: 'System Serif', value: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif", google: false },
-  { label: 'Orbitron', value: "'Orbitron', sans-serif", google: true },
-  { label: 'Share Tech Mono', value: "'Share Tech Mono', monospace", google: true },
-  { label: 'VT323', value: "'VT323', monospace", google: true },
-  { label: 'Press Start 2P', value: "'Press Start 2P', monospace", google: true },
-  { label: 'Audiowide', value: "'Audiowide', sans-serif", google: true },
-  { label: 'Rajdhani', value: "'Rajdhani', sans-serif", google: true },
-  { label: 'Chakra Petch', value: "'Chakra Petch', sans-serif", google: true },
-  { label: 'Exo 2', value: "'Exo 2', sans-serif", google: true },
-  { label: 'Tektur', value: "'Tektur', sans-serif", google: true },
-  { label: 'Oxanium', value: "'Oxanium', sans-serif", google: true },
-  { label: 'Iceland', value: "'Iceland', monospace", google: true },
-  { label: 'Michroma', value: "'Michroma', sans-serif", google: true },
-  { label: 'Russo One', value: "'Russo One', sans-serif", google: true },
-  { label: 'Bruno Ace', value: "'Bruno Ace', sans-serif", google: true },
-  { label: 'Electrolize', value: "'Electrolize', sans-serif", google: true },
+  { label: 'JetBrains Mono', value: 'var(--font-jetbrains-mono), ui-monospace, monospace', google: false },
+  { label: 'Space Grotesk', value: 'var(--font-space-grotesk), system-ui, sans-serif', google: false },
+  { label: 'Orbitron', value: 'var(--font-orbitron), sans-serif', google: false },
+  { label: 'Share Tech Mono', value: 'var(--font-share-tech-mono), monospace', google: false },
+  { label: 'Space Mono', value: 'var(--font-space-mono), monospace', google: false },
+  { label: 'System Mono', value: 'ui-monospace, monospace', google: false },
+  { label: 'System Sans', value: 'system-ui, sans-serif', google: false },
+  { label: 'System Serif', value: 'ui-serif, serif', google: false },
 ]
 
-/** Load Google Fonts by injecting a stylesheet link */
+/** Compatibility exports: remote font loading is deliberately disabled. */
 export const loadedFonts = new Set<string>()
 export const loadedFontLinks = new Map<string, HTMLLinkElement>()
-export function loadGoogleFont(fontLabel: string) {
-  if (loadedFonts.has(fontLabel)) return
-  loadedFonts.add(fontLabel)
-  const family = fontLabel.replace(/ /g, '+')
-  const link = document.createElement('link')
-  link.rel = 'stylesheet'
-  link.href = `https://fonts.googleapis.com/css2?family=${family}:wght@400;500;700&display=swap`
-  document.head.appendChild(link)
-  loadedFontLinks.set(fontLabel, link)
+export function loadGoogleFont(_fontLabel: string): void {
+  // Disabled: all public fonts are local or system provided.
 }
-
-/**
- * Remove Google Font <link> tags for fonts that are no longer in use.
- * Call this after a theme change with the set of currently active font labels.
- */
-export function unloadUnusedGoogleFonts(activeFontLabels: Set<string>) {
-  for (const [label, linkEl] of loadedFontLinks) {
-    if (!activeFontLabels.has(label)) {
-      linkEl.remove()
-      loadedFontLinks.delete(label)
-      loadedFonts.delete(label)
-    }
-  }
+export function unloadUnusedGoogleFonts(_activeFontLabels: Set<string>): void {
+  // No runtime stylesheet links exist.
 }
-
-/** Pre-load all Google Fonts for preview */
-export function loadAllGoogleFonts() {
-  FONT_OPTIONS.filter(f => f.google).forEach(f => loadGoogleFont(f.label))
+export function loadAllGoogleFonts(): void {
+  // No remote font preloading.
 }
 
 /** Apply overlay effect CSS classes to root element */

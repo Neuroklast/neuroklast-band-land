@@ -636,7 +636,7 @@
   "themeCustomizer.customColors": "Individuelle Farben",
   "themeCustomizer.borderRadius": "Border Radius",
   "themeCustomizer.remValue": "{0}rem",
-  "themeCustomizer.fontDesc": "Wähle aus lokalen und Google Fonts.",
+  "themeCustomizer.fontDesc": "Wähle lokal eingebundene oder Systemschriften.",
   "themeCustomizer.fontDefault": "Standard: {0}",
   "themeCustomizer.fontSampleText": "SITE — The quick brown fox jumps over the lazy dog",
   "themeCustomizer.fontSampleChars": "0123456789 !@#$%^&*() ABCDEFGHIJKLMNOPQRSTUVWXYZ",

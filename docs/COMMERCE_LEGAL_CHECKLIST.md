@@ -15,7 +15,7 @@ This checklist is a technical readiness aid, not a declaration of legal complian
 ## Before enabling NEUROKORE_SALES_ENABLED=true
 
 - [ ] Verify Admin → Legal & Privacy actual full legal name, serviceable address, contact email, editorial responsibility (where necessary) and VAT information if applicable.
-- [ ] Verify how personal, device and order data is really processed; hosting location and actual processors / data transfer safeguards / DPAs (Vercel, Supabase, Resend, R2, Stripe, remote fonts/CDN).
+- [ ] Verify how personal, device and order data is really processed; hosting location and actual processors / data transfer safeguards / DPAs (Vercel, Supabase, Resend, R2, Stripe and third-party media/CDN).
 - [ ] Enable Resend with a verified sender domain; verify CONTACT_FROM_EMAIL and WITHDRAWAL_EMAIL/CONTACT_EMAIL in Vercel.
 - [ ] Configure Stripe public business info, terms-of-service URL, statement descriptor, tax registrations and receipts in dashboard.
 - [ ] Stripe B2C prices must use tax_behavior=inclusive; otherwise checkout stays disabled so no misleading net prices are advertised.
@@ -25,6 +25,9 @@ This checklist is a technical readiness aid, not a declaration of legal complian
 - [ ] Verify the contract confirmation sent after payment and inspect its content on a durable medium.
 - [ ] Check the legally required withdrawal function and notice under § 356a BGB (in force since 19 June 2026).
 - [ ] Confirm BFSG applicability, including the microenterprise service exception if claimed, and test keyboard/mobile accessibility.
+- [ ] Confirm the current supabase/schema.sql applied in production, including REVOKE of direct anonymous analytics inserts. Do not assume a merged SQL file changed the live database.
+- [ ] Verify the first-party signed analytics cookie, immediate revocation, rate-limited API writes and lack of unconsented requests in production browser devtools.
+- [ ] Review rights/licenses/credits for uploaded images, cover art, photos, logos, video, fonts and downloads. Document third-party permissions outside of code.
 - [ ] Review GDPR deletion and retention jobs, data subject requests and backup retention. Prose must match actual execution.
 - [ ] Align the packaged EULA.txt and LICENSE.txt in the released installer/ZIP with the public /license-terms. Uploaded earlier versions contain blanket AS-IS/no-warranty/no-liability clauses that cannot override mandatory German consumer rights.
 - [ ] Have the actual EULA, B2C contract notices and withdrawal text reviewed for the seller's business structure and jurisdictions.

@@ -36,16 +36,27 @@ test.describe('public smoke', () => {
     expect(body).not.toMatch(/TTDSG/)
   })
 
-  test('cookie banner can reject all (opt-in analytics)', async ({ page }) => {
+  test('rejecting analytics leaves no server opt-in cookie', async ({ page }) => {
+    await page.addInitScript(() => localStorage.removeItem('zd-cookie-consent'))
     await page.goto('/')
     const banner = page.locator('[data-cookie-banner]')
-    // Banner appears after delay if no prior consent
-    const visible = await banner.isVisible({ timeout: 5000 }).catch(() => false)
-    if (!visible) {
-      test.skip(true, 'Consent already stored or banner disabled in this env')
-      return
-    }
+    await expect(banner).toBeVisible({ timeout: 7000 })
     await page.getByRole('button', { name: /reject|ablehnen|alle ablehnen/i }).first().click()
     await expect(banner).toBeHidden({ timeout: 5000 })
+    await expect.poll(async () =>
+      (await page.context().cookies()).some(cookie => cookie.name === 'nk_analytics_consent'),
+    ).toBe(false)
+  })
+
+  test('does not request remote Google Fonts on the public homepage', async ({ page }) => {
+    const remoteFonts: string[] = []
+    page.on('request', request => {
+      const host = new URL(request.url()).hostname
+      if (host === 'fonts.googleapis.com' || host === 'fonts.gstatic.com') remoteFonts.push(request.url())
+    })
+    await page.goto('/')
+    await expect(page.locator('body')).toBeVisible()
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => undefined)
+    expect(remoteFonts).toEqual([])
   })
 })

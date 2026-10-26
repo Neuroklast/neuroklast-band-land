@@ -5,6 +5,20 @@ import { usePathname } from 'next/navigation'
 import type { AnalyticsConfig } from '@/lib/analytics-config'
 import { useAnalytics } from '@/hooks/use-analytics'
 
+/** Use stable, non-personal identifiers. Never record button text or URL queries. */
+function interactionTarget(element: Element): string {
+  const id = element.getAttribute('data-analytics-id') || element.id
+  if (id && /^[a-zA-Z0-9_-]{1,80}$/.test(id)) return id
+  const href = element.getAttribute('href')
+  if (href) {
+    try {
+      const url = new URL(href, window.location.origin)
+      return url.origin === window.location.origin ? url.pathname : url.hostname
+    } catch { /* fall back to tag */ }
+  }
+  return element.tagName.toLowerCase()
+}
+
 interface AnalyticsTrackerProps {
   config: AnalyticsConfig
 }
@@ -59,12 +73,7 @@ export function AnalyticsTracker({ config }: AnalyticsTrackerProps) {
 
       track({
         type: 'click',
-        target:
-          clickable.id ||
-          clickable.getAttribute('href') ||
-          clickable.getAttribute('aria-label') ||
-          clickable.textContent?.trim().slice(0, 80) ||
-          'unknown',
+        target: interactionTarget(clickable),
         heatmap: {
           x: Math.min(1, Math.max(0, pageX)),
           y: Math.min(2, Math.max(0, pageY * 2)), // normalize long pages into 0–2 schema range

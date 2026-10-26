@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label'
 import { ArrowCounterClockwise } from '@phosphor-icons/react'
 import type { ThemeSettings } from '@/lib/types'
 import type { ThemePackage } from '@/lib/types'
-import { FONT_OPTIONS, loadGoogleFont } from '@/lib/theme-application'
+import { FONT_OPTIONS } from '@/lib/theme-application'
 import { useLocale } from '@/hooks/use-locale'
 
 interface TypographyPanelProps {
@@ -52,8 +52,6 @@ export default function ThemeCustomizerTypographyPanel({
           <select
             value={themeSettings[key] || FONT_OPTIONS[0].value}
             onChange={e => {
-              const opt = FONT_OPTIONS.find(f => f.value === e.target.value)
-              if (opt?.google) loadGoogleFont(opt.label)
               onPatch({ [key]: e.target.value })
             }}
             className="w-full h-9 rounded border border-primary/20 bg-card px-3 text-xs text-foreground"

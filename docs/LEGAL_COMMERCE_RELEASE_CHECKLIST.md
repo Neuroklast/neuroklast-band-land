@@ -37,4 +37,6 @@ Withdrawal records include names, emails and order details. The table is RLS-pro
 - GDPR Art. 13: https://eur-lex.europa.eu/
 - Google localized pages: https://developers.google.com/search/docs/specialty/international/localized-versions
 
+Also verify the production database contains the latest analytics permissions, the browser makes no remote font requests, and private account pages do not emit analytics. Do not declare compliance based on source code alone.
+
 Keep sales disabled until operational and legal checks are completed.

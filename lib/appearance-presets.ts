@@ -52,9 +52,9 @@ export const BUILTIN_APPEARANCE_PRESETS: SavedAppearancePreset[] = [
       borderColor: 'oklch(0.15 0.03 250)',
       secondaryColor: 'oklch(0.10 0.02 260)',
       modalGlowColor: 'oklch(0.60 0.20 250)',
-      fontHeading: "'Orbitron', sans-serif",
-      fontBody: "'Share Tech Mono', monospace",
-      fontMono: "'Share Tech Mono', monospace",
+      fontHeading: "var(--font-orbitron), sans-serif",
+      fontBody: "var(--font-share-tech-mono), monospace",
+      fontMono: "var(--font-share-tech-mono), monospace",
     },
   },
   {
@@ -69,9 +69,9 @@ export const BUILTIN_APPEARANCE_PRESETS: SavedAppearancePreset[] = [
       borderColor: 'oklch(0.12 0.04 145)',
       secondaryColor: 'oklch(0.08 0.02 145)',
       modalGlowColor: 'oklch(0.65 0.22 145)',
-      fontHeading: "'Orbitron', sans-serif",
-      fontBody: "'Share Tech Mono', monospace",
-      fontMono: "'Share Tech Mono', monospace",
+      fontHeading: "var(--font-orbitron), sans-serif",
+      fontBody: "var(--font-share-tech-mono), monospace",
+      fontMono: "var(--font-share-tech-mono), monospace",
     },
   },
   {
@@ -86,9 +86,9 @@ export const BUILTIN_APPEARANCE_PRESETS: SavedAppearancePreset[] = [
       borderColor: 'oklch(0.15 0.05 300)',
       secondaryColor: 'oklch(0.10 0.04 300)',
       modalGlowColor: 'oklch(0.60 0.25 300)',
-      fontHeading: "'Orbitron', sans-serif",
-      fontBody: "'Share Tech Mono', monospace",
-      fontMono: "'Share Tech Mono', monospace",
+      fontHeading: "var(--font-orbitron), sans-serif",
+      fontBody: "var(--font-share-tech-mono), monospace",
+      fontMono: "var(--font-share-tech-mono), monospace",
     },
   },
   {
@@ -103,9 +103,9 @@ export const BUILTIN_APPEARANCE_PRESETS: SavedAppearancePreset[] = [
       borderColor: 'oklch(0.18 0.06 80)',
       secondaryColor: 'oklch(0.10 0.03 60)',
       modalGlowColor: 'oklch(0.70 0.18 80)',
-      fontHeading: "'Orbitron', sans-serif",
-      fontBody: "'Share Tech Mono', monospace",
-      fontMono: "'Share Tech Mono', monospace",
+      fontHeading: "var(--font-orbitron), sans-serif",
+      fontBody: "var(--font-share-tech-mono), monospace",
+      fontMono: "var(--font-share-tech-mono), monospace",
     },
   },
   {
@@ -120,9 +120,9 @@ export const BUILTIN_APPEARANCE_PRESETS: SavedAppearancePreset[] = [
       borderColor: 'oklch(0.10 0.01 225)',
       secondaryColor: 'oklch(0.07 0.01 230)',
       modalGlowColor: 'oklch(0.70 0.05 215)',
-      fontHeading: "'Orbitron', sans-serif",
-      fontBody: "'Share Tech Mono', monospace",
-      fontMono: "'Share Tech Mono', monospace",
+      fontHeading: "var(--font-orbitron), sans-serif",
+      fontBody: "var(--font-share-tech-mono), monospace",
+      fontMono: "var(--font-share-tech-mono), monospace",
     },
   },
 ]
@@ -133,12 +133,6 @@ export const HEADING_FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'Orbitron', value: "var(--font-orbitron), 'Orbitron', sans-serif" },
   { label: 'Space Mono', value: "var(--font-space-mono), 'Space Mono', monospace" },
   { label: 'Share Tech Mono', value: "var(--font-share-tech-mono), 'Share Tech Mono', monospace" },
-  { label: 'Rajdhani', value: "'Rajdhani', sans-serif" },
-  { label: 'Exo 2', value: "'Exo 2', sans-serif" },
-  { label: 'Audiowide', value: "'Audiowide', sans-serif" },
-  { label: 'Share Tech', value: "'Share Tech', sans-serif" },
-  { label: 'Bebas Neue', value: "'Bebas Neue', sans-serif" },
-  { label: 'Oswald', value: "'Oswald', sans-serif" },
   { label: 'system-ui', value: 'system-ui, sans-serif' },
 ]
 
@@ -147,18 +141,12 @@ export const BODY_FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'Space Mono', value: "var(--font-space-mono), 'Space Mono', monospace" },
   { label: 'Share Tech Mono', value: "var(--font-share-tech-mono), 'Share Tech Mono', monospace" },
   { label: 'system-ui', value: 'system-ui, sans-serif' },
-  { label: 'Inter', value: "'Inter', sans-serif" },
-  { label: 'Roboto', value: "'Roboto', sans-serif" },
-  { label: 'Rajdhani', value: "'Rajdhani', sans-serif" },
 ]
 
 export const MONO_FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'JetBrains Mono (default)', value: "var(--font-jetbrains-mono), 'JetBrains Mono', monospace" },
   { label: 'Share Tech Mono', value: "var(--font-share-tech-mono), 'Share Tech Mono', monospace" },
   { label: 'Space Mono', value: "var(--font-space-mono), 'Space Mono', monospace" },
-  { label: 'Fira Code', value: "'Fira Code', monospace" },
-  { label: 'Source Code Pro', value: "'Source Code Pro', monospace" },
-  { label: 'VT323', value: "'VT323', monospace" },
 ]
 
 export type FontSizeThemeKey = 'headingFontSize' | 'bodyFontSize' | 'monoFontSize'
