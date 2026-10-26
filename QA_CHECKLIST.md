@@ -16,3 +16,10 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] In Admin → Look & Feel → Background, upload MP4/MOV/WebM on desktop and separate-mobile. Confirm encode/upload progress and scroll seeking at top/middle/bottom.
 - [ ] Import a public video URL and a Google Drive video. Confirm temporary R2 source cleanup and only encoded MP4 is selected.
 - [ ] Test an unsupported/oversized/corrupt video. Existing live background must remain unchanged, errors must be visible.
+
+### Release Manager product sync
+
+- [ ] A manager beta release creates one new NEUROKORE product version with Installer and Bundle downloads.
+- [ ] R2 file hashes and displayed versions match GitHub; public/admin views refresh.
+- [ ] Interrupted transfer can retry without duplicate versions or replacing published assets.
+- [ ] Missing/wrong sync credentials deny import; withdrawn releases stay withdrawn.
