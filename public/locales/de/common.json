@@ -20,7 +20,7 @@
   "nav.closePlayer": "Musik-Player schließen",
   "nav.openPlayer": "Musik-Player öffnen",
   "cookie.notice": "SYSTEM_HINWEIS",
-  "cookie.text": "Diese Website verwendet technisch notwendige lokale Speicherung (Local Storage, IndexedDB) für Einstellungen und Bildcaching. Es werden keine Tracking-Cookies gesetzt. Weitere Informationen finden Sie in unserer Datenschutzerklärung.",
+  "cookie.text": "Diese Website nutzt Local Storage und IndexedDB für Einstellungen und Bildcache. Eine optionale Reichweitenmessung wird nur aktiviert, wenn Sie Analytics erlauben. Ihre Auswahl können Sie jederzeit in den Datenschutzeinstellungen ändern. Weitere Informationen finden Sie in unserer Datenschutzerklärung.",
   "cookie.decline": "ABLEHNEN",
   "cookie.accept": "AKZEPTIEREN",
   "hero.sysLabel": "SYS: NK-MAIN",

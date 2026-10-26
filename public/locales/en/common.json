@@ -20,7 +20,7 @@
   "nav.closePlayer": "Close music player",
   "nav.openPlayer": "Open music player",
   "cookie.notice": "SYSTEM_NOTICE",
-  "cookie.text": "This website uses technically necessary local storage (Local Storage, IndexedDB) for settings and image caching. No tracking cookies are set. For more information, see our privacy policy.",
+  "cookie.text": "This site uses Local Storage and IndexedDB for settings and image caching. Optional analytics runs only if you allow it. You can change your choice at any time in Privacy Preferences. See our Privacy Policy for details.",
   "cookie.decline": "DECLINE",
   "cookie.accept": "ACCEPT",
   "hero.sysLabel": "SYS: NK-MAIN",
