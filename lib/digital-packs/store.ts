@@ -1,7 +1,7 @@
 import 'server-only'
 import { z } from 'zod'
 import { db } from '@/lib/neurokore/server'
-import { packSchema, packIsReady } from './rules'
+import { packSchema, packIsReady, type DigitalPack } from './rules'
 export { packSchema, packIsReady, euros, digitalPackSalesOpen } from './rules'
 export type { DigitalPack } from './rules'
 
