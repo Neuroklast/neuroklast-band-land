@@ -59,6 +59,7 @@ export default function YouTubeWidget({ widget, themeSettings }: YouTubeWidgetPr
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
         loading="lazy"
+        referrerPolicy="strict-origin-when-cross-origin"
         style={{
           position: 'absolute',
           top: 0,

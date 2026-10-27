@@ -4,6 +4,10 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-10-27
+
+YouTube embeds need a non-empty HTTP `Referer` to identify the embedding site. `referrerPolicy="no-referrer"` on an iframe overrides the correct global `Referrer-Policy` header and can trigger YouTube error 153. Use `strict-origin-when-cross-origin` on all YouTube iframes so only the site origin is shared cross-site. Preserve two-click consent so no YouTube request occurs before the visitor opts in.
+
 ## Session: 2026-10-26
 
 GitHub asset SHA-256 digests establish download identity, not Authenticode signing. Public release imports must keep signature status unverified, validate exact repository asset URLs and retain the existing product visibility/download gates. Legacy CMS beta versions can omit their suffix; compare them using their declared channel before selecting a newer external release.

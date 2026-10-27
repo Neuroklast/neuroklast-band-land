@@ -88,7 +88,7 @@ Built-ins: `help`, `clear`, `exit`, `glitch`, `matrix`. Custom commands cannot o
 
 ### Two-click embeds
 
-YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: one HUD click (no latch). The iframe loads **only after** that click. Spotify uses a static `open.spotify.com/embed/{type}/{id}` iframe (`lib/spotify-artist.ts` `spotifyEmbedUrl`) — never the iframe-api script (it eval()s and fails production CSP). Spotify iframe height is the box pixel height (232 mobile / 352 desktop), not `"100%"`. Cookie banner is **not** a hatch slider.
+YouTube (`YouTubeEmbed`) and Spotify (`SpotifyEmbed`) use `EmbedConsentGate`: one HUD click (no latch). The iframe loads **only after** that click. Spotify uses a static `open.spotify.com/embed/{type}/{id}` iframe (`lib/spotify-artist.ts` `spotifyEmbedUrl`) — never the iframe-api script (it eval()s and fails production CSP). Spotify iframe height is the box pixel height (232 mobile / 352 desktop), not `"100%"`. Cookie banner is **not** a hatch slider. YouTube iframes must set `referrerPolicy="strict-origin-when-cross-origin"`: the player needs the site origin for identification (error 153 otherwise). Never use `no-referrer` on these iframes. This does not change the two-click consent requirement.
 
 ---
 
