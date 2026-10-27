@@ -236,13 +236,14 @@ export function PluginDetail({ productId }: { productId: string }) {
   }, [dirty])
 
   async function save(form: HTMLFormElement) {
-    if (!product) return
+    if (!product || busy) return
     const data = new FormData(form)
     const titleValue = String(data.get('title') ?? '').trim()
     const rawSlug = String(data.get('slug') ?? '').trim()
     const slugValue = rawSlug || slugifyProductTitle(titleValue)
-    if (!slugValue) {
-      setMessage('Add a title or a URL slug.')
+    if (!titleValue || !/^[a-z0-9][a-z0-9-]*$/.test(slugValue)) {
+      selectTab('page')
+      setMessage('Enter a product name and a valid lowercase URL slug.')
       return
     }
     setBusy(true)
@@ -417,6 +418,7 @@ export function PluginDetail({ productId }: { productId: string }) {
 
       <form
         id="plugin-core-form"
+        noValidate
         className="space-y-5"
         onChange={(event) => {
           if ((event.target as HTMLInputElement).name) setDirty(true)
