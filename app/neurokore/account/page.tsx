@@ -30,7 +30,7 @@ export default async function AccountPage({
           Otherwise, request a one-time email link.
         </p>
         <LicenseAccount />
-        <Link href="/plugins/neurokore#purchase"
+        <Link href="/plugins/neurokore/checkout"
           className="inline-block text-sm font-semibold text-zinc-200 underline underline-offset-4 hover:text-red-400">
           Return to NEUROKORE checkout
         </Link>
