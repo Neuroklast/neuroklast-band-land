@@ -10,6 +10,7 @@ const rowsSchema = z.object({
     tier: z.string(),
     expires_at: z.string().nullable(),
     revoked_at: z.string().nullable(),
+    stripe_session: z.string().nullable(),
   })),
 })
 
@@ -250,6 +251,18 @@ export function LicensePanel({ productId }: { productId: string }) {
             >
               Reset devices
             </button>
+            {row.stripe_session?.startsWith('cs_test_') && (
+              <button
+                className="min-h-[44px] rounded border border-red-800 px-3 py-2 text-sm text-red-300 hover:bg-red-950/40 disabled:opacity-40"
+                disabled={busy}
+                onClick={() => {
+                  const answer = window.prompt('Permanently delete this sandbox licence and all its devices? The sandbox order remains as a replay-safe record. Type DELETE TEST to confirm:')
+                  if (answer === 'DELETE TEST') void mutate({ action: 'delete_sandbox', id: row.id })
+                }}
+              >
+                Delete test key
+              </button>
+            )}
           </li>
         ))}
       </ul>
