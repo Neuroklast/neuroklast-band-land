@@ -68,3 +68,20 @@ The narrow additive migration `neurokore_sandbox_test_license_cleanup` was succe
 Verification after applying: four pre-existing licences, zero orders, the new column exists, `anon` and `authenticated` cannot invoke the delete RPC, `service_role` can.
 
 **No Stripe sandbox checkout or real plugin activation has yet been executed end-to-end.**
+
+## Checkout Session API compatibility finding (27 October 2026)
+
+An authenticated customer reached order insertion, but Stripe rejected the Session and the order had no `stripe_session` set.
+
+Confirmed against the NEUROKLAST Stripe Sandbox API, in order:
+
+1. Managed Payments defaults **on** and rejects Checkout `custom_text`.
+2. With Managed Payments disabled, `consent_collection[terms_of_service]=required` requires a public Terms URL configured in Stripe Dashboard.
+3. With that field omitted, `automatic_tax.enabled=true` requires a Stripe product tax code or account-wide default tax code.
+4. A one-time €1 sandbox Checkout Session was created successfully **without payment** when `managed_payments.enabled=false`, custom text retained, native Stripe TOS collection omitted, and automatic tax not requested.
+
+The code now applies these exceptions **only** to the Preview NEUROKORE sandbox path. Its own legal-link acknowledgement checkbox is still required before the API is called. The sandbox Checkout Session uses Stripe API `2026-04-22.dahlia` (first version supporting `managed_payments`); the existing production API version and automatic tax/consent behaviour are not changed. It does **not** demonstrate configured VAT handling for real customers.
+
+Before enabling **live** sales, configure the Stripe public Terms URL and Stripe Tax registrations/default tax code and decide deliberately whether Managed Payments (Stripe as merchant of record) is suitable. Do not silently carry sandbox tax exclusions over to production.
+
+The Preview endpoint now reports a non-sensitive failure stage if an external service still prevents checkout. No paid test session or licence has been created yet.
