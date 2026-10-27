@@ -2,7 +2,7 @@
 import { z } from 'zod'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createActionClient } from '@/lib/supabaseServer'
-import { body, json, limit, sameOrigin, unavailable } from '@/lib/neurokore/server'
+import { body, json, limit, origin, sameOrigin, unavailable } from '@/lib/neurokore/server'
 export async function POST(request: Request) {
   try {
     sameOrigin(request)
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       const { error } = await client.auth.verifyOtp({ email: input.email, token: input.token, type: 'email' })
       if (error) return unavailable()
     } else {
-      const { error } = await client.auth.signInWithOtp({ email: input.email, options: { shouldCreateUser: true } })
+      const { error } = await client.auth.signInWithOtp({ email: input.email, options: { shouldCreateUser: true, emailRedirectTo: origin() + '/neurokore/auth/callback' } })
       if (error) return unavailable()
     }
     return json({ ok: true })
