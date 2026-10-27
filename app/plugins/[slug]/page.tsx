@@ -105,8 +105,8 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
 
           {sandboxPreview && (
             <section role="status" aria-label="Stripe Sandbox readiness"
-              className="space-y-2 border border-amber-700/60 bg-amber-950/30 p-4 text-sm text-amber-100">
-              <p className="font-semibold">NEUROKORE — Stripe Sandbox (test payments only)</p>
+              className="space-y-1 border-l-2 border-amber-700/70 bg-zinc-950 px-4 py-3 text-xs text-zinc-300">
+              <p className="font-semibold text-amber-300">Preview / Stripe Sandbox – simulated payments only</p>
               {sandboxBlocker === 'invalid-stripe-key' ? (
                 <p>Checkout locked: Preview must use a NEUROKLAST Stripe test secret key (sk_test_ or rk_test_), not a live key.</p>
               ) : sandboxBlocker === 'sales-disabled' ? (
@@ -124,7 +124,6 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
               {!sandboxMailReady && (
                 <p>Purchase email is not ready: set a Resend API key for this Preview branch or provide access to the existing encrypted key.</p>
               )}
-              <p>Test licences can be deleted by an administrator; demo download remains available.</p>
             </section>
           )}
           <header className={
@@ -144,16 +143,17 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                 )}
               </div>
               <div className="flex flex-wrap gap-3">
+                {salesOpen && price && !price.recurring && (
+                  <a href="#purchase"
+                    className="inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-800/80 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                    Buy {product.title} · {formatProductPrice(price)}
+                  </a>
+                )}
                 {downloadAvailable && (
                   <Link href={'/plugins/' + product.slug + '/download'}
-                    className="inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-700/20 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
-                    {product.pricing_mode === 'free' ? 'Free download' : 'Download demo'}
+                    className="inline-flex min-h-11 items-center justify-center border border-white/40 px-5 py-3 text-sm font-semibold text-white transition-colors hover:border-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                    {product.pricing_mode === 'free' ? 'Free download' : 'Try free demo'}
                   </Link>
-                )}
-                {salesOpen && price && !price.recurring && (
-                  <a href="#purchase" className="inline-flex min-h-11 items-center justify-center border border-white/40 px-5 py-3 text-sm font-semibold hover:border-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
-                    Buy licence · {formatProductPrice(price)}
-                  </a>
                 )}
                 <Link href="/#contact" className="inline-flex min-h-11 items-center justify-center px-2 py-3 text-sm text-zinc-300 underline underline-offset-4 hover:text-white">
                   Support
