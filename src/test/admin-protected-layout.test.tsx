@@ -61,6 +61,8 @@ describe('ProtectedAdminLayout', () => {
 
     expect(result).toBeTruthy()
     expect((result as ReactElement).props.children).toBeTruthy()
+    // The public site uses Lenis; admin nested scrollers must receive native wheel/touch events.
+    expect((result as ReactElement).props['data-lenis-prevent']).toBe('')
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 
