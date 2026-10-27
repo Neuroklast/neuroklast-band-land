@@ -25,6 +25,9 @@ export async function GET(request: Request) {
     const { error } = await db().from('analytics_events')
       .delete().lt('created_at', cutoff)
     if (error) throw error
+    const { error: diagError } = await db().from('neurokore_beta_diagnostics')
+      .delete().lt('created_at', cutoff)
+    if (diagError) throw diagError
     return Response.json({ ok: true, cutoff }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {
     return Response.json({ error: 'Retention cleanup failed' }, { status: 503 })

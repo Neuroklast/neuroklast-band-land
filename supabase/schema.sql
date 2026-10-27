@@ -1599,3 +1599,29 @@ GRANT SELECT, INSERT, UPDATE ON TABLE public.privacy_requests TO service_role;
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_snapshot text;
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS licence_snapshot text;
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_version text;
+
+-- NEUROKORE closed beta diagnostics. No free-text fields and no user/device IDs.
+-- POST is allowed only through the Vercel server using service_role.
+CREATE TABLE IF NOT EXISTS public.neurokore_beta_diagnostics (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  schema_version integer NOT NULL DEFAULT 1 CHECK (schema_version = 1),
+  plugin_version text NOT NULL CHECK (length(plugin_version) <= 24),
+  event_code text NOT NULL CHECK (event_code IN ('session-start','js-error','promise-rejection','manual-test','native-timeout')),
+  os_family text NOT NULL CHECK (os_family IN ('windows11','windows','macos','linux','other')),
+  host_family text NOT NULL CHECK (host_family IN ('fl-studio','ableton','reaper','bitwig','cubase','studio-one','logic','pro-tools','reason','garageband','other')),
+  plugin_format text NOT NULL CHECK (plugin_format IN ('vst3','au','standalone','other')),
+  cpu_cores_bucket smallint NOT NULL CHECK (cpu_cores_bucket IN (2,4,8,16,32)),
+  memory_gb_bucket smallint NOT NULL CHECK (memory_gb_bucket IN (8,16,32,64)),
+  sample_rate integer NOT NULL CHECK (sample_rate IN (0,44100,48000,88200,96000,192000)),
+  buffer_size integer NOT NULL CHECK (buffer_size BETWEEN 0 AND 8192),
+  bundle text CHECK (bundle IS NULL OR bundle ~ '^[a-zA-Z0-9_-]{1,70}\\.js$'),
+  line_number integer CHECK (line_number IS NULL OR line_number BETWEEN 1 AND 100000)
+);
+CREATE INDEX IF NOT EXISTS neurokore_beta_diagnostics_created_idx
+  ON public.neurokore_beta_diagnostics (created_at DESC);
+CREATE INDEX IF NOT EXISTS neurokore_beta_diagnostics_code_idx
+  ON public.neurokore_beta_diagnostics (event_code, created_at DESC);
+ALTER TABLE public.neurokore_beta_diagnostics ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.neurokore_beta_diagnostics FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, DELETE ON TABLE public.neurokore_beta_diagnostics TO service_role;
