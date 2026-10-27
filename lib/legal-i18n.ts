@@ -233,9 +233,8 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     hosting: {
       title: '2. Hosting and infrastructure',
       paragraphs: [
-        'This website is hosted by Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. When you visit our website, personal data such as your IP address may be processed on Vercel servers. This may involve transfers to the USA. See Vercel\'s privacy policy: https://vercel.com/legal/privacy-policy',
-        'The legal basis is Art. 6(1)(f) GDPR (legitimate interest in reliable website presentation).',
-        'We use Supabase (database and authentication for the admin area), Cloudflare R2 (media files; EU jurisdiction where configured), and Resend (transactional emails for contact requests, purchase confirmations and withdrawal receipts — no mailing list) as processors. Data processing agreements (DPAs) and storage regions should be configured in each provider dashboard. These providers process data only as necessary to operate the website.',
+        "Our website is delivered through Vercel. To show the pages and protect the service, connection details such as your IP address and the time of access are processed. This is based on our legitimate interest in operating a secure website (Art. 6(1)(f) GDPR). Vercel privacy information: https://vercel.com/legal/privacy-policy.",
+        "We use Supabase for customer accounts, software licences and website data. Its main database is located in the United Kingdom. Cloudflare delivers some images and software downloads. Resend sends our contact and purchase emails. These providers receive only the data required for the respective service. More information about transfers abroad is provided below.",
       ],
     },
     controller: {
@@ -250,51 +249,42 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     storage: {
       title: '4. Browser storage, cookies, and local data',
       paragraphs: [
-        'We store your cookie consent preferences in localStorage (key: zd-cookie-consent). This is technically necessary to remember your choice. Legal basis: Art. 6(1)(f) GDPR and § 25(2) TDDDG.',
-        'Functional preferences (language, theme, sound mute state) may be stored in localStorage without analytics consent because they are strictly necessary for your chosen experience. Legal basis: Art. 6(1)(f) GDPR.',
-        'An IndexedDB image cache may store compressed images locally to improve performance. No personal profiles are created. Legal basis: Art. 6(1)(f) GDPR.',
-        'If you consent to analytics, we may store first-party usage events (page views, section views, clicks with relative coordinates) on our servers (Supabase table analytics_events). No advertising network is involved. Retention: events are kept for up to 90 days for reporting, then removed through a protected daily retention job when configured; you may request earlier erasure. You can revoke consent at any time via "Cookie Preferences" in the footer.',
-        'Admin authentication uses HttpOnly session cookies (Supabase). These are not set for regular visitors.',
+        "We remember choices such as your language, website appearance and cookie preferences on your device. Essential cookies and similar storage also keep sign-in and security features working. Legal basis: Art. 6(1)(f) GDPR and, where applicable, § 25(2) TDDDG.",
+        "Optional website statistics are collected only with your consent (Art. 6(1)(a) GDPR). If you agree, we record which pages and sections are viewed and which links or buttons are used. Click positions may be recorded without recording the content of your input. These statistics are stored for up to 90 days. You can change your choice in the cookie settings at any time.",
+        "Images may be saved temporarily on your device so the site loads faster. Customer and administrator logins use cookies required for authentication.",
       ],
     },
     contact: {
       title: '5. Contact form',
       paragraphs: [
-        'When you submit our contact form, we process: name, email address, subject, and message.',
-        'Your message is transmitted to us by email via Resend. We do not operate an inbox or ticket system on this website, and we do not store contact submissions in our database. We do not sell or share this data with third parties for marketing purposes. A privacy notice with a link to this policy is shown next to the form.',
-        'Legal basis: Art. 6(1)(b) GDPR (pre-contractual communication) or Art. 6(1)(f) GDPR (legitimate interest in responding to inquiries).',
-        'Data is deleted after your request has been processed, unless statutory retention obligations require longer storage.',
-        'Public forms are rate-limited and protected against automated abuse (pseudonymised IP hashes may be stored briefly for security). Legal basis: Art. 6(1)(f) GDPR.',
+        "If you contact us through the form, we use your name, email address, subject and message to respond. Resend delivers the message to our email inbox. Legal basis: Art. 6(1)(b) GDPR for enquiries about a contract, otherwise Art. 6(1)(f) GDPR.",
+        "We keep the correspondence only as long as necessary to handle it, unless legal retention obligations apply. To protect the form from spam, we may briefly process connection information such as your IP address (Art. 6(1)(f) GDPR).",
       ],
     },
     newsletter: {
       title: '6. No newsletter',
       paragraphs: [
-        'This website does not offer a newsletter, mailing list, or email subscription. Contact requests are delivered through Resend email. We do not store subscriber addresses.',
+        "We do not currently offer an email newsletter or mailing list. Contact and purchase emails are not used to subscribe you to advertising.",
       ],
     },
     news: {
       title: '7. News and blog content',
       paragraphs: [
-        'Public news posts are editorial content (title, text, optional cover image). Reading news does not require an account and does not create a personal profile.',
-        'Cover images may be delivered via our media CDN (Cloudflare R2) or image proxy (wsrv.nl) as described below. Legal basis: Art. 6(1)(f) GDPR.',
+        "You can read our news without creating an account. Images in articles may be delivered by Cloudflare or the image service wsrv.nl. These providers may receive your IP address when the images are displayed (Art. 6(1)(f) GDPR).",
       ],
     },
     cdn: {
       title: '8. Image CDN (wsrv.nl) and web fonts',
       paragraphs: [
-        'To improve loading speed, images may be delivered via wsrv.nl (Images.weserv.nl). When your browser requests an image, wsrv.nl may temporarily process your IP address to deliver the content.',
-        'wsrv.nl does not set tracking cookies. Legal basis: Art. 6(1)(f) GDPR (legitimate interest in fast image delivery). More information: https://wsrv.nl',
-        'Default website fonts (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono and Space Mono) are self-hosted at build time. Choosing other fonts in the appearance settings does not load external Google Fonts; local fallbacks are used instead.',
+        "Some images are delivered through the external service wsrv.nl so they load faster. Your IP address is technically transferred when you load such images. Our legitimate interest in reliable page delivery is the legal basis (Art. 6(1)(f) GDPR). Details: https://wsrv.nl.",
+        "Website fonts are loaded from our own website, not directly from Google's font service.",
       ],
     },
     embeds: {
       title: '9. Third-party embeds (Spotify, YouTube)',
       paragraphs: [
-        'Embedded media players (Spotify artist player, YouTube) are NOT loaded automatically. They only load after you explicitly click a load button (two-click method). The Listen section on the homepage uses this Spotify embed.',
-        'When activated, your IP address and browser data may be transmitted to Spotify AB (Sweden) or Google/YouTube (USA). Legal basis: Art. 6(1)(a) GDPR (your explicit consent).',
-        'Spotify privacy policy: https://www.spotify.com/legal/privacy-policy/',
-        'Google privacy policy: https://policies.google.com/privacy',
+        "Music and video players from Spotify and YouTube are loaded only after you choose to display them. Until then, the embedded players do not connect to those providers.",
+        "Once activated, Spotify or YouTube may receive your IP address and browser information and may use their own cookies. The legal basis for loading the content is your consent (Art. 6(1)(a) GDPR). Spotify: https://www.spotify.com/legal/privacy-policy/ · Google: https://policies.google.com/privacy.",
       ],
     },
     'external-links': {
@@ -307,7 +297,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     transfers: {
       title: '11. International data transfers',
       paragraphs: [
-        'Some processors (Vercel, Cloudflare, Resend, Google/YouTube when embeds are activated, wsrv.nl) may process data outside the EU/EEA, including the USA. Transfers are based on appropriate safeguards such as EU Standard Contractual Clauses or an adequacy decision (e.g. EU-US Data Privacy Framework) where applicable. The operator should conclude DPAs with each processor.',
+        "Some service providers operate outside the EU and EEA, including in the United Kingdom and the United States. When personal data is transferred, we rely on an applicable adequacy decision or appropriate safeguards such as EU standard contractual clauses. You can contact us for further information about the safeguards relevant to your data.",
       ],
     },
     rights: {
@@ -333,9 +323,8 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     hosting: {
       title: '2. Hosting und Infrastruktur',
       paragraphs: [
-        'Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Besuch der Website können personenbezogene Daten wie Ihre IP-Adresse auf Servern von Vercel verarbeitet werden; dies kann eine Übermittlung in die USA beinhalten. Datenschutzerklärung von Vercel: https://vercel.com/legal/privacy-policy',
-        'Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer zuverlässigen Bereitstellung der Website).',
-        'Als weitere Auftragsverarbeiter nutzen wir Supabase (Datenbank und Admin-Authentifizierung), Cloudflare R2 (Mediendateien; EU-Jurisdiction soweit konfiguriert) und Resend (transaktionale E-Mails für Kontaktanfragen, Kaufbestätigungen und Widerrufsbestätigungen — keine Mailingliste). Auftragsverarbeitungsverträge (AVV/DPA) und Speicherregionen sind in den jeweiligen Anbieter-Dashboards zu konfigurieren.',
+        "Unsere Website wird über Vercel bereitgestellt. Beim Aufruf werden Verbindungsdaten wie deine IP-Adresse und der Zeitpunkt des Zugriffs verarbeitet. Das ist notwendig, damit die Seite funktioniert und wir sie vor Angriffen schützen können. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Informationen zu Vercel: https://vercel.com/legal/privacy-policy.",
+        "Für Kundenkonten, Softwarelizenzen und Website-Daten nutzen wir Supabase. Die zugehörige Datenbank befindet sich im Vereinigten Königreich. Cloudflare liefert einen Teil der Bilder und Softwaredownloads aus. Resend versendet Nachrichten aus dem Kontaktformular sowie E-Mails zu Bestellungen. Diese Anbieter erhalten die Daten, die sie für die jeweilige Aufgabe benötigen. Hinweise zu Übermittlungen ins Ausland findest du weiter unten.",
       ],
     },
     controller: {
@@ -350,51 +339,42 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     storage: {
       title: '4. Browser-Speicher, Cookies und lokale Daten',
       paragraphs: [
-        'Ihre Cookie-Einstellungen speichern wir in localStorage (Schlüssel: zd-cookie-consent). Das ist technisch erforderlich, um Ihre Wahl zu merken. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO und § 25 Abs. 2 TDDDG.',
-        'Funktionale Einstellungen (Sprache, Theme, Ton) können ohne Analytics-Einwilligung in localStorage gespeichert werden, weil sie für die von Ihnen gewählte Nutzung erforderlich sind. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.',
-        'Ein IndexedDB-Bildcache kann komprimierte Bilder lokal speichern, um die Performance zu verbessern. Es werden keine Personenprofile gebildet. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.',
-        'Wenn Sie Analytics zustimmen, können wir First-Party-Nutzungsereignisse (Seitenaufrufe, Abschnittsansichten, Klicks mit relativen Koordinaten) auf unseren Servern speichern (Supabase-Tabelle analytics_events). Es ist kein Werbenetzwerk beteiligt. Speicherdauer: bis zu 90 Tage für Auswertungen, danach automatische Bereinigung durch einen geschützten täglichen Auftrag, sofern konfiguriert; frühere Löschung auf Anfrage. Widerruf jederzeit über „Cookie-Einstellungen“ im Footer.',
-        'Admin-Authentifizierung nutzt HttpOnly-Session-Cookies (Supabase). Für normale Besucher werden diese nicht gesetzt.',
+        "Wir speichern Einstellungen wie Sprache, Darstellung und deine Cookie-Auswahl auf deinem Gerät. Notwendige Cookies und ähnliche Speicherfunktionen halten außerdem Anmeldung und Sicherheitsfunktionen am Laufen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO und, soweit anwendbar, § 25 Abs. 2 TDDDG.",
+        "Wenn du ausdrücklich zustimmst, erfassen wir zur Verbesserung der Website, welche Seiten und Bereiche angesehen und welche Links oder Schaltflächen genutzt werden. Dabei können auch Klickpositionen erfasst werden, nicht aber eingegebene Texte. Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO. Die Auswertungsdaten werden höchstens 90 Tage gespeichert. Deine Einwilligung kannst du jederzeit in den Cookie-Einstellungen ändern.",
+        "Bilder können vorübergehend auf deinem Gerät gespeichert werden, damit sie schneller laden. Für Kunden- und Administratoranmeldungen werden technisch notwendige Cookies eingesetzt.",
       ],
     },
     contact: {
       title: '5. Kontaktformular',
       paragraphs: [
-        'Wenn Sie unser Kontaktformular nutzen, verarbeiten wir: Name, E-Mail-Adresse, Betreff und Nachricht.',
-        'Die Nachricht wird per E-Mail über Resend an uns übermittelt. Es gibt kein Postfach- oder Ticketsystem auf der Website; Kontaktanfragen werden nicht in unserer Datenbank gespeichert. Eine Weitergabe zu Marketingzwecken an Dritte findet nicht statt. Am Formular wird auf diese Datenschutzerklärung hingewiesen.',
-        'Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Kommunikation) oder Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Beantwortung von Anfragen).',
-        'Die Daten werden nach abschließender Bearbeitung Ihrer Anfrage gelöscht, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.',
-        'Formulare sind rate-limitiert; pseudonymisierte IP-Hashes können kurzzeitig zu Sicherheitszwecken gespeichert werden. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.',
+        "Wenn du uns über das Kontaktformular schreibst, verarbeiten wir deinen Namen, deine E-Mail-Adresse, den Betreff und deine Nachricht, um dir antworten zu können. Resend übermittelt die Anfrage an unser E-Mail-Postfach. Rechtsgrundlage ist bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO, ansonsten Art. 6 Abs. 1 lit. f DSGVO.",
+        "Die Korrespondenz bewahren wir nur so lange auf, wie sie für die Bearbeitung erforderlich ist oder gesetzliche Pflichten dies verlangen. Zum Schutz vor Spam können wir Verbindungsdaten wie die IP-Adresse kurzzeitig verarbeiten (Art. 6 Abs. 1 lit. f DSGVO).",
       ],
     },
     newsletter: {
       title: '6. Kein Newsletter',
       paragraphs: [
-        'Diese Website bietet keinen Newsletter, keine Mailingliste und kein E-Mail-Abo. Kontaktanfragen werden über Resend per E-Mail zugestellt. Es werden keine Abonnentenadressen gespeichert.',
+        "Wir bieten derzeit keinen E-Mail-Newsletter und keine Mailingliste an. Nachrichten über das Kontaktformular oder zu Bestellungen sind keine Anmeldung zu Werbung.",
       ],
     },
     news: {
       title: '7. News und redaktionelle Inhalte',
       paragraphs: [
-        'Öffentliche News-Beiträge sind redaktionelle Inhalte. Das Lesen erfordert kein Konto und erzeugt kein Personenprofil.',
-        'Titelbilder können über Cloudflare R2 oder den Bild-Proxy wsrv.nl ausgeliefert werden. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.',
+        "Unsere News kannst du ohne Kundenkonto lesen. Artikelbilder können über Cloudflare oder den Bilddienst wsrv.nl geladen werden. Dabei kann deine IP-Adresse an diese Anbieter übermittelt werden (Art. 6 Abs. 1 lit. f DSGVO).",
       ],
     },
     cdn: {
       title: '8. Bild-CDN (wsrv.nl) und Webfonts',
       paragraphs: [
-        'Zur Performance-Optimierung können Bilder über wsrv.nl ausgeliefert werden. Dabei kann Ihre IP-Adresse kurzzeitig verarbeitet werden.',
-        'wsrv.nl setzt keine Tracking-Cookies. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: https://wsrv.nl',
-        'Die Standardschriften (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono und Space Mono) werden beim Build lokal eingebunden. Für andere Schriftwahlen im Design wird keine Verbindung zu Google Fonts aufgebaut, sondern eine lokal verfügbare Ersatzschrift verwendet.',
+        "Einige Bilder werden über den externen Dienst wsrv.nl ausgeliefert, damit sie schneller laden. Beim Abruf wird deine IP-Adresse aus technischen Gründen übermittelt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: https://wsrv.nl.",
+        "Die Schriftarten der Website werden von unserer eigenen Website geladen. Dabei wird keine Verbindung zum Schriftendienst von Google aufgebaut.",
       ],
     },
     embeds: {
       title: '9. Drittanbieter-Embeds (Spotify, YouTube)',
       paragraphs: [
-        'Eingebettete Media-Player (Spotify-Artist-Player, YouTube) werden NICHT automatisch geladen. Sie laden erst nach explizitem Klick (Zwei-Klick-Lösung). Der Bereich „Hören“ auf der Startseite nutzt dieses Spotify-Embed.',
-        'Nach Aktivierung können IP-Adresse und Browserdaten an Spotify AB (Schweden) bzw. Google/YouTube (USA) übermittelt werden. Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).',
-        'Datenschutz Spotify: https://www.spotify.com/legal/privacy-policy/',
-        'Datenschutz Google: https://policies.google.com/privacy',
+        "Musik- und Videoplayer von Spotify und YouTube werden erst geladen, wenn du sie selbst aktivierst. Vorher wird keine Verbindung über diese eingebetteten Player zu den Anbietern hergestellt.",
+        "Nach der Aktivierung können Spotify oder YouTube deine IP-Adresse und Browserdaten erhalten und eigene Cookies einsetzen. Grundlage für das Laden ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Spotify: https://www.spotify.com/legal/privacy-policy/ · Google: https://policies.google.com/privacy.",
       ],
     },
     'external-links': {
@@ -407,7 +387,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     transfers: {
       title: '11. Internationale Datenübermittlungen',
       paragraphs: [
-        'Einige Auftragsverarbeiter (Vercel, Cloudflare, Resend, Google/YouTube bei aktivierten Embeds, wsrv.nl) können Daten außerhalb der EU/des EWR verarbeiten, einschließlich der USA. Übermittlungen erfolgen auf Grundlage geeigneter Garantien wie EU-Standardvertragsklauseln oder eines Angemessenheitsbeschlusses (z. B. EU-US Data Privacy Framework), soweit anwendbar. Der Betreiber sollte mit jedem Auftragsverarbeiter einen AVV/DPA abschließen.',
+        "Einige unserer Dienstleister verarbeiten Daten außerhalb der EU und des EWR, insbesondere im Vereinigten Königreich und in den USA. Für solche Übermittlungen gelten, je nach Anbieter, ein Angemessenheitsbeschluss der EU oder geeignete Schutzmaßnahmen wie EU-Standardvertragsklauseln. Weitere Informationen zu den für deine Daten geltenden Schutzmaßnahmen kannst du bei uns anfordern.",
       ],
     },
     rights: {
