@@ -61,6 +61,7 @@ describe('ProtectedAdminLayout', () => {
 
     expect(result).toBeTruthy()
     expect((result as ReactElement).props.children).toBeTruthy()
+    expect((result as ReactElement).props['data-lenis-prevent']).toBe('')
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 

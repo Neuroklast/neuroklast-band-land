@@ -148,5 +148,7 @@ export function buildPrivacyPolicySections(
     }
     return { id, title: section.title, paragraphs }
   })
-  return [...sections, commercePrivacySection(locale)]
+  // Commerce, accounts, withdrawal and diagnostic notices are integrated into
+  // the localized defaults. Avoid duplicating the same disclosure at the bottom.
+  return sections
 }

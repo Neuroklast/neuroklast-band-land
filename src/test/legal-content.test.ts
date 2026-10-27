@@ -161,6 +161,31 @@ describe('buildPrivacyPolicySections', () => {
     expect(body).toMatch(/rate-limited/i)
   })
 
+  it('provides every software-commerce privacy disclosure in all eight languages', () => {
+    const config = parseLegalConfig(sampleConfig)
+    for (const locale of LEGAL_LOCALES) {
+      const sections = buildPrivacyPolicySections(config, locale)
+      const identifiers = sections.map(section => section.id)
+      expect(identifiers, locale).toContain('accounts')
+      expect(identifiers, locale).toContain('purchases')
+      expect(identifiers, locale).toContain('requests')
+      expect(identifiers, locale).toContain('diagnostics')
+      expect(identifiers, locale).toContain('updates')
+      expect(identifiers, locale).not.toContain('digital-commerce')
+      expect(new Set(identifiers).size, locale).toBe(identifiers.length)
+      for (const id of ['accounts', 'purchases', 'requests', 'diagnostics', 'updates']) {
+        const section = sections.find(candidate => candidate.id === id)
+        expect(section?.title.length, locale + ':' + id).toBeGreaterThan(6)
+        expect(section?.paragraphs.length, locale + ':' + id).toBeGreaterThan(0)
+      }
+    }
+    const german = buildPrivacyPolicySections(config, 'de').map(section => section.paragraphs.join(' ')).join(' ')
+    expect(german).toContain('NEUROKORE')
+    expect(german).toContain('Stripe')
+    expect(german).toContain('Resend')
+    expect(german).toContain('90 Tagen')
+  })
+
   it('builds German privacy sections', () => {
     const sections = buildPrivacyPolicySections(parseLegalConfig(sampleConfig), 'de')
     const body = sections.map((s) => s.paragraphs.join(' ')).join(' ')
