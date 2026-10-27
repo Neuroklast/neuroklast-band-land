@@ -1,16 +1,16 @@
 /**
- * Next.js server boot hook. On Vercel Production this runs the R2↔DB
- * filename reconcile once per git SHA (see lib/r2-reconcile-on-deploy.ts) and
- * the legacy `*.supabase.co` storage URL migration (lib/legacy-url-migration-on-deploy.ts).
+ * Next.js server boot hook.
+ *
+ * Database schema changes MUST be applied and verified by the explicit
+ * `npm run db:schema` deployment operation before a release. Never run DDL
+ * during a Vercel function's startup: a missing or stale Postgres password
+ * would otherwise trigger repeated authentication failures on live traffic.
+ *
+ * Only the existing non-schema, best-effort maintenance jobs run here.
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME && process.env.NEXT_RUNTIME !== 'nodejs') return
   if (process.env.VERCEL_ENV !== 'production') return
-
-  const { runProductionDeploySchemaApply } = await import('@/lib/schema-apply-on-deploy')
-  // A detached promise can be killed when the serverless startup finishes,
-  // leaving schema_apply_deploy permanently stuck at 'running'.
-  await runProductionDeploySchemaApply()
 
   const { runProductionDeployR2Reconcile } = await import('@/lib/r2-reconcile-on-deploy')
   void runProductionDeployR2Reconcile()
