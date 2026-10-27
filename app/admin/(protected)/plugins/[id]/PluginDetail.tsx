@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { AdminEditorLayout } from '@/app/admin/_components/AdminEditorLayout'
+import { AdminSaveBar } from '@/app/admin/_components/AdminSaveBar'
+import { useAdminEditorTab } from '@/app/admin/_components/useAdminEditorTab'
 import { z } from 'zod'
 import {
   DndContext,
@@ -74,10 +77,19 @@ interface MediaItem {
 
 const inputClass =
   'w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600'
-const primaryButton =
-  'rounded bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px]'
 const secondaryButton =
   'rounded border border-zinc-700 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px]'
+
+const PLUGIN_TABS = [
+  { id: 'page', label: 'Product page' },
+  { id: 'media', label: 'Media' },
+  { id: 'pricing', label: 'Pricing & visibility' },
+  { id: 'signing', label: 'Signing key' },
+  { id: 'releases', label: 'Versions & downloads' },
+  { id: 'licences', label: 'Licences' },
+  { id: 'danger', label: 'Delete product' },
+] as const
+const PLUGIN_TAB_IDS = PLUGIN_TABS.map((tab) => tab.id)
 
 async function api(body?: object): Promise<unknown> {
   const response = await fetch('/api/plugins', body
@@ -181,6 +193,8 @@ export function PluginDetail({ productId }: { productId: string }) {
   const [media, setMedia] = useState<MediaItem[]>([])
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const [dirty, setDirty] = useState(false)
+  const [activeTab, selectTab] = useAdminEditorTab(PLUGIN_TAB_IDS, 'page')
   const [importPem, setImportPem] = useState('')
 
   const [newFeatureTitle, setNewFeatureTitle] = useState('')
@@ -192,12 +206,12 @@ export function PluginDetail({ productId }: { productId: string }) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  async function refresh() {
+  async function refresh(preserveDraft = false) {
     const payload = await api()
     const all = z.object({ products: z.array(productSchema) }).parse(payload).products
     const found = all.find((item) => item.id === productId) ?? null
     setProduct(found)
-    if (found) {
+    if (found && !preserveDraft) {
       setDescription(found.description ?? '')
       setRequirements(found.system_requirements.join('\n'))
       setFeatures(found.features.map((feature) => ({ id: crypto.randomUUID(), title: feature.title, body: feature.body })))
@@ -210,6 +224,16 @@ export function PluginDetail({ productId }: { productId: string }) {
       setMessage(error instanceof Error ? error.message : 'Could not load plugin.'),
     )
   }, [productId])
+
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
 
   async function save(form: HTMLFormElement) {
     if (!product) return
@@ -245,6 +269,7 @@ export function PluginDetail({ productId }: { productId: string }) {
         active: product.active,
       })
       await refresh()
+      setDirty(false)
       setMessage('Saved. The public page uses these values after revalidation.')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Please retry.')
@@ -263,7 +288,7 @@ export function PluginDetail({ productId }: { productId: string }) {
     setMessage('')
     try {
       await api({ action: 'set_active', id: product.id, active })
-      await refresh()
+      await refresh(true)
       setMessage(active
         ? 'Page is public. The product and its published downloads are now reachable.'
         : 'Page hidden. The public page and downloads return 404 until you make it public again.')
@@ -300,6 +325,7 @@ export function PluginDetail({ productId }: { productId: string }) {
   function handleFeatureDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
+    setDirty(true)
     setFeatures((prev) => {
       const oldIndex = prev.findIndex((f) => f.id === active.id)
       const newIndex = prev.findIndex((f) => f.id === over.id)
@@ -312,28 +338,34 @@ export function PluginDetail({ productId }: { productId: string }) {
     const body = newFeatureBody.trim()
     if (!title) return
     setFeatures([...features, { id: crypto.randomUUID(), title, body }])
+    setDirty(true)
     setNewFeatureTitle('')
     setNewFeatureBody('')
   }
 
   function updateFeature(id: string, field: 'title' | 'body', value: string) {
+    setDirty(true)
     setFeatures((prev) => prev.map((f) => f.id === id ? { ...f, [field]: value } : f))
   }
 
   function removeFeature(id: string) {
+    setDirty(true)
     setFeatures((prev) => prev.filter((f) => f.id !== id))
   }
 
   function removeMedia(id: string) {
+    setDirty(true)
     setMedia((prev) => prev.filter((m) => m.id !== id))
   }
 
   function appendMedia(kind: MediaItem['kind'], storagePath: string, publicUrl?: string) {
     if (!publicUrl) return
+    setDirty(true)
     setMedia((prev) => [...prev, { id: crypto.randomUUID(), kind, url: publicUrl, storagePath }])
   }
 
   function moveMedia(id: string, direction: -1 | 1) {
+    setDirty(true)
     setMedia((prev) => {
       const index = prev.findIndex(item => item.id === id)
       const next = index + direction
@@ -343,6 +375,7 @@ export function PluginDetail({ productId }: { productId: string }) {
   }
 
   function resolveMedia(id: string, storagePath: string, publicUrl?: string) {
+    setDirty(true)
     setMedia((prev) => prev.map((m) => m.id === id ? { ...m, url: publicUrl ?? m.url, storagePath } : m))
   }
 
@@ -354,10 +387,11 @@ export function PluginDetail({ productId }: { productId: string }) {
   }
 
   return (
-    <div className="space-y-8">
-      <p role="status" className="min-h-6 text-sm text-zinc-400">{message}</p>
+    <div className="space-y-4">
+      <AdminEditorLayout tabs={PLUGIN_TABS} activeTab={activeTab} onTabChange={selectTab} idPrefix="plugin-editor">
+      <p role="status" className="mb-3 min-h-5 text-sm text-zinc-400">{message}</p>
 
-      <div className={`rounded border p-4 text-sm ${publicLive ? 'border-emerald-900/60 bg-emerald-950/20 text-emerald-200' : 'border-amber-900/60 bg-amber-950/20 text-amber-200'}`}>
+      <div hidden={activeTab !== 'page'} className={`rounded border p-4 text-sm ${publicLive ? 'border-emerald-900/60 bg-emerald-950/20 text-emerald-200' : 'border-amber-900/60 bg-amber-950/20 text-amber-200'}`}>
         <p className="font-medium">
           {publicLive
             ? 'Public: the product page and downloads are reachable.'
@@ -382,13 +416,17 @@ export function PluginDetail({ productId }: { productId: string }) {
       </div>
 
       <form
+        id="plugin-core-form"
         className="space-y-5"
+        onChange={(event) => {
+          if ((event.target as HTMLInputElement).name) setDirty(true)
+        }}
         onSubmit={(event) => {
           event.preventDefault()
           void save(event.currentTarget)
         }}
       >
-        <section className="space-y-3 rounded border border-zinc-800 bg-zinc-950/60 p-4">
+        <section id="plugin-editor-panel-page" aria-labelledby="plugin-editor-nav-page" hidden={activeTab !== 'page'} className="space-y-3 rounded border border-zinc-800 bg-zinc-950/60 p-4">
           <h2 className="text-sm font-semibold text-zinc-200">Product page</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm text-zinc-300">
@@ -461,12 +499,14 @@ export function PluginDetail({ productId }: { productId: string }) {
 
           <label className="block text-sm text-zinc-300">
             System requirements — one per line
-            <textarea value={requirements} onChange={(event) => setRequirements(event.target.value)}
+            <textarea value={requirements} onChange={(event) => { setRequirements(event.target.value); setDirty(true) }}
               rows={3} className={inputClass + ' mt-1'} />
           </label>
 
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Media</h3>
+        </section>
+
+        <section id="plugin-editor-panel-media" aria-labelledby="plugin-editor-nav-media" hidden={activeTab !== 'media'} className="space-y-3 rounded border border-zinc-800 bg-zinc-950/60 p-4">
+            <h2 className="text-sm font-semibold text-zinc-200">Media</h2>
             <p className="text-xs text-zinc-400">
               Upload images, video (MP4/WebM) and audio (MP3/WAV) to R2. No URLs.
               The first image is the product cover used on the homepage and in 1200 × 630 social link previews.
@@ -583,10 +623,9 @@ export function PluginDetail({ productId }: { productId: string }) {
                 />
               )}
             </div>
-          </div>
         </section>
 
-        <section className="space-y-4 rounded border border-zinc-800 bg-zinc-950/60 p-4">
+        <section id="plugin-editor-panel-pricing" aria-labelledby="plugin-editor-nav-pricing" hidden={activeTab !== 'pricing'} className="space-y-4 rounded border border-zinc-800 bg-zinc-950/60 p-4">
           <h2 className="text-sm font-semibold text-zinc-200">Visibility, pricing and licensing</h2>
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="text-sm text-zinc-300">
@@ -637,10 +676,9 @@ export function PluginDetail({ productId }: { productId: string }) {
           </p>
         </section>
 
-        <button className={primaryButton} disabled={busy}>{busy ? 'Saving…' : 'Save plugin'}</button>
       </form>
 
-      <section className="space-y-3 rounded border border-zinc-800 bg-zinc-950/60 p-4">
+      <section id="plugin-editor-panel-signing" aria-labelledby="plugin-editor-nav-signing" hidden={activeTab !== 'signing'} className="space-y-3 rounded border border-zinc-800 bg-zinc-950/60 p-4">
         <h2 className="text-sm font-semibold text-zinc-200">Signing key</h2>
         <p className="text-xs text-zinc-500">
           Each plugin gets its own Ed25519 key. The public key must be compiled into that plugin.
@@ -667,7 +705,7 @@ export function PluginDetail({ productId }: { productId: string }) {
                 setBusy(true)
                 setMessage('')
                 void api({ action: 'generate_key', id: product.id })
-                  .then(async () => { await refresh(); setMessage('New signing key generated.') })
+                  .then(async () => { await refresh(true); setMessage('New signing key generated.') })
                   .catch((error) => setMessage(error instanceof Error ? error.message : 'Please retry.'))
                   .finally(() => setBusy(false))
               }
@@ -703,7 +741,7 @@ export function PluginDetail({ productId }: { productId: string }) {
               setBusy(true)
               setMessage('')
               void api({ action: 'import_key', id: product.id, private_pem: importPem })
-                .then(async () => { setImportPem(''); await refresh(); setMessage('Signing key imported.') })
+                .then(async () => { setImportPem(''); await refresh(true); setMessage('Signing key imported.') })
                 .catch((error) => setMessage(error instanceof Error ? error.message : 'Please retry.'))
                 .finally(() => setBusy(false))
             }}
@@ -713,17 +751,17 @@ export function PluginDetail({ productId }: { productId: string }) {
         </div>
       </section>
 
-      <section>
+      <section id="plugin-editor-panel-releases" aria-labelledby="plugin-editor-nav-releases" hidden={activeTab !== 'releases'}>
         <h2 className="mb-3 text-lg font-semibold text-zinc-100">Versions &amp; downloads</h2>
-        <ReleasePanel productId={product.id} />
+        {activeTab === 'releases' && <ReleasePanel productId={product.id} />}
       </section>
 
-      <section>
+      <section id="plugin-editor-panel-licences" aria-labelledby="plugin-editor-nav-licences" hidden={activeTab !== 'licences'}>
         <h2 className="mb-3 text-lg font-semibold text-zinc-100">Licences</h2>
-        <LicensePanel productId={product.id} />
+        {activeTab === 'licences' && <LicensePanel productId={product.id} />}
       </section>
 
-      <section className="space-y-3 rounded border border-red-900/60 bg-red-950/10 p-4">
+      <section id="plugin-editor-panel-danger" aria-labelledby="plugin-editor-nav-danger" hidden={activeTab !== 'danger'} className="space-y-3 rounded border border-red-900/60 bg-red-950/10 p-4">
         <h2 className="text-sm font-semibold text-red-300">Delete product</h2>
         <p className="text-xs text-zinc-400">
           Removes versions, downloads, licences, audit rows and stored build files. Allowed while the
@@ -738,6 +776,11 @@ export function PluginDetail({ productId }: { productId: string }) {
           Delete “{product.title}”
         </button>
       </section>
+
+      {(['page', 'media', 'pricing'].includes(activeTab) || dirty) && (
+        <AdminSaveBar formId="plugin-core-form" dirty={dirty} busy={busy} message={message} />
+      )}
+      </AdminEditorLayout>
     </div>
   )
 }
