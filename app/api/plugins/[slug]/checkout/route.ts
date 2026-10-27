@@ -6,6 +6,7 @@ import { commerceSections } from '@/lib/commerce-legal-copy'
 import { contractDocumentText } from '@/lib/neurokore/email-format'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
+import { checkoutBillingPolicy } from '@/lib/neurokore/invoicing'
 import { body, db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
 import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
 import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
@@ -35,6 +36,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!slugSchema.safeParse(slug).success) return json({ error: 'Plugin not found.' }, 404)
     const buyer = await user()
     if (!isNeurokoreSalesEnabled()) return json({ error: 'Sales are not open yet.' }, 503)
+    const billing = checkoutBillingPolicy()
 
     const client = db()
     // Do not accept money while mandatory legal operator details are missing.
@@ -98,6 +100,17 @@ export async function POST(request: Request, context: RouteContext) {
       return json({ error: 'Sales unavailable: contract email service is not configured.' }, 503)
     }
 
+    // For VAT-registered sellers, Stripe Tax must have an active registration;
+    // otherwise Checkout may create invoices without collecting due tax.
+    if (billing.stripeAutomaticTax) {
+      const registrations = z.object({
+        data: z.array(z.object({ status: z.string() })),
+      }).parse(await stripe('tax/registrations?limit=100', required('STRIPE_SECRET_KEY')))
+      if (!registrations.data.some(registration => registration.status === 'active')) {
+        return json({ error: 'Sales unavailable until Stripe Tax registration is active.' }, 503)
+      }
+    }
+
     const id = randomUUID()
     const termsSnapshot = contractDocumentText(commerceSections('terms', locale, legal.termsText))
     const licenceSnapshot = contractDocumentText(commerceSections('license', locale))
@@ -117,11 +130,13 @@ export async function POST(request: Request, context: RouteContext) {
       'line_items[0][price]': price, 'line_items[0][quantity]': '1',
       success_url: origin() + '/neurokore/account?checkout=success',
       cancel_url: origin() + '/plugins/' + product.slug + '?checkout=cancelled',
-      'automatic_tax[enabled]': 'true',
+      'automatic_tax[enabled]': String(billing.stripeAutomaticTax),
+      'invoice_creation[enabled]': String(billing.invoiceEnabled),
       'billing_address_collection': 'required',
       'consent_collection[terms_of_service]': 'required',
       'custom_text[submit][message]': 'Terms: ' + origin() + localizedLegalPath(locale, 'terms') + ' | Withdrawal: ' + origin() + localizedLegalPath(locale, 'withdrawal-policy'),
     })
+    if (billing.invoiceFooter) params.set('invoice_creation[invoice_data][footer]', billing.invoiceFooter)
     const session = z.object({ id: z.string(), url: z.url() }).parse(
       await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id))
     if (new URL(session.url).hostname !== 'checkout.stripe.com') throw new Error('Invalid checkout')

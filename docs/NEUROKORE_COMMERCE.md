@@ -145,3 +145,16 @@ For NEUROKORE v2, a `full` entitlement with `expires_at = NULL` is signed as the
 3. Verify sandbox events and production endpoint HTTP responses (unsigned POST must return 400).
 4. Add new event subscriptions to the two Stripe endpoints after the code has deployed.
 5. Complete tax/legal/invoicing review and full sandbox end-to-end test, then explicitly decide on enabling sales.
+
+
+## Invoice and VAT readiness gate (October 2026)
+
+Paid plugin checkout now requires an explicit server-only `NEUROKORE_TAX_MODE`, in addition to both sales switches. Supported values:
+- `small_business`: only if the actual seller is eligible for § 19 UStG and has not opted out. Stripe automatic tax disabled, post-payment invoice contains the §19 exemption note and no separately charged German VAT.
+- `vat_registered`: if the seller uses standard VAT accounting. Stripe automatic tax enabled. Checkout fails closed unless Stripe Tax has an active tax registration. Review jurisdictions and OSS/digital-services requirements.
+
+When that status is verified, Stripe Checkout generates a paid post-payment invoice and sends it to the customer. Stripe charges an additional **0.4% of each one-time checkout payment**, capped at 2 USD or equivalent, for this feature (59 € => approximately 0.24 €). Stripe-generated documents still require seller-identity, address, and tax-ID verification; API configuration alone does not prove legal invoice compliance. Do not enable sales until this check passes.
+
+The tax classification and tax registration have not been provided or confirmed; never infer either from the Stripe default account (Germany) or the product's inclusive price. Production stays `NEUROKORE_SALES_ENABLED=false` and product `sales_enabled=false`.
+
+Production schema deploy reminder: `DATABASE_URL` and `DIRECT_URL` on Vercel are existing pooler URLs; as of Oct 27, automated schema apply reports PostgreSQL password authentication failure. The additive payment migration was separately applied through Supabase management. Update both connection strings with valid credentials using secure Vercel settings, do not log or commit the password, then re-verify successful `schema_apply_deploy` state after a new deployment.
