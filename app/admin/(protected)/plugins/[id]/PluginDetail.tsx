@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { AdminEditorLayout } from '@/app/admin/_components/AdminEditorLayout'
 import { AdminSaveBar } from '@/app/admin/_components/AdminSaveBar'
 import { useAdminEditorTab } from '@/app/admin/_components/useAdminEditorTab'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { z } from 'zod'
 import {
   DndContext,
@@ -225,15 +226,7 @@ export function PluginDetail({ productId }: { productId: string }) {
     )
   }, [productId])
 
-  useEffect(() => {
-    if (!dirty) return
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty])
+  useUnsavedChanges(dirty)
 
   async function save(form: HTMLFormElement) {
     if (!product || busy) return
