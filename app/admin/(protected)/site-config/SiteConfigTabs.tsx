@@ -10,6 +10,7 @@ import { SimpleTextConfigEditor } from './SimpleTextConfigEditor'
 import { ImageCdnEditor } from './ImageCdnEditor'
 import SiteConfigEditor from './SiteConfigEditor'
 import { AdminPreviewPane } from '@/app/admin/_components/AdminPreviewPane'
+import { AdminEditorLayout } from '@/app/admin/_components/AdminEditorLayout'
 import { SectionsSortable } from '@/app/admin/(protected)/sections/SectionsSortable'
 import { parseSections, type SectionConfig } from '@/lib/site-config-sections'
 import { TerminalConfigEditor } from './TerminalConfigEditor'
@@ -100,22 +101,8 @@ export function SiteConfigTabs({
   return (
     <AdminPreviewPane>
       <div className="space-y-4" data-admin-ui="true">
-        <nav className="flex flex-wrap gap-2 border-b border-zinc-800 pb-3 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => selectTab(tab.id)}
-              className={`min-h-[44px] px-3 py-1.5 text-xs rounded transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-red-900/40 text-white border border-red-700/50'
-                  : 'text-zinc-400 hover:text-white border border-transparent'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+        <AdminEditorLayout tabs={tabs} activeTab={activeTab} onTabChange={selectTab} idPrefix="site-editor" compact>
+          <div id={`site-editor-panel-${activeTab}`} className="min-w-0 space-y-4">
 
         {activeTab === 'hero' && <HeroConfigEditor currentValue={heroValue} />}
         {activeTab === 'loader' && <LoadingScreenEditor currentValue={loadingScreenValue} />}
@@ -185,6 +172,8 @@ export function SiteConfigTabs({
             ))}
           </div>
         )}
+          </div>
+        </AdminEditorLayout>
       </div>
     </AdminPreviewPane>
   )
