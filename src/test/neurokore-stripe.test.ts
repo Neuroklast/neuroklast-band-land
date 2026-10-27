@@ -1,7 +1,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { createHmac } from 'node:crypto'
-import { assertStripeKeyEnvironment, verifyWebhook } from '../../lib/neurokore/stripe'
+import { assertStripeKeyEnvironment, configureNeurokoreSandboxCheckout, verifyWebhook } from '../../lib/neurokore/stripe'
 describe('Stripe webhook trust boundary', () => {
   const raw = '{"type":"checkout.session.completed"}'
   const timestamp = 1900000000
@@ -41,5 +41,24 @@ describe('Stripe live/sandbox isolation', () => {
     expect(() => assertStripeKeyEnvironment(live, 'production')).not.toThrow()
     expect(() => assertStripeKeyEnvironment(test, 'production')).toThrow()
     expect(() => assertStripeKeyEnvironment('bad-secret', 'preview')).toThrow()
+  })
+})
+
+describe('NEUROKORE Stripe Sandbox session configuration', () => {
+  it('disables only unsupported test-account features, retaining the contract and product', () => {
+    const params = new URLSearchParams({
+      'line_items[0][price]': 'price_test_one_euro',
+      'automatic_tax[enabled]': 'true',
+      'consent_collection[terms_of_service]': 'required',
+      'custom_text[submit][message]': 'Terms and withdrawal details',
+      'metadata[plugin_order]': 'test-order',
+    })
+    configureNeurokoreSandboxCheckout(params)
+    expect(params.get('managed_payments[enabled]')).toBe('false')
+    expect(params.get('automatic_tax[enabled]')).toBe('false')
+    expect(params.has('consent_collection[terms_of_service]')).toBe(false)
+    expect(params.get('custom_text[submit][message]')).toContain('withdrawal')
+    expect(params.get('line_items[0][price]')).toBe('price_test_one_euro')
+    expect(params.get('metadata[plugin_order]')).toBe('test-order')
   })
 })
