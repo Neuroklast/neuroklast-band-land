@@ -1344,7 +1344,7 @@ for (const locale of LEGAL_LOCALES) {
   for (const [index, id] of (['accounts', 'purchases', 'requests', 'diagnostics', 'updates'] as const).entries()) {
     PRIVACY_COPY[locale][id].title = String(index + 12) + '. ' + PRIVACY_COPY[locale][id].title
   }
-  PRIVACY_COPY[locale].rights.title = PRIVACY_COPY[locale].rights.title.replace(/^12\\.\\s*/, '17. ')
+  PRIVACY_COPY[locale].rights.title = PRIVACY_COPY[locale].rights.title.replace(/^12\.\s*/, '17. ')
 }
 
 // Legal notices do not require blanket liability disclaimers. The former
