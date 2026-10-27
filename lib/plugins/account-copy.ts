@@ -11,8 +11,8 @@ export type AccountCopy = {
 export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   de: {
     title: 'Meine Lizenzen', email: 'E-Mail-Adresse', code: 'Anmeldecode', signIn: 'Anmelden',
-    sendCode: 'Code senden', sending: 'Bitte warten…', checkEmail: 'Prüfe dein E-Mail-Postfach.',
-    authError: 'Anmeldung fehlgeschlagen. Prüfe deinen Code und versuche es erneut.',
+    sendCode: 'Anmeldelink senden', sending: 'Bitte warten…', checkEmail: 'Öffne den einmaligen Anmeldelink in deinem E-Mail-Postfach.',
+    authError: 'Anmeldung fehlgeschlagen. Bitte fordere einen neuen Link an.',
     loadError: 'Lizenzen konnten nicht geladen werden.', signedIn: 'Angemeldet als', signOut: 'Abmelden',
     noLicences: 'Noch keine Lizenzen vorhanden.', refresh: 'Aktualisieren', licence: 'Lizenzschlüssel',
     alpha: 'Alpha-Zugang', full: 'Vollversion', revoked: 'Widerrufen', expires: 'Gültig bis',
@@ -23,8 +23,8 @@ export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   },
   en: {
     title: 'My licences', email: 'Email address', code: 'Email code', signIn: 'Sign in',
-    sendCode: 'Send sign-in code', sending: 'Please wait…', checkEmail: 'Check your email for your sign-in code.',
-    authError: 'Sign-in failed. Check your email and code, then retry.',
+    sendCode: 'Send sign-in link', sending: 'Please wait…', checkEmail: 'Check your inbox and open your one-time sign-in link.',
+    authError: 'Sign-in failed. Please request a new link.',
     loadError: 'Could not load your licences.', signedIn: 'Signed in as', signOut: 'Sign out',
     noLicences: 'No licences yet.', refresh: 'Refresh', licence: 'Licence key',
     alpha: 'Alpha access', full: 'Full version', revoked: 'Revoked', expires: 'Expires',
@@ -35,7 +35,7 @@ export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   },
   uk: {
     title: 'Мої ліцензії', email: 'Електронна пошта', code: 'Код з листа', signIn: 'Увійти',
-    sendCode: 'Надіслати код', sending: 'Зачекайте…', checkEmail: 'Перевірте електронну пошту.',
+    sendCode: 'Надіслати посилання', sending: 'Зачекайте…', checkEmail: 'Відкрийте одноразове посилання з листа.',
     authError: 'Не вдалося увійти. Перевірте код.', loadError: 'Не вдалося завантажити ліцензії.',
     signedIn: 'Обліковий запис', signOut: 'Вийти', noLicences: 'Ліцензій поки немає.',
     refresh: 'Оновити', licence: 'Ключ ліцензії', alpha: 'Альфа-доступ', full: 'Повна версія',
@@ -47,7 +47,7 @@ export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   },
   it: {
     title: 'Le mie licenze', email: 'Email', code: 'Codice email', signIn: 'Accedi',
-    sendCode: 'Invia codice', sending: 'Attendere…', checkEmail: 'Controlla la posta.',
+    sendCode: 'Invia link di accesso', sending: 'Attendere…', checkEmail: 'Apri il link di accesso ricevuto via email.',
     authError: 'Accesso non riuscito. Verifica il codice.', loadError: 'Impossibile caricare le licenze.',
     signedIn: 'Connesso come', signOut: 'Esci', noLicences: 'Nessuna licenza.',
     refresh: 'Aggiorna', licence: 'Chiave di licenza', alpha: 'Accesso alfa', full: 'Versione completa',
@@ -59,7 +59,7 @@ export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   },
   es: {
     title: 'Mis licencias', email: 'Correo electrónico', code: 'Código recibido', signIn: 'Iniciar sesión',
-    sendCode: 'Enviar código', sending: 'Espera…', checkEmail: 'Revisa tu correo.',
+    sendCode: 'Enviar enlace de acceso', sending: 'Espera…', checkEmail: 'Abre el enlace de acceso recibido por correo.',
     authError: 'Error de acceso. Comprueba el código.', loadError: 'No se pudieron cargar las licencias.',
     signedIn: 'Sesión de', signOut: 'Cerrar sesión', noLicences: 'Aún no hay licencias.',
     refresh: 'Actualizar', licence: 'Clave de licencia', alpha: 'Acceso alfa', full: 'Versión completa',
@@ -71,7 +71,7 @@ export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   },
   pt: {
     title: 'As minhas licenças', email: 'Email', code: 'Código de acesso', signIn: 'Entrar',
-    sendCode: 'Enviar código', sending: 'Aguarde…', checkEmail: 'Verifique o seu email.',
+    sendCode: 'Enviar código', sending: 'Aguarde…', checkEmail: 'Abra o link de acesso enviado por email.',
     authError: 'Erro ao entrar. Confirme o código.', loadError: 'Não foi possível carregar licenças.',
     signedIn: 'Sessão iniciada como', signOut: 'Sair', noLicences: 'Ainda não existem licenças.',
     refresh: 'Atualizar', licence: 'Chave de licença', alpha: 'Acesso alfa', full: 'Versão completa',
@@ -83,7 +83,7 @@ export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   },
   ja: {
     title: 'ライセンス一覧', email: 'メールアドレス', code: 'メール認証コード', signIn: 'ログイン',
-    sendCode: 'コードを送信', sending: '処理中…', checkEmail: 'メールを確認してください。',
+    sendCode: 'ログインリンクを送信', sending: '処理中…', checkEmail: 'メール内のログインリンクを開いてください。',
     authError: 'ログインできません。コードをご確認ください。', loadError: 'ライセンスを読み込めませんでした。',
     signedIn: 'ログイン中', signOut: 'ログアウト', noLicences: 'ライセンスはまだありません。',
     refresh: '更新', licence: 'ライセンスキー', alpha: 'アルファ版', full: '製品版',
@@ -95,7 +95,7 @@ export const ACCOUNT_COPY: Record<LegalLocale, AccountCopy> = {
   },
   ko: {
     title: '내 라이선스', email: '이메일', code: '이메일 코드', signIn: '로그인',
-    sendCode: '코드 보내기', sending: '처리 중…', checkEmail: '이메일을 확인하세요.',
+    sendCode: '로그인 링크 보내기', sending: '처리 중…', checkEmail: '이메일의 일회용 로그인 링크를 열어 주세요.',
     authError: '로그인 실패. 코드를 확인하세요.', loadError: '라이선스를 불러올 수 없습니다.',
     signedIn: '로그인한 계정', signOut: '로그아웃', noLicences: '라이선스가 없습니다.',
     refresh: '새로고침', licence: '라이선스 키', alpha: '알파 접근', full: '정식 버전',
