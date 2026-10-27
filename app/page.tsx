@@ -109,6 +109,8 @@ interface MusicHighlightRow {
 interface CommerceItemRow {
   id: string; title: string
   image_storage_path: string | null; image_url: string | null; external_url: string | null
+  archive_key?: string | null; archive_filename?: string | null; archive_bytes?: number | null
+  license_notes?: string | null; is_free?: boolean | null; price_cents?: number | null
 }
 interface ProductItemRow {
   id: string
@@ -220,7 +222,7 @@ async function fetchAll() {
       supabase.from('partners').select('id, name, url, logo_storage_path, logo_url, category, logo_white, description, socials').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('music_highlights').select('id, title, youtube_url, description').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('merchandise').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
-      supabase.from('soundpacks').select('id, title, image_storage_path, image_url, external_url').eq('active', true).order('display_order', { ascending: true }),
+      supabase.from('soundpacks').select('id, title, image_storage_path, image_url, external_url, archive_key, archive_filename, archive_bytes, license_notes, is_free, price_cents').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('products').select('id, title, slug, kind, description, short_description, image_storage_path, image_url, media, href, price_label').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('gallery').select('id, alt, storage_path, image_url').eq('active', true).order('display_order', { ascending: true }),
       supabase.from('media_downloads').select('id, title, description, category, file_storage_path, file_url, file_mime, file_size_bytes, original_filename, display_order').eq('active', true).order('display_order', { ascending: true }),
@@ -738,7 +740,10 @@ export default async function HomePage() {
               <SectionErrorBoundary key="soundpacks" sectionName="Soundpacks">
                 {divider}
                 <SoundpacksSection
-                  items={soundpacks.map(commerceItemMap)}
+                  items={soundpacks.filter(item =>
+                    Boolean(item.archive_key && item.archive_filename && item.archive_bytes &&
+                      item.license_notes?.trim() && (item.is_free ? item.price_cents === 0 : (item.price_cents ?? 0) >= 100))
+                  ).map(item => ({ ...commerceItemMap(item), externalUrl: '/soundpacks/' + item.id }))}
                   heading={section.label}
                   intro={section.intro}
                 />
