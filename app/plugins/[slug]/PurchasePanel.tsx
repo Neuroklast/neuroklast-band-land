@@ -71,6 +71,20 @@ export function PurchasePanel({
         <p className="text-xl font-bold tabular-nums text-white">{price}</p>
       </div>
       <p className="text-sm leading-6 text-zinc-400">{copy.pricing}</p>
+      <details className="group border-t border-white/15 pt-4">
+        <summary className="w-fit cursor-pointer text-sm text-zinc-300 underline underline-offset-4 hover:text-white">
+          {language === 'de' ? 'Rechtliche Informationen ansehen' : 'View purchase and legal information'}
+        </summary>
+        <nav aria-label={language === 'de' ? 'Rechtliche Informationen' : 'Purchase and legal information'}
+          className="mt-3 flex flex-wrap gap-x-5 gap-y-3 text-sm text-zinc-300">
+          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'legal-notice')}>{links.notice}</Link>
+          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'privacy-policy')}>{links.privacy}</Link>
+          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'terms')}>{links.terms}</Link>
+          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'purchase-info')}>{links.purchase}</Link>
+          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'license-terms')}>{links.licence}</Link>
+          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'withdrawal-policy')}>{COMMERCE_LEGAL_COPY[language].docs.withdrawal}</Link>
+        </nav>
+      </details>
       {recurring ? (
         <p role="alert">Recurring subscriptions are not currently available for this product.</p>
       ) : signedIn === null ? (
@@ -101,20 +115,6 @@ export function PurchasePanel({
           <p className="text-xs text-white/60">{copy.total}</p>
         </>
       )}
-      <details className="group border-t border-white/15 pt-4">
-        <summary className="w-fit cursor-pointer text-sm text-zinc-300 underline underline-offset-4 hover:text-white">
-          {language === 'de' ? 'Rechtliche Informationen ansehen' : 'View purchase and legal information'}
-        </summary>
-        <nav aria-label={language === 'de' ? 'Rechtliche Informationen' : 'Purchase and legal information'}
-          className="mt-3 flex flex-wrap gap-x-5 gap-y-3 text-sm text-zinc-300">
-          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'legal-notice')}>{links.notice}</Link>
-          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'privacy-policy')}>{links.privacy}</Link>
-          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'terms')}>{links.terms}</Link>
-          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'purchase-info')}>{links.purchase}</Link>
-          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'license-terms')}>{links.licence}</Link>
-          <Link className="underline hover:text-white" href={localizedLegalPath(language, 'withdrawal-policy')}>{COMMERCE_LEGAL_COPY[language].docs.withdrawal}</Link>
-        </nav>
-      </details>
       {slug === 'neurokore' && (
         <aside className="flex flex-wrap items-center justify-between gap-3 border-t border-white/15 pt-5">
           <div className="space-y-1">
