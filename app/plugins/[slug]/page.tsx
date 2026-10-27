@@ -8,7 +8,7 @@ import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { formatProductPrice, loadProductPriceForProduct } from '@/lib/plugins/price'
 import { CHANNEL_LABEL } from '@/lib/plugins/releases'
 import { availablePublicDownload } from '@/lib/plugins/public-download'
-import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
+import { isPluginSaleOpen, isNeurokoreSandboxCheckout } from '@/lib/neurokore/flags'
 import { PurchasePanel } from './PurchasePanel'
 import { JsonLd } from '@/app/_components/public/JsonLd'
 import { getSiteOrigin } from '@/lib/og-share'
@@ -57,11 +57,11 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
   const videos = product.media.filter(item => item.kind === 'video' && item.url && !isLegacySupabaseStorageUrl(item.url))
   const audios = product.media.filter(item => item.kind === 'audio' && item.url && !isLegacySupabaseStorageUrl(item.url))
   const cover = images[0]
-  const price = product.pricing_mode === 'paid' && product.sales_enabled
+  const saleAllowed = isPluginSaleOpen(product)
+  const price = product.pricing_mode === 'paid' && saleAllowed
     ? await loadProductPriceForProduct(product.id)
     : null
-  const salesOpen = isNeurokoreSalesEnabled() && product.sales_enabled &&
-    product.pricing_mode === 'paid'
+  const salesOpen = saleAllowed && product.pricing_mode === 'paid'
 
   const canonicalUrl = absoluteUrl(getSiteOrigin(), pluginCanonicalPath(slug))
   const softwareSchema = buildSoftwareApplicationSchema({
@@ -96,6 +96,11 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
             <span className="text-zinc-200">{product.title}</span>
           </nav>
 
+          {isNeurokoreSandboxCheckout() && product.slug === 'neurokore' && (
+            <p role="status" className="border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-100">
+              Stripe Sandbox preview: payments are simulated. Test licences can be deleted by administrators.
+            </p>
+          )}
           <header className={
             'overflow-hidden border border-white/15 bg-zinc-950 ' +
             (cover ? 'grid items-stretch lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]' : '')
