@@ -87,7 +87,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         'The content and works on these pages created by the site operators are subject to German copyright law. Duplication, processing, distribution, and any form of exploitation beyond the scope of copyright law require the written consent of the respective author or creator.',
         'Downloads and copies of this page are only permitted for private, non-commercial use. Where content on this site was not created by the operator, third-party copyrights are respected and marked accordingly.',
-        'Further information on data processing is available in our Privacy Policy (/privacy-policy).',
+        'Further information on data processing is available in our Privacy Policy.',
       ],
     },
   },
@@ -105,7 +105,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         'Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.',
         'Downloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet. Soweit die Inhalte auf dieser Seite nicht vom Betreiber erstellt wurden, werden die Urheberrechte Dritter beachtet und entsprechend gekennzeichnet.',
-        'Weitere Hinweise zur Datenverarbeitung finden Sie in der Datenschutzerklärung (/privacy-policy).',
+        'Weitere Hinweise zur Datenverarbeitung finden Sie in der Datenschutzerklärung.',
       ],
     },
   },
@@ -123,7 +123,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         'Контент і твори, створені операторами цього сайту, охороняються німецьким авторським правом. Відтворення, обробка, поширення та будь-яке використання поза межами авторського права потребують письмової згоди автора.',
         'Завантаження та копії цієї сторінки дозволені лише для приватного некомерційного використання. Контент третіх осіб позначено відповідно.',
-        'Додаткова інформація про обробку даних — у Політиці конфіденційності (/privacy-policy).',
+        'Додаткова інформація про обробку даних — у Політиці конфіденційності.',
       ],
     },
   },
@@ -141,7 +141,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         'I contenuti e le opere creati dagli operatori del sito sono tutelati dal diritto d’autore tedesco. Riproduzione, elaborazione, distribuzione e ogni sfruttamento oltre i limiti di legge richiedono il consenso scritto dell’autore.',
         'Download e copie di questa pagina sono consentiti solo per uso privato non commerciale. I diritti di terzi sono rispettati e segnalati.',
-        'Ulteriori informazioni sul trattamento dei dati sono nella Informativa sulla privacy (/privacy-policy).',
+        'Ulteriori informazioni sul trattamento dei dati sono nella Informativa sulla privacy.',
       ],
     },
   },
@@ -159,7 +159,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         'Los contenidos y obras creados por los operadores de este sitio están sujetos al derecho de autor alemán. La reproducción, el tratamiento, la distribución y cualquier explotación más allá de la ley requieren el consentimiento escrito del autor.',
         'Las descargas y copias de esta página solo se permiten para uso privado no comercial. Se respetan y marcan los derechos de terceros.',
-        'Más información sobre el tratamiento de datos en la Política de privacidad (/privacy-policy).',
+        'Más información sobre el tratamiento de datos en la Política de privacidad.',
       ],
     },
   },
@@ -177,7 +177,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         'Os conteúdos e obras criados pelos operadores deste sítio estão sujeitos ao direito de autor alemão. A reprodução, o tratamento, a distribuição e qualquer exploração para além da lei exigem o consentimento escrito do autor.',
         'Transferências e cópias desta página só são permitidas para uso privado não comercial. Os direitos de terceiros são respeitados e assinalados.',
-        'Mais informações sobre o tratamento de dados na Política de privacidade (/privacy-policy).',
+        'Mais informações sobre o tratamento de dados na Política de privacidade.',
       ],
     },
   },
@@ -195,7 +195,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         'サイト運営者が作成したコンテンツおよび著作物はドイツ著作権法の対象です。複製、改変、頒布および著作権法の範囲を超える利用には、各著作者の書面による同意が必要です。',
         '本ページのダウンロードおよびコピーは私的かつ非営利の利用に限り許可されます。第三者の著作権は尊重し、適切に表示します。',
-        'データ処理の詳細はプライバシーポリシー（/privacy-policy）をご覧ください。',
+        'データ処理の詳細はプライバシーポリシーをご覧ください。',
       ],
     },
   },
@@ -213,7 +213,7 @@ export const NOTICE_COPY: Record<LegalLocale, Record<string, LegalCopySection>> 
       paragraphs: [
         '사이트 운영자가 작성한 콘텐츠와 저작물은 독일 저작권법의 적용을 받습니다. 복제, 가공, 배포 및 저작권법 범위를 넘는 이용에는 해당 저작자의 서면 동의가 필요합니다.',
         '이 페이지의 다운로드와 복사는 사적·비상업적 용도로만 허용됩니다. 제3자 저작권은 존중되며 표시됩니다.',
-        '데이터 처리에 관한 추가 정보는 개인정보 처리방침(/privacy-policy)을 참조하세요.',
+        '데이터 처리에 관한 추가 정보는 개인정보 처리방침을 참조하세요.',
       ],
     },
   },
