@@ -38,6 +38,31 @@ export function configureNeurokoreSandboxCheckout(params: URLSearchParams): void
 }
 
 /**
+ * Merchant-of-record checkout is opt-in and disabled until the NEUROKLAST
+ * account has completed Managed Payments onboarding in Stripe Dashboard.
+ * Stripe, not our application, generates customer invoices and handles
+ * indirect taxes for its supported Managed Payments transactions.
+ *
+ * This must never be used for a sandbox/preflight checkout that deliberately
+ * exercises our legacy checkout contract.
+ */
+export function configureManagedPaymentsCheckout(
+  params: URLSearchParams,
+  env: Record<string, string | undefined> = process.env,
+): void {
+  if (env.STRIPE_MANAGED_PAYMENTS_ENABLED !== 'true')
+    throw new Error('Managed Payments onboarding has not been confirmed')
+  params.set('managed_payments[enabled]', 'true')
+  // Managed Payments owns tax, checkout payment methods and invoicing.
+  for (const key of [
+    'automatic_tax[enabled]', 'tax_id_collection[enabled]',
+    'invoice_creation[enabled]', 'invoice_creation[invoice_data][footer]',
+    'custom_text[submit][message]',
+    'consent_collection[terms_of_service]',
+  ]) params.delete(key)
+}
+
+/**
  * A signed event is not sufficient authorization to mint a license.
  * The actual paid session must also belong to the expected Stripe mode,
  * and must reference the same locally-created checkout order.
