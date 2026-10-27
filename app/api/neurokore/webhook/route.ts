@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { sessionSchema } from '@/lib/neurokore/contract-confirmation'
 import { fulfillVerifiedCheckoutSession } from '@/lib/neurokore/fulfillment'
 import { recordPaymentIncident } from '@/lib/neurokore/payment-events'
+import { paidPackSessionSchema, fulfillDigitalPackSession, recordDigitalPackPaymentIncident } from '@/lib/digital-packs/fulfillment'
 import { json, required } from '@/lib/neurokore/server'
 import { assertStripeFulfillmentEnvironment, stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
       .parse(JSON.parse(raw))
     if (['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed'].includes(event.type)) {
       stage = 'payment-incident'
-      await recordPaymentIncident(event)
+      const matchedPlugin = await recordPaymentIncident(event)
+      if (!matchedPlugin) await recordDigitalPackPaymentIncident(event)
       return json({ received: true })
     }
     if (!['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type))
@@ -42,6 +44,22 @@ export async function POST(request: Request) {
     stage = 'stripe-session-verify'
     const session = sessionSchema.parse(await stripe(
       'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY')))
+    // Packs have an independent payment entitlement; never create a VST licence
+    // when Stripe marks this as a digital-pack order.
+    const metadata = event.data.object.metadata
+    const freshSession = await stripe(
+      'checkout/sessions/' + sessionId, required('STRIPE_SECRET_KEY'))
+    const packCheckout = paidPackSessionSchema.safeParse(freshSession)
+    if (packCheckout.success && packCheckout.data.metadata.digital_pack_order) {
+      stage = 'digital-pack-fulfilment'
+      await fulfillDigitalPackSession(packCheckout.data, event.livemode)
+      return json({ received: true })
+    }
+    if (metadata && typeof metadata === 'object' &&
+      'digital_pack_order' in metadata) {
+      // A malformed pack purchase must fail closed, not be fulfilled as a plugin.
+      throw new Error('Invalid digital pack Checkout Session')
+    }
     assertStripeFulfillmentEnvironment({
       eventLivemode: event.livemode, sessionLivemode: session.livemode, sessionId: session.id,
       environment: session.metadata?.environment, clientReferenceId: session.client_reference_id,
