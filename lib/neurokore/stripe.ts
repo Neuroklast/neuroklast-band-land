@@ -10,7 +10,7 @@ export function verifyWebhook(raw: string, header: string, secret: string, now =
     timingSafeEqual(expected, Buffer.from(value, 'hex')))
   if (!ok) throw new Error('Invalid webhook')
 }
-/** Reject live Stripe credentials outside production and test credentials in production. */
+/** A preview must never charge a live key, and production must never run on sandbox credentials. */
 export function assertStripeKeyEnvironment(
   secret: string,
   vercelEnv: string | undefined = process.env.VERCEL_ENV,
@@ -22,12 +22,55 @@ export function assertStripeKeyEnvironment(
     throw new Error('Stripe key mode does not match deployment environment')
   }
 }
+/**
+ * Sandbox-only checkout compatibility for an unconfigured Stripe test account:
+ * - Managed Payments defaults on and rejects our contract links in custom_text.
+ * - Stripe TOS collection needs a Stripe-hosted public terms URL.
+ * - Automatic tax requires a product/default tax code and registrations.
+ *
+ * The website still requires explicit acknowledgement of terms before checkout.
+ * Never apply these sandbox exceptions to a production sale.
+ */
+export function configureNeurokoreSandboxCheckout(params: URLSearchParams): void {
+  params.set('managed_payments[enabled]', 'false')
+  params.set('automatic_tax[enabled]', 'false')
+  params.delete('consent_collection[terms_of_service]')
+}
 
-export async function stripe(path: string, secret: string, params?: URLSearchParams, idempotencyKey?: string): Promise<unknown> {
+/**
+ * A signed event is not sufficient authorization to mint a license.
+ * The actual paid session must also belong to the expected Stripe mode,
+ * and must reference the same locally-created checkout order.
+ */
+export function assertStripeFulfillmentEnvironment(input: {
+  eventLivemode: boolean
+  sessionLivemode: boolean
+  sessionId: string
+  environment: string | undefined
+  clientReferenceId: string
+  metadataOrderId: string | undefined
+}, vercelEnv: string | undefined = process.env.VERCEL_ENV): void {
+  const production = vercelEnv === 'production'
+  if (input.eventLivemode !== production || input.sessionLivemode !== production)
+    throw new Error('Stripe event and session modes do not match deployment')
+  if (production && !input.sessionId.startsWith('cs_live_'))
+    throw new Error('Expected live checkout session')
+  if (!production && !input.sessionId.startsWith('cs_test_'))
+    throw new Error('Expected test checkout session')
+  if (input.environment !== (production ? 'live' : 'neurokore-sandbox'))
+    throw new Error('Stripe checkout environment mismatch')
+  if (input.metadataOrderId !== input.clientReferenceId)
+    throw new Error('Stripe checkout order identity mismatch')
+}
+
+export async function stripe(
+  path: string, secret: string, params?: URLSearchParams, idempotencyKey?: string,
+  apiVersion = '2025-02-24.acacia',
+): Promise<unknown> {
   assertStripeKeyEnvironment(secret)
   const response = await fetch('https://api.stripe.com/v1/' + path, {
     method: params ? 'POST' : 'GET', cache: 'no-store', signal: AbortSignal.timeout(15000),
-    headers: { Authorization: 'Bearer ' + secret, 'Stripe-Version': '2025-02-24.acacia',
+    headers: { Authorization: 'Bearer ' + secret, 'Stripe-Version': apiVersion,
       ...(params ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
       ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
     body: params?.toString(),

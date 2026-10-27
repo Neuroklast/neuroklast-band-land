@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveLegalLocale } from '@/lib/legal-templates'
 import { ACCOUNT_COPY } from '@/lib/plugins/account-copy'
+import { CustomerSignIn } from '@/components/neurokore/CustomerSignIn'
 
 const accountSchema = z.object({
   email: z.string(),
@@ -23,48 +24,38 @@ export function LicenseAccount() {
   const language = resolveLegalLocale(locale)
   const copy = ACCOUNT_COPY[language]
   const [account, setAccount] = useState<Account | null>(null)
-  const [email, setEmail] = useState('')
-  const [token, setToken] = useState('')
-  const [sent, setSent] = useState(false)
+  const [checking, setChecking] = useState(true)
+  const [licencesUnavailable, setLicencesUnavailable] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [revealed, setRevealed] = useState<Record<string, boolean>>({})
 
   async function refresh() {
+    // A missing licence-decryption key must never log out an authenticated buyer.
+    const session = await fetch('/api/neurokore/session', { cache: 'no-store' })
+    if (session.status === 401) {
+      setAccount(null)
+      setLicencesUnavailable(false)
+      return
+    }
+    if (!session.ok) throw new Error(copy.loadError)
+    const sessionData = z.object({ email: z.email() }).parse(await session.json())
     const response = await fetch('/api/neurokore/account', { cache: 'no-store' })
-    if (response.status === 401) { setAccount(null); return }
+    if (response.status === 503) {
+      setAccount({ email: sessionData.email, licenses: [] })
+      setLicencesUnavailable(true)
+      return
+    }
     if (!response.ok) throw new Error(copy.loadError)
     setAccount(accountSchema.parse(await response.json()))
+    setLicencesUnavailable(false)
   }
 
   useEffect(() => {
-    let active = true
-    fetch('/api/neurokore/account', { cache: 'no-store' }).then(async response => {
-      if (!active) return
-      if (response.status === 401) { setAccount(null); return }
-      if (!response.ok) throw new Error('Account unavailable')
-      const parsed = accountSchema.parse(await response.json())
-      if (active) setAccount(parsed)
-    }).catch(() => { if (active) setMessage(copy.loadError) })
-    return () => { active = false }
+    void refresh().catch(() => setMessage(copy.loadError)).finally(() => setChecking(false))
     // Load the current session when the component is mounted.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  async function authenticate() {
-    setBusy(true)
-    setMessage('')
-    try {
-      const response = await fetch('/api/neurokore/auth', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, ...(sent ? { token } : {}) }),
-      })
-      if (!response.ok) throw new Error(copy.authError)
-      if (sent) { await refresh(); setToken('') }
-      else { setSent(true); setMessage(copy.checkEmail) }
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : copy.authError)
-    } finally { setBusy(false) }
-  }
 
   async function signOut() {
     setBusy(true)
@@ -74,9 +65,6 @@ export function LicenseAccount() {
       if (!response.ok) throw new Error(copy.authError)
       setAccount(null)
       setRevealed({})
-      setSent(false)
-      setToken('')
-      setEmail('')
     } catch (error) { setMessage(error instanceof Error ? error.message : copy.authError) }
     finally { setBusy(false) }
   }
@@ -98,24 +86,19 @@ export function LicenseAccount() {
           Create an offline licence file
         </Link>
       </p>
-      {!account ? (
-        <form className="space-y-4" onSubmit={event => { event.preventDefault(); void authenticate() }}>
-          <label className="block space-y-1">{copy.email}
-            <input required type="email" autoComplete="email" className={control}
-              value={email} disabled={sent || busy} onChange={event => setEmail(event.target.value)} />
-          </label>
-          {sent && <label className="block space-y-1">{copy.code}
-            <input required autoComplete="one-time-code" inputMode="numeric" className={control}
-              value={token} onChange={event => setToken(event.target.value)} />
-          </label>}
-          <button className={button} disabled={busy}>
-            {busy ? copy.sending : sent ? copy.signIn : copy.sendCode}
-          </button>
-          {sent && <button className={button + ' ml-3'} type="button" disabled={busy}
-            onClick={() => { setSent(false); setToken(''); setMessage('') }}>
-            {copy.changeEmail}
-          </button>}
-        </form>
+      {checking ? (
+        <p role="status" className="text-sm text-zinc-300">
+          {language === 'de' ? 'Anmeldung wird geprüft…' : 'Checking sign-in…'}
+        </p>
+      ) : !account ? (
+        <div className="space-y-4 border border-white/15 bg-zinc-950 p-5">
+          <p className="text-sm text-zinc-300">
+            {language === 'de'
+              ? 'Melde dich ohne Passwort an. Wir schicken dir einen sicheren Anmeldelink per E-Mail.'
+              : 'Sign in without a password. We will email you a secure one-time link.'}
+          </p>
+          <CustomerSignIn />
+        </div>
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -124,7 +107,14 @@ export function LicenseAccount() {
           </div>
           <button className={button} disabled={busy}
             onClick={() => void refresh().catch(() => setMessage(copy.loadError))}>{copy.refresh}</button>
-          {account.licenses.length === 0 && <p className="text-zinc-400">{copy.noLicences}</p>}
+          {licencesUnavailable && (
+            <p role="status" className="border border-amber-800/60 bg-amber-950/20 p-4 text-sm text-amber-100">
+              {language === 'de'
+                ? 'Anmeldung erfolgreich. Die Lizenzverwaltung ist derzeit noch nicht vollständig eingerichtet. Du musst dich nicht erneut anmelden.'
+                : 'Signed in successfully. Licence management is not fully configured yet. You do not need to sign in again.'}
+            </p>
+          )}
+          {!licencesUnavailable && account.licenses.length === 0 && <p className="text-zinc-400">{copy.noLicences}</p>}
           <div className="grid gap-5">
             {account.licenses.map(license => (
               <article key={license.id} className="space-y-4 border border-white/15 bg-zinc-950 p-5 sm:p-7">

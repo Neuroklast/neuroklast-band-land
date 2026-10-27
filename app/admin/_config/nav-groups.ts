@@ -44,6 +44,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
       { href: '/admin/merchandise', label: 'Merchandise', countKey: 'merchandise' },
       { href: '/admin/plugins', label: 'Products & Plugins', countKey: 'products' },
       { href: '/admin/orders', label: 'Plugin Orders' },
+      { href: '/admin/contact-inbox', label: 'Contact Inbox' },
       { href: '/admin/withdrawals', label: 'Withdrawal confirmations' },
       { href: '/admin/soundpacks', label: 'Soundpacks', countKey: 'soundpacks' },
       { href: '/admin/music-highlights', label: 'Music Highlights', countKey: 'musicHighlights' },

@@ -8,8 +8,8 @@ import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { formatProductPrice, loadProductPriceForProduct } from '@/lib/plugins/price'
 import { CHANNEL_LABEL } from '@/lib/plugins/releases'
 import { availablePublicDownload } from '@/lib/plugins/public-download'
-import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
-import { PurchasePanel } from './PurchasePanel'
+import { isPluginSaleOpen, isNeurokoreSandboxPreview, sandboxCheckoutBlocker } from '@/lib/neurokore/flags'
+import { getApiSecret } from '@/lib/api-secrets'
 import { JsonLd } from '@/app/_components/public/JsonLd'
 import { getSiteOrigin } from '@/lib/og-share'
 import { absoluteUrl, buildBreadcrumbSchema, buildSoftwareApplicationSchema } from '@/lib/structured-data'
@@ -57,11 +57,17 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
   const videos = product.media.filter(item => item.kind === 'video' && item.url && !isLegacySupabaseStorageUrl(item.url))
   const audios = product.media.filter(item => item.kind === 'audio' && item.url && !isLegacySupabaseStorageUrl(item.url))
   const cover = images[0]
-  const price = product.pricing_mode === 'paid' && product.sales_enabled
+  const saleAllowed = isPluginSaleOpen(product)
+  const price = product.pricing_mode === 'paid' && saleAllowed
     ? await loadProductPriceForProduct(product.id)
     : null
-  const salesOpen = isNeurokoreSalesEnabled() && product.sales_enabled &&
-    product.pricing_mode === 'paid'
+  const salesOpen = saleAllowed && product.pricing_mode === 'paid'
+  const sandboxPreview = isNeurokoreSandboxPreview() && product.slug === 'neurokore'
+  const sandboxBlocker = sandboxPreview ? sandboxCheckoutBlocker() : null
+  const sandboxMailReady = sandboxPreview ? Boolean(await getApiSecret('resend_api_key')) : null
+  const sandboxLicensingReady = sandboxPreview
+    ? Boolean(process.env.NEUROKORE_KEY_ENCRYPTION_SECRET && process.env.NEUROKORE_SIGNING_PRIVATE_KEY)
+    : null
 
   const canonicalUrl = absoluteUrl(getSiteOrigin(), pluginCanonicalPath(slug))
   const softwareSchema = buildSoftwareApplicationSchema({
@@ -96,6 +102,29 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
             <span className="text-zinc-200">{product.title}</span>
           </nav>
 
+          {sandboxPreview && (
+            <section role="status" aria-label="Stripe Sandbox readiness"
+              className="space-y-1 border-l-2 border-amber-700/70 bg-zinc-950 px-4 py-3 text-xs text-zinc-300">
+              <p className="font-semibold text-amber-300">Preview / Stripe Sandbox – simulated payments only</p>
+              {sandboxBlocker === 'invalid-stripe-key' ? (
+                <p>Checkout locked: Preview must use a NEUROKLAST Stripe test secret key (sk_test_ or rk_test_), not a live key.</p>
+              ) : sandboxBlocker === 'sales-disabled' ? (
+                <p>Checkout locked: the Preview sales flag is off.</p>
+              ) : sandboxBlocker === 'missing-price' ? (
+                <p>Checkout locked: the EUR 1 sandbox Price ID is missing.</p>
+              ) : !price ? (
+                <p>Checkout locked: Stripe could not load the EUR 1 sandbox Price. Check the test key's account and permissions.</p>
+              ) : (
+                <p>Sandbox price verified: {formatProductPrice(price)}. No real charges.</p>
+              )}
+              {!sandboxLicensingReady && (
+                <p>Licence fulfillment is not ready: the existing encryption and signing keys must be configured for this Preview branch.</p>
+              )}
+              {!sandboxMailReady && (
+                <p>Purchase email is not ready: set a Resend API key for this Preview branch or provide access to the existing encrypted key.</p>
+              )}
+            </section>
+          )}
           <header className={
             'overflow-hidden border border-white/15 bg-zinc-950 ' +
             (cover ? 'grid items-stretch lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]' : '')
@@ -113,16 +142,17 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                 )}
               </div>
               <div className="flex flex-wrap gap-3">
-                {downloadAvailable && (
-                  <Link href={'/plugins/' + product.slug + '/download'}
-                    className="inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-700/20 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
-                    {product.pricing_mode === 'free' ? 'Free download' : 'Download demo'}
+                {salesOpen && price && !price.recurring && (
+                  <Link href={"/plugins/" + product.slug + "/checkout"}
+                    className="inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-800/80 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                    Buy {product.title} · {formatProductPrice(price)}
                   </Link>
                 )}
-                {salesOpen && price && !price.recurring && (
-                  <a href="#purchase" className="inline-flex min-h-11 items-center justify-center border border-white/40 px-5 py-3 text-sm font-semibold hover:border-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
-                    Buy licence · {formatProductPrice(price)}
-                  </a>
+                {downloadAvailable && (
+                  <Link href={'/plugins/' + product.slug + '/download'}
+                    className="inline-flex min-h-11 items-center justify-center border border-white/40 px-5 py-3 text-sm font-semibold text-white transition-colors hover:border-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                    {product.pricing_mode === 'free' ? 'Free download' : 'Try free demo'}
+                  </Link>
                 )}
                 <Link href="/#contact" className="inline-flex min-h-11 items-center justify-center px-2 py-3 text-sm text-zinc-300 underline underline-offset-4 hover:text-white">
                   Support
@@ -150,46 +180,18 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
             )}
           </header>
 
-          {salesOpen && price && !price.recurring && (
-            <div id="purchase" className="scroll-mt-28">
-              <PurchasePanel slug={product.slug} productTitle={product.title}
-                price={formatProductPrice(price)} recurring={price.recurring} />
-            </div>
-          )}
           {salesOpen && price?.recurring && (
             <p role="status" className="border border-white/20 bg-zinc-950 p-5 text-zinc-300">
               Subscription checkout is not available yet. Contact us for current licensing options.
             </p>
           )}
 
-          {product.description && (
-            <section aria-labelledby="plugin-about" className="border border-white/10 bg-zinc-950/70 p-6 sm:p-9">
-              <h2 id="plugin-about" className="mb-5 text-2xl font-semibold tracking-tight sm:text-3xl">About {product.title}</h2>
-              <p className="max-w-4xl whitespace-pre-line text-base leading-8 text-zinc-200">{product.description}</p>
-            </section>
-          )}
-
-          {images.length > 1 && (
-            <section aria-labelledby="plugin-gallery" className="space-y-4">
-              <h2 id="plugin-gallery" className="text-2xl font-semibold tracking-tight">More images</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {images.slice(1, 5).map((item, index) => (
-                  <figure key={item.url} className="flex aspect-[16/10] items-center justify-center border border-white/15 bg-zinc-950 p-3">
-                    <CdnImage src={item.url} alt={product.title + ' image ' + (index + 2)}
-                      widths={[480, 800, 1200]} sizes="(max-width: 640px) 92vw, 45vw"
-                      className="h-full w-full object-contain" loading="lazy" />
-                  </figure>
-                ))}
-              </div>
-            </section>
-          )}
-
           {videos.length > 0 && (
             <section aria-labelledby="plugin-videos" className="space-y-4">
-              <h2 id="plugin-videos" className="text-2xl font-semibold tracking-tight">Videos</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2"><p className="font-mono text-xs uppercase tracking-[.2em] text-red-400">IN ACTION</p><h2 id="plugin-videos" className="text-2xl font-semibold tracking-tight sm:text-3xl">See and hear {product.title}</h2></div>
+              <div className={videos.length === 1 ? "grid gap-4" : "grid gap-4 lg:grid-cols-2"}>
                 {videos.map((item, index) => (
-                  <figure key={item.url} className="border border-white/15 bg-zinc-950 p-3">
+                  <figure key={item.url} className="mx-auto w-full max-w-5xl border border-white/15 bg-zinc-950 p-3 sm:p-5">
                     <BrandedVideoPlayer
                       src={item.url}
                       poster={cover?.url}
@@ -199,6 +201,13 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                   </figure>
                 ))}
               </div>
+            </section>
+          )}
+
+          {product.description && (
+            <section aria-labelledby="plugin-about" className="border border-white/10 bg-zinc-950/70 p-6 sm:p-9">
+              <h2 id="plugin-about" className="mb-5 text-2xl font-semibold tracking-tight sm:text-3xl">About {product.title}</h2>
+              <p className="max-w-4xl whitespace-pre-line text-base leading-8 text-zinc-200">{product.description}</p>
             </section>
           )}
 
@@ -231,6 +240,21 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                   </li>
                 ))}
               </ul>
+            </section>
+          )}
+
+          {images.length > 1 && (
+            <section aria-labelledby="plugin-gallery" className="space-y-4">
+              <h2 id="plugin-gallery" className="text-2xl font-semibold tracking-tight">More images</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {images.slice(1, 5).map((item, index) => (
+                  <figure key={item.url} className="flex aspect-[16/10] items-center justify-center border border-white/15 bg-zinc-950 p-3">
+                    <CdnImage src={item.url} alt={product.title + ' image ' + (index + 2)}
+                      widths={[480, 800, 1200]} sizes="(max-width: 640px) 92vw, 45vw"
+                      className="h-full w-full object-contain" loading="lazy" />
+                  </figure>
+                ))}
+              </div>
             </section>
           )}
 
@@ -284,6 +308,30 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                 href="/#contact">Contact NEUROKLAST</Link>
             </section>
           </div>
+          {salesOpen && price && !price.recurring && (
+            <section aria-labelledby="plugin-final-cta"
+              className="flex flex-wrap items-center justify-between gap-5 border border-red-800/50 bg-zinc-950 p-6 sm:p-9">
+              <div className="space-y-2">
+                <h2 id="plugin-final-cta" className="text-2xl font-semibold">Ready to make it yours?</h2>
+                <p className="text-sm leading-7 text-zinc-300">
+                  {product.title} · {formatProductPrice(price)} · One-time purchase.
+                  Your licence will be available in your account after payment.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link href={'/plugins/' + product.slug + '/checkout'}
+                  className="inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-800/80 px-6 py-3 text-sm font-semibold text-white hover:bg-red-700">
+                  Buy {product.title}
+                </Link>
+                {downloadAvailable && (
+                  <Link href={'/plugins/' + product.slug + '/download'}
+                    className="inline-flex min-h-11 items-center justify-center border border-white/30 px-5 py-3 text-sm font-semibold text-white hover:border-red-500">
+                    Try demo
+                  </Link>
+                )}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </LegalPageShell>

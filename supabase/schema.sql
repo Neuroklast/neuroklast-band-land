@@ -171,6 +171,73 @@ CREATE TABLE IF NOT EXISTS public.soundpacks (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+
+-- NEUROKLAST AUDIO: digital soundpacks / preset packs (private archive assets).
+ALTER TABLE public.soundpacks
+  ADD COLUMN IF NOT EXISTS description text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS pack_type text NOT NULL DEFAULT 'sample_pack',
+  ADD COLUMN IF NOT EXISTS is_free boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS price_cents integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS archive_key text,
+  ADD COLUMN IF NOT EXISTS archive_filename text,
+  ADD COLUMN IF NOT EXISTS archive_bytes bigint,
+  ADD COLUMN IF NOT EXISTS sample_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS format_description text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS license_notes text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'soundpacks_pack_type_check')
+  THEN ALTER TABLE public.soundpacks ADD CONSTRAINT soundpacks_pack_type_check
+    CHECK (pack_type IN ('sample_pack','preset_pack')); END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'soundpacks_price_check')
+  THEN ALTER TABLE public.soundpacks ADD CONSTRAINT soundpacks_price_check
+    CHECK (price_cents BETWEEN 0 AND 100000 AND (NOT is_free OR price_cents=0)); END IF;
+END;
+$$;
+ALTER TABLE public.soundpacks DROP CONSTRAINT IF EXISTS soundpacks_archive_check;
+ALTER TABLE public.soundpacks ADD CONSTRAINT soundpacks_archive_check
+  CHECK ((archive_key IS NULL AND archive_filename IS NULL AND archive_bytes IS NULL)
+    OR (archive_key ~ '^digital-packs/[a-f0-9-]{36}[.]zip$'
+      AND archive_filename IS NOT NULL AND length(archive_filename) BETWEEN 5 AND 180
+      AND position('/' in archive_filename)=0 AND position(chr(92) in archive_filename)=0
+      AND right(lower(archive_filename),4)='.zip' AND archive_bytes > 0));
+
+CREATE TABLE IF NOT EXISTS public.digital_pack_orders (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  pack_id uuid NOT NULL REFERENCES public.soundpacks(id) ON DELETE RESTRICT,
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+  email text NOT NULL CHECK (email=lower(email)),
+  amount_cents integer NOT NULL CHECK (amount_cents BETWEEN 1 AND 100000),
+  currency text NOT NULL DEFAULT 'eur' CHECK (currency='eur'),
+  archive_key text NOT NULL,
+  archive_filename text NOT NULL,
+  stripe_session text UNIQUE,
+  payment_intent text UNIQUE,
+  status text NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending','paid','refunded','disputed')),
+  paid_at timestamptz,
+  confirmation_sent_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.digital_pack_orders
+  ADD COLUMN IF NOT EXISTS pack_title text,
+  ADD COLUMN IF NOT EXISTS terms_snapshot text,
+  ADD COLUMN IF NOT EXISTS license_snapshot text,
+  ADD COLUMN IF NOT EXISTS terms_version text,
+  ADD COLUMN IF NOT EXISTS email_claimed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS email_attempts integer NOT NULL DEFAULT 0;
+ALTER TABLE public.digital_pack_orders DROP CONSTRAINT IF EXISTS digital_pack_orders_archive_key_check;
+ALTER TABLE public.digital_pack_orders ADD CONSTRAINT digital_pack_orders_archive_key_check
+  CHECK (archive_key ~ '^digital-packs/[a-f0-9-]{36}[.]zip$');
+CREATE INDEX IF NOT EXISTS digital_pack_orders_user_idx
+  ON public.digital_pack_orders (user_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS digital_pack_orders_pack_status_idx
+  ON public.digital_pack_orders (pack_id,status);
+ALTER TABLE public.digital_pack_orders ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.digital_pack_orders FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.digital_pack_orders TO service_role;
+
 -- ─── products (software / plugin cards; section toggle in site_config) ──
 CREATE TABLE IF NOT EXISTS public.products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -817,7 +884,11 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+-- Only the trusted auth.users trigger should invoke this privileged function.
+-- PostgreSQL triggers do not need public EXECUTE grants at firing time.
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -1130,6 +1201,73 @@ CREATE TABLE IF NOT EXISTS public.plugin_orders (
 
 -- Contract confirmation is sent on a durable medium after Stripe fulfilment.
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS confirmation_sent_at timestamptz;
+-- Preserve an order tombstone after wiping a sandbox license, preventing webhook replay.
+ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS test_deleted_at timestamptz;
+
+-- Idempotent commerce state and a leased, service-role-only receipt outbox.
+ALTER TABLE public.plugin_orders
+  ADD COLUMN IF NOT EXISTS payment_state text NOT NULL DEFAULT 'pending',
+  ADD COLUMN IF NOT EXISTS payment_state_at timestamptz,
+  ADD COLUMN IF NOT EXISTS confirmation_attempts integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS confirmation_claimed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS confirmation_error_at timestamptz;
+CREATE INDEX IF NOT EXISTS plugin_orders_unconfirmed_idx
+  ON public.plugin_orders (created_at) WHERE license_id IS NOT NULL
+  AND confirmation_sent_at IS NULL AND test_deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS plugin_orders_payment_state_idx
+  ON public.plugin_orders (payment_state, created_at DESC);
+
+-- A missing/expired 2-minute lease is the only case in which one worker can
+-- claim the transaction. The row lock prevents simultaneous webhook/admin
+-- retries sending multiple emails.
+CREATE OR REPLACE FUNCTION public.plugin_claim_confirmation(p_order uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  locked public.plugin_orders;
+BEGIN
+  SELECT * INTO locked FROM public.plugin_orders WHERE id = p_order FOR UPDATE;
+  IF NOT FOUND OR locked.license_id IS NULL OR locked.test_deleted_at IS NOT NULL
+    OR locked.confirmation_sent_at IS NOT NULL
+    OR locked.confirmation_attempts >= 20
+    OR (locked.confirmation_claimed_at IS NOT NULL AND locked.confirmation_claimed_at > now() - interval '2 minutes')
+  THEN
+    RETURN false;
+  END IF;
+  UPDATE public.plugin_orders
+    SET confirmation_claimed_at = now(),
+        confirmation_attempts = confirmation_attempts + 1
+    WHERE id = p_order;
+  RETURN true;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.plugin_claim_confirmation(uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.plugin_claim_confirmation(uuid) TO service_role;
+
+-- Admin-only contact inbox. Order matches are resolved by verified order email
+-- in a protected dashboard; no customer licence data is exposed to submitters.
+CREATE TABLE IF NOT EXISTS public.plugin_contact_requests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL CHECK (length(name) BETWEEN 1 AND 100),
+  email text NOT NULL CHECK (length(email) BETWEEN 3 AND 254),
+  subject text NOT NULL CHECK (length(subject) BETWEEN 1 AND 200),
+  message text NOT NULL CHECK (length(message) BETWEEN 10 AND 5000),
+  delivery_state text NOT NULL DEFAULT 'pending' CHECK (delivery_state IN ('pending','accepted','failed')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  provider_accepted_at timestamptz,
+  closed_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS plugin_contact_requests_email_idx
+  ON public.plugin_contact_requests (lower(email), created_at DESC);
+CREATE INDEX IF NOT EXISTS plugin_contact_requests_pending_idx
+  ON public.plugin_contact_requests (created_at DESC) WHERE closed_at IS NULL;
+ALTER TABLE public.plugin_contact_requests ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.plugin_contact_requests FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.plugin_contact_requests TO service_role;
+CREATE INDEX IF NOT EXISTS plugin_orders_email_lookup_idx ON public.plugin_orders (lower(email), created_at DESC);
 
 CREATE TABLE IF NOT EXISTS public.plugin_releases (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1343,6 +1481,14 @@ BEGIN
   IF NOT FOUND OR o.stripe_session IS DISTINCT FROM p_session THEN
     RAISE EXCEPTION 'Order mismatch';
   END IF;
+  -- Never issue a second licence for a deliberately cleared sandbox payment.
+  IF o.test_deleted_at IS NOT NULL THEN
+    RETURN NULL;
+  END IF;
+  -- Never mint a new key after a verified payment incident.
+  IF o.payment_state IN ('refunded', 'partially_refunded', 'disputed', 'dispute_closed') THEN
+    RETURN NULL;
+  END IF;
   IF o.license_id IS NOT NULL THEN
     RETURN o.license_id;
   END IF;
@@ -1352,6 +1498,49 @@ BEGIN
   RETURNING id INTO result;
   UPDATE public.plugin_orders SET license_id = result, payment_intent = p_intent WHERE id = p_order;
   RETURN result;
+END;
+$$;
+
+
+-- Delete only sandbox-purchased license secrets and device activations.
+-- Keep the paid order with a tombstone so repeated webhooks cannot reissue a key.
+CREATE OR REPLACE FUNCTION public.plugin_delete_sandbox_license(
+  p_license uuid, p_product uuid, p_actor uuid
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  o public.plugin_orders;
+  locked_license uuid;
+BEGIN
+  SELECT * INTO o
+    FROM public.plugin_orders
+    WHERE license_id = p_license AND product_id = p_product
+    FOR UPDATE;
+  IF NOT FOUND OR o.test_deleted_at IS NOT NULL
+    OR o.price_id <> 'price_1UV6RMEP3z8hPITngA11NGBL'
+    OR o.stripe_session IS NULL
+    OR left(o.stripe_session, 8) <> 'cs_test_'
+  THEN
+    RAISE EXCEPTION 'Only NEUROKORE Stripe Sandbox purchases can be deleted';
+  END IF;
+
+  SELECT id INTO locked_license FROM public.plugin_licenses
+    WHERE id = p_license AND product_id = p_product AND stripe_session = o.stripe_session
+    FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Matching sandbox licence missing'; END IF;
+
+  UPDATE public.plugin_orders
+    SET license_id = NULL, test_deleted_at = now()
+    WHERE id = o.id;
+  DELETE FROM public.plugin_licenses WHERE id = p_license AND product_id = p_product;
+  INSERT INTO public.plugin_admin_audit(actor, product_id, action, target, detail)
+    VALUES (p_actor, p_product, 'license.sandbox.delete', p_license::text,
+      jsonb_build_object('order_id', o.id, 'test_payment', true));
+  RETURN true;
 END;
 $$;
 
@@ -1498,12 +1687,14 @@ $$;
 
 REVOKE ALL ON FUNCTION public.plugin_activate(text, text, text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.plugin_delete_sandbox_license(uuid, uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_publish_release(uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_withdraw_release(uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_delete_product(uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_public_catalog() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.plugin_activate(text, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_delete_sandbox_license(uuid, uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_publish_release(uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_withdraw_release(uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_delete_product(uuid) TO service_role;
