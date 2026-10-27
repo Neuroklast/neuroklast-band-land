@@ -948,9 +948,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "Customer accounts and license activation",
       "paragraphs": [
-        "To log in to the software customer portal, we process your email address, a Supabase user ID and technically necessary session information. Sign-in codes are sent by email. The legal basis is Art. 6(1)(b) GDPR.",
-        "For issued software licenses we process the purchased product, license status, order reference, activation times and device-related identifiers. Activation records help enforce the agreed number of devices and provide offline authorizations. The legal basis is Art. 6(1)(b) GDPR.",
-        "Account and license records are kept for as long as needed to perform the license agreement, handle support and protect legal claims, subject to applicable retention and deletion requirements."
+        "To give you access to your purchased software, we use your email address, your customer account and information about your licences. We also record which devices you activate, so the agreed device limit can be applied (Art. 6(1)(b) GDPR).",
+        "Account and licence information is kept as long as necessary for your contract, customer support or legal obligations."
       ]
     },
     "purchases": {
@@ -970,15 +969,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "Optional NEUROKORE beta diagnostics",
       "paragraphs": [
-        "In beta versions, you can separately opt in to technical diagnostic reports inside the plugin. This option is off by default and can be disabled at any time. The reports contain plugin version, operating system and audio host categories, plugin format, coarse CPU/RAM classes, sample rate, buffer size and error category, sometimes a JavaScript bundle filename and line number.",
-        "No audio, presets, license keys, usernames, file paths or free-text error messages are included in the defined report payload. The server uses temporary IP-based abuse protection, and transport providers may process IP addresses in connection logs. Accordingly the reports are data-minimized, not guaranteed to be anonymous. The legal basis for optional diagnostics is Art. 6(1)(a) GDPR. Stored diagnostic reports are deleted after at most 90 days by the configured cleanup process."
+        "NEUROKORE beta users can choose whether to send technical error reports. This is switched off by default and can be disabled at any time. Reports contain the software version, operating system, audio program, basic computer and audio settings, and the type of problem. For some errors, a file name and line number may be included.",
+        "The reports do not contain audio, presets, licence keys or personal messages. Connection data may include your IP address, so the reports are not necessarily anonymous. Consent is the legal basis (Art. 6(1)(a) GDPR). Reports are deleted after no more than 90 days."
       ]
     },
     "updates": {
       "title": "Software downloads and update checks",
       "paragraphs": [
-        "Published software files and media may be delivered through Cloudflare R2 or GitHub. Download and server infrastructure can technically process IP address, requested file, request time and browser/device information (Art. 6(1)(f) GDPR).",
-        "If you manually request or enable automatic update checks in NEUROKORE, the plugin contacts the GitHub releases API. GitHub may receive technical connection data. Automatic checks are optional. Updates are not installed without your confirmation. See https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+        "When you download our software, the provider delivering the file may process connection details such as your IP address and the time of the download (Art. 6(1)(f) GDPR).",
+        "NEUROKORE can check for updates through GitHub, either when you request it or if you enable automatic checks. GitHub may then receive technical connection data. No update is installed without your confirmation. GitHub privacy information: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
       ]
     }
   },
@@ -986,9 +985,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "Kundenkonto und Lizenzaktivierung",
       "paragraphs": [
-        "Für die Anmeldung am Software-Kundenkonto verarbeiten wir die E-Mail-Adresse, eine Supabase-Benutzerkennung und technisch notwendige Sitzungsinformationen. Anmeldecodes werden per E-Mail versendet. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.",
-        "Für Softwarelizenzen verarbeiten wir das erworbene Produkt, Lizenzstatus, Bestellreferenzen, Aktivierungszeitpunkte und gerätebezogene Kennungen. Diese Daten ermöglichen die vereinbarte Anzahl von Geräteaktivierungen und zeitlich begrenzte Offline-Berechtigungen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.",
-        "Konto- und Lizenzdaten speichern wir, soweit dies für die Vertragserfüllung, Unterstützung und die Abwicklung rechtlicher Ansprüche erforderlich ist. Gesetzliche Aufbewahrungs- und Löschpflichten bleiben unberührt."
+        "Damit du deine Software nutzen kannst, verarbeiten wir deine E-Mail-Adresse, Angaben zum Kundenkonto und zu deinen Lizenzen. Wir erfassen außerdem, auf welchen Geräten du die Software aktivierst, um die vereinbarte Anzahl von Aktivierungen einzuhalten (Art. 6 Abs. 1 lit. b DSGVO).",
+        "Konto- und Lizenzdaten speichern wir, solange sie für den Vertrag, den Support oder gesetzliche Pflichten erforderlich sind."
       ]
     },
     "purchases": {
@@ -1008,15 +1006,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "Optionale NEUROKORE-Betadiagnose",
       "paragraphs": [
-        "In Betaversionen von NEUROKORE kannst du innerhalb des Plugins ausdrücklich in technische Diagnosemeldungen einwilligen. Diese Funktion ist standardmäßig ausgeschaltet und jederzeit deaktivierbar. Übermittelt werden Pluginversion, Kategorien von Betriebssystem und Audio-Host, Pluginformat, grobe Angaben zu CPU und Arbeitsspeicher, Samplerate, Puffergröße und Fehlerkategorie. Gegebenenfalls werden der Name einer JavaScript-Datei und die Zeilennummer übertragen.",
-        "Die vorgesehenen Meldungen enthalten keine Audiodaten, Presets, Lizenzschlüssel, Benutzernamen, Dateipfade oder frei formulierte Fehlermeldungen. Der Server verwendet einen vorübergehenden IP-basierten Missbrauchsschutz. Transportdienstleister können IP-Adressen in Verbindungsprotokollen verarbeiten. Die Meldungen sind daher datenminimiert, aber nicht garantiert anonym. Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO. Gespeicherte Diagnosemeldungen werden durch die konfigurierte Bereinigung spätestens nach 90 Tagen gelöscht."
+        "In der NEUROKORE-Betaversion kannst du freiwillig technische Fehlerberichte senden. Die Funktion ist zunächst ausgeschaltet und lässt sich jederzeit deaktivieren. Die Berichte enthalten die Programmversion, das Betriebssystem, die verwendete Audiosoftware, grundlegende Rechner- und Audioeinstellungen sowie die Art des Fehlers. Bei bestimmten Fehlern können der Name einer Programmdatei und eine Zeilennummer enthalten sein.",
+        "Audiodaten, Presets, Lizenzschlüssel und persönliche Nachrichten werden nicht übertragen. Bei der Verbindung kann deine IP-Adresse verarbeitet werden. Die Berichte sind daher nicht zwingend anonym. Grundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Die Berichte werden nach spätestens 90 Tagen gelöscht."
       ]
     },
     "updates": {
       "title": "Softwaredownloads und Updateprüfung",
       "paragraphs": [
-        "Softwaredownloads und Mediendateien können über Cloudflare R2 oder GitHub bereitgestellt werden. Bei Downloads können technisch erforderliche Verbindungsdaten wie IP-Adresse, angeforderte Datei, Zeitpunkt und Browser- oder Geräteinformationen verarbeitet werden (Art. 6 Abs. 1 lit. f DSGVO).",
-        "Wenn du im NEUROKORE-Plugin manuell oder optional automatisch nach Updates suchst, wird die GitHub-Releases-API aufgerufen. GitHub kann dabei technische Verbindungsdaten erhalten. Automatische Prüfungen sind abschaltbar. Updates werden nicht ohne deine Bestätigung installiert. Datenschutzhinweise: https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement."
+        "Beim Herunterladen unserer Software kann der Anbieter, der die Datei ausliefert, Verbindungsdaten wie deine IP-Adresse und den Zeitpunkt des Downloads verarbeiten (Art. 6 Abs. 1 lit. f DSGVO).",
+        "NEUROKORE kann über GitHub nach Updates suchen, wenn du die Prüfung selbst startest oder automatische Prüfungen aktivierst. GitHub kann dabei technische Verbindungsdaten erhalten. Ohne deine Bestätigung wird kein Update installiert. Datenschutzhinweise von GitHub: https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement."
       ]
     }
   },
@@ -1024,8 +1022,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "Обліковий запис і активація ліцензії",
       "paragraphs": [
-        "Для входу до кабінету покупця програмного забезпечення ми обробляємо електронну адресу, ідентифікатор користувача Supabase та технічно необхідні дані сеансу. Коди входу надсилаються електронною поштою. Правова підстава: ст. 6(1)(b) GDPR.",
-        "Для ліцензій обробляються придбаний продукт, стан ліцензії, посилання на замовлення, час активації та ідентифікатори пристроїв. Це потрібно для дотримання дозволеної кількості пристроїв та роботи офлайн-дозволів (ст. 6(1)(b) GDPR). Дані зберігаються протягом строку, необхідного для договору, підтримки та законних вимог."
+        "Для доступу до придбаного програмного забезпечення ми використовуємо email, дані облікового запису та ліцензій. Також враховуємо пристрої, на яких активовано програму, щоб дотримуватися дозволеної кількості активацій (ст. 6(1)(b) GDPR).",
+        "Відомості зберігаються протягом строку, потрібного для договору, підтримки або законних обов’язків."
       ]
     },
     "purchases": {
@@ -1045,15 +1043,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "Необов’язкова діагностика бета-версії NEUROKORE",
       "paragraphs": [
-        "У бета-версіях звіти про технічні помилки надсилаються лише після окремої згоди в плагіні. За замовчуванням функція вимкнена. Звіти містять версію плагіна, категорії ОС і аудіопрограми, формат, приблизні характеристики CPU/RAM, частоту дискретизації, буфер, тип помилки та інколи назву JS-файлу й номер рядка.",
-        "Звіти не включають аудіо, пресети, ліцензійні ключі, імена користувачів, шляхи до файлів або довільний текст помилки. Для захисту від зловживань тимчасово обробляються IP-дані, тому повну анонімність не гарантовано. Підстава: ст. 6(1)(a) GDPR. Звіти видаляються не пізніше 90 днів."
+        "У бета-версії NEUROKORE можна добровільно ввімкнути технічні звіти. За замовчуванням їх вимкнено. Звіти містять версію програми, операційну систему, аудіопрограму, основні налаштування комп’ютера й аудіо, вид помилки, а іноді назву програмного файлу та рядок.",
+        "Аудіо, пресети, ліцензійні ключі й особисті повідомлення не надсилаються. Під час з’єднання може оброблятися IP-адреса, тому повна анонімність не гарантована. Підстава: згода (ст. 6(1)(a) GDPR). Звіти видаляються протягом 90 днів."
       ]
     },
     "updates": {
       "title": "Завантаження та перевірка оновлень",
       "paragraphs": [
-        "Файли можуть надаватися через Cloudflare R2 або GitHub. Під час завантаження обробляються технічні дані з’єднання, наприклад IP-адреса, час і запитаний файл (ст. 6(1)(f) GDPR).",
-        "Ручна або ввімкнена користувачем автоматична перевірка оновлень звертається до GitHub Releases API. GitHub може отримувати технічні дані з’єднання. Оновлення встановлюються лише після підтвердження. Політика: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+        "Під час завантаження програм постачальник файлів може отримати IP-адресу й час запиту (ст. 6(1)(f) GDPR).",
+        "NEUROKORE може перевіряти оновлення через GitHub вручну або за вашим вибором автоматично. GitHub може отримувати технічні дані з’єднання. Встановлення потребує підтвердження. Політика: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
       ]
     }
   },
@@ -1061,8 +1059,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "Account cliente e attivazione delle licenze",
       "paragraphs": [
-        "Per accedere all'account software trattiamo indirizzo email, identificativo utente Supabase e dati di sessione tecnicamente necessari. I codici di accesso sono inviati via email. Base giuridica: art. 6(1)(b) GDPR.",
-        "Per le licenze trattiamo prodotto acquistato, stato della licenza, riferimento d'ordine, orari di attivazione e identificativi del dispositivo, necessari per gestire le postazioni consentite e le autorizzazioni offline (art. 6(1)(b) GDPR). Conserviamo i dati finché necessari per contratto, assistenza e obblighi di legge."
+        "Per utilizzare il software acquistato trattiamo email, dati dell'account e delle licenze. Registriamo anche i dispositivi attivati per rispettare il numero consentito (art. 6(1)(b) GDPR).",
+        "I dati vengono conservati per il tempo necessario a contratto, assistenza e obblighi legali."
       ]
     },
     "purchases": {
@@ -1082,15 +1080,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "Diagnostica beta facoltativa di NEUROKORE",
       "paragraphs": [
-        "Nelle versioni beta i report tecnici vengono inviati solo con consenso separato nel plugin, disattivato per impostazione predefinita e revocabile. Sono trasmessi versione, categorie del sistema operativo e della DAW, formato, classi CPU/RAM, frequenza di campionamento, buffer, categoria dell'errore ed eventualmente nome del file JavaScript e riga.",
-        "Non vengono inviati audio, preset, chiavi di licenza, nomi utente, percorsi o messaggi liberi. La protezione temporanea contro abusi usa dati IP; non è quindi garantito anonimato assoluto. Base giuridica: art. 6(1)(a) GDPR. I report conservati sono cancellati entro 90 giorni."
+        "Nella beta di NEUROKORE puoi scegliere di inviare report tecnici. La funzione è disattivata per impostazione predefinita e revocabile. I report includono versione del programma, sistema operativo, programma audio, impostazioni essenziali e tipo di errore; talvolta nome del file del programma e numero di riga.",
+        "Non vengono inviati audio, preset, chiavi di licenza o messaggi personali. Durante la connessione può essere trattato l'IP, quindi i report non sono necessariamente anonimi. Base: consenso (art. 6(1)(a) GDPR). Conservazione massima: 90 giorni."
       ]
     },
     "updates": {
       "title": "Download e controllo degli aggiornamenti",
       "paragraphs": [
-        "I file possono essere distribuiti tramite Cloudflare R2 o GitHub, che possono trattare dati tecnici di connessione, come indirizzo IP, file richiesto e orario (art. 6(1)(f) GDPR).",
-        "I controlli manuali o automatici facoltativi degli aggiornamenti interrogano la API GitHub Releases. GitHub può ricevere dati di connessione. Gli aggiornamenti non vengono installati senza conferma. Informativa: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+        "Durante il download il fornitore dei file può trattare dati di connessione come IP e orario (art. 6(1)(f) GDPR).",
+        "NEUROKORE può cercare aggiornamenti tramite GitHub quando lo richiedi o attivi il controllo automatico. GitHub può ricevere dati di connessione. Nessun aggiornamento viene installato senza conferma. Politica: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
       ]
     }
   },
@@ -1098,8 +1096,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "Cuenta de cliente y activación de licencias",
       "paragraphs": [
-        "Para acceder a la cuenta de software tratamos el correo electrónico, identificador de usuario de Supabase y datos de sesión necesarios. Los códigos de acceso se envían por correo. Base jurídica: art. 6.1.b RGPD.",
-        "Para las licencias tratamos producto adquirido, estado, referencia del pedido, fechas de activación e identificadores del dispositivo, necesarios para controlar los dispositivos autorizados y el uso sin conexión (art. 6.1.b RGPD). Los datos se conservan mientras sean necesarios para el contrato, asistencia y obligaciones legales."
+        "Para acceder al software comprado tratamos tu correo y datos de la cuenta y las licencias. También registramos los dispositivos activados para respetar el límite contratado (art. 6.1.b RGPD).",
+        "Conservamos los datos el tiempo necesario para el contrato, la asistencia o las obligaciones legales."
       ]
     },
     "purchases": {
@@ -1119,15 +1117,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "Diagnóstico beta opcional de NEUROKORE",
       "paragraphs": [
-        "En versiones beta solo se envían informes técnicos tras consentimiento independiente dentro del plugin, desactivado por defecto y revocable. Incluyen versión, categorías de sistema y programa de audio, formato, clases aproximadas de CPU/RAM, frecuencia de muestreo, búfer, tipo de error y, en ocasiones, archivo JavaScript y número de línea.",
-        "No incluyen audio, presets, claves de licencia, usuarios, rutas de archivos ni textos libres de errores. La protección temporal contra abusos utiliza datos IP, por lo que no se garantiza el anonimato absoluto. Base: art. 6.1.a RGPD. Los informes se eliminan en un máximo de 90 días."
+        "En la beta de NEUROKORE puedes elegir enviar informes técnicos. Están desactivados por defecto y puedes retirarlos. Incluyen versión, sistema operativo, programa de audio, ajustes básicos del equipo y tipo de error; a veces nombre de archivo del programa y línea.",
+        "No incluyen audio, presets, claves de licencia ni mensajes personales. La conexión puede implicar el tratamiento de tu IP, por lo que no son necesariamente anónimos. Base: consentimiento (art. 6.1.a RGPD). Se eliminan en un máximo de 90 días."
       ]
     },
     "updates": {
       "title": "Descargas y comprobación de actualizaciones",
       "paragraphs": [
-        "Los archivos pueden distribuirse mediante Cloudflare R2 o GitHub, que procesan datos técnicos de conexión, como IP, archivo solicitado y hora (art. 6.1.f RGPD).",
-        "La comprobación manual u opcional automática consulta la API GitHub Releases. GitHub puede recibir datos de conexión. Las actualizaciones solo se instalan con confirmación. Información: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+        "Al descargar software, el proveedor puede tratar datos de conexión como la IP y la hora (art. 6.1.f RGPD).",
+        "NEUROKORE puede buscar actualizaciones a través de GitHub cuando lo solicitas o activas la comprobación automática. GitHub puede recibir datos de conexión. No se instala nada sin confirmación. Política: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
       ]
     }
   },
@@ -1135,8 +1133,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "Conta de cliente e ativação de licenças",
       "paragraphs": [
-        "Para iniciar sessão na conta de software tratamos email, identificador de utilizador Supabase e dados de sessão necessários. Os códigos de acesso são enviados por email. Fundamento: artigo 6.º, n.º 1, alínea b), RGPD.",
-        "Para as licenças tratamos produto comprado, estado, referência da encomenda, datas de ativação e identificadores do dispositivo para gerir os dispositivos autorizados e permissões offline. Os dados são mantidos enquanto necessários ao contrato, apoio e obrigações legais."
+        "Para aceder ao software comprado tratamos email, dados da conta e das licenças. Registamos os dispositivos ativados para respeitar o limite contratado (artigo 6.º, n.º 1, alínea b), RGPD).",
+        "Conservamos os dados enquanto necessários ao contrato, apoio ou obrigações legais."
       ]
     },
     "purchases": {
@@ -1156,15 +1154,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "Diagnóstico beta opcional do NEUROKORE",
       "paragraphs": [
-        "Em versões beta, os relatórios técnicos exigem consentimento separado no plugin, desligado por defeito e revogável. Incluem versão, categorias do sistema operativo e aplicação de áudio, formato, classes CPU/RAM, frequência de amostragem, buffer, tipo de erro e, ocasionalmente, ficheiro JavaScript e linha.",
-        "Não incluem áudio, presets, chaves, nomes, caminhos ou mensagens livres. A proteção temporária contra abusos processa dados IP, pelo que não se garante anonimato absoluto. Fundamento: artigo 6.º, n.º 1, alínea a), RGPD. Os relatórios são apagados em até 90 dias."
+        "Na beta do NEUROKORE podes optar por enviar relatórios técnicos, desligados por defeito e revogáveis. Incluem versão, sistema operativo, programa de áudio, definições básicas e tipo de erro; por vezes nome de ficheiro do programa e linha.",
+        "Não incluem áudio, presets, chaves ou mensagens pessoais. A ligação pode envolver o IP, pelo que não são necessariamente anónimos. Fundamento: consentimento (artigo 6.º, n.º 1, alínea a), RGPD). São eliminados em até 90 dias."
       ]
     },
     "updates": {
       "title": "Transferências e verificação de atualizações",
       "paragraphs": [
-        "Os ficheiros podem ser distribuídos através da Cloudflare R2 ou GitHub, processando dados técnicos de ligação, como IP, ficheiro pedido e hora (artigo 6.º, n.º 1, alínea f), RGPD).",
-        "A verificação manual ou automática opcional utiliza a API GitHub Releases. O GitHub pode receber dados de ligação. As atualizações só são instaladas após confirmação. Política: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+        "Ao descarregar software, o fornecedor pode tratar dados de ligação como IP e hora (artigo 6.º, n.º 1, alínea f), RGPD).",
+        "O NEUROKORE pode procurar atualizações no GitHub quando pedes ou ativas a verificação automática. O GitHub pode receber dados de ligação. Nenhuma atualização é instalada sem confirmação. Política: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
       ]
     }
   },
@@ -1172,8 +1170,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "顧客アカウントとライセンス認証",
       "paragraphs": [
-        "ソフトウェアの顧客アカウントへのログインでは、メールアドレス、SupabaseのユーザーID、技術的に必要なセッション情報を処理します。ログインコードはメールで送信します。法的根拠はGDPR第6条第1項(b)です。",
-        "ライセンス管理では、購入製品、状態、注文番号、認証日時、端末識別子を処理し、利用可能な端末数とオフライン認証を管理します。契約履行、サポート、法的義務に必要な期間保存します。"
+        "購入したソフトウェアの利用のため、メールアドレス、アカウントとライセンスの情報を処理します。許可された台数を管理するため、認証済みの端末も記録します（GDPR第6条第1項(b)）。",
+        "情報は契約、サポート、法的義務に必要な期間保存します。"
       ]
     },
     "purchases": {
@@ -1193,15 +1191,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "NEUROKOREベータ版の任意診断",
       "paragraphs": [
-        "ベータ版の技術診断は、プラグイン内で別途同意した場合にのみ送信します。初期設定はオフで、いつでも解除できます。収集項目はバージョン、OS・DAWの分類、形式、概略CPU/RAM、サンプルレート、バッファサイズ、エラー分類、場合によってはJavaScriptファイル名と行番号です。",
-        "音声、プリセット、ライセンスキー、ユーザー名、ファイルパス、自由記述のエラー文は送信しません。不正利用対策では一時的にIP関連情報を使用するため、完全な匿名性は保証しません。根拠はGDPR第6条第1項(a)。保存された診断情報は90日以内に削除します。"
+        "NEUROKOREベータ版では技術的なエラー報告を任意で有効にできます。初期設定はオフで、いつでも解除できます。報告にはバージョン、OS、使用する音楽ソフト、基本設定、エラーの種類、場合によってはプログラムファイル名と行番号が含まれます。",
+        "音声、プリセット、ライセンスキー、個人的なメッセージは含まれません。接続時にIPアドレスが処理されるため、完全な匿名性は保証できません。根拠は同意（GDPR第6条第1項(a)）。報告は最長90日で削除します。"
       ]
     },
     "updates": {
       "title": "ダウンロードと更新確認",
       "paragraphs": [
-        "ファイルはCloudflare R2またはGitHub経由で配信される場合があります。配信時にはIPアドレス、要求したファイル、日時など技術的接続情報が処理されます（GDPR第6条第1項(f)）。",
-        "手動または任意の自動更新確認ではGitHub Releases APIに接続します。GitHubが接続情報を取得する場合があります。更新は確認なしにインストールされません。詳細: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement。"
+        "ソフトウェアのダウンロード時、配信事業者がIPアドレスやアクセス時刻を処理することがあります（GDPR第6条第1項(f)）。",
+        "NEUROKOREでは手動または任意の自動確認でGitHubから更新を確認できます。GitHubが接続情報を受け取る場合があります。確認なしにインストールしません。詳細: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement。"
       ]
     }
   },
@@ -1209,8 +1207,8 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "accounts": {
       "title": "고객 계정 및 라이선스 활성화",
       "paragraphs": [
-        "소프트웨어 계정 로그인 시 이메일 주소, Supabase 사용자 ID, 기술적으로 필요한 세션 정보를 처리합니다. 로그인 코드는 이메일로 전송합니다. 법적 근거는 GDPR 제6조 제1항 (b)입니다.",
-        "라이선스 관리에는 구매 제품, 라이선스 상태, 주문 참조, 활성화 시각, 장치 식별자를 사용하여 허용 장치 수와 오프라인 승인을 관리합니다. 계약 이행, 지원 및 법적 의무에 필요한 기간 동안 보관합니다."
+        "구매한 소프트웨어를 사용하도록 이메일, 계정 및 라이선스 정보를 처리합니다. 허용된 기기 수를 관리하기 위해 활성화한 기기도 기록합니다(GDPR 제6조 제1항 (b)).",
+        "계약, 지원 및 법적 의무에 필요한 기간 동안 보관합니다."
       ]
     },
     "purchases": {
@@ -1230,15 +1228,15 @@ const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySecti
     "diagnostics": {
       "title": "선택형 NEUROKORE 베타 진단",
       "paragraphs": [
-        "베타 버전의 기술 오류 보고는 플러그인에서 별도로 동의한 경우에만 전송됩니다. 기본값은 꺼짐이며 언제든 철회할 수 있습니다. 버전, OS·DAW 분류, 형식, 대략적 CPU/RAM, 샘플 속도, 버퍼 크기, 오류 종류와 경우에 따라 JavaScript 파일명 및 줄 번호가 포함됩니다.",
-        "오디오, 프리셋, 라이선스 키, 사용자 이름, 파일 경로 또는 자유 형식 오류 메시지는 포함되지 않습니다. 남용 방지에는 일시적으로 IP 관련 정보를 사용하므로 완전 익명은 보장되지 않습니다. 근거는 GDPR 제6조 제1항 (a)입니다. 저장된 진단 정보는 90일 이내 삭제됩니다."
+        "NEUROKORE 베타에서는 기술 오류 보고를 선택할 수 있습니다. 기본값은 꺼짐이며 언제든 철회할 수 있습니다. 보고에는 버전, 운영체제, 오디오 프로그램, 기본 설정, 오류 종류, 경우에 따라 프로그램 파일명과 줄 번호가 포함됩니다.",
+        "오디오, 프리셋, 라이선스 키, 개인 메시지는 전송하지 않습니다. 연결 시 IP 주소가 처리될 수 있어 완전한 익명은 보장되지 않습니다. 근거는 동의(GDPR 제6조 제1항 (a))입니다. 보고는 90일 이내 삭제합니다."
       ]
     },
     "updates": {
       "title": "다운로드와 업데이트 확인",
       "paragraphs": [
-        "소프트웨어 파일은 Cloudflare R2 또는 GitHub에서 제공될 수 있으며 IP 주소, 요청 파일, 시각 등 기술적 접속 정보가 처리될 수 있습니다(GDPR 제6조 제1항 (f)).",
-        "수동 또는 선택형 자동 업데이트 확인은 GitHub Releases API를 호출합니다. GitHub가 기술적 접속 정보를 수신할 수 있습니다. 설치는 사용자의 확인 후에만 이루어집니다. 정책: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+        "프로그램을 내려받을 때 파일 제공업체가 IP 주소와 접속 시각 등을 처리할 수 있습니다(GDPR 제6조 제1항 (f)).",
+        "NEUROKORE는 수동 또는 선택한 자동 확인으로 GitHub에서 업데이트를 확인할 수 있습니다. GitHub가 연결 정보를 받을 수 있습니다. 사용자 확인 없이 설치되지 않습니다. 정책: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
       ]
     }
   }
@@ -1248,19 +1246,7 @@ for (const locale of LEGAL_LOCALES) {
   Object.assign(PRIVACY_COPY[locale], PRIVACY_SERVICE_DETAILS[locale])
 }
 
-const PRIVACY_PRIMARY_REGION: Record<LegalLocale, string> = {
-  "en": "The primary Supabase database for this website is currently hosted in London, United Kingdom (eu-west-2), outside the EU/EEA. The EU has an adequacy decision for the United Kingdom. Provider support access and other international transfers are addressed separately below.",
-  "de": "Die primäre Supabase-Datenbank dieser Website wird derzeit in London, Vereinigtes Königreich (eu-west-2), betrieben und liegt damit außerhalb der EU und des EWR. Für das Vereinigte Königreich besteht ein Angemessenheitsbeschluss der EU. Etwaige internationale Zugriffe durch Dienstleister werden weiter unten erläutert.",
-  "uk": "Основна база даних Supabase наразі розміщена в Лондоні, Велика Британія (eu-west-2), поза ЄС/ЄЕЗ. Для Великої Британії діє рішення ЄС про належний рівень захисту. Інші міжнародні передавання описані нижче.",
-  "it": "Il database principale Supabase è attualmente ospitato a Londra, Regno Unito (eu-west-2), fuori dall'UE/SEE. Per il Regno Unito esiste una decisione di adeguatezza dell'UE. Altri trasferimenti internazionali sono descritti più avanti.",
-  "es": "La base de datos principal de Supabase está alojada actualmente en Londres, Reino Unido (eu-west-2), fuera de la UE/EEE. El Reino Unido cuenta con una decisión de adecuación de la UE. Otros accesos y transferencias internacionales se explican más adelante.",
-  "pt": "A base de dados principal Supabase está atualmente alojada em Londres, Reino Unido (eu-west-2), fora da UE/EEE. Existe uma decisão de adequação da UE para o Reino Unido. Outros acessos e transferências internacionais são explicados abaixo.",
-  "ja": "Supabaseの主要データベースは現在、EU/EEA域外の英国ロンドン（eu-west-2）で運用されています。英国についてはEUの十分性認定があります。その他の国際的なデータ移転については後述します。",
-  "ko": "Supabase 기본 데이터베이스는 현재 EU/EEA 외부인 영국 런던(eu-west-2)에 위치합니다. 영국에는 EU 적정성 결정이 적용됩니다. 다른 국외 이전 및 접근은 아래에서 설명합니다."
-}
-
 for (const locale of LEGAL_LOCALES) {
-  PRIVACY_COPY[locale].hosting.paragraphs.push(PRIVACY_PRIMARY_REGION[locale])
   for (const [index, id] of (['accounts', 'purchases', 'requests', 'diagnostics', 'updates'] as const).entries()) {
     PRIVACY_COPY[locale][id].title = String(index + 12) + '. ' + PRIVACY_COPY[locale][id].title
   }
