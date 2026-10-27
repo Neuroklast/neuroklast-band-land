@@ -20,7 +20,7 @@ const schema = z.object({
   pack_type: z.enum(['sample_pack','preset_pack']).default('sample_pack'),
   is_free: z.boolean().default(true),
   price_cents: z.coerce.number().int().min(0).max(100000).default(0),
-  archive_key: z.string().regex(/^digital-packs\\/[a-f0-9-]{36}\\.zip$/).nullable().default(null),
+  archive_key: z.string().regex(/^digital-packs\/[a-f0-9-]{36}\.zip$/).nullable().default(null),
   archive_filename: z.string().min(1).max(180).nullable().default(null),
   archive_bytes: z.coerce.number().int().min(1).max(1024*1024*1024).nullable().default(null),
   sample_count: z.coerce.number().int().min(0).max(1000000).default(0),
