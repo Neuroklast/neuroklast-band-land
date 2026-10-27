@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Fix YouTube embedded player error 153 in Music Highlights and other embeds by forwarding the site origin through `strict-origin-when-cross-origin` without changing the two-click consent flow.
 - Spotify LISTEN player uses a static `open.spotify.com/embed` iframe after two-click consent. The official iframe-api script eval()s and was blocked by production CSP (`unsafe-eval` is development-only).
 - Keep browser-side media URL normalization free of Node DNS/Undici imports by sharing the pure host policy with the server SSRF guard. Server DNS pinning and redirect rejection remain intact.
 

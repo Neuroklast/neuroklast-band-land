@@ -4,6 +4,8 @@
 
 Spotify, YouTube, SoundCloud: **never** auto-load. Two-click consent before `<iframe>`. Spotify must be a static `open.spotify.com/embed` iframe. Do **not** load `https://open.spotify.com/embed/iframe-api/v1` — that script eval()s and production CSP forbids `unsafe-eval`.
 
+YouTube iframes must use `referrerPolicy="strict-origin-when-cross-origin"` because YouTube requires the embedding site's origin in the `Referer` request header (otherwise player error 153). This shares the origin, not the full URL path, with YouTube only after the visitor has consented.
+
 ## Public forms
 
 - Contact + newsletter: honeypot (`_hp`), Zod validation, Resend delivery

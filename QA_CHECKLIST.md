@@ -1,5 +1,11 @@
 # QA checklist
 
+## YouTube embeds
+
+- [ ] On the homepage Music Highlights section, confirm YouTube is not contacted until the consent button is clicked.
+- [ ] After consenting, verify the video plays without error 153 in Chrome and Firefox and sends the site origin in the iframe request `Referer` header.
+- [ ] Repeat for a YouTube item in the media overlay; confirm the external YouTube playback option remains available if playback is blocked by the browser or YouTube.
+
 ## NEUROKORE licensing and sales
 
 - [ ] Publish a newer NEUROKORE GitHub beta with Setup/ZIP and SHA-256 sidecars; after cache revalidation, confirm its version, notes, checksums and separate installer/ZIP links on `/plugins/neurokore/download`.

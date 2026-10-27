@@ -59,7 +59,7 @@ export default function YouTubeEmbed({ videoId, title }: YouTubeEmbedProps) {
           sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
           allowFullScreen
           loading="lazy"
-          referrerPolicy="no-referrer"
+          referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
     </motion.div>

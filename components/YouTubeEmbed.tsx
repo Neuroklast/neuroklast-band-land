@@ -59,7 +59,7 @@ export default function YouTubeEmbed({ videoId, title }: YouTubeEmbedProps) {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture"
               sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
               loading="eager"
-              referrerPolicy="no-referrer"
+              referrerPolicy="strict-origin-when-cross-origin"
             />
           }
         />
