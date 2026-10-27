@@ -23,7 +23,7 @@ export function AdminEditorLayout<Id extends string>({
   return (
     <div className={compact ? 'grid min-w-0 gap-4' : 'grid min-w-0 gap-5 xl:grid-cols-[190px_minmax(0,1fr)] xl:gap-6'}>
       <aside className={compact ? 'sticky top-0 z-10 min-w-0 self-start bg-zinc-950/95 py-1 backdrop-blur' : 'min-w-0 xl:sticky xl:top-4 xl:self-start'}>
-        <nav aria-label="Editor sections" className={compact ? 'flex flex-wrap gap-1 border-b border-zinc-800 pb-2' : 'flex gap-1 overflow-x-auto border-b border-zinc-800 pb-2 xl:flex-col xl:overflow-visible xl:border-b-0 xl:pb-0'}>
+        <nav aria-label="Editor sections" className={compact ? 'flex flex-wrap gap-1 border-b border-zinc-800 pb-2' : 'flex flex-wrap gap-1 border-b border-zinc-800 pb-2 xl:flex-nowrap xl:flex-col xl:border-b-0 xl:pb-0'}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
