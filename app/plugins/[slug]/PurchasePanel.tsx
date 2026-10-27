@@ -8,6 +8,17 @@ import { COMMERCE_ACTIONS } from '@/lib/commerce-actions-i18n'
 import { COMMERCE_LEGAL_COPY } from '@/lib/commerce-legal-copy'
 import { localizedLegalPath } from '@/lib/legal-routes'
 
+const paymentUnavailable: Record<ReturnType<typeof resolveLegalLocale>, string> = {
+  de: "Die Zahlung kann gerade nicht gestartet werden. Bitte versuche es später erneut oder kontaktiere uns.",
+  en: "We couldn't open the payment page. Please try again later or contact us.",
+  uk: "Не вдалося відкрити сторінку оплати. Спробуйте пізніше або напишіть нам.",
+  it: "Non è stato possibile aprire la pagina di pagamento. Riprova più tardi o contattaci.",
+  es: "No pudimos abrir la página de pago. Inténtalo más tarde o contáctanos.",
+  pt: "Não foi possível abrir a página de pagamento. Tenta novamente mais tarde ou contacta-nos.",
+  ja: "決済ページを開けませんでした。時間をおいて再試行するか、お問い合わせください。",
+  ko: "결제 페이지를 열지 못했습니다. 나중에 다시 시도하거나 문의해 주세요.",
+}
+
 export function PurchasePanel({
   slug, productTitle, price, recurring,
 }: {
@@ -40,14 +51,15 @@ export function PurchasePanel({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ locale: language }),
       })
-      const body: { url?: string; error?: string } = await response.json().catch(() => ({}))
-      if (!response.ok || !body.url) throw new Error(body.error || 'Checkout is currently unavailable.')
+      const body: { url?: string } = await response.json().catch(() => ({}))
+      if (!response.ok || !body.url) throw new Error('payment_unavailable')
       const target = new URL(body.url)
       if (target.protocol !== 'https:' || target.hostname !== 'checkout.stripe.com')
-        throw new Error('Invalid checkout destination.')
+        throw new Error('payment_unavailable')
       window.location.assign(target.href)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Checkout is unavailable.')
+    } catch {
+      // Never expose internal payment-configuration or API messages to buyers.
+      setError(paymentUnavailable[language])
       setBusy(false)
     }
   }
