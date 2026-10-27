@@ -8,7 +8,8 @@ import { ACCOUNT_COPY } from '@/lib/plugins/account-copy'
 /** Same passwordless customer login in checkout and the licence account. */
 export function CustomerSignIn() {
   const { locale } = useLocale()
-  const copy = ACCOUNT_COPY[resolveLegalLocale(locale)]
+  const language = resolveLegalLocale(locale)
+  const copy = ACCOUNT_COPY[language]
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -24,11 +25,16 @@ export function CustomerSignIn() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
+      if (response.status === 429) {
+        throw new Error(language === 'de'
+          ? 'Zu viele Anfragen. Bitte warte etwa eine Minute, bevor du einen neuen Link anforderst.'
+          : 'Too many requests. Wait about a minute before requesting another link.')
+      }
       if (!response.ok) throw new Error(copy.authError)
       setSent(true)
       setMessage(copy.checkEmail)
-    } catch {
-      setMessage(copy.authError)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : copy.authError)
     } finally {
       setBusy(false)
     }
