@@ -25,6 +25,18 @@ describe('NEUROKORE activation contract', () => {
     const other = generateKeyPairSync('ed25519').publicKey.export({ type: 'spki', format: 'pem' }).toString()
     expect(() => verifyLicense(doc, other)).toThrow()
   })
+  it('signs and verifies perpetual purchases using the existing v2 signature format', () => {
+    const keys = generateKeyPairSync('ed25519')
+    const privateKey = keys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+    const publicKey = keys.publicKey.export({ type: 'spki', format: 'pem' }).toString()
+    const license = {
+      version: 2 as const, product: 'NEUROKORE' as const,
+      licenseId: '11111111-1111-4111-8111-111111111111',
+      device: 'v2:' + 'f'.repeat(64), tier: 'perpetual' as const,
+      email: 'buyer@example.com', issuedAt: 1800000000, expiresAt: 253402300799,
+    }
+    expect(verifyLicense(signLicense(license, privateKey), publicKey)).toEqual(license)
+  })
   it('keeps activation secrets out of hashes and authenticates stored ciphertext', () => {
     const key = newKey(), secret = 'ab'.repeat(32)
     expect(activationSchema.safeParse({ key, device: 'v2:' + '0'.repeat(64) }).success).toBe(true)

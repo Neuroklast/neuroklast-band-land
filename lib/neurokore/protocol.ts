@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const payloadSchema = z.object({
   version: z.literal(2), product: z.literal('NEUROKORE'),
   licenseId: z.uuid(), device: z.string().regex(/^v2:[a-f0-9]{64}$/),
-  tier: z.enum(['alpha', 'full']), email: z.email(),
+  tier: z.enum(['alpha', 'full', 'perpetual']), email: z.email(),
   issuedAt: z.number().int().positive(), expiresAt: z.number().int().nonnegative(),
 }).strict()
 export type LicensePayload = z.infer<typeof payloadSchema>
