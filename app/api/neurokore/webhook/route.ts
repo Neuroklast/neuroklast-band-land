@@ -167,7 +167,11 @@ async function recordIncident(
       chargeId = dispute.charge
       state = disputeIncident(dispute.status)
     } else if (eventType === 'refund.updated') {
-      chargeId = z.string().startsWith('ch_').parse(object.charge)
+      const refundId = z.string().startsWith('re_').parse(object.id)
+      const refund = z.object({ charge: z.string().startsWith('ch_'), status: z.string() })
+        .parse(await stripe('refunds/' + encodeURIComponent(refundId), secret))
+      if (refund.status !== 'succeeded') return // Pending/failed refund must not revoke a licence
+      chargeId = refund.charge
     } else {
       chargeId = z.string().startsWith('ch_').parse(object.id)
     }
