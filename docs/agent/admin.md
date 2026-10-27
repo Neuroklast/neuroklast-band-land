@@ -31,6 +31,35 @@ is still required to persist the selected URL in site_config.
 @ffmpeg/core is GPL-2.0-or-later. See docs/FFMPEG_CORE_LICENSE.md and comply with
 the source/license distribution requirements before deploying.
 
+## Shared editor navigation and scroll layout
+
+The protected admin shell uses one scroll container for the content area and a separately
+scrollable sidebar, sized to the viewport. Do not add nested page-height containers
+(`min-h-screen`, `h-screen`) to editor pages.
+
+Shared editor components:
+
+- `AdminEditorLayout`: section navigation. The regular layout has a sticky local
+  sidebar on wide screens, and a horizontal navigator on smaller screens. Use
+  `compact` for a wrapping, sticky navigation bar in constrained contexts such
+  as split preview editors.
+- `useAdminEditorTab`: stores the selected section in `?tab=`, supports
+  back/forward, and changes sections without a server-side navigation.
+- `AdminSaveBar`: viewport-bottom action area with `formId`, dirty state,
+  busy state and save status.
+
+The plugin detail editor is the reference implementation. **Keep core form
+sections mounted while hidden**: the product page, media, and pricing are saved
+by a single `FormData` request, so conditional unmounting would drop values
+from other sections. Signing keys, releases, and licences retain their own
+actions and are not submitted by that form. Media/feature reorder and uploads
+must set the dirty flag, not only native input change events. A refresh caused
+by a key or visibility action must preserve an unsaved product draft.
+
+Keep editor navigation and save status usable at narrow widths and at high
+browser/Windows zoom. Each editor may supply its own saved-data mutation.
+Do not replace the existing site-config editor actions with plugin actions.
+
 ## Site config mutations
 
 `updateSiteConfig` in `app/admin/_actions/siteConfig.ts` dispatches `update_site_config` via `lib/admin-action-registry.ts`.
