@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo, useSyncExternalStore, type ReactNode } from 'react'
-import { type Locale, type SiteLanguage, t as translate, BUILTIN_LOCALES } from '@/lib/i18n'
+import { type Locale, type SiteLanguage, t as translate, PUBLIC_LOCALES } from '@/lib/i18n'
+import { parseLanguagesConfig } from '@/lib/languages-config'
 import {
   DEFAULT_LOCALE,
   detectLocaleSync,
@@ -10,7 +11,7 @@ import {
 } from '@/lib/locale-detect'
 
 export type { Locale, SiteLanguage }
-export { BUILTIN_LOCALES as LOCALES }
+export { PUBLIC_LOCALES as LOCALES }
 
 interface LocaleContextValue {
   locale: Locale
@@ -35,7 +36,7 @@ export function LocaleProvider({
   languages?: SiteLanguage[]
 }) {
   const languages = useMemo(
-    () => (configuredLanguages && configuredLanguages.length > 0 ? configuredLanguages : BUILTIN_LOCALES),
+    () => parseLanguagesConfig(configuredLanguages),
     [configuredLanguages],
   )
   const supportedCodes = useMemo(() => languages.map((l) => l.code), [languages])

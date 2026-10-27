@@ -1,4 +1,4 @@
-import { BUILTIN_LOCALES, type SiteLanguage } from '@/lib/i18n'
+import { PUBLIC_LOCALES, type SiteLanguage } from '@/lib/i18n'
 
 export type { SiteLanguage }
 
@@ -9,34 +9,29 @@ export function isValidLocaleCode(code: string): boolean {
   return LOCALE_CODE_RE.test(code)
 }
 
-/** Parse site_config.languages; falls back to built-in locales when absent or invalid. */
+/**
+ * Public site is English and German only. Historic admin configuration and
+ * other translations are retained, but never exposed to visitors.
+ */
 export function parseLanguagesConfig(raw: unknown): SiteLanguage[] {
-  if (!Array.isArray(raw) || raw.length === 0) {
-    return [...BUILTIN_LOCALES]
-  }
-
-  const result: SiteLanguage[] = []
-  const seen = new Set<string>()
-
+  const supported = PUBLIC_LOCALES
+  if (!Array.isArray(raw)) return [...supported]
+  const configured = new Map<string, SiteLanguage>()
   for (const item of raw) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const row = item as Record<string, unknown>
-    const code =
-      typeof row.code === 'string' ? row.code.trim().toLowerCase() : ''
-    const label = typeof row.label === 'string' ? row.label.trim() : ''
-    if (!code || !isValidLocaleCode(code) || seen.has(code)) continue
-    seen.add(code)
-    const builtin = BUILTIN_LOCALES.find((l) => l.code === code)
-    result.push({
-      code,
-      label: label || builtin?.label || code.toUpperCase(),
-      flag: builtin?.flag ?? '',
+    const code = typeof row.code === 'string' ? row.code.trim().toLowerCase() : ''
+    if (!supported.some((language) => language.code === code)) continue
+    const builtin = supported.find((language) => language.code === code)!
+    configured.set(code, {
+      ...builtin,
+      label: typeof row.label === 'string' && row.label.trim()
+        ? row.label.trim()
+        : builtin.label,
     })
   }
-
-  if (result.length === 0) return [...BUILTIN_LOCALES]
-  if (result.length === 1 && result[0].code === 'en') return [...BUILTIN_LOCALES]
-  return result
+  // Both languages remain available even if a stale config lists only one.
+  return supported.map((language) => configured.get(language.code) ?? language)
 }
 
 /** Locale codes enabled on the public site. */

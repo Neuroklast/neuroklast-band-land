@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LEGAL_LOCALES } from '@/lib/legal-i18n'
-import { LEGAL_DOCUMENTS, legalLanguageAlternates, localizedLegalPath, validLegalLocale, validLegalDocument } from '@/lib/legal-routes'
+import { LEGAL_DOCUMENTS, PUBLIC_LEGAL_LOCALES, legalLanguageAlternates, localizedLegalPath, validLegalLocale, validLegalDocument } from '@/lib/legal-routes'
 import { withdrawalLegalSections } from '@/lib/withdrawal-legal-sections'
 import { parseLegalConfig } from '@/lib/legal-content'
 import { WITHDRAWAL_RECEIPT_PENDING } from '@/lib/legal-withdrawal-i18n'
@@ -8,7 +8,7 @@ import { WITHDRAWAL_RECEIPT_PENDING } from '@/lib/legal-withdrawal-i18n'
 describe('SEO-addressable legal pages', () => {
   it('exposes every legal document once per language with reciprocal alternates', () => {
     const urls = new Set<string>()
-    for (const lang of LEGAL_LOCALES) {
+    for (const lang of PUBLIC_LEGAL_LOCALES) {
       expect(validLegalLocale(lang)).toBe(true)
       for (const document of LEGAL_DOCUMENTS) {
         expect(validLegalDocument(document)).toBe(true)
@@ -19,10 +19,13 @@ describe('SEO-addressable legal pages', () => {
         const alternatives = legalLanguageAlternates(document)
         expect(alternatives[lang]).toBe(path)
         expect(alternatives['x-default']).toBe(localizedLegalPath('en', document))
-        expect(Object.keys(alternatives)).toHaveLength(LEGAL_LOCALES.length + 1)
+        expect(Object.keys(alternatives)).toHaveLength(PUBLIC_LEGAL_LOCALES.length + 1)
       }
     }
-    expect(urls.size).toBe(LEGAL_LOCALES.length * LEGAL_DOCUMENTS.length)
+    expect(urls.size).toBe(PUBLIC_LEGAL_LOCALES.length * LEGAL_DOCUMENTS.length)
+    for (const archivedLocale of LEGAL_LOCALES.filter(locale => !PUBLIC_LEGAL_LOCALES.includes(locale as 'en' | 'de'))) {
+      expect(validLegalLocale(archivedLocale)).toBe(false)
+    }
     expect(validLegalLocale('invalid')).toBe(false)
     expect(validLegalDocument('admin')).toBe(false)
   })

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
-import { LEGAL_LOCALES } from '@/lib/legal-i18n'
+import { PUBLIC_LEGAL_LOCALES } from '@/lib/legal-routes'
 import { body, db, json, limit, sameOrigin } from '@/lib/neurokore/server'
 import { attemptWithdrawalReceipt, type WithdrawalNotice } from '@/lib/withdrawal-receipt'
 
@@ -11,7 +11,7 @@ const inputSchema = z.object({
   name: z.string().trim().min(2).max(160),
   email: z.email().max(254).transform(value => value.toLowerCase()),
   orderReference: z.string().trim().min(3).max(500),
-  locale: z.enum(LEGAL_LOCALES).default('en'),
+  locale: z.enum(PUBLIC_LEGAL_LOCALES).default('en'),
 }).strict()
 
 /**

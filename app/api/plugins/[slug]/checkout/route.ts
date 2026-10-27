@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { LEGAL_LOCALES } from '@/lib/legal-i18n'
+import { PUBLIC_LEGAL_LOCALES } from '@/lib/legal-routes'
 import { localizedLegalPath } from '@/lib/legal-routes'
 import { COMMERCE_TERMS_VERSION } from '@/lib/commerce-version'
 import { commerceSections } from '@/lib/commerce-legal-copy'
@@ -27,12 +27,12 @@ export async function POST(request: Request, context: RouteContext) {
     sameOrigin(request)
     await limit(request, 'plugin-checkout', 5)
     const { slug } = await context.params
-    const requested = z.object({ locale: z.enum(LEGAL_LOCALES).default('en') }).strict()
+    const requested = z.object({ locale: z.enum(PUBLIC_LEGAL_LOCALES).default('en') }).strict()
       .safeParse(await body(request))
     if (!requested.success) return json({ error: 'Invalid checkout request.' }, 400)
     const locale = requested.data.locale
     // Stripe Checkout does not provide Ukrainian UI at present; EN is fallback.
-    const stripeLocale = locale === 'uk' ? 'en' : locale
+    const stripeLocale = locale
     if (!slugSchema.safeParse(slug).success) return json({ error: 'Plugin not found.' }, 404)
     stage = 'customer-auth'
     const buyer = await user()

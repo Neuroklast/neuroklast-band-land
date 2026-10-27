@@ -1,6 +1,7 @@
 import { activationSchema, keyHash, signLicense, signLicenseV3 } from '@/lib/neurokore/protocol'
 import { body, db, json, licenseRow, limit, required, unavailable } from '@/lib/neurokore/server'
 import { signingKeyFor } from '@/lib/plugins/signing'
+import { activationTerms } from '@/lib/neurokore/activation-policy'
 import { slugSchema } from '@/lib/plugins/releases'
 
 export const runtime = 'nodejs'
@@ -50,13 +51,14 @@ export async function POST(request: Request) {
     if (error) return unavailable(true)
     const row = licenseRow.parse(data)
     const now = Math.floor(Date.now() / 1000)
-    const end = row.expires_at ? Math.floor(Date.parse(row.expires_at) / 1000) : now + 30 * 86400
-    const expiresAt = Math.min(end, now + 30 * 86400)
+    const terms = activationTerms(row, now)
     const license = row.license_format === 'v2'
       ? signLicense({ version: 2, product: 'NEUROKORE', licenseId: row.id,
-          device: input.device, tier: row.tier, email: row.email, issuedAt: now, expiresAt }, pem)
+          device: input.device, tier: terms.tier, email: row.email,
+          issuedAt: now, expiresAt: terms.expiresAt }, pem)
       : signLicenseV3({ version: 3, product: row.product_slug, licenseId: row.id,
-          device: input.device, tier: row.tier, email: row.email, issuedAt: now, expiresAt }, pem)
+          device: input.device, tier: row.tier, email: row.email,
+          issuedAt: now, expiresAt: terms.expiresAt }, pem)
     return json({ license }, 200, true)
   } catch { return unavailable(true) }
 }

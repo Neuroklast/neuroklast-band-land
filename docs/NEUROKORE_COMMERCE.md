@@ -119,3 +119,9 @@ No secrets were created or deployed by this change. Unit/route tests cover relea
 ## Release Manager product sync
 
 The same server-only 64-hex `NEUROKORE_RELEASE_SYNC_TOKEN` is configured in Vercel Production and locally in the manager (`build/release-manager/website-sync.json`, token field, ignored by Git; alternatively its environment variable). `/api/plugins/neurokore/release-sync` imports only an official, complete, published GitHub release. All four files are hashed and copied to immutable, version-specific R2 keys before Installer/Bundle artifacts are registered and the version is published under the existing active NEUROKORE product. Existing published/withdrawn versions cannot be replaced. Authenticated GET with a version query checks readiness; POST with a version imports or retries. The manager completes only after the website confirms the product version. The homepage, product/download pages and admin version views are revalidated. No database migration is required.
+
+## Perpetual offline activation policy
+
+For NEUROKORE v2, a `full` entitlement with `expires_at = NULL` is signed as the native `perpetual` tier with the representable expiry 9999-12-31T23:59:59Z. This avoids forcing paid customers online every 30 days. Time-limited full grants and alpha keys retain 30-day maximum activation leases. Other v3 products keep their own existing lease policy.
+
+**Important tradeoff:** A permanent offline certificate cannot be remotely revoked after issuance. Admin-side device resets and refunds only affect future activations, not an already installed perpetual certificate. Do not claim instant revocation of purchased offline licences. Consider time-limited leases only if the product terms expressly promise that behavior and reliable automatic renewal exists. Existing v2 full certificates can be upgraded by reactivating the same key in the current build. Validate these paths before enabling checkout.

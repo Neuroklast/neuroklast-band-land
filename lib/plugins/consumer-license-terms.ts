@@ -26,7 +26,7 @@ export const SOFTWARE_LICENSE_CONDITIONS = [
   },
   {
     title: 'Widerruf',
-    body: 'Für Verbraucher gelten die gesetzlichen Widerrufsrechte. Details und eine elektronische Widerrufsfunktion sind unter /withdrawal-policy und /withdrawal erreichbar. Eine Lizenzaktivierung allein ersetzt keine gesetzlich notwendigen Erklärungen zum vorzeitigen Erlöschen des Widerrufsrechts.',
+    body: 'Für Verbraucher gelten die gesetzlichen Widerrufsrechte. Die Widerrufsbelehrung und das Online-Widerrufsformular findest du über die Links im Shop. Eine Lizenzaktivierung allein ersetzt keine gesetzlich notwendigen Erklärungen zum vorzeitigen Erlöschen des Widerrufsrechts.',
   },
   {
     title: 'Kontakt',
