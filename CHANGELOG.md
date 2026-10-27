@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Await automatic production database schema application during server startup to avoid abandoned migration locks on serverless instances.
+
 - Reconcile Stripe refunds, chargebacks and failed/expired checkout sessions with durable event IDs, atomic licence holds and admin visibility.
 - Claim purchase confirmations atomically under Stripe webhook retries; do not send contracts for revoked/refunded orders.
 
