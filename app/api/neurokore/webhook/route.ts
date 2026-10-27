@@ -3,7 +3,7 @@ import { sessionSchema } from '@/lib/neurokore/contract-confirmation'
 import { fulfillVerifiedCheckoutSession } from '@/lib/neurokore/fulfillment'
 import { INCIDENT_EVENTS, SUCCESS_EVENTS, refundIncident, disputeIncident, type PaymentIncident } from '@/lib/neurokore/payment-events'
 import { paidPackSessionSchema, fulfillDigitalPackSession, recordDigitalPackPaymentIncident } from '@/lib/digital-packs/fulfillment'
-import { json, required } from '@/lib/neurokore/server'
+import { db, json, required } from '@/lib/neurokore/server'
 import { assertStripeFulfillmentEnvironment, stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 
 export const runtime = 'nodejs'
