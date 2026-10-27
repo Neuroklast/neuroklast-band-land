@@ -1,10 +1,13 @@
-import { LEGAL_LOCALES, type LegalLocale } from './legal-i18n'
+import { type LegalLocale } from './legal-i18n'
+
+/** Public legal translations. Additional translations remain in the repository. */
+export const PUBLIC_LEGAL_LOCALES = ['en', 'de'] as const satisfies readonly LegalLocale[]
 
 export const LEGAL_DOCUMENTS = ['terms', 'purchase-info', 'license-terms', 'withdrawal-policy', 'legal-notice', 'privacy-policy'] as const
 export type LegalDocument = (typeof LEGAL_DOCUMENTS)[number]
 
 export function validLegalLocale(value: string): value is LegalLocale {
-  return (LEGAL_LOCALES as readonly string[]).includes(value)
+  return (PUBLIC_LEGAL_LOCALES as readonly string[]).includes(value)
 }
 
 export function validLegalDocument(value: string): value is LegalDocument {
@@ -18,7 +21,7 @@ export function localizedLegalPath(locale: LegalLocale, document: LegalDocument)
 /** Each locale has its own indexable URL with a self-referencing canonical. */
 export function legalLanguageAlternates(document: LegalDocument): Record<string, string> {
   return {
-    ...Object.fromEntries(LEGAL_LOCALES.map(locale => [locale, localizedLegalPath(locale, document)])),
+    ...Object.fromEntries(PUBLIC_LEGAL_LOCALES.map(locale => [locale, localizedLegalPath(locale, document)])),
     'x-default': localizedLegalPath('en', document),
   }
 }
