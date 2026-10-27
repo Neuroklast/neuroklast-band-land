@@ -77,23 +77,23 @@ export function AdminShell({ children }: AdminShellProps) {
     return (
       <>
         <AdminNav mobileOnly />
-        <main className="flex-1 p-4 pt-16 overflow-auto min-w-0 md:p-8 md:pt-8">{children}</main>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-8">{children}</main>
       </>
     )
   }
 
   return (
-    <div className="flex flex-1 min-h-0 w-full">
+    <div className="flex min-h-0 h-full flex-1 w-full overflow-hidden">
       {!layoutReady ? (
-        <div className="flex flex-1 min-h-screen w-full">
+        <div className="flex min-h-0 h-full flex-1 w-full">
           <div className="w-64 shrink-0 border-r border-zinc-800 bg-zinc-950" aria-hidden="true" />
-          <main className="flex-1 p-8 overflow-auto min-w-0">{children}</main>
+          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-8">{children}</main>
         </div>
       ) : (
         <ResizablePanelGroup
           key="admin-shell-resizable"
           orientation="horizontal"
-          className="flex-1 min-h-screen"
+          className="min-h-0 h-full flex-1"
           defaultLayout={defaultLayout}
           onLayoutChanged={onLayoutChanged}
         >
@@ -111,7 +111,7 @@ export function AdminShell({ children }: AdminShellProps) {
             className="w-2 bg-zinc-800/80 hover:bg-zinc-700 transition-colors data-[resize-handle-active]:bg-red-900/50"
           />
           <ResizablePanel id="admin-main" minSize="50%" className="min-w-0">
-            <main className="h-full p-8 overflow-auto min-w-0">{children}</main>
+            <main className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain p-8">{children}</main>
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
