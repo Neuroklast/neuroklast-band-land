@@ -42,24 +42,21 @@ export async function POST(request: Request) {
     const sessionId = z.string().regex(/^cs_[a-zA-Z0-9_]+$/).parse(event.data.object.id)
     if (event.data.object.payment_status !== 'paid') return json({ received: true })
     stage = 'stripe-session-verify'
-    const session = sessionSchema.parse(await stripe(
-      'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY')))
-    // Packs have an independent payment entitlement; never create a VST licence
-    // when Stripe marks this as a digital-pack order.
-    const metadata = event.data.object.metadata
-    const freshSession = await stripe(
-      'checkout/sessions/' + sessionId, required('STRIPE_SECRET_KEY'))
-    const packCheckout = paidPackSessionSchema.safeParse(freshSession)
-    if (packCheckout.success && packCheckout.data.metadata.digital_pack_order) {
+    const rawSession = await stripe(
+      'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY'))
+    // An order's type is determined solely by the Checkout Session retrieved
+    // from Stripe, never by the browser or the event's untrusted metadata copy.
+    const packCheckout = paidPackSessionSchema.safeParse(rawSession)
+    if (packCheckout.success) {
       stage = 'digital-pack-fulfilment'
       await fulfillDigitalPackSession(packCheckout.data, event.livemode)
       return json({ received: true })
     }
-    if (metadata && typeof metadata === 'object' &&
-      'digital_pack_order' in metadata) {
-      // A malformed pack purchase must fail closed, not be fulfilled as a plugin.
+    const rawMetadata = rawSession && typeof rawSession === 'object' && 'metadata' in rawSession
+      ? rawSession.metadata : null
+    if (rawMetadata && typeof rawMetadata === 'object' && 'digital_pack_order' in rawMetadata)
       throw new Error('Invalid digital pack Checkout Session')
-    }
+    const session = sessionSchema.parse(rawSession)
     assertStripeFulfillmentEnvironment({
       eventLivemode: event.livemode, sessionLivemode: session.livemode, sessionId: session.id,
       environment: session.metadata?.environment, clientReferenceId: session.client_reference_id,
