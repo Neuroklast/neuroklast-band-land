@@ -7,6 +7,7 @@ import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { loadProductPriceForProduct, formatProductPrice } from '@/lib/plugins/price'
 import { isPluginSaleOpen, isNeurokoreSandboxPreview } from '@/lib/neurokore/flags'
 import { PurchasePanel } from '../PurchasePanel'
+import { availablePublicDownload } from '@/lib/plugins/public-download'
 
 export const metadata: Metadata = {
   title: 'Checkout | NEUROKLAST AUDIO',
@@ -30,7 +31,7 @@ export default async function PluginCheckoutPage({
   if (!price || price.recurring) notFound()
 
   const image = product.media.find(item => item.kind === 'image' && item.url)
-  const demoAvailable = product.demo_downloads_enabled
+  const demoAvailable = availablePublicDownload(product) !== null
   const isSandbox = isNeurokoreSandboxPreview() && product.slug === 'neurokore'
   return (
     <LegalPageShell>
