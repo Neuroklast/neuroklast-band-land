@@ -51,12 +51,17 @@ export async function POST(request: Request) {
     const row = licenseRow.parse(data)
     const now = Math.floor(Date.now() / 1000)
     const end = row.expires_at ? Math.floor(Date.parse(row.expires_at) / 1000) : now + 30 * 86400
-    const expiresAt = Math.min(end, now + 30 * 86400)
+    // A full licence with no entitlement end date is a perpetual purchase.
+    // Use the native v2 perpetual tier so paid users never lose audio when offline.
+    // Expiring promotional licences and generic v3 products keep short leases.
+    const permanentV2 = row.license_format === 'v2' && row.tier === 'full' && row.expires_at === null
+    const expiresAt = permanentV2 ? 253402300799 : Math.min(end, now + 30 * 86400)
     const license = row.license_format === 'v2'
       ? signLicense({ version: 2, product: 'NEUROKORE', licenseId: row.id,
-          device: input.device, tier: row.tier, email: row.email, issuedAt: now, expiresAt }, pem)
+          device: input.device, tier: permanentV2 ? 'perpetual' : row.tier,
+          email: row.email, issuedAt: now, expiresAt }, pem)
       : signLicenseV3({ version: 3, product: row.product_slug, licenseId: row.id,
-          device: input.device, tier: row.tier, email: row.email, issuedAt: now, expiresAt }, pem)
+          device: input.device, tier: row.tier, email: row.email, issuedAt: now, expiresAt: Math.min(end, now + 30 * 86400) }, pem)
     return json({ license }, 200, true)
   } catch { return unavailable(true) }
 }
