@@ -25,6 +25,11 @@ export const BUILTIN_LOCALES: SiteLanguage[] = [
   { code: 'ko', label: '한국어',      flag: '' },
 ]
 
+/** Available choices on the public website. Other translations stay archived. */
+export const PUBLIC_LOCALES: SiteLanguage[] = BUILTIN_LOCALES.filter(
+  (locale) => locale.code === 'en' || locale.code === 'de',
+)
+
 /** @deprecated Use BUILTIN_LOCALES or configured languages from LocaleProvider. */
 export const LOCALES = BUILTIN_LOCALES
 
