@@ -22,6 +22,21 @@ export function assertStripeKeyEnvironment(
     throw new Error('Stripe key mode does not match deployment environment')
   }
 }
+/**
+ * Sandbox-only checkout compatibility for an unconfigured Stripe test account:
+ * - Managed Payments defaults on and rejects our contract links in custom_text.
+ * - Stripe TOS collection needs a Stripe-hosted public terms URL.
+ * - Automatic tax requires a product/default tax code and registrations.
+ *
+ * The website still requires explicit acknowledgement of terms before checkout.
+ * Never apply these sandbox exceptions to a production sale.
+ */
+export function configureNeurokoreSandboxCheckout(params: URLSearchParams): void {
+  params.set('managed_payments[enabled]', 'false')
+  params.set('automatic_tax[enabled]', 'false')
+  params.delete('consent_collection[terms_of_service]')
+}
+
 export async function stripe(path: string, secret: string, params?: URLSearchParams, idempotencyKey?: string): Promise<unknown> {
   assertStripeKeyEnvironment(secret)
   const response = await fetch('https://api.stripe.com/v1/' + path, {
