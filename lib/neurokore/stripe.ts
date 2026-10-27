@@ -10,7 +10,21 @@ export function verifyWebhook(raw: string, header: string, secret: string, now =
     timingSafeEqual(expected, Buffer.from(value, 'hex')))
   if (!ok) throw new Error('Invalid webhook')
 }
+/** Reject live Stripe credentials outside production and test credentials in production. */
+export function assertStripeKeyEnvironment(
+  secret: string,
+  vercelEnv: string | undefined = process.env.VERCEL_ENV,
+): void {
+  const live = /^(sk|rk)_live_/.test(secret)
+  const test = /^(sk|rk)_test_/.test(secret)
+  if (!live && !test) throw new Error('Invalid Stripe API key mode')
+  if (vercelEnv === 'production' ? !live : !test) {
+    throw new Error('Stripe key mode does not match deployment environment')
+  }
+}
+
 export async function stripe(path: string, secret: string, params?: URLSearchParams, idempotencyKey?: string): Promise<unknown> {
+  assertStripeKeyEnvironment(secret)
   const response = await fetch('https://api.stripe.com/v1/' + path, {
     method: params ? 'POST' : 'GET', cache: 'no-store', signal: AbortSignal.timeout(15000),
     headers: { Authorization: 'Bearer ' + secret, 'Stripe-Version': '2025-02-24.acacia',
