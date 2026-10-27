@@ -1137,6 +1137,49 @@ ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS confirmation_sent_at t
 -- Preserve an order tombstone after wiping a sandbox license, preventing webhook replay.
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS test_deleted_at timestamptz;
 
+-- Idempotent commerce state and a leased, service-role-only receipt outbox.
+ALTER TABLE public.plugin_orders
+  ADD COLUMN IF NOT EXISTS payment_state text NOT NULL DEFAULT 'pending',
+  ADD COLUMN IF NOT EXISTS payment_state_at timestamptz,
+  ADD COLUMN IF NOT EXISTS confirmation_attempts integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS confirmation_claimed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS confirmation_error_at timestamptz;
+CREATE INDEX IF NOT EXISTS plugin_orders_unconfirmed_idx
+  ON public.plugin_orders (created_at) WHERE license_id IS NOT NULL
+  AND confirmation_sent_at IS NULL AND test_deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS plugin_orders_payment_state_idx
+  ON public.plugin_orders (payment_state, created_at DESC);
+
+-- A missing/expired 2-minute lease is the only case in which one worker can
+-- claim the transaction. The row lock prevents simultaneous webhook/admin
+-- retries sending multiple emails.
+CREATE OR REPLACE FUNCTION public.plugin_claim_confirmation(p_order uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE
+  locked public.plugin_orders;
+BEGIN
+  SELECT * INTO locked FROM public.plugin_orders WHERE id = p_order FOR UPDATE;
+  IF NOT FOUND OR locked.license_id IS NULL OR locked.test_deleted_at IS NOT NULL
+    OR locked.confirmation_sent_at IS NOT NULL
+    OR locked.confirmation_attempts >= 20
+    OR (locked.confirmation_claimed_at IS NOT NULL AND locked.confirmation_claimed_at > now() - interval '2 minutes')
+  THEN
+    RETURN false;
+  END IF;
+  UPDATE public.plugin_orders
+    SET confirmation_claimed_at = now(),
+        confirmation_attempts = confirmation_attempts + 1
+    WHERE id = p_order;
+  RETURN true;
+END;
+$;
+REVOKE ALL ON FUNCTION public.plugin_claim_confirmation(uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.plugin_claim_confirmation(uuid) TO service_role;
+
 CREATE TABLE IF NOT EXISTS public.plugin_releases (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
