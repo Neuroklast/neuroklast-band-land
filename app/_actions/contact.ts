@@ -3,6 +3,7 @@
 import { getApiSecret } from '@/lib/api-secrets'
 import { contactFormSchema } from '@/lib/contact-form'
 import { checkContactRateLimit } from '@/lib/server-rate-limit'
+import { db } from '@/lib/neurokore/server'
 
 function escapeHtml(str: string): string {
   return str
@@ -41,11 +42,37 @@ export async function submitContact(
   }
 
   const { name, email, subject, message } = parsed.data
+  // Contact details are self-reported. Matching orders helps support triage
+  // but is never treated as proof of ownership of a licence.
+  let contactId: string | null = null
+  let matchingOrders = 0
+  try {
+    const client = db()
+    const normalizedEmail = email.trim().toLowerCase()
+    const { data: request, error: stored } = await client.from('plugin_contact_requests')
+      .insert({ name, email: normalizedEmail, subject, message, delivery_state: 'pending' })
+      .select('id').single()
+    if (stored) throw stored
+    contactId = request.id
+    const matches = await client.from('plugin_orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('email', normalizedEmail)
+      .not('license_id', 'is', null)
+      .is('test_deleted_at', null)
+    if (!matches.error) matchingOrders = matches.count ?? 0
+  } catch {
+    // Email delivery remains independent from the optional support inbox.
+    console.error('[contact] support inbox persistence unavailable')
+  }
   const resendKey = await getApiSecret('resend_api_key')
   const contactEmail = process.env.CONTACT_EMAIL ?? 'booking@neuroklast.net'
 
   if (!resendKey) {
     if (process.env.NODE_ENV === 'production') {
+      if (contactId) {
+        await db().from('plugin_contact_requests').update({ delivery_state: 'failed' })
+          .eq('id', contactId)
+      }
       return { error: 'send_failed' }
     }
     // Local dev without a key: do not pretend a booking was delivered in production.
@@ -59,11 +86,15 @@ export async function submitContact(
   const htmlBody = `
     <p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
     <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+    <p><strong>Linked paid-licence orders for this unverified contact email:</strong> ${matchingOrders}</p>
+    <p><em>Email matching is not identity verification.</em></p>
     <hr />
     <p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>
   `
 
-  const res = await fetch('https://api.resend.com/emails', {
+  let res: Response
+  try {
+    res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -78,9 +109,21 @@ export async function submitContact(
     }),
   })
 
-  if (!res.ok) {
+  } catch {
+    if (contactId) {
+      await db().from('plugin_contact_requests').update({ delivery_state: 'failed' })
+        .eq('id', contactId).then(() => undefined, () => undefined)
+    }
     return { error: 'send_failed' }
   }
-
+  if (contactId) {
+    try {
+      await db().from('plugin_contact_requests').update({
+        delivery_state: res.ok ? 'accepted' : 'failed',
+        provider_accepted_at: res.ok ? new Date().toISOString() : null,
+      }).eq('id', contactId)
+    } catch { console.error('[contact] delivery status persistence unavailable') }
+  }
+  if (!res.ok) return { error: 'send_failed' }
   return { success: true }
 }
