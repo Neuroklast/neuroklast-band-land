@@ -884,7 +884,7 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   RETURN new;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- Only the trusted auth.users trigger should invoke this privileged function.
 -- PostgreSQL triggers do not need public EXECUTE grants at firing time.
@@ -1816,3 +1816,150 @@ CREATE INDEX IF NOT EXISTS plugin_beta_diagnostics_code_idx
 ALTER TABLE public.plugin_beta_diagnostics ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.plugin_beta_diagnostics FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT, DELETE ON TABLE public.plugin_beta_diagnostics TO service_role;
+
+
+-- ============================================================
+-- Stripe payment incident reconciliation (idempotent)
+-- Webhook handlers never update licence/payment tables directly.
+-- The service-role-only RPC serializes events against fulfilment.
+-- ============================================================
+ALTER TABLE public.plugin_orders
+  ADD COLUMN IF NOT EXISTS test_deleted_at timestamptz,
+  ADD COLUMN IF NOT EXISTS payment_state text NOT NULL DEFAULT 'pending',
+  ADD COLUMN IF NOT EXISTS payment_state_at timestamptz,
+  ADD COLUMN IF NOT EXISTS confirmation_attempts integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS confirmation_claimed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS confirmation_error_at timestamptz;
+
+CREATE TABLE IF NOT EXISTS public.plugin_payment_events (
+  event_id text PRIMARY KEY CHECK (event_id ~ '^evt_[A-Za-z0-9]+$'),
+  order_id uuid NOT NULL REFERENCES public.plugin_orders(id) ON DELETE RESTRICT,
+  event_type text NOT NULL,
+  payment_state text NOT NULL,
+  processed_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS plugin_payment_events_order_idx ON public.plugin_payment_events(order_id, processed_at DESC);
+ALTER TABLE public.plugin_payment_events ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.plugin_payment_events FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT ON public.plugin_payment_events TO service_role;
+
+-- State transitions must be serialized with the same row lock as licence issuance.
+-- Disputed and fully refunded licences are blocked from future activations.
+-- Offline perpetual certificates already installed cannot be recalled.
+CREATE OR REPLACE FUNCTION public.plugin_record_payment_event(
+  p_order uuid, p_session text, p_intent text, p_event_id text, p_event_type text, p_state text
+) RETURNS boolean
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+AS $$
+DECLARE
+  o public.plugin_orders;
+  state_after text;
+BEGIN
+  IF p_event_id !~ '^evt_[A-Za-z0-9]+$'
+    OR p_state NOT IN ('refunded','partially_refunded','disputed','dispute_closed','failed','expired')
+    OR p_event_type NOT IN ('charge.refunded','refund.updated','charge.dispute.created',
+      'charge.dispute.closed','charge.dispute.updated','checkout.session.async_payment_failed',
+      'checkout.session.expired')
+  THEN
+    RAISE EXCEPTION 'Unsupported payment event';
+  END IF;
+  SELECT * INTO o FROM public.plugin_orders WHERE id = p_order FOR UPDATE;
+  IF NOT FOUND OR o.stripe_session IS DISTINCT FROM p_session
+    OR o.test_deleted_at IS NOT NULL
+    OR (p_intent IS NOT NULL AND o.payment_intent IS NOT NULL AND o.payment_intent <> p_intent)
+  THEN
+    RAISE EXCEPTION 'Payment order mismatch';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.plugin_payment_events WHERE event_id = p_event_id) THEN
+    RETURN false;
+  END IF;
+
+  -- Never reverse a confirmed full refund just because Stripe delivers older events late.
+  -- Never lift the conservative hold for a dispute from a later partial refund.
+  state_after := CASE
+    WHEN o.payment_state = 'refunded' THEN 'refunded'
+    WHEN o.payment_state IN ('disputed','dispute_closed')
+      AND p_state IN ('partially_refunded','failed','expired') THEN o.payment_state
+    WHEN o.payment_state = 'partially_refunded' AND p_state IN ('failed','expired') THEN o.payment_state
+    WHEN o.payment_state = 'paid' AND p_state IN ('failed','expired') THEN o.payment_state
+    ELSE p_state
+  END;
+  UPDATE public.plugin_orders SET
+    payment_intent = coalesce(payment_intent,p_intent),
+    payment_state = state_after,
+    payment_state_at = now()
+  WHERE id = o.id;
+  IF state_after IN ('refunded','disputed','dispute_closed') AND o.license_id IS NOT NULL THEN
+    UPDATE public.plugin_licenses
+      SET revoked_at = coalesce(revoked_at,now())
+      WHERE id = o.license_id;
+  END IF;
+  INSERT INTO public.plugin_payment_events(event_id,order_id,event_type,payment_state)
+    VALUES(p_event_id,o.id,p_event_type,state_after);
+  RETURN true;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.plugin_fulfill(
+  p_order uuid, p_session text, p_intent text, p_key_hash text, p_key_cipher text
+) RETURNS uuid
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+AS $$
+DECLARE
+  o public.plugin_orders;
+  p public.products;
+  result uuid;
+BEGIN
+  SELECT * INTO o FROM public.plugin_orders WHERE id = p_order FOR UPDATE;
+  IF NOT FOUND OR o.stripe_session IS DISTINCT FROM p_session
+    OR (o.payment_intent IS NOT NULL AND o.payment_intent <> p_intent) THEN
+    RAISE EXCEPTION 'Order mismatch';
+  END IF;
+  IF o.test_deleted_at IS NOT NULL OR o.payment_state NOT IN ('pending','paid') THEN
+    RETURN NULL;
+  END IF;
+  IF o.license_id IS NOT NULL THEN
+    RETURN o.license_id;
+  END IF;
+  SELECT * INTO p FROM public.products WHERE id = o.product_id;
+  INSERT INTO public.plugin_licenses(product_id,email,key_hash,key_cipher,tier,license_format,stripe_session)
+    VALUES(o.product_id,o.email,p_key_hash,p_key_cipher,'full',p.license_format,p_session)
+    RETURNING id INTO result;
+  UPDATE public.plugin_orders
+    SET license_id=result,payment_intent=p_intent,payment_state='paid',payment_state_at=now()
+    WHERE id=p_order;
+  RETURN result;
+END;
+$$;
+
+-- Prevent two deliveries from sending the same contract email simultaneously.
+-- The Resend idempotency key remains the outer retry guard.
+CREATE OR REPLACE FUNCTION public.plugin_claim_confirmation(p_order uuid)
+RETURNS boolean
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+AS $$
+DECLARE locked public.plugin_orders;
+BEGIN
+  SELECT * INTO locked FROM public.plugin_orders WHERE id=p_order FOR UPDATE;
+  IF NOT FOUND OR locked.license_id IS NULL OR locked.payment_state <> 'paid'
+    OR locked.test_deleted_at IS NOT NULL OR locked.confirmation_sent_at IS NOT NULL
+    OR locked.confirmation_attempts >= 20
+    OR (locked.confirmation_claimed_at IS NOT NULL
+        AND locked.confirmation_claimed_at > now()-interval '2 minutes') THEN
+    RETURN false;
+  END IF;
+  UPDATE public.plugin_orders SET
+    confirmation_claimed_at=now(), confirmation_attempts=confirmation_attempts+1
+    WHERE id=p_order;
+  RETURN true;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.plugin_record_payment_event(uuid,text,text,text,text,text)
+  FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.plugin_claim_confirmation(uuid)
+  FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.plugin_fulfill(uuid,text,text,text,text)
+  FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.plugin_record_payment_event(uuid,text,text,text,text,text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_claim_confirmation(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid,text,text,text,text) TO service_role;

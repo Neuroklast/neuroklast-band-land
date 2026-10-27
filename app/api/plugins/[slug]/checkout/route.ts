@@ -6,6 +6,7 @@ import { commerceSections } from '@/lib/commerce-legal-copy'
 import { contractDocumentText } from '@/lib/neurokore/email-format'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
+import { checkoutBillingPolicy } from '@/lib/neurokore/invoicing'
 import { body, db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
 import { isNeurokoreSalesEnabled, isPluginSaleOpen, isNeurokoreSandboxCheckout } from '@/lib/neurokore/flags'
 import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
@@ -22,7 +23,6 @@ interface RouteContext {
 }
 
 export async function POST(request: Request, context: RouteContext) {
-  let stage = 'request'
   try {
     sameOrigin(request)
     await limit(request, 'plugin-checkout', 5)
@@ -34,11 +34,8 @@ export async function POST(request: Request, context: RouteContext) {
     // Stripe Checkout does not provide Ukrainian UI at present; EN is fallback.
     const stripeLocale = locale
     if (!slugSchema.safeParse(slug).success) return json({ error: 'Plugin not found.' }, 404)
-    stage = 'customer-auth'
     const buyer = await user()
     if (!isNeurokoreSalesEnabled()) return json({ error: 'Sales are not open yet.' }, 503)
-
-    stage = 'legal-and-database'
     const client = db()
     // Do not accept money while mandatory legal operator details are missing.
     const legal = await loadLegalConfig(client)
@@ -53,11 +50,12 @@ export async function POST(request: Request, context: RouteContext) {
     const product = productResult.data
     if (product.pricing_mode !== 'paid') return json({ error: 'This plugin is free.' }, 409)
     if (!isPluginSaleOpen(product)) return json({ error: 'Sales are not open for this plugin.' }, 409)
+    const sandboxMode = isNeurokoreSandboxCheckout() && product.slug === 'neurokore'
+    const billing = sandboxMode ? null : checkoutBillingPolicy()
     if (!product.license_required) return json({ error: 'This plugin does not need a license.' }, 409)
 
     // Query release records directly; anonymous download availability is a separate switch.
     // No paid checkout until at least one validated binary is actually published.
-    stage = 'release-readiness'
     const releaseResult = await client.from('plugin_releases')
       .select('id,status,withdrawn_at,plugin_release_artifacts(id,validation_status,storage_key,filesize_bytes,sha256)')
       .eq('product_id', product.id)
@@ -74,13 +72,10 @@ export async function POST(request: Request, context: RouteContext) {
     const secretResult = await client.from('plugin_product_secrets')
       .select('stripe_price_id,signing_key_cipher').eq('product_id', product.id).maybeSingle()
     if (secretResult.error) throw secretResult.error
-    const price = isNeurokoreSandboxCheckout() && product.slug === 'neurokore'
-      ? required('STRIPE_SANDBOX_PRICE_ID')
-      : secretResult.data?.stripe_price_id
+    const price = sandboxMode ? required('STRIPE_SANDBOX_PRICE_ID') : secretResult.data?.stripe_price_id
     if (!price) return json({ error: 'This plugin has no price configured.' }, 503)
     // The checkout is deliberately one-time only. Never charge recurring prices
     // through a payment-mode session or present a misleading one-off price.
-    stage = 'stripe-price'
     const stripePrice = z.object({
       active: z.boolean(),
       type: z.enum(['one_time', 'recurring']),
@@ -92,7 +87,6 @@ export async function POST(request: Request, context: RouteContext) {
       return json({ error: 'This product requires an active tax-inclusive one-time Stripe price.' }, 409)
     }
 
-    stage = 'licence-signing'
     const encryptionSecret = required('NEUROKORE_KEY_ENCRYPTION_SECRET')
     const pem = signingKeyFor(
       { slug: product.slug, signing_key_cipher: secretResult.data?.signing_key_cipher ?? null },
@@ -102,15 +96,24 @@ export async function POST(request: Request, context: RouteContext) {
     validateLicenseConfiguration(pem, encryptionSecret)
     required('STRIPE_WEBHOOK_SECRET')
     // A sale must not start if we cannot send the contract confirmation.
-    stage = 'mail-readiness'
     if (!await getApiSecret('resend_api_key')) {
       return json({ error: 'Sales unavailable: contract email service is not configured.' }, 503)
+    }
+
+    // For VAT-registered sellers, Stripe Tax must have an active registration;
+    // otherwise Checkout may create invoices without collecting due tax.
+    if (billing?.stripeAutomaticTax) {
+      const registrations = z.object({
+        data: z.array(z.object({ status: z.string() })),
+      }).parse(await stripe('tax/registrations?limit=100', required('STRIPE_SECRET_KEY')))
+      if (!registrations.data.some(registration => registration.status === 'active')) {
+        return json({ error: 'Sales unavailable until Stripe Tax registration is active.' }, 503)
+      }
     }
 
     const id = randomUUID()
     const termsSnapshot = contractDocumentText(commerceSections('terms', locale, legal.termsText))
     const licenceSnapshot = contractDocumentText(commerceSections('license', locale))
-    stage = 'order-insert'
     const insert = await client.from('plugin_orders').insert({
       id, product_id: product.id, user_id: buyer.id, email: buyer.email, price_id: price,
       terms_snapshot: termsSnapshot, licence_snapshot: licenceSnapshot,
@@ -123,35 +126,27 @@ export async function POST(request: Request, context: RouteContext) {
       'metadata[plugin_order]': id,
       'metadata[locale]': locale,
       'metadata[terms_version]': COMMERCE_TERMS_VERSION,
-      'metadata[environment]': isNeurokoreSandboxCheckout() ? 'neurokore-sandbox' : 'live',
+      'metadata[environment]': sandboxMode ? 'neurokore-sandbox' : 'live',
       locale: stripeLocale,
       'line_items[0][price]': price, 'line_items[0][quantity]': '1',
       success_url: origin() + '/neurokore/account?checkout=success',
       cancel_url: origin() + '/plugins/' + product.slug + '?checkout=cancelled',
-      'automatic_tax[enabled]': 'true',
+      'automatic_tax[enabled]': String(billing?.stripeAutomaticTax ?? false),
+      'invoice_creation[enabled]': String(billing?.invoiceEnabled ?? false),
       'billing_address_collection': 'required',
       'consent_collection[terms_of_service]': 'required',
       'custom_text[submit][message]': 'Terms: ' + origin() + localizedLegalPath(locale, 'terms') + ' | Withdrawal: ' + origin() + localizedLegalPath(locale, 'withdrawal-policy'),
     })
-    if (isNeurokoreSandboxCheckout() && product.slug === 'neurokore') {
-      configureNeurokoreSandboxCheckout(params)
-    }
-    stage = 'stripe-session'
+    if (billing?.invoiceFooter) params.set('invoice_creation[invoice_data][footer]', billing.invoiceFooter)
+    if (sandboxMode) configureNeurokoreSandboxCheckout(params)
     const session = z.object({ id: z.string(), url: z.url() }).parse(
       await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id,
-        isNeurokoreSandboxCheckout() ? '2026-04-22.dahlia' : undefined))
+        sandboxMode ? '2026-04-22.dahlia' : undefined))
     if (new URL(session.url).hostname !== 'checkout.stripe.com') throw new Error('Invalid checkout')
-    stage = 'order-session-save'
     const saved = await client.from('plugin_orders').update({ stripe_session: session.id }).eq('id', id)
     if (saved.error) throw saved.error
     return json({ url: session.url })
-  } catch (error) {
-    // A preview checkout should never mask a failing external service as a login error.
-    // Log no customer details, keys, tokens, SQL text or Stripe URLs.
-    if (process.env.VERCEL_ENV === 'preview' && process.env.NEUROKORE_SANDBOX_CHECKOUT === 'true') {
-      console.error('[neurokore-sandbox-checkout] failed', { stage, errorType: error instanceof Error ? error.name : 'unknown' })
-      return json({ error: `Sandbox checkout unavailable at ${stage}.` }, 503)
-    }
+  } catch {
     return unavailable()
   }
 }

@@ -26,7 +26,7 @@ export default async function PluginOrdersPage({
   await admin() // Existing admin role and MFA required.
   const query = await searchParams
   const q = typeof query.q === 'string' ? query.q.trim().slice(0,254) : ''
-  const allowedStates = ['pending','paid','partially_refunded','refunded','disputed','dispute_closed']
+  const allowedStates = ['pending','paid','partially_refunded','refunded','disputed','dispute_closed','failed','expired']
   const payment = allowedStates.includes(query.payment || '') ? query.payment! : ''
   let orders: Order[] = []
   let errorMessage = ''
@@ -77,10 +77,10 @@ export default async function PluginOrdersPage({
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="border border-zinc-700 bg-zinc-950 p-5"><p className="text-xs text-zinc-400">Last 100 orders</p><p className="text-3xl">{orders.length}</p></div>
         <div className="border border-zinc-700 bg-zinc-950 p-5"><p className="text-xs text-zinc-400">Licence assigned</p><p className="text-3xl">{orders.filter(o => o.license_id).length}</p></div>
-        <div className="border border-zinc-700 bg-zinc-950 p-5"><p className="text-xs text-zinc-400">Needs attention</p><p className="text-3xl">{orders.filter(o => ['refunded','partially_refunded','disputed','dispute_closed'].includes(o.payment_state) || (o.license_id && !o.confirmation_sent_at)).length}</p></div>
+        <div className="border border-zinc-700 bg-zinc-950 p-5"><p className="text-xs text-zinc-400">Needs attention</p><p className="text-3xl">{orders.filter(o => ['refunded','partially_refunded','disputed','dispute_closed','failed','expired'].includes(o.payment_state) || (o.license_id && !o.confirmation_sent_at)).length}</p></div>
       </div>
       <p className="text-sm text-zinc-400">
-        Payment and refund state must be verified in Stripe. A licence assignment does not by itself confirm settlement or prove that an invoice was issued.
+        Payment incidents are reconciled from signed Stripe webhooks. Verify disputed payments and pending refunds in Stripe. A licence assignment does not prove settlement or invoice issuance.
       </p>
       <div className="overflow-x-auto border border-zinc-700">
         <table className="w-full min-w-[50rem] text-sm">

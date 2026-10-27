@@ -8,7 +8,9 @@ export async function register(): Promise<void> {
   if (process.env.VERCEL_ENV !== 'production') return
 
   const { runProductionDeploySchemaApply } = await import('@/lib/schema-apply-on-deploy')
-  void runProductionDeploySchemaApply()
+  // A detached promise can be killed when the serverless startup finishes,
+  // leaving schema_apply_deploy permanently stuck at 'running'.
+  await runProductionDeploySchemaApply()
 
   const { runProductionDeployR2Reconcile } = await import('@/lib/r2-reconcile-on-deploy')
   void runProductionDeployR2Reconcile()
