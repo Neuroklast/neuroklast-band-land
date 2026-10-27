@@ -25,7 +25,7 @@ export function PurchasePanel({
 
   useEffect(() => {
     let mounted = true
-    fetch('/api/neurokore/account', { cache: 'no-store' })
+    fetch('/api/neurokore/session', { cache: 'no-store' })
       .then(result => { if (mounted) setSignedIn(result.ok) })
       .catch(() => { if (mounted) setSignedIn(false) })
     return () => { mounted = false }
