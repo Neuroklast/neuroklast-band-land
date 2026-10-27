@@ -5,7 +5,7 @@ import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
 import { db, json, origin, required } from '@/lib/neurokore/server'
 import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
-import { contractDocumentText, contractEmailText } from '@/lib/neurokore/email-format'
+import { contractDocumentText, contractEmailText, contractEmailHtml } from '@/lib/neurokore/email-format'
 import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
 import { LEGAL_LOCALES } from '@/lib/legal-i18n'
 import { localizedLegalPath } from '@/lib/legal-routes'
@@ -111,6 +111,13 @@ async function sendContractConfirmation(
       to: [order.email],
       subject: translations.docs.purchase + ' – ' + product.title,
       text,
+      html: contractEmailHtml({
+        title: translations.docs.purchase,
+        product: product.title,
+        chargedAmount: formatChargedAmount(session.amount_total, session.currency, locale),
+        accountUrl: siteUrl + '/neurokore/account',
+        documentText: text,
+      }),
     }),
   })
   if (!response.ok) throw new Error('Contract confirmation email unavailable')
