@@ -144,26 +144,30 @@ export async function POST(request: Request) {
       'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY')))
     const client = db()
     const orderResult = await client.from('plugin_orders')
-      .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version')
+      .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version,test_deleted_at')
       .eq('id', session.client_reference_id).single()
     if (orderResult.error) throw orderResult.error
     const order = z.object({
       id: z.uuid(), product_id: z.uuid(), email: z.email(),
       price_id: z.string(), stripe_session: z.string().nullable(),
       confirmation_sent_at: z.string().nullable(),
+      test_deleted_at: z.string().nullable(),
       terms_snapshot: z.string().nullable(),
       licence_snapshot: z.string().nullable(),
       terms_version: z.string().nullable(),
     }).parse(orderResult.data)
+    // A wiped sandbox test order must never produce another licence or email.
+    if (order.test_deleted_at) return json({ received: true })
     if (order.stripe_session !== session.id || order.email !== session.customer_email.toLowerCase() ||
       order.price_id !== session.line_items.data[0].price.id) throw new Error('Order mismatch')
 
     const key = newKey()
-    const { error } = await client.rpc('plugin_fulfill', {
+    const { data: fulfilledId, error } = await client.rpc('plugin_fulfill', {
       p_order: order.id, p_session: session.id, p_intent: session.payment_intent,
       p_key_hash: keyHash(key), p_key_cipher: encryptKey(key, required('NEUROKORE_KEY_ENCRYPTION_SECRET')),
     })
     if (error) throw error
+    if (!fulfilledId) return json({ received: true })
 
     if (!order.confirmation_sent_at) {
       await sendContractConfirmation(client, order, session)
