@@ -1,26 +1,19 @@
-import { createClient } from '@/lib/supabaseServer'
 import { notFound } from 'next/navigation'
-import EditSoundpackForm from './EditSoundpackForm'
-
-interface SoundpackItem {
-  id: string
-  title: string
-  image_storage_path: string | null
-  image_url: string | null
-  external_url: string | null
-  display_order: number
-}
+import { admin, db } from '@/lib/neurokore/server'
+import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { SoundpackEditor, type EditableSoundpack } from '../SoundpackEditor'
 
 export default async function EditSoundpackPage({ params }: { params: Promise<{ id: string }> }) {
+  await admin()
   const { id } = await params
-  const supabase = await createClient()
-  const { data } = await supabase.from('soundpacks').select('*').eq('id', id).single()
-  if (!data) notFound()
-
+  const { data, error } = await db().from('soundpacks')
+    .select('id,title,image_storage_path,image_url,external_url,display_order,description,pack_type,is_free,price_cents,archive_key,archive_filename,archive_bytes,sample_count,format_description,license_notes')
+    .eq('id', id).single()
+  if (error || !data) notFound()
   return (
-    <div className="max-w-lg">
-      <h1 className="text-xl font-bold mb-6">Edit Soundpack</h1>
-      <EditSoundpackForm item={data as SoundpackItem} />
-    </div>
+    <main>
+      <AdminPageHeader title={'Edit '+data.title} description="Manage secure ZIP, pack details, rights and pricing." />
+      <SoundpackEditor item={data as EditableSoundpack}/>
+    </main>
   )
 }
