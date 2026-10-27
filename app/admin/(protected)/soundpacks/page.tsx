@@ -5,14 +5,14 @@ import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 
 export default async function SoundpacksPage() {
-  let items: Array<{ id: string; title: string; display_order: number }> = []
+  let items: Array<{ id: string; title: string; display_order: number; pack_type: string; is_free: boolean; price_cents: number; archive_key: string | null; license_notes: string; active: boolean }> = []
 
   let loadError = false
   try {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('soundpacks')
-      .select('id, title, display_order')
+      .select('id, title, display_order, pack_type, is_free, price_cents, archive_key, license_notes, active')
       .order('display_order', { ascending: true })
     if (error) loadError = true
     else items = data ?? []
@@ -24,7 +24,7 @@ export default async function SoundpacksPage() {
     <div>
       <AdminPageHeader
         title="Soundpacks"
-        description="Manage downloadable soundpack listings with cover art and external purchase links."
+        description="Publish free NEUROKORE presets and paid sample libraries from private ZIP archives. Live sales remain separately disabled."
         action={
           <Link
             href="/admin/soundpacks/new"
@@ -49,7 +49,7 @@ export default async function SoundpacksPage() {
           <thead>
             <tr className="border-b border-zinc-800 text-zinc-400">
               <th className="text-left py-2 pr-4">Order</th>
-              <th className="text-left py-2 pr-4">Title</th>
+              <th className="text-left py-2 pr-4">Title</th><th className="text-left py-2 pr-4">Type</th><th className="text-left py-2 pr-4">Price</th><th className="text-left py-2 pr-4">Readiness</th>
               <th className="text-right py-2">Actions</th>
             </tr>
           </thead>
@@ -58,6 +58,12 @@ export default async function SoundpacksPage() {
               <tr key={item.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
                 <td className="py-2 pr-4 text-zinc-400">{item.display_order}</td>
                 <td className="py-2 pr-4 text-zinc-200">{item.title}</td>
+                <td className="py-2 pr-4 text-zinc-400">{item.pack_type === 'preset_pack' ? 'Presets' : 'Samples'}</td>
+                <td className="py-2 pr-4 text-zinc-300">{item.is_free ? 'FREE' : (item.price_cents / 100).toFixed(2) + ' €'}</td>
+                <td className="py-2 pr-4 text-xs text-zinc-400">
+                  {!item.active ? 'Hidden' : !item.archive_key ? 'ZIP missing' :
+                    !item.license_notes?.trim() ? 'Licence text missing' : 'Ready for download'}
+                </td>
                 <td className="py-2 text-right space-x-2">
                   <Link
                     href={`/admin/soundpacks/${item.id}`}
