@@ -1328,6 +1328,25 @@ for (const locale of LEGAL_LOCALES) {
   Object.assign(PRIVACY_COPY[locale], PRIVACY_SERVICE_DETAILS[locale])
 }
 
+const PRIVACY_PRIMARY_REGION: Record<LegalLocale, string> = {
+  "en": "The primary Supabase database for this website is currently hosted in London, United Kingdom (eu-west-2), outside the EU/EEA. The EU has an adequacy decision for the United Kingdom. Provider support access and other international transfers are addressed separately below.",
+  "de": "Die primäre Supabase-Datenbank dieser Website wird derzeit in London, Vereinigtes Königreich (eu-west-2), betrieben und liegt damit außerhalb der EU und des EWR. Für das Vereinigte Königreich besteht ein Angemessenheitsbeschluss der EU. Etwaige internationale Zugriffe durch Dienstleister werden weiter unten erläutert.",
+  "uk": "Основна база даних Supabase наразі розміщена в Лондоні, Велика Британія (eu-west-2), поза ЄС/ЄЕЗ. Для Великої Британії діє рішення ЄС про належний рівень захисту. Інші міжнародні передавання описані нижче.",
+  "it": "Il database principale Supabase è attualmente ospitato a Londra, Regno Unito (eu-west-2), fuori dall'UE/SEE. Per il Regno Unito esiste una decisione di adeguatezza dell'UE. Altri trasferimenti internazionali sono descritti più avanti.",
+  "es": "La base de datos principal de Supabase está alojada actualmente en Londres, Reino Unido (eu-west-2), fuera de la UE/EEE. El Reino Unido cuenta con una decisión de adecuación de la UE. Otros accesos y transferencias internacionales se explican más adelante.",
+  "pt": "A base de dados principal Supabase está atualmente alojada em Londres, Reino Unido (eu-west-2), fora da UE/EEE. Existe uma decisão de adequação da UE para o Reino Unido. Outros acessos e transferências internacionais são explicados abaixo.",
+  "ja": "Supabaseの主要データベースは現在、EU/EEA域外の英国ロンドン（eu-west-2）で運用されています。英国についてはEUの十分性認定があります。その他の国際的なデータ移転については後述します。",
+  "ko": "Supabase 기본 데이터베이스는 현재 EU/EEA 외부인 영국 런던(eu-west-2)에 위치합니다. 영국에는 EU 적정성 결정이 적용됩니다. 다른 국외 이전 및 접근은 아래에서 설명합니다."
+}
+
+for (const locale of LEGAL_LOCALES) {
+  PRIVACY_COPY[locale].hosting.paragraphs.push(PRIVACY_PRIMARY_REGION[locale])
+  for (const [index, id] of (['accounts', 'purchases', 'requests', 'diagnostics', 'updates'] as const).entries()) {
+    PRIVACY_COPY[locale][id].title = String(index + 12) + '. ' + PRIVACY_COPY[locale][id].title
+  }
+  PRIVACY_COPY[locale].rights.title = PRIVACY_COPY[locale].rights.title.replace(/^12\\.\\s*/, '17. ')
+}
+
 // Legal notices do not require blanket liability disclaimers. The former
 // liability sections cited repealed/misapplied DDG provisions (§§ 8–10).
 // Keep operator, editorial responsibility, dispute information and copyright.
