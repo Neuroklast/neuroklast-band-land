@@ -1396,6 +1396,10 @@ BEGIN
   IF o.test_deleted_at IS NOT NULL THEN
     RETURN NULL;
   END IF;
+  -- Never mint a new key after a verified payment incident.
+  IF o.payment_state IN ('refunded', 'partially_refunded', 'disputed', 'dispute_closed') THEN
+    RETURN NULL;
+  END IF;
   IF o.license_id IS NOT NULL THEN
     RETURN o.license_id;
   END IF;
