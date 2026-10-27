@@ -414,7 +414,15 @@ export function PluginDetail({ productId }: { productId: string }) {
         noValidate
         className="space-y-5"
         onChange={(event) => {
-          if ((event.target as HTMLInputElement).name) setDirty(true)
+          const target = event.target
+          if (
+            (target instanceof HTMLInputElement ||
+              target instanceof HTMLTextAreaElement ||
+              target instanceof HTMLSelectElement) &&
+            target.name
+          ) {
+            setDirty(true)
+          }
         }}
         onSubmit={(event) => {
           event.preventDefault()
