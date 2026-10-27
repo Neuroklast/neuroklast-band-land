@@ -274,7 +274,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. Image CDN (wsrv.nl) and web fonts',
+      title: "8. Images and website fonts",
       paragraphs: [
         "Some images are delivered through the external service wsrv.nl so they load faster. Your IP address is technically transferred when you load such images. Our legitimate interest in reliable page delivery is the legal basis (Art. 6(1)(f) GDPR). Details: https://wsrv.nl.",
         "Website fonts are loaded from our own website, not directly from Google's font service.",
@@ -364,7 +364,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. Bild-CDN (wsrv.nl) und Webfonts',
+      title: "8. Bilder und Schriftarten",
       paragraphs: [
         "Einige Bilder werden über den externen Dienst wsrv.nl ausgeliefert, damit sie schneller laden. Beim Abruf wird deine IP-Adresse aus technischen Gründen übermittelt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: https://wsrv.nl.",
         "Die Schriftarten der Website werden von unserer eigenen Website geladen. Dabei wird keine Verbindung zum Schriftendienst von Google aufgebaut.",
@@ -454,7 +454,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. CDN зображень (wsrv.nl) і вебшрифти',
+      title: "8. Зображення та шрифти сайту",
       paragraphs: [
         "Деякі зображення постачає сервіс wsrv.nl. Для їх показу він отримує IP-адресу (ст. 6(1)(f) GDPR). Деталі: https://wsrv.nl.",
         "Шрифти завантажуються з нашого сайту без прямого підключення до Google Fonts.",
@@ -544,7 +544,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. CDN immagini (wsrv.nl) e web font',
+      title: "8. Immagini e caratteri del sito",
       paragraphs: [
         "Alcune immagini vengono distribuite tramite wsrv.nl, che riceve l'indirizzo IP per mostrarle (art. 6(1)(f) GDPR). Dettagli: https://wsrv.nl.",
         "I caratteri vengono caricati dal nostro sito, senza collegarsi direttamente a Google Fonts.",
@@ -634,7 +634,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. CDN de imágenes (wsrv.nl) y fuentes web',
+      title: "8. Imágenes y fuentes del sitio",
       paragraphs: [
         "Algunas imágenes se muestran mediante wsrv.nl, que recibe la dirección IP para entregarlas (art. 6.1.f RGPD). Más información: https://wsrv.nl.",
         "Las fuentes se cargan desde nuestro propio sitio y no directamente desde Google Fonts.",
@@ -724,7 +724,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. CDN de imagens (wsrv.nl) e tipos de letra web',
+      title: "8. Imagens e tipos de letra do site",
       paragraphs: [
         "Algumas imagens são fornecidas pelo serviço wsrv.nl, que recebe o IP para as apresentar (artigo 6.º, n.º 1, alínea f), RGPD). Mais informações: https://wsrv.nl.",
         "Os tipos de letra são carregados a partir do nosso site, sem ligação direta ao Google Fonts.",
@@ -814,7 +814,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. 画像CDN（wsrv.nl）とウェブフォント',
+      title: "8. 画像とフォント",
       paragraphs: [
         "一部の画像はwsrv.nlから配信され、表示に必要なIPアドレスが渡ります（GDPR第6条第1項(f)）。詳細: https://wsrv.nl。",
         "フォントは当サイトから読み込み、Google Fontsへ直接接続しません。",
@@ -904,7 +904,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       ],
     },
     cdn: {
-      title: '8. 이미지 CDN(wsrv.nl) 및 웹 글꼴',
+      title: "8. 이미지와 글꼴",
       paragraphs: [
         "일부 이미지는 wsrv.nl에서 제공하며 이를 위해 IP 주소가 전달됩니다(GDPR 제6조 제1항 (f)). 자세히: https://wsrv.nl.",
         "글꼴은 당사 사이트에서 불러오며 Google Fonts에 직접 연결하지 않습니다.",
