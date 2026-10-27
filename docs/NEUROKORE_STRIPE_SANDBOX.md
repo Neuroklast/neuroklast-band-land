@@ -1,62 +1,70 @@
-# NEUROKORE Stripe Sandbox: isolated end-to-end checkout
+# NEUROKORE Stripe Sandbox test on Vercel Preview
 
-## Verified Stripe resources (27 October 2026)
+Verified 27 October 2026. This is a controlled payment simulation, not a production launch.
 
-- Stripe **NEUROKLAST Sandbox**, `acct_1UV6GBEP3z8hPITn`, test mode only.
-- Test product **NEUROKORE — Sandbox Test License**: `prod_VW8ifYVUATvnhd`.
-- Test one-time **EUR 1.00 (inclusive)** Price: `price_1UV6RMEP3z8hPITngA11NGBL`.
-- Product, Price and empty webhook list were confirmed against the Stripe Sandbox API.
-- The test amount **is not a retail price**. No live Stripe product, customer charge or production order was created.
+## Connected services
 
-## Incomplete external prerequisites
+- Stripe account: **NEUROKLAST Sandbox** `acct_1UV6GBEP3z8hPITn`.
+- Stripe product: `prod_VW8ifYVUATvnhd`.
+- Stripe Price: `price_1UV6RMEP3z8hPITngA11NGBL`, EUR 1.00 one-time and tax-inclusive, **test mode**.
+- Production Stripe account **NEUROKLAST** is not changed.
+- Vercel project: `neuroklast-band-land` (`prj_c9w3i0A1Mc8CrzQxvsFjGlkAbgXD`).
+- Preview Git branch: `chore/neurokore-sandbox-preflight-20261027`, Draft PR #515.
+- Preview URL: `https://neuroklast-band-land-git-chore-neur-cb3e37-neuroklasts-projects.vercel.app`.
+- Supabase project: `cvxhbdmhtesnkubublar` (**existing production licensing database**, used by explicit owner request). No separate database or charge was created.
 
-- Supabase project `cvxhbdmhtesnkubublar` **cannot currently be accessed through the ChatGPT Supabase connector**. Its server returns `link_id must identify an eligible linked account`. Do not assume migrations were applied.
-- No isolated Supabase test project or copied plugin/release data has been verified.
-- No Vercel staging URL, sandbox Stripe API key, webhook signing secret or authenticated customer test is provisioned yet.
-- Live sales remain off. Keep `NEUROKORE_SALES_ENABLED=false` for Production.
-- The Vercel project currently protects preview URLs with authentication (all except custom domains). Stripe cannot send events to a protected preview URL without a supported bypass. Plan a dedicated publicly reachable HTTPS staging webhook endpoint, with strong application-level signature validation.
+The Vercel Ignored Build Step was narrowed to permit `main` and this preview branch, leaving all other branches ignored. The preview is protected by Vercel Authentication and is not served on `neuroklast.net`.
 
-## Provision isolated staging (do not reuse production credentials)
+## Configured in Vercel Preview, scoped to this branch only
 
-1. In Supabase, create a **separate project** for staging (creation may incur cost); do not use the live NEUROKLAST database. Apply the existing idempotent `supabase/schema.sql` there. Configure Supabase Auth email OTP and isolated test SMTP.
-2. Set up a Vercel preview deployment on a dedicated staging branch. Configure a stable staging HTTPS origin. Restrict the staging site itself, but keep `POST /api/neurokore/webhook` externally reachable for signed Stripe deliveries.
-3. Scope these variables **only to the staging branch/environment**:
-   - `VERCEL_ENV=preview` (provided automatically by Vercel)
-   - `NEUROKORE_SITE_URL=https://<staging-domain>`
-   - `NEUROKORE_SALES_ENABLED=true`
-   - `STRIPE_SECRET_KEY=sk_test_...` (NEUROKLAST Sandbox account)
-   - `STRIPE_WEBHOOK_SECRET=whsec_...` (from the Sandbox webhook endpoint)
-   - `NEXT_PUBLIC_SUPABASE_URL=https://<staging-ref>.supabase.co`
-   - `SUPABASE_SERVICE_ROLE_KEY=<staging-only-secret>`
-   - `NEUROKORE_KEY_ENCRYPTION_SECRET=<new-32-byte-random-hex>`
-   - `NEUROKORE_SIGNING_PRIVATE_KEY=<test-key-matching-a-test-plugin-build>`
-   - `NEXT_PUBLIC_DEV_MODE=false`
-   - Plus staging R2/SMTP and any other existing backend dependencies used by published artifacts and legal purchase emails.
-4. In staging Admin > Plugins > NEUROKORE, link the sandbox Price ID `price_1UV6RMEP3z8hPITngA11NGBL`, enable per-product sales, and ensure a validated release is published. The checkout checks release readiness, legal completeness, authenticated customer, signing key and contract-confirmation email integration.
-5. Create the Stripe **Sandbox** webhook pointing to `https://<staging-domain>/api/neurokore/webhook`. Enable `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy its signing secret into the **staging** `STRIPE_WEBHOOK_SECRET`.
-6. Make a Stripe Sandbox card purchase while signed in as a customer on staging, then verify the order and exactly one license in the staging database, email confirmation, and license activation in a test build.
+- `NEUROKORE_SANDBOX_CHECKOUT=true`
+- `NEUROKORE_SALES_ENABLED=true`
+- `STRIPE_SANDBOX_PRICE_ID=price_1UV6RMEP3z8hPITngA11NGBL`
+- `NEXT_PUBLIC_DEV_MODE=false`
+- `NEUROKORE_SITE_URL`, `SITE_URL`, `NEXT_PUBLIC_SITE_URL`: branch-specific preview origin
+- `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_URL`: existing Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`: public keys of existing Supabase project
 
-### Live/test key guard
+The source code enables a sandbox purchase only when **all** of `VERCEL_ENV=preview`, `NEUROKORE_SANDBOX_CHECKOUT=true`, `NEUROKORE_SALES_ENABLED=true`, a `sk_test_...` secret and a `price_...` sandbox Price ID are present. Only product slug `neurokore` may bypass the product's `sales_enabled=false` in the Preview. Production still honours the database kill switch. The Product's production Stripe Price ID is never overwritten.
 
-`lib/neurokore/stripe.ts` now rejects `sk_live_` / `rk_live_` outside `VERCEL_ENV=production`, and rejects test credentials in Production. This covers product Price lookup, checkout creation and webhook session retrieval. A mismatch fails closed.
+## Still required before a complete test purchase
 
-**Do not enable global sales in Production to try the Sandbox.** Production and preview configurations must never share the same Supabase data, Stripe API credentials, signing keys or R2 files.
+**Do not put secrets in Git or a chat message.** In Vercel Project Settings > Environment Variables, configure these keys as secrets for this exact Preview branch only:
 
-### Sandbox scenarios to exercise
+- `STRIPE_SECRET_KEY`: generated in **NEUROKLAST Sandbox**, `sk_test_...`.
+- `STRIPE_WEBHOOK_SECRET`: `whsec_...` for the NEUROKLAST Sandbox webhook registered below.
+- `SUPABASE_SERVICE_ROLE_KEY`: the existing licensing backend service key.
+- `NEUROKORE_KEY_ENCRYPTION_SECRET`: the **same** encryption secret already used by production licensing.
+- `NEUROKORE_SIGNING_PRIVATE_KEY`: the **same** NEUROKORE v2 private signing key already used by the released plugin, if no encrypted per-product private key exists.
+- `SECRETS_ENCRYPTION_KEY`: existing key used to decrypt the stored Resend API key from `api_secrets`.
 
-- Checkout succeeds using Stripe's test card `4242 4242 4242 4242`, a future expiry and any CVC.
-- Declined cards and abandoned payment produce no license.
-- `checkout.session.completed` with unpaid/pending payment does not fulfill.
-- Duplicate and reordered webhooks do not create duplicate licenses.
-- A transient email failure can retry without issuing a second license.
-- The authorized buyer can view their license, other accounts cannot.
-- Device activation, reactivation and seat limit function using **test-signed** licenses.
-- Refund handling is reviewed separately. The current commerce documentation states **there is no automatic refund revocation**.
-- Verify test and live events are separated, inspect webhook deliveries and database rows, then keep production sales disabled pending legal, tax and deliverability checks.
+These are powerful production credentials, so do not expose this Preview to untrusted users or unreviewed commits. The branch is restricted by Vercel Authentication. A Preview with production credentials is **not** a fully isolated staging environment. After tests, remove these Preview-scoped secrets.
 
-Run the existing Stripe unit tests from the repository:
-```bash
-npm run test -- src/test/neurokore-stripe.test.ts
-```
+Check Supabase Auth redirect allowlist for the exact Preview origin. Ensure the customer can sign in using email and the Resend confirmation API key configured in `api_secrets` is usable.
 
-This document is a configuration handoff, **not** a record of an executed end-to-end transaction.
+### Stripe webhook and Vercel protection
+
+Register a webhook in **NEUROKLAST Sandbox** for `checkout.session.completed` and `checkout.session.async_payment_succeeded` pointing to:
+
+`https://neuroklast-band-land-git-chore-neur-cb3e37-neuroklasts-projects.vercel.app/api/neurokore/webhook`
+
+However, Vercel Authentication blocks external Stripe deliveries. Vercel's documented workaround is a project-specific **Protection Bypass for Automation** token as the URL query parameter `x-vercel-protection-bypass`. It grants broad bypass privileges for the Vercel project, not just that route, so treat it as a highly sensitive credential and revoke it when tests finish. If no acceptable restricted webhook access path is available, do not register an unreachable URL. Only after the endpoint is genuinely reachable should the Stripe test webhook be created and its signing secret stored in the branch's Vercel Preview environment.
+
+### Important test lifecycle
+
+1. Sign in on the Preview as a real Supabase test user. Complete legal configuration and check that NEUROKORE has a validated published plugin release.
+2. Start checkout from `/plugins/neurokore`. Confirm the displayed amount is **EUR 1.00**. Pay with Stripe's standard test card.
+3. Confirm `checkout.session.completed` was delivered and the purchased key appears at `/neurokore/account`. Test plugin activation and device limits.
+4. Check duplicate webhook deliveries: exactly one licence per test order.
+5. Go to **Admin > Plugins > NEUROKORE > Licences**, select the sandbox-purchased key and choose **Delete test key**. Type `DELETE TEST` to confirm.
+6. The key and its device rows are deleted; the order is retained as a tombstone (`test_deleted_at`) to block webhook replays. Normal paid orders and manually issued keys cannot be deleted through this action.
+7. Already-issued offline activation documents cannot be remotely erased and may remain usable until their expiry. Key deletion prevents reactivation and renewal.
+8. Keep `NEUROKORE_SALES_ENABLED=false` on Production. Remove temporary Preview secrets and restore the original Ignored Build Step rule after the test campaign.
+
+### Database migration status
+
+The narrow additive migration `neurokore_sandbox_test_license_cleanup` was successfully applied to Supabase `cvxhbdmhtesnkubublar`. It adds `plugin_orders.test_deleted_at`, prevents replay fulfilment in `plugin_fulfill`, and creates `plugin_delete_sandbox_license` for authenticated service-role calls only.
+
+Verification after applying: four pre-existing licences, zero orders, the new column exists, `anon` and `authenticated` cannot invoke the delete RPC, `service_role` can.
+
+**No Stripe sandbox checkout or real plugin activation has yet been executed end-to-end.**
