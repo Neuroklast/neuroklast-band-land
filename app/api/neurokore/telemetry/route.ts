@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   } catch { return empty(503) } // Fail closed.
 
   try {
-    const { error } = await db().from('neurokore_beta_diagnostics').insert({
+    const { error } = await db().from('plugin_beta_diagnostics').insert({
       schema_version: parsed.data.schema, plugin_version: parsed.data.version,
       event_code: parsed.data.code, os_family: parsed.data.os, host_family: parsed.data.host,
       plugin_format: parsed.data.format, cpu_cores_bucket: parsed.data.cpuCores,

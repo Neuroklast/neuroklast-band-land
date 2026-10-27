@@ -1602,7 +1602,7 @@ ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_version text;
 
 -- NEUROKORE closed beta diagnostics. No free-text fields and no user/device IDs.
 -- POST is allowed only through the Vercel server using service_role.
-CREATE TABLE IF NOT EXISTS public.neurokore_beta_diagnostics (
+CREATE TABLE IF NOT EXISTS public.plugin_beta_diagnostics (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at timestamptz NOT NULL DEFAULT now(),
   schema_version integer NOT NULL DEFAULT 1 CHECK (schema_version = 1),
@@ -1618,10 +1618,10 @@ CREATE TABLE IF NOT EXISTS public.neurokore_beta_diagnostics (
   bundle text CHECK (bundle IS NULL OR bundle ~ '^[a-zA-Z0-9_-]{1,70}\.js$'),
   line_number integer CHECK (line_number IS NULL OR line_number BETWEEN 1 AND 100000)
 );
-CREATE INDEX IF NOT EXISTS neurokore_beta_diagnostics_created_idx
-  ON public.neurokore_beta_diagnostics (created_at DESC);
-CREATE INDEX IF NOT EXISTS neurokore_beta_diagnostics_code_idx
-  ON public.neurokore_beta_diagnostics (event_code, created_at DESC);
-ALTER TABLE public.neurokore_beta_diagnostics ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.neurokore_beta_diagnostics FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT, DELETE ON TABLE public.neurokore_beta_diagnostics TO service_role;
+CREATE INDEX IF NOT EXISTS plugin_beta_diagnostics_created_idx
+  ON public.plugin_beta_diagnostics (created_at DESC);
+CREATE INDEX IF NOT EXISTS plugin_beta_diagnostics_code_idx
+  ON public.plugin_beta_diagnostics (event_code, created_at DESC);
+ALTER TABLE public.plugin_beta_diagnostics ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.plugin_beta_diagnostics FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, DELETE ON TABLE public.plugin_beta_diagnostics TO service_role;

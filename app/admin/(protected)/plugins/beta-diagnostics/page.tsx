@@ -8,12 +8,12 @@ export default async function BetaDiagnosticsPage() {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const supabase = db()
   const [latest, total, errors] = await Promise.all([
-    supabase.from('neurokore_beta_diagnostics')
+    supabase.from('plugin_beta_diagnostics')
       .select('id,created_at,plugin_version,event_code,os_family,host_family,plugin_format,cpu_cores_bucket,memory_gb_bucket,sample_rate,buffer_size,bundle,line_number')
       .order('created_at', { ascending: false }).limit(100),
-    supabase.from('neurokore_beta_diagnostics')
+    supabase.from('plugin_beta_diagnostics')
       .select('id', { count: 'exact', head: true }).gte('created_at', cutoff),
-    supabase.from('neurokore_beta_diagnostics')
+    supabase.from('plugin_beta_diagnostics')
       .select('id', { count: 'exact', head: true }).gte('created_at', cutoff)
       .in('event_code', ['js-error', 'promise-rejection', 'native-timeout']),
   ])
