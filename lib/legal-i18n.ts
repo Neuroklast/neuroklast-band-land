@@ -413,9 +413,8 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     hosting: {
       title: '2. Хостинг та інфраструктура',
       paragraphs: [
-        'Сайт розміщено у Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, США. Під час відвідування IP-адреса може оброблятися на серверах Vercel, зокрема з передачею до США. Політика Vercel: https://vercel.com/legal/privacy-policy',
-        'Правова підстава: ст. 6(1)(f) GDPR (законний інтерес у надійній роботі сайту).',
-        'Як обробники також використовуються Supabase (база даних і автентифікація адмінки), Cloudflare R2 (медіа; юрисдикція ЄС за можливості) та Resend (транзакційні листи для контактів, підтверджень покупок і відкликання договорів — без розсилки). DPA та регіони зберігання налаштовуються в кабінетах провайдерів.',
+        "Сайт працює на платформі Vercel. Під час відвідування обробляються технічні дані з’єднання, зокрема IP-адреса та час доступу, для роботи й захисту сайту (ст. 6(1)(f) GDPR). Деталі: https://vercel.com/legal/privacy-policy.",
+        "Supabase обслуговує облікові записи та ліцензії; основні дані розміщено у Великій Британії. Cloudflare доставляє деякі файли, а Resend надсилає листи щодо контактів і покупок. Ці постачальники отримують лише потрібні для послуги дані.",
       ],
     },
     controller: {
@@ -430,51 +429,42 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     storage: {
       title: '4. Браузерне сховище, cookies і локальні дані',
       paragraphs: [
-        'Вибір щодо cookies зберігається в localStorage (ключ: zd-cookie-consent). Це технічно необхідно. Підстава: ст. 6(1)(f) GDPR і § 25(2) TDDDG.',
-        'Функціональні налаштування (мова, тема, звук) можуть зберігатися без згоди на аналітику. Підстава: ст. 6(1)(f) GDPR.',
-        'IndexedDB може кешувати стиснуті зображення локально. Профілі осіб не створюються. Підстава: ст. 6(1)(f) GDPR.',
-        'За згодою на аналітику ми можемо зберігати first-party події (перегляди сторінок і секцій, кліки з відносними координатами) на наших серверах (таблиця analytics_events). Рекламної мережі немає. Зберігання: до 90 днів. Відкликати згоду можна в «Налаштуваннях cookies» у футері.',
-        'Адмін-автентифікація використовує HttpOnly-сесійні cookies (Supabase). Для звичайних відвідувачів вони не встановлюються.',
+        "На пристрої зберігаються вибрані мова, оформлення та налаштування cookie. Необхідні cookie підтримують вхід і безпеку сайту (ст. 6(1)(f) GDPR і § 25(2) TDDDG).",
+        "За вашою згодою ми збираємо статистику відвідування сторінок, розділів та натискань на кнопки й посилання. Ми не зберігаємо введений текст. Дані видаляються не пізніше ніж через 90 днів. Згоду можна відкликати в налаштуваннях cookie (ст. 6(1)(a) GDPR).",
+        "Зображення можуть тимчасово зберігатися на пристрої для швидшого завантаження.",
       ],
     },
     contact: {
       title: '5. Контактна форма',
       paragraphs: [
-        'Під час надсилання форми ми обробляємо ім’я, e-mail, тему та повідомлення.',
-        'Повідомлення надходить нам електронною поштою через Resend. На сайті немає скриньки чи тікет-системи; заявки не зберігаються в базі. Дані не продаються третім особам для маркетингу.',
-        'Підстава: ст. 6(1)(b) GDPR або ст. 6(1)(f) GDPR.',
-        'Дані видаляються після обробки запиту, якщо немає законних строків зберігання.',
-        'Форми мають обмеження частоти запитів; псевдонімізовані хеші IP можуть коротко зберігатися з міркувань безпеки. Підстава: ст. 6(1)(f) GDPR.',
+        "Для відповіді на запит ми обробляємо ім’я, email, тему та повідомлення. Resend надсилає його до нашої пошти (ст. 6(1)(b) або (f) GDPR).",
+        "Листування зберігається на час розгляду або визначений законом строк. Для захисту від спаму можуть короткочасно оброблятися дані з’єднання, наприклад IP-адреса (ст. 6(1)(f) GDPR).",
       ],
     },
     newsletter: {
       title: '6. Немає розсилки',
       paragraphs: [
-        'Цей сайт не пропонує newsletter, mailing list чи e-mail-підписку. Контактні запити доставляються через Resend. Адреси підписників не зберігаються.',
+        "Наразі ми не пропонуємо електронну розсилку. Контактні та службові листи не означають підписку на рекламу.",
       ],
     },
     news: {
       title: '7. Новини та редакційний контент',
       paragraphs: [
-        'Публічні новини — редакційний контент. Читання не потребує облікового запису й не створює профілю.',
-        'Обкладинки можуть доставлятися через Cloudflare R2 або проксі wsrv.nl. Підстава: ст. 6(1)(f) GDPR.',
+        "Новини доступні без облікового запису. Зображення можуть завантажуватися через Cloudflare або wsrv.nl, які при цьому отримують IP-адресу (ст. 6(1)(f) GDPR).",
       ],
     },
     cdn: {
       title: '8. CDN зображень (wsrv.nl) і вебшрифти',
       paragraphs: [
-        'Для швидкості зображення можуть доставлятися через wsrv.nl. При цьому IP може короткочасно оброблятися.',
-        'wsrv.nl не встановлює трекінгових cookies. Підстава: ст. 6(1)(f) GDPR. Деталі: https://wsrv.nl',
-        'Стандартні шрифти (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono, Space Mono) розміщені локально. Інші налаштування використовують локальні резервні шрифти без запитів до Google Fonts.',
+        "Деякі зображення постачає сервіс wsrv.nl. Для їх показу він отримує IP-адресу (ст. 6(1)(f) GDPR). Деталі: https://wsrv.nl.",
+        "Шрифти завантажуються з нашого сайту без прямого підключення до Google Fonts.",
       ],
     },
     embeds: {
       title: '9. Сторонні вбудови (Spotify, YouTube)',
       paragraphs: [
-        'Медіаплеєри (Spotify, YouTube) НЕ завантажуються автоматично. Лише після явного кліку (двокроковий метод). Розділ «Слухати» на головній використовує Spotify-вбудову.',
-        'Після активації IP і дані браузера можуть передаватися Spotify AB (Швеція) або Google/YouTube (США). Підстава: ст. 6(1)(a) GDPR (згода).',
-        'Політика Spotify: https://www.spotify.com/legal/privacy-policy/',
-        'Політика Google: https://policies.google.com/privacy',
+        "Програвачі Spotify й YouTube завантажуються лише після вашого натискання.",
+        "Після активації постачальники можуть отримувати IP-адресу й дані браузера та встановлювати власні cookie. Підстава: ваша згода (ст. 6(1)(a) GDPR). Spotify: https://www.spotify.com/legal/privacy-policy/ · Google: https://policies.google.com/privacy.",
       ],
     },
     'external-links': {
@@ -487,7 +477,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     transfers: {
       title: '11. Міжнародна передача даних',
       paragraphs: [
-        'Деякі обробники (Vercel, Cloudflare, Resend, Google/YouTube після активації вбудов, wsrv.nl) можуть обробляти дані поза ЄС/ЄЕЗ, зокрема в США. Передача ґрунтується на SCC або рішенні про адекватність (наприклад EU-US Data Privacy Framework). Оператор має укласти DPA з кожним обробником.',
+        "Деякі постачальники обробляють дані за межами ЄС/ЄЕЗ, зокрема у Великій Британії та США. Для захисту використовуються відповідні рішення про належний рівень захисту або стандартні договірні положення ЄС. Інформацію про гарантії можна запитати у нас.",
       ],
     },
     rights: {
@@ -513,9 +503,8 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     hosting: {
       title: '2. Hosting e infrastruttura',
       paragraphs: [
-        'Il sito è ospitato da Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. Visitando il sito, dati come l’indirizzo IP possono essere trattati su server Vercel, anche con trasferimento negli USA. Informativa Vercel: https://vercel.com/legal/privacy-policy',
-        'Base giuridica: art. 6(1)(f) GDPR (interesse legittimo a una presentazione affidabile del sito).',
-        'Utilizziamo come responsabili del trattamento Supabase (database e autenticazione admin), Cloudflare R2 (media; giurisdizione UE se configurata) e Resend (e-mail transazionali per contatti, conferme di acquisto e recessi — nessuna mailing list). I DPA e le regioni di archiviazione vanno configurati nei pannelli dei fornitori.',
+        "Il sito è gestito tramite Vercel. Per il funzionamento e la sicurezza sono trattati dati di connessione, inclusi indirizzo IP e orario (art. 6(1)(f) GDPR). Informativa: https://vercel.com/legal/privacy-policy.",
+        "Supabase gestisce account e licenze; il database principale si trova nel Regno Unito. Cloudflare distribuisce alcuni file e Resend invia email relative a contatti e acquisti. Ogni fornitore riceve solo i dati necessari.",
       ],
     },
     controller: {
@@ -530,51 +519,42 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     storage: {
       title: '4. Archiviazione nel browser, cookie e dati locali',
       paragraphs: [
-        'Memorizziamo le preferenze cookie in localStorage (chiave: zd-cookie-consent). È tecnicamente necessario. Base: art. 6(1)(f) GDPR e § 25(2) TDDDG.',
-        'Preferenze funzionali (lingua, tema, audio) possono essere salvate senza consenso alle analitiche. Base: art. 6(1)(f) GDPR.',
-        'Una cache IndexedDB può salvare immagini compresse in locale. Non si creano profili. Base: art. 6(1)(f) GDPR.',
-        'Con il consenso alle analitiche possiamo salvare eventi first-party (visite, sezioni, clic con coordinate relative) sui nostri server (tabella analytics_events). Nessuna rete pubblicitaria. Conservazione: fino a 90 giorni. Revoca in qualsiasi momento da «Preferenze cookie» nel footer.',
-        'L’autenticazione admin usa cookie di sessione HttpOnly (Supabase). Non sono impostati per i visitatori ordinari.',
+        "Sul dispositivo ricordiamo lingua, aspetto del sito e preferenze sui cookie. I cookie necessari consentono accesso e sicurezza (art. 6(1)(f) GDPR e, ove applicabile, § 25(2) TDDDG).",
+        "Solo con il consenso raccogliamo statistiche su pagine, sezioni e pulsanti o link utilizzati, senza registrare il testo digitato. I dati sono conservati fino a 90 giorni. Il consenso è revocabile dalle impostazioni cookie (art. 6(1)(a) GDPR).",
+        "Le immagini possono essere salvate temporaneamente sul dispositivo per velocizzare il sito.",
       ],
     },
     contact: {
       title: '5. Modulo di contatto',
       paragraphs: [
-        'Inviando il modulo trattiamo: nome, e-mail, oggetto e messaggio.',
-        'Il messaggio ci arriva via e-mail tramite Resend. Non gestiamo una casella o un sistema ticket sul sito e non memorizziamo i messaggi nel database. Non vendiamo i dati a terzi per marketing.',
-        'Base giuridica: art. 6(1)(b) GDPR o art. 6(1)(f) GDPR.',
-        'I dati sono cancellati dopo la gestione della richiesta, salvo obblighi di conservazione.',
-        'I moduli sono soggetti a rate-limit; hash IP pseudonimizzati possono essere conservati brevemente per sicurezza. Base: art. 6(1)(f) GDPR.',
+        "Trattiamo nome, email, oggetto e messaggio per rispondere alle richieste. Resend consegna il messaggio alla nostra casella email (art. 6(1)(b) o (f) GDPR).",
+        "Conserviamo la corrispondenza per il tempo necessario o previsto dalla legge. Per prevenire spam, i dati di connessione, compreso l'IP, possono essere trattati brevemente (art. 6(1)(f) GDPR).",
       ],
     },
     newsletter: {
       title: '6. Nessuna newsletter',
       paragraphs: [
-        'Questo sito non offre newsletter, mailing list né abbonamento e-mail. Le richieste di contatto vengono recapitate tramite Resend. Non memorizziamo indirizzi di iscritti.',
+        "Attualmente non offriamo una newsletter. I messaggi di contatto e acquisto non iscrivono a comunicazioni pubblicitarie.",
       ],
     },
     news: {
       title: '7. News e contenuti editoriali',
       paragraphs: [
-        'I post pubblici sono contenuti editoriali. La lettura non richiede un account e non crea un profilo.',
-        'Le copertine possono essere consegnate via Cloudflare R2 o proxy wsrv.nl. Base: art. 6(1)(f) GDPR.',
+        "Le notizie sono leggibili senza account. Le immagini possono essere caricate tramite Cloudflare o wsrv.nl, che ricevono l'indirizzo IP (art. 6(1)(f) GDPR).",
       ],
     },
     cdn: {
       title: '8. CDN immagini (wsrv.nl) e web font',
       paragraphs: [
-        'Per la velocità le immagini possono essere consegnate via wsrv.nl. L’IP può essere trattato temporaneamente.',
-        'wsrv.nl non imposta cookie di tracciamento. Base: art. 6(1)(f) GDPR. Info: https://wsrv.nl',
-        'I font standard (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono e Space Mono) sono ospitati localmente. Le altre selezioni usano font sostitutivi locali e non caricano Google Fonts.',
+        "Alcune immagini vengono distribuite tramite wsrv.nl, che riceve l'indirizzo IP per mostrarle (art. 6(1)(f) GDPR). Dettagli: https://wsrv.nl.",
+        "I caratteri vengono caricati dal nostro sito, senza collegarsi direttamente a Google Fonts.",
       ],
     },
     embeds: {
       title: '9. Incorporamenti di terzi (Spotify, YouTube)',
       paragraphs: [
-        'I player (Spotify, YouTube) NON si caricano automaticamente. Solo dopo un clic esplicito (metodo two-click). La sezione Ascolta in home usa questo embed Spotify.',
-        'Dopo l’attivazione IP e dati del browser possono essere trasmessi a Spotify AB (Svezia) o Google/YouTube (USA). Base: art. 6(1)(a) GDPR (consenso).',
-        'Privacy Spotify: https://www.spotify.com/legal/privacy-policy/',
-        'Privacy Google: https://policies.google.com/privacy',
+        "I lettori Spotify e YouTube vengono caricati solo dopo una tua scelta.",
+        "Dopo l'attivazione possono ricevere IP e dati del browser e utilizzare cookie propri. Base: consenso (art. 6(1)(a) GDPR). Spotify: https://www.spotify.com/legal/privacy-policy/ · Google: https://policies.google.com/privacy.",
       ],
     },
     'external-links': {
@@ -587,7 +567,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     transfers: {
       title: '11. Trasferimenti internazionali',
       paragraphs: [
-        'Alcuni responsabili (Vercel, Cloudflare, Resend, Google/YouTube se gli embed sono attivati, wsrv.nl) possono trattare dati fuori dallo SEE, inclusi gli USA. I trasferimenti si basano su SCC o decisioni di adeguatezza (es. EU-US Data Privacy Framework). Il gestore dovrebbe stipulare DPA con ciascun responsabile.',
+        "Alcuni fornitori trattano dati fuori dall'UE/SEE, anche nel Regno Unito e negli USA. Si applicano decisioni di adeguatezza o garanzie come le clausole contrattuali standard UE. Puoi richiedere maggiori informazioni.",
       ],
     },
     rights: {
@@ -613,9 +593,8 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     hosting: {
       title: '2. Alojamiento e infraestructura',
       paragraphs: [
-        'Este sitio está alojado en Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, EE. UU. Al visitarlo, datos como tu IP pueden tratarse en servidores de Vercel, lo que puede implicar transferencias a EE. UU. Política de Vercel: https://vercel.com/legal/privacy-policy',
-        'Base jurídica: art. 6(1)(f) RGPD (interés legítimo en una presentación fiable del sitio).',
-        'Usamos como encargados Supabase (base de datos y autenticación de admin), Cloudflare R2 (medios; jurisdicción UE si está configurada) y Resend (correo transaccional para consultas, confirmaciones de compra y desistimientos — sin lista de correo). Los DPA y las regiones de almacenamiento deben configurarse en cada proveedor.',
+        "El sitio se ofrece mediante Vercel. Para funcionar y protegerse procesa datos de conexión, como la dirección IP y la hora de acceso (art. 6.1.f RGPD). Política: https://vercel.com/legal/privacy-policy.",
+        "Supabase gestiona cuentas y licencias; los datos principales se alojan en el Reino Unido. Cloudflare distribuye algunos archivos y Resend entrega correos sobre consultas y compras. Los proveedores reciben los datos necesarios para prestar sus servicios.",
       ],
     },
     controller: {
@@ -630,51 +609,42 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     storage: {
       title: '4. Almacenamiento del navegador, cookies y datos locales',
       paragraphs: [
-        'Guardamos tus preferencias de cookies en localStorage (clave: zd-cookie-consent). Es técnicamente necesario. Base: art. 6(1)(f) RGPD y § 25(2) TDDDG.',
-        'Preferencias funcionales (idioma, tema, sonido) pueden guardarse sin consentimiento de analítica. Base: art. 6(1)(f) RGPD.',
-        'Una caché IndexedDB puede guardar imágenes comprimidas en local. No se crean perfiles. Base: art. 6(1)(f) RGPD.',
-        'Si consientes la analítica, podemos guardar eventos first-party (páginas, secciones, clics con coordenadas relativas) en nuestros servidores (tabla analytics_events). No hay red publicitaria. Conservación: hasta 90 días. Puedes revocar el consentimiento en «Preferencias de cookies» del pie.',
-        'La autenticación de admin usa cookies de sesión HttpOnly (Supabase). No se establecen para visitantes habituales.',
+        "Guardamos en tu dispositivo las preferencias de idioma, aspecto y cookies. Las cookies necesarias permiten el acceso y la seguridad (art. 6.1.f RGPD y, cuando corresponda, § 25.2 TDDDG).",
+        "Solo con tu consentimiento recopilamos estadísticas de páginas, secciones, enlaces y botones usados, sin guardar lo que escribes. Los datos se conservan hasta 90 días. Puedes retirar tu consentimiento en los ajustes de cookies (art. 6.1.a RGPD).",
+        "Las imágenes pueden guardarse temporalmente en tu dispositivo para mejorar la carga.",
       ],
     },
     contact: {
       title: '5. Formulario de contacto',
       paragraphs: [
-        'Al enviar el formulario tratamos: nombre, correo, asunto y mensaje.',
-        'El mensaje nos llega por correo a través de Resend. No hay bandeja ni sistema de tickets en el sitio; no almacenamos envíos en la base de datos. No vendemos los datos a terceros con fines de marketing.',
-        'Base jurídica: art. 6(1)(b) RGPD o art. 6(1)(f) RGPD.',
-        'Los datos se eliminan tras tramitar la solicitud, salvo plazos legales de conservación.',
-        'Los formularios tienen límite de frecuencia; hashes de IP seudonimizados pueden guardarse brevemente por seguridad. Base: art. 6(1)(f) RGPD.',
+        "Tratamos tu nombre, correo, asunto y mensaje para responder. Resend entrega la consulta a nuestro buzón (art. 6.1.b o f RGPD).",
+        "Guardamos la correspondencia el tiempo necesario o exigido por ley. Para evitar el spam podemos procesar brevemente datos de conexión como la dirección IP (art. 6.1.f RGPD).",
       ],
     },
     newsletter: {
       title: '6. Sin boletín',
       paragraphs: [
-        'Este sitio no ofrece newsletter, lista de correo ni suscripción por e-mail. Los mensajes del formulario se entregan a través de Resend. No almacenamos direcciones de suscriptores.',
+        "Actualmente no ofrecemos un boletín por correo. Las consultas y compras no te suscriben a publicidad.",
       ],
     },
     news: {
       title: '7. Noticias y contenido editorial',
       paragraphs: [
-        'Las noticias públicas son contenido editorial. Leerlas no requiere cuenta ni crea un perfil.',
-        'Las portadas pueden servirse vía Cloudflare R2 o el proxy wsrv.nl. Base: art. 6(1)(f) RGPD.',
+        "Puedes leer las noticias sin cuenta. Las imágenes pueden cargarse a través de Cloudflare o wsrv.nl, que reciben la dirección IP (art. 6.1.f RGPD).",
       ],
     },
     cdn: {
       title: '8. CDN de imágenes (wsrv.nl) y fuentes web',
       paragraphs: [
-        'Para la velocidad, las imágenes pueden servirse vía wsrv.nl. La IP puede tratarse temporalmente.',
-        'wsrv.nl no establece cookies de seguimiento. Base: art. 6(1)(f) RGPD. Más información: https://wsrv.nl',
-        'Las fuentes estándar (JetBrains Mono, Space Grotesk, Orbitron, Share Tech Mono y Space Mono) se alojan localmente. Otras fuentes utilizan alternativas locales sin cargar Google Fonts.',
+        "Algunas imágenes se muestran mediante wsrv.nl, que recibe la dirección IP para entregarlas (art. 6.1.f RGPD). Más información: https://wsrv.nl.",
+        "Las fuentes se cargan desde nuestro propio sitio y no directamente desde Google Fonts.",
       ],
     },
     embeds: {
       title: '9. Incrustaciones de terceros (Spotify, YouTube)',
       paragraphs: [
-        'Los reproductores (Spotify, YouTube) NO se cargan automáticamente. Solo tras un clic explícito (método de dos clics). La sección Escuchar de la portada usa este embed de Spotify.',
-        'Al activarse, la IP y datos del navegador pueden transmitirse a Spotify AB (Suecia) o Google/YouTube (EE. UU.). Base: art. 6(1)(a) RGPD (consentimiento).',
-        'Privacidad de Spotify: https://www.spotify.com/legal/privacy-policy/',
-        'Privacidad de Google: https://policies.google.com/privacy',
+        "Los reproductores de Spotify y YouTube solo se cargan cuando decides activarlos.",
+        "Después pueden recibir IP y datos del navegador y usar sus propias cookies. Base: consentimiento (art. 6.1.a RGPD). Spotify: https://www.spotify.com/legal/privacy-policy/ · Google: https://policies.google.com/privacy.",
       ],
     },
     'external-links': {
@@ -687,7 +657,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     transfers: {
       title: '11. Transferencias internacionales',
       paragraphs: [
-        'Algunos encargados (Vercel, Cloudflare, Resend, Google/YouTube si se activan los embeds, wsrv.nl) pueden tratar datos fuera del EEE, incluidos EE. UU. Las transferencias se basan en CCT o una decisión de adecuación (p. ej. EU-US Data Privacy Framework). El operador debe celebrar DPA con cada encargado.',
+        "Algunos proveedores tratan datos fuera de la UE/EEE, como en el Reino Unido y Estados Unidos. Se aplican decisiones de adecuación o garantías como las cláusulas contractuales tipo de la UE. Puedes solicitarnos más información.",
       ],
     },
     rights: {
