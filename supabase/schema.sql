@@ -1615,7 +1615,7 @@ CREATE TABLE IF NOT EXISTS public.neurokore_beta_diagnostics (
   memory_gb_bucket smallint NOT NULL CHECK (memory_gb_bucket IN (8,16,32,64)),
   sample_rate integer NOT NULL CHECK (sample_rate IN (0,44100,48000,88200,96000,192000)),
   buffer_size integer NOT NULL CHECK (buffer_size BETWEEN 0 AND 8192),
-  bundle text CHECK (bundle IS NULL OR bundle ~ '^[a-zA-Z0-9_-]{1,70}\\.js$'),
+  bundle text CHECK (bundle IS NULL OR bundle ~ '^[a-zA-Z0-9_-]{1,70}\.js$'),
   line_number integer CHECK (line_number IS NULL OR line_number BETWEEN 1 AND 100000)
 );
 CREATE INDEX IF NOT EXISTS neurokore_beta_diagnostics_created_idx
