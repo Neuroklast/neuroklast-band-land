@@ -37,6 +37,32 @@ export function configureNeurokoreSandboxCheckout(params: URLSearchParams): void
   params.delete('consent_collection[terms_of_service]')
 }
 
+/**
+ * A signed event is not sufficient authorization to mint a license.
+ * The actual paid session must also belong to the expected Stripe mode,
+ * and must reference the same locally-created checkout order.
+ */
+export function assertStripeFulfillmentEnvironment(input: {
+  eventLivemode: boolean
+  sessionLivemode: boolean
+  sessionId: string
+  environment: string | undefined
+  clientReferenceId: string
+  metadataOrderId: string | undefined
+}, vercelEnv: string | undefined = process.env.VERCEL_ENV): void {
+  const production = vercelEnv === 'production'
+  if (input.eventLivemode !== production || input.sessionLivemode !== production)
+    throw new Error('Stripe event and session modes do not match deployment')
+  if (production && !input.sessionId.startsWith('cs_live_'))
+    throw new Error('Expected live checkout session')
+  if (!production && !input.sessionId.startsWith('cs_test_'))
+    throw new Error('Expected test checkout session')
+  if (input.environment !== (production ? 'live' : 'neurokore-sandbox'))
+    throw new Error('Stripe checkout environment mismatch')
+  if (input.metadataOrderId !== input.clientReferenceId)
+    throw new Error('Stripe checkout order identity mismatch')
+}
+
 export async function stripe(
   path: string, secret: string, params?: URLSearchParams, idempotencyKey?: string,
   apiVersion = '2025-02-24.acacia',
