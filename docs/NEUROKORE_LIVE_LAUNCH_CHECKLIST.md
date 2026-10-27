@@ -66,3 +66,14 @@ Status 2026-10-27: **Stripe Sandbox E2E purchase succeeded. Not cleared for live
 - Supabase performance linter flagged multiple unrelated foreign keys without indexes and some per-row auth function evaluation in policies; tune based on real query patterns rather than blindly changing every table.
 - Production and Preview DB data is **not isolated yet**.
 - **CI/unit test execution and final plugin activation test are still required.** A Vercel successful TypeScript build is not a substitute for functional integration tests.
+
+
+## Order lookup and support inbox (current sandbox branch)
+
+- Admin **Plugin Orders** supports search by customer email, exact order UUID and licence UUID, plus payment-state filtering. Each linked paid licence can be explicitly revealed only by an administrator whose session passes the existing MFA check. Every reveal is audited in `plugin_admin_audit`; keys never appear by default in the order list.
+- Admin **Contact Inbox** stores validated first-party website contact submissions in the Supabase table `plugin_contact_requests`. It shows a count of purchased licences for the self-reported email address, links to a filtered order search, allows reply by email, and supports close/reopen. **An email match is not identity verification.** Verify identity before revealing or modifying a licence.
+- Supabase: contact table is RLS-enabled and requires service-role access; no table privileges for `anon` or `authenticated`. Order lookup is server-side and admin-only.
+- The contact handler still delivers through Resend. The support copy records whether the provider accepted or rejected the email, allowing recovery of cases when email fails.
+- Daily privacy retention deletes resolved support requests older than 180 days and all requests older than 365 days; align the public privacy notice with this processing and the retention policy before rolling the feature into production.
+- Support records begin accumulating only after this branch is deployed and traffic reaches it. Historic contact emails received before the change are **not** backfilled.
+- Merging `main` into this branch was performed using a Git merge commit with parents (feature branch, main), preserving all feature changes and the three intervening main commits. `main` was never modified.
