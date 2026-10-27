@@ -1371,7 +1371,7 @@ RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   o public.plugin_orders;
   locked_license uuid;
@@ -1402,7 +1402,7 @@ BEGIN
       jsonb_build_object('order_id', o.id, 'test_payment', true));
   RETURN true;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.plugin_publish_release(p_release uuid, p_admin uuid)
 RETURNS void
