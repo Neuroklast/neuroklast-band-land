@@ -32,7 +32,7 @@ export default async function ProtectedAdminLayout({
   }
 
   return (
-    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-950 text-zinc-100" data-admin-ui="true">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-950 text-zinc-100" data-admin-ui="true" data-lenis-prevent="">
       {/* Admin shell uses custom dark container (different from public PageLayout).
           Documented exception per AGENTS §6. All public pages use PageLayout. */}
       <AdminShell>{children}</AdminShell>
