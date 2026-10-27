@@ -1,7 +1,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { createHmac } from 'node:crypto'
-import { assertStripeKeyEnvironment, configureNeurokoreSandboxCheckout, verifyWebhook } from '../../lib/neurokore/stripe'
+import { assertStripeKeyEnvironment, assertStripeFulfillmentEnvironment, configureNeurokoreSandboxCheckout, verifyWebhook } from '../../lib/neurokore/stripe'
 describe('Stripe webhook trust boundary', () => {
   const raw = '{"type":"checkout.session.completed"}'
   const timestamp = 1900000000
@@ -60,5 +60,32 @@ describe('NEUROKORE Stripe Sandbox session configuration', () => {
     expect(params.get('custom_text[submit][message]')).toContain('withdrawal')
     expect(params.get('line_items[0][price]')).toBe('price_test_one_euro')
     expect(params.get('metadata[plugin_order]')).toBe('test-order')
+  })
+})
+
+describe('Paid Stripe webhook fulfilment isolation', () => {
+  const sandbox = {
+    eventLivemode: false, sessionLivemode: false,
+    sessionId: 'cs_test_a1example',
+    environment: 'neurokore-sandbox',
+    clientReferenceId: '123e4567-e89b-42d3-a456-426614174000',
+    metadataOrderId: '123e4567-e89b-42d3-a456-426614174000',
+  }
+  it('accepts the matching signed test event and fetched test session', () => {
+    expect(() => assertStripeFulfillmentEnvironment(sandbox, 'preview')).not.toThrow()
+  })
+  it('rejects cross-mode event, session and identifiers', () => {
+    expect(() => assertStripeFulfillmentEnvironment({ ...sandbox, eventLivemode: true }, 'preview')).toThrow()
+    expect(() => assertStripeFulfillmentEnvironment({ ...sandbox, sessionLivemode: true }, 'preview')).toThrow()
+    expect(() => assertStripeFulfillmentEnvironment({ ...sandbox, sessionId: 'cs_live_abc' }, 'preview')).toThrow()
+    expect(() => assertStripeFulfillmentEnvironment({ ...sandbox, environment: 'live' }, 'preview')).toThrow()
+    expect(() => assertStripeFulfillmentEnvironment({ ...sandbox, metadataOrderId: 'another-order' }, 'preview')).toThrow()
+  })
+  it('rejects sandbox events sent to Production and enforces live checkout matching', () => {
+    expect(() => assertStripeFulfillmentEnvironment(sandbox, 'production')).toThrow()
+    expect(() => assertStripeFulfillmentEnvironment({
+      ...sandbox, eventLivemode: true, sessionLivemode: true,
+      sessionId: 'cs_live_a1example', environment: 'live',
+    }, 'production')).not.toThrow()
   })
 })
