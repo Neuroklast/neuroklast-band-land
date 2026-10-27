@@ -40,9 +40,20 @@ describe('locale-detect', () => {
     expect(detectLocaleSync(supported)).toBe('ja')
   })
 
+  it('chooses German for German browsers when DE/EN are the public languages', () => {
+    vi.stubGlobal('navigator', { language: 'de-DE', languages: ['de-DE', 'en-US'] })
+    expect(detectLocaleSync(['en', 'de'])).toBe('de')
+  })
+
+  it('ignores an old language preference that is no longer public', () => {
+    localStorage.setItem('zd-locale', 'ja')
+    vi.stubGlobal('navigator', { language: 'en-US', languages: ['en-US'] })
+    expect(detectLocaleSync(['en', 'de'])).toBe('en')
+  })
+
   it('stays English when no storage even if browser is another language', () => {
     vi.stubGlobal('navigator', { language: 'es-MX', languages: ['es-MX', 'en'] })
-    expect(detectLocaleSync(supported)).toBe('en')
+    expect(detectLocaleSync(['en', 'de'])).toBe('en')
   })
 
   it('falls back to English when nothing matches', () => {
