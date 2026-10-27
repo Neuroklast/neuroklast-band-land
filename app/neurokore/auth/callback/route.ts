@@ -8,6 +8,16 @@ export const dynamic = 'force-dynamic'
 /** Compatibility with older Supabase PKCE links that already contain a code. */
 export async function GET(request: NextRequest) {
   const destination = new URL('/neurokore/account', origin())
+  // New branded email links carry a token hash. Never consume it in a GET:
+  // link scanners may visit this URL automatically.
+  const hash = request.nextUrl.searchParams.get('token_hash')
+  if (hash && /^[a-f0-9]{64}$/i.test(hash) && request.nextUrl.searchParams.get('type') === 'email') {
+    const confirm = new URL('/neurokore/auth/confirm', origin())
+    confirm.searchParams.set('token_hash', hash)
+    confirm.searchParams.set('type', 'email')
+    return NextResponse.redirect(confirm, { status: 303, headers: { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' } })
+  }
+
   const code = request.nextUrl.searchParams.get('code')
   if (!code || code.length > 2048) {
     destination.searchParams.set('auth', 'invalid')
