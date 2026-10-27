@@ -270,7 +270,7 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                 <ul className="list-disc space-y-2 pl-5 text-zinc-300">
                   <li>One licence covers two device activations.</li>
                   <li>Activation requires a short internet connection.</li>
-                  <li>Offline licence certificates can be renewed after 30 days.</li>
+                  <li>Purchased full licences work permanently offline. Compatible plugin versions may verify licence status in the background while online; only a confirmed revocation takes effect on the next launch.</li>
                 </ul>
               )}
               <div className="flex flex-col items-start gap-2">
