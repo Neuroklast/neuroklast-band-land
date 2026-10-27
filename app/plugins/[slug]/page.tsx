@@ -8,7 +8,8 @@ import { loadPublicProduct } from '@/lib/plugins/public-catalog'
 import { formatProductPrice, loadProductPriceForProduct } from '@/lib/plugins/price'
 import { CHANNEL_LABEL } from '@/lib/plugins/releases'
 import { availablePublicDownload } from '@/lib/plugins/public-download'
-import { isPluginSaleOpen, isNeurokoreSandboxCheckout } from '@/lib/neurokore/flags'
+import { isPluginSaleOpen, isNeurokoreSandboxPreview, sandboxCheckoutBlocker } from '@/lib/neurokore/flags'
+import { getApiSecret } from '@/lib/api-secrets'
 import { PurchasePanel } from './PurchasePanel'
 import { JsonLd } from '@/app/_components/public/JsonLd'
 import { getSiteOrigin } from '@/lib/og-share'
@@ -62,6 +63,12 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
     ? await loadProductPriceForProduct(product.id)
     : null
   const salesOpen = saleAllowed && product.pricing_mode === 'paid'
+  const sandboxPreview = isNeurokoreSandboxPreview() && product.slug === 'neurokore'
+  const sandboxBlocker = sandboxPreview ? sandboxCheckoutBlocker() : null
+  const sandboxMailReady = sandboxPreview ? Boolean(await getApiSecret('resend_api_key')) : null
+  const sandboxLicensingReady = sandboxPreview
+    ? Boolean(process.env.NEUROKORE_KEY_ENCRYPTION_SECRET && process.env.NEUROKORE_SIGNING_PRIVATE_KEY)
+    : null
 
   const canonicalUrl = absoluteUrl(getSiteOrigin(), pluginCanonicalPath(slug))
   const softwareSchema = buildSoftwareApplicationSchema({
@@ -96,10 +103,29 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
             <span className="text-zinc-200">{product.title}</span>
           </nav>
 
-          {isNeurokoreSandboxCheckout() && product.slug === 'neurokore' && (
-            <p role="status" className="border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-100">
-              Stripe Sandbox preview: payments are simulated. Test licences can be deleted by administrators.
-            </p>
+          {sandboxPreview && (
+            <section role="status" aria-label="Stripe Sandbox readiness"
+              className="space-y-2 border border-amber-700/60 bg-amber-950/30 p-4 text-sm text-amber-100">
+              <p className="font-semibold">NEUROKORE — Stripe Sandbox (test payments only)</p>
+              {sandboxBlocker === 'invalid-stripe-key' ? (
+                <p>Checkout locked: Preview must use a NEUROKLAST Stripe test secret key (sk_test_ or rk_test_), not a live key.</p>
+              ) : sandboxBlocker === 'sales-disabled' ? (
+                <p>Checkout locked: the Preview sales flag is off.</p>
+              ) : sandboxBlocker === 'missing-price' ? (
+                <p>Checkout locked: the EUR 1 sandbox Price ID is missing.</p>
+              ) : !price ? (
+                <p>Checkout locked: Stripe could not load the EUR 1 sandbox Price. Check the test key's account and permissions.</p>
+              ) : (
+                <p>Sandbox price verified: {formatProductPrice(price)}. No real charges.</p>
+              )}
+              {!sandboxLicensingReady && (
+                <p>Licence fulfillment is not ready: the existing encryption and signing keys must be configured for this Preview branch.</p>
+              )}
+              {!sandboxMailReady && (
+                <p>Purchase email is not ready: set a Resend API key for this Preview branch or provide access to the existing encrypted key.</p>
+              )}
+              <p>Test licences can be deleted by an administrator; demo download remains available.</p>
+            </section>
           )}
           <header className={
             'overflow-hidden border border-white/15 bg-zinc-950 ' +
