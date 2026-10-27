@@ -46,25 +46,25 @@ export const PRIVACY_STREAM: Record<LegalLocale, string> = {
 }
 
 export const INCOMPLETE_NOTICE: Record<LegalLocale, string> = {
-  en: 'Notice: Required operator details are incomplete. Please complete them under Admin → Legal & Privacy.',
-  de: 'Hinweis: Pflichtangaben im Impressum sind noch unvollständig. Bitte im Admin unter Legal & Privacy ergänzen.',
-  uk: 'Увага: обовʼязкові дані оператора неповні. Доповніть їх у Admin → Legal & Privacy.',
-  it: 'Avviso: i dati obbligatori dell’operatore sono incompleti. Completali in Admin → Legal & Privacy.',
-  es: 'Aviso: faltan datos obligatorios del operador. Complétalos en Admin → Legal & Privacy.',
-  pt: 'Aviso: os dados obrigatórios do operador estão incompletos. Complete-os em Admin → Legal & Privacy.',
-  ja: '注意: 運営者の必須情報が未記入です。Admin → Legal & Privacy で入力してください。',
-  ko: '안내: 운영자 필수 정보가 불완전합니다. Admin → Legal & Privacy에서 입력하세요.'
+  en: "The provider information is currently incomplete. Please contact us for any missing details.",
+  de: "Die Anbieterangaben sind derzeit nicht vollständig. Fehlende Angaben kannst du bei uns erfragen.",
+  uk: "Інформація про власника сайту наразі неповна. Відсутні відомості можна запитати у нас.",
+  it: "Le informazioni sul gestore del sito sono attualmente incomplete. Puoi richiedere i dati mancanti.",
+  es: "La información del titular del sitio está incompleta. Puedes solicitar los datos que faltan.",
+  pt: "As informações sobre o responsável pelo site estão incompletas. Podes solicitar os dados em falta.",
+  ja: "運営者情報の一部が不足しています。不足する情報はお問い合わせください。",
+  ko: "사이트 운영자 정보 일부가 누락되어 있습니다. 필요한 정보는 문의해 주세요.",
 }
 
 export const FIELD_LABEL: Record<LegalLocale, { phone: string; email: string; vat: string; postal: string; configureOperator: string; configureResponsible: string }> = {
-  en: { phone: 'Phone', email: 'Email', vat: 'VAT ID', postal: 'Postal address', configureOperator: 'Please configure operator details in the admin panel under Legal & Privacy.', configureResponsible: 'Please configure the responsible person in the admin panel.' },
-  de: { phone: 'Telefon', email: 'E-Mail', vat: 'USt-IdNr.', postal: 'Postanschrift', configureOperator: 'Bitte vervollständigen Sie die Betreiberangaben im Admin unter Legal & Privacy.', configureResponsible: 'Bitte verantwortliche Person im Admin hinterlegen.' },
-  uk: { phone: 'Телефон', email: 'Електронна пошта', vat: 'ІПН / VAT', postal: 'Поштова адреса', configureOperator: 'Будь ласка, заповніть дані оператора в Admin → Legal & Privacy.', configureResponsible: 'Будь ласка, вкажіть відповідальну особу в адмінці.' },
-  it: { phone: 'Telefono', email: 'E-mail', vat: 'P. IVA', postal: 'Indirizzo postale', configureOperator: 'Completa i dati dell’operatore in Admin → Legal & Privacy.', configureResponsible: 'Indica la persona responsabile nel pannello admin.' },
-  es: { phone: 'Teléfono', email: 'Correo', vat: 'NIF / IVA', postal: 'Dirección postal', configureOperator: 'Completa los datos del operador en Admin → Legal & Privacy.', configureResponsible: 'Configura la persona responsable en el panel de admin.' },
-  pt: { phone: 'Telefone', email: 'E-mail', vat: 'NIF / IVA', postal: 'Morada', configureOperator: 'Preencha os dados do operador em Admin → Legal & Privacy.', configureResponsible: 'Indique a pessoa responsável no painel de admin.' },
-  ja: { phone: '電話', email: 'メール', vat: 'VAT番号', postal: '所在地', configureOperator: 'Admin → Legal & Privacy で運営者情報を入力してください。', configureResponsible: '管理画面で責任者を設定してください。' },
-  ko: { phone: '전화', email: '이메일', vat: '부가세 ID', postal: '우편 주소', configureOperator: 'Admin → Legal & Privacy에서 운영자 정보를 입력하세요.', configureResponsible: '관리자 화면에서 책임자를 설정하세요.' },
+  en: { phone: 'Phone', email: 'Email', vat: 'VAT ID', postal: 'Postal address', configureOperator: 'Provider details are currently unavailable.', configureResponsible: 'Editorial contact details are currently unavailable.' },
+  de: { phone: 'Telefon', email: 'E-Mail', vat: 'USt-IdNr.', postal: 'Postanschrift', configureOperator: 'Anbieterangaben sind derzeit nicht verfügbar.', configureResponsible: 'Redaktionelle Kontaktangaben sind derzeit nicht verfügbar.' },
+  uk: { phone: 'Телефон', email: 'Електронна пошта', vat: 'ІПН / VAT', postal: 'Поштова адреса', configureOperator: 'Відомості про власника тимчасово недоступні.', configureResponsible: 'Редакційні контакти тимчасово недоступні.' },
+  it: { phone: 'Telefono', email: 'E-mail', vat: 'P. IVA', postal: 'Indirizzo postale', configureOperator: 'I dati del gestore non sono attualmente disponibili.', configureResponsible: 'I dati del responsabile editoriale non sono disponibili.' },
+  es: { phone: 'Teléfono', email: 'Correo', vat: 'NIF / IVA', postal: 'Dirección postal', configureOperator: 'Los datos del titular no están disponibles por ahora.', configureResponsible: 'Los datos del responsable editorial no están disponibles.' },
+  pt: { phone: 'Telefone', email: 'E-mail', vat: 'NIF / IVA', postal: 'Morada', configureOperator: 'Os dados do responsável pelo site não estão disponíveis.', configureResponsible: 'Os contactos editoriais não estão disponíveis.' },
+  ja: { phone: '電話', email: 'メール', vat: 'VAT番号', postal: '所在地', configureOperator: '運営者情報は現在ご利用いただけません。', configureResponsible: '編集責任者の連絡先は現在ご利用いただけません。' },
+  ko: { phone: '전화', email: '이메일', vat: '부가세 ID', postal: '우편 주소', configureOperator: '운영자 정보를 현재 이용할 수 없습니다.', configureResponsible: '편집 책임자 연락처를 현재 이용할 수 없습니다.' },
 }
 
 export interface LegalCopySection {
