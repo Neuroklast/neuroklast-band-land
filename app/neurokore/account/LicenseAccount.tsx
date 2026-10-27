@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveLegalLocale } from '@/lib/legal-templates'
 import { ACCOUNT_COPY } from '@/lib/plugins/account-copy'
+import { CustomerSignIn } from '@/components/neurokore/CustomerSignIn'
 
 const accountSchema = z.object({
   email: z.string(),
@@ -23,9 +24,6 @@ export function LicenseAccount() {
   const language = resolveLegalLocale(locale)
   const copy = ACCOUNT_COPY[language]
   const [account, setAccount] = useState<Account | null>(null)
-  const [email, setEmail] = useState('')
-  const [token, setToken] = useState('')
-  const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [revealed, setRevealed] = useState<Record<string, boolean>>({})
@@ -50,22 +48,6 @@ export function LicenseAccount() {
     // Load the current session when the component is mounted.
   }, [])
 
-  async function authenticate() {
-    setBusy(true)
-    setMessage('')
-    try {
-      const response = await fetch('/api/neurokore/auth', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, ...(sent ? { token } : {}) }),
-      })
-      if (!response.ok) throw new Error(copy.authError)
-      if (sent) { await refresh(); setToken('') }
-      else { setSent(true); setMessage(copy.checkEmail) }
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : copy.authError)
-    } finally { setBusy(false) }
-  }
-
   async function signOut() {
     setBusy(true)
     setMessage('')
@@ -74,9 +56,6 @@ export function LicenseAccount() {
       if (!response.ok) throw new Error(copy.authError)
       setAccount(null)
       setRevealed({})
-      setSent(false)
-      setToken('')
-      setEmail('')
     } catch (error) { setMessage(error instanceof Error ? error.message : copy.authError) }
     finally { setBusy(false) }
   }
@@ -99,23 +78,14 @@ export function LicenseAccount() {
         </Link>
       </p>
       {!account ? (
-        <form className="space-y-4" onSubmit={event => { event.preventDefault(); void authenticate() }}>
-          <label className="block space-y-1">{copy.email}
-            <input required type="email" autoComplete="email" className={control}
-              value={email} disabled={sent || busy} onChange={event => setEmail(event.target.value)} />
-          </label>
-          {sent && <label className="block space-y-1">{copy.code}
-            <input required autoComplete="one-time-code" inputMode="numeric" className={control}
-              value={token} onChange={event => setToken(event.target.value)} />
-          </label>}
-          <button className={button} disabled={busy}>
-            {busy ? copy.sending : sent ? copy.signIn : copy.sendCode}
-          </button>
-          {sent && <button className={button + ' ml-3'} type="button" disabled={busy}
-            onClick={() => { setSent(false); setToken(''); setMessage('') }}>
-            {copy.changeEmail}
-          </button>}
-        </form>
+        <div className="space-y-4 border border-white/15 bg-zinc-950 p-5">
+          <p className="text-sm text-zinc-300">
+            {language === 'de'
+              ? 'Melde dich ohne Passwort an. Wir schicken dir einen sicheren Anmeldelink per E-Mail.'
+              : 'Sign in without a password. We will email you a secure one-time link.'}
+          </p>
+          <CustomerSignIn />
+        </div>
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
