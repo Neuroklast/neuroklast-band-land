@@ -20,7 +20,7 @@ export const COMMERCE_ACTIONS: Record<LegalLocale, ActionCopy> = {
     account: 'Lizenz kaufen', missingAccount: 'Für den Kauf benötigst du ein Kundenkonto. Melde dich mit E-Mail-Code an und kehre anschließend zurück.',
     pricing: 'Der angezeigte Preis enthält anfallende Steuern. Der verbindliche Gesamtbetrag erscheint vor der Zahlung.',
     reviewDocs: 'Ich habe AGB, Lizenzbedingungen und Widerrufsbelehrung gelesen. Dadurch verzichte ich nicht auf das gesetzliche Widerrufsrecht.',
-    nextPayment: 'Weiter zur Zahlungsübersicht', total: 'Die zahlungspflichtige Bestellung erfolgt erst im anschließenden Checkout.',
+    nextPayment: 'Weiter zur Zahlungsübersicht', total: 'Die zahlungspflichtige Bestellung erfolgt erst auf der folgenden Zahlungsseite.',
   },
   en: {
     start: 'Withdraw from contract', intro: 'Submit an online withdrawal notice without signing in. You do not need to give a reason.',
@@ -33,7 +33,7 @@ export const COMMERCE_ACTIONS: Record<LegalLocale, ActionCopy> = {
     account: 'Buy licence', missingAccount: 'A customer account is needed for the licence. Sign in using your email code and return here.',
     pricing: 'The displayed price includes applicable taxes. The final total is shown before payment.',
     reviewDocs: 'I have read the Terms, licence terms and withdrawal notice. This does not waive my statutory withdrawal right.',
-    nextPayment: 'Continue to payment overview', total: 'The payment obligation arises only at the final checkout step.',
+    nextPayment: 'Continue to payment overview', total: 'You only place a binding order on the final payment page.',
   },
   uk: {
     start: 'Відмовитися від договору', intro: 'Надішліть заяву про відмову онлайн без входу в обліковий запис. Причину зазначати не потрібно.',

@@ -9,7 +9,7 @@ import {
   getLegalCompleteness,
   isLegalConfigComplete,
 } from '@/lib/legal-content'
-import { LEGAL_LOCALES, NOTICE_COPY, NOTICE_DOC_TITLE, PRIVACY_DOC_TITLE } from '@/lib/legal-i18n'
+import { LEGAL_LOCALES, NOTICE_COPY, NOTICE_DOC_TITLE, PRIVACY_DOC_TITLE, INCOMPLETE_NOTICE } from '@/lib/legal-i18n'
 import {
   buildLegalNoticeSections,
   buildPrivacyPolicySections,
@@ -152,13 +152,12 @@ describe('buildPrivacyPolicySections', () => {
     const sections = buildPrivacyPolicySections(parseLegalConfig(sampleConfig))
     const body = sections.map((s) => s.paragraphs.join(' ')).join(' ')
     expect(body).toMatch(/TDDDG|Telecommunications Digital Services/)
-    expect(body).toMatch(/does not offer a newsletter/i)
+    expect(body).toMatch(/do not currently offer an email newsletter/i)
     expect(body).not.toContain('double opt-in')
     expect(sections.some((s) => s.id === 'news')).toBe(true)
-    expect(body).toMatch(/self-hosted/i)
-    expect(body).toMatch(/JetBrains Mono/)
+    expect(body).toMatch(/fonts are loaded from our own website/i)
     expect(body).toMatch(/90 days/)
-    expect(body).toMatch(/rate-limited/i)
+    expect(body).toMatch(/protect the form from spam/i)
   })
 
   it('provides every software-commerce privacy disclosure in all eight languages', () => {
@@ -186,11 +185,24 @@ describe('buildPrivacyPolicySections', () => {
     expect(german).toContain('90 Tagen')
   })
 
+  it('does not publish internal implementation details in any default legal policy', () => {
+    const config = parseLegalConfig(sampleConfig)
+    for (const locale of LEGAL_LOCALES) {
+      const body = buildPrivacyPolicySections(config, locale)
+        .map(section => [section.title, ...section.paragraphs].join(' '))
+        .join(' ')
+      expect(body, locale).not.toMatch(/localStorage|IndexedDB|HttpOnly|analytics_events|eu-west-2|GitHub Releases API|Cloudflare R2|Admin →|admin panel|\\bwebhook\\b|\\bbackend\\b/i)
+      expect(INCOMPLETE_NOTICE[locale], locale).not.toMatch(/Admin →|admin panel|адмінці|管理画面|관리자 화면/i)
+      expect(body, locale).toContain('Stripe')
+      expect(body, locale).toContain('Resend')
+    }
+  })
+
   it('builds German privacy sections', () => {
     const sections = buildPrivacyPolicySections(parseLegalConfig(sampleConfig), 'de')
     const body = sections.map((s) => s.paragraphs.join(' ')).join(' ')
     expect(body).toMatch(/Datenschutz|personenbezogenen/)
-    expect(body).toMatch(/self-hosted|next\/font|JetBrains Mono/)
+    expect(body).toMatch(/Schriftarten der Website/)
     expect(sections.find((s) => s.id === 'rights')?.title).toMatch(/Rechte/)
   })
 })
