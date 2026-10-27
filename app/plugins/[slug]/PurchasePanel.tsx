@@ -7,6 +7,7 @@ import { resolveLegalLocale } from '@/lib/legal-templates'
 import { COMMERCE_ACTIONS } from '@/lib/commerce-actions-i18n'
 import { COMMERCE_LEGAL_COPY } from '@/lib/commerce-legal-copy'
 import { localizedLegalPath } from '@/lib/legal-routes'
+import { CustomerSignIn } from '@/components/neurokore/CustomerSignIn'
 
 export function PurchasePanel({
   slug, productTitle, price, recurring,
@@ -70,7 +71,18 @@ export function PurchasePanel({
       ) : signedIn === null ? (
         <p role="status">Loading…</p>
       ) : !signedIn ? (
-        <p>{copy.missingAccount} <Link className="underline" href="/neurokore/account">{copy.account}</Link>.</p>
+        <div className="space-y-4 border-t border-white/15 pt-5">
+          <h3 className="text-lg font-semibold">1. {language === 'de' ? 'Mit E-Mail anmelden' : 'Sign in with email'}</h3>
+          <p className="text-sm text-zinc-300">
+            {language === 'de'
+              ? 'Gib deine E-Mail-Adresse ein. Du erhältst einen einmaligen Anmeldelink und kannst danach mit dem Kauf fortfahren. Kein Passwort erforderlich.'
+              : 'Enter your email to get a one-time sign-in link. No password needed. Continue your purchase once signed in.'}
+          </p>
+          <CustomerSignIn />
+          <Link className="inline-block text-sm text-zinc-300 underline underline-offset-4" href="/neurokore/account">
+            {language === 'de' ? 'Bereits Kunde? Meine Lizenzen öffnen' : 'Already a customer? Open my licences'}
+          </Link>
+        </div>
       ) : (
         <>
           <label className="flex cursor-pointer items-start gap-3 text-sm">
