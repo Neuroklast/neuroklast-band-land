@@ -1199,7 +1199,7 @@ CREATE INDEX IF NOT EXISTS plugin_contact_requests_pending_idx
   ON public.plugin_contact_requests (created_at DESC) WHERE closed_at IS NULL;
 ALTER TABLE public.plugin_contact_requests ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.plugin_contact_requests FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT, UPDATE ON TABLE public.plugin_contact_requests TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.plugin_contact_requests TO service_role;
 CREATE INDEX IF NOT EXISTS plugin_orders_email_lookup_idx ON public.plugin_orders (lower(email), created_at DESC);
 
 CREATE TABLE IF NOT EXISTS public.plugin_releases (
