@@ -21,7 +21,7 @@ describe('localized B2C documents', () => {
       const plainText = COMMERCE_PRIVACY[language].paragraphs.join(' ')
       expect(plainText).toContain('Stripe')
       expect(plainText).toContain('Resend')
-      expect(plainText).not.toMatch(/localStorage|IndexedDB|HttpOnly|webhook|Supabase|API|backend/i)
+      expect(plainText).not.toMatch(/localStorage|IndexedDB|HttpOnly|webhook|Supabase|\bAPI\b|backend/i)
     })
   }
 })
