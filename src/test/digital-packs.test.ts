@@ -64,7 +64,7 @@ describe('digital entitlement trust boundaries',()=>{
   it('does not expose downloads from the public R2 media bucket',()=>{
     const code=text('lib/digital-packs/storage.ts')
     expect(code).toContain('R2_BUCKET_DIGITAL_PRODUCTS')
-    expect(code).toContain('R2_BUCKET_MEDIA')
+    expect(code).toContain('MEDIA_BUCKET') // resolved from canonical constants, not duplicated env lookups
     expect(code).toContain('expiresIn: 60')
   })
 })
