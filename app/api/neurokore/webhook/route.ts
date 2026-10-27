@@ -3,7 +3,7 @@ import { getApiSecret } from '@/lib/api-secrets'
 import { loadLegalConfig, formatServiceAddress } from '@/lib/legal-content'
 import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
 import { db, json, origin, required } from '@/lib/neurokore/server'
-import { stripe, verifyWebhook } from '@/lib/neurokore/stripe'
+import { assertStripeFulfillmentEnvironment, stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 import { COMMERCE_LEGAL_COPY, commerceSections } from '@/lib/commerce-legal-copy'
 import { contractDocumentText, contractEmailText, contractEmailHtml } from '@/lib/neurokore/email-format'
 import { WITHDRAWAL_COPY } from '@/lib/legal-withdrawal-i18n'
@@ -15,6 +15,7 @@ export const runtime = 'nodejs'
 
 const sessionSchema = z.object({
   id: z.string(),
+  livemode: z.boolean(),
   mode: z.literal('payment'),
   payment_status: z.literal('paid'),
   client_reference_id: z.uuid(),
@@ -22,7 +23,7 @@ const sessionSchema = z.object({
   customer_email: z.email(),
   amount_total: z.number().int().nonnegative(),
   currency: z.string().min(3).max(3),
-  metadata: z.object({ locale: z.enum(LEGAL_LOCALES).optional(), terms_version: z.string().optional() }).nullable().optional(),
+  metadata: z.object({ locale: z.enum(LEGAL_LOCALES).optional(), terms_version: z.string().optional(), environment: z.string().optional(), plugin_order: z.uuid().optional() }).nullable().optional(),
   line_items: z.object({
     has_more: z.literal(false),
     data: z.array(z.object({
@@ -140,7 +141,7 @@ export async function POST(request: Request) {
     const raw = Buffer.concat(chunks).toString('utf8')
     try { verifyWebhook(raw, request.headers.get('stripe-signature') || '', required('STRIPE_WEBHOOK_SECRET')) }
     catch { return json({ error: 'Invalid signature' }, 400) }
-    const event = z.object({ type: z.string(), data: z.object({ object: z.record(z.string(), z.unknown()) }) })
+    const event = z.object({ type: z.string(), livemode: z.boolean(), data: z.object({ object: z.record(z.string(), z.unknown()) }) })
       .parse(JSON.parse(raw))
     if (!['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type))
       return json({ received: true })
@@ -149,6 +150,11 @@ export async function POST(request: Request) {
     if (event.data.object.payment_status !== 'paid') return json({ received: true })
     const session = sessionSchema.parse(await stripe(
       'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY')))
+    assertStripeFulfillmentEnvironment({
+      eventLivemode: event.livemode, sessionLivemode: session.livemode, sessionId: session.id,
+      environment: session.metadata?.environment, clientReferenceId: session.client_reference_id,
+      metadataOrderId: session.metadata?.plugin_order,
+    })
     const client = db()
     const orderResult = await client.from('plugin_orders')
       .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version,test_deleted_at')
