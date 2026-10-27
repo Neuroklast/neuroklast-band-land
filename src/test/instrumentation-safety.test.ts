@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 describe('production instrumentation safety', () => {
   it('does not execute schema migration in the Next.js startup hook', () => {
     const bootstrap = readFileSync(join(process.cwd(), 'instrumentation.ts'), 'utf8')
-    expect(bootstrap).not.toMatch(/(?:await|void)\\s+runProductionDeploySchemaApply\\s*\\(/)
-    expect(bootstrap).not.toMatch(/import\\s*\\(\\s*['"]@\\/lib\\/schema-apply-on-deploy['"]\\s*\\)/)
+    expect(bootstrap.includes('runProductionDeploySchemaApply(')).toBe(false)
+    expect(bootstrap.includes('schema-apply-on-deploy')).toBe(false)
   })
 })
