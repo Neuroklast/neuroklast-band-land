@@ -129,7 +129,8 @@ export async function POST(request: Request, context: RouteContext) {
       configureNeurokoreSandboxCheckout(params)
     }
     const session = z.object({ id: z.string(), url: z.url() }).parse(
-      await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id))
+      await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id,
+        isNeurokoreSandboxCheckout() ? '2026-04-22.dahlia' : undefined))
     if (new URL(session.url).hostname !== 'checkout.stripe.com') throw new Error('Invalid checkout')
     const saved = await client.from('plugin_orders').update({ stripe_session: session.id }).eq('id', id)
     if (saved.error) throw saved.error
