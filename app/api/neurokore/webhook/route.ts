@@ -171,8 +171,27 @@ export async function POST(request: Request) {
     }).parse(orderResult.data)
     // A wiped sandbox test order must never produce another licence or email.
     if (order.test_deleted_at) return json({ received: true })
-    if (order.stripe_session !== session.id || order.email !== session.customer_email.toLowerCase() ||
+    if (order.email !== session.customer_email.toLowerCase() ||
       order.price_id !== session.line_items.data[0].price.id) throw new Error('Order mismatch')
+
+    // Recover a paid checkout when Stripe successfully created the Session but
+    // Vercel crashed before persisting its ID. Only a signature-verified paid
+    // session with matching order metadata/email/price may claim the empty slot.
+    if (order.stripe_session === null) {
+      const claim = await client.from('plugin_orders')
+        .update({ stripe_session: session.id })
+        .eq('id', order.id).is('stripe_session', null).is('test_deleted_at', null)
+        .select('id').maybeSingle()
+      if (claim.error) throw claim.error
+      if (!claim.data) {
+        const current = await client.from('plugin_orders')
+          .select('stripe_session,test_deleted_at').eq('id', order.id).single()
+        if (current.error || current.data?.stripe_session !== session.id || current.data?.test_deleted_at)
+          throw new Error('Checkout session conflict')
+      }
+    } else if (order.stripe_session !== session.id) {
+      throw new Error('Checkout session mismatch')
+    }
 
     const key = newKey()
     const { data: fulfilledId, error } = await client.rpc('plugin_fulfill', {
