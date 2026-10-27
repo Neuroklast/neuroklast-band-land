@@ -7,6 +7,8 @@ import { configureNeurokoreSandboxCheckout, stripe } from '@/lib/neurokore/strip
 import { loadLegalConfig, getLegalCompleteness } from '@/lib/legal-content'
 import { getApiSecret } from '@/lib/api-secrets'
 import { COMMERCE_TERMS_VERSION } from '@/lib/commerce-version'
+import { commerceSections } from '@/lib/commerce-legal-copy'
+import { contractDocumentText } from '@/lib/neurokore/email-format'
 
 export const runtime = 'nodejs'
 
@@ -37,6 +39,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       id: orderId, pack_id: pack.id, user_id: buyer.id, email: buyer.email,
       amount_cents: pack.price_cents, currency: 'eur',
       archive_key: pack.archive_key, archive_filename: pack.archive_filename,
+      pack_title: pack.title,
+      terms_snapshot: contractDocumentText(commerceSections('terms','en',legal.termsText)),
+      license_snapshot: pack.license_notes,
+      terms_version: COMMERCE_TERMS_VERSION,
     })
     if (inserted.error) throw inserted.error
 
