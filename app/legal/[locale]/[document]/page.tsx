@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { LegalDocumentContent } from '@/app/_components/public/LegalDocumentContent'
 import { LEGAL_LOCALES, NOTICE_DOC_TITLE, PRIVACY_DOC_TITLE, INCOMPLETE_NOTICE } from '@/lib/legal-i18n'
@@ -10,7 +10,7 @@ import { buildLegalNoticeSections, buildPrivacyPolicySections } from '@/lib/lega
 import { getLegalCompleteness, loadLegalConfig, DEFAULT_LEGAL_CONFIG } from '@/lib/legal-content'
 import { createPublicClient } from '@/lib/supabaseServer'
 import {
-  LEGAL_DOCUMENTS, validLegalLocale, validLegalDocument, localizedLegalPath, legalLanguageAlternates,
+  LEGAL_DOCUMENTS, PUBLIC_LEGAL_LOCALES, validLegalLocale, validLegalDocument, localizedLegalPath, legalLanguageAlternates,
 } from '@/lib/legal-routes'
 
 export const revalidate = 60
@@ -19,7 +19,7 @@ type Params = { locale: string; document: string }
 const siteOrigin = 'https://neuroklast.net'
 
 export function generateStaticParams() {
-  return LEGAL_LOCALES.flatMap(locale => LEGAL_DOCUMENTS.map(document => ({ locale, document })))
+  return PUBLIC_LEGAL_LOCALES.flatMap(locale => LEGAL_DOCUMENTS.map(document => ({ locale, document })))
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -49,7 +49,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function LocalizedLegalPage({ params }: { params: Promise<Params> }) {
   const { locale, document } = await params
-  if (!validLegalLocale(locale) || !validLegalDocument(document)) notFound()
+  if (!validLegalDocument(document)) notFound()
+  // Retire previously published translations without breaking old bookmarks.
+  if (!validLegalLocale(locale)) {
+    if ((LEGAL_LOCALES as readonly string[]).includes(locale)) {
+      permanentRedirect(localizedLegalPath('en', document))
+    }
+    notFound()
+  }
   let config = DEFAULT_LEGAL_CONFIG
   try { config = await loadLegalConfig(createPublicClient()) } catch { /* still render fallback */ }
   const translations = COMMERCE_LEGAL_COPY[locale]
@@ -74,7 +81,7 @@ export default async function LocalizedLegalPage({ params }: { params: Promise<P
     <LegalPageShell>
       <div lang={locale} className="bg-black text-white">
         <nav aria-label="Legal language versions" className="mx-auto flex max-w-3xl flex-wrap gap-3 px-4 pt-24 sm:px-6">
-          {LEGAL_LOCALES.map(lang => (
+          {PUBLIC_LEGAL_LOCALES.map(lang => (
             <Link key={lang} href={localizedLegalPath(lang, document)}
               hrefLang={lang} lang={lang} aria-current={lang === locale ? 'page' : undefined}
               className={'min-h-11 border px-3 py-3 text-xs font-mono ' +
