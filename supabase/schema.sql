@@ -1383,7 +1383,7 @@ BEGIN
   IF NOT FOUND OR o.test_deleted_at IS NOT NULL
     OR o.price_id <> 'price_1UV6RMEP3z8hPITngA11NGBL'
     OR o.stripe_session IS NULL
-    OR o.stripe_session NOT LIKE 'cs_test_%'
+    OR left(o.stripe_session, 8) <> 'cs_test_'
   THEN
     RAISE EXCEPTION 'Only NEUROKORE Stripe Sandbox purchases can be deleted';
   END IF;
