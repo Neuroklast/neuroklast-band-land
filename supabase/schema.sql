@@ -4952,6 +4952,11 @@ GRANT SELECT, INSERT, DELETE ON TABLE public.plugin_beta_diagnostics TO service_
   confirmation_sent_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.digital_pack_orders
+  ADD COLUMN IF NOT EXISTS pack_title text,
+  ADD COLUMN IF NOT EXISTS terms_snapshot text,
+  ADD COLUMN IF NOT EXISTS license_snapshot text,
+  ADD COLUMN IF NOT EXISTS terms_version text;
 CREATE INDEX IF NOT EXISTS digital_pack_orders_user_idx
   ON public.digital_pack_orders (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS digital_pack_orders_pack_status_idx
