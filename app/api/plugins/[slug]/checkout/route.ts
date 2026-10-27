@@ -12,7 +12,7 @@ import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
 import { signingKeyFor } from '@/lib/plugins/signing'
 import { slugSchema } from '@/lib/plugins/releases'
 import { hasSellableRelease, saleReleaseSchema } from '@/lib/plugins/sale-readiness'
-import { stripe } from '@/lib/neurokore/stripe'
+import { configureNeurokoreSandboxCheckout, stripe } from '@/lib/neurokore/stripe'
 import { loadLegalConfig, getLegalCompleteness } from '@/lib/legal-content'
 
 export const runtime = 'nodejs'
@@ -125,6 +125,9 @@ export async function POST(request: Request, context: RouteContext) {
       'consent_collection[terms_of_service]': 'required',
       'custom_text[submit][message]': 'Terms: ' + origin() + localizedLegalPath(locale, 'terms') + ' | Withdrawal: ' + origin() + localizedLegalPath(locale, 'withdrawal-policy'),
     })
+    if (isNeurokoreSandboxCheckout() && product.slug === 'neurokore') {
+      configureNeurokoreSandboxCheckout(params)
+    }
     const session = z.object({ id: z.string(), url: z.url() }).parse(
       await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id))
     if (new URL(session.url).hostname !== 'checkout.stripe.com') throw new Error('Invalid checkout')
