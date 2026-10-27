@@ -126,6 +126,7 @@ async function sendContractConfirmation(
 
 /** Fulfil once. A temporary email failure triggers a Stripe retry without duplicating the licence. */
 export async function POST(request: Request) {
+  let stage = 'read-payload'
   try {
     const reader = request.body?.getReader()
     if (!reader) return json({ error: 'Missing body' }, 400)
@@ -139,8 +140,10 @@ export async function POST(request: Request) {
       chunks.push(next.value)
     }
     const raw = Buffer.concat(chunks).toString('utf8')
+    stage = 'signature-check'
     try { verifyWebhook(raw, request.headers.get('stripe-signature') || '', required('STRIPE_WEBHOOK_SECRET')) }
     catch { return json({ error: 'Invalid signature' }, 400) }
+    stage = 'event-parse'
     const event = z.object({ type: z.string(), livemode: z.boolean(), data: z.object({ object: z.record(z.string(), z.unknown()) }) })
       .parse(JSON.parse(raw))
     if (!['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type))
@@ -148,6 +151,7 @@ export async function POST(request: Request) {
 
     const sessionId = z.string().regex(/^cs_[a-zA-Z0-9_]+$/).parse(event.data.object.id)
     if (event.data.object.payment_status !== 'paid') return json({ received: true })
+    stage = 'stripe-session-verify'
     const session = sessionSchema.parse(await stripe(
       'checkout/sessions/' + sessionId + '?expand[]=line_items', required('STRIPE_SECRET_KEY')))
     assertStripeFulfillmentEnvironment({
@@ -156,6 +160,7 @@ export async function POST(request: Request) {
       metadataOrderId: session.metadata?.plugin_order,
     })
     const client = db()
+    stage = 'order-lookup'
     const orderResult = await client.from('plugin_orders')
       .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version,test_deleted_at')
       .eq('id', session.client_reference_id).single()
@@ -178,6 +183,7 @@ export async function POST(request: Request) {
     // Vercel crashed before persisting its ID. Only a signature-verified paid
     // session with matching order metadata/email/price may claim the empty slot.
     if (order.stripe_session === null) {
+      stage = 'order-link-recovery'
       const claim = await client.from('plugin_orders')
         .update({ stripe_session: session.id })
         .eq('id', order.id).is('stripe_session', null).is('test_deleted_at', null)
@@ -193,6 +199,7 @@ export async function POST(request: Request) {
       throw new Error('Checkout session mismatch')
     }
 
+    stage = 'licence-fulfilment'
     const key = newKey()
     const { data: fulfilledId, error } = await client.rpc('plugin_fulfill', {
       p_order: order.id, p_session: session.id, p_intent: session.payment_intent,
@@ -202,15 +209,22 @@ export async function POST(request: Request) {
     if (!fulfilledId) return json({ received: true })
 
     if (!order.confirmation_sent_at) {
+      stage = 'confirmation-delivery'
       await sendContractConfirmation(client, order, session)
+      stage = 'confirmation-record'
       const saved = await client.from('plugin_orders')
         .update({ confirmation_sent_at: new Date().toISOString() })
         .eq('id', order.id).is('confirmation_sent_at', null)
       if (saved.error) throw saved.error
     }
     return json({ received: true })
-  } catch {
-    // Fail closed so Stripe retries; never log secrets or customer data.
+  } catch (error) {
+    // Stripe retries on 5xx. Diagnose the failing stage without recording
+    // messages, payloads, keys, e-mail addresses, tokens or request IDs.
+    console.error('[neurokore-fulfilment] retryable failure', {
+      stage,
+      errorType: error instanceof Error ? error.name : 'unknown',
+    })
     return json({ error: 'Fulfillment or customer confirmation pending' }, 500)
   }
 }
