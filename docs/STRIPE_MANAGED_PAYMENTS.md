@@ -1,6 +1,6 @@
 # Stripe Managed Payments launch configuration (NEUROKLAST)
 
-Status: Checkout code prepared, **not activated**. NEUROKLAST is currently treated as a German small business under § 19 UStG according to the operator. The seller must verify that status and any international or B2B obligations with a tax professional. Stripe's merchant-of-record coverage does not replace the seller's income-tax and accounting obligations.
+Status (2026-10-27): **Managed Payments live account verified**, checkout code prepared, live storefront sales still closed. NEUROKLAST is currently treated as a German small business under § 19 UStG according to the operator. The seller must verify that status and any international or B2B obligations with a tax professional. Stripe's merchant-of-record coverage does not replace the seller's income-tax and accounting obligations.
 
 ## Required manual Stripe Dashboard action
 
@@ -8,7 +8,7 @@ Status: Checkout code prepared, **not activated**. NEUROKLAST is currently treat
 2. Open https://dashboard.stripe.com/settings/managed-payments and complete Stripe's eligibility review and legal onboarding. Accept the terms yourself. The API integration cannot accept the merchant agreement for you.
 3. Configure the public terms and privacy links under https://dashboard.stripe.com/settings/checkout and verify the customer support address. Managed Payments invoices and receipts are issued by Stripe/Link, not the seller's optional Checkout invoice_creation integration.
 4. Confirm downloadable software NEUROKORE has an eligible product tax code. The present product is classified `txcd_10202000` and the 59.00 EUR one-off Price has inclusive tax behavior, but **the category should still be confirmed for the intended customer base**. Only use Stripe-eligible downloadable-digital product tax codes.
-5. Obtain confirmation in Stripe that Managed Payments is enabled before setting `STRIPE_MANAGED_PAYMENTS_ENABLED=true` in **Vercel Production**.
+5. Completed 2026-10-27: confirmed Managed Payments in the live NEUROKLAST account with an unpaid EUR 59.00 Checkout Session (`managed_payments.enabled=true`) and configured `STRIPE_MANAGED_PAYMENTS_ENABLED=true` in Vercel Production. No real charge was made.
 
 ## Website integration
 
@@ -18,7 +18,7 @@ Status: Checkout code prepared, **not activated**. NEUROKLAST is currently treat
 - The previous NEUROKLAST sandbox path remains non-Merchant-of-Record for continuity of its existing EUR 1 test. It does not verify Managed Payments end to end.
 - Verified 2026-10-27: a separate un-paid Stripe Sandbox Checkout Session **was successfully created** with `managed_payments.enabled=true`, test amount EUR 1, an eligible software tax code, and `livemode=false`. This proves Checkout Session creation, **not** a paid transaction, receipt, webhook, or licence fulfilment. Complete a separate **Stripe sandbox Managed Payments** checkout test against an isolated Preview database before live launch.
 - Pack code: `sample_pack` uses eligible downloaded digital-audio tax code `txcd_10401100`; `preset_pack` uses eligible generic electronically-supplied digital-services code `txcd_10000000`. Confirm both product classifications with the tax adviser, especially if different licensing, subscription, or usage rights apply.
-- No production sales flags, Vercel environment settings, Stripe account agreements, tax registration records, or real customer payments are changed by this PR.
+- This PR does not toggle production sales flags, modify Stripe tax registrations or process payments. The production Managed Payments Vercel environment variable was separately configured after independent live API verification.
 
 ## Accounting and pricing implications
 
@@ -28,9 +28,9 @@ Managed Payments has an **additional 3.5% fee on the total transaction (includin
 
 ## Release checklist
 
-- [ ] Stripe live Dashboard: Managed Payments activation and legal terms accepted by operator
+- [x] Stripe live Dashboard: Managed Payments activation reported by operator and independently confirmed by an unpaid live Checkout Session
 - [ ] Dashboard: checkout Terms/Privacy URLs, product classification, merchant/contact details checked
-- [ ] Vercel production: verified dedicated live credentials, `STRIPE_MANAGED_PAYMENTS_ENABLED=true`
+- [x] Vercel production: `STRIPE_MANAGED_PAYMENTS_ENABLED=true` configured; live Checkout Session confirmed. Verify live credentials continue to point to the NEUROKLAST account during website E2E.
 - [ ] Dedicated isolated Stripe test/Preview environment: actual Managed Payments session and payment, tax, generated receipt and correct entitlement tested
 - [ ] Website: valid legal/withdrawal content, no conflicting promises about who issues invoices, fulfilment email explicitly distinguishable from Stripe invoice
 - [ ] Reconcile: Webhook paid/refunded/disputed handling and licence/download revocation with Managed Payments
