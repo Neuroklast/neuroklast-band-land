@@ -18,6 +18,7 @@ const inputSchema = z.discriminatedUnion('action', [
   }).strict(),
   z.object({ action: z.literal('reveal'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('revoke'), id: z.uuid() }).strict(),
+  z.object({ action: z.literal('delete_sandbox'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('reset'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('remove_device'), id: z.uuid(), device: z.string().regex(/^v2:[a-f0-9]{64}$/) }).strict(),
 ])
@@ -53,7 +54,7 @@ export async function GET(request: Request, context: RouteContext) {
     const client = db()
     if (!(await loadProduct(client, id))) return json({ error: 'Plugin not found.' }, 404)
     const { data, error } = await client.from('plugin_licenses')
-      .select('id,email,tier,license_format,expires_at,revoked_at,created_at,plugin_devices(device,activated_at)')
+      .select('id,email,tier,license_format,expires_at,revoked_at,created_at,stripe_session,plugin_devices(device,activated_at)')
       .eq('product_id', id).order('created_at', { ascending: false }).limit(100)
     if (error) throw error
     return json({ licenses: data ?? [] })
@@ -98,6 +99,14 @@ export async function POST(request: Request, context: RouteContext) {
     if (licenseError) throw licenseError
     if (!license) return json({ error: 'License not found.' }, 404)
 
+    if (input.action === 'delete_sandbox') {
+      const { data: deleted, error } = await client.rpc('plugin_delete_sandbox_license', {
+        p_license: input.id, p_product: productId, p_actor: actor,
+      })
+      if (error) throw error
+      if (deleted !== true) return json({ error: 'Sandbox licence could not be deleted.' }, 409)
+      return json({ ok: true })
+    }
     if (input.action === 'reveal') {
       return json({ key: decryptKey(license.key_cipher, secret) })
     }
