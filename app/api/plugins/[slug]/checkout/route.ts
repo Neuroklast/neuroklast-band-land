@@ -7,7 +7,7 @@ import { contractDocumentText } from '@/lib/neurokore/email-format'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
 import { body, db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
-import { isNeurokoreSalesEnabled } from '@/lib/neurokore/flags'
+import { isNeurokoreSalesEnabled, isPluginSaleOpen, isNeurokoreSandboxCheckout } from '@/lib/neurokore/flags'
 import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
 import { signingKeyFor } from '@/lib/plugins/signing'
 import { slugSchema } from '@/lib/plugins/releases'
@@ -49,7 +49,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!productResult.data) return json({ error: 'Plugin not found.' }, 404)
     const product = productResult.data
     if (product.pricing_mode !== 'paid') return json({ error: 'This plugin is free.' }, 409)
-    if (!product.sales_enabled) return json({ error: 'Sales are not open for this plugin.' }, 409)
+    if (!isPluginSaleOpen(product)) return json({ error: 'Sales are not open for this plugin.' }, 409)
     if (!product.license_required) return json({ error: 'This plugin does not need a license.' }, 409)
 
     // Query release records directly; anonymous download availability is a separate switch.
@@ -70,7 +70,9 @@ export async function POST(request: Request, context: RouteContext) {
     const secretResult = await client.from('plugin_product_secrets')
       .select('stripe_price_id,signing_key_cipher').eq('product_id', product.id).maybeSingle()
     if (secretResult.error) throw secretResult.error
-    const price = secretResult.data?.stripe_price_id
+    const price = isNeurokoreSandboxCheckout() && product.slug === 'neurokore'
+      ? required('STRIPE_SANDBOX_PRICE_ID')
+      : secretResult.data?.stripe_price_id
     if (!price) return json({ error: 'This plugin has no price configured.' }, 503)
     // The checkout is deliberately one-time only. Never charge recurring prices
     // through a payment-mode session or present a misleading one-off price.
@@ -113,6 +115,7 @@ export async function POST(request: Request, context: RouteContext) {
       'metadata[plugin_order]': id,
       'metadata[locale]': locale,
       'metadata[terms_version]': COMMERCE_TERMS_VERSION,
+      'metadata[environment]': isNeurokoreSandboxCheckout() ? 'neurokore-sandbox' : 'live',
       locale: stripeLocale,
       'line_items[0][price]': price, 'line_items[0][quantity]': '1',
       success_url: origin() + '/neurokore/account?checkout=success',
