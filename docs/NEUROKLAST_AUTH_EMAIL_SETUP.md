@@ -11,7 +11,7 @@ Open [Supabase Auth URL Configuration](https://supabase.com/dashboard/project/cv
   `https://neuroklast-band-land-git-chore-neur-cb3e37-neuroklasts-projects.vercel.app/neurokore/auth/callback`
   (the stable Preview branch alias).
 - Add `https://neuroklast.net/neurokore/auth/callback` **only after** the corresponding callback code is deployed on Production.
-- The sign-in route uses `emailRedirectTo` explicitly and redirects only to `/neurokore/auth/callback`. The callback exchanges the Supabase PKCE code for a cookie-backed customer session.
+- The sign-in route uses `emailRedirectTo` explicitly and redirects only to `/neurokore/auth/callback`. The callback supports legacy PKCE code links and the new token-hash link. New token-hash links open a safe confirmation page; only its explicit POST verifies the token and persists the Supabase session cookies in the actual redirect response.
 - Old Magic Links sent before these changes, especially URLs using localhost, must not be reused. Request a new email.
 
 ## 2. Install the branded login email
@@ -19,10 +19,12 @@ Open [Supabase Auth URL Configuration](https://supabase.com/dashboard/project/cv
 Go to [Supabase Auth Email Templates](https://supabase.com/dashboard/project/cvxhbdmhtesnkubublar/auth/templates), edit **Magic Link / OTP**:
 
 - Subject: `NEUROKLAST | Your sign-in link`
-- HTML: paste the complete source of `supabase/templates/neuroklast-magic-link.html`.
-- **Keep `{{ .ConfirmationURL }}` unchanged** — Supabase generates this link with its one-time verification token and `redirect_to`.
+- HTML: paste the complete **Source** of `supabase/templates/neuroklast-magic-link.html` (not the rendered Preview).
+- The current design intentionally uses **`{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email`**, not `{{ .ConfirmationURL }}`. `RedirectTo` is the already-allowlisted `/neurokore/auth/callback` URL supplied by the website. Opening the email displays an intermediate confirmation page rather than consuming the token through a GET request.
+- **Click Save changes** in Supabase. The preview rendering alone does not activate a template.
+- The email subject must become `NEUROKLAST | Your sign-in link`. If a fresh email still says `Your sign-in link` and includes `powered by Supabase`, the customized template was not applied.
 - Save and send a fresh email. Other Auth email templates (Confirm Signup, Recovery, Invite) are separate; adapt them if those flows are enabled for customers.
-- Avoid link tracking or rewriting verification URLs. Email link prefetch can consume one-time links; if users report an already-used link, consider a manual confirmation page or switch to an emailed OTP.
+- Avoid link tracking or rewriting verification URLs. The new confirmation page avoids consuming tokens on automated GET requests. Supabase's hosted Auth templates must still be updated manually.
 
 This template uses inline CSS, no remote images, no open tracking pixels and no external fonts.
 
