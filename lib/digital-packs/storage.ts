@@ -2,10 +2,11 @@ import 'server-only'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createR2S3Client } from '@/lib/r2-s3-client'
+import { MEDIA_BUCKET } from '@/lib/constants'
 
 export function digitalPackBucket(env: Record<string,string|undefined> = process.env): string {
   const bucket = env.R2_BUCKET_DIGITAL_PRODUCTS
-  if (!bucket || bucket === env.R2_BUCKET_MEDIA)
+  if (!bucket || bucket === MEDIA_BUCKET)
     throw new Error('A separate non-public R2_BUCKET_DIGITAL_PRODUCTS is required.')
   return bucket
 }
