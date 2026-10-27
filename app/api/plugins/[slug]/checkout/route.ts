@@ -6,14 +6,13 @@ import { commerceSections } from '@/lib/commerce-legal-copy'
 import { contractDocumentText } from '@/lib/neurokore/email-format'
 import { z } from 'zod'
 import { getApiSecret } from '@/lib/api-secrets'
-import { checkoutBillingPolicy } from '@/lib/neurokore/invoicing'
 import { body, db, json, limit, origin, required, sameOrigin, unavailable, user } from '@/lib/neurokore/server'
 import { isNeurokoreSalesEnabled, isPluginSaleOpen, isNeurokoreSandboxCheckout } from '@/lib/neurokore/flags'
 import { validateLicenseConfiguration } from '@/lib/neurokore/protocol'
 import { signingKeyFor } from '@/lib/plugins/signing'
 import { slugSchema } from '@/lib/plugins/releases'
 import { hasSellableRelease, saleReleaseSchema } from '@/lib/plugins/sale-readiness'
-import { configureNeurokoreSandboxCheckout, stripe } from '@/lib/neurokore/stripe'
+import { configureManagedPaymentsCheckout, configureNeurokoreSandboxCheckout, stripe } from '@/lib/neurokore/stripe'
 import { loadLegalConfig, getLegalCompleteness } from '@/lib/legal-content'
 
 export const runtime = 'nodejs'
@@ -51,7 +50,8 @@ export async function POST(request: Request, context: RouteContext) {
     if (product.pricing_mode !== 'paid') return json({ error: 'This plugin is free.' }, 409)
     if (!isPluginSaleOpen(product)) return json({ error: 'Sales are not open for this plugin.' }, 409)
     const sandboxMode = isNeurokoreSandboxCheckout() && product.slug === 'neurokore'
-    const billing = sandboxMode ? null : checkoutBillingPolicy()
+    if (!sandboxMode && process.env.STRIPE_MANAGED_PAYMENTS_ENABLED !== 'true')
+      return json({ error: 'Managed Payments onboarding is required before sales.' }, 503)
     if (!product.license_required) return json({ error: 'This plugin does not need a license.' }, 409)
 
     // Query release records directly; anonymous download availability is a separate switch.
@@ -100,17 +100,6 @@ export async function POST(request: Request, context: RouteContext) {
       return json({ error: 'Sales unavailable: contract email service is not configured.' }, 503)
     }
 
-    // For VAT-registered sellers, Stripe Tax must have an active registration;
-    // otherwise Checkout may create invoices without collecting due tax.
-    if (billing?.stripeAutomaticTax) {
-      const registrations = z.object({
-        data: z.array(z.object({ status: z.string() })),
-      }).parse(await stripe('tax/registrations?limit=100', required('STRIPE_SECRET_KEY')))
-      if (!registrations.data.some(registration => registration.status === 'active')) {
-        return json({ error: 'Sales unavailable until Stripe Tax registration is active.' }, 503)
-      }
-    }
-
     const id = randomUUID()
     const termsSnapshot = contractDocumentText(commerceSections('terms', locale, legal.termsText))
     const licenceSnapshot = contractDocumentText(commerceSections('license', locale))
@@ -131,17 +120,16 @@ export async function POST(request: Request, context: RouteContext) {
       'line_items[0][price]': price, 'line_items[0][quantity]': '1',
       success_url: origin() + '/neurokore/account?checkout=success',
       cancel_url: origin() + '/plugins/' + product.slug + '?checkout=cancelled',
-      'automatic_tax[enabled]': String(billing?.stripeAutomaticTax ?? false),
-      'invoice_creation[enabled]': String(billing?.invoiceEnabled ?? false),
+      'automatic_tax[enabled]': 'false',
       'billing_address_collection': 'required',
       'consent_collection[terms_of_service]': 'required',
       'custom_text[submit][message]': 'Terms: ' + origin() + localizedLegalPath(locale, 'terms') + ' | Withdrawal: ' + origin() + localizedLegalPath(locale, 'withdrawal-policy'),
     })
-    if (billing?.invoiceFooter) params.set('invoice_creation[invoice_data][footer]', billing.invoiceFooter)
     if (sandboxMode) configureNeurokoreSandboxCheckout(params)
+    else configureManagedPaymentsCheckout(params)
     const session = z.object({ id: z.string(), url: z.url() }).parse(
       await stripe('checkout/sessions', required('STRIPE_SECRET_KEY'), params, id,
-        sandboxMode ? '2026-04-22.dahlia' : undefined))
+        '2026-04-22.dahlia'))
     if (new URL(session.url).hostname !== 'checkout.stripe.com') throw new Error('Invalid checkout')
     const saved = await client.from('plugin_orders').update({ stripe_session: session.id }).eq('id', id)
     if (saved.error) throw saved.error

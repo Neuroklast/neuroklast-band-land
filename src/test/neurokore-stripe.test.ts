@@ -1,7 +1,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { createHmac } from 'node:crypto'
-import { assertStripeKeyEnvironment, assertStripeFulfillmentEnvironment, configureNeurokoreSandboxCheckout, verifyWebhook } from '../../lib/neurokore/stripe'
+import { assertStripeKeyEnvironment, assertStripeFulfillmentEnvironment, configureNeurokoreSandboxCheckout, configureManagedPaymentsCheckout, verifyWebhook } from '../../lib/neurokore/stripe'
 describe('Stripe webhook trust boundary', () => {
   const raw = '{"type":"checkout.session.completed"}'
   const timestamp = 1900000000
@@ -60,6 +60,36 @@ describe('NEUROKORE Stripe Sandbox session configuration', () => {
     expect(params.get('custom_text[submit][message]')).toContain('withdrawal')
     expect(params.get('line_items[0][price]')).toBe('price_test_one_euro')
     expect(params.get('metadata[plugin_order]')).toBe('test-order')
+  })
+})
+
+describe('NEUROKLAST Managed Payments', () => {
+  it('fails closed until merchant-of-record onboarding has been explicitly confirmed', () => {
+    const params = new URLSearchParams({ 'line_items[0][price]': 'price_live' })
+    expect(() => configureManagedPaymentsCheckout(params, {})).toThrow()
+    expect(params.has('managed_payments[enabled]')).toBe(false)
+  })
+
+  it('removes seller-tax and seller-invoice parameters for enabled checkout', () => {
+    const params = new URLSearchParams({
+      'line_items[0][price]': 'price_live',
+      'automatic_tax[enabled]': 'true',
+      'tax_id_collection[enabled]': 'true',
+      'invoice_creation[enabled]': 'true',
+      'invoice_creation[invoice_data][footer]': 'Section 19',
+      'consent_collection[terms_of_service]': 'required',
+      'custom_text[submit][message]': 'Old checkout text',
+      'metadata[plugin_order]': 'an-order',
+    })
+    configureManagedPaymentsCheckout(params, { STRIPE_MANAGED_PAYMENTS_ENABLED: 'true' })
+    expect(params.get('managed_payments[enabled]')).toBe('true')
+    for (const key of [
+      'automatic_tax[enabled]', 'tax_id_collection[enabled]',
+      'invoice_creation[enabled]', 'invoice_creation[invoice_data][footer]',
+      'consent_collection[terms_of_service]', 'custom_text[submit][message]',
+    ]) expect(params.has(key)).toBe(false)
+    expect(params.get('line_items[0][price]')).toBe('price_live')
+    expect(params.get('metadata[plugin_order]')).toBe('an-order')
   })
 })
 
