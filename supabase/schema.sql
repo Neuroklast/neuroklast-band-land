@@ -1180,6 +1180,28 @@ $;
 REVOKE ALL ON FUNCTION public.plugin_claim_confirmation(uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.plugin_claim_confirmation(uuid) TO service_role;
 
+-- Admin-only contact inbox. Order matches are resolved by verified order email
+-- in a protected dashboard; no customer licence data is exposed to submitters.
+CREATE TABLE IF NOT EXISTS public.plugin_contact_requests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL CHECK (length(name) BETWEEN 1 AND 100),
+  email text NOT NULL CHECK (length(email) BETWEEN 3 AND 254),
+  subject text NOT NULL CHECK (length(subject) BETWEEN 1 AND 200),
+  message text NOT NULL CHECK (length(message) BETWEEN 10 AND 5000),
+  delivery_state text NOT NULL DEFAULT 'pending' CHECK (delivery_state IN ('pending','accepted','failed')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  provider_accepted_at timestamptz,
+  closed_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS plugin_contact_requests_email_idx
+  ON public.plugin_contact_requests (lower(email), created_at DESC);
+CREATE INDEX IF NOT EXISTS plugin_contact_requests_pending_idx
+  ON public.plugin_contact_requests (created_at DESC) WHERE closed_at IS NULL;
+ALTER TABLE public.plugin_contact_requests ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.plugin_contact_requests FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.plugin_contact_requests TO service_role;
+CREATE INDEX IF NOT EXISTS plugin_orders_email_lookup_idx ON public.plugin_orders (lower(email), created_at DESC);
+
 CREATE TABLE IF NOT EXISTS public.plugin_releases (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
