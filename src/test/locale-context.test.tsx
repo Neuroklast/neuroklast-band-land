@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { LocaleProvider, useLocale } from '@/contexts/LocaleContext'
-import type { Locale } from '@/lib/i18n'
+import { PUBLIC_LOCALES } from '@/lib/i18n'
 
 function TestConsumer() {
   const { locale, setLocale, t } = useLocale()
@@ -106,36 +106,24 @@ describe('LocaleContext', () => {
     }
   })
 
-  it('should switch to all 8 locales', async () => {
-    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
-    for (const locale of locales) {
+  it('restores only English or German from localStorage', async () => {
+    for (const locale of PUBLIC_LOCALES.map(language => language.code)) {
       localStorage.setItem('zd-locale', locale)
-      const { unmount } = render(
-        <LocaleProvider>
-          <TestConsumer />
-        </LocaleProvider>
-      )
-      await waitFor(() => {
-        expect(screen.getByTestId('locale').textContent).toBe(locale)
-      })
+      const { unmount } = render(<LocaleProvider><TestConsumer /></LocaleProvider>)
+      await waitFor(() => expect(screen.getByTestId('locale').textContent).toBe(locale))
       unmount()
     }
   })
 
-  it('should restore all supported locales from localStorage', async () => {
-    const locales: Locale[] = ['en', 'de', 'uk', 'it', 'es', 'pt', 'ja', 'ko']
-    for (const locale of locales) {
-      localStorage.setItem('zd-locale', locale)
-      const { unmount } = render(
-        <LocaleProvider>
-          <TestConsumer />
-        </LocaleProvider>
-      )
-      await waitFor(() => {
-        expect(screen.getByTestId('locale').textContent).toBe(locale)
-      })
-      unmount()
-    }
+  it('ignores obsolete stored locales and prevents switching to archived languages', () => {
+    localStorage.setItem('zd-locale', 'ja')
+    render(<LocaleProvider><TestConsumer /></LocaleProvider>)
+    expect(screen.getByTestId('locale').textContent).toBe('en')
+    fireEvent.click(screen.getByTestId('switch-ja'))
+    expect(screen.getByTestId('locale').textContent).toBe('en')
+    fireEvent.click(screen.getByTestId('switch-de'))
+    fireEvent.click(screen.getByTestId('switch-uk'))
+    expect(screen.getByTestId('locale').textContent).toBe('de')
   })
 
   it('should use customTranslations override', () => {
@@ -168,16 +156,13 @@ describe('LocaleContext', () => {
     expect(screen.getByTestId('locale').textContent).toBe('en')
   })
 
-  it('should use custom translation for configured non-built-in locale', () => {
+  it('does not expose custom admin languages on the public site', () => {
     const customTranslations = { 'footer.admin': { fr: 'ADMIN_FR' } }
-    render(
-      <LocaleProvider
-        languages={[{ code: 'fr', label: 'Français', flag: '' }]}
-        customTranslations={customTranslations}
-      >
-        <CustomTranslationConsumer />
-      </LocaleProvider>
-    )
-    expect(screen.getByTestId('custom').textContent).toBe('ADMIN_FR')
+    render(<LocaleProvider languages={[{ code: 'fr', label: 'Français', flag: '' }]} customTranslations={customTranslations}>
+      <TestConsumer />
+    </LocaleProvider>)
+    expect(screen.getByTestId('locale').textContent).toBe('en')
+    expect(screen.getByTestId('translated').textContent).toBe('ADMIN')
   })
+
 })

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { buildGigSlugMap } from '@/lib/gig-slug'
-import { LEGAL_LOCALES } from '@/lib/legal-i18n'
-import { LEGAL_DOCUMENTS, localizedLegalPath } from '@/lib/legal-routes'
+import { LEGAL_DOCUMENTS, PUBLIC_LEGAL_LOCALES, localizedLegalPath } from '@/lib/legal-routes'
 
 /** Rebuild periodically so new news posts appear without redeploy. */
 export const revalidate = 300
@@ -26,7 +25,7 @@ const STATIC_URLS: SitemapUrl[] = [
 
 ]
 
-const LOCALIZED_LEGAL_URLS: SitemapUrl[] = LEGAL_LOCALES.flatMap(locale =>
+const LOCALIZED_LEGAL_URLS: SitemapUrl[] = PUBLIC_LEGAL_LOCALES.flatMap(locale =>
   LEGAL_DOCUMENTS.map(document => ({
     loc: BASE_URL + localizedLegalPath(locale, document),
     changefreq: 'monthly',
