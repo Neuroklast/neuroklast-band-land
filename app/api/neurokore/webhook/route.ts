@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { sessionSchema } from '@/lib/neurokore/contract-confirmation'
 import { fulfillVerifiedCheckoutSession } from '@/lib/neurokore/fulfillment'
+import { recordPaymentIncident } from '@/lib/neurokore/payment-events'
 import { json, required } from '@/lib/neurokore/server'
 import { assertStripeFulfillmentEnvironment, stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 
@@ -28,6 +29,11 @@ export async function POST(request: Request) {
     stage = 'event-parse'
     const event = z.object({ type: z.string(), livemode: z.boolean(), data: z.object({ object: z.record(z.string(), z.unknown()) }) })
       .parse(JSON.parse(raw))
+    if (['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed'].includes(event.type)) {
+      stage = 'payment-incident'
+      await recordPaymentIncident(event)
+      return json({ received: true })
+    }
     if (!['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type))
       return json({ received: true })
 
