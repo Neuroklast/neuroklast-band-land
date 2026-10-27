@@ -24,28 +24,37 @@ export function LicenseAccount() {
   const language = resolveLegalLocale(locale)
   const copy = ACCOUNT_COPY[language]
   const [account, setAccount] = useState<Account | null>(null)
+  const [checking, setChecking] = useState(true)
+  const [licencesUnavailable, setLicencesUnavailable] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [revealed, setRevealed] = useState<Record<string, boolean>>({})
 
   async function refresh() {
+    // A missing licence-decryption key must never log out an authenticated buyer.
+    const session = await fetch('/api/neurokore/session', { cache: 'no-store' })
+    if (session.status === 401) {
+      setAccount(null)
+      setLicencesUnavailable(false)
+      return
+    }
+    if (!session.ok) throw new Error(copy.loadError)
+    const sessionData = z.object({ email: z.email() }).parse(await session.json())
     const response = await fetch('/api/neurokore/account', { cache: 'no-store' })
-    if (response.status === 401) { setAccount(null); return }
+    if (response.status === 503) {
+      setAccount({ email: sessionData.email, licenses: [] })
+      setLicencesUnavailable(true)
+      return
+    }
     if (!response.ok) throw new Error(copy.loadError)
     setAccount(accountSchema.parse(await response.json()))
+    setLicencesUnavailable(false)
   }
 
   useEffect(() => {
-    let active = true
-    fetch('/api/neurokore/account', { cache: 'no-store' }).then(async response => {
-      if (!active) return
-      if (response.status === 401) { setAccount(null); return }
-      if (!response.ok) throw new Error('Account unavailable')
-      const parsed = accountSchema.parse(await response.json())
-      if (active) setAccount(parsed)
-    }).catch(() => { if (active) setMessage(copy.loadError) })
-    return () => { active = false }
+    void refresh().catch(() => setMessage(copy.loadError)).finally(() => setChecking(false))
     // Load the current session when the component is mounted.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function signOut() {
@@ -77,7 +86,11 @@ export function LicenseAccount() {
           Create an offline licence file
         </Link>
       </p>
-      {!account ? (
+      {checking ? (
+        <p role="status" className="text-sm text-zinc-300">
+          {language === 'de' ? 'Anmeldung wird geprüft…' : 'Checking sign-in…'}
+        </p>
+      ) : !account ? (
         <div className="space-y-4 border border-white/15 bg-zinc-950 p-5">
           <p className="text-sm text-zinc-300">
             {language === 'de'
@@ -94,7 +107,14 @@ export function LicenseAccount() {
           </div>
           <button className={button} disabled={busy}
             onClick={() => void refresh().catch(() => setMessage(copy.loadError))}>{copy.refresh}</button>
-          {account.licenses.length === 0 && <p className="text-zinc-400">{copy.noLicences}</p>}
+          {licencesUnavailable && (
+            <p role="status" className="border border-amber-800/60 bg-amber-950/20 p-4 text-sm text-amber-100">
+              {language === 'de'
+                ? 'Anmeldung erfolgreich. Die Lizenzverwaltung ist derzeit noch nicht vollständig eingerichtet. Du musst dich nicht erneut anmelden.'
+                : 'Signed in successfully. Licence management is not fully configured yet. You do not need to sign in again.'}
+            </p>
+          )}
+          {!licencesUnavailable && account.licenses.length === 0 && <p className="text-zinc-400">{copy.noLicences}</p>}
           <div className="grid gap-5">
             {account.licenses.map(license => (
               <article key={license.id} className="space-y-4 border border-white/15 bg-zinc-950 p-5 sm:p-7">
