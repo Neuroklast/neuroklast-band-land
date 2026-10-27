@@ -125,3 +125,23 @@ The same server-only 64-hex `NEUROKORE_RELEASE_SYNC_TOKEN` is configured in Verc
 For NEUROKORE v2, a `full` entitlement with `expires_at = NULL` is signed as the native `perpetual` tier with the representable expiry 9999-12-31T23:59:59Z. This avoids forcing paid customers online every 30 days. Time-limited full grants and alpha keys retain 30-day maximum activation leases. Other v3 products keep their own existing lease policy.
 
 **Important tradeoff:** A permanent offline certificate cannot be remotely revoked after issuance. Admin-side device resets and refunds only affect future activations, not an already installed perpetual certificate. Do not claim instant revocation of purchased offline licences. Consider time-limited leases only if the product terms expressly promise that behavior and reliable automatic renewal exists. Existing v2 full certificates can be upgraded by reactivating the same key in the current build. Validate these paths before enabling checkout.
+
+
+## Stripe live/sandbox incident processing (October 2026)
+
+- Stripe webhook endpoints must use the exact environment's signing secret and snapshot API version \`2025-02-24.acacia\`. Never reuse the Sandbox secret in Production.
+- Subscribed events: \`checkout.session.completed\`, \`checkout.session.async_payment_succeeded\`, \`checkout.session.async_payment_failed\`, \`checkout.session.expired\`, \`charge.refunded\`, \`refund.updated\`, \`charge.dispute.created\`, \`charge.dispute.updated\`, \`charge.dispute.closed\`.
+- On every incident event the backend fetches the canonical Stripe object and resolves the Checkout Session via the PaymentIntent rather than trusting unverified metadata. Other Stripe integrations' payments are ignored.
+- \`plugin_record_payment_event\` locks the order, records the unique Stripe event ID, and prevents older retry events from undoing a confirmed full refund or active dispute hold.
+- A partial refund is recorded for manual review without automatically revoking the full licence; a full refund or dispute revokes **future activation**. Disputes remain held after closure until manual review. Permanent signed offline certificates cannot be remotely revoked.
+- \`plugin_claim_confirmation\` makes contract email delivery exclusive under parallel webhook retries; Resend idempotency keys prevent duplicate mail dispatch.
+- The orders admin displays payment state and incidents; Stripe remains the source of truth for funds and invoices.
+- Production checkout remains gated by global \`NEUROKORE_SALES_ENABLED=false\`, product \`sales_enabled=false\`, legal completeness, valid released build, Stripe Price, licensed signing keys, and confirmation email credentials.
+- Before enabling sales, verify seller VAT/Kleinunternehmer classification, Stripe Tax registrations/collection, invoice requirements, chargeback/refund policy, a complete sandbox purchase and at least one controlled signed refund/dispute replay against the branch preview. Do not use real money for sandbox tests.
+
+### Deploy order
+1. Deploy the additive idempotent Supabase schema (includes service-role-only payment RPC and audit table).
+2. Deploy webhook handler and admin reporting. Keep sales switches off.
+3. Verify sandbox events and production endpoint HTTP responses (unsigned POST must return 400).
+4. Add new event subscriptions to the two Stripe endpoints after the code has deployed.
+5. Complete tax/legal/invoicing review and full sandbox end-to-end test, then explicitly decide on enabling sales.
