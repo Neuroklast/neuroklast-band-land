@@ -23,6 +23,7 @@ export function useAdminEditorTab<Id extends string>(
     if (!allowed.includes(tab)) return
     setActive(tab)
     const url = new URL(window.location.href)
+    if ((url.searchParams.get('tab') ?? fallback) === tab) return
     if (tab === fallback) url.searchParams.delete('tab')
     else url.searchParams.set('tab', tab)
     window.history.pushState(null, '', url.toString())
