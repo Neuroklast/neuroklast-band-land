@@ -139,7 +139,7 @@ interface AdminNavProps {
 function DesktopSidebar({ className = '' }: { className?: string }) {
   return (
     <aside
-      className={`flex flex-col w-full bg-zinc-950 border-r border-zinc-800 min-h-screen h-full ${className}`}
+      className={`flex flex-col w-full bg-zinc-950 border-r border-zinc-800 min-h-0 h-full ${className}`}
     >
       <div className="p-4 border-b border-zinc-800 shrink-0">
         <span className="font-mono font-bold tracking-[0.2em] text-sm text-white uppercase">Neuroklast</span>
