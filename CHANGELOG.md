@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Reconcile Stripe refunds, chargebacks and failed/expired checkout sessions with durable event IDs, atomic licence holds and admin visibility.
+- Claim purchase confirmations atomically under Stripe webhook retries; do not send contracts for revoked/refunded orders.
+
 - Fix production-build boundaries: legacy import validation and API-key field definitions no longer import Node crypto into admin browser bundles, and the login redirect helper lives outside the route-handler export surface.
 
 - Add an authenticated NEUROKORE release import that copies and verifies all four official GitHub assets into immutable R2 keys, registers a version in Products, publishes only complete versions and refreshes public/admin views. Retries preserve existing files and withdrawn releases.
