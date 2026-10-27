@@ -1022,6 +1022,331 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
   },
 }
 
+// Expanded service-specific disclosures complement the hosting, local-storage and rights sections above.
+const PRIVACY_SERVICE_DETAILS: Record<LegalLocale, Record<string, LegalCopySection>> = {
+  "en": {
+    "accounts": {
+      "title": "Customer accounts and license activation",
+      "paragraphs": [
+        "To log in to the software customer portal, we process your email address, a Supabase user ID and technically necessary session information. Sign-in codes are sent by email. The legal basis is Art. 6(1)(b) GDPR.",
+        "For issued software licenses we process the purchased product, license status, order reference, activation times and device-related identifiers. Activation records help enforce the agreed number of devices and provide offline authorizations. The legal basis is Art. 6(1)(b) GDPR.",
+        "Account and license records are kept for as long as needed to perform the license agreement, handle support and protect legal claims, subject to applicable retention and deletion requirements."
+      ]
+    },
+    "purchases": {
+      "title": "Purchases, payment processing and invoices",
+      "paragraphs": [
+        "When you buy software, we process your contact email, product and price, order/payment references, billing details and the agreed contract and license version. Stripe processes the payment. We do not receive or store complete payment-card numbers. The legal bases are Art. 6(1)(b) and (c) GDPR.",
+        "Stripe's privacy notice is at https://stripe.com/privacy. We use Resend to email contractual confirmations and relevant customer notifications. Invoices and other records subject to statutory retention are kept for the applicable statutory period. Refunds and chargebacks may also require processing transaction data."
+      ]
+    },
+    "requests": {
+      "title": "Withdrawal, customer support and data-subject requests",
+      "paragraphs": [
+        "For online withdrawal requests, we collect your name, email, contract details, the time received and a reference number, and send an acknowledgement through Resend. This is required to meet legal obligations and handle the contract (Art. 6(1)(c) and (b) GDPR).",
+        "To handle access, rectification and deletion requests we process the information necessary to verify entitlement, respond and document our legal compliance (Art. 6(1)(c) GDPR). Data held by payment and email providers may need to be checked separately."
+      ]
+    },
+    "diagnostics": {
+      "title": "Optional NEUROKORE beta diagnostics",
+      "paragraphs": [
+        "In beta versions, you can separately opt in to technical diagnostic reports inside the plugin. This option is off by default and can be disabled at any time. The reports contain plugin version, operating system and audio host categories, plugin format, coarse CPU/RAM classes, sample rate, buffer size and error category, sometimes a JavaScript bundle filename and line number.",
+        "No audio, presets, license keys, usernames, file paths or free-text error messages are included in the defined report payload. The server uses temporary IP-based abuse protection, and transport providers may process IP addresses in connection logs. Accordingly the reports are data-minimized, not guaranteed to be anonymous. The legal basis for optional diagnostics is Art. 6(1)(a) GDPR. Stored diagnostic reports are deleted after at most 90 days by the configured cleanup process."
+      ]
+    },
+    "updates": {
+      "title": "Software downloads and update checks",
+      "paragraphs": [
+        "Published software files and media may be delivered through Cloudflare R2 or GitHub. Download and server infrastructure can technically process IP address, requested file, request time and browser/device information (Art. 6(1)(f) GDPR).",
+        "If you manually request or enable automatic update checks in NEUROKORE, the plugin contacts the GitHub releases API. GitHub may receive technical connection data. Automatic checks are optional. Updates are not installed without your confirmation. See https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+      ]
+    }
+  },
+  "de": {
+    "accounts": {
+      "title": "Kundenkonto und Lizenzaktivierung",
+      "paragraphs": [
+        "Für die Anmeldung am Software-Kundenkonto verarbeiten wir die E-Mail-Adresse, eine Supabase-Benutzerkennung und technisch notwendige Sitzungsinformationen. Anmeldecodes werden per E-Mail versendet. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.",
+        "Für Softwarelizenzen verarbeiten wir das erworbene Produkt, Lizenzstatus, Bestellreferenzen, Aktivierungszeitpunkte und gerätebezogene Kennungen. Diese Daten ermöglichen die vereinbarte Anzahl von Geräteaktivierungen und zeitlich begrenzte Offline-Berechtigungen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.",
+        "Konto- und Lizenzdaten speichern wir, soweit dies für die Vertragserfüllung, Unterstützung und die Abwicklung rechtlicher Ansprüche erforderlich ist. Gesetzliche Aufbewahrungs- und Löschpflichten bleiben unberührt."
+      ]
+    },
+    "purchases": {
+      "title": "Softwarebestellungen, Zahlungen und Rechnungen",
+      "paragraphs": [
+        "Beim Softwarekauf verarbeiten wir Kontakt-E-Mail-Adresse, Produkt, Preis, Bestell- und Zahlungsreferenzen, Rechnungsangaben sowie die vereinbarten Vertrags- und Lizenzversionen. Die Zahlung wird über Stripe abgewickelt. Vollständige Kreditkartendaten erhalten und speichern wir nicht. Rechtsgrundlagen sind Art. 6 Abs. 1 lit. b und c DSGVO.",
+        "Datenschutzhinweise von Stripe: https://stripe.com/de/privacy. Vertragsbestätigungen und notwendige Kundenbenachrichtigungen werden über Resend per E-Mail versendet. Steuerlich oder handelsrechtlich aufzubewahrende Belege bleiben für die jeweils vorgeschriebene Zeit gespeichert. Auch Erstattungen oder Rückbelastungen können eine weitere Verarbeitung von Transaktionsdaten erfordern."
+      ]
+    },
+    "requests": {
+      "title": "Widerrufe, Kundenanfragen und Datenschutzanfragen",
+      "paragraphs": [
+        "Bei einem elektronischen Widerruf verarbeiten wir Namen, E-Mail-Adresse, Vertragsangaben, Eingangszeitpunkt und eine Referenznummer. Eine Eingangsbestätigung wird über Resend versendet. Rechtsgrundlagen sind Art. 6 Abs. 1 lit. c und b DSGVO.",
+        "Zur Bearbeitung von Auskunfts-, Berichtigungs- und Löschanfragen verarbeiten wir die für die Identitäts- und Berechtigungsprüfung, Beantwortung und Dokumentation erforderlichen Angaben (Art. 6 Abs. 1 lit. c DSGVO). Bei Zahlungs- und E-Mail-Dienstleistern gespeicherte Daten müssen gegebenenfalls gesondert geprüft werden."
+      ]
+    },
+    "diagnostics": {
+      "title": "Optionale NEUROKORE-Betadiagnose",
+      "paragraphs": [
+        "In Betaversionen von NEUROKORE kannst du innerhalb des Plugins ausdrücklich in technische Diagnosemeldungen einwilligen. Diese Funktion ist standardmäßig ausgeschaltet und jederzeit deaktivierbar. Übermittelt werden Pluginversion, Kategorien von Betriebssystem und Audio-Host, Pluginformat, grobe Angaben zu CPU und Arbeitsspeicher, Samplerate, Puffergröße und Fehlerkategorie. Gegebenenfalls werden der Name einer JavaScript-Datei und die Zeilennummer übertragen.",
+        "Die vorgesehenen Meldungen enthalten keine Audiodaten, Presets, Lizenzschlüssel, Benutzernamen, Dateipfade oder frei formulierte Fehlermeldungen. Der Server verwendet einen vorübergehenden IP-basierten Missbrauchsschutz. Transportdienstleister können IP-Adressen in Verbindungsprotokollen verarbeiten. Die Meldungen sind daher datenminimiert, aber nicht garantiert anonym. Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO. Gespeicherte Diagnosemeldungen werden durch die konfigurierte Bereinigung spätestens nach 90 Tagen gelöscht."
+      ]
+    },
+    "updates": {
+      "title": "Softwaredownloads und Updateprüfung",
+      "paragraphs": [
+        "Softwaredownloads und Mediendateien können über Cloudflare R2 oder GitHub bereitgestellt werden. Bei Downloads können technisch erforderliche Verbindungsdaten wie IP-Adresse, angeforderte Datei, Zeitpunkt und Browser- oder Geräteinformationen verarbeitet werden (Art. 6 Abs. 1 lit. f DSGVO).",
+        "Wenn du im NEUROKORE-Plugin manuell oder optional automatisch nach Updates suchst, wird die GitHub-Releases-API aufgerufen. GitHub kann dabei technische Verbindungsdaten erhalten. Automatische Prüfungen sind abschaltbar. Updates werden nicht ohne deine Bestätigung installiert. Datenschutzhinweise: https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement."
+      ]
+    }
+  },
+  "uk": {
+    "accounts": {
+      "title": "Обліковий запис і активація ліцензії",
+      "paragraphs": [
+        "Для входу до кабінету покупця програмного забезпечення ми обробляємо електронну адресу, ідентифікатор користувача Supabase та технічно необхідні дані сеансу. Коди входу надсилаються електронною поштою. Правова підстава: ст. 6(1)(b) GDPR.",
+        "Для ліцензій обробляються придбаний продукт, стан ліцензії, посилання на замовлення, час активації та ідентифікатори пристроїв. Це потрібно для дотримання дозволеної кількості пристроїв та роботи офлайн-дозволів (ст. 6(1)(b) GDPR). Дані зберігаються протягом строку, необхідного для договору, підтримки та законних вимог."
+      ]
+    },
+    "purchases": {
+      "title": "Замовлення програм, платежі та рахунки",
+      "paragraphs": [
+        "Під час купівлі ми обробляємо email, товар, ціну, посилання на замовлення й оплату, платіжні реквізити для рахунка, редакції умов та ліцензії. Оплату здійснює Stripe. Повні номери банківських карток ми не отримуємо і не зберігаємо. Підстави: ст. 6(1)(b) і (c) GDPR.",
+        "Політика Stripe: https://stripe.com/privacy. Resend надсилає підтвердження договору та необхідні повідомлення. Документи зберігаються відповідно до встановлених законом строків, включно з випадками повернення коштів."
+      ]
+    },
+    "requests": {
+      "title": "Відкликання договору та запити щодо даних",
+      "paragraphs": [
+        "Для відкликання договору ми обробляємо ім’я, email, відомості про договір, час надходження та номер запиту. Resend надсилає підтвердження отримання (ст. 6(1)(c) і (b) GDPR).",
+        "Для запитів на доступ, виправлення й видалення даних обробляються відомості, необхідні для перевірки особи, відповіді й підтвердження виконання правових обов’язків (ст. 6(1)(c) GDPR)."
+      ]
+    },
+    "diagnostics": {
+      "title": "Необов’язкова діагностика бета-версії NEUROKORE",
+      "paragraphs": [
+        "У бета-версіях звіти про технічні помилки надсилаються лише після окремої згоди в плагіні. За замовчуванням функція вимкнена. Звіти містять версію плагіна, категорії ОС і аудіопрограми, формат, приблизні характеристики CPU/RAM, частоту дискретизації, буфер, тип помилки та інколи назву JS-файлу й номер рядка.",
+        "Звіти не включають аудіо, пресети, ліцензійні ключі, імена користувачів, шляхи до файлів або довільний текст помилки. Для захисту від зловживань тимчасово обробляються IP-дані, тому повну анонімність не гарантовано. Підстава: ст. 6(1)(a) GDPR. Звіти видаляються не пізніше 90 днів."
+      ]
+    },
+    "updates": {
+      "title": "Завантаження та перевірка оновлень",
+      "paragraphs": [
+        "Файли можуть надаватися через Cloudflare R2 або GitHub. Під час завантаження обробляються технічні дані з’єднання, наприклад IP-адреса, час і запитаний файл (ст. 6(1)(f) GDPR).",
+        "Ручна або ввімкнена користувачем автоматична перевірка оновлень звертається до GitHub Releases API. GitHub може отримувати технічні дані з’єднання. Оновлення встановлюються лише після підтвердження. Політика: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+      ]
+    }
+  },
+  "it": {
+    "accounts": {
+      "title": "Account cliente e attivazione delle licenze",
+      "paragraphs": [
+        "Per accedere all'account software trattiamo indirizzo email, identificativo utente Supabase e dati di sessione tecnicamente necessari. I codici di accesso sono inviati via email. Base giuridica: art. 6(1)(b) GDPR.",
+        "Per le licenze trattiamo prodotto acquistato, stato della licenza, riferimento d'ordine, orari di attivazione e identificativi del dispositivo, necessari per gestire le postazioni consentite e le autorizzazioni offline (art. 6(1)(b) GDPR). Conserviamo i dati finché necessari per contratto, assistenza e obblighi di legge."
+      ]
+    },
+    "purchases": {
+      "title": "Acquisti software, pagamenti e fatture",
+      "paragraphs": [
+        "Per gli acquisti trattiamo email, prodotto, prezzo, riferimenti d'ordine e pagamento, dati di fatturazione e versioni delle condizioni contrattuali e di licenza. I pagamenti sono gestiti da Stripe. Non riceviamo o conserviamo i numeri completi delle carte. Basi giuridiche: art. 6(1)(b) e (c) GDPR.",
+        "Informativa Stripe: https://stripe.com/privacy. Resend invia conferme contrattuali e comunicazioni necessarie. I documenti fiscali sono conservati per i periodi di legge; rimborsi e contestazioni possono richiedere ulteriori dati transazionali."
+      ]
+    },
+    "requests": {
+      "title": "Recesso, assistenza e richieste privacy",
+      "paragraphs": [
+        "Per il recesso online trattiamo nome, email, dettagli del contratto, data e ora di ricezione e numero di riferimento. Resend invia una ricevuta (art. 6(1)(c) e (b) GDPR).",
+        "Per richieste di accesso, rettifica o cancellazione trattiamo i dati necessari per verificare l'identità, rispondere e documentare gli obblighi legali (art. 6(1)(c) GDPR)."
+      ]
+    },
+    "diagnostics": {
+      "title": "Diagnostica beta facoltativa di NEUROKORE",
+      "paragraphs": [
+        "Nelle versioni beta i report tecnici vengono inviati solo con consenso separato nel plugin, disattivato per impostazione predefinita e revocabile. Sono trasmessi versione, categorie del sistema operativo e della DAW, formato, classi CPU/RAM, frequenza di campionamento, buffer, categoria dell'errore ed eventualmente nome del file JavaScript e riga.",
+        "Non vengono inviati audio, preset, chiavi di licenza, nomi utente, percorsi o messaggi liberi. La protezione temporanea contro abusi usa dati IP; non è quindi garantito anonimato assoluto. Base giuridica: art. 6(1)(a) GDPR. I report conservati sono cancellati entro 90 giorni."
+      ]
+    },
+    "updates": {
+      "title": "Download e controllo degli aggiornamenti",
+      "paragraphs": [
+        "I file possono essere distribuiti tramite Cloudflare R2 o GitHub, che possono trattare dati tecnici di connessione, come indirizzo IP, file richiesto e orario (art. 6(1)(f) GDPR).",
+        "I controlli manuali o automatici facoltativi degli aggiornamenti interrogano la API GitHub Releases. GitHub può ricevere dati di connessione. Gli aggiornamenti non vengono installati senza conferma. Informativa: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+      ]
+    }
+  },
+  "es": {
+    "accounts": {
+      "title": "Cuenta de cliente y activación de licencias",
+      "paragraphs": [
+        "Para acceder a la cuenta de software tratamos el correo electrónico, identificador de usuario de Supabase y datos de sesión necesarios. Los códigos de acceso se envían por correo. Base jurídica: art. 6.1.b RGPD.",
+        "Para las licencias tratamos producto adquirido, estado, referencia del pedido, fechas de activación e identificadores del dispositivo, necesarios para controlar los dispositivos autorizados y el uso sin conexión (art. 6.1.b RGPD). Los datos se conservan mientras sean necesarios para el contrato, asistencia y obligaciones legales."
+      ]
+    },
+    "purchases": {
+      "title": "Compras, pagos y facturación",
+      "paragraphs": [
+        "En las compras tratamos email, producto, precio, referencias de pedido y pago, datos de facturación y versiones de los términos y la licencia. Stripe gestiona los pagos. No recibimos ni almacenamos números completos de tarjetas. Bases jurídicas: art. 6.1.b y c RGPD.",
+        "Política de Stripe: https://stripe.com/privacy. Resend envía confirmaciones de contrato y avisos necesarios. Los documentos fiscales se conservan durante los plazos legales y pueden tratarse datos para reembolsos y contracargos."
+      ]
+    },
+    "requests": {
+      "title": "Desistimiento y solicitudes de protección de datos",
+      "paragraphs": [
+        "Para desistimientos online tratamos nombre, email, datos del contrato, momento de recepción y referencia. Resend envía el acuse de recibo (art. 6.1.c y b RGPD).",
+        "Para solicitudes de acceso, rectificación o supresión tratamos los datos necesarios para verificar la identidad, responder y acreditar el cumplimiento legal (art. 6.1.c RGPD)."
+      ]
+    },
+    "diagnostics": {
+      "title": "Diagnóstico beta opcional de NEUROKORE",
+      "paragraphs": [
+        "En versiones beta solo se envían informes técnicos tras consentimiento independiente dentro del plugin, desactivado por defecto y revocable. Incluyen versión, categorías de sistema y programa de audio, formato, clases aproximadas de CPU/RAM, frecuencia de muestreo, búfer, tipo de error y, en ocasiones, archivo JavaScript y número de línea.",
+        "No incluyen audio, presets, claves de licencia, usuarios, rutas de archivos ni textos libres de errores. La protección temporal contra abusos utiliza datos IP, por lo que no se garantiza el anonimato absoluto. Base: art. 6.1.a RGPD. Los informes se eliminan en un máximo de 90 días."
+      ]
+    },
+    "updates": {
+      "title": "Descargas y comprobación de actualizaciones",
+      "paragraphs": [
+        "Los archivos pueden distribuirse mediante Cloudflare R2 o GitHub, que procesan datos técnicos de conexión, como IP, archivo solicitado y hora (art. 6.1.f RGPD).",
+        "La comprobación manual u opcional automática consulta la API GitHub Releases. GitHub puede recibir datos de conexión. Las actualizaciones solo se instalan con confirmación. Información: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+      ]
+    }
+  },
+  "pt": {
+    "accounts": {
+      "title": "Conta de cliente e ativação de licenças",
+      "paragraphs": [
+        "Para iniciar sessão na conta de software tratamos email, identificador de utilizador Supabase e dados de sessão necessários. Os códigos de acesso são enviados por email. Fundamento: artigo 6.º, n.º 1, alínea b), RGPD.",
+        "Para as licenças tratamos produto comprado, estado, referência da encomenda, datas de ativação e identificadores do dispositivo para gerir os dispositivos autorizados e permissões offline. Os dados são mantidos enquanto necessários ao contrato, apoio e obrigações legais."
+      ]
+    },
+    "purchases": {
+      "title": "Compras, pagamentos e faturação",
+      "paragraphs": [
+        "Nas compras tratamos email, produto, preço, referências da encomenda e pagamento, dados de faturação e versões dos termos e da licença. A Stripe processa os pagamentos. Não recebemos ou guardamos números completos de cartões. Fundamentos: artigo 6.º, n.º 1, alíneas b) e c), RGPD.",
+        "Política Stripe: https://stripe.com/privacy. A Resend envia confirmações contratuais e notificações necessárias. Documentos fiscais são conservados pelos prazos legais, incluindo dados necessários a reembolsos."
+      ]
+    },
+    "requests": {
+      "title": "Resolução do contrato e pedidos de proteção de dados",
+      "paragraphs": [
+        "Para pedidos de livre resolução tratamos nome, email, detalhes contratuais, hora de receção e referência. A Resend envia a confirmação (artigo 6.º, n.º 1, alíneas b) e c), RGPD).",
+        "Para pedidos de acesso, retificação ou apagamento tratamos os dados necessários para verificar identidade, responder e comprovar obrigações legais (artigo 6.º, n.º 1, alínea c), RGPD)."
+      ]
+    },
+    "diagnostics": {
+      "title": "Diagnóstico beta opcional do NEUROKORE",
+      "paragraphs": [
+        "Em versões beta, os relatórios técnicos exigem consentimento separado no plugin, desligado por defeito e revogável. Incluem versão, categorias do sistema operativo e aplicação de áudio, formato, classes CPU/RAM, frequência de amostragem, buffer, tipo de erro e, ocasionalmente, ficheiro JavaScript e linha.",
+        "Não incluem áudio, presets, chaves, nomes, caminhos ou mensagens livres. A proteção temporária contra abusos processa dados IP, pelo que não se garante anonimato absoluto. Fundamento: artigo 6.º, n.º 1, alínea a), RGPD. Os relatórios são apagados em até 90 dias."
+      ]
+    },
+    "updates": {
+      "title": "Transferências e verificação de atualizações",
+      "paragraphs": [
+        "Os ficheiros podem ser distribuídos através da Cloudflare R2 ou GitHub, processando dados técnicos de ligação, como IP, ficheiro pedido e hora (artigo 6.º, n.º 1, alínea f), RGPD).",
+        "A verificação manual ou automática opcional utiliza a API GitHub Releases. O GitHub pode receber dados de ligação. As atualizações só são instaladas após confirmação. Política: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+      ]
+    }
+  },
+  "ja": {
+    "accounts": {
+      "title": "顧客アカウントとライセンス認証",
+      "paragraphs": [
+        "ソフトウェアの顧客アカウントへのログインでは、メールアドレス、SupabaseのユーザーID、技術的に必要なセッション情報を処理します。ログインコードはメールで送信します。法的根拠はGDPR第6条第1項(b)です。",
+        "ライセンス管理では、購入製品、状態、注文番号、認証日時、端末識別子を処理し、利用可能な端末数とオフライン認証を管理します。契約履行、サポート、法的義務に必要な期間保存します。"
+      ]
+    },
+    "purchases": {
+      "title": "ソフトウェア購入、支払い、請求書",
+      "paragraphs": [
+        "購入時にはメールアドレス、商品、価格、注文・決済番号、請求情報、契約条件とライセンスの版を処理します。決済はStripeが担当し、当サイトはカード番号全体を取得・保存しません。法的根拠はGDPR第6条第1項(b)および(c)です。",
+        "Stripeのプライバシーポリシー: https://stripe.com/privacy。Resendから契約確認等の必要なメールを送信します。会計書類は法定期間保管し、返金時にも関連する取引情報を処理します。"
+      ]
+    },
+    "requests": {
+      "title": "契約撤回と個人情報に関する請求",
+      "paragraphs": [
+        "オンラインで契約撤回する場合、氏名、メール、契約内容、受付時刻、参照番号を処理し、Resendから受付確認を送ります（GDPR第6条第1項(b)、(c)）。",
+        "開示、訂正、削除の請求では、本人確認、回答、法令遵守の記録に必要な情報を処理します（GDPR第6条第1項(c)）。"
+      ]
+    },
+    "diagnostics": {
+      "title": "NEUROKOREベータ版の任意診断",
+      "paragraphs": [
+        "ベータ版の技術診断は、プラグイン内で別途同意した場合にのみ送信します。初期設定はオフで、いつでも解除できます。収集項目はバージョン、OS・DAWの分類、形式、概略CPU/RAM、サンプルレート、バッファサイズ、エラー分類、場合によってはJavaScriptファイル名と行番号です。",
+        "音声、プリセット、ライセンスキー、ユーザー名、ファイルパス、自由記述のエラー文は送信しません。不正利用対策では一時的にIP関連情報を使用するため、完全な匿名性は保証しません。根拠はGDPR第6条第1項(a)。保存された診断情報は90日以内に削除します。"
+      ]
+    },
+    "updates": {
+      "title": "ダウンロードと更新確認",
+      "paragraphs": [
+        "ファイルはCloudflare R2またはGitHub経由で配信される場合があります。配信時にはIPアドレス、要求したファイル、日時など技術的接続情報が処理されます（GDPR第6条第1項(f)）。",
+        "手動または任意の自動更新確認ではGitHub Releases APIに接続します。GitHubが接続情報を取得する場合があります。更新は確認なしにインストールされません。詳細: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement。"
+      ]
+    }
+  },
+  "ko": {
+    "accounts": {
+      "title": "고객 계정 및 라이선스 활성화",
+      "paragraphs": [
+        "소프트웨어 계정 로그인 시 이메일 주소, Supabase 사용자 ID, 기술적으로 필요한 세션 정보를 처리합니다. 로그인 코드는 이메일로 전송합니다. 법적 근거는 GDPR 제6조 제1항 (b)입니다.",
+        "라이선스 관리에는 구매 제품, 라이선스 상태, 주문 참조, 활성화 시각, 장치 식별자를 사용하여 허용 장치 수와 오프라인 승인을 관리합니다. 계약 이행, 지원 및 법적 의무에 필요한 기간 동안 보관합니다."
+      ]
+    },
+    "purchases": {
+      "title": "소프트웨어 구매, 결제 및 청구",
+      "paragraphs": [
+        "구매 시 이메일, 제품, 가격, 주문·결제 참조, 청구 정보, 계약 및 라이선스 버전을 처리합니다. 결제는 Stripe가 담당하며, 전체 카드 번호는 당사가 수집하거나 저장하지 않습니다. 근거는 GDPR 제6조 제1항 (b) 및 (c)입니다.",
+        "Stripe 정책: https://stripe.com/privacy. Resend로 계약 확인 및 필요한 안내를 발송합니다. 회계 자료는 법정 보존 기간 동안 유지하며 환불 처리에 필요한 거래 정보도 처리할 수 있습니다."
+      ]
+    },
+    "requests": {
+      "title": "계약 철회 및 개인정보 요청",
+      "paragraphs": [
+        "온라인 계약 철회 시 이름, 이메일, 계약 내용, 접수 시각, 참조번호를 처리하며 Resend로 접수 확인을 보냅니다(GDPR 제6조 제1항 (b), (c)).",
+        "열람·정정·삭제 요청에는 신원 확인, 답변 및 법적 의무 이행 기록에 필요한 정보를 처리합니다(GDPR 제6조 제1항 (c))."
+      ]
+    },
+    "diagnostics": {
+      "title": "선택형 NEUROKORE 베타 진단",
+      "paragraphs": [
+        "베타 버전의 기술 오류 보고는 플러그인에서 별도로 동의한 경우에만 전송됩니다. 기본값은 꺼짐이며 언제든 철회할 수 있습니다. 버전, OS·DAW 분류, 형식, 대략적 CPU/RAM, 샘플 속도, 버퍼 크기, 오류 종류와 경우에 따라 JavaScript 파일명 및 줄 번호가 포함됩니다.",
+        "오디오, 프리셋, 라이선스 키, 사용자 이름, 파일 경로 또는 자유 형식 오류 메시지는 포함되지 않습니다. 남용 방지에는 일시적으로 IP 관련 정보를 사용하므로 완전 익명은 보장되지 않습니다. 근거는 GDPR 제6조 제1항 (a)입니다. 저장된 진단 정보는 90일 이내 삭제됩니다."
+      ]
+    },
+    "updates": {
+      "title": "다운로드와 업데이트 확인",
+      "paragraphs": [
+        "소프트웨어 파일은 Cloudflare R2 또는 GitHub에서 제공될 수 있으며 IP 주소, 요청 파일, 시각 등 기술적 접속 정보가 처리될 수 있습니다(GDPR 제6조 제1항 (f)).",
+        "수동 또는 선택형 자동 업데이트 확인은 GitHub Releases API를 호출합니다. GitHub가 기술적 접속 정보를 수신할 수 있습니다. 설치는 사용자의 확인 후에만 이루어집니다. 정책: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement."
+      ]
+    }
+  }
+}
+
+for (const locale of LEGAL_LOCALES) {
+  Object.assign(PRIVACY_COPY[locale], PRIVACY_SERVICE_DETAILS[locale])
+}
+
+const PRIVACY_PRIMARY_REGION: Record<LegalLocale, string> = {
+  "en": "The primary Supabase database for this website is currently hosted in London, United Kingdom (eu-west-2), outside the EU/EEA. The EU has an adequacy decision for the United Kingdom. Provider support access and other international transfers are addressed separately below.",
+  "de": "Die primäre Supabase-Datenbank dieser Website wird derzeit in London, Vereinigtes Königreich (eu-west-2), betrieben und liegt damit außerhalb der EU und des EWR. Für das Vereinigte Königreich besteht ein Angemessenheitsbeschluss der EU. Etwaige internationale Zugriffe durch Dienstleister werden weiter unten erläutert.",
+  "uk": "Основна база даних Supabase наразі розміщена в Лондоні, Велика Британія (eu-west-2), поза ЄС/ЄЕЗ. Для Великої Британії діє рішення ЄС про належний рівень захисту. Інші міжнародні передавання описані нижче.",
+  "it": "Il database principale Supabase è attualmente ospitato a Londra, Regno Unito (eu-west-2), fuori dall'UE/SEE. Per il Regno Unito esiste una decisione di adeguatezza dell'UE. Altri trasferimenti internazionali sono descritti più avanti.",
+  "es": "La base de datos principal de Supabase está alojada actualmente en Londres, Reino Unido (eu-west-2), fuera de la UE/EEE. El Reino Unido cuenta con una decisión de adecuación de la UE. Otros accesos y transferencias internacionales se explican más adelante.",
+  "pt": "A base de dados principal Supabase está atualmente alojada em Londres, Reino Unido (eu-west-2), fora da UE/EEE. Existe uma decisão de adequação da UE para o Reino Unido. Outros acessos e transferências internacionais são explicados abaixo.",
+  "ja": "Supabaseの主要データベースは現在、EU/EEA域外の英国ロンドン（eu-west-2）で運用されています。英国についてはEUの十分性認定があります。その他の国際的なデータ移転については後述します。",
+  "ko": "Supabase 기본 데이터베이스는 현재 EU/EEA 외부인 영국 런던(eu-west-2)에 위치합니다. 영국에는 EU 적정성 결정이 적용됩니다. 다른 국외 이전 및 접근은 아래에서 설명합니다."
+}
+
+for (const locale of LEGAL_LOCALES) {
+  PRIVACY_COPY[locale].hosting.paragraphs.push(PRIVACY_PRIMARY_REGION[locale])
+  for (const [index, id] of (['accounts', 'purchases', 'requests', 'diagnostics', 'updates'] as const).entries()) {
+    PRIVACY_COPY[locale][id].title = String(index + 12) + '. ' + PRIVACY_COPY[locale][id].title
+  }
+  PRIVACY_COPY[locale].rights.title = PRIVACY_COPY[locale].rights.title.replace(/^12\.\s*/, '17. ')
+}
+
 // Legal notices do not require blanket liability disclaimers. The former
 // liability sections cited repealed/misapplied DDG provisions (§§ 8–10).
 // Keep operator, editorial responsibility, dispute information and copyright.
@@ -1044,5 +1369,10 @@ export const PRIVACY_SECTION_ORDER = [
   'embeds',
   'external-links',
   'transfers',
+  'accounts',
+  'purchases',
+  'requests',
+  'diagnostics',
+  'updates',
   'rights',
 ] as const
