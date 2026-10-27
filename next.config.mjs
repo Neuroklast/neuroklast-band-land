@@ -13,6 +13,25 @@ function r2PublicHostname() {
 
 const r2Hostname = r2PublicHostname()
 
+// Temporary branch-only diagnostics: report readiness without revealing credentials.
+if (process.env.VERCEL_ENV === 'preview' &&
+  process.env.VERCEL_GIT_COMMIT_REF === 'chore/neurokore-sandbox-preflight-20261027') {
+  const stripeKey = process.env.STRIPE_SECRET_KEY ?? ''
+  const stripeKeyMode = /^(sk|rk)_test_/.test(stripeKey) ? 'test'
+    : /^(sk|rk)_live_/.test(stripeKey) ? 'live' : stripeKey ? 'invalid' : 'missing'
+  console.info('[neurokore-preview-preflight]', JSON.stringify({
+    stripeKeyMode,
+    sandboxSwitch: process.env.NEUROKORE_SANDBOX_CHECKOUT === 'true',
+    salesSwitch: process.env.NEUROKORE_SALES_ENABLED === 'true',
+    sandboxPricePresent: !!process.env.STRIPE_SANDBOX_PRICE_ID,
+    webhookSecretPresent: !!process.env.STRIPE_WEBHOOK_SECRET,
+    licenseEncryptionPresent: !!process.env.NEUROKORE_KEY_ENCRYPTION_SECRET,
+    licenseSigningPresent: !!process.env.NEUROKORE_SIGNING_PRIVATE_KEY,
+    mailDecryptKeyPresent: !!process.env.SECRETS_ENCRYPTION_KEY,
+    resendEnvFallbackPresent: !!process.env.RESEND_API_KEY,
+  }))
+}
+
 const DEFAULT_FAVICON = '/brand/nk-mark.svg'
 
 const SECURITY_HEADERS = buildSecurityHeaders({ isDev: process.env.NODE_ENV !== 'production' })
