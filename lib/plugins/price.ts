@@ -1,6 +1,6 @@
 import 'server-only'
 import { z } from 'zod'
-import { isNeurokoreSalesEnabled } from '../neurokore/flags'
+import { isNeurokoreSalesEnabled, isNeurokoreSandboxCheckout } from '../neurokore/flags'
 import { db, required } from '../neurokore/server'
 import { stripe } from '../neurokore/stripe'
 
@@ -40,6 +40,10 @@ export async function loadProductPriceForProduct(productId: string): Promise<Pro
     const { data, error } = await db().from('plugin_product_secrets')
       .select('stripe_price_id').eq('product_id', productId).maybeSingle()
     if (error) return null
+    if (isNeurokoreSandboxCheckout()) {
+      const { data: product } = await db().from('products').select('slug').eq('id', productId).maybeSingle()
+      if (product?.slug === 'neurokore') return loadProductPrice(required('STRIPE_SANDBOX_PRICE_ID'))
+    }
     return loadProductPrice(data?.stripe_price_id ?? null)
   } catch {
     return null
