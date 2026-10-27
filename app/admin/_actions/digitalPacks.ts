@@ -5,6 +5,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { requireAdmin } from '@/app/admin/_actions/auth'
 import { createR2S3Client } from '@/lib/r2-s3-client'
+import { MEDIA_BUCKET } from '@/lib/constants'
 import { headR2Object } from '@/lib/storage/r2'
 
 const MAX_ARCHIVE_SIZE = 1024 * 1024 * 1024 // 1 GiB, single PUT. Larger packs need multipart.
@@ -12,7 +13,7 @@ const MAX_ARCHIVE_SIZE = 1024 * 1024 * 1024 // 1 GiB, single PUT. Larger packs n
 function privateBucket(): string {
   const bucket = process.env.R2_BUCKET_DIGITAL_PRODUCTS
   if (!bucket) throw new Error('Set R2_BUCKET_DIGITAL_PRODUCTS to a PRIVATE R2 bucket before uploading.')
-  if (bucket === process.env.R2_BUCKET_MEDIA)
+  if (bucket === MEDIA_BUCKET)
     throw new Error('Digital product bucket must differ from the public media bucket.')
   return bucket
 }
