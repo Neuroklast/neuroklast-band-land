@@ -28,6 +28,17 @@ export async function GET(request: Request) {
     const { error: diagError } = await db().from('plugin_beta_diagnostics')
       .delete().lt('created_at', cutoff)
     if (diagError) throw diagError
+    // Support messages are not accounting records. Remove resolved cases after
+    // six months and any remaining unclosed cases after one year.
+    const resolvedCutoff = new Date(Date.now() - 180 * 86400000).toISOString()
+    const contactCutoff = new Date(Date.now() - 365 * 86400000).toISOString()
+    const client = db()
+    const closed = await client.from('plugin_contact_requests').delete()
+      .not('closed_at', 'is', null).lt('created_at', resolvedCutoff)
+    if (closed.error) throw closed.error
+    const stale = await client.from('plugin_contact_requests').delete()
+      .lt('created_at', contactCutoff)
+    if (stale.error) throw stale.error
     return Response.json({ ok: true, cutoff }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {
     return Response.json({ error: 'Retention cleanup failed' }, { status: 503 })
