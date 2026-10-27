@@ -37,11 +37,14 @@ export function configureNeurokoreSandboxCheckout(params: URLSearchParams): void
   params.delete('consent_collection[terms_of_service]')
 }
 
-export async function stripe(path: string, secret: string, params?: URLSearchParams, idempotencyKey?: string): Promise<unknown> {
+export async function stripe(
+  path: string, secret: string, params?: URLSearchParams, idempotencyKey?: string,
+  apiVersion = '2025-02-24.acacia',
+): Promise<unknown> {
   assertStripeKeyEnvironment(secret)
   const response = await fetch('https://api.stripe.com/v1/' + path, {
     method: params ? 'POST' : 'GET', cache: 'no-store', signal: AbortSignal.timeout(15000),
-    headers: { Authorization: 'Bearer ' + secret, 'Stripe-Version': '2025-02-24.acacia',
+    headers: { Authorization: 'Bearer ' + secret, 'Stripe-Version': apiVersion,
       ...(params ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
       ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
     body: params?.toString(),
