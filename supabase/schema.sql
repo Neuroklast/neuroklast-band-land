@@ -1130,6 +1130,8 @@ CREATE TABLE IF NOT EXISTS public.plugin_orders (
 
 -- Contract confirmation is sent on a durable medium after Stripe fulfilment.
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS confirmation_sent_at timestamptz;
+-- Preserve an order tombstone after wiping a sandbox license, preventing webhook replay.
+ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS test_deleted_at timestamptz;
 
 CREATE TABLE IF NOT EXISTS public.plugin_releases (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1343,6 +1345,10 @@ BEGIN
   IF NOT FOUND OR o.stripe_session IS DISTINCT FROM p_session THEN
     RAISE EXCEPTION 'Order mismatch';
   END IF;
+  -- Never issue a second licence for a deliberately cleared sandbox payment.
+  IF o.test_deleted_at IS NOT NULL THEN
+    RETURN NULL;
+  END IF;
   IF o.license_id IS NOT NULL THEN
     RETURN o.license_id;
   END IF;
@@ -1354,6 +1360,49 @@ BEGIN
   RETURN result;
 END;
 $$;
+
+
+-- Delete only sandbox-purchased license secrets and device activations.
+-- Keep the paid order with a tombstone so repeated webhooks cannot reissue a key.
+CREATE OR REPLACE FUNCTION public.plugin_delete_sandbox_license(
+  p_license uuid, p_product uuid, p_actor uuid
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE
+  o public.plugin_orders;
+  locked_license uuid;
+BEGIN
+  SELECT * INTO o
+    FROM public.plugin_orders
+    WHERE license_id = p_license AND product_id = p_product
+    FOR UPDATE;
+  IF NOT FOUND OR o.test_deleted_at IS NOT NULL
+    OR o.price_id <> 'price_1UV6RMEP3z8hPITngA11NGBL'
+    OR o.stripe_session IS NULL
+    OR o.stripe_session NOT LIKE 'cs_test_%'
+  THEN
+    RAISE EXCEPTION 'Only NEUROKORE Stripe Sandbox purchases can be deleted';
+  END IF;
+
+  SELECT id INTO locked_license FROM public.plugin_licenses
+    WHERE id = p_license AND product_id = p_product AND stripe_session = o.stripe_session
+    FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Matching sandbox licence missing'; END IF;
+
+  UPDATE public.plugin_orders
+    SET license_id = NULL, test_deleted_at = now()
+    WHERE id = o.id;
+  DELETE FROM public.plugin_licenses WHERE id = p_license AND product_id = p_product;
+  INSERT INTO public.plugin_admin_audit(actor, product_id, action, target, detail)
+    VALUES (p_actor, p_product, 'license.sandbox.delete', p_license::text,
+      jsonb_build_object('order_id', o.id, 'test_payment', true));
+  RETURN true;
+END;
+$;
 
 CREATE OR REPLACE FUNCTION public.plugin_publish_release(p_release uuid, p_admin uuid)
 RETURNS void
@@ -1498,12 +1547,14 @@ $$;
 
 REVOKE ALL ON FUNCTION public.plugin_activate(text, text, text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.plugin_delete_sandbox_license(uuid, uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_publish_release(uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_withdraw_release(uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_delete_product(uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_public_catalog() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.plugin_activate(text, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_delete_sandbox_license(uuid, uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_publish_release(uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_withdraw_release(uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_delete_product(uuid) TO service_role;
