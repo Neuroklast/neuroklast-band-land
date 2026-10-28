@@ -10,6 +10,7 @@ const url = z.string().max(2048).refine((value) => {
 
 const locale = z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/)
 const translationKey = z.string().min(1).max(120).regex(/^[a-zA-Z0-9.-]+$/)
+  .refine((key) => key !== 'constructor' && key !== 'prototype', 'Reserved translation key')
 const translationValue = z.record(locale, z.string().max(2000))
 const translations = z.record(translationKey, translationValue)
   .refine((value) => Object.keys(value).length <= 120, 'Too many translation keys')
