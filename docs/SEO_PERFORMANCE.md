@@ -23,7 +23,7 @@
 
 ## Measurable budgets
 Workflow: `.github/workflows/lighthouse.yml` on pull requests.
-Runs **mobile Lighthouse on the built local app**, not a public production deployment, with 2 samples each for homepage, plugins and releases.
+Runs a Pixel 7 browser smoke audit (public routes, horizontal overflow and reduced motion), then **mobile Lighthouse on the built local app**, not a public production deployment, with 2 samples each for homepage, plugins and releases.
 
 Initial hard caps:
 - LCP <= 5500 ms (lab simulated mobile)

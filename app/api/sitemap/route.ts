@@ -115,8 +115,7 @@ async function fetchGigUrls(): Promise<SitemapUrl[]> {
     for (const row of rows) {
       const slug = slugById.get(row.id)
       if (!slug) continue
-      // No lastmod here: gigs have no updated_at, and the event date is not a
-      // modification date. GET() applies the site_config content stamp instead.
+      // No lastmod here: gig event dates are not modification dates.
       entries.push({
         loc: `${BASE_URL}/gigs/${slug}`,
         changefreq: 'weekly',

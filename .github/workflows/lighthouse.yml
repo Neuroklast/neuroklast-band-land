@@ -35,6 +35,10 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
+      - name: Install mobile browser
+        run: npx playwright install --with-deps chromium
+      - name: Mobile layout and reduced-motion smoke
+        run: npx playwright test e2e/mobile.spec.ts --project=mobile-chromium
       - name: Lighthouse mobile collection and budgets
         run: |
           npm install -g @lhci/cli@0.15.1
