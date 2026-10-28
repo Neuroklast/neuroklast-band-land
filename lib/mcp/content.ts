@@ -43,7 +43,7 @@ const EDITABLE = {
   releases: {
     create: true,
     required: ['title', 'type'],
-    fields: { title: short, type: z.enum(['album', 'ep', 'single', 'remix', 'compilation']), release_date: date.nullable(), description: nullableText, cover_storage_path: nullableShort, cover_url: url, streaming_links: streamingLinks, tracks, custom_links: customLinks, artists: strings, active: z.boolean(), display_order: order },
+    fields: { title: short, type: z.enum(['album', 'ep', 'single', 'song', 'remix', 'compilation']), release_date: date.nullable(), description: nullableText, cover_storage_path: nullableShort, cover_url: url, streaming_links: streamingLinks, tracks, custom_links: customLinks, artists: strings, active: z.boolean(), display_order: order },
   },
   bio: {
     create: false,
