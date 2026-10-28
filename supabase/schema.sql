@@ -1976,6 +1976,7 @@ CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
   target_key text,
   changes jsonb NOT NULL,
   previous_hash text,
+  previous_snapshot jsonb,
   requested_by uuid NOT NULL REFERENCES auth.users(id),
   client_id text NOT NULL,
   status text NOT NULL DEFAULT 'pending'
@@ -1985,9 +1986,9 @@ CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
   reviewed_by uuid REFERENCES auth.users(id),
   error text,
   CONSTRAINT mcp_target_check CHECK (
-    (operation = 'create' AND target_id IS NULL AND target_key IS NULL AND previous_hash IS NULL)
-    OR (operation = 'update' AND target_id IS NOT NULL AND target_key IS NULL AND previous_hash IS NOT NULL)
-    OR (operation = 'config' AND target_id IS NULL AND target_key IN ('hero','merchandise','translations') AND previous_hash IS NOT NULL)
+    (operation = 'create' AND target_id IS NULL AND target_key IS NULL AND previous_hash IS NULL AND previous_snapshot IS NULL)
+    OR (operation = 'update' AND target_id IS NOT NULL AND target_key IS NULL AND previous_hash IS NOT NULL AND previous_snapshot IS NOT NULL)
+    OR (operation = 'config' AND target_id IS NULL AND target_key IN ('hero','merchandise','translations') AND previous_hash IS NOT NULL AND previous_snapshot IS NOT NULL)
   )
 );
 CREATE INDEX IF NOT EXISTS mcp_content_requests_queue_idx
@@ -2030,3 +2031,182 @@ BEGIN
   END LOOP;
 END;
 $mcp_oauth_isolation$;
+
+
+-- Atomic apply prevents time-of-check/time-of-use races and double approvals.
+-- Called exclusively by the server-side service_role after MFA + admin checks.
+-- OWASP A01: table, columns and config keys are independently allowlisted.
+CREATE OR REPLACE FUNCTION public.mcp_apply_content_request(
+  p_request_id uuid, p_reviewer uuid
+) RETURNS text
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+AS $mcp_apply$
+DECLARE
+  proposed public.mcp_content_requests%ROWTYPE;
+  field_name text;
+  allowed_fields text[];
+  columns_list text;
+  new_row jsonb;
+  old_row jsonb;
+  old_value jsonb;
+  new_value jsonb;
+  result_id uuid;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = p_reviewer AND role = 'admin') THEN
+    RAISE EXCEPTION 'Reviewer is not a current administrator';
+  END IF;
+
+  SELECT * INTO proposed FROM public.mcp_content_requests
+    WHERE id = p_request_id FOR UPDATE;
+  IF NOT FOUND OR proposed.status <> 'pending' THEN
+    RETURN 'not_pending';
+  END IF;
+  IF proposed.changes IS NULL OR jsonb_typeof(proposed.changes) <> 'object' THEN
+    RAISE EXCEPTION 'Invalid pending proposal';
+  END IF;
+
+  IF proposed.operation = 'config' THEN
+    IF proposed.collection <> 'site_config'
+      OR proposed.target_key NOT IN ('hero', 'merchandise', 'translations') THEN
+      RAISE EXCEPTION 'Invalid configuration target';
+    END IF;
+    SELECT value INTO old_value FROM public.site_config
+      WHERE key = proposed.target_key FOR UPDATE;
+    IF NOT FOUND THEN old_value := NULL; END IF;
+    IF jsonb_build_object('value', old_value) IS DISTINCT FROM proposed.previous_snapshot THEN
+      UPDATE public.mcp_content_requests
+        SET status='conflict', error='Site copy changed since this proposal',
+            reviewed_at=now(), reviewed_by=p_reviewer
+        WHERE id=p_request_id;
+      RETURN 'conflict';
+    END IF;
+
+    IF proposed.target_key = 'hero' THEN
+      allowed_fields := ARRAY['headline','tagline','ctaLabel','ctaUrl'];
+    ELSIF proposed.target_key = 'merchandise' THEN
+      allowed_fields := ARRAY['footerText','footerUrl'];
+    ELSE
+      allowed_fields := NULL; -- translation keys are validated by the API
+    END IF;
+    IF allowed_fields IS NOT NULL AND EXISTS (
+      SELECT 1 FROM jsonb_object_keys(proposed.changes) key
+      WHERE key <> ALL(allowed_fields)
+    ) THEN
+      RAISE EXCEPTION 'Forbidden config field';
+    END IF;
+    IF jsonb_typeof(old_value) IS DISTINCT FROM 'object' THEN
+      new_value := '{}'::jsonb;
+    ELSE
+      new_value := old_value;
+    END IF;
+
+    IF proposed.target_key = 'translations' THEN
+      FOR field_name IN SELECT jsonb_object_keys(proposed.changes) LOOP
+        IF field_name IN ('__proto__','prototype','constructor') OR
+           jsonb_typeof(proposed.changes -> field_name) <> 'object' THEN
+          RAISE EXCEPTION 'Invalid translation patch';
+        END IF;
+        new_value := jsonb_set(
+          new_value, ARRAY[field_name],
+          (CASE WHEN jsonb_typeof(new_value -> field_name) = 'object'
+             THEN new_value -> field_name ELSE '{}'::jsonb END)
+             || (proposed.changes -> field_name), true
+        );
+      END LOOP;
+    ELSE
+      new_value := new_value || proposed.changes;
+    END IF;
+    INSERT INTO public.site_config (key, value, updated_at)
+    VALUES (proposed.target_key, new_value, now())
+    ON CONFLICT (key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at;
+  ELSE
+    -- No SQL identifier may be accepted without appearing in this registry.
+    CASE proposed.collection
+      WHEN 'news_posts' THEN allowed_fields := ARRAY['title','slug','excerpt','body','link','cover_storage_path','cover_url','published_at','display_order','active'];
+      WHEN 'gigs' THEN allowed_fields := ARRAY['title','event_date','venue','city','country','ticket_url','festival_name','description','gig_type','status','sold_out','supporting_artists','event_links','photo_storage_path','photo_url','active'];
+      WHEN 'releases' THEN allowed_fields := ARRAY['title','type','release_date','description','cover_storage_path','cover_url','streaming_links','tracks','custom_links','artists','active','display_order'];
+      WHEN 'bio' THEN allowed_fields := ARRAY['content','achievements','collabs'];
+      WHEN 'members' THEN allowed_fields := ARRAY['name','role','bio','photo_storage_path','photo_url','display_order','active'];
+      WHEN 'gallery' THEN allowed_fields := ARRAY['alt','caption','display_order','active'];
+      WHEN 'media_downloads' THEN allowed_fields := ARRAY['title','description','category','display_order','active'];
+      WHEN 'partners' THEN allowed_fields := ARRAY['name','url','category','description','socials','display_order','active','logo_white'];
+      WHEN 'social_links' THEN allowed_fields := ARRAY['platform','url','label','display_order','active'];
+      WHEN 'music_highlights' THEN allowed_fields := ARRAY['title','youtube_url','description','display_order','active'];
+      WHEN 'merchandise' THEN allowed_fields := ARRAY['title','external_url','display_order','active'];
+      WHEN 'products' THEN allowed_fields := ARRAY['title','description','href','display_order','active'];
+      WHEN 'soundpacks' THEN allowed_fields := ARRAY['title','description','format_description','license_notes','sample_count','display_order','active'];
+      ELSE RAISE EXCEPTION 'Unsupported editorial collection';
+    END CASE;
+    IF EXISTS (
+      SELECT 1 FROM jsonb_object_keys(proposed.changes) key
+      WHERE key <> ALL(allowed_fields)
+    ) THEN
+      RAISE EXCEPTION 'Forbidden editorial field';
+    END IF;
+    IF proposed.operation = 'create' THEN
+      IF proposed.collection IN ('bio','gallery','media_downloads','soundpacks') THEN
+        RAISE EXCEPTION 'Creation disabled for this collection';
+      END IF;
+      -- A model cannot bypass the unpublished-draft requirement.
+      new_row := proposed.changes || '{"active":false}'::jsonb;
+    ELSIF proposed.operation = 'update' THEN
+      new_row := proposed.changes;
+      EXECUTE format(
+        'SELECT to_jsonb(t) FROM public.%I t WHERE id = $1 FOR UPDATE',
+        proposed.collection
+      ) INTO old_row USING proposed.target_id;
+      IF old_row IS NULL THEN
+        UPDATE public.mcp_content_requests
+          SET status='conflict', error='Content was deleted',
+              reviewed_at=now(), reviewed_by=p_reviewer WHERE id=p_request_id;
+        RETURN 'conflict';
+      END IF;
+      IF jsonb_typeof(proposed.previous_snapshot) <> 'object' THEN
+        RAISE EXCEPTION 'Missing previous content snapshot';
+      END IF;
+      FOR field_name IN SELECT jsonb_object_keys(proposed.previous_snapshot) LOOP
+        IF field_name <> 'id' AND field_name <> ALL(allowed_fields) THEN
+          RAISE EXCEPTION 'Unexpected snapshot field';
+        END IF;
+        IF (old_row -> field_name) IS DISTINCT FROM
+           (proposed.previous_snapshot -> field_name) THEN
+          UPDATE public.mcp_content_requests
+            SET status='conflict', error='Content changed since this proposal',
+                reviewed_at=now(), reviewed_by=p_reviewer WHERE id=p_request_id;
+          RETURN 'conflict';
+        END IF;
+      END LOOP;
+      IF proposed.collection = 'releases' THEN
+        new_row := new_row || '{"manually_edited":true}'::jsonb;
+      END IF;
+    ELSE
+      RAISE EXCEPTION 'Invalid editorial operation';
+    END IF;
+
+    SELECT string_agg(format('%I', key), ',' ORDER BY key)
+      INTO columns_list FROM jsonb_object_keys(new_row) key;
+    IF columns_list IS NULL THEN RAISE EXCEPTION 'No editorial fields supplied'; END IF;
+    IF proposed.operation = 'create' THEN
+      EXECUTE format(
+        'INSERT INTO public.%I (%s) SELECT %s FROM jsonb_populate_record(NULL::public.%I, $1) RETURNING id',
+        proposed.collection, columns_list, columns_list, proposed.collection
+      ) INTO result_id USING new_row;
+    ELSE
+      EXECUTE format(
+        'UPDATE public.%I SET (%s) = (SELECT %s FROM jsonb_populate_record(NULL::public.%I, $1)) WHERE id = $2 RETURNING id',
+        proposed.collection, columns_list, columns_list, proposed.collection
+      ) INTO result_id USING new_row, proposed.target_id;
+    END IF;
+    IF result_id IS NULL THEN RAISE EXCEPTION 'Content write did not complete'; END IF;
+  END IF;
+
+  UPDATE public.mcp_content_requests
+    SET status='approved', reviewed_at=now(), reviewed_by=p_reviewer, error=NULL
+    WHERE id=p_request_id AND status='pending';
+  IF NOT FOUND THEN RAISE EXCEPTION 'Approval status was not updated'; END IF;
+  RETURN 'approved';
+END
+$mcp_apply$;
+REVOKE ALL ON FUNCTION public.mcp_apply_content_request(uuid,uuid)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.mcp_apply_content_request(uuid,uuid) TO service_role;
