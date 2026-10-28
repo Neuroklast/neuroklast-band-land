@@ -66,7 +66,7 @@ function NewsSortableRow({
         transition,
         opacity: isDragging ? 0.65 : 1,
       }}
-      className={'border-b border-zinc-800/50 ' + (isDragging ? 'relative z-10 bg-zinc-900 shadow-lg' : 'bg-zinc-950')}
+      className={'border-b border-zinc-800/50 ' + (isDragging ? 'bg-zinc-900 shadow-lg' : 'bg-zinc-950')}
       data-testid={'news-row-' + post.id}
     >
       <td className="py-2 pr-2">
