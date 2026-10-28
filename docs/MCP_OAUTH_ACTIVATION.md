@@ -15,6 +15,10 @@ Project: cvxhbdmhtesnkubublar.
 
 Open /admin/integrations. After verifying MFA, add each provider's pre-registered Supabase OAuth client ID to the private allowlist. The page permits immediate per-client block, re-enable, edit-by-registering-the-same-ID, and permanent removal from the NEUROKLAST allowlist, without redeployment. Removing the allowlist entry does not delete the OAuth app registered with Supabase Auth; delete/revoke that separately. Duplicate client registration now returns a correct Already registered status. An OAuth application must still be installed once in the provider account, unless the provider supports one-click installation. Do not copy client secrets into the admin form.
 
+## ChatGPT action discovery
+
+OAuth success does not prove MCP tool discovery works. The server supports modern `server/discover` (2026-07-28) and legacy `initialize` (2025-06-18), followed by `tools/list`. All three require a valid bearer token, an enabled registered OAuth client, a verified administrator and an AAL2 session claim. Modern MCP responses include `resultType: "complete"`, while legacy initialization remains backward compatible. If ChatGPT reports "Authentication succeeded, action discovery failed", inspect Vercel production `POST /api/mcp` logs and the sanitized `[MCP_AUTH_DENIED]` reason; never paste access tokens or client secrets into logs. Reconnect the existing ChatGPT integration after deployment. A real-token end-to-end test is still required.
+
 ## Validate
 
 Discovery: https://neuroklast.net/.well-known/oauth-protected-resource/api/mcp
