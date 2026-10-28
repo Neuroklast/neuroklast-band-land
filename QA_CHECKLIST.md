@@ -2,7 +2,9 @@
 
 ## Private MCP editorial integration
 
-- [ ] Unset OAuth client ID: MCP rejects all requests; no anonymous reads.
+- [ ] Empty OAuth client allowlist: MCP rejects all bearer tokens; no anonymous reads.
+- [ ] Each registered client ID must be separately enabled by an MFA-backed admin; disabled clients are rejected on the next request.
+- [ ] Direct anon/authenticated database access to `mcp_oauth_clients` is denied.
 - [ ] OAuth login requires an allowlisted client ID, real administrator account and AAL2 MFA.
 - [ ] Verify no access to legal content, orders, personal information, plugin keys or payment pricing.
 - [ ] Check content read, paginated collections, draft proposal, admin approval/rejection and audit history.
