@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { AdminNav } from '@/app/admin/_components/AdminNav'
 import {
   ResizableHandle,
@@ -51,6 +52,10 @@ interface AdminShellProps {
 }
 
 export function AdminShell({ children }: AdminShellProps) {
+  const fixedReview = usePathname() === '/admin/ai-content'
+  const contentClass = fixedReview
+    ? 'min-h-0 min-w-0 flex-1 overflow-hidden p-3 sm:p-4 lg:p-5'
+    : 'min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-8'
   const [defaultLayout, setDefaultLayout] = useState<AdminShellLayout>(FALLBACK_LAYOUT)
   const [layoutReady, setLayoutReady] = useState(false)
   const [viewport, setViewport] = useState<'unknown' | 'mobile' | 'desktop'>('unknown')
@@ -77,7 +82,7 @@ export function AdminShell({ children }: AdminShellProps) {
     return (
       <>
         <AdminNav mobileOnly />
-        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-8">{children}</main>
+        <main className={contentClass}>{children}</main>
       </>
     )
   }
@@ -87,7 +92,7 @@ export function AdminShell({ children }: AdminShellProps) {
       {!layoutReady ? (
         <div className="flex min-h-0 h-full flex-1 w-full">
           <div className="w-64 shrink-0 border-r border-zinc-800 bg-zinc-950" aria-hidden="true" />
-          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-8">{children}</main>
+          <main className={contentClass}>{children}</main>
         </div>
       ) : (
         <ResizablePanelGroup
@@ -111,7 +116,9 @@ export function AdminShell({ children }: AdminShellProps) {
             className="w-2 bg-zinc-800/80 hover:bg-zinc-700 transition-colors data-[resize-handle-active]:bg-red-900/50"
           />
           <ResizablePanel id="admin-main" minSize="50%" className="min-w-0">
-            <main className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain p-8">{children}</main>
+            <main className={fixedReview
+              ? 'h-full min-h-0 min-w-0 overflow-hidden p-3 sm:p-4 lg:p-5'
+              : 'h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain p-8'}>{children}</main>
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
