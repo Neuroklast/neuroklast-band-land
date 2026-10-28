@@ -1,7 +1,7 @@
 {
   "name": "neuroklast-band-land",
   "private": true,
-  "license": "BSL-1.1",
+  "license": "SEE LICENSE IN LICENSE",
   "version": "3.0.0",
   "scripts": {
     "dev": "next dev",

@@ -7,7 +7,8 @@ export const COMMERCE_PRIVACY: Record<LegalLocale, { title: string; paragraphs: 
     "paragraphs": [
       "Für dein Kundenkonto und deine Softwarelizenzen verarbeiten wir die E-Mail-Adresse, Bestell- und Lizenzangaben sowie die Geräte, auf denen du eine Lizenz aktivierst (Art. 6 Abs. 1 lit. b DSGVO). Unterstützte NEUROKORE-Versionen fragen, sofern eine Internetverbindung besteht, höchstens einmal täglich den Lizenzstatus ab. Dabei übertragen sie nur die Lizenz-ID und eine pseudonyme, gehashte Gerätekennung. Bei fehlender Verbindung wird keine Lizenz gesperrt. Ausschließlich ein digital signierter Widerruf wird lokal gespeichert und beim nächsten Start berücksichtigt.",
       "Zahlungen verarbeitet Stripe. Dabei erhält Stripe die für die Zahlung erforderlichen Daten. Vollständige Kartennummern speichern wir nicht. Vertragsbestätigungen werden über Resend versendet. Rechnungs- und Bestellunterlagen bewahren wir entsprechend den gesetzlichen Fristen auf (Art. 6 Abs. 1 lit. b und c DSGVO).",
-      "Wenn du einen Vertrag widerrufst, verarbeiten wir deine Kontaktdaten, Vertragsangaben und den Eingang deiner Erklärung. Du erhältst eine Bestätigung per E-Mail (Art. 6 Abs. 1 lit. b und c DSGVO)."
+      "Wenn du einen Vertrag widerrufst, verarbeiten wir deine Kontaktdaten, Vertragsangaben und den Eingang deiner Erklärung. Du erhältst eine Bestätigung per E-Mail (Art. 6 Abs. 1 lit. b und c DSGVO).",
+      "Für technische NEUROKORE-Betadiagnosen können Pluginversion, Betriebssystem, DAW, Pluginformat, grobe Hardwareangaben, Abtastrate, Puffergröße und ein vordefinierter Fehlercode an unsere Website übertragen werden. Freitexte und direkte Gerätekennungen werden dabei nicht im Diagnoseeintrag gespeichert. Verbindungsdaten können beim technischen Empfang und zum Schutz vor Missbrauch verarbeitet werden. Die Diagnoseeinträge werden nach spätestens 90 Tagen planmäßig gelöscht. Ob und unter welchen Voraussetzungen der Client Diagnosen sendet, wird zusätzlich im Plugin erläutert; eine freiwillige Einwilligung ist erforderlich, soweit keine andere tragfähige Rechtsgrundlage besteht."
     ]
   },
   "en": {
@@ -15,7 +16,8 @@ export const COMMERCE_PRIVACY: Record<LegalLocale, { title: string; paragraphs: 
     "paragraphs": [
       "We use your email address, order and licence details, and activated devices to provide your software account and purchased licences (Art. 6(1)(b) GDPR). Compatible NEUROKORE versions make a background licence-status check at most once per day when online, sending only the licence ID and a pseudonymous hashed device identifier. No internet connection is required to continue using a valid offline licence. Only a digitally signed revocation is stored locally and applied on the next launch.",
       "Stripe handles payments and receives the necessary payment details. We do not store complete card numbers. Resend delivers contract confirmations. We retain invoices and order records for the periods required by law (Art. 6(1)(b) and (c) GDPR).",
-      "If you withdraw from a contract, we process your contact details, the contract information and the time your request was received. A confirmation is sent by email (Art. 6(1)(b) and (c) GDPR)."
+      "If you withdraw from a contract, we process your contact details, the contract information and the time your request was received. A confirmation is sent by email (Art. 6(1)(b) and (c) GDPR).",
+      "Technical NEUROKORE beta diagnostics may transmit the plugin version, operating system, host DAW, plugin format, coarse hardware characteristics, sample rate, buffer size and a predefined error code to our website. Diagnostic records do not store free text or direct device identifiers. Connection data may be processed for delivery and abuse prevention. Diagnostic records are scheduled for deletion within 90 days. The plugin must separately explain when diagnostics are sent and obtain opt-in where required by law."
     ]
   },
   "uk": {

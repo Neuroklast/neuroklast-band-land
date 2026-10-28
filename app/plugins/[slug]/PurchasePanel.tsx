@@ -50,7 +50,7 @@ export function PurchasePanel({
       const response = await fetch('/api/plugins/' + encodeURIComponent(slug) + '/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locale: language }),
+        body: JSON.stringify({ locale: language, acceptedTerms: true }),
       })
       const body: { url?: string; error?: string } = await response.json().catch(() => ({}))
       if (!response.ok || !body.url) throw new Error(body.error || 'Checkout is currently unavailable.')
