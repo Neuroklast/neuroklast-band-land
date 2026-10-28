@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/app/admin/_actions/auth'
 import { getAdminUserId } from '@/lib/api-admin-auth'
 import { createAdminClient } from '@/lib/supabaseAdmin'
+import { createActionClient } from '@/lib/supabaseServer'
 import { allowedContentFields, digestContent, getContentDefinition, parseContentChanges } from '@/lib/mcp/content'
 import { z } from 'zod'
 import { mergeSiteContent, parseSiteContentPatch } from '@/lib/mcp/site-config'
@@ -13,6 +14,10 @@ const uuid = z.string().uuid()
 export async function reviewMcpContent(requestId: string, decision: 'approve' | 'reject'): Promise<{ error?: string; success?: boolean }> {
   try {
     await requireAdmin()
+    // Content publishing requires a fresh MFA-assured admin session, too.
+    const session = await createActionClient()
+    const { data: assurance, error: assuranceError } = await session.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (assuranceError || assurance?.currentLevel !== 'aal2') return { error: 'MFA (AAL2) is required to approve editorial changes' }
     const reviewer = await getAdminUserId()
     if (!reviewer || !uuid.safeParse(requestId).success || !['approve', 'reject'].includes(decision)) {
       return { error: 'Review request invalid' }
