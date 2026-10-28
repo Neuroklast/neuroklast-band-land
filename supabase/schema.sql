@@ -2033,7 +2033,7 @@ GRANT EXECUTE ON FUNCTION public.mcp_verify_oauth_mfa_grant(uuid, uuid, text) TO
 CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   collection text NOT NULL,
-  operation text NOT NULL CHECK (operation IN ('create', 'update', 'config')),
+  operation text NOT NULL CHECK (operation IN ('create', 'update', 'delete', 'config')),
   target_id uuid,
   target_key text,
   changes jsonb NOT NULL,
@@ -2049,9 +2049,20 @@ CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
   error text,
   CONSTRAINT mcp_target_check CHECK (
     (operation = 'create' AND target_id IS NULL AND target_key IS NULL AND previous_hash IS NULL AND previous_snapshot IS NULL)
-    OR (operation = 'update' AND target_id IS NOT NULL AND target_key IS NULL AND previous_hash IS NOT NULL AND previous_snapshot IS NOT NULL)
+    OR (operation IN ('update','delete') AND target_id IS NOT NULL AND target_key IS NULL AND previous_hash IS NOT NULL AND previous_snapshot IS NOT NULL)
     OR (operation = 'config' AND target_id IS NULL AND target_key IN ('hero','merchandise','translations') AND previous_hash IS NOT NULL AND previous_snapshot IS NOT NULL)
   )
+);
+-- Upgrade existing installations: allow separately reviewed editorial removal
+-- while retaining the same mandatory target/snapshot requirement.
+ALTER TABLE public.mcp_content_requests DROP CONSTRAINT IF EXISTS mcp_content_requests_operation_check;
+ALTER TABLE public.mcp_content_requests ADD CONSTRAINT mcp_content_requests_operation_check
+  CHECK (operation IN ('create','update','delete','config'));
+ALTER TABLE public.mcp_content_requests DROP CONSTRAINT IF EXISTS mcp_target_check;
+ALTER TABLE public.mcp_content_requests ADD CONSTRAINT mcp_target_check CHECK (
+    (operation = 'create' AND target_id IS NULL AND target_key IS NULL AND previous_hash IS NULL AND previous_snapshot IS NULL)
+    OR (operation IN ('update','delete') AND target_id IS NOT NULL AND target_key IS NULL AND previous_hash IS NOT NULL AND previous_snapshot IS NOT NULL)
+    OR (operation = 'config' AND target_id IS NULL AND target_key IN ('hero','merchandise','translations') AND previous_hash IS NOT NULL AND previous_snapshot IS NOT NULL)
 );
 CREATE INDEX IF NOT EXISTS mcp_content_requests_queue_idx
   ON public.mcp_content_requests (status, created_at DESC);
@@ -2199,6 +2210,55 @@ BEGIN
       WHEN 'soundpacks' THEN allowed_fields := ARRAY['title','description','format_description','license_notes','sample_count','display_order','active'];
       ELSE RAISE EXCEPTION 'Unsupported editorial collection';
     END CASE;
+    -- Deliberately destructive operation: only enumerated editorial tables.
+    -- Commerce records are excluded because they have order/license relations.
+    IF proposed.operation = 'delete' THEN
+      IF proposed.collection NOT IN (
+        'news_posts','gigs','releases','bio','members','gallery','media_downloads',
+        'partners','social_links','music_highlights','merchandise'
+      ) THEN
+        RAISE EXCEPTION 'Deletion unavailable for this collection';
+      END IF;
+      IF jsonb_typeof(proposed.changes -> 'reason') IS DISTINCT FROM 'string'
+        OR (SELECT count(*) FROM jsonb_object_keys(proposed.changes)) <> 1
+        OR char_length(btrim(proposed.changes ->> 'reason')) NOT BETWEEN 5 AND 500
+      THEN
+        RAISE EXCEPTION 'Invalid deletion reason';
+      END IF;
+      EXECUTE format('SELECT to_jsonb(t) FROM public.%I t WHERE id = $1 FOR UPDATE', proposed.collection)
+        INTO old_row USING proposed.target_id;
+      IF old_row IS NULL THEN
+        UPDATE public.mcp_content_requests
+          SET status='conflict', error='Content no longer exists',
+              reviewed_at=now(), reviewed_by=p_reviewer
+          WHERE id=p_request_id;
+        RETURN 'conflict';
+      END IF;
+      IF jsonb_typeof(proposed.previous_snapshot) <> 'object'
+        OR (proposed.previous_snapshot ->> 'id') IS DISTINCT FROM proposed.target_id::text
+      THEN
+        RAISE EXCEPTION 'Invalid deletion snapshot';
+      END IF;
+      FOR field_name IN SELECT unnest(allowed_fields) LOOP
+        IF NOT (proposed.previous_snapshot ? field_name)
+          OR (old_row -> field_name) IS DISTINCT FROM (proposed.previous_snapshot -> field_name)
+        THEN
+          UPDATE public.mcp_content_requests
+            SET status='conflict', error='Content changed since deletion was proposed',
+                reviewed_at=now(), reviewed_by=p_reviewer
+            WHERE id=p_request_id;
+          RETURN 'conflict';
+        END IF;
+      END LOOP;
+      EXECUTE format('DELETE FROM public.%I WHERE id = $1 RETURNING id', proposed.collection)
+        INTO result_id USING proposed.target_id;
+      IF result_id IS NULL THEN RAISE EXCEPTION 'Content removal failed'; END IF;
+      UPDATE public.mcp_content_requests
+        SET status='approved', reviewed_at=now(), reviewed_by=p_reviewer, error=NULL
+        WHERE id=p_request_id AND status='pending';
+      IF NOT FOUND THEN RAISE EXCEPTION 'Approval status was not updated'; END IF;
+      RETURN 'approved';
+    END IF;
     IF EXISTS (
       SELECT 1 FROM jsonb_object_keys(proposed.changes) key
       WHERE key <> ALL(allowed_fields)
