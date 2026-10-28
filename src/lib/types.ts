@@ -23,7 +23,7 @@ export interface Gig {
 export interface Release {
   id: string
   title: string
-  type?: 'album' | 'ep' | 'single' | 'remix' | 'compilation'
+  type?: 'album' | 'ep' | 'single' | 'song' | 'remix' | 'compilation'
   artwork?: string
   releaseDate?: string // ISO 8601: "2024-11-01"
   description?: string
