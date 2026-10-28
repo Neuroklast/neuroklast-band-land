@@ -18,7 +18,7 @@ export default async function DigitalPackDetail({
   if(!pack)notFound()
   const cover = r2Url(pack.image_storage_path) ?? pack.image_url
   return <LegalPageShell>
-    <main className="min-h-screen bg-black px-5 pb-28 pt-28 text-white sm:px-8">
+    <section className="min-h-screen bg-black px-5 pb-28 pt-28 text-white sm:px-8">
       <div className="mx-auto max-w-6xl space-y-10">
         <nav className="font-mono text-xs text-zinc-400">
           <Link href="/soundpacks" className="hover:text-white">SOUND PACKS</Link> / {pack.title}
@@ -57,6 +57,6 @@ export default async function DigitalPackDetail({
           </div>
         </div>
       </div>
-    </main>
+    </section>
   </LegalPageShell>
 }
