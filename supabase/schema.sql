@@ -2396,3 +2396,32 @@ $reorder_news$;
 REVOKE ALL ON FUNCTION public.reorder_news_posts(uuid[],uuid[])
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.reorder_news_posts(uuid[],uuid[]) TO service_role;
+
+
+-- Production role hardening and targeted foreign-key indexes (2026-10-28).
+-- Analytics ingestion and cleanup must use the server's service_role.
+-- Public client roles do not need direct read/write of customer analytics.
+REVOKE ALL ON TABLE public.analytics_events FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.analytics_events TO service_role;
+-- The public product catalogue is read-only. Admin changes require an
+-- authenticated admin and the existing RLS policies.
+REVOKE INSERT, UPDATE, DELETE ON TABLE public.products FROM PUBLIC, anon;
+
+-- These simple FK indexes are idempotent and contain no personal data themselves.
+CREATE INDEX IF NOT EXISTS idx_mcp_content_requests_requested_by_fk ON public.mcp_content_requests (requested_by);
+CREATE INDEX IF NOT EXISTS idx_mcp_content_requests_reviewed_by_fk ON public.mcp_content_requests (reviewed_by);
+CREATE INDEX IF NOT EXISTS idx_mcp_oauth_clients_created_by_fk ON public.mcp_oauth_clients (created_by);
+CREATE INDEX IF NOT EXISTS idx_mcp_oauth_clients_updated_by_fk ON public.mcp_oauth_clients (updated_by);
+CREATE INDEX IF NOT EXISTS idx_mcp_oauth_mfa_grants_client_id_fk ON public.mcp_oauth_mfa_grants (client_id);
+CREATE INDEX IF NOT EXISTS idx_plugin_admin_audit_actor_fk ON public.plugin_admin_audit (actor);
+CREATE INDEX IF NOT EXISTS idx_plugin_admin_audit_product_id_fk ON public.plugin_admin_audit (product_id);
+CREATE INDEX IF NOT EXISTS idx_plugin_download_events_artifact_id_fk ON public.plugin_download_events (artifact_id);
+CREATE INDEX IF NOT EXISTS idx_plugin_download_events_release_id_fk ON public.plugin_download_events (release_id);
+CREATE INDEX IF NOT EXISTS idx_plugin_download_events_product_id_fk ON public.plugin_download_events (product_id);
+CREATE INDEX IF NOT EXISTS idx_plugin_licenses_created_by_fk ON public.plugin_licenses (created_by);
+CREATE INDEX IF NOT EXISTS idx_plugin_orders_license_id_fk ON public.plugin_orders (license_id);
+CREATE INDEX IF NOT EXISTS idx_plugin_orders_user_id_fk ON public.plugin_orders (user_id);
+CREATE INDEX IF NOT EXISTS idx_plugin_releases_published_by_fk ON public.plugin_releases (published_by);
+CREATE INDEX IF NOT EXISTS idx_privacy_requests_completed_by_fk ON public.privacy_requests (completed_by);
+CREATE INDEX IF NOT EXISTS idx_privacy_requests_identity_verified_by_fk ON public.privacy_requests (identity_verified_by);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_created_by_fk ON public.sync_jobs (created_by);
