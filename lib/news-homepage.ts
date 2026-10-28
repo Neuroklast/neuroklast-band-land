@@ -13,20 +13,14 @@ export function selectHomepageNews<T extends { id: string; publishedAt: string |
   posts: readonly T[],
   featuredId: string | null,
 ): { lead: T | null; recent: T[]; isFeatured: boolean } {
-  const dateValue = (post: T): number => {
-    if (!post.publishedAt) return -Infinity
-    const timestamp = Date.parse(post.publishedAt)
-    return Number.isFinite(timestamp) ? timestamp : -Infinity
-  }
-
-  // Stable sort keeps the existing order for identical or missing dates.
-  const newestFirst = [...posts].sort((a, b) => dateValue(b) - dateValue(a))
-  const pinned = featuredId ? newestFirst.find((post) => post.id === featuredId) : undefined
-  const lead = pinned ?? newestFirst[0] ?? null
+  // The existing admin drag-and-drop order is canonical; new posts are inserted first.
+  const ordered = [...posts]
+  const pinned = featuredId ? ordered.find((post) => post.id === featuredId) : undefined
+  const lead = pinned ?? ordered[0] ?? null
 
   return {
     lead,
     isFeatured: Boolean(pinned),
-    recent: newestFirst.filter((post) => post.id !== lead?.id).slice(0, 3),
+    recent: ordered.filter((post) => post.id !== lead?.id).slice(0, 3),
   }
 }

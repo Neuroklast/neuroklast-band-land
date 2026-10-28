@@ -232,7 +232,9 @@ async function fetchAll() {
         .from('news_posts')
         .select('id, title, slug, excerpt, body, link, cover_storage_path, cover_url, published_at, display_order')
         .eq('active', true)
-        .order('published_at', { ascending: false }),
+        .order('display_order', { ascending: true, nullsFirst: false })
+        .order('published_at', { ascending: false, nullsFirst: false })
+        .order('id', { ascending: true }),
     ])
 
     const logQueryError = (label: string, error: { message: string } | null) => {

@@ -77,7 +77,7 @@ function NewsCard({
         <div className={`flex min-w-0 flex-1 flex-col justify-center ${prominent ? 'gap-3 p-5 md:p-7' : 'gap-2 p-3 sm:p-4'}`}>
           {prominent ? (
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
-              {featured ? 'FEATURED // NEWS' : 'LATEST // NEWS'}
+              {featured ? 'FEATURED // NEWS' : 'TOP STORY // NEWS'}
             </span>
           ) : null}
           {post.publishedAt ? (

@@ -2,20 +2,20 @@ import { describe, expect, it } from 'vitest'
 import { parseFeaturedNewsId, selectHomepageNews } from '@/lib/news-homepage'
 
 const posts = [
-  { id: 'older', publishedAt: '2026-10-10T12:00:00Z' },
   { id: 'latest', publishedAt: '2026-10-28T12:00:00Z' },
-  { id: 'third', publishedAt: '2026-10-25T12:00:00Z' },
   { id: 'second', publishedAt: '2026-10-27T12:00:00Z' },
+  { id: 'third', publishedAt: '2026-10-25T12:00:00Z' },
   { id: 'fourth', publishedAt: '2026-10-20T12:00:00Z' },
+  { id: 'older', publishedAt: '2026-10-10T12:00:00Z' },
 ]
 
 describe('homepage news selection', () => {
-  it('highlights the newest post and only three preceding posts', () => {
+  it('highlights the first editorially ordered post and only the next three', () => {
     const selected = selectHomepageNews(posts, null)
     expect(selected.lead?.id).toBe('latest')
     expect(selected.isFeatured).toBe(false)
     expect(selected.recent.map(({ id }) => id)).toEqual(['second', 'third', 'fourth'])
-    expect(posts[0].id).toBe('older') // Never mutate the original list.
+    expect(posts[0].id).toBe('latest') // Never mutate the original list.
   })
 
   it('pins one featured post, then shows three newest distinct posts', () => {
@@ -25,9 +25,15 @@ describe('homepage news selection', () => {
     expect(selected.recent.map(({ id }) => id)).toEqual(['latest', 'second', 'third'])
   })
 
-  it('falls back to the latest entry when featured is hidden or deleted', () => {
+  it('falls back to the first ordered entry when featured is hidden or deleted', () => {
     expect(selectHomepageNews(posts, 'not-active').lead?.id).toBe('latest')
     expect(selectHomepageNews(posts, 'not-active').isFeatured).toBe(false)
+  })
+
+  it('respects manual drag ordering without rewriting publication dates', () => {
+    const reordered = [posts[4], ...posts.slice(0, 4)]
+    expect(selectHomepageNews(reordered, null).lead?.id).toBe('older')
+    expect(selectHomepageNews(reordered, null).recent.map(({ id }) => id)).toEqual(['latest', 'second', 'third'])
   })
 
   it('handles missing dates and empty content without duplicating cards', () => {

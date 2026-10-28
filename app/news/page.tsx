@@ -33,9 +33,11 @@ export default async function NewsArchivePage() {
     const supabase = createPublicClient()
     const { data, error } = await supabase
       .from('news_posts')
-      .select('id, title, slug, excerpt, cover_storage_path, cover_url, published_at')
+      .select('id, title, slug, excerpt, cover_storage_path, cover_url, published_at, display_order')
       .eq('active', true)
-      .order('published_at', { ascending: false })
+      .order('display_order', { ascending: true, nullsFirst: false })
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .order('id', { ascending: true })
 
     if (error) console.error('[news archive] failed to load news:', error.message)
     else posts = data ?? []
