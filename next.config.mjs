@@ -50,7 +50,9 @@ const nextConfig = {
     },
   },
   outputFileTracingIncludes: {
-    '*': ['./supabase/schema.sql'],\n    // Include the untracked, private runtime binary assets in this API function only.\n    '/api/admin/ffmpeg/[asset]': ['./.ffmpeg-admin-assets/*'],
+    '*': ['./supabase/schema.sql'],
+    // Include the untracked, private runtime binary assets in this API function only.
+    '/api/admin/ffmpeg/[asset]': ['./.ffmpeg-admin-assets/*'],
   },
   async redirects() {
     return [
