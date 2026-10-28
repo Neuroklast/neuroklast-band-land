@@ -83,11 +83,11 @@ export function GigOverlayContent({
           </OverlayItem>
         ) : null}
         {data.photoUrl ? (
-          <OverlayItem className="relative mb-4 overflow-hidden" delay={0.12}>
+          <OverlayItem className="relative mb-4 flex justify-center overflow-hidden border border-border bg-background/60" delay={0.12}>
             <OverlayScanImage
               src={data.photoUrl}
               alt={data.title || data.venue || ''}
-              className="max-h-56 w-full border border-border object-cover"
+              className="block h-auto max-h-[min(65svh,42rem)] max-w-full object-contain"
             />
             <OverlayFrame />
           </OverlayItem>
