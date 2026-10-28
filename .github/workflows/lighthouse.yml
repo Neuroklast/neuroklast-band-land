@@ -1,0 +1,51 @@
+name: Mobile Lighthouse budgets
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/lighthouse.yml'
+      - '.lighthouserc.cjs'
+      - 'app/**'
+      - 'components/**'
+      - 'contexts/**'
+      - 'hooks/**'
+      - 'layouts/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'styles/**'
+      - 'next.config.mjs'
+      - 'package*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - name: Lighthouse mobile collection and budgets
+        run: |
+          npm install -g @lhci/cli@0.15.1
+          lhci autorun --config=.lighthouserc.cjs
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-mobile-reports
+          path: |
+            lighthouse-reports/
+            .lighthouseci/
+          retention-days: 14
+          if-no-files-found: ignore

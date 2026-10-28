@@ -74,7 +74,7 @@ function AnimatedLayer({
       ) : backgroundType === 'data-stream' ? (
         <DataStreamBackground opacity={hasImage ? 0.4 : 0.55} perfMode={perfMode} />
       ) : backgroundType === 'stars' ? (
-        <StarField transparent={hasImage} starCount={perfMode ? 80 : 140} starSpeed={perfMode ? 0.6 : 1} />
+        <StarField transparent={hasImage} starCount={perfMode ? 80 : 140} starSpeed={perfMode ? 0.6 : 1} perfMode={perfMode} />
       ) : backgroundType === 'glitch-grid' ? (
         <GlitchGridBackground
           transparent={hasImage}
@@ -108,6 +108,27 @@ export function BackgroundStack({
   const { lenis } = useLenisContext()
   const [draftBackgroundType, setDraftBackgroundType] = useState<PublicBackgroundType | null>(null)
   const [draftVideoEnabled, setDraftVideoEnabled] = useState<boolean | null>(null)
+  const [decorationsReady, setDecorationsReady] = useState(false)
+
+  // Decorative canvas is never an LCP prerequisite. Defer heavy JS + paints
+  // until idle, while keeping the primary hero and content immediately usable.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let cancelled = false
+    const activate = () => { if (!cancelled) setDecorationsReady(true) }
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(activate, { timeout: 1200 })
+      return () => {
+        cancelled = true
+        window.cancelIdleCallback(id)
+      }
+    }
+    const timer = window.setTimeout(activate, 500)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [])
 
   const onDraft = useCallback((key: AdminDraftKey, value: Record<string, unknown>) => {
     if (key !== 'background') return
@@ -176,11 +197,11 @@ export function BackgroundStack({
           data-draft-target="bg-image"
         >
           <img
-            src={toDirectImageUrl(imageUrl, { w: 1920, q: 80 }) || imageUrl}
+            src={toDirectImageUrl(imageUrl, { w: isMobile ? 900 : 1920, q: isMobile ? 68 : 80 }) || imageUrl}
             alt=""
             className="h-full w-full object-cover"
-            loading="eager"
-            fetchPriority="high"
+            loading="lazy"
+            fetchPriority="low"
             decoding="async"
             onError={(e) => void onMediaImageError(e)}
           />
@@ -210,7 +231,7 @@ export function BackgroundStack({
 
       {/* Scroll-scrubbed 1080p video + full-size canvas together janks Lenis.
           Video is the background when active; keep canvas for still/image modes. */}
-      {!activeVideoUrl ? (
+      {!activeVideoUrl && decorationsReady ? (
         <AnimatedLayer
           backgroundType={effectiveBackgroundType}
           hasImage={hasMedia}

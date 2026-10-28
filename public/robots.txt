@@ -1,105 +1,17 @@
-# https://neuroklast.net
-# Crawlers: Please respect these access rules.
-
+# Public site: search engines, AI assistants and preview fetchers are welcome.
+# robots.txt is crawl guidance, not a security boundary.
 User-agent: *
 Allow: /
-
-# Private and restricted areas — access prohibited
 Disallow: /admin/
-Disallow: /nk-sec
-Disallow: /wp-admin/
-Disallow: /phpmyadmin/
-Disallow: /.env
-Disallow: /.git/
+Disallow: /api/
+Disallow: /neurokore/account
+Disallow: /soundpacks/library
+Disallow: /plugins/*/checkout
 Disallow: /dashboard/
-Disallow: /backup/
-Disallow: /config/
-Disallow: /debug/
-Disallow: /staging/
 Disallow: /internal/
 Disallow: /private/
-Disallow: /data/
-Disallow: /logs/
 Disallow: /tmp/
-Disallow: /cgi-bin/
-Disallow: /api/
-Disallow: /wp-login.php
-Disallow: /server-status
-Disallow: /server-info
-Disallow: /xmlrpc.php
-
-Crawl-delay: 10
-
-# AI Training Bots – Scraping verboten
-User-agent: GPTBot
-Disallow: /
-
-User-agent: ChatGPT-User
-Disallow: /
-
-User-agent: OAI-SearchBot
-Disallow: /
-
-User-agent: OpenAI-WebBot
-Disallow: /
-
-User-agent: anthropic-ai
-Disallow: /
-
-User-agent: ClaudeBot
-Disallow: /
-
-User-agent: Claude-Web
-Disallow: /
-
-User-agent: Claude-Search
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
-
-User-agent: Google-Extended
-Disallow: /
-
-# Meta/Facebook share agents may fetch social link previews.
-
-User-agent: Bytespider
-Disallow: /
-
-User-agent: PetalBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-User-agent: Timpix
-Disallow: /
-
-User-agent: Amazonbot
-Disallow: /
-
-User-agent: Applebot-Extended
-Disallow: /
-
-User-agent: cohere-ai
-Disallow: /
-
-User-agent: PerplexityBot
-Disallow: /
-
-User-agent: Perplexity-User
-Disallow: /
-
-User-agent: omi
-Disallow: /
+Disallow: /.git/
+Disallow: /.env
 
 Sitemap: https://neuroklast.net/sitemap.xml

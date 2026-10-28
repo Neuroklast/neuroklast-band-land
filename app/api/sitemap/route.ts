@@ -6,7 +6,7 @@ import { LEGAL_DOCUMENTS, PUBLIC_LEGAL_LOCALES, localizedLegalPath } from '@/lib
 /** Rebuild periodically so new news posts appear without redeploy. */
 export const revalidate = 300
 
-const BASE_URL = process.env.SITE_URL?.replace(/\/$/, '') || 'https://neuroklast.net'
+const BASE_URL = 'https://neuroklast.net'
 
 type SitemapUrl = { loc: string; changefreq: string; priority: string; lastmod?: string }
 
@@ -16,6 +16,7 @@ const STATIC_URLS: SitemapUrl[] = [
   { loc: `${BASE_URL}/gigs`, changefreq: 'weekly', priority: '0.8' },
   { loc: `${BASE_URL}/media`, changefreq: 'weekly', priority: '0.7' },
   { loc: `${BASE_URL}/plugins`, changefreq: 'weekly', priority: '0.8' },
+  { loc: `${BASE_URL}/soundpacks`, changefreq: 'weekly', priority: '0.7' },
 
 
 
@@ -91,24 +92,6 @@ async function fetchNewsUrls(): Promise<SitemapUrl[]> {
   }
 }
 
-async function fetchContentStamp(): Promise<string | undefined> {
-  try {
-    // Single row read: reflects the newest site_config change and is cheap
-    // enough for the hourly sitemap regeneration.
-    const supabase = createPublicClient()
-    const { data } = await supabase
-      .from('site_config')
-      .select('updated_at')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-
-    const stamp = (data ?? [])[0]?.updated_at as string | null | undefined
-    return stamp ? new Date(stamp).toISOString().slice(0, 10) : undefined
-  } catch {
-    return undefined
-  }
-}
-
 async function fetchGigUrls(): Promise<SitemapUrl[]> {
   try {
     const supabase = createPublicClient()
@@ -165,20 +148,34 @@ async function fetchPluginUrls(): Promise<SitemapUrl[]> {
   }
 }
 
+/** A published pack has an indexable product page, but an inactive pack does not. */
+async function fetchSoundpackUrls(): Promise<SitemapUrl[]> {
+  try {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase.from('soundpacks')
+      .select('id').eq('active', true).limit(250)
+    if (error) return []
+    return (data ?? []).filter(row => typeof row.id === 'string' &&
+      /^[a-f0-9-]{36}$/i.test(row.id)).map(row => ({
+      loc: `${BASE_URL}/soundpacks/${row.id}`,
+      changefreq: 'weekly',
+      priority: '0.7',
+    }))
+  } catch {
+    return []
+  }
+}
+
 export async function GET(): Promise<NextResponse> {
-  const [newsUrls, gigUrls, pluginUrls, contentStamp] = await Promise.all([
+  const [newsUrls, gigUrls, pluginUrls, soundpackUrls] = await Promise.all([
     fetchNewsUrls(),
     fetchGigUrls(),
     fetchPluginUrls(),
-    fetchContentStamp(),
+    fetchSoundpackUrls(),
   ])
-  const staticUrls = STATIC_URLS.map((url) =>
-    url.lastmod ? url : { ...url, lastmod: contentStamp },
-  )
-  const datedGigUrls = gigUrls.map((url) =>
-    url.lastmod ? url : { ...url, lastmod: contentStamp },
-  )
-  const xml = buildSitemap([...staticUrls, ...LOCALIZED_LEGAL_URLS, ...pluginUrls, ...datedGigUrls, ...newsUrls])
+  // Only provide lastmod when it actually describes a page update.
+  // A change to unrelated site settings must not rewrite all sitemap dates.
+  const xml = buildSitemap([...STATIC_URLS, ...LOCALIZED_LEGAL_URLS, ...pluginUrls, ...soundpackUrls, ...gigUrls, ...newsUrls])
   return new NextResponse(xml, {
     status: 200,
     headers: {

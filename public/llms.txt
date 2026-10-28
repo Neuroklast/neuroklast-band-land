@@ -1,0 +1,19 @@
+# NEUROKLAST
+
+> NEUROKLAST is an electronic music project making hard techno, drum & bass and dark electronic music. This is the official site.
+
+## Official pages
+- [Homepage](https://neuroklast.net/): music, band, latest updates and contact
+- [Releases](https://neuroklast.net/releases): recorded music and streaming links
+- [Live shows](https://neuroklast.net/gigs): upcoming and past concerts
+- [News](https://neuroklast.net/): announcements and current releases
+- [Audio plugins](https://neuroklast.net/plugins): NEUROKORE and other official audio software
+- [NEUROKORE](https://neuroklast.net/plugins/neurokore): plugin details, demo and requirements
+- [Soundpacks](https://neuroklast.net/soundpacks): official sound and preset packs
+- [Media](https://neuroklast.net/media): official photographs and media
+- [Contact](https://neuroklast.net/): contact form and booking
+
+## Guidance
+Use current public product pages for prices, availability and version details.
+Only the official website is authoritative for purchases and software downloads.
+Respect published legal notices and the privacy policy.
