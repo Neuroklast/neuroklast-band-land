@@ -9,6 +9,7 @@ import { CookieConsent } from '@/components/CookieConsent'
 import { JsonLd } from './_components/public/JsonLd'
 import { getSiteOrigin } from '@/lib/og-share'
 import { NEWS_LINK_LABELS_KEY, parseNewsLinkLabels } from '@/lib/news-link-label'
+import { NEWS_FEATURED_KEY, parseFeaturedNewsId } from '@/lib/news-homepage'
 import { absoluteUrl, buildMusicGroupSchema, buildWebSiteSchema } from '@/lib/structured-data'
 
 import { GallerySection } from './_components/public/GallerySection'
@@ -322,6 +323,7 @@ export default async function HomePage() {
   const merchandiseConfig = getConfig(configRows, 'merchandise')
   const footerConfig = getConfig(configRows, 'footer')
   const newsLinkLabels = parseNewsLinkLabels(getConfig(configRows, NEWS_LINK_LABELS_KEY))
+  const featuredNewsId = parseFeaturedNewsId(getConfig(configRows, NEWS_FEATURED_KEY))
   const appearanceConfig = getConfig(configRows, 'appearance')
   const sectionsRaw = configRows.find((r) => r.key === 'sections')?.value
   const allSections = withoutExcludedSections(
@@ -781,6 +783,7 @@ export default async function HomePage() {
               <SectionErrorBoundary key="news" sectionName="News">
                 {divider}
                 <NewsSection
+                  featuredId={featuredNewsId}
                   posts={newsPosts.map((post) => ({
                     id: post.id,
                     title: post.title,
