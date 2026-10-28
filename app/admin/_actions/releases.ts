@@ -13,7 +13,7 @@ import { z } from 'zod'
 
 const releaseInputSchema = z.object({
   title: z.string().min(1),
-  type: z.enum(['album', 'ep', 'single', 'remix', 'compilation']).default('single'),
+  type: z.enum(['album', 'ep', 'single', 'song', 'remix', 'compilation']).default('single'),
   release_date: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   cover_storage_path: z.string().optional().nullable(),
