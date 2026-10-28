@@ -2,6 +2,18 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-28 — Secure NEUROKLAST content MCP hardening
+
+**Agent:** ChatGPT
+**Branch:** `feat/secure-ai-content-mcp`
+
+Added strict content-specific MCP tools with OAuth client allowlisting and an administrator approval UI. Fixed Postgres contract CI incompatibility in the OAuth token RLS restriction. Replaced non-atomic approval with a single privileged PostgreSQL function, including proposal/row locking, change snapshot verification, independent SQL field allowlists and audit status in one transaction. Added SQL contract tests in the existing disposable database workflow, and before/after review details.
+
+**Verification:** Existing PR CI earlier passed lint, typecheck, tests and build. Re-run CI and contract workflow for the last schema/test changes. Live OAuth configuration and end-to-end connectivity are not yet verified. No production OAuth client or credentials were created.
+
+---
+
+
 ## Session: 2026-10-26 — Automatic NEUROKORE download releases
 
 **Agent:** Codex
