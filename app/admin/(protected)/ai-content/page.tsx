@@ -4,6 +4,20 @@ import { requireAdmin } from '@/app/admin/_actions/auth'
 import { reviewMcpContent } from '@/app/admin/_actions/mcpContent'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 
+type ContentReviewRow = {
+  id: string
+  collection: string
+  operation: string
+  target_id: string | null
+  target_key: string | null
+  changes: unknown
+  status: string
+  created_at: string
+  requested_by: string
+  reviewed_at: string | null
+  error: string | null
+}
+
 const URLS: Record<string, string> = {
   news_posts: 'news', gigs: 'gigs', releases: 'releases', bio: 'bio',
   members: 'members', gallery: 'gallery', media_downloads: 'media',
@@ -30,8 +44,9 @@ export default async function AiContentReviewPage({
   const { data, error } = await supabase.from('mcp_content_requests')
     .select('id, collection, operation, target_id, target_key, changes, status, created_at, requested_by, reviewed_at, error')
     .order('created_at', { ascending: false }).limit(70)
-  const pending = (data ?? []).filter((row) => row.status === 'pending')
-  const history = (data ?? []).filter((row) => row.status !== 'pending')
+  const requests = (data ?? []) as ContentReviewRow[]
+  const pending = requests.filter((row) => row.status === 'pending')
+  const history = requests.filter((row) => row.status !== 'pending')
   const params = await searchParams
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 pb-12">
