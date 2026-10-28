@@ -58,6 +58,11 @@ export async function authenticateMcp(request: Request): Promise<{ userId: strin
 }
 
 export function mcpUnauthorized(error: McpAccessError, request: Request) {
+  // Diagnostic only: emit fixed, server-authored reasons for failed bearer
+  // requests. Never log Authorization headers, tokens, users or request URLs.
+  if (request.headers.get('authorization')?.startsWith('Bearer ')) {
+    console.warn('[MCP_AUTH_DENIED]', error.status, error.message)
+  }
   const resource = new URL('/.well-known/oauth-protected-resource/mcp', request.url).toString()
   const headers: Record<string, string> = { ...noCache }
   if (error.status === 401) headers['WWW-Authenticate'] = 'Bearer resource_metadata="' + resource + '"'
