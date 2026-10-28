@@ -30,11 +30,12 @@ Not exposed: orders, customers, license keys, private download assets, product p
 3. The authenticated user must still have a server-confirmed `profiles.role = admin`.
 4. Every authenticated request uses the existing durable PostgreSQL rate limiter, failing closed on errors. Payloads and result sizes are bounded.
 5. A hardcoded table/column registry and per-field Zod validation prevent arbitrary table access, SQL execution or writes to sensitive fields.
-6. Proposals go to `mcp_content_requests` (RLS, no anon/authenticated database privileges). The existing privileged Supabase client is used only on the server after authorization.
-7. Human review claims each request atomically; content snapshots are checked before applying to reject stale proposals. A server-side review history records creator, reviewer, time, operation, status and proposed values; it is not append-only or cryptographically tamper-proof.
-8. New records remain inactive until separately published using the existing admin UI. Existing changes only apply after explicit review. There is no delete tool.
+6. A database-level restrictive RLS policy denies OAuth access tokens with a `client_id` direct table access, including access normally granted by the administrator's ordinary session. MCP uses its own server-side checks and privileges. This protects against attempts to bypass the content API via Supabase PostgREST. Audit existing privileged database functions and any other exposed schemas separately.
+7. Proposals go to `mcp_content_requests` (RLS, no anon/authenticated database privileges). The existing privileged Supabase client is used only on the server after authorization.
+8. Human review claims each request atomically; content snapshots are checked before applying to reject stale proposals. A server-side review history records creator, reviewer, time, operation, status and proposed values; it is not append-only or cryptographically tamper-proof.
+9. New records remain inactive until separately published using the existing admin UI. Existing changes only apply after explicit review. There is no delete tool.
 
-**Remaining review risks:** The conflict check and actual content UPDATE are separate DB operations. A concurrent human edit between them is a narrow race; serializable stored procedures or row locking would close it. Approval and operation are not one database transaction. Any deployment must treat this as an open hardening item. Review all public content renderers for stored XSS separately, including rich text and JSON.
+**Remaining review risks:** The conflict check and actual content UPDATE are separate DB operations. OAuth tokens are also not automatically isolated from existing privileged RPC functions; audit their grants before production. A concurrent human edit between them is a narrow race; serializable stored procedures or row locking would close it. Approval and operation are not one database transaction. Any deployment must treat this as an open hardening item. Review all public content renderers for stored XSS separately, including rich text and JSON.
 
 ## Setup (never commit real values)
 
@@ -43,10 +44,11 @@ Not exposed: orders, customers, license keys, private download assets, product p
 3. Register a **dedicated production OAuth client** with only the exact callback URI required by your ChatGPT plugin. Avoid dynamic client registration unless you need it. Confirm the registered client ID is visible to the consent page.
 4. Set the server-only Vercel environment variable `NEUROKLAST_MCP_CLIENT_ID` to that OAuth client ID. Do not expose it as `NEXT_PUBLIC_*`. Do not put a service-role key into ChatGPT or any plugin configuration.
 5. Deploy after the CI gates pass. Check `/.well-known/oauth-protected-resource/api/mcp`, then verify anonymous and invalid OAuth tokens cannot read or propose content.
-6. In ChatGPT Plugins, use **Add custom MCP server**, server URL `https://neuroklast.net/api/mcp`, and connect using OAuth. You must be allowed to create custom MCP plugins on your plan/workspace.
-7. Log in through `/admin/oauth/consent`, inspect client and scopes, complete MFA, then approve. Try `content_capabilities`, `content_list` and a harmless test proposal.
-8. Open `/admin/ai-content`; compare the proposal with live content, approve or reject it, and verify the live page. Confirm approvals cannot be replayed, secrets are excluded, revoked clients fail, and publish/delete remains blocked.
-9. When disabling access, unset `NEUROKLAST_MCP_CLIENT_ID` and redeploy; revoke the OAuth client and refresh sessions from Supabase as appropriate.
+6. Confirm OAuth token cannot query any public table using the Supabase Data API, not just that MCP rejects forbidden requests. Confirm an ordinary admin cookie session still works.
+7. In ChatGPT Plugins, use **Add custom MCP server**, server URL `https://neuroklast.net/api/mcp`, and connect using OAuth. You must be allowed to create custom MCP plugins on your plan/workspace.
+8. Log in through `/admin/oauth/consent`, inspect client and scopes, complete MFA, then approve. Try `content_capabilities`, `content_list` and a harmless test proposal.
+9. Open `/admin/ai-content`; compare the proposal with live content, approve or reject it, and verify the live page. Confirm approvals cannot be replayed, secrets are excluded, revoked clients fail, and publish/delete remains blocked.
+10. When disabling access, unset `NEUROKLAST_MCP_CLIENT_ID` and redeploy; revoke the OAuth client and refresh sessions from Supabase as appropriate.
 
 ## Model tools
 
