@@ -1,20 +1,27 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/app/admin/_actions/auth'
-import { registerMcpClient, setMcpClientEnabled } from '@/app/admin/_actions/mcpIntegrations'
+import { registerMcpClient, setMcpClientEnabled, deleteMcpClient } from '@/app/admin/_actions/mcpIntegrations'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { CopyMcpAddress } from './CopyMcpAddress'
+import { RemoveMcpClientButton } from './RemoveMcpClientButton'
 import { type McpRegisteredClient } from '@/lib/mcp/client-registry'
 
 async function addClient(form: FormData) {
   'use server'
   const result = await registerMcpClient(form)
-  redirect('/admin/integrations?status=' + (result.success ? 'ok' : 'failed'))
+  redirect('/admin/integrations?status=' + (result.success ? result.outcome : result.error))
 }
 async function toggleClient(form: FormData) {
   'use server'
   const result = await setMcpClientEnabled(String(form.get('client_id') || ''), form.get('enabled') === 'true')
   redirect('/admin/integrations?status=' + (result.success ? 'ok' : 'failed'))
+}
+
+async function removeClient(form: FormData) {
+  'use server'
+  const result = await deleteMcpClient(String(form.get('client_id') || ''))
+  redirect('/admin/integrations?status=' + (result.success ? result.outcome : result.error))
 }
 
 export const dynamic = 'force-dynamic'
@@ -32,8 +39,14 @@ export default async function IntegrationsPage({
       <h1 className="text-2xl font-bold text-white">AI Integrations</h1>
       <p className="mt-2 text-sm text-zinc-400">Manage OAuth access to NEUROKLAST editorial tools. All content edits still require separate admin approval.</p>
     </header>
-    {status === 'failed' && <p role="alert" className="text-red-300">Action failed. Verify admin MFA and the client ID.</p>}
-    {status === 'ok' && <p role="status" className="text-zinc-300">Access permissions updated.</p>}
+    {status === 'mfa' && <p role="alert" className="text-red-300">Administrator MFA verification is required. Verify your session, then try again.</p>}
+    {status === 'invalid' && <p role="alert" className="text-red-300">Invalid client ID, display name, or provider.</p>}
+    {status === 'database' && <p role="alert" className="text-red-300">Database operation failed. Verify that the integration registry is available.</p>}
+    {status === 'not_found' && <p role="alert" className="text-red-300">This OAuth client is not registered in NEUROKLAST.</p>}
+    {status === 'unchanged' && <p role="status" className="text-zinc-300">Client is already registered and authorized. Nothing else needs to be added here.</p>}
+    {status === 'added' && <p role="status" className="text-zinc-300">Client added and authorized.</p>}
+    {status === 'updated' && <p role="status" className="text-zinc-300">Client details and access updated.</p>}
+    {status === 'deleted' && <p role="status" className="text-zinc-300">Client removed from NEUROKLAST. Its MCP access is now blocked.</p>}
     <section className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900 p-5">
       <h2 className="font-semibold">Your secure MCP address</h2>
       <CopyMcpAddress value="https://neuroklast.net/api/mcp" />
@@ -58,7 +71,7 @@ export default async function IntegrationsPage({
       </article>
     </section>
     <section className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900 p-5">
-      <h2 className="font-semibold">Authorize an OAuth client</h2>
+      <h2 className="font-semibold">Register or update an OAuth client</h2>
       <form action={addClient} className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-sm">Provider
           <select name="provider" className="block w-full rounded border border-zinc-600 bg-zinc-950 p-3">
@@ -85,13 +98,16 @@ export default async function IntegrationsPage({
           <p className="text-xs text-zinc-400">{client.provider} · {client.enabled ? 'Allowed' : 'Blocked'}</p>
           <p className="break-all font-mono text-xs text-zinc-500">{client.client_id}</p>
         </div>
-        <form action={toggleClient}>
-          <input type="hidden" name="client_id" value={client.client_id} />
-          <input type="hidden" name="enabled" value={String(!client.enabled)} />
-          <button className="rounded border border-red-800 px-4 py-2 text-sm">{client.enabled ? 'Block now' : 'Re-enable'}</button>
-        </form>
+        <div className="flex flex-wrap items-center gap-2">
+          <form action={toggleClient}>
+            <input type="hidden" name="client_id" value={client.client_id} />
+            <input type="hidden" name="enabled" value={String(!client.enabled)} />
+            <button className="rounded border border-zinc-600 px-4 py-2 text-sm">{client.enabled ? 'Block now' : 'Re-enable'}</button>
+          </form>
+          <RemoveMcpClientButton clientId={client.client_id} name={client.display_name} removeAction={removeClient} />
+        </div>
       </article>)}
-      <p className="text-xs text-zinc-500">Blocking applies to the next MCP request, even with a previously issued token. Revoke provider refresh tokens in Supabase separately.</p>
+      <p className="text-xs text-zinc-500">Blocking or deleting removes MCP access on the next request, including existing access tokens. Deletion here only removes NEUROKLAST's permission entry: revoke or delete the OAuth application and refresh tokens separately in Supabase. Pending content proposals remain in the review queue.</p>
     </section>
   </main>
 }
