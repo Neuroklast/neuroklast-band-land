@@ -119,9 +119,9 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
     } else {
       // Clear an old server cookie if local consent was removed.
       void syncServerConsent(false)
-      // Show banner after a short delay so the page can render first
-      const timer = setTimeout(() => setShowBanner(true), 800)
-      return () => clearTimeout(timer)
+      // No arbitrary post-hydration delay: it created a second, late LCP
+      // candidate and made the consent controls unusable for longer.
+      setShowBanner(true)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -180,7 +180,7 @@ export function CookieConsent({ onPreferencesChange, onOpenPrivacyPolicy, privac
           data-cookie-banner
           className="fixed bottom-0 left-0 right-0 max-h-[min(70svh,32rem)] overflow-y-auto overscroll-contain bg-background/98 backdrop-blur-lg border-t-2 border-primary/30 p-4 md:p-6 shadow-2xl pb-[max(1rem,env(safe-area-inset-bottom))]"
           style={{ zIndex: 'var(--z-system)' } as CSSProperties}
-          initial={prefersReducedMotion ? false : { y: 100, opacity: 0 }}
+          initial={false}
           animate={{ y: 0, opacity: 1 }}
           exit={prefersReducedMotion ? undefined : { y: 100, opacity: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}

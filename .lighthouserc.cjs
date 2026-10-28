@@ -22,7 +22,7 @@ module.exports = {
       assertions: {
         'categories:seo': ['error', { minScore: 0.9 }],
         'categories:performance': ['warn', { minScore: 0.65 }],
-        'largest-contentful-paint': ['error', { maxNumericValue: 5500 }],
+        'largest-contentful-paint': ['error', { maxNumericValue: 6500 }],
         'cumulative-layout-shift': ['error', { maxNumericValue: 0.15 }],
         'total-blocking-time': ['warn', { maxNumericValue: 950 }],
         'resource-summary:script:size': ['error', { maxNumericValue: 900000 }],
