@@ -4,6 +4,7 @@ import { requireAdmin } from '@/app/admin/_actions/auth'
 import { registerMcpClient, setMcpClientEnabled } from '@/app/admin/_actions/mcpIntegrations'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { CopyMcpAddress } from './CopyMcpAddress'
+import { type McpRegisteredClient } from '@/lib/mcp/client-registry'
 
 async function addClient(form: FormData) {
   'use server'
@@ -24,6 +25,7 @@ export default async function IntegrationsPage({
   await requireAdmin()
   const { data, error } = await createAdminClient().from('mcp_oauth_clients')
     .select('client_id, provider, display_name, enabled').order('created_at', { ascending: false }).limit(100)
+  const clients = (data ?? []) as McpRegisteredClient[]
   const { status } = await searchParams
   return <main className="mx-auto max-w-5xl space-y-6 px-4 pb-12">
     <header>
@@ -76,8 +78,8 @@ export default async function IntegrationsPage({
     <section className="space-y-3">
       <h2 className="font-semibold">Client access</h2>
       {error && <p role="alert" className="text-red-300">Could not load allowlist. No client is implicitly authorized.</p>}
-      {data?.length === 0 && <p className="text-sm text-zinc-400">No OAuth clients authorized.</p>}
-      {data?.map(client => <article key={client.client_id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-zinc-700 bg-zinc-900 p-4">
+      {clients.length === 0 && <p className="text-sm text-zinc-400">No OAuth clients authorized.</p>}
+      {clients.map(client => <article key={client.client_id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-zinc-700 bg-zinc-900 p-4">
         <div className="min-w-0">
           <strong>{client.display_name}</strong>
           <p className="text-xs text-zinc-400">{client.provider} · {client.enabled ? 'Allowed' : 'Blocked'}</p>
