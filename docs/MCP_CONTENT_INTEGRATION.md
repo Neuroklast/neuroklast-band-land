@@ -2,6 +2,10 @@
 
 **Status:** Code on a feature branch. Not live until merged, deployed, configured and tested end to end. Do not connect ChatGPT before reviewing CI and database permissions.
 
+## ChatGPT plan availability
+
+As of October 2026, full custom MCP write / modify actions in ChatGPT are available to Business and Enterprise/Edu customers; Plus does not provide full custom MCP write access. Pro custom MCP is restricted to read/fetch. Check [OpenAI's current requirements](https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt) before setup. Other compatible MCP clients may support write proposals independent of ChatGPT account tier.
+
 ## Purpose
 
 A private, OAuth 2.1 authenticated, **approval-only** Model Context Protocol endpoint at `https://neuroklast.net/api/mcp`. ChatGPT can read editorial content and propose changes. Every change requires a separate logged-in administrator to apply it using `/admin/ai-content`. There is **no MCP delete operation**, no automatic publishing, and no direct SQL or file upload.
@@ -27,7 +31,7 @@ Not exposed: orders, customers, license keys, private download assets, product p
 4. Every authenticated request uses the existing durable PostgreSQL rate limiter, failing closed on errors. Payloads and result sizes are bounded.
 5. A hardcoded table/column registry and per-field Zod validation prevent arbitrary table access, SQL execution or writes to sensitive fields.
 6. Proposals go to `mcp_content_requests` (RLS, no anon/authenticated database privileges). The existing privileged Supabase client is used only on the server after authorization.
-7. Human review claims each request atomically; content snapshots are checked before applying to reject stale proposals. A full history records creator, reviewer, time, operation, status and proposed values.
+7. Human review claims each request atomically; content snapshots are checked before applying to reject stale proposals. A server-side review history records creator, reviewer, time, operation, status and proposed values; it is not append-only or cryptographically tamper-proof.
 8. New records remain inactive until separately published using the existing admin UI. Existing changes only apply after explicit review. There is no delete tool.
 
 **Remaining review risks:** The conflict check and actual content UPDATE are separate DB operations. A concurrent human edit between them is a narrow race; serializable stored procedures or row locking would close it. Approval and operation are not one database transaction. Any deployment must treat this as an open hardening item. Review all public content renderers for stored XSS separately, including rich text and JSON.
