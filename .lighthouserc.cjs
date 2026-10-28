@@ -5,9 +5,6 @@
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: 'npm run start -- --hostname 127.0.0.1',
-      startServerReadyPattern: 'Ready in',
-      startServerReadyTimeout: 60000,
       url: [
         'http://127.0.0.1:3000/',
         'http://127.0.0.1:3000/plugins',
