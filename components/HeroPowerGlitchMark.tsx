@@ -43,6 +43,8 @@ export function HeroPowerGlitchMark({
         alt={alt}
         className={imgClassName}
         decoding="async"
+        loading="eager"
+        fetchPriority="high"
         data-draft-target="hero-logo"
       />
     </div>

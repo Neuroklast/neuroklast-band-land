@@ -139,6 +139,18 @@ function subscribePublicBoot(): () => void {
   return () => {}
 }
 
+function subscribeCompactBoot(onChange: () => void): () => void {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {}
+  const media = window.matchMedia('(max-width: 767px), (prefers-reduced-motion: reduce)')
+  media.addEventListener('change', onChange)
+  return () => media.removeEventListener('change', onChange)
+}
+
+function getCompactBoot(): boolean {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+    window.matchMedia('(max-width: 767px), (prefers-reduced-motion: reduce)').matches
+}
+
 export function PublicBoot({
   lookId: _lookId,
   loadingScreen,
@@ -148,12 +160,15 @@ export function PublicBoot({
 }) {
   const config = parseLoadingScreenConfig(loadingScreen)
   const already = useSyncExternalStore(subscribePublicBoot, hasCompletedPublicBoot, () => false)
+  const compact = useSyncExternalStore(subscribeCompactBoot, getCompactBoot, () => false)
   const [finished, setFinished] = useState(!config.enabled)
-  const showing = config.enabled && !already && !finished
+  const showing = config.enabled && !already && !finished && !compact
 
   useEffect(() => {
-    if (showing) markPublicBootComplete()
-  }, [showing])
+    // Mobile and reduced-motion visitors see content immediately, not a
+    // multi-second fake loading animation that delays the page's first LCP.
+    if (showing || compact) markPublicBootComplete()
+  }, [showing, compact])
 
   if (!showing) return null
 

@@ -18,6 +18,13 @@ test.describe('mobile public experience', () => {
     })
   }
 
+  test('mobile homepage avoids full MP4 and blocking boot overlay', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await expect(page.locator('[data-draft-target="bg-video"]')).toHaveCount(0)
+    await expect(page.locator('[data-draft-target="bg-mobile-static"]')).toBeVisible()
+    await expect(page.locator('[data-public-boot]')).toBeHidden()
+  })
+
   test('decorative background respects reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/', { waitUntil: 'domcontentloaded' })

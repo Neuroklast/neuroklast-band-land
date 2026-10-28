@@ -22,12 +22,24 @@ export function SiteBgVideo({
   const videoRef = useRef<HTMLVideoElement>(null)
   const { lenis } = useLenisContext()
   const [on, setOn] = useState(false)
+  const [compact, setCompact] = useState(false)
   const videoSrc = src?.trim() || DEFAULT_SITE_BACKGROUND_VIDEO
   const videoOpacity = parseBackgroundVideoOpacity(opacity, DEFAULT_BACKGROUND_VIDEO_OPACITY)
 
   useEffect(() => {
-    if (!enabled || shouldDisableVideoBackground() || prefersReducedMotion()) return
-    setOn(true)
+    // Scrubbing a full-resolution MP4 downloads multiple large byte ranges.
+    // Narrow mobile viewports get a CSS-only cinematic background instead.
+    const media = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-width: 767px)')
+      : null
+    const update = () => {
+      const isCompact = media?.matches ?? false
+      setCompact(isCompact)
+      setOn(enabled && !isCompact && !shouldDisableVideoBackground() && !prefersReducedMotion())
+    }
+    update()
+    media?.addEventListener?.('change', update)
+    return () => media?.removeEventListener?.('change', update)
   }, [enabled])
 
   useEffect(() => {
@@ -61,10 +73,23 @@ export function SiteBgVideo({
     }
   }, [on, lenis])
 
-  if (!on || !enabled) return null
+  if (!enabled) return null
 
   return (
-    <div
+    <>
+      {compact ? (
+        <div
+          aria-hidden
+          data-draft-target="bg-mobile-static"
+          className="pointer-events-none fixed inset-0 sm:hidden"
+          style={{
+            zIndex: 'var(--z-bg-video, 1)',
+            opacity: videoOpacity,
+            background: 'radial-gradient(ellipse 85% 60% at 50% 40%, rgba(93, 7, 17, 0.25), transparent 80%), linear-gradient(145deg, #0a080a, #030305 75%)',
+          }}
+        />
+      ) : null}
+      {on ? <div
       aria-hidden
       className="pointer-events-none fixed inset-0"
       data-draft-target="bg-video-wrap"
@@ -89,6 +114,7 @@ export function SiteBgVideo({
             'radial-gradient(ellipse 70% 65% at 50% 45%, transparent 35%, rgb(0 0 0 / 0.42) 100%)',
         }}
       />
-    </div>
+    </div> : null}
+    </>
   )
 }

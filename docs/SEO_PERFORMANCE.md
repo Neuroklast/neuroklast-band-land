@@ -43,3 +43,6 @@ Outputs are retained as workflow artifacts. Tighten caps after reviewing actual 
 5. Test mobile width 360px, 390px, 768px; reduced motion; save-data; keyboard navigation; background video; and layout shifts.
 
 No Lighthouse score is claimed until the workflow actually runs. Backend/third-party failures should be fixed, not papered over by lowering assertions.
+
+## Findings and mobile-first remediation (2026-10-28)
+Initial real lab report (simulated mobile on a production build): homepage Lighthouse performance 70–73, SEO 100, LCP 7.9–8.1s and 7.1–18 MB transferred. The 8.4 MB scroll video was requested twice in one Lighthouse pass, and the three-second blocking boot overlay was chosen as the LCP element (most of its LCP latency was render delay). `SiteBgVideo` now uses a CSS-only atmospheric gradient at <=767 px. Desktop video scrubbing remains intact. `PublicBoot` skips its blocking overlay on narrow viewports and for reduced-motion clients; desktop still sees the configured boot animation. Hero logo image receives high fetch priority. Re-run the same mobile audit before claiming improved scores.
