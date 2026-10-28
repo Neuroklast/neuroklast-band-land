@@ -58,7 +58,7 @@ Not exposed: orders, customers, license keys, private download assets, product p
 - `content_my_requests`
 - `site_text_capabilities` / `site_text_get` / `site_text_propose_update`
 
-Content proposal tools do not directly apply edits. An admin must approve every proposal, independently of any tool-call confirmation shown by ChatGPT. No API endpoint accepts a raw table name that is not in the fixed registry.
+Content proposal tools do not directly apply edits. An admin must approve every proposal, independently of any tool-call confirmation shown by ChatGPT. The admin review screen uses a single-proposal slider with field-level before/after values, Accept/Reject, Back/Skip, keyboard and swipe navigation, optional JSON and a recent-decision history. Back/Skip only change the viewed proposal; they do not reverse already committed decisions. Deletions still require a second explicit confirmation. No API endpoint accepts a raw table name that is not in the fixed registry.
 
 ## Operational checks
 

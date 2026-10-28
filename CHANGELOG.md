@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Replace the AI content review JSON wall with a one-proposal-at-a-time slider, readable field-level before/after comparisons, explicit Accept/Reject, Back/Skip navigation, guarded deletion confirmation and collapsible raw details. Group Content Review and Integrations under a dedicated AI admin navigation section.
+
 - Separate EP, Single, and Song categories throughout public discography browsing, admin editing, and MCP editorial validation. Previously EPs and singles shared one label and filter.
 
 - New MCP content removal proposal with separate administrator confirmation, guarded by version checks and an audit record. Commerce tables are excluded.

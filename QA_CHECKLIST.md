@@ -2,6 +2,12 @@
 
 ## Private MCP editorial integration
 
+- [ ] Admin sidebar has a single AI section with Content Review and Integrations; neither remains buried under Content/System.
+- [ ] AI review shows one proposal at a time, correct before/after fields (including config), navigation position, optional JSON, and recent decisions; responsive on narrow screens.
+- [ ] Skip, Back, left/right keyboard navigation and horizontal touch swipes never submit changes. Accept/Reject submit exactly once, advance only on success and keep the current item visible on MFA/conflict/network failures.
+- [ ] Approved proposals disappear from the pending queue after refresh. Back/Skip do not pretend to undo applied database changes. Old reviewed entries remain in the decision history.
+- [ ] Deletion always requires a second, explicit click and its cancel action prevents submission. Rejection of deletion does not delete content.
+
 - [ ] Release types Song, Single, EP, Album, Remix and Compilation can be proposed over MCP and reviewed in the admin; the site shows distinct Single/EP/Song filters.
 
 - [ ] Reviewed MCP removal queues a pending request; approval with MFA deletes exactly one editorial record, rejection leaves it unchanged.
