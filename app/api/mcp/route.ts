@@ -1,4 +1,4 @@
-import { authenticateMcp, contentCapabilities, getContent, listContent, listMyRequests, McpAccessError, mcpUnauthorized, queueContentChange } from '@/lib/mcp/server'
+import { authenticateMcp, contentCapabilities, getContent, getSiteContent, listContent, listMyRequests, McpAccessError, mcpUnauthorized, queueContentChange, queueSiteContentChange, siteContentCapabilities } from '@/lib/mcp/server'
 import { CONTENT_COLLECTIONS } from '@/lib/mcp/content'
 
 export const runtime = 'nodejs'
@@ -37,6 +37,24 @@ const TOOLS = [
     name: 'content_propose_update',
     description: 'Submit an edit to an existing editorial record for human approval. Does not modify live content. Changes must contain only permitted content fields.',
     inputSchema: { type: 'object', properties: { collection, id, changes: { type: 'object', additionalProperties: true } }, required: ['collection', 'id', 'changes'], additionalProperties: false },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+  },
+  {
+    name: 'site_text_capabilities',
+    description: 'List readable website text configuration and writable text-only configuration keys.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    annotations: { readOnlyHint: true, destructiveHint: false },
+  },
+  {
+    name: 'site_text_get',
+    description: 'Read allowlisted public-facing hero, merchandise, translation or section configuration.',
+    inputSchema: { type: 'object', properties: { key: { type: 'string', enum: ['hero', 'merchandise', 'translations', 'sections'] } }, required: ['key'], additionalProperties: false },
+    annotations: { readOnlyHint: true, destructiveHint: false },
+  },
+  {
+    name: 'site_text_propose_update',
+    description: 'Propose hero copy, merchandise footer copy or translations for manual review. No legal, analytics or security settings.',
+    inputSchema: { type: 'object', properties: { key: { type: 'string', enum: ['hero', 'merchandise', 'translations'] }, changes: { type: 'object', additionalProperties: true } }, required: ['key', 'changes'], additionalProperties: false },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
   },
   {
@@ -106,6 +124,13 @@ export async function POST(request: Request) {
       case 'content_propose_update':
         if (typeof args.collection !== 'string' || typeof args.id !== 'string') throw new McpAccessError('Collection and id required', 400)
         value = await queueContentChange(context, 'update', args.collection, args.changes, args.id); break
+      case 'site_text_capabilities': value = siteContentCapabilities(); break
+      case 'site_text_get':
+        if (typeof args.key !== 'string') throw new McpAccessError('Site text key required', 400)
+        value = await getSiteContent(args.key); break
+      case 'site_text_propose_update':
+        if (typeof args.key !== 'string') throw new McpAccessError('Site text key required', 400)
+        value = await queueSiteContentChange(context, args.key, args.changes); break
       case 'content_my_requests':
         value = await listMyRequests(context, args.limit === undefined ? 20 : Number(args.limit)); break
       default: return rpcError(requestId, -32601, 'Unknown tool')
