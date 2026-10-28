@@ -1,3 +1,4 @@
+import { postgresUuid } from '@/lib/mcp/postgres-uuid'
 import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { getActiveMcpClient } from '@/lib/mcp/client-registry'
@@ -7,7 +8,7 @@ import { allowedContentFields, CONTENT_COLLECTIONS, digestContent, filterContent
 import { z } from 'zod'
 import { canReadSiteContent, parseSiteContentPatch, READABLE_SITE_CONTENT, WRITABLE_SITE_CONTENT } from '@/lib/mcp/site-config'
 
-const uuid = z.string().uuid()
+const uuid = postgresUuid
 const noCache = { 'Cache-Control': 'no-store' }
 
 export class McpAccessError extends Error {
