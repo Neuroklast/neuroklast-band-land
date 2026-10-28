@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     const contactCutoff = new Date(Date.now() - 365 * 86400000).toISOString()
     const client = db()
     const closed = await client.from('plugin_contact_requests').delete()
-      .not('closed_at', 'is', null).lt('created_at', resolvedCutoff)
+      .not('closed_at', 'is', null).lt('closed_at', resolvedCutoff)
     if (closed.error) throw closed.error
     const stale = await client.from('plugin_contact_requests').delete()
       .lt('created_at', contactCutoff)

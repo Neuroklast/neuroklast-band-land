@@ -20,7 +20,7 @@ import type { SiteLanguage } from '@/lib/i18n'
 import type { CustomTranslations } from '@/lib/translations-config'
 import { useState } from 'react'
 
-function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+function ErrorFallback({ resetErrorBoundary }: FallbackProps) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4 text-foreground">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">ERR://BOUNDARY</p>

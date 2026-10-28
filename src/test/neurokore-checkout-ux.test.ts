@@ -23,6 +23,8 @@ describe('single-product NEUROKORE checkout journey', () => {
     expect(checkoutPage).toContain("robots: { index: false")
     expect(checkoutForm).toContain("'/api/plugins/' + encodeURIComponent(slug) + '/checkout'")
     expect(checkoutForm).toContain('if (!reviewed || busy || recurring) return')
+    expect(checkoutForm).toContain('acceptedTerms: true')
+    expect(file('app/api/plugins/[slug]/checkout/route.ts')).toContain('acceptedTerms: z.literal(true)')
     expect(checkoutForm).toContain('href={localizedLegalPath(language,\'terms\')}')
     expect(checkoutForm).toContain('NEUROMETER')
   })
