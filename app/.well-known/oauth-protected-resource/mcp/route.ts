@@ -1,11 +1,13 @@
 // RFC 9728 metadata for the protected MCP resource.
-// OAuth discovery is delegated to Supabase Auth. Never expose credentials here.
+// OAuth discovery is delegated to Supabase Auth. Discovery intentionally works
+// before an OAuth client ID has been registered; the MCP API itself stays
+// fail-closed until NEUROKLAST_MCP_CLIENT_ID is explicitly configured.
 export const dynamic = 'force-dynamic'
 
 export function GET() {
   const issuer = process.env.NEXT_PUBLIC_SUPABASE_URL
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://neuroklast.net'
-  if (!issuer || !process.env.NEUROKLAST_MCP_CLIENT_ID) {
+  if (!issuer) {
     return Response.json({ error: 'MCP integration not configured' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
   }
   return Response.json({
