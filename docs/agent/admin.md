@@ -2,6 +2,9 @@
 
 ## AI content review
 
+New MCP release creation is published only upon MFA-backed admin approval, including older pending requests that have `active=false`. Other content creation remains draft-only. The review slider immediately advances on Accept/Reject while server actions complete, tracks pending writes and restores an item with an actionable failure notice if approval fails. Do not show optimistic success before the RPC confirms it. An unload warning protects in-flight operations from accidental page closure. Release create approval sets `manually_edited=true` to prevent subsequent sync overwrites.
+
+
 **Viewport-fit exception:** `/admin/ai-content` opts out of the shell's ordinary main-page scrolling. The page and ReviewSlider use a bounded `h-full min-h-0` flex layout. The queue and the proposal header are compact; the action footer is `shrink-0` so Back/Reject/Accept/Skip remain visible without page scrolling. At most four short field highlights appear on the card (only the first two on narrow screens). Full fields, previous snapshots, technical JSON and recent decisions open as separate scrollable dialogs, never as tall content below the footer. Keep the review server action, MFA checks and deletion-confirmation semantics unchanged. All other admin routes continue using regular main scrolling.
 
 
