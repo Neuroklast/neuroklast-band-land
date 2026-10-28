@@ -89,6 +89,8 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
             src={settings.logoUrl}
             alt={settings.bootLabel || 'Neuroklast'}
             className="object-contain"
+            loading="lazy"
+            fetchPriority="low"
             style={{ width: settings.logoSizePx, height: settings.logoSizePx }}
           />
         </motion.div>
