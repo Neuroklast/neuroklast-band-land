@@ -4,6 +4,12 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-10-28 — OAuth authorization redirect and opaque request IDs
+
+Supabase's OAuth Server Authorization Path is independently configured in its dashboard and is concatenated with Auth Site URL. The live setting pointed at `/oauth/consent`, while our only UI lived at `/admin/oauth/consent`, resulting in 404 before login. Always provide a compatible redirect or verify the exact dashboard setting before connecting a client. `authorization_id` is an opaque token, **not necessarily a UUID or hex**, so reject only invalid URL-safe formats and delegate authentication to Supabase. Never insert the token into a client-controlled external redirect.
+
+---
+
 ## Session: 2026-10-27
 
 YouTube embeds need a non-empty HTTP `Referer` to identify the embedding site. `referrerPolicy="no-referrer"` on an iframe overrides the correct global `Referrer-Policy` header and can trigger YouTube error 153. Use `strict-origin-when-cross-origin` on all YouTube iframes so only the site origin is shared cross-site. Preserve two-click consent so no YouTube request occurs before the visitor opts in.
