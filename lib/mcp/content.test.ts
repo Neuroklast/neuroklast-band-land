@@ -13,7 +13,7 @@ describe('MCP editorial allowlist', () => {
     expect(() => parseContentChanges('soundpacks', 'update', { archive_key: 'private.zip' })).toThrow('not writable')
   })
 
-  it('creates inactive drafts even if the caller requests publication', () => {
+  it('keeps news and gig proposals as drafts even if publication is requested', () => {
     expect(parseContentChanges('news_posts', 'create', {
       title: 'Next release', slug: 'next-release', active: true, body: 'A new single',
     }).active).toBe(false)
