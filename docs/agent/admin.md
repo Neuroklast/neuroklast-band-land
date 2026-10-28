@@ -1,5 +1,9 @@
 # Admin Patterns
 
+## News ordering
+
+`/admin/news` renders `NewsSortableTable` using existing `@dnd-kit` sortable sensors; only the grip initiates drag. The full list, including inactive posts, is submitted to `reorderNewsPosts(orderedIds, expectedIds)`. The server action validates UUID sets, requires the current admin session and calls the service-role-only `reorder_news_posts` RPC. The RPC locks the table, compares its current sorted IDs to the previous order and updates all `display_order` values in one transaction. A mismatch aborts without partial writes. The list rolls back and shows a message if saving fails. The public homepage orders by `display_order`, then `published_at` and ID. New posts are inserted before the first existing post; editing a post does not overwrite ordering. Numeric sort controls have been removed from the news forms.
+
 ## AI content review
 
 New MCP release creation is published only upon MFA-backed admin approval, including older pending requests that have `active=false`. Other content creation remains draft-only. The review slider immediately advances on Accept/Reject while server actions complete, tracks pending writes and restores an item with an actionable failure notice if approval fails. Do not show optimistic success before the RPC confirms it. An unload warning protects in-flight operations from accidental page closure. Release create approval sets `manually_edited=true` to prevent subsequent sync overwrites.

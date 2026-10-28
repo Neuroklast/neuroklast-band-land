@@ -2338,3 +2338,60 @@ $mcp_apply$;
 REVOKE ALL ON FUNCTION public.mcp_apply_content_request(uuid,uuid)
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.mcp_apply_content_request(uuid,uuid) TO service_role;
+
+
+-- Atomic, full-list news sorting. Only the already-authenticated admin server
+-- action can call this service-role-only function. Public reads remain unchanged.
+CREATE OR REPLACE FUNCTION public.reorder_news_posts(
+  p_ids uuid[], p_expected_ids uuid[]
+) RETURNS text
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+AS $reorder_news$
+DECLARE
+  current_ids uuid[];
+  requested_count integer;
+BEGIN
+  requested_count := cardinality(p_ids);
+  IF p_ids IS NULL OR p_expected_ids IS NULL
+    OR requested_count IS NULL OR requested_count < 1 OR requested_count > 2000
+    OR cardinality(p_expected_ids) <> requested_count
+    OR array_position(p_ids, NULL) IS NOT NULL
+    OR array_position(p_expected_ids, NULL) IS NOT NULL
+  THEN
+    RAISE EXCEPTION 'Invalid news order';
+  END IF;
+
+  IF (SELECT count(DISTINCT item) FROM unnest(p_ids) AS items(item)) <> requested_count
+    OR (SELECT count(DISTINCT item) FROM unnest(p_expected_ids) AS items(item)) <> requested_count
+  THEN
+    RAISE EXCEPTION 'Duplicate news IDs';
+  END IF;
+
+  -- Serializes reorder with inserts, deletes and other reorders. Normal
+  -- SELECTs on the public website are not blocked by this lock.
+  LOCK TABLE public.news_posts IN SHARE ROW EXCLUSIVE MODE;
+  SELECT array_agg(id ORDER BY display_order ASC NULLS LAST,
+                                 published_at DESC NULLS LAST, id ASC)
+    INTO current_ids FROM public.news_posts;
+
+  IF current_ids IS DISTINCT FROM p_expected_ids THEN
+    RAISE EXCEPTION 'News order changed. Reload the list and try again.';
+  END IF;
+
+  IF NOT (p_ids @> current_ids AND current_ids @> p_ids) THEN
+    RAISE EXCEPTION 'News list has changed. Reload the list and try again.';
+  END IF;
+
+  UPDATE public.news_posts AS n
+     SET display_order = requested.ordinal - 1,
+         updated_at = now()
+    FROM unnest(p_ids) WITH ORDINALITY AS requested(id, ordinal)
+   WHERE n.id = requested.id;
+
+  RETURN 'saved';
+END
+$reorder_news$;
+
+REVOKE ALL ON FUNCTION public.reorder_news_posts(uuid[],uuid[])
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.reorder_news_posts(uuid[],uuid[]) TO service_role;
