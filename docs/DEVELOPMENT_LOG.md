@@ -2,6 +2,17 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-28 — OAuth client duplicate-handling and deletion
+
+**Agent:** ChatGPT
+**Branch:** `fix/mcp-client-management-duplicate-delete`
+
+Fixed misleading admin MFA error for duplicate OAuth client registrations: existing entries are now idempotent and editable by client ID. Added explicit permanent client removal with a two-step confirmation, preserved MFA checks and server-side service-role restrictions, updated database DELETE grant, SQL contract and unit tests. Removing an allowlist record revokes MCP access, but does not delete Supabase Auth OAuth applications or their sessions.
+
+**Validation:** GitHub CI and PostgreSQL contract must pass before merge; OAuth handshakes need a real connected ChatGPT plugin to verify.
+
+---
+
 ## Session: 2026-10-28 — Multi-provider editorial AI integration hub
 
 **Agent:** ChatGPT
