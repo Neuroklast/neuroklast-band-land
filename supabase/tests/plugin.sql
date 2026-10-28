@@ -83,8 +83,14 @@ begin
   if has_function_privilege('authenticated','public.plugin_activate(text,text,text)','EXECUTE') then
     raise exception 'TEST FAILED: public RPC access';
   end if;
-  if has_function_privilege('anon','public.plugin_public_catalog()','EXECUTE') is not true then
-    raise exception 'TEST FAILED: public catalogue must be readable';
+  if has_function_privilege('anon','public.plugin_public_catalog()','EXECUTE') then
+    raise exception 'TEST FAILED: privileged catalog must not be exposed to anonymous callers';
+  end if;
+  if has_function_privilege('authenticated','public.plugin_public_catalog()','EXECUTE') then
+    raise exception 'TEST FAILED: privileged catalog must not be exposed to authenticated callers';
+  end if;
+  if not has_function_privilege('service_role','public.plugin_public_catalog()','EXECUTE') then
+    raise exception 'TEST FAILED: service-role public website catalog unavailable';
   end if;
   -- Hidden product with an alpha licence, audit rows, a release and an abandoned
   -- checkout: everything goes, including the audit rows and the licence.
