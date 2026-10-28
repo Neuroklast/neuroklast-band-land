@@ -147,21 +147,19 @@ export function ReviewSlider({
   const queue = useMemo(() => initialPending.filter((row) => !reviewedIds.includes(row.id)), [initialPending, reviewedIds])
   const [index, setIndex] = useState(0)
   const [busy, setBusy] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmDeleteFor, setConfirmDeleteFor] = useState<string | null>(null)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const startTouch = useRef<{ x: number; y: number } | null>(null)
 
   const activeIndex = queue.length ? Math.min(index, queue.length - 1) : 0
   const active = queue[activeIndex]
+  const confirmDelete = confirmDeleteFor === active?.id
   const navigate = useCallback((direction: number) => {
     if (busy || queue.length <= 1) return
     setIndex((current) => (current + direction + queue.length) % queue.length)
     setMessage(null)
+    setConfirmDeleteFor(null)
   }, [busy, queue.length])
-
-  useEffect(() => {
-    setConfirmDelete(false)
-  }, [active?.id])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -194,7 +192,7 @@ export function ReviewSlider({
   const decide = async (decision: 'approve' | 'reject') => {
     if (!active || busy) return
     if (active.operation === 'delete' && decision === 'approve' && !confirmDelete) {
-      setConfirmDelete(true)
+      setConfirmDeleteFor(active.id)
       return
     }
     const id = active.id
@@ -214,7 +212,7 @@ export function ReviewSlider({
       setMessage({ kind: 'error', text: 'The review request could not be completed. Check your connection and refresh the page to confirm its status.' })
     } finally {
       setBusy(false)
-      setConfirmDelete(false)
+      setConfirmDeleteFor(null)
     }
   }
 
@@ -290,7 +288,7 @@ export function ReviewSlider({
             <div role="alert" className="mx-4 mb-4 rounded-lg border border-red-700 bg-red-950/40 p-4 text-sm text-red-200 sm:mx-6">
               <div className="flex items-center gap-2 font-semibold"><Warning size={18} /> Permanent deletion</div>
               <p className="mt-2">This deletes the database record and cannot be undone in this review screen. Referenced R2 files are not automatically deleted.</p>
-              <button type="button" onClick={() => setConfirmDelete(false)} className="mt-3 underline" disabled={busy}>Cancel deletion</button>
+              <button type="button" onClick={() => setConfirmDeleteFor(null)} className="mt-3 underline" disabled={busy}>Cancel deletion</button>
             </div>
           ) : null}
           <footer className="flex flex-wrap items-center gap-2 border-t border-zinc-800 bg-zinc-950/40 p-4 sm:p-5">
