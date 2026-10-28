@@ -122,9 +122,8 @@ export function LookFooter({
       siteName={siteName}
       genres={genres}
       socialLinks={socialLinks}
+      legalNoticeUrl={legalNoticeUrl}
       privacyPolicyUrl={privacyPolicyUrl}
-      onImpressum={() => router.push(legalNoticeUrl)}
-      onDatenschutz={() => router.push(privacyPolicyUrl)}
       onAdminLogin={() => router.push('/admin/login')}
     />
   )
