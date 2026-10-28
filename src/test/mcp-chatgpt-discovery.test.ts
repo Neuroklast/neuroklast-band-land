@@ -24,6 +24,7 @@ vi.mock('@/lib/mcp/server', () => {
 })
 
 import { POST, GET } from '@/app/api/mcp/route'
+import { McpAccessError } from '@/lib/mcp/server'
 
 const modern = '2026-07-28'
 const legacy = '2025-06-18'
@@ -114,7 +115,7 @@ describe('ChatGPT MCP tool discovery compatibility', () => {
   })
 
   it('never exposes tool definitions without valid authentication', async () => {
-    authenticate.mockRejectedValueOnce({ status: 401, message: 'Bearer OAuth access token required' })
+    authenticate.mockRejectedValueOnce(new McpAccessError('Bearer OAuth access token required', 401))
     const response = await call('server/discover')
     expect(response.status).toBe(401)
   })
