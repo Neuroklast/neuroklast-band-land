@@ -51,7 +51,7 @@ function NewsCard({
         onClick={() => onOpen(post)}
         aria-label={`Open ${post.title}`}
       >
-        <div
+        {(post.coverUrl || !prominent) && <div
           className={`relative shrink-0 overflow-hidden bg-muted ${prominent
             ? 'aspect-video w-full md:aspect-[16/9] md:w-[57%]'
             : 'min-h-28 w-28 sm:aspect-video sm:min-h-0 sm:w-full'}`}
@@ -73,7 +73,7 @@ function NewsCard({
               NEWS
             </div>
           )}
-        </div>
+        </div>}
         <div className={`flex min-w-0 flex-1 flex-col justify-center ${prominent ? 'gap-3 p-5 md:p-7' : 'gap-2 p-3 sm:p-4'}`}>
           {prominent ? (
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
