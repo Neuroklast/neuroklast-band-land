@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabaseServer'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { NewsSortableTable, type NewsAdminRow } from './NewsSortableTable'
+import { NEWS_FEATURED_KEY, parseFeaturedNewsId } from '@/lib/news-homepage'
 
 export default async function NewsAdminPage() {
   let posts: NewsAdminRow[] = []
 
+  let featuredNewsId: string | null = null
   let loadError = false
   try {
     const supabase = await createClient()
@@ -19,6 +21,14 @@ export default async function NewsAdminPage() {
       .order('id', { ascending: true })
     if (error) loadError = true
     else posts = data ?? []
+
+    const { data: featuredConfig, error: configError } = await supabase
+      .from('site_config')
+      .select('value')
+      .eq('key', NEWS_FEATURED_KEY)
+      .maybeSingle()
+    if (configError) loadError = true
+    else featuredNewsId = parseFeaturedNewsId(featuredConfig?.value)
   } catch {
     loadError = true
   }
@@ -27,7 +37,7 @@ export default async function NewsAdminPage() {
     <div>
       <AdminPageHeader
         title="News / Blog"
-        description="Drag posts into the order they should appear on the website. Changes save automatically."
+        description="Drag news into order, or feature one story as the homepage lead. Changes save automatically."
         action={
           <Link
             href="/admin/news/new"
@@ -51,7 +61,7 @@ export default async function NewsAdminPage() {
           </Link>
         </div>
       ) : (
-        <NewsSortableTable initialPosts={posts} />
+        <NewsSortableTable initialPosts={posts} initialFeaturedId={featuredNewsId} />
       )}
     </div>
   )

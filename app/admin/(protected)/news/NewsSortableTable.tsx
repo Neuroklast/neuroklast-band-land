@@ -21,7 +21,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { DotsSixVertical } from '@phosphor-icons/react'
-import { deleteNewsPost, reorderNewsPosts, toggleNewsPostVisibility } from '@/app/admin/_actions/news'
+import { deleteNewsPost, reorderNewsPosts, toggleNewsPostVisibility, setFeaturedNewsPost } from '@/app/admin/_actions/news'
 import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
 import { resolveImageUrl } from '@/lib/r2'
 import { toDirectImageUrl } from '@/lib/image-cache'
@@ -46,11 +46,15 @@ function NewsSortableRow({
   disabled,
   onToggle,
   onDelete,
+  onFeature,
+  featured,
 }: {
   post: NewsAdminRow
   disabled: boolean
   onToggle: (post: NewsAdminRow) => void
   onDelete: (id: string) => void
+  onFeature: (post: NewsAdminRow) => void
+  featured: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: post.id,
@@ -101,6 +105,18 @@ function NewsSortableRow({
           {post.active ? 'Visible' : 'Hidden'}
         </button>
       </td>
+      <td className="py-2 pr-4">
+        <button
+          type="button"
+          onClick={() => onFeature(post)}
+          disabled={disabled || (!post.active && !featured)}
+          aria-label={featured ? 'Remove featured ' + post.title : 'Feature ' + post.title + ' on homepage'}
+          title={featured ? 'Remove feature and show the first ordered news' : 'Show as the large homepage lead story'}
+          className={'min-h-10 whitespace-nowrap font-mono text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-30 ' + (featured ? 'font-bold text-red-400 hover:text-red-300' : 'text-zinc-400 hover:text-white')}
+        >
+          {featured ? 'FEATURED' : 'Feature'}
+        </button>
+      </td>
       <td className="py-2 text-right">
         <div className="flex flex-wrap items-center justify-end gap-3">
           {post.active ? (
@@ -125,9 +141,16 @@ function NewsSortableRow({
   )
 }
 
-export function NewsSortableTable({ initialPosts }: { initialPosts: NewsAdminRow[] }) {
+export function NewsSortableTable({
+  initialPosts,
+  initialFeaturedId = null,
+}: {
+  initialPosts: NewsAdminRow[]
+  initialFeaturedId?: string | null
+}) {
   const router = useRouter()
   const [posts, setPosts] = useState(initialPosts)
+  const [featuredId, setFeaturedId] = useState<string | null>(initialFeaturedId)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [mutatingId, setMutatingId] = useState<string | null>(null)
@@ -137,6 +160,7 @@ export function NewsSortableTable({ initialPosts }: { initialPosts: NewsAdminRow
   )
 
   useEffect(() => { setPosts(initialPosts) }, [initialPosts])
+  useEffect(() => { setFeaturedId(initialFeaturedId) }, [initialFeaturedId])
 
   async function handleDragEnd({ active, over }: DragEndEvent) {
     if (status === 'saving' || !over || active.id === over.id) return
@@ -174,6 +198,24 @@ export function NewsSortableTable({ initialPosts }: { initialPosts: NewsAdminRow
       router.refresh()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not change visibility.')
+    } finally {
+      setMutatingId(null)
+    }
+  }
+
+  async function handleFeature(post: NewsAdminRow) {
+    if (mutatingId || status === 'saving') return
+    const shouldFeature = featuredId !== post.id
+    if (shouldFeature && !post.active) return
+    setMutatingId(post.id)
+    setError(null)
+    try {
+      const result = await setFeaturedNewsPost(post.id, shouldFeature)
+      if (result.error) throw new Error(result.error)
+      setFeaturedId(shouldFeature ? post.id : null)
+      router.refresh()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not update featured news.')
     } finally {
       setMutatingId(null)
     }
@@ -223,6 +265,7 @@ export function NewsSortableTable({ initialPosts }: { initialPosts: NewsAdminRow
                   <th scope="col" className="py-2 pr-4">External link</th>
                   <th scope="col" className="py-2 pr-4">Published</th>
                   <th scope="col" className="py-2 pr-4">Active</th>
+                  <th scope="col" className="py-2 pr-4">Homepage</th>
                   <th scope="col" className="py-2 text-right">Actions</th>
                 </tr>
               </thead>
@@ -232,6 +275,8 @@ export function NewsSortableTable({ initialPosts }: { initialPosts: NewsAdminRow
                     disabled={status === 'saving' || mutatingId !== null}
                     onToggle={(item) => void handleVisibility(item)}
                     onDelete={(id) => void handleDelete(id)}
+                    onFeature={(item) => void handleFeature(item)}
+                    featured={featuredId === post.id}
                   />
                 ))}
               </tbody>

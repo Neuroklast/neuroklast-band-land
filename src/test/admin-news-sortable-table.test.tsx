@@ -7,6 +7,7 @@ vi.mock('@/app/admin/_actions/news', () => ({
   reorderNewsPosts: vi.fn(),
   toggleNewsPostVisibility: vi.fn(),
   deleteNewsPost: vi.fn(),
+  setFeaturedNewsPost: vi.fn(),
 }))
 vi.mock('@/lib/r2', () => ({ resolveImageUrl: () => null }))
 vi.mock('@/lib/image-cache', () => ({ toDirectImageUrl: () => '' }))
