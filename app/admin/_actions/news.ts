@@ -128,6 +128,7 @@ export async function createNewsPost(formData: FormData) {
     revalidatePath('/')
     revalidatePath('/news')
     revalidatePath('/news/' + row.slug)
+    revalidatePath('/news/' + row.slug + '/social-image')
     return { success: true }
   }, 'Unable to create news post.')
 }
@@ -151,7 +152,11 @@ export async function updateNewsPost(id: string, formData: FormData) {
     revalidatePath('/')
     revalidatePath('/news')
     revalidatePath(`/news/${row.slug}`)
-    if (previous?.slug && previous.slug !== row.slug) revalidatePath('/news/' + previous.slug)
+    revalidatePath(`/news/${row.slug}/social-image`)
+    if (previous?.slug && previous.slug !== row.slug) {
+      revalidatePath('/news/' + previous.slug)
+      revalidatePath('/news/' + previous.slug + '/social-image')
+    }
     return { success: true }
   }, 'Unable to update news post.')
 }
@@ -170,7 +175,10 @@ export async function deleteNewsPost(id: string) {
     revalidatePath('/admin/news')
     revalidatePath('/')
     revalidatePath('/news')
-    if (previous?.slug) revalidatePath('/news/' + previous.slug)
+    if (previous?.slug) {
+      revalidatePath('/news/' + previous.slug)
+      revalidatePath('/news/' + previous.slug + '/social-image')
+    }
     return { success: true }
   }, 'Unable to delete news post.')
 }
@@ -189,7 +197,10 @@ export async function toggleNewsPostVisibility(id: string, active: boolean) {
     revalidatePath('/admin/news')
     revalidatePath('/')
     revalidatePath('/news')
-    if (previous?.slug) revalidatePath('/news/' + previous.slug)
+    if (previous?.slug) {
+      revalidatePath('/news/' + previous.slug)
+      revalidatePath('/news/' + previous.slug + '/social-image')
+    }
     return { success: true }
   }, 'Unable to update news visibility.')
 }

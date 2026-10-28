@@ -1,5 +1,12 @@
 # QA checklist
 
+## News social previews
+
+- [ ] Share a news post with a stored R2 cover on WhatsApp, Facebook, X and Discord: OG and Twitter metadata resolve to `/news/[slug]/social-image?v=...`, return HTTP 200 with `image/jpeg`, 1200×630, and visibly match the news photo.
+- [ ] The share image is letterboxed to preserve the entire photo without stretching. Copy/share links continue pointing to the individual public article.
+- [ ] After changing a news cover, the preview URL version changes and the next share shows the updated image. Hidden/unpublished posts never expose a social image.
+- [ ] A post without a cover uses `/og-image.png`, and external/non-R2 URLs cannot be fetched through the JPEG converter.
+
 ## News drag-and-drop ordering
 
 - [ ] Drag a News / Blog row by its grip. The new order appears immediately, saves automatically, and survives refresh. Hidden rows may also be moved without changing visibility.

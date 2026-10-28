@@ -22,6 +22,10 @@ Regression guard: `src/test/public-mobile.test.tsx`, `src/test/nav-links.test.ts
 
 ---
 
+## News share images
+
+The public `/news/[slug]` metadata uses `newsSocialImageMetadata` from `lib/news-social-image.ts`. When a news item has a cover stored in the configured R2 public host, social metadata points to a **same-origin** `/news/[slug]/social-image?v=<cover-key>` endpoint with 1200×630 JPEG dimensions. The Node route reads only active news and converts the article's own R2 photo to JPEG via Sharp, preserving the whole image on a dark background. It only fetches from the configured R2 origin (no arbitrary URL fetches). Missing/non-R2 covers use `/og-image.png`. Editing covers or visibility revalidates the social image route. Never let shared links point to the external article when generating the preview: social networks must scrape the canonical NEUROKLAST news article to read its unique metadata.
+
 ## Homepage lists (gigs / cards)
 
 1. Critical list items must not rely solely on Framer `whileInView` with `initial={{ opacity: 0 }}` — Lenis + IntersectionObserver can leave them invisible forever.

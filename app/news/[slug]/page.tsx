@@ -12,6 +12,7 @@ import { LegalPageShell } from '@/app/_components/public/LegalPageShell'
 import { JsonLd } from '@/app/_components/public/JsonLd'
 import { getSiteOrigin } from '@/lib/og-share'
 import { absoluteUrl, buildBreadcrumbSchema } from '@/lib/structured-data'
+import { newsSocialImageMetadata } from '@/lib/news-social-image'
 
 interface NewsPostRow {
   id: string
@@ -51,9 +52,10 @@ export async function generateMetadata({
   const { slug } = await params
   const post = await loadPost(slug)
   if (!post) return { title: 'News', robots: { index: false, follow: false } }
-  const cover = resolveImageUrl(post.cover_storage_path, post.cover_url)
   const origin = getSiteOrigin()
-  const image = absoluteUrl(origin, cover || '/og-image.png')
+  const socialImage = newsSocialImageMetadata(
+    post.slug, post.title, post.cover_storage_path, post.cover_url, origin,
+  )
   const description = post.excerpt?.trim() || post.body.slice(0, 160).trim() || undefined
   return {
     title: post.title,
@@ -65,14 +67,14 @@ export async function generateMetadata({
       type: 'article',
       url: absoluteUrl(origin, '/news/' + encodeURIComponent(slug)),
       siteName: 'NEUROKLAST',
-      images: [{ url: image, alt: post.title }],
+      images: [socialImage.openGraphImage],
       publishedTime: post.published_at ?? undefined,
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description,
-      images: [image],
+      images: [socialImage.image],
     },
   }
 }
