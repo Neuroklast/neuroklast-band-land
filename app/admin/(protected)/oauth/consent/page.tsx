@@ -1,4 +1,5 @@
 import { createActionClient } from '@/lib/supabaseServer'
+import { getActiveMcpClient } from '@/lib/mcp/client-registry'
 import { decideMcpOAuth } from '@/app/admin/_actions/mcpOAuth'
 import { redirect } from 'next/navigation'
 
@@ -17,9 +18,9 @@ export default async function McpOAuthConsent({
     if (data.redirect_url && new URL(data.redirect_url).protocol === 'https:') redirect(data.redirect_url)
     return <p>Unable to resume the authorization request.</p>
   }
-  const expected = process.env.NEUROKLAST_MCP_CLIENT_ID
   const client = data.client as { id?: string; client_id?: string; name?: string }
-  if (!expected || (client.id ?? client.client_id) !== expected) {
+  const clientId = client.id ?? client.client_id
+  if (!clientId || !(await getActiveMcpClient(clientId))) {
     return <p>This OAuth client is not permitted to access NEUROKLAST content.</p>
   }
   const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
