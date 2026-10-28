@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react'
-import { ArrowLeft, ArrowRight, ArrowCounterClockwise, Check, X, Warning, CaretDown } from '@phosphor-icons/react'
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react'
+import { ArrowRight, ArrowCounterClockwise, Check, X, Warning, CaretDown } from '@phosphor-icons/react'
 import { reviewMcpContent } from '@/app/admin/_actions/mcpContent'
 
 export type ContentReviewRow = {
@@ -103,7 +103,7 @@ function proposalTitle(row: ContentReviewRow) {
 
 function ChangeFields({ item }: { item: ContentReviewRow }) {
   const changed = Object.entries(record(item.changes))
-  const previous = record(item.previous_snapshot)
+  const previous = item.operation === 'config' ? record(record(item.previous_snapshot).value) : record(item.previous_snapshot)
   if (item.operation === 'delete') {
     return <div className="rounded-lg border border-red-900/60 bg-red-950/20 p-4">
       <p className="mb-3 text-sm font-medium text-red-300">This record will be permanently deleted.</p>
@@ -143,16 +143,13 @@ export function ReviewSlider({
   recentDecisions: ContentReviewRow[]
 }) {
   const router = useRouter()
-  const [queue, setQueue] = useState(initialPending)
+  const [reviewedIds, setReviewedIds] = useState<string[]>([])
+  const queue = useMemo(() => initialPending.filter((row) => !reviewedIds.includes(row.id)), [initialPending, reviewedIds])
   const [index, setIndex] = useState(0)
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const startTouch = useRef<{ x: number; y: number } | null>(null)
-
-  useEffect(() => {
-    setQueue(initialPending)
-  }, [initialPending])
 
   const activeIndex = queue.length ? Math.min(index, queue.length - 1) : 0
   const active = queue[activeIndex]
@@ -209,7 +206,7 @@ export function ReviewSlider({
         setMessage({ kind: 'error', text: result.error ?? 'The decision could not be saved. Nothing was applied.' })
         return
       }
-      setQueue((rows) => rows.filter((row) => row.id !== id))
+      setReviewedIds((ids) => [...ids, id])
       setIndex((current) => Math.min(current, Math.max(0, queue.length - 2)))
       setMessage({ kind: 'success', text: decision === 'approve' ? 'Change approved and applied.' : 'Proposal rejected.' })
       router.refresh()
