@@ -1,5 +1,5 @@
 import 'server-only'
-import { createPublicClient } from '@/lib/supabaseServer'
+import { db } from '@/lib/neurokore/server'
 import { latestByChannel, parsePublicCatalog, type PublicProduct } from './releases'
 import { mergePublicReleaseDownloads } from './github-releases'
 import { loadNeurokoreGitHubReleases } from './github-releases-server'
@@ -7,7 +7,7 @@ import { loadNeurokoreGitHubReleases } from './github-releases-server'
 /** Published products and release metadata only; no storage keys or secrets. */
 export async function loadPublicCatalog(): Promise<PublicProduct[]> {
   try {
-    const supabase = createPublicClient()
+    const supabase = db()
     const { data, error } = await supabase.rpc('plugin_public_catalog')
     if (error) return []
     const products = parsePublicCatalog(data)
