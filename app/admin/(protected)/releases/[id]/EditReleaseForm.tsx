@@ -50,6 +50,7 @@ export default function EditReleaseForm({ release, resolvedCoverUrl }: Props) {
         <label className="block text-sm text-zinc-300 mb-1">Type</label>
         <select name="type" defaultValue={release.type as string} className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none">
           <option value="single">Single</option>
+          <option value="song">Song / Track appearance</option>
           <option value="ep">EP</option>
           <option value="album">Album</option>
           <option value="remix">Remix</option>

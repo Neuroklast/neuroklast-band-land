@@ -12,7 +12,7 @@ export interface ReleaseTrackMetadata {
 
 export interface ReleaseMetadata {
   title: string
-  type: 'album' | 'ep' | 'single' | 'remix' | 'compilation' | ''
+  type: 'album' | 'ep' | 'single' | 'song' | 'remix' | 'compilation' | ''
   release_date: string | null
   description: string | null
   artists: string[]

@@ -249,7 +249,7 @@ export function sharedCoverFingerprint(
   return null
 }
 
-const LOOSE_CATALOGUE_TYPES = new Set(['album', 'ep', 'compilation', 'single', 'remix'])
+const LOOSE_CATALOGUE_TYPES = new Set(['album', 'ep', 'compilation', 'single', 'song', 'remix'])
 
 function catalogueTypesLooselyCompatible(a: string, b: string): boolean {
   if (a === b) return true
