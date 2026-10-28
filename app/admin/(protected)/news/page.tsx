@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabaseServer'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { ConfirmDeleteButton } from '@/app/admin/_components/ConfirmDeleteButton'
-import { deleteNewsPost, toggleNewsPostVisibility } from '@/app/admin/_actions/news'
+import { deleteNewsPost, toggleNewsPostVisibility, setFeaturedNewsPost } from '@/app/admin/_actions/news'
+import { NEWS_FEATURED_KEY, parseFeaturedNewsId } from '@/lib/news-homepage'
 import { resolveImageUrl } from '@/lib/r2'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { NewsShareActions } from '@/components/news/NewsShareActions'
@@ -22,6 +23,7 @@ export default async function NewsAdminPage() {
     display_order: number
   }> = []
 
+  let featuredNewsId: string | null = null
   let loadError = false
   try {
     const supabase = await createClient()
@@ -34,6 +36,14 @@ export default async function NewsAdminPage() {
       .order('published_at', { ascending: false })
     if (error) loadError = true
     else posts = data ?? []
+
+    const { data: featuredConfig, error: configError } = await supabase
+      .from('site_config')
+      .select('value')
+      .eq('key', NEWS_FEATURED_KEY)
+      .maybeSingle()
+    if (configError) loadError = true
+    else featuredNewsId = parseFeaturedNewsId(featuredConfig?.value)
   } catch {
     loadError = true
   }
@@ -76,6 +86,7 @@ export default async function NewsAdminPage() {
                 <th className="py-2 pr-4">External link</th>
                 <th className="py-2 pr-4">Published</th>
                 <th className="py-2 pr-4">Active</th>
+                <th className="py-2 pr-4">Homepage</th>
                 <th className="py-2 text-right">Actions</th>
               </tr>
             </thead>
@@ -127,6 +138,22 @@ export default async function NewsAdminPage() {
                           className={`text-xs ${post.active ? 'text-green-400' : 'text-zinc-500'}`}
                         >
                           {post.active ? 'Visible' : 'Hidden'}
+                        </button>
+                      </form>
+                    </td>
+                    <td className="py-2 pr-4">
+                      <form action={async () => {
+                        'use server'
+                        await setFeaturedNewsPost(post.id, featuredNewsId !== post.id)
+                      }}>
+                        <button
+                          type="submit"
+                          disabled={!post.active && featuredNewsId !== post.id}
+                          aria-label={featuredNewsId === post.id ? `Remove ${post.title} from featured` : `Feature ${post.title} on homepage`}
+                          title={featuredNewsId === post.id ? 'Remove feature: newest news will lead' : 'Feature this news above the latest stories'}
+                          className={`min-h-10 whitespace-nowrap font-mono text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${featuredNewsId === post.id ? 'font-bold text-red-400 hover:text-red-300' : 'text-zinc-400 hover:text-white'}`}
+                        >
+                          {featuredNewsId === post.id ? 'FEATURED' : 'Feature'}
                         </button>
                       </form>
                     </td>
