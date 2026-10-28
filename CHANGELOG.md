@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Keep the AI review workflow inside the admin viewport: compact title and progress, a concise change preview, fixed-position review actions, and independently scrollable full-details and history dialogs. Remove the need to page-scroll just to reach Accept/Reject/Back/Skip.
+
 - Replace the AI content review JSON wall with a one-proposal-at-a-time slider, readable field-level before/after comparisons, explicit Accept/Reject, Back/Skip navigation, guarded deletion confirmation and collapsible raw details. Group Content Review and Integrations under a dedicated AI admin navigation section.
 
 - Separate EP, Single, and Song categories throughout public discography browsing, admin editing, and MCP editorial validation. Previously EPs and singles shared one label and filter.

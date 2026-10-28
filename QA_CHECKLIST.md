@@ -2,6 +2,10 @@
 
 ## Private MCP editorial integration
 
+- [ ] At typical desktop and mobile viewport sizes, AI Content Review shows Back, Reject, Accept and Skip without scrolling the admin page, including when the proposal has many tracks, streaming links or long text.
+- [ ] Compact preview shows a limited set of highlights, explains that full information is in Review all, and the full changes/technical JSON are accessible in a separate scrollable dialog; opening it never submits a decision.
+- [ ] At high browser zoom and on narrow screens, action footer stays reachable; deletion confirmation and errors do not push the actions below the viewport. Other admin pages retain native scrolling.
+
 - [ ] Admin sidebar has a single AI section with Content Review and Integrations; neither remains buried under Content/System.
 - [ ] AI review shows one proposal at a time, correct before/after fields (including config), navigation position, optional JSON, and recent decisions; responsive on narrow screens.
 - [ ] Skip, Back, left/right keyboard navigation and horizontal touch swipes never submit changes. Accept/Reject submit exactly once, advance only on success and keep the current item visible on MFA/conflict/network failures.
