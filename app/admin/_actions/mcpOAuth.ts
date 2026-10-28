@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/app/admin/_actions/auth'
 import { createActionClient } from '@/lib/supabaseServer'
+import { getActiveMcpClient } from '@/lib/mcp/client-registry'
 
 export async function decideMcpOAuth(formData: FormData) {
   await requireAdmin()
@@ -11,13 +12,12 @@ export async function decideMcpOAuth(formData: FormData) {
   if (!/^[a-f0-9-]{20,100}$/i.test(authorizationId) || !['approve', 'deny'].includes(String(decision))) {
     throw new Error('Invalid authorization decision')
   }
-  const clientId = process.env.NEUROKLAST_MCP_CLIENT_ID
-  if (!clientId) throw new Error('MCP OAuth integration is disabled')
   const supabase = await createActionClient()
   const { data: details, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId)
   if (error || !details || !('authorization_id' in details)) throw new Error('Authorization request unavailable')
   const oauthClient = details.client as { id?: string; client_id?: string }
-  if ((oauthClient.id ?? oauthClient.client_id) !== clientId) throw new Error('OAuth client is not allowlisted')
+  const clientId = oauthClient.id ?? oauthClient.client_id
+  if (!clientId || !(await getActiveMcpClient(clientId))) throw new Error('OAuth client is not allowlisted')
 
   // The MCP endpoint also enforces aal2 on every access token.
   const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
