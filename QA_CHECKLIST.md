@@ -2,6 +2,10 @@
 
 ## Private MCP editorial integration
 
+- [ ] Existing queued release create proposals with active=false display Visible after Accept; accepting them inserts publicly visible and manually protected releases. Other new content remains drafts; approved existing release updates do not inadvertently change visibility.
+- [ ] Accept/Reject immediately moves to the next card before the server returns. Multiple rapid decisions persist independently, an in-flight counter stays visible, double submissions are prevented, and server failures restore the proposal with a review shortcut.
+- [ ] Do not leave the page while operations are in flight; navigation/reload warning appears. A missing response must never be shown as a successful approval.
+
 - [ ] At typical desktop and mobile viewport sizes, AI Content Review shows Back, Reject, Accept and Skip without scrolling the admin page, including when the proposal has many tracks, streaming links or long text.
 - [ ] Compact preview shows a limited set of highlights, explains that full information is in Review all, and the full changes/technical JSON are accessible in a separate scrollable dialog; opening it never submits a decision.
 - [ ] At high browser zoom and on narrow screens, action footer stays reachable; deletion confirmation and errors do not push the actions below the viewport. Other admin pages retain native scrolling.
