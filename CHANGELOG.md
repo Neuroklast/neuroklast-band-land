@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- News sharing now serves the article's own R2 cover as a first-party, crawler-friendly 1200×630 JPEG for Open Graph and Twitter/large-card previews. Cache-busted by cover filename; missing covers fall back to the site's default image. Cover edits and visibility changes invalidate the preview route.
+
 - Add drag-and-drop news ordering in `/admin/news`, with mouse/touch and keyboard handles, auto-save, failure rollback and atomic conflict-safe ordering. The homepage now honors the saved order rather than publication date. New posts appear first, and numeric order inputs have been removed from news forms.
 
 - After MFA-backed approval, newly created NEUROKLAST releases are publicly visible immediately, including older queued create proposals, and protected as manually edited. Other editorial creations remain unpublished drafts. Fix AI Content Review to advance instantly after Accept/Reject while writes are pending, with a saving counter, non-blocking next item, and restored proposals on failure.
