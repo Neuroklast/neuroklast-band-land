@@ -32,10 +32,10 @@ Not exposed: orders, customers, license keys, private download assets, product p
 5. A hardcoded table/column registry and per-field Zod validation prevent arbitrary table access, SQL execution or writes to sensitive fields.
 6. A database-level restrictive RLS policy denies OAuth access tokens with a `client_id` direct table access, including access normally granted by the administrator's ordinary session. MCP uses its own server-side checks and privileges. This protects against attempts to bypass the content API via Supabase PostgREST. Audit existing privileged database functions and any other exposed schemas separately.
 7. Proposals go to `mcp_content_requests` (RLS, no anon/authenticated database privileges). The existing privileged Supabase client is used only on the server after authorization.
-8. Human review claims each request atomically; content snapshots are checked before applying to reject stale proposals. A server-side review history records creator, reviewer, time, operation, status and proposed values; it is not append-only or cryptographically tamper-proof.
+8. Human review executes a single `mcp_apply_content_request` PostgreSQL function under a transaction. The function locks the proposal and content row, compares the saved content snapshot, validates an independent SQL allowlist, commits the edit and its review status together, and prevents replay. Failures roll back completely. See `supabase/tests/mcp-content.sql`. A server-side review history records creator, reviewer, time, operation, status and proposed values; it is not append-only or cryptographically tamper-proof.
 9. New records remain inactive until separately published using the existing admin UI. Existing changes only apply after explicit review. There is no delete tool.
 
-**Remaining review risks:** The conflict check and actual content UPDATE are separate DB operations. OAuth tokens are also not automatically isolated from existing privileged RPC functions; audit their grants before production. A concurrent human edit between them is a narrow race; serializable stored procedures or row locking would close it. Approval and operation are not one database transaction. Any deployment must treat this as an open hardening item. Review all public content renderers for stored XSS separately, including rich text and JSON.
+**Remaining review risks:** OAuth tokens are not automatically isolated from existing privileged RPC functions. Inspect grants and audit all exposed functions before production. The review/audit table is not append-only. Review public content renderers for stored XSS, including rich text and JSON. Live OAuth+MFA handshakes and user permissions must be tested end to end before enabling any client.
 
 ## Setup (never commit real values)
 
@@ -63,7 +63,7 @@ Content proposal tools do not directly apply edits. An admin must approve every 
 ## Operational checks
 
 - Confirm CI: lint, typecheck, tests, build.
-- Run full MCP protocol/OAuth conformance tests in production-like staging.
+- Run the database SQL contract via `psql -v ON_ERROR_STOP=1 -f supabase/tests/mcp-content.sql` in disposable CI only, then full MCP protocol/OAuth conformance tests in production-like staging.
 - Run API penetration tests for IDOR, client-token substitution, unauthorized admin session, missing MFA, user-agent variations, CSRF, request floods, HTML injection, stale revisions, concurrent approvals and database downtime.
 - Restrict and regularly inspect OAuth clients. Review audit logs and data retention, then document this integration in the privacy disclosures if relevant personal data is processed.
 - The `/api/mcp` endpoint is **not ready for production access** simply because the code exists. No security can be guaranteed as absolute.
