@@ -77,10 +77,10 @@ export default function NeuroklastClassicFooter({
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-muted-foreground tracking-wider">
-              <Link href={sanitizeExternalHref(legalNoticeUrl)} className="nk-os-nav min-h-[44px] inline-flex items-center">
+              <Link href={sanitizeExternalHref(legalNoticeUrl) ?? '/legal-notice'} className="nk-os-nav min-h-[44px] inline-flex items-center">
                 {t('footer.legal')}
               </Link>
-              <Link href={sanitizeExternalHref(privacyPolicyUrl)} className="nk-os-nav min-h-[44px] inline-flex items-center">
+              <Link href={sanitizeExternalHref(privacyPolicyUrl) ?? '/privacy-policy'} className="nk-os-nav min-h-[44px] inline-flex items-center">
                 {t('footer.privacy')}
               </Link>
               <Link
