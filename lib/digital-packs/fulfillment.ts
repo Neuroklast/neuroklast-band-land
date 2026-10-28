@@ -5,6 +5,7 @@ import { assertStripeFulfillmentEnvironment } from '@/lib/neurokore/stripe'
 import { getApiSecret } from '@/lib/api-secrets'
 import { formatServiceAddress, loadLegalConfig } from '@/lib/legal-content'
 import { origin } from '@/lib/neurokore/server'
+import { assertDigitalPackIncidentMatchesOrder, digitalPackRevocationStatus, type VerifiedDigitalPackIncident } from '@/lib/digital-packs/payment-incidents'
 
 export const paidPackSessionSchema = z.object({
   id: z.string().regex(/^cs_(test|live)_[A-Za-z0-9_]+$/),
@@ -146,22 +147,52 @@ export async function fulfillDigitalPackSession(session: Session, eventLivemode:
   return 'paid'
 }
 
-/** Signed Stripe refund/dispute notification only; entitlement stops on incident. */
-export async function recordDigitalPackPaymentIncident(event: {
-  type:string;livemode:boolean;data:{object:Record<string,unknown>}
-}) {
-  if(event.livemode!==(process.env.VERCEL_ENV==='production'))throw new Error('Cross environment incident')
-  const value=event.data.object.payment_intent
-  if(typeof value!=='string'||!/^pi_[A-Za-z0-9_]+$/.test(value))return false
-  const client=db()
-  const row=await client.from('digital_pack_orders').select('id,status')
-    .eq('payment_intent',value).maybeSingle()
-  if(row.error)throw row.error
-  if(!row.data)return false
-  const status=event.type==='charge.refunded'?'refunded':'disputed'
-  if(row.data.status===status)return true
-  const updated=await client.from('digital_pack_orders')
-    .update({status}).eq('id',row.data.id).eq('status','paid')
-  if(updated.error)throw updated.error
+/**
+ * Stripe incident is resolved against the current Charge/Dispute/Refund and
+ * Checkout Session by the webhook before this function can be called.
+ * Verify it belongs to this precise local order before revoking downloads.
+ *
+ * A full refund or dispute may arrive before the paid checkout event. In
+ * that case revoke even a pending order so a delayed success event cannot
+ * recreate entitlement. Partial refunds retain access.
+ */
+export async function recordDigitalPackPaymentIncident(
+  incident: VerifiedDigitalPackIncident,
+  eventLivemode: boolean,
+): Promise<boolean> {
+  if (eventLivemode !== (process.env.VERCEL_ENV === 'production')) {
+    throw new Error('Cross-environment digital pack incident')
+  }
+  const status = digitalPackRevocationStatus(incident.state)
+  if (!status) return false
+
+  const client = db()
+  const { data: order, error } = await client.from('digital_pack_orders')
+    .select('id,status,stripe_session,payment_intent')
+    .eq('id', incident.orderId).maybeSingle()
+  if (error) throw error
+  if (!order) return false
+  assertDigitalPackIncidentMatchesOrder(incident, order)
+
+  // A full refund must never be undone by a subsequent dispute event.
+  if (order.status === 'refunded' || order.status === status) return true
+  const eligible = status === 'refunded'
+    ? ['pending', 'paid', 'disputed']
+    : ['pending', 'paid']
+  const update = await client.from('digital_pack_orders')
+    .update({ status, payment_intent: incident.paymentIntent })
+    .eq('id', order.id)
+    .eq('stripe_session', incident.sessionId)
+    .in('status', eligible)
+    .select('id,status').maybeSingle()
+  if (update.error) throw update.error
+  if (!update.data) {
+    const current = await client.from('digital_pack_orders')
+      .select('status').eq('id', order.id).single()
+    if (current.error ||
+      (current.data?.status !== status && current.data?.status !== 'refunded')) {
+      throw new Error('Digital pack incident update conflict')
+    }
+  }
   return true
 }
