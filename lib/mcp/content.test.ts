@@ -28,6 +28,9 @@ describe('MCP editorial allowlist', () => {
     expect(() => parseContentChanges('news_posts', 'update', { link: 'javascript:alert(1)' })).toThrow('Invalid link')
     expect(() => parseContentChanges('gallery', 'create', { caption: 'new' })).toThrow('Creation is not supported')
     expect(() => parseContentChanges('releases', 'update', { itunes_id: '123' })).toThrow('not writable')
+    expect(() => parseContentChanges('releases', 'update', { streaming_links: [{ platform: 'Spotify', url: 'javascript:alert(1)' }] })).toThrow('Invalid streaming_links')
+    expect(() => parseContentChanges('gigs', 'update', { event_links: { page: 'javascript:alert(1)' } })).toThrow('Invalid event_links')
+    expect(() => parseContentChanges('products', 'update', { href: '/\\\\malicious' })).toThrow('Invalid href')
   })
 
   it('versions content for conflict detection', () => {
