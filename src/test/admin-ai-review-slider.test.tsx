@@ -83,24 +83,58 @@ describe('AI content review carousel', () => {
     expect(save).not.toHaveBeenCalled()
   })
 
-  it('applies a decision through the existing server action and advances', async () => {
+  it('advances immediately while saving and does not report success before the server', async () => {
+    let complete: (value: { success: boolean }) => void = () => { throw new Error('Deferred not initialized') }
+    save.mockImplementationOnce(() => new Promise((resolve) => { complete = resolve }))
     render(<ReviewSlider initialPending={[first, second]} recentDecisions={[]} />)
     fireEvent.click(screen.getByRole('button', { name: 'Accept' }))
+    expect(save).toHaveBeenCalledWith(first.id, 'approve')
+    expect(screen.getByRole('heading', { name: 'Second track' })).toBeInTheDocument()
+    expect(screen.getByText('1 saving…')).toBeInTheDocument()
+    expect(refresh).not.toHaveBeenCalled()
+    complete({ success: true })
     await waitFor(() => {
-      expect(save).toHaveBeenCalledWith(first.id, 'approve')
-      expect(screen.getByRole('heading', { name: 'Second track' })).toBeInTheDocument()
       expect(refresh).toHaveBeenCalled()
+      expect(screen.queryByText('1 saving…')).not.toBeInTheDocument()
     })
-    expect(screen.getByText('Change approved and applied.')).toBeInTheDocument()
   })
 
-  it('keeps the proposal visible when MFA or approval fails', async () => {
+  it('allows rapid decisions on different proposals without duplicate submissions', async () => {
+    const complete: Array<(value: { success: boolean }) => void> = []
+    save.mockImplementation(() => new Promise((resolve) => { complete.push(resolve) }))
+    render(<ReviewSlider initialPending={[first, second]} recentDecisions={[]} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Accept' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reject' }))
+    expect(save).toHaveBeenNthCalledWith(1, first.id, 'approve')
+    expect(save).toHaveBeenNthCalledWith(2, second.id, 'reject')
+    expect(screen.getByText('2 saving…')).toBeInTheDocument()
+    expect(refresh).not.toHaveBeenCalled()
+    complete[1]({ success: true })
+    complete[0]({ success: true })
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(2))
+    expect(screen.getByText('All reviewed')).toBeInTheDocument()
+  })
+
+  it('restores a failed proposal with a visible error and a review shortcut', async () => {
     save.mockResolvedValueOnce({ error: 'MFA (AAL2) is required to review AI content' })
     render(<ReviewSlider initialPending={[first, second]} recentDecisions={[]} />)
     fireEvent.click(screen.getByRole('button', { name: 'Accept' }))
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('MFA (AAL2)'))
+    expect(screen.getByRole('heading', { name: 'Second track' })).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('MFA (AAL2)'))
     expect(screen.getByRole('heading', { name: 'First track' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Review failed item' })).toBeInTheDocument()
     expect(refresh).not.toHaveBeenCalled()
+  })
+
+  it('shows publication after Accept even when an old queued release has active=false', () => {
+    const old = { ...first, operation: 'create', target_id: null, changes: {
+      title: 'Empyrean remix', type: 'remix', active: false, artists: ['Neuroklast'],
+    } }
+    render(<ReviewSlider initialPending={[old]} recentDecisions={[]} />)
+    expect(screen.getByText('Visible after Accept')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Review all 4 fields' }))
+    expect(screen.getAllByText('Visible on website').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Yes').length).toBeGreaterThan(0)
   })
 
   it('requires a separate confirmation before approving a deletion', async () => {

@@ -2269,8 +2269,14 @@ BEGIN
       IF proposed.collection IN ('bio','gallery','media_downloads','soundpacks') THEN
         RAISE EXCEPTION 'Creation disabled for this collection';
       END IF;
-      -- A model cannot bypass the unpublished-draft requirement.
-      new_row := proposed.changes || '{"active":false}'::jsonb;
+      -- Human-approved discography additions are published on the artist site.
+      -- Old pending release proposals contain active=false: override them here
+      -- atomically after MFA review. Other editorial creations remain drafts.
+      IF proposed.collection = 'releases' THEN
+        new_row := proposed.changes || '{"active":true,"manually_edited":true}'::jsonb;
+      ELSE
+        new_row := proposed.changes || '{"active":false}'::jsonb;
+      END IF;
     ELSIF proposed.operation = 'update' THEN
       new_row := proposed.changes;
       EXECUTE format(

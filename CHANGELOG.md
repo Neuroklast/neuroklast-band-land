@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- After MFA-backed approval, newly created NEUROKLAST releases are publicly visible immediately, including older queued create proposals, and protected as manually edited. Other editorial creations remain unpublished drafts. Fix AI Content Review to advance instantly after Accept/Reject while writes are pending, with a saving counter, non-blocking next item, and restored proposals on failure.
+
 - Keep the AI review workflow inside the admin viewport: compact title and progress, a concise change preview, fixed-position review actions, and independently scrollable full-details and history dialogs. Remove the need to page-scroll just to reach Accept/Reject/Back/Skip.
 
 - Replace the AI content review JSON wall with a one-proposal-at-a-time slider, readable field-level before/after comparisons, explicit Accept/Reject, Back/Skip navigation, guarded deletion confirmation and collapsible raw details. Group Content Review and Integrations under a dedicated AI admin navigation section.

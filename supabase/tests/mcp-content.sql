@@ -109,6 +109,25 @@ BEGIN
      (SELECT active FROM public.news_posts WHERE slug='mcp-test-draft') IS DISTINCT FROM false
   THEN RAISE EXCEPTION 'MCP created a published article'; END IF;
 
+  -- New artist releases go live only after a separate explicit administrator
+  -- approval. Old queued requests can still contain active=false, but the
+  -- atomic apply transaction enforces the published result.
+  INSERT INTO public.mcp_content_requests (
+    collection, operation, changes, requested_by, client_id
+  ) VALUES (
+    'releases', 'create',
+    '{"title":"mcp-test-published-remix","type":"remix","active":false,"artists":["Neuroklast"]}',
+    reviewer, 'test-client'
+  ) RETURNING id INTO proposal;
+  IF EXISTS (SELECT 1 FROM public.releases WHERE title='mcp-test-published-remix') THEN
+    RAISE EXCEPTION 'MCP release proposal bypassed human approval';
+  END IF;
+  result := public.mcp_apply_content_request(proposal, reviewer);
+  IF result <> 'approved'
+    OR (SELECT active FROM public.releases WHERE title='mcp-test-published-remix') IS DISTINCT FROM true
+    OR (SELECT manually_edited FROM public.releases WHERE title='mcp-test-published-remix') IS DISTINCT FROM true
+  THEN RAISE EXCEPTION 'MCP approved release was not published and protected'; END IF;
+
   -- Stale changes must be marked conflicted; original must stay untouched.
   INSERT INTO public.mcp_content_requests (
     collection, operation, target_id, changes, previous_hash,
