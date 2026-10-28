@@ -2,6 +2,7 @@ import { createActionClient } from '@/lib/supabaseServer'
 import { getActiveMcpClient } from '@/lib/mcp/client-registry'
 import { decideMcpOAuth } from '@/app/admin/_actions/mcpOAuth'
 import { redirect } from 'next/navigation'
+import { isValidOAuthAuthorizationId } from '@/lib/mcp/authorization-id'
 
 export default async function McpOAuthConsent({
   searchParams,
@@ -9,7 +10,7 @@ export default async function McpOAuthConsent({
   searchParams: Promise<{ authorization_id?: string }>
 }) {
   const id = (await searchParams).authorization_id
-  if (!id || !/^[a-f0-9-]{20,100}$/i.test(id)) return <p>Invalid authorization request.</p>
+  if (!isValidOAuthAuthorizationId(id)) return <p>Invalid authorization request.</p>
   const supabase = await createActionClient()
   const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(id)
   if (error || !data) return <p>OAuth authorization request unavailable.</p>
