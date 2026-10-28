@@ -16,6 +16,7 @@ describe('GigOverlayContent', () => {
       ticket_url: null,
       festival_name: 'Samhain Ritual',
       gig_type: 'dj',
+      photo_url: 'https://example.com/event-poster.jpg',
     })
 
     render(
@@ -30,5 +31,11 @@ describe('GigOverlayContent', () => {
     expect(screen.getByText(/P8/)).toBeInTheDocument()
     expect(screen.getByText(/Karlsruhe/)).toBeInTheDocument()
     expect(screen.getByText('DJ set')).toBeInTheDocument()
+
+    // Uploaded event posters must be shown in full, even when tall or square.
+    const poster = screen.getByRole('img', { name: 'Samhain Ritual' })
+    expect(poster).toHaveClass('object-contain')
+    expect(poster).toHaveClass('max-w-full')
+    expect(poster).not.toHaveClass('object-cover')
   })
 })
