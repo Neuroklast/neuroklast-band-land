@@ -14,7 +14,7 @@ export const SOFTWARE_LICENSE_CONDITIONS = [
   },
   {
     title: 'Aktivierung und Geräte',
-    body: 'Wenn das Produkt eine Aktivierung benötigt, gelten die auf seiner Produktseite ausgewiesenen Aktivierungsplätze und technischen Voraussetzungen. Für NEUROKORE werden derzeit zwei Geräteaktivierungen und eine regelmäßig zu erneuernde Offline-Berechtigung beschrieben. Eine Änderung der Zahl aktiver Geräte kann Unterstützung durch den Anbieter erfordern.',
+    body: 'Wenn das Produkt eine Aktivierung benötigt, gelten die auf seiner Produktseite ausgewiesenen Aktivierungsplätze und technischen Voraussetzungen. Für NEUROKORE sind derzeit zwei Geräteaktivierungen vorgesehen. Nach gültiger Aktivierung bleibt eine gekaufte Vollversion auch ohne Internetverbindung dauerhaft nutzbar; die bloße Abwesenheit einer Verbindung beendet die Lizenz nicht. Kompatible Versionen können den Lizenzstatus bei bestehender Internetverbindung im Hintergrund prüfen. Eine Änderung der Zahl aktiver Geräte kann Unterstützung durch den Anbieter erfordern.',
   },
   {
     title: 'Rechte an der Software',
