@@ -101,14 +101,16 @@ export async function queueContentChange(
   if (operation === 'create' && !definition.create) throw new McpAccessError('Creation blocked', 403)
   if (operation === 'update' && (!id || !uuid.safeParse(id).success)) throw new McpAccessError('Existing item id required', 400)
   let previousHash: string | null = null
+  let previousSnapshot: Record<string, unknown> | null = null
   if (operation === 'update') {
     const existing = await getContent(collection, id!)
     previousHash = existing.version
+    previousSnapshot = existing.item
   }
   const admin = createAdminClient()
   const { data, error } = await admin.from('mcp_content_requests').insert({
     collection, operation, target_id: operation === 'update' ? id : null,
-    changes: cleaned, previous_hash: previousHash,
+    changes: cleaned, previous_hash: previousHash, previous_snapshot: previousSnapshot,
     requested_by: context.userId, client_id: context.clientId,
   }).select('id, status, created_at').single()
   if (error || !data) throw new Error('Could not store content approval request')
@@ -150,7 +152,7 @@ export async function queueSiteContentChange(
   const admin = createAdminClient()
   const { data, error } = await admin.from('mcp_content_requests').insert({
     collection: 'site_config', operation: 'config', target_id: null, target_key: key,
-    changes: cleaned, previous_hash: current.version,
+    changes: cleaned, previous_hash: current.version, previous_snapshot: { value: current.value },
     requested_by: context.userId, client_id: context.clientId,
   }).select('id, status, created_at').single()
   if (error || !data) throw new Error('Could not store site text proposal')
