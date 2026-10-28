@@ -36,7 +36,7 @@ function loadBrowserFFmpeg(): Promise<FFmpegConstructor> {
 
   wrapperPromise = new Promise<FFmpegConstructor>((resolve, reject) => {
     const script = document.createElement('script')
-    script.src = '/vendor/ffmpeg-core/ffmpeg.js'
+    script.src = '/api/admin/ffmpeg/ffmpeg.js'
     script.async = true
     script.onload = () => {
       const ffmpeg = window.FFmpegWASM?.FFmpeg
@@ -55,7 +55,7 @@ function loadBrowserFFmpeg(): Promise<FFmpegConstructor> {
 /**
  * Encode on the admin's machine, not inside a short-lived Vercel function.
  * The single-threaded FFmpeg core is copied to the same origin during
- * predev/prebuild. Do not use a CDN script or weaken the public CSP.
+ * predev/prebuild in a non-public directory and served by an authenticated\n * same-origin admin API. Do not use a CDN script or weaken the public CSP.
  */
 export async function encodeBackgroundVideo(
   input: File,
@@ -80,9 +80,9 @@ export async function encodeBackgroundVideo(
       }
     })
     await ffmpeg.load({
-      coreURL: '/vendor/ffmpeg-core/ffmpeg-core.js',
-      wasmURL: '/vendor/ffmpeg-core/ffmpeg-core.wasm',
-      workerLoadURL: '/vendor/ffmpeg-core/814.ffmpeg.js',
+      coreURL: '/api/admin/ffmpeg/ffmpeg-core.js',
+      wasmURL: '/api/admin/ffmpeg/ffmpeg-core.wasm',
+      workerLoadURL: '/api/admin/ffmpeg/814.ffmpeg.js',
     })
     onProgress?.('Optimizing video for scrolling…', 0)
     await ffmpeg.writeFile(inputName, new Uint8Array(await input.arrayBuffer()))
