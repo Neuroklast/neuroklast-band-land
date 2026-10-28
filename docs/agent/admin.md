@@ -2,6 +2,9 @@
 
 ## AI content review
 
+**Viewport-fit exception:** `/admin/ai-content` opts out of the shell's ordinary main-page scrolling. The page and ReviewSlider use a bounded `h-full min-h-0` flex layout. The queue and the proposal header are compact; the action footer is `shrink-0` so Back/Reject/Accept/Skip remain visible without page scrolling. At most four short field highlights appear on the card (only the first two on narrow screens). Full fields, previous snapshots, technical JSON and recent decisions open as separate scrollable dialogs, never as tall content below the footer. Keep the review server action, MFA checks and deletion-confirmation semantics unchanged. All other admin routes continue using regular main scrolling.
+
+
 The protected admin sidebar puts AI Content Review (`/admin/ai-content`) and AI Integrations (`/admin/integrations`) in the dedicated AI group. The review page renders only one proposal at a time through `ReviewSlider`, including field-wise before/after comparisons and a collapsed raw JSON view. Skip/Back, arrow keys and touch swipes never mutate state. Accept/Reject use the existing `reviewMcpContent` server action with AAL2 MFA and PostgreSQL atomic approvals; successful decisions advance the queue. Permanent deletion keeps a second confirmation. Back does not roll back an already committed decision. Review history remains available in a disclosure below the card.
 
 ## Two admin layers
