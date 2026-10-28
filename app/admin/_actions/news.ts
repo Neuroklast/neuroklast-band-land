@@ -7,6 +7,7 @@ import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { safeExternalUrlOptional } from '@/lib/safe-external-url'
 import { NEWS_LINK_LABELS_KEY, cleanNewsLinkLabel, parseNewsLinkLabels } from '@/lib/news-link-label'
 import { z } from 'zod'
+import { NEWS_FEATURED_KEY, parseFeaturedNewsId } from '@/lib/news-homepage'
 
 function slugify(input: string): string {
   return input
@@ -180,4 +181,47 @@ export async function toggleNewsPostVisibility(id: string, active: boolean) {
     if (previous?.slug) revalidatePath('/news/' + previous.slug)
     return { success: true }
   }, 'Unable to update news visibility.')
+}
+
+/**
+ * Select exactly one homepage lead story without touching published dates or display order.
+ * A null selection automatically promotes the latest active news item.
+ */
+export async function setFeaturedNewsPost(id: string, featured: boolean) {
+  const supabaseAdmin = createAdminClient()
+
+  return runAdminAction(async () => {
+    const validId = z.string().uuid().safeParse(id)
+    if (!validId.success) return { error: 'Invalid news post ID.' }
+
+    if (featured) {
+      const { data: post, error: readError } = await supabaseAdmin
+        .from('news_posts')
+        .select('id, active')
+        .eq('id', id)
+        .maybeSingle()
+      if (readError) return { error: readError.message }
+      if (!post?.active) return { error: 'Only visible news can be featured.' }
+    } else {
+      // A stale browser tab must never clear a different editor's selection.
+      const { data: current, error: readError } = await supabaseAdmin
+        .from('site_config')
+        .select('value')
+        .eq('key', NEWS_FEATURED_KEY)
+        .maybeSingle()
+      if (readError) return { error: readError.message }
+      if (parseFeaturedNewsId(current?.value) !== id) return { success: true }
+    }
+
+    const { error } = await supabaseAdmin.from('site_config').upsert({
+      key: NEWS_FEATURED_KEY,
+      value: { postId: featured ? id : null },
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'key' })
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/news')
+    revalidatePath('/')
+    return { success: true }
+  }, 'Unable to update featured news.')
 }
