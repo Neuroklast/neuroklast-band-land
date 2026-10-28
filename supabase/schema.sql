@@ -1978,7 +1978,7 @@ CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
   requested_by uuid NOT NULL REFERENCES auth.users(id),
   client_id text NOT NULL,
   status text NOT NULL DEFAULT 'pending'
-    CHECK (status IN ('pending', 'approved', 'rejected', 'conflict')),
+    CHECK (status IN ('pending', 'applying', 'approved', 'rejected', 'conflict', 'failed')),
   created_at timestamptz NOT NULL DEFAULT now(),
   reviewed_at timestamptz,
   reviewed_by uuid REFERENCES auth.users(id),
