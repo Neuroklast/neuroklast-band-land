@@ -1,5 +1,13 @@
 # QA checklist
 
+## News drag-and-drop ordering
+
+- [ ] Drag a News / Blog row by its grip. The new order appears immediately, saves automatically, and survives refresh. Hidden rows may also be moved without changing visibility.
+- [ ] On the public homepage the News cards follow `display_order` even when publication dates differ; dates and slugs remain unchanged.
+- [ ] Space + arrow-key sorting and keyboard focus work. The grip is the only drag target, so View, Copy Link, Edit and visibility buttons still work.
+- [ ] Simulate a failed or concurrent reorder: the UI shows an error and restores the previous order. No partial positions are committed.
+- [ ] Newly created news appear first. Editing a news item without changing its order leaves the manually saved order intact.
+
 ## Private MCP editorial integration
 
 - [ ] Existing queued release create proposals with active=false display Visible after Accept; accepting them inserts publicly visible and manually protected releases. Other new content remains drafts; approved existing release updates do not inadvertently change visibility.
