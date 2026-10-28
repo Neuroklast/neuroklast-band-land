@@ -10,6 +10,16 @@ describe('production database least privilege', () => {
     expect(schema).toContain(
       'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.analytics_events TO service_role;')
   })
+  it('keeps privileged catalog queries server-side and private', () => {
+    const catalog = readFileSync('lib/plugins/public-catalog.ts', 'utf8')
+    expect(catalog).toContain("import 'server-only'")
+    expect(catalog).toContain("const supabase = db()")
+    expect(catalog).not.toContain('createPublicClient')
+    expect(schema).toContain(
+      'REVOKE ALL ON FUNCTION public.plugin_public_catalog() FROM PUBLIC, anon, authenticated;')
+    expect(schema).toContain(
+      'GRANT EXECUTE ON FUNCTION public.plugin_public_catalog() TO service_role;')
+  })
   it('makes anonymous product catalogue access read-only', () => {
     expect(schema).toContain(
       'REVOKE INSERT, UPDATE, DELETE ON TABLE public.products FROM PUBLIC, anon;')
