@@ -11,6 +11,7 @@ type ContentReviewRow = {
   target_id: string | null
   target_key: string | null
   changes: unknown
+  previous_snapshot: unknown
   status: string
   created_at: string
   requested_by: string
@@ -42,7 +43,7 @@ export default async function AiContentReviewPage({
   await requireAdmin()
   const supabase = createAdminClient()
   const { data, error } = await supabase.from('mcp_content_requests')
-    .select('id, collection, operation, target_id, target_key, changes, status, created_at, requested_by, reviewed_at, error')
+    .select('id, collection, operation, target_id, target_key, changes, previous_snapshot, status, created_at, requested_by, reviewed_at, error')
     .order('created_at', { ascending: false }).limit(70)
   const requests = (data ?? []) as ContentReviewRow[]
   const pending = requests.filter((row) => row.status === 'pending')
@@ -76,7 +77,15 @@ export default async function AiContentReviewPage({
                   Existing item: <Link className="underline" href={`/admin/${URLS[request.collection] ?? ''}/${request.target_id}`}>{request.target_id}</Link>
                 </p>
               ) : null}
-              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Proposed values</p>
+              {request.previous_snapshot ? (
+                <>
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Before</p>
+                  <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded border border-zinc-800 bg-zinc-950 p-3 text-xs text-zinc-500">
+                    {JSON.stringify(request.previous_snapshot, null, 2)}
+                  </pre>
+                </>
+              ) : null}
+              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Proposed changes</p>
               <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded border border-zinc-800 bg-zinc-950 p-3 text-xs text-zinc-300">
                 {JSON.stringify(request.changes, null, 2)}
               </pre>
