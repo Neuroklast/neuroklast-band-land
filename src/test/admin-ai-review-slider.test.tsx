@@ -66,7 +66,7 @@ describe('AI content review carousel', () => {
     expect(root).toHaveClass('overflow-hidden', 'flex-1')
     const card = screen.getByRole('article')
     expect(card).toHaveClass('min-h-0', 'flex-1', 'overflow-hidden')
-    expect(screen.getByRole('region', { name: 'Review actions' })).toBeInTheDocument()
+    expect(container.querySelector('footer[aria-label="Review actions"]')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Review all 6 fields' })).toBeInTheDocument()
     expect(screen.queryByText('First mix')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Review all 6 fields' }))
