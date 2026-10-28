@@ -9,13 +9,24 @@ import { z } from 'zod'
 const short = z.string().trim().min(1).max(240)
 const text = z.string().max(30000)
 const nullableText = text.nullable()
-const url = z.string().url().max(2048).refine((s) => s.startsWith('https://'), 'HTTPS required').nullable()
+const httpsUrl = z.string().url().max(2048).refine((s) => s.startsWith('https://'), 'HTTPS required')
+const url = httpsUrl.nullable()
+const siteHref = z.string().max(2048).refine((s) =>
+  (s.startsWith('/') && !s.startsWith('//') && !s.includes('\\\\') && !s.includes(':')) ||
+  s.startsWith('https://'), 'Site-relative or HTTPS link required')
+const linkMap = z.record(z.string().regex(/^[a-zA-Z0-9_-]{1,40}$/), httpsUrl)
+  .refine((value) => Object.keys(value).length <= 20)
+const streamingLinks = z.array(z.object({
+  platform: short, url: httpsUrl, label: short.optional(),
+}).strict()).max(50)
+const customLinks = z.array(z.object({ label: short, url: httpsUrl }).strict()).max(50)
+const tracks = z.array(z.object({
+  title: short, duration: short.optional(), artist: short.optional(), featuredArtists: z.array(short).max(30).optional(),
+}).strict()).max(300)
 const order = z.number().int().min(-10000).max(10000)
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) => !Number.isNaN(Date.parse(s)))
 const instant = z.string().datetime({ offset: true })
-const objects = z.array(z.record(z.string(), z.unknown())).max(200)
 const strings = z.array(z.string().max(300)).max(200)
-const jsonObject = z.record(z.string(), z.unknown())
 const nullableShort = short.nullable()
 
 const EDITABLE = {
@@ -27,12 +38,12 @@ const EDITABLE = {
   gigs: {
     create: true,
     required: ['title', 'event_date'],
-    fields: { title: short, event_date: instant, venue: nullableText, city: nullableShort, country: nullableShort, ticket_url: url, festival_name: nullableText, description: nullableText, gig_type: nullableShort, status: z.enum(['confirmed', 'cancelled', 'postponed']), sold_out: z.boolean(), supporting_artists: strings, event_links: jsonObject, photo_storage_path: nullableShort, photo_url: url, active: z.boolean() },
+    fields: { title: short, event_date: instant, venue: nullableText, city: nullableShort, country: nullableShort, ticket_url: url, festival_name: nullableText, description: nullableText, gig_type: nullableShort, status: z.enum(['confirmed', 'cancelled', 'postponed']), sold_out: z.boolean(), supporting_artists: strings, event_links: linkMap, photo_storage_path: nullableShort, photo_url: url, active: z.boolean() },
   },
   releases: {
     create: true,
     required: ['title', 'type'],
-    fields: { title: short, type: z.enum(['album', 'ep', 'single', 'remix', 'compilation']), release_date: date.nullable(), description: nullableText, cover_storage_path: nullableShort, cover_url: url, streaming_links: objects, tracks: objects, custom_links: objects, artists: strings, active: z.boolean(), display_order: order },
+    fields: { title: short, type: z.enum(['album', 'ep', 'single', 'remix', 'compilation']), release_date: date.nullable(), description: nullableText, cover_storage_path: nullableShort, cover_url: url, streaming_links: streamingLinks, tracks, custom_links: customLinks, artists: strings, active: z.boolean(), display_order: order },
   },
   bio: {
     create: false,
@@ -57,7 +68,7 @@ const EDITABLE = {
   partners: {
     create: true,
     required: ['name'],
-    fields: { name: short, url, category: nullableShort, description: nullableText, socials: jsonObject, display_order: order, active: z.boolean(), logo_white: z.boolean() },
+    fields: { name: short, url, category: nullableShort, description: nullableText, socials: linkMap, display_order: order, active: z.boolean(), logo_white: z.boolean() },
   },
   social_links: {
     create: true,
@@ -77,7 +88,7 @@ const EDITABLE = {
   products: {
     create: true,
     required: ['title'],
-    fields: { title: short, description: nullableText, href: url, display_order: order, active: z.boolean() },
+    fields: { title: short, description: nullableText, href: siteHref.nullable(), display_order: order, active: z.boolean() },
   },
   soundpacks: {
     create: false,
