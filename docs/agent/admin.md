@@ -1,5 +1,9 @@
 # Admin Patterns
 
+## AI content review
+
+The protected admin sidebar puts AI Content Review (`/admin/ai-content`) and AI Integrations (`/admin/integrations`) in the dedicated AI group. The review page renders only one proposal at a time through `ReviewSlider`, including field-wise before/after comparisons and a collapsed raw JSON view. Skip/Back, arrow keys and touch swipes never mutate state. Accept/Reject use the existing `reviewMcpContent` server action with AAL2 MFA and PostgreSQL atomic approvals; successful decisions advance the queue. Permanent deletion keeps a second confirmation. Back does not roll back an already committed decision. Review history remains available in a disclosure below the card.
+
 ## Two admin layers
 
 | Layer | Storage | UI |
