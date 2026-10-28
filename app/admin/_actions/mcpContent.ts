@@ -6,6 +6,7 @@ import { getAdminUserId } from '@/lib/api-admin-auth'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { allowedContentFields, digestContent, getContentDefinition, parseContentChanges } from '@/lib/mcp/content'
 import { z } from 'zod'
+import { mergeSiteContent, parseSiteContentPatch } from '@/lib/mcp/site-config'
 
 const uuid = z.string().uuid()
 
@@ -32,10 +33,28 @@ export async function reviewMcpContent(requestId: string, decision: 'approve' | 
     const { data: request, error: claimError } = await admin.from('mcp_content_requests')
       .update({ status: 'applying', reviewed_at: now, reviewed_by: reviewer })
       .eq('id', requestId).eq('status', 'pending')
-      .select('id, collection, operation, target_id, changes, previous_hash').maybeSingle()
+      .select('id, collection, operation, target_id, target_key, changes, previous_hash').maybeSingle()
     if (claimError || !request) return { error: 'Request is no longer pending' }
 
     try {
+      if (request.operation === 'config' && request.collection === 'site_config') {
+        const key = String(request.target_key ?? '')
+        const patch = parseSiteContentPatch(key, request.changes)
+        const { data: current, error: readError } = await admin.from('site_config')
+          .select('value').eq('key', key).maybeSingle()
+        if (readError || digestContent({ value: current?.value ?? null }) !== request.previous_hash) {
+          await admin.from('mcp_content_requests')
+            .update({ status: 'conflict', error: 'Site text changed after the proposal was submitted' })
+            .eq('id', requestId).eq('status', 'applying')
+          revalidatePath('/admin/ai-content')
+          return { error: 'Conflict: live site text has changed. Submit a fresh proposal.' }
+        }
+        const next = mergeSiteContent(key, current?.value, patch)
+        const { error: saveError } = await admin.from('site_config').upsert({
+          key, value: next, updated_at: new Date().toISOString(),
+        }, { onConflict: 'key' })
+        if (saveError) throw new Error('Unable to apply site text')
+      } else {
       const definition = getContentDefinition(request.collection)
       if (!definition || !['create', 'update'].includes(request.operation)) throw new Error('Unsupported collection')
       const operation = request.operation as 'create' | 'update'
@@ -62,6 +81,7 @@ export async function reviewMcpContent(requestId: string, decision: 'approve' | 
         const { data: created, error } = await admin.from(request.collection)
           .insert(changes).select('id').single()
         if (error || !created) throw new Error('Content creation failed')
+      }
       }
       const { error: auditError } = await admin.from('mcp_content_requests')
         .update({ status: 'approved' }).eq('id', requestId).eq('status', 'applying')
