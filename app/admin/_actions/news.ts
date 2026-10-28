@@ -27,7 +27,7 @@ const schema = z.object({
   cover_storage_path: z.string().optional().nullable(),
   cover_url: safeExternalUrlOptional,
   published_at: z.string().optional().nullable(),
-  display_order: z.coerce.number().optional().default(0),
+  display_order: z.coerce.number().optional(),
   active: z
     .union([z.boolean(), z.string()])
     .optional()
@@ -45,7 +45,7 @@ function parseFormData(formData: FormData) {
     cover_storage_path: formData.get('cover_storage_path') || null,
     cover_url: formData.get('cover_url') || null,
     published_at: formData.get('published_at') || null,
-    display_order: formData.get('display_order') || 0,
+    display_order: formData.get('display_order') || undefined,
     active: formData.get('active') ?? true,
   }
 }
@@ -63,7 +63,7 @@ function toRow(parsed: z.infer<typeof schema>) {
       cover_storage_path: parsed.cover_storage_path || null,
       cover_url: parsed.cover_url || null,
       published_at: parsed.published_at || new Date().toISOString(),
-      display_order: parsed.display_order ?? 0,
+      ...(parsed.display_order === undefined ? {} : { display_order: parsed.display_order }),
       active: parsed.active ?? true,
     },
     'cover_storage_path',
@@ -105,7 +105,18 @@ export async function createNewsPost(formData: FormData) {
 
   return runAdminAction(async () => {
     const row = toRow(parsed.data)
-    const { data: created, error } = await supabaseAdmin.from('news_posts').insert(row).select('id').single()
+    // New posts start at the top without disturbing manually arranged rows.
+    const { data: first, error: orderError } = await supabaseAdmin.from('news_posts')
+      .select('display_order')
+      .order('display_order', { ascending: true, nullsFirst: false })
+      .limit(1).maybeSingle()
+    if (orderError) return { error: 'Unable to determine the first news position.' }
+    const firstOrder = first?.display_order ?? 0
+    const insertRow = {
+      ...row,
+      display_order: parsed.data.display_order ?? Math.min(0, firstOrder - 1),
+    }
+    const { data: created, error } = await supabaseAdmin.from('news_posts').insert(insertRow).select('id').single()
     if (error || !created) return { error: error?.message || 'News post could not be saved.' }
     if (row.link && parsed.data.link_label) {
       const labelError = await saveNewsLinkLabel(supabaseAdmin, created.id, parsed.data.link_label)
