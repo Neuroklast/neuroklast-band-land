@@ -99,6 +99,11 @@ const EDITABLE = {
 
 export type ContentCollection = keyof typeof EDITABLE
 export const CONTENT_COLLECTIONS = Object.keys(EDITABLE) as ContentCollection[]
+export const MCP_REMOVABLE_COLLECTIONS: readonly ContentCollection[] = ['news_posts', 'gigs', 'releases', 'bio', 'members', 'gallery', 'media_downloads', 'partners', 'social_links', 'music_highlights', 'merchandise']
+export function mayRemoveMcpContent(collection: string): boolean {
+  return MCP_REMOVABLE_COLLECTIONS.some((name) => name === collection)
+}
+
 export const CONTENT_CONFIG_KEYS = ['hero', 'footer', 'translations', 'sections'] as const
 export type ContentConfigKey = typeof CONTENT_CONFIG_KEYS[number]
 
