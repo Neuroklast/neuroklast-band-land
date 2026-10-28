@@ -1,6 +1,6 @@
 # Private MCP Editorial API
 
-**Status:** Code on a feature branch. Not live until merged, deployed, configured and tested end to end. Do not connect ChatGPT before reviewing CI and database permissions.
+**Status:** MCP API deployed. Each OAuth client remains denied until registered in Supabase Auth and separately authorized in `/admin/integrations`; OAuth end-to-end testing is still required.
 
 ## ChatGPT plan availability
 
@@ -25,8 +25,8 @@ Not exposed: orders, customers, license keys, private download assets, product p
 
 ## Security model
 
-1. Supabase Auth OAuth 2.1 authorization code with PKCE. Only the explicitly registered OAuth client in `NEUROKLAST_MCP_CLIENT_ID` is accepted.
-2. The access token must pass a live `supabase.auth.getUser(token)` check. Its **verified** claims must match the exact configured OAuth `client_id`, the user ID, and `aal2` (MFA).
+1. Supabase Auth OAuth 2.1 authorization code with PKCE. Each OAuth client must exist in the private `mcp_oauth_clients` database allowlist and be enabled by an MFA-verified administrator.
+2. The access token must pass a live `supabase.auth.getUser(token)` check. Its **verified** claims must match the currently enabled, registered OAuth `client_id`, the user ID, and `aal2` (MFA).
 3. The authenticated user must still have a server-confirmed `profiles.role = admin`.
 4. Every authenticated request uses the existing durable PostgreSQL rate limiter, failing closed on errors. Payloads and result sizes are bounded.
 5. A hardcoded table/column registry and per-field Zod validation prevent arbitrary table access, SQL execution or writes to sensitive fields.
@@ -41,8 +41,8 @@ Not exposed: orders, customers, license keys, private download assets, product p
 
 1. Verify `supabase/schema.sql` is applied and `public.mcp_content_requests` exists with RLS enabled and **no** grants to `anon` or `authenticated`.
 2. Supabase dashboard > Authentication > OAuth Server: enable OAuth 2.1, set Authorization Path to `/admin/oauth/consent`. Enable a signing configuration supported by your OAuth client. Confirm MFA/TOTP for the admin account.
-3. Register a **dedicated production OAuth client** with only the exact callback URI required by your ChatGPT plugin. Avoid dynamic client registration unless you need it. Confirm the registered client ID is visible to the consent page.
-4. Set the server-only Vercel environment variable `NEUROKLAST_MCP_CLIENT_ID` to that OAuth client ID. Do not expose it as `NEXT_PUBLIC_*`. Do not put a service-role key into ChatGPT or any plugin configuration.
+3. Register a dedicated OAuth client per AI provider in Supabase OAuth Apps using its verified callback URI; keep dynamic client registration disabled by default. 
+4. Visit `/admin/integrations`, complete MFA (AAL2), and explicitly allowlist the registered client ID. This is separate from OAuth registration and does not install the connector in the provider app. No client secret is needed in the NEUROKLAST admin panel.
 5. Deploy after the CI gates pass. Check `/.well-known/oauth-protected-resource/api/mcp`, then verify anonymous and invalid OAuth tokens cannot read or propose content.
 6. Confirm OAuth token cannot query any public table using the Supabase Data API, not just that MCP rejects forbidden requests. Confirm an ordinary admin cookie session still works.
 7. In ChatGPT Plugins, use **Add custom MCP server**, server URL `https://neuroklast.net/api/mcp`, and connect using OAuth. You must be allowed to create custom MCP plugins on your plan/workspace.
