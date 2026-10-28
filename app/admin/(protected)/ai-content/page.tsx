@@ -19,13 +19,12 @@ export default async function AiContentReviewPage() {
   ])
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 px-4 pb-12">
-      <header>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-400">AI / Editorial</p>
-        <h1 className="text-2xl font-bold tracking-tight">Content Review</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          Review AI proposals one at a time. Every decision requires an administrator session with MFA.
-          New content remains inactive until published separately. Deletions require a second confirmation.
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col gap-3 overflow-hidden">
+      <header className="shrink-0">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-400">AI / Editorial</p>
+        <h1 className="mt-1 text-xl font-bold tracking-tight">Content Review</h1>
+        <p className="mt-1 hidden text-xs text-zinc-400 sm:block">
+          Changes require MFA approval. New content stays inactive until separately published.
         </p>
       </header>
       {pendingResult.error || historyResult.error ? (
