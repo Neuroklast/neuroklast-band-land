@@ -1,42 +1,35 @@
-# NEUROKLAST AUDIO: legal and commerce launch gate
+# Legal commerce launch checks (2026-10-28)
 
-Engineering checklist, October 22, 2026. This is not legal certification.
+Repository controls for data processing, consumer contracts and access are not
+a legal certificate. Keep this checklist synchronized with production.
 
-## Implemented
+- Vercel Pro deployment: daily /api/cron/privacy-retention and every 15 minutes
+  /api/cron/withdrawal-receipts via vercel.json. Verify CRON_SECRET, deployment
+  schedule and execution; configure alerts for non-2xx results and failed mail.
+- CONTACT_FROM_EMAIL must be available in production and verified with Resend.
+  Test a real withdrawal acknowledgement without disclosing customer data.
+- Plugin checkout requires on-site terms acknowledgement with
+  terms_accepted_at stored server-side. Apply the updated supabase/schema.sql
+  before merging/deploying. This is distinct from consent to waive withdrawal rights.
+- Actual checkout and receipt must accurately disclose Managed Payments merchant
+  of record and licensor. Verify Stripe-controlled terms/privacy links.
+- Public legal documents are DE and EN. Check exact legal identity, postal
+  address, any required editorial responsible person, actual tax identifiers
+  and registered legal form with the operator.
+- Data protection statement includes actual support-inbox database storage,
+  practical retention periods, order-match triage and plugin beta diagnostics.
+- Schedule mandatory support/withdrawal retention, back-up retention, incident
+  response, and test both primary and recovery flows.
+- DPA index: docs/DPA_REGISTER_20261028.md. Contract inclusion must be
+  verified for each legal entity. Do not post private signed copies publicly.
+- Check the specific distributed installer/EULA against checkout, statutory
+  warranties, update obligations and two-device/offline activation promises.
+- Confirm external media rights, contact form, hosted fonts, iframe consents,
+  security headers, keyboard interaction, responsive legal links and BFSG
+  scope in a real browser.
+- Separate repository-source license from consumer plugin contracts.
+- Soundpack and preset licensing is intentionally out of scope.
+- FFmpeg licensing is intentionally out of scope.
 
-- 48 server-rendered, separately indexable legal documents: six documents in eight site languages.
-- Self-referencing canonicals, reciprocal hreflang and x-default for legal routes.
-- Localized legal links in the footer and in the purchase panel.
-- Each localized withdrawal notice includes a reusable model withdrawal form.
-- Withdrawal is recorded with UUID and server receipt time before any email call.
-- Admin/MFA-only retry endpoint for Resend notifications that have not been accepted.
-- Stripe checkout metadata records buyer language and terms version.
-
-## Go-live checklist
-
-1. Apply and VERIFY the idempotent additions to the canonical Supabase schema at supabase/schema.sql before publishing the new withdrawal form. This repository deliberately has no separate SQL migration files.
-2. Configure verified CONTACT_FROM_EMAIL and the actual operator contact email. Test Resend delivery to buyer and operator.
-3. Verify receipt timestamps, idempotent retries, invalid input handling, database RLS and accessibility of withdrawal without login.
-4. Alert an administrator to pending email receipts. An endpoint alone does not satisfy the need for prompt confirmation.
-5. Configure Stripe public terms/privacy links, accepted payments, tax-inclusive prices, the final payment button and receipts. Check the actual hosted checkout.
-6. Verify all German company details (legal name, address, tax and registry data when required) and actual data processors and transfer mechanisms.
-7. Compare the distributed LICENSE/EULA files and actual software activation restrictions against the public terms.
-8. Review withdrawal guidance and cancellation rights for the specific software product and territory.
-9. Have the documents and all eight translations reviewed before selling to consumers internationally. Applicable mandatory laws differ.
-10. Confirm invoices, update obligations, customer support, refund handling, BFSG applicability and data retention/deletion.
-11. Test canonical/hreflang in generated HTML, 48 route HTTP responses, the sitemap, build, keyboard and screen-reader navigation.
-12. Retain an immutable copy/version of contractual terms provided to customers at the time of sale.
-
-## Privacy
-
-Withdrawal records include names, emails and order details. The table is RLS-protected and service-role-only. Implement and verify a retention/deletion schedule grounded in applicable legal obligations. Keep the service role secret.
-
-## References
-
-- BGB 356a, 356, 312j, 312f: https://www.gesetze-im-internet.de/bgb/
-- GDPR Art. 13: https://eur-lex.europa.eu/
-- Google localized pages: https://developers.google.com/search/docs/specialty/international/localized-versions
-
-Also verify the production database contains the latest analytics permissions, the browser makes no remote font requests, and private account pages do not emit analytics. Do not declare compliance based on source code alone.
-
-Keep sales disabled until operational and legal checks are completed.
+Do not claim compliance merely because files exist. Complete the production
+verification and obtain legal professional review before a legal release sign-off.

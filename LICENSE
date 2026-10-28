@@ -1,28 +1,28 @@
-NEUROKLAST PROPRIETARY SOFTWARE LICENSE AGREEMENT
+NEUROKLAST WEBSITE SOURCE CODE LICENSE
 
-Copyright (c) 2024-2026 Neuroklast. All rights reserved.
+Copyright (c) 2024-2026 NEUROKLAST. All rights reserved.
 
-1. PREAMBLE
-This software is proprietary and is NOT open source software. The source code is made publicly available in this repository solely to facilitate automated deployment processes. 
+This repository contains proprietary website source code. Public access to the
+repository does not grant permission to copy, modify, redistribute, sell,
+publish or deploy this proprietary code. Use or deployment requires express
+written permission from the rights holder, unless applicable law provides
+otherwise. Removing licensing or access controls is not authorized.
 
-2. GRANT OF LICENSE
-Neuroklast grants you a limited, non-exclusive, non-transferable, and non-sublicensable right to deploy and use this software strictly for its intended purpose. This right is expressly conditioned upon your acquisition and continuous maintenance of a valid Activation Key directly from Neuroklast.
+This notice governs the proprietary website source code only. It does not
+govern sales or use of NEUROKORE software, digital products or products
+distributed under separate product-specific agreements.
 
-3. RESTRICTIONS
-You are strictly prohibited from:
-a) Using, hosting, or deploying the software without a valid Activation Key.
-b) Modifying, altering, or removing the activation key verification system or any license enforcement mechanisms.
-c) Copying, modifying, creating derivative works of, redistributing, sublicensing, or selling the source code or any part of this software.
-d) Using the software to provide a competitive product or service.
+Third-party dependencies, media and assets remain subject to their own
+copyright and licensing terms. Nothing in this document replaces or restricts
+those third-party terms.
 
-4. INTELLECTUAL PROPERTY
-All title, ownership rights, and intellectual property rights in and to the software remain exclusively with Neuroklast. 
+To the extent permitted by applicable law, the source code is provided without
+contractual guarantees beyond those expressly agreed in writing. This clause
+does not exclude or limit any mandatory statutory rights, including liability
+that cannot lawfully be excluded under German law.
 
-5. DISCLAIMER OF WARRANTY AND LIMITATION OF LIABILITY
-The software is provided "as is", without warranty of any kind, express or implied. To the maximum extent permitted by applicable law, Neuroklast shall not be liable for any direct, indirect, incidental, special, or consequential damages arising out of the use or inability to use the software. In jurisdictions such as Germany where absolute exclusion of liability is not permitted, liability is limited to intent and gross negligence (Vorsatz und grobe Fahrlässigkeit) in accordance with German statutory law.
+Mandatory consumer protections and mandatory rules on jurisdiction are not
+restricted by this notice. Any dispute is governed by otherwise applicable law
+and courts of competent jurisdiction.
 
-6. GOVERNING LAW AND JURISDICTION
-This Agreement shall be governed by and construed in accordance with the laws of the Federal Republic of Germany, without regard to its conflict of law principles. The exclusive place of jurisdiction for all disputes arising from or in connection with this Agreement shall be Düsseldorf, Germany.
-
-7. SEVERABILITY
-If any provision of this Agreement is held to be unenforceable or invalid, such provision will be changed and interpreted to accomplish the objectives of such provision to the greatest extent possible under applicable law. The remaining provisions will continue in full force and effect.
+For licensing questions, use the contact address in the website's Legal Notice.

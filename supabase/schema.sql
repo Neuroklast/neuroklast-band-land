@@ -1790,6 +1790,8 @@ GRANT SELECT, INSERT, UPDATE ON TABLE public.privacy_requests TO service_role;
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_snapshot text;
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS licence_snapshot text;
 ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_version text;
+-- Record affirmative consent to purchase conditions independently of client-only UI state.
+ALTER TABLE public.plugin_orders ADD COLUMN IF NOT EXISTS terms_accepted_at timestamptz;
 
 -- NEUROKORE closed beta diagnostics. No free-text fields and no user/device IDs.
 -- POST is allowed only through the Vercel server using service_role.

@@ -26,7 +26,7 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">ERR://BOUNDARY</p>
       <h1 className="mt-4 font-mono text-3xl font-bold">Something went wrong</h1>
       <pre className="mt-4 max-w-xl overflow-auto font-mono text-xs text-muted-foreground">
-        {error instanceof Error ? error.message : String(error)}
+        An unexpected error occurred. Please try again.
       </pre>
       <button
         type="button"

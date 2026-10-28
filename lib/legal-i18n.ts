@@ -257,8 +257,8 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     contact: {
       title: '5. Contact form',
       paragraphs: [
-        "If you contact us through the form, we use your name, email address, subject and message to respond. Resend delivers the message to our email inbox. Legal basis: Art. 6(1)(b) GDPR for enquiries about a contract, otherwise Art. 6(1)(f) GDPR.",
-        "We keep the correspondence only as long as necessary to handle it, unless legal retention obligations apply. To protect the form from spam, we may briefly process connection information such as your IP address (Art. 6(1)(f) GDPR).",
+        "If you contact us through the form, we use your name, email address, subject and message to respond. We store the request in an access-restricted Supabase support database and forward it to our email inbox using Resend. For support triage, we may check the number of licence orders sharing the submitted email address without treating this as proof of identity. Legal basis: Art. 6(1)(b) GDPR for enquiries about a contract, otherwise Art. 6(1)(f) GDPR.",
+        "Closed support requests are scheduled for deletion from our support database after 180 days, with other requests deleted after 365 days, unless statutory retention duties or legal claims require longer preservation. Mailbox and processor copies may follow different retention periods. To protect the form from spam, we may briefly process connection information such as your IP address (Art. 6(1)(f) GDPR).",
       ],
     },
     newsletter: {
@@ -347,8 +347,8 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     contact: {
       title: '5. Kontaktformular',
       paragraphs: [
-        "Wenn du uns über das Kontaktformular schreibst, verarbeiten wir deinen Namen, deine E-Mail-Adresse, den Betreff und deine Nachricht, um dir antworten zu können. Resend übermittelt die Anfrage an unser E-Mail-Postfach. Rechtsgrundlage ist bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO, ansonsten Art. 6 Abs. 1 lit. f DSGVO.",
-        "Die Korrespondenz bewahren wir nur so lange auf, wie sie für die Bearbeitung erforderlich ist oder gesetzliche Pflichten dies verlangen. Zum Schutz vor Spam können wir Verbindungsdaten wie die IP-Adresse kurzzeitig verarbeiten (Art. 6 Abs. 1 lit. f DSGVO).",
+        "Wenn du uns über das Kontaktformular schreibst, verarbeiten wir deinen Namen, deine E-Mail-Adresse, den Betreff und deine Nachricht, um dir antworten zu können. Die Anfrage wird in unserer zugriffsgeschützten Support-Datenbank bei Supabase gespeichert und über Resend an unser E-Mail-Postfach übermittelt. Zur Zuordnung von Supportanfragen prüfen wir bei gleicher E-Mail-Adresse die Anzahl vorhandener Lizenzbestellungen, ohne daraus eine Identitätsbestätigung abzuleiten. Rechtsgrundlage ist bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO, ansonsten Art. 6 Abs. 1 lit. f DSGVO.",
+        "Abgeschlossene Supportanfragen werden planmäßig nach 180 Tagen und sonstige Anfragen spätestens nach 365 Tagen aus unserer Support-Datenbank gelöscht, soweit keine gesetzlichen Aufbewahrungspflichten oder offenen rechtlichen Ansprüche entgegenstehen. Im E-Mail-Postfach und bei Dienstleistern können weitere Kopien nach deren Löschfristen verbleiben. Zum Schutz vor Spam können wir Verbindungsdaten wie die IP-Adresse kurzzeitig verarbeiten (Art. 6 Abs. 1 lit. f DSGVO).",
       ],
     },
     newsletter: {

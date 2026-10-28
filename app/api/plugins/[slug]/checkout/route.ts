@@ -26,7 +26,7 @@ export async function POST(request: Request, context: RouteContext) {
     sameOrigin(request)
     await limit(request, 'plugin-checkout', 5)
     const { slug } = await context.params
-    const requested = z.object({ locale: z.enum(PUBLIC_LEGAL_LOCALES).default('en') }).strict()
+    const requested = z.object({ locale: z.enum(PUBLIC_LEGAL_LOCALES).default('en'), acceptedTerms: z.literal(true) }).strict()
       .safeParse(await body(request))
     if (!requested.success) return json({ error: 'Invalid checkout request.' }, 400)
     const locale = requested.data.locale
@@ -107,6 +107,7 @@ export async function POST(request: Request, context: RouteContext) {
       id, product_id: product.id, user_id: buyer.id, email: buyer.email, price_id: price,
       terms_snapshot: termsSnapshot, licence_snapshot: licenceSnapshot,
       terms_version: COMMERCE_TERMS_VERSION,
+      terms_accepted_at: new Date().toISOString(),
     })
     if (insert.error) throw insert.error
 
