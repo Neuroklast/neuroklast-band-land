@@ -37,7 +37,7 @@ export default async function DigitalPackDetail({
             </p>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{pack.title}</h1>
             <p className="whitespace-pre-wrap text-base leading-8 text-zinc-300">{pack.description}</p>
-            <div className="space-y-2 border-y border-zinc-800 py-5">
+            <div id="pack-license" className="scroll-mt-32 space-y-2 border-y border-zinc-800 py-5">
               <h2 className="font-semibold">Usage licence</h2>
               <p className="whitespace-pre-wrap text-sm leading-7 text-zinc-300">{pack.license_notes}</p>
               {pack.pack_type==='preset_pack' &&
