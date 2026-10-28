@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/app/admin/_actions/auth'
-import { registerMcpClient, setMcpClientEnabled, deleteMcpClient } from '@/app/admin/_actions/mcpIntegrations'
+import { registerMcpClient, setMcpClientEnabled, deleteMcpClient, verifyMcpClientMfa } from '@/app/admin/_actions/mcpIntegrations'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { CopyMcpAddress } from './CopyMcpAddress'
 import { RemoveMcpClientButton } from './RemoveMcpClientButton'
@@ -21,6 +21,12 @@ async function toggleClient(form: FormData) {
 async function removeClient(form: FormData) {
   'use server'
   const result = await deleteMcpClient(String(form.get('client_id') || ''))
+  redirect('/admin/integrations?status=' + (result.success ? result.outcome : result.error))
+}
+
+async function confirmMfaGrant(form: FormData) {
+  'use server'
+  const result = await verifyMcpClientMfa(String(form.get('client_id') ?? ''))
   redirect('/admin/integrations?status=' + (result.success ? result.outcome : result.error))
 }
 
@@ -47,6 +53,7 @@ export default async function IntegrationsPage({
     {status === 'added' && <p role="status" className="text-zinc-300">Client added and authorized.</p>}
     {status === 'updated' && <p role="status" className="text-zinc-300">Client details and access updated.</p>}
     {status === 'deleted' && <p role="status" className="text-zinc-300">Client removed from NEUROKLAST. Its MCP access is now blocked.</p>}
+    {status === 'verified' && <p role="status" className="text-zinc-300">MFA access confirmed for this OAuth client. Retry connecting the existing ChatGPT plugin; no new app is needed.</p>}
     <section className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900 p-5">
       <h2 className="font-semibold">Your secure MCP address</h2>
       <CopyMcpAddress value="https://neuroklast.net/api/mcp" />
@@ -99,6 +106,10 @@ export default async function IntegrationsPage({
           <p className="break-all font-mono text-xs text-zinc-500">{client.client_id}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {client.enabled && <form action={confirmMfaGrant}>
+            <input name="client_id" type="hidden" value={client.client_id} />
+            <button className="rounded border border-zinc-500 px-3 py-2 text-sm">Confirm MFA for OAuth</button>
+          </form>}
           <form action={toggleClient}>
             <input type="hidden" name="client_id" value={client.client_id} />
             <input type="hidden" name="enabled" value={String(!client.enabled)} />
