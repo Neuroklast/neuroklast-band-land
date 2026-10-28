@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react'
-import { ArrowRight, ArrowCounterClockwise, Check, X, Warning, CaretDown } from '@phosphor-icons/react'
+import { ArrowRight, ArrowCounterClockwise, Check, X, Warning, CaretDown, ArrowsOut, ClockCounterClockwise } from '@phosphor-icons/react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { reviewMcpContent } from '@/app/admin/_actions/mcpContent'
 
 export type ContentReviewRow = {
@@ -118,7 +119,7 @@ function ChangeFields({ item }: { item: ContentReviewRow }) {
         <h3 className="border-b border-zinc-800 bg-zinc-900/80 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-300">
           {fieldLabel(field)}
         </h3>
-        <div className="grid gap-px bg-zinc-800 md:grid-cols-2">
+        <div className={item.operation === 'create' ? 'bg-zinc-950' : 'grid gap-px bg-zinc-800 md:grid-cols-2'}>
           {item.operation !== 'create' ? (
             <div className="min-w-0 bg-zinc-950 px-4 py-3">
               <p className="mb-2 text-[11px] font-semibold uppercase text-zinc-500">Before</p>
@@ -135,6 +136,80 @@ function ChangeFields({ item }: { item: ContentReviewRow }) {
   </div>
 }
 
+
+/** A compact, intentionally lossy label for the fixed-height review preview.
+ * The complete, unabridged payload is always available in the details dialog. */
+function previewValue(value: unknown): string {
+  if (value == null || value === '') return 'Not set'
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  if (typeof value === 'number') return String(value)
+  if (typeof value === 'string') {
+    const url = safeUrl(value)
+    if (url) {
+      try { return new URL(url).hostname.replace(/^www\./, '') }
+      catch { return value }
+    }
+    return value
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return 'Empty list'
+    const names = value.slice(0, 2).map((entry) => {
+      if (typeof entry === 'string') return entry
+      const obj = record(entry)
+      return [obj.title, obj.name, obj.platform, obj.label].find((v) => typeof v === 'string') ??
+        (typeof obj.url === 'string' ? previewValue(obj.url) : 'Item')
+    })
+    return value.length + ' items: ' + names.join(', ') + (value.length > 2 ? '…' : '')
+  }
+  const object = record(value)
+  const keys = Object.keys(object)
+  return keys.length === 0 ? 'Empty object' : keys.length + ' properties'
+}
+
+function ChangesPreview({ item }: { item: ContentReviewRow }) {
+  const changed = Object.entries(record(item.changes))
+  if (item.operation === 'delete') {
+    return (
+      <div className="rounded-lg border border-red-900/60 bg-red-950/20 p-4">
+        <p className="text-sm font-semibold text-red-300">Permanent removal of this record</p>
+        <p className="mt-1 line-clamp-2 text-xs text-zinc-300">
+          Reason: {String(record(item.changes).reason ?? 'Not supplied')}
+        </p>
+        <p className="mt-2 text-xs text-zinc-500">Review the complete record before confirming.</p>
+      </div>
+    )
+  }
+  const before = item.operation === 'config'
+    ? record(record(item.previous_snapshot).value)
+    : record(item.previous_snapshot)
+  // The title is already visible in the proposal header; prioritize other changes.
+  const fields = changed.filter(([key]) => key !== 'title' && key !== 'name')
+  const highlights = (fields.length ? fields : changed).slice(0, 4)
+  if (!highlights.length) return <p className="text-sm text-zinc-500">No changes supplied.</p>
+
+  return (
+    <div className="grid min-h-0 content-start gap-2 overflow-hidden md:grid-cols-2" aria-label="Change highlights">
+      {highlights.map(([field, value], index) => (
+        <div key={field} className={[
+          'min-w-0 rounded-lg border border-zinc-800 bg-zinc-950/80 px-3 py-2',
+          index >= 2 ? 'hidden md:block' : '',
+        ].join(' ')}>
+          <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-zinc-400">{fieldLabel(field)}</p>
+          {item.operation !== 'create' ? (
+            <p className="mt-1 truncate text-xs text-zinc-500">
+              <span className="sr-only">Before: </span>{previewValue(before[field])}
+            </p>
+          ) : null}
+          <p className="mt-1 truncate text-sm font-medium text-zinc-100" title={previewValue(value)}>
+            <span className="sr-only">Proposed: </span>
+            {item.operation === 'create' ? '' : '→ '}{previewValue(value)}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function ReviewSlider({
   initialPending,
   recentDecisions,
@@ -148,24 +223,27 @@ export function ReviewSlider({
   const [index, setIndex] = useState(0)
   const [busy, setBusy] = useState(false)
   const [confirmDeleteFor, setConfirmDeleteFor] = useState<string | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const startTouch = useRef<{ x: number; y: number } | null>(null)
 
   const activeIndex = queue.length ? Math.min(index, queue.length - 1) : 0
   const active = queue[activeIndex]
   const confirmDelete = confirmDeleteFor === active?.id
+  const changeCount = active ? Object.keys(record(active.changes)).length : 0
+
   const navigate = useCallback((direction: number) => {
-    if (busy || queue.length <= 1) return
+    if (busy || queue.length <= 1 || detailsOpen || historyOpen || confirmDeleteFor) return
     setIndex((current) => (current + direction + queue.length) % queue.length)
     setMessage(null)
-    setConfirmDeleteFor(null)
-  }, [busy, queue.length])
+  }, [busy, queue.length, detailsOpen, historyOpen, confirmDeleteFor])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (event.target instanceof HTMLElement &&
-        (event.target.closest('button, a, input, textarea, select, summary, [contenteditable="true"]'))) return
+        event.target.closest('button, a, input, textarea, select, summary, [contenteditable="true"]')) return
       if (event.key === 'ArrowLeft') { event.preventDefault(); navigate(-1) }
       if (event.key === 'ArrowRight') { event.preventDefault(); navigate(1) }
     }
@@ -184,9 +262,7 @@ export function ReviewSlider({
     if (!start || !touch) return
     const dx = touch.clientX - start.x
     const dy = touch.clientY - start.y
-    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) {
-      navigate(dx < 0 ? 1 : -1)
-    }
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) navigate(dx < 0 ? 1 : -1)
   }
 
   const decide = async (decision: 'approve' | 'reject') => {
@@ -209,66 +285,117 @@ export function ReviewSlider({
       setMessage({ kind: 'success', text: decision === 'approve' ? 'Change approved and applied.' : 'Proposal rejected.' })
       router.refresh()
     } catch {
-      setMessage({ kind: 'error', text: 'The review request could not be completed. Check your connection and refresh the page to confirm its status.' })
+      setMessage({ kind: 'error', text: 'Review could not be completed. Check your connection and refresh to verify its status.' })
     } finally {
       setBusy(false)
       setConfirmDeleteFor(null)
     }
   }
 
-  return <div className="space-y-5">
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Review queue</p>
-          <p className="mt-1 text-lg font-semibold text-white" aria-live="polite">
-            {queue.length ? String(activeIndex + 1) + ' / ' + String(queue.length) : 'All caught up'}
-          </p>
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+      <div className="shrink-0 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2.5 sm:px-4">
+        <div className="flex items-center gap-3">
+          <span className="shrink-0 text-sm font-semibold tabular-nums text-zinc-100" aria-live="polite">
+            {queue.length ? (activeIndex + 1) + ' / ' + queue.length : 'All reviewed'}
+          </span>
+          <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-zinc-800"
+            role="progressbar" aria-label="Position in review queue"
+            aria-valuemin={0} aria-valuemax={Math.max(queue.length, 1)}
+            aria-valuenow={queue.length ? activeIndex + 1 : 0}>
+            <div className="h-full rounded-full bg-red-600 transition-[width] duration-200"
+              style={{ width: queue.length ? ((activeIndex + 1) / queue.length) * 100 + '%' : '0%' }} />
+          </div>
+          <button type="button" onClick={() => setHistoryOpen(true)} disabled={!recentDecisions.length}
+            className="inline-flex shrink-0 items-center gap-1.5 text-xs text-zinc-400 hover:text-white disabled:opacity-40">
+            <ClockCounterClockwise size={16} /> History
+          </button>
         </div>
-        <p className="text-xs text-zinc-500">Swipe to navigate · Arrow keys: Back / Skip</p>
       </div>
-      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-zinc-800" role="progressbar"
-        aria-label="Position in review queue" aria-valuemin={0}
-        aria-valuemax={Math.max(queue.length, 1)} aria-valuenow={queue.length ? activeIndex + 1 : 0}>
-        <div className="h-full rounded-full bg-red-600 transition-[width] duration-200"
-          style={{ width: queue.length ? String(((activeIndex + 1) / queue.length) * 100) + '%' : '0%' }} />
-      </div>
-    </div>
 
-    {message ? <div role="status" className={message.kind === 'error'
-      ? 'rounded-lg border border-red-800 bg-red-950/30 p-3 text-sm text-red-200'
-      : 'rounded-lg border border-zinc-700 bg-zinc-900 p-3 text-sm text-zinc-200'}>{message.text}</div> : null}
-
-    {active ? (
-      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} className="touch-pan-y">
-        <article key={active.id} className="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900/70 shadow-xl shadow-black/20">
-          <header className="border-b border-zinc-800 p-5 sm:p-6">
+      {active ? (
+        <article key={active.id} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+          className="flex min-h-0 flex-1 touch-pan-y flex-col overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900/70 shadow-xl shadow-black/20">
+          <header className="shrink-0 border-b border-zinc-800 px-4 py-3 sm:px-5">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className={active.operation === 'delete'
-                ? 'rounded bg-red-950 px-2 py-1 font-semibold uppercase text-red-300'
-                : 'rounded bg-zinc-800 px-2 py-1 font-semibold uppercase text-zinc-300'}>
-                {active.operation}
-              </span>
-              <span className="rounded border border-zinc-700 px-2 py-1 text-zinc-400">{fieldLabel(active.collection)}</span>
+                ? 'rounded bg-red-950 px-2 py-0.5 font-semibold uppercase text-red-300'
+                : 'rounded bg-zinc-800 px-2 py-0.5 font-semibold uppercase text-zinc-300'}>{active.operation}</span>
+              <span className="rounded border border-zinc-700 px-2 py-0.5 text-zinc-400">{fieldLabel(active.collection)}</span>
               <time className="ml-auto text-zinc-500" dateTime={active.created_at}>
                 {new Date(active.created_at).toLocaleString('de-DE')}
               </time>
             </div>
-            <h2 className="mt-4 break-words text-xl font-bold sm:text-2xl">{proposalTitle(active)}</h2>
+            <h2 className="mt-2 line-clamp-2 break-words text-base font-bold sm:text-xl">{proposalTitle(active)}</h2>
+          </header>
+
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 py-3 sm:px-5">
+            {message ? <div role="status" className={message.kind === 'error'
+              ? 'shrink-0 rounded border border-red-800 bg-red-950/30 px-3 py-2 text-xs text-red-200'
+              : 'shrink-0 rounded border border-zinc-700 px-3 py-2 text-xs text-zinc-200'}>
+              {message.text}
+            </div> : null}
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                Change highlights
+              </p>
+              <button type="button" onClick={() => setDetailsOpen(true)}
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-800">
+                <ArrowsOut size={14} /> Review all {changeCount} {changeCount === 1 ? 'field' : 'fields'}
+              </button>
+            </div>
+            <ChangesPreview item={active} />
+            <p className="mt-auto shrink-0 text-[11px] text-zinc-500">
+              Full values and before/after comparison are available in Review all.
+            </p>
+          </div>
+
+          <footer className="grid shrink-0 grid-cols-2 gap-2 border-t border-zinc-800 bg-zinc-950/50 p-3 sm:grid-cols-4 sm:px-5"
+            aria-label="Review actions">
+            <button type="button" onClick={() => navigate(-1)} disabled={busy || queue.length <= 1}
+              aria-label="Back to previous proposal"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">
+              <ArrowCounterClockwise size={17} /> Back
+            </button>
+            <button type="button" onClick={() => void decide('reject')} disabled={busy}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-red-900/70 px-3 py-2 text-sm font-semibold text-red-300 hover:bg-red-950/50 disabled:opacity-40">
+              <X size={17} /> Reject
+            </button>
+            <button type="button" onClick={() => void decide('approve')} disabled={busy}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-zinc-100 px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-white disabled:opacity-40">
+              <Check size={17} /> {busy ? 'Saving…' : active.operation === 'delete' ? 'Review delete' : 'Accept'}
+            </button>
+            <button type="button" onClick={() => navigate(1)} disabled={busy || queue.length <= 1}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">
+              Skip <ArrowRight size={17} />
+            </button>
+          </footer>
+        </article>
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 text-center">
+          <Check className="mb-3 h-9 w-9 text-zinc-400" />
+          <p className="text-lg font-semibold">No proposals waiting</p>
+          <p className="mt-2 text-sm text-zinc-500">New AI proposals will appear here for your approval.</p>
+          {message ? <p role="status" className="mt-2 text-xs text-zinc-300">{message.text}</p> : null}
+          <button type="button" className="mt-5 rounded-lg border border-zinc-700 px-4 py-2 text-sm hover:bg-zinc-800"
+            onClick={() => router.refresh()}>Refresh queue</button>
+        </div>
+      )}
+
+      <Dialog open={detailsOpen && !!active} onOpenChange={setDetailsOpen}>
+        <DialogContent className="flex max-h-[90dvh] w-[min(96vw,980px)] max-w-5xl flex-col gap-0 overflow-hidden border-zinc-700 bg-zinc-950 p-0 text-zinc-100">
+          <DialogHeader className="shrink-0 border-b border-zinc-800 px-5 py-4 pr-12">
+            <DialogTitle>Complete proposal: {active ? proposalTitle(active) : ''}</DialogTitle>
+            <p className="text-xs text-zinc-400">Review all fields before accepting or rejecting. The content is not changed by opening this view.</p>
+          </DialogHeader>
+          {active ? <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5" data-testid="review-details-scroll">
             {active.target_id && ADMIN_PATHS[active.collection] ? (
               <Link href={'/admin/' + ADMIN_PATHS[active.collection] + '/' + active.target_id}
-                className="mt-2 inline-block text-xs text-zinc-400 underline hover:text-white">
-                Open existing item
-              </Link>
+                className="inline-block text-xs text-zinc-400 underline hover:text-white">Open existing item</Link>
             ) : null}
-            {active.target_key ? <p className="mt-2 text-xs text-zinc-500">Site key: {active.target_key}</p> : null}
-          </header>
-          <div className="p-4 sm:p-6">
-            <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              {active.operation === 'delete' ? 'Record to delete' : 'Changes to review'}
-            </p>
+            {active.target_key ? <p className="text-xs text-zinc-500">Site key: {active.target_key}</p> : null}
             <ChangeFields item={active} />
-            <details className="mt-5 rounded-lg border border-zinc-800">
+            <details className="rounded-lg border border-zinc-800">
               <summary className="flex cursor-pointer items-center gap-2 p-3 text-xs text-zinc-400 hover:text-white">
                 <CaretDown size={14} aria-hidden="true" /> Technical JSON details
               </summary>
@@ -283,66 +410,46 @@ export function ReviewSlider({
                 </div>
               </div>
             </details>
+          </div> : null}
+          <div className="shrink-0 border-t border-zinc-800 p-3 text-right">
+            <button type="button" onClick={() => setDetailsOpen(false)}
+              className="min-h-11 rounded-lg border border-zinc-700 px-5 py-2 text-sm hover:bg-zinc-800">Close details</button>
           </div>
-          {confirmDelete ? (
-            <div role="alert" className="mx-4 mb-4 rounded-lg border border-red-700 bg-red-950/40 p-4 text-sm text-red-200 sm:mx-6">
-              <div className="flex items-center gap-2 font-semibold"><Warning size={18} /> Permanent deletion</div>
-              <p className="mt-2">This deletes the database record and cannot be undone in this review screen. Referenced R2 files are not automatically deleted.</p>
-              <button type="button" onClick={() => setConfirmDeleteFor(null)} className="mt-3 underline" disabled={busy}>Cancel deletion</button>
-            </div>
-          ) : null}
-          <footer className="flex flex-wrap items-center gap-2 border-t border-zinc-800 bg-zinc-950/40 p-4 sm:p-5">
-            <button type="button" onClick={() => navigate(-1)} disabled={busy || queue.length <= 1}
-              aria-label="Back to previous proposal"
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">
-              <ArrowCounterClockwise size={17} /> Back
-            </button>
-            <div className="flex-1" />
-            <button type="button" onClick={() => void decide('reject')} disabled={busy}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-900/70 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-950/50 disabled:opacity-40">
-              <X size={17} /> Reject
-            </button>
-            <button type="button" onClick={() => void decide('approve')} disabled={busy}
-              className={confirmDelete
-                ? 'inline-flex min-h-11 items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-40'
-                : 'inline-flex min-h-11 items-center gap-2 rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-white disabled:opacity-40'}>
-              <Check size={17} /> {busy ? 'Saving…' : confirmDelete ? 'Confirm delete' : active.operation === 'delete' ? 'Review delete' : 'Accept'}
-            </button>
-            <button type="button" onClick={() => navigate(1)} disabled={busy || queue.length <= 1}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">
-              Skip <ArrowRight size={17} />
-            </button>
-          </footer>
-        </article>
-        <p className="mt-3 text-center text-xs text-zinc-500">
-          Back and Skip only navigate. Accept and Reject are saved immediately and cannot be undone here.
-        </p>
-      </div>
-    ) : (
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-5 py-16 text-center">
-        <Check className="mx-auto mb-3 h-9 w-9 text-zinc-400" />
-        <p className="text-lg font-semibold">No proposals waiting</p>
-        <p className="mt-2 text-sm text-zinc-500">New AI proposals will appear here for your approval.</p>
-        <button type="button" className="mt-5 rounded-lg border border-zinc-700 px-4 py-2 text-sm hover:bg-zinc-800"
-          onClick={() => router.refresh()}>Refresh queue</button>
-      </div>
-    )}
+        </DialogContent>
+      </Dialog>
 
-    {recentDecisions.length > 0 ? (
-      <details className="rounded-xl border border-zinc-800 bg-zinc-900/30">
-        <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-zinc-300">
-          Recent decisions ({recentDecisions.length})
-        </summary>
-        <ul className="space-y-1 border-t border-zinc-800 p-3">
-          {recentDecisions.map((item) => (
-            <li key={item.id} className="rounded-md px-3 py-2 text-xs text-zinc-400">
-              <span className="font-medium text-zinc-200">{proposalTitle(item)}</span>
-              <span className="ml-2">{item.operation} · {item.status}</span>
-              {item.error ? <p className="mt-1 text-red-300">{item.error}</p> : null}
-            </li>
-          ))}
-        </ul>
-      </details>
-    ) : null}
-  </div>
+      <Dialog open={confirmDelete} onOpenChange={(open) => { if (!open) setConfirmDeleteFor(null) }}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto border-red-900 bg-zinc-950 text-zinc-100">
+          <DialogHeader><DialogTitle>Confirm permanent deletion</DialogTitle></DialogHeader>
+          <div role="alert" className="rounded-lg border border-red-800 bg-red-950/30 p-4 text-sm text-red-200">
+            <div className="flex items-center gap-2 font-semibold"><Warning size={18} /> Permanent deletion</div>
+            <p className="mt-2">This deletes {active ? proposalTitle(active) : 'the record'} from the database. It cannot be undone here. Referenced R2 files are not automatically removed.</p>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <button type="button" disabled={busy} onClick={() => setConfirmDeleteFor(null)}
+              className="min-h-11 rounded-lg border border-zinc-700 px-4 py-2 text-sm">Cancel deletion</button>
+            <button type="button" disabled={busy} onClick={() => void decide('approve')}
+              className="min-h-11 rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">
+              {busy ? 'Deleting…' : 'Confirm delete'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="flex max-h-[85dvh] w-[min(96vw,720px)] max-w-3xl flex-col overflow-hidden border-zinc-700 bg-zinc-950 text-zinc-100">
+          <DialogHeader><DialogTitle>Recent decisions ({recentDecisions.length})</DialogTitle></DialogHeader>
+          <ul className="min-h-0 space-y-2 overflow-y-auto">
+            {recentDecisions.map((item) => (
+              <li key={item.id} className="rounded-md border border-zinc-800 px-3 py-2 text-xs text-zinc-400">
+                <span className="font-medium text-zinc-200">{proposalTitle(item)}</span>
+                <span className="ml-2">{item.operation} · {item.status}</span>
+                {item.error ? <p className="mt-1 text-red-300">{item.error}</p> : null}
+              </li>
+            ))}
+          </ul>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
 }
