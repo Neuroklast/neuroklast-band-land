@@ -1,4 +1,4 @@
-import { authenticateMcp, contentCapabilities, getContent, getSiteContent, listContent, listMyRequests, McpAccessError, mcpUnauthorized, queueContentChange, queueSiteContentChange, siteContentCapabilities } from '@/lib/mcp/server'
+import { authenticateMcp, contentCapabilities, getContent, getSiteContent, listContent, listMyRequests, McpAccessError, mcpUnauthorized, queueContentChange, queueContentRemoval, queueSiteContentChange, siteContentCapabilities } from '@/lib/mcp/server'
 import { CONTENT_COLLECTIONS } from '@/lib/mcp/content'
 
 export const runtime = 'nodejs'
@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 const MODERN_MCP_VERSION = '2026-07-28'
 const LEGACY_MCP_VERSION = '2025-06-18'
-const SERVER_INFO = { name: 'neuroklast-content', version: '1.1.0' }
+const SERVER_INFO = { name: 'neuroklast-content', version: '1.2.0' }
 const SERVER_INSTRUCTIONS = 'NEUROKLAST editorial content only. Read first. Submit proposals for administrator review; never directly publish or delete.'
 const SERVER_CAPABILITIES = { tools: { listChanged: false } }
 
@@ -58,6 +58,15 @@ const TOOLS = [
     description: 'Submit an edit to an existing editorial record for human approval. Does not modify live content. Changes must contain only permitted content fields.',
     inputSchema: { type: 'object', properties: { collection, id, changes: { type: 'object', additionalProperties: true } }, required: ['collection', 'id', 'changes'], additionalProperties: false },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+  },
+  {
+    name: 'content_propose_delete',
+    description: 'Request removal of a single existing editorial record by UUID. This only queues a proposal; no live content is removed before separate MFA-verified admin confirmation. Not available for products or soundpacks.',
+    inputSchema: { type: 'object', properties: {
+      collection, id,
+      reason: { type: 'string', minLength: 5, maxLength: 500 },
+    }, required: ['collection', 'id', 'reason'], additionalProperties: false },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false },
   },
   {
     name: 'site_text_capabilities',
@@ -164,6 +173,12 @@ export async function POST(request: Request) {
       case 'content_propose_update':
         if (typeof args.collection !== 'string' || typeof args.id !== 'string') throw new McpAccessError('Collection and id required', 400)
         value = await queueContentChange(context, 'update', args.collection, args.changes, args.id); break
+      case 'content_propose_delete':
+        if (typeof args.collection !== 'string' || typeof args.id !== 'string' || typeof args.reason !== 'string') {
+          throw new McpAccessError('Collection, id and reason required', 400)
+        }
+        value = await queueContentRemoval(context, args.collection, args.id, args.reason)
+        break
       case 'site_text_capabilities': value = siteContentCapabilities(); break
       case 'site_text_get':
         if (typeof args.key !== 'string') throw new McpAccessError('Site text key required', 400)
