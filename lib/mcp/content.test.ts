@@ -22,6 +22,16 @@ describe('MCP editorial allowlist', () => {
     }).active).toBe(false)
   })
 
+  it('publishes new releases on explicit approval while other new content remains in drafts', () => {
+    expect(parseContentChanges('releases', 'create', {
+      title: 'Empyrean Remix', type: 'remix', active: false, artists: ['Neuroklast'],
+    }).active).toBe(true)
+    expect(parseContentChanges('releases', 'create', { title: 'New release', type: 'ep' }).active).toBe(true)
+    expect(parseContentChanges('releases', 'update', { title: 'Corrected title' })).not.toHaveProperty('active')
+    expect(parseContentChanges('releases', 'update', { active: false }).active).toBe(false)
+    expect(parseContentChanges('news_posts', 'create', { title: 'Draft', slug: 'draft', active: true }).active).toBe(false)
+  })
+
   it('rejects incomplete records, wrong URLs, bad IDs and forbidden creation', () => {
     expect(() => parseContentChanges('gigs', 'create', { title: 'Concert' })).toThrow('Required field')
     expect(() => parseContentChanges('news_posts', 'create', { title: 'News', slug: '../bad' })).toThrow('Invalid slug')
