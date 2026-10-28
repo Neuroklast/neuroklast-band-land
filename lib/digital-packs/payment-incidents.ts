@@ -36,7 +36,7 @@ export function assertDigitalPackIncidentMatchesOrder(
       !order.stripe_session ||
       order.stripe_session !== incident.sessionId ||
       (order.payment_intent !== null && order.payment_intent !== incident.paymentIntent) ||
-      (incident.paymentIntent === null && order.status === 'paid')) {
+      (order.status === 'paid' && (order.payment_intent === null || incident.paymentIntent === null))) {
     throw new Error('Verified Stripe incident does not match digital pack order')
   }
 }
