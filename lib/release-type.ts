@@ -4,16 +4,16 @@ type ReleaseType = 'remix' | 'compilation' | 'ep' | 'single'
 
 /**
  * Maps an internal release type value to its user-facing display label.
- * 'single' and 'ep' are grouped under the single combined label 'Single / EP'.
+ * Each format has its own label so singles and EPs remain distinguishable.
  * Returns the raw value for any unknown input so callers can apply a fallback.
  */
 export function displayReleaseType(type: string): string {
   switch (type) {
     case 'album':
       return 'Album'
-    case 'ep':
-    case 'single':
-      return 'Single / EP'
+    case 'ep': return 'EP'
+    case 'single': return 'Single'
+    case 'song': return 'Song'
     case 'remix':
       return 'Remix'
     case 'compilation':
