@@ -1,6 +1,6 @@
 # MCP OAuth activation
 
-Implementation status (October 28, 2026): The production Supabase content-approval migration is applied; Vercel has NEXT_PUBLIC_SITE_URL=https://neuroklast.net. No OAuth client has been registered or activated by this change.
+Implementation status (October 28, 2026): The production Supabase content-approval migration is applied; Vercel has NEXT_PUBLIC_SITE_URL=https://neuroklast.net. OAuth clients must be explicitly registered in Supabase OAuth Apps and authorized in /admin/integrations; no client is automatically trusted.
 
 ## Supabase Dashboard
 
@@ -11,9 +11,9 @@ Project: cvxhbdmhtesnkubublar.
 3. Authentication > OAuth Apps: register a client named NEUROKLAST Content. Use the exact ChatGPT callback URI shown during the client connection workflow. Choose public/confidential according to the ChatGPT configuration; do not guess the callback.
 4. Use /admin/security > Two-factor authentication to enroll a TOTP factor and confirm a six-digit code (this promotes the admin session to AAL2). The OAuth consent page redirects to /admin/mfa when the session has not reached AAL2. Enable breached-password protection in Authentication security settings.
 
-## Vercel
+## Provider access in NEUROKLAST Admin
 
-In project neuroklast-band-land set a production-only server-side variable NEUROKLAST_MCP_CLIENT_ID to the registered Supabase OAuth client ID, then redeploy the production app. No other credential should be sent to ChatGPT.
+Open /admin/integrations. After verifying MFA, add each provider's pre-registered Supabase OAuth client ID to the private allowlist. The page permits immediate per-client block and re-enable, without redeployment. An OAuth application must still be installed once in the provider account, unless the provider supports one-click installation. Do not copy client secrets into the admin form.
 
 ## Validate
 
