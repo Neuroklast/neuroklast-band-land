@@ -18,7 +18,7 @@ export default async function DigitalPackDetail({
   if(!pack)notFound()
   const cover = r2Url(pack.image_storage_path) ?? pack.image_url
   return <LegalPageShell>
-    <main className="min-h-screen bg-black px-5 pb-28 pt-28 text-white sm:px-8">
+    <section className="min-h-screen bg-black px-5 pb-28 pt-28 text-white sm:px-8">
       <div className="mx-auto max-w-6xl space-y-10">
         <nav className="font-mono text-xs text-zinc-400">
           <Link href="/soundpacks" className="hover:text-white">SOUND PACKS</Link> / {pack.title}
@@ -37,7 +37,7 @@ export default async function DigitalPackDetail({
             </p>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{pack.title}</h1>
             <p className="whitespace-pre-wrap text-base leading-8 text-zinc-300">{pack.description}</p>
-            <div className="space-y-2 border-y border-zinc-800 py-5">
+            <div id="pack-license" className="scroll-mt-32 space-y-2 border-y border-zinc-800 py-5">
               <h2 className="font-semibold">Usage licence</h2>
               <p className="whitespace-pre-wrap text-sm leading-7 text-zinc-300">{pack.license_notes}</p>
               {pack.pack_type==='preset_pack' &&
@@ -57,6 +57,6 @@ export default async function DigitalPackDetail({
           </div>
         </div>
       </div>
-    </main>
+    </section>
   </LegalPageShell>
 }

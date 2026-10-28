@@ -225,6 +225,7 @@ ALTER TABLE public.digital_pack_orders
   ADD COLUMN IF NOT EXISTS terms_snapshot text,
   ADD COLUMN IF NOT EXISTS license_snapshot text,
   ADD COLUMN IF NOT EXISTS terms_version text,
+  ADD COLUMN IF NOT EXISTS terms_accepted_at timestamptz,
   ADD COLUMN IF NOT EXISTS email_claimed_at timestamptz,
   ADD COLUMN IF NOT EXISTS email_attempts integer NOT NULL DEFAULT 0;
 ALTER TABLE public.digital_pack_orders DROP CONSTRAINT IF EXISTS digital_pack_orders_archive_key_check;

@@ -6,9 +6,7 @@ import { digitalPackBucket } from '@/lib/digital-packs/storage'
 import { configureManagedPaymentsCheckout, configureNeurokoreSandboxCheckout, stripe } from '@/lib/neurokore/stripe'
 import { loadLegalConfig, getLegalCompleteness } from '@/lib/legal-content'
 import { getApiSecret } from '@/lib/api-secrets'
-import { COMMERCE_TERMS_VERSION } from '@/lib/commerce-version'
-import { commerceSections } from '@/lib/commerce-legal-copy'
-import { contractDocumentText } from '@/lib/neurokore/email-format'
+import { DIGITAL_PACK_TERMS_VERSION, digitalPackTermsSnapshot } from '@/lib/digital-packs/consumer-terms'
 
 export const runtime = 'nodejs'
 
@@ -18,7 +16,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await limit(request, 'digital-pack-checkout', 5)
     const { id } = await params
     if (!z.uuid().safeParse(id).success) return json({ error: 'Unknown pack.' }, 404)
-    const payload = z.object({ acceptedTerms: z.literal(true) }).strict().parse(await body(request))
+    const payload = z.object({ acceptedTerms: z.literal(true), locale: z.enum(['de', 'en']).default('en') }).strict().parse(await body(request))
     if (!payload.acceptedTerms) return json({ error: 'Review the terms before payment.' }, 400)
     const buyer = await user().catch(() => null)
     if (!buyer) return json({ error: 'Sign in before buying.' }, 401)
@@ -26,7 +24,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     digitalPackBucket()
     const client = db()
     const pack = await loadDigitalPack(id)
-    if (!pack || pack.is_free || pack.price_cents < 100 || !pack.archive_key || !pack.archive_filename)
+    if (!pack || pack.is_free || pack.price_cents < 100 || !pack.archive_key || !pack.archive_filename || !pack.license_notes?.trim())
       return json({ error: 'This soundpack is not for sale.' }, 409)
     const legal = await loadLegalConfig(client)
     if (!getLegalCompleteness(legal).complete)
@@ -43,9 +41,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       amount_cents: pack.price_cents, currency: 'eur',
       archive_key: pack.archive_key, archive_filename: pack.archive_filename,
       pack_title: pack.title,
-      terms_snapshot: contractDocumentText(commerceSections('terms','en',legal.termsText)),
+      terms_snapshot: digitalPackTermsSnapshot(payload.locale),
       license_snapshot: pack.license_notes,
-      terms_version: COMMERCE_TERMS_VERSION,
+      terms_version: DIGITAL_PACK_TERMS_VERSION,
+      terms_accepted_at: new Date().toISOString(),
     })
     if (inserted.error) throw inserted.error
 
@@ -55,7 +54,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       client_reference_id: orderId,
       'metadata[digital_pack_order]': orderId,
       'metadata[environment]': sandbox ? 'neurokore-sandbox' : 'live',
-      'metadata[terms_version]': COMMERCE_TERMS_VERSION,
+      'metadata[terms_version]': DIGITAL_PACK_TERMS_VERSION,
+      'metadata[locale]': payload.locale,
       locale: 'auto',
       'line_items[0][price_data][currency]': 'eur',
       'line_items[0][price_data][unit_amount]': String(pack.price_cents),
@@ -70,7 +70,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       'automatic_tax[enabled]': 'true',
       'billing_address_collection': 'required',
       'consent_collection[terms_of_service]': 'required',
-      'custom_text[submit][message]': 'Terms: ' + origin() + '/terms | Withdrawal: ' + origin() + '/withdrawal-policy',
+      'custom_text[submit][message]': 'Pack terms: ' + origin() + '/soundpacks/terms | Withdrawal: ' + origin() + '/withdrawal-policy',
     })
     if (sandbox) configureNeurokoreSandboxCheckout(paramsStripe)
     else configureManagedPaymentsCheckout(paramsStripe)

@@ -67,6 +67,7 @@ export async function sendContractConfirmation(
     'Description: ' + (product.short_description || product.title),
     'System requirements: ' + (Array.isArray(product.system_requirements) ? product.system_requirements.join('; ') : 'See product page'),
     'Payment provider: Stripe',
+    'Merchant of record / payment seller: identified in your Stripe Checkout and Stripe payment receipt when Managed Payments applies.',
     'Total charged including applicable tax: ' + formatChargedAmount(session.amount_total, session.currency, locale),
     'Digital delivery. No physical shipment.',
     'Your software licence is assigned to your account after payment confirmation.',

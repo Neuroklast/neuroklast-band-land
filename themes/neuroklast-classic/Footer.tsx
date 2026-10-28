@@ -18,10 +18,9 @@ export default function NeuroklastClassicFooter({
   socialLinks,
   siteName: _siteName,
   label,
+  legalNoticeUrl = '/legal-notice',
   privacyPolicyUrl = '/privacy-policy',
   onAdminLogin,
-  onImpressum,
-  onDatenschutz,
 }: FooterSlotProps) {
   const { t, locale } = useLocale()
   const legalLocale = resolveLegalLocale(locale)
@@ -78,23 +77,17 @@ export default function NeuroklastClassicFooter({
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-muted-foreground tracking-wider">
-              {onImpressum && (
-                <button
-                  onClick={onImpressum}
-                  className="nk-os-nav min-h-[44px]"
-                >
-                  {t('footer.legal')}
-                </button>
-              )}
-              {onDatenschutz && (
-                <button
-                  onClick={onDatenschutz}
-                  className="nk-os-nav min-h-[44px]"
-                >
-                  {t('footer.privacy')}
-                </button>
-              )}
-              <Link href="/withdrawal" className="nk-os-nav min-h-[44px] inline-flex items-center font-semibold">
+              <Link href={sanitizeExternalHref(legalNoticeUrl) ?? '/legal-notice'} className="nk-os-nav min-h-[44px] inline-flex items-center">
+                {t('footer.legal')}
+              </Link>
+              <Link href={sanitizeExternalHref(privacyPolicyUrl) ?? '/privacy-policy'} className="nk-os-nav min-h-[44px] inline-flex items-center">
+                {t('footer.privacy')}
+              </Link>
+              <Link
+                href="/withdrawal"
+                aria-label={shopLinks.withdrawal}
+                className="inline-flex min-h-[48px] items-center justify-center rounded-sm border-2 border-primary bg-primary/15 px-4 py-2 font-mono text-sm font-bold text-foreground outline-offset-4 transition-colors hover:bg-primary/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
                 {shopLinks.withdrawal}
               </Link>
               <Link href={localizedLegalPath(legalLocale, "withdrawal-policy")} className="nk-os-nav min-h-[44px] inline-flex items-center">
