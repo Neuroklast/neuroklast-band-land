@@ -12,7 +12,7 @@ Vertragsunterlagen im öffentlichen Repository ablegen.
 | Resend | Kontaktformular, Bestellung, Widerrufsbestätigungen | https://resend.com/legal/dpa | Fassung 31.12.2025, bei Annahme der Nutzungsbedingungen laut DPA eingebunden. Account-Zuordnung dokumentieren. |
 | Stripe | Zahlungsabwicklung, Managed Payments | https://stripe.com/de/legal/dpa | Fassung 28.09.2026, laut Stripe Bestandteil des Services Agreement. Stripe kann je Verarbeitung eigene Verantwortlichen- oder Auftragsverarbeiterrolle haben. Managed Payments separat prüfen. |
 | Spotify und YouTube / Google | Erst nach expliziter Aktivierung eingebettete Inhalte | Datenschutzinformationen der jeweiligen Anbieter | Bei eigenständiger Verarbeitung durch Plattformen typischerweise kein AV-Vertrag für den eigenen Account. Konkrete Einbindung und Rollen prüfen. |
-| wsrv.nl | Optionaler Bild-Proxy | https://wsrv.nl/ | Kein belastbar bestätigter AV-Vertrag gefunden. Risiko und tatsächliche Aktivierung prüfen; personenbezogene Daten nicht über diesen Dienst routen. |
+| wsrv.nl | Optionaler Bild-Proxy | https://wsrv.nl/ | Kein belastbar bestätigter AV-Vertrag gefunden. Daher ist der Proxy standardmäßig deaktiviert (direkte Bildauslieferung). Nicht ohne erneute Datenschutzprüfung aktivieren. |
 
 ## Noch durch Betreiber zu sichern
 
