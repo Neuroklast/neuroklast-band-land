@@ -135,6 +135,41 @@ BEGIN
      OR has_table_privilege('anon', 'public.mcp_oauth_clients', 'DELETE')
   THEN RAISE EXCEPTION 'Public OAuth client management privileges detected'; END IF;
 
+  -- Live OAuth session is AAL1 but valid MFA-attested user/client authorization
+  -- must be accepted. Revoked consent and expired proof must be rejected.
+  INSERT INTO auth.oauth_clients(id)
+    VALUES ('00000000-0000-4000-8000-000000000077');
+  INSERT INTO public.mcp_oauth_clients
+    (client_id, provider, display_name, enabled, created_by, updated_by)
+    VALUES ('00000000-0000-4000-8000-000000000077','other','OAuth fixture',true,reviewer,reviewer);
+  INSERT INTO auth.oauth_consents(id,user_id,client_id,revoked_at)
+    VALUES ('00000000-0000-4000-8000-000000000078',reviewer,
+            '00000000-0000-4000-8000-000000000077',NULL);
+  INSERT INTO auth.sessions(id,user_id,oauth_client_id,aal)
+    VALUES ('00000000-0000-4000-8000-000000000079',reviewer,
+            '00000000-0000-4000-8000-000000000077','aal1');
+  INSERT INTO public.mcp_oauth_mfa_grants(user_id,client_id)
+    VALUES (reviewer,'00000000-0000-4000-8000-000000000077');
+  IF NOT public.mcp_verify_oauth_mfa_grant(
+    '00000000-0000-4000-8000-000000000079',reviewer,
+    '00000000-0000-4000-8000-000000000077')
+  THEN RAISE EXCEPTION 'Real AAL1 OAuth session with MFA proof unexpectedly denied'; END IF;
+  UPDATE auth.oauth_consents SET revoked_at=now()
+    WHERE id='00000000-0000-4000-8000-000000000078';
+  IF public.mcp_verify_oauth_mfa_grant(
+    '00000000-0000-4000-8000-000000000079',reviewer,
+    '00000000-0000-4000-8000-000000000077')
+  THEN RAISE EXCEPTION 'Revoked OAuth consent was accepted'; END IF;
+  UPDATE auth.oauth_consents SET revoked_at=NULL
+    WHERE id='00000000-0000-4000-8000-000000000078';
+  UPDATE public.mcp_oauth_mfa_grants
+     SET verified_at=now()-interval '31 days', expires_at=now()-interval '1 day'
+   WHERE client_id='00000000-0000-4000-8000-000000000077';
+  IF public.mcp_verify_oauth_mfa_grant(
+    '00000000-0000-4000-8000-000000000079',reviewer,
+    '00000000-0000-4000-8000-000000000077')
+  THEN RAISE EXCEPTION 'Expired OAuth MFA proof was accepted'; END IF;
+
   -- No role other than service_role (or the table owner) can call the RPC.
   IF has_function_privilege('authenticated','public.mcp_apply_content_request(uuid,uuid)','EXECUTE')
      OR has_function_privilege('anon','public.mcp_apply_content_request(uuid,uuid)','EXECUTE')
