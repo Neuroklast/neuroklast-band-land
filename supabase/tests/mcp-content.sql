@@ -97,6 +97,20 @@ BEGIN
     RAISE EXCEPTION 'Failed MCP transaction did not roll back';
   END IF;
 
+  -- AI OAuth registry must never be reachable by browser roles.
+  INSERT INTO public.mcp_oauth_clients (client_id, provider, display_name, enabled, created_by, updated_by)
+    VALUES ('mcp-test-client', 'claude', 'Test provider', true, reviewer, reviewer);
+  IF NOT EXISTS (SELECT 1 FROM public.mcp_oauth_clients WHERE client_id='mcp-test-client' AND enabled)
+  THEN RAISE EXCEPTION 'MCP OAuth registry insert failed'; END IF;
+  UPDATE public.mcp_oauth_clients SET enabled=false WHERE client_id='mcp-test-client';
+  IF EXISTS (SELECT 1 FROM public.mcp_oauth_clients WHERE client_id='mcp-test-client' AND enabled)
+  THEN RAISE EXCEPTION 'MCP OAuth client revocation failed'; END IF;
+  IF has_table_privilege('anon', 'public.mcp_oauth_clients', 'SELECT')
+     OR has_table_privilege('authenticated', 'public.mcp_oauth_clients', 'SELECT')
+     OR has_table_privilege('authenticated', 'public.mcp_oauth_clients', 'INSERT')
+     OR has_table_privilege('authenticated', 'public.mcp_oauth_clients', 'UPDATE')
+  THEN RAISE EXCEPTION 'Public OAuth client management privileges detected'; END IF;
+
   -- No role other than service_role (or the table owner) can call the RPC.
   IF has_function_privilege('authenticated','public.mcp_apply_content_request(uuid,uuid)','EXECUTE')
      OR has_function_privilege('anon','public.mcp_apply_content_request(uuid,uuid)','EXECUTE')
