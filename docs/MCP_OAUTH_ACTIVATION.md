@@ -36,3 +36,8 @@ Supabase issuer: https://cvxhbdmhtesnkubublar.supabase.co/auth/v1
 Confirm unauthenticated, nonadmin, non-MFA and wrong-client requests fail; use a valid admin login to test reading content, proposing a draft and separately reviewing it at /admin/ai-content. Check that the OAuth token cannot use Supabase's Data API or exposed functions to bypass restrictions. Test refresh and revocation. Stop if any check fails.
 
 Every new OAuth client must be registered with Supabase Auth and allowlisted under `/admin/integrations`; no legacy `NEUROKLAST_MCP_CLIENT_ID` environment setting is required. The test callback and full authenticated MCP operations still require a live end-to-end smoke test. See docs/MCP_CONTENT_INTEGRATION.md.
+
+
+## Editorial deletion proposals
+
+The MCP tool `content_propose_delete` queues a single-record removal for admin review. It does **not** delete during the tool call. `/admin/ai-content` requires AAL2 and a second explicit confirmation before the atomic database transaction deletes the record. Each proposal stores its previous snapshot and a reason; stale proposals must conflict, and approved proposals cannot be applied again. The allowed editorial collections exclude `products` and `soundpacks` to protect orders and licensing. Deleting a database record does not delete R2 media assets. Keep an export/backup before approving irreversible removals.

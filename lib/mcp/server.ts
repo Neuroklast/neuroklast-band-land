@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabaseAdmin'
 import { getActiveMcpClient } from '@/lib/mcp/client-registry'
 import { verifyMcpOAuthMfaGrant } from '@/lib/mcp/mfa-grants'
 import { consumeRateLimitForRequest } from '@/lib/rate-limit'
-import { allowedContentFields, CONTENT_COLLECTIONS, digestContent, filterContentRow, getContentDefinition, parseContentChanges } from '@/lib/mcp/content'
+import { allowedContentFields, CONTENT_COLLECTIONS, digestContent, filterContentRow, getContentDefinition, parseContentChanges, mayRemoveMcpContent } from '@/lib/mcp/content'
 import { z } from 'zod'
 import { canReadSiteContent, parseSiteContentPatch, READABLE_SITE_CONTENT, WRITABLE_SITE_CONTENT } from '@/lib/mcp/site-config'
 
@@ -143,6 +143,38 @@ export async function queueContentChange(
   return { request_id: data.id, status: data.status, created_at: data.created_at, needs_admin_approval: true, review_url: 'https://neuroklast.net/admin/ai-content' }
 }
 
+/**
+ * Queue an editorial deletion for a separate, MFA-verified human decision.
+ * The existing row remains untouched until the atomic review RPC runs.
+ */
+export async function queueContentRemoval(
+  context: { userId: string; clientId: string },
+  collection: string,
+  id: string,
+  reason: string,
+) {
+  table(collection)
+  if (!mayRemoveMcpContent(collection)) throw new McpAccessError('Deletion unavailable for this collection', 403)
+  if (!uuid.safeParse(id).success) throw new McpAccessError('Invalid item ID', 400)
+  if (typeof reason !== 'string' || reason.trim().length < 5 || reason.length > 500) {
+    throw new McpAccessError('Provide a reason between 5 and 500 characters', 400)
+  }
+  const existing = await getContent(collection, id)
+  const admin = createAdminClient()
+  const { data, error } = await admin.from('mcp_content_requests').insert({
+    collection, operation: 'delete', target_id: id, target_key: null,
+    changes: { reason: reason.trim() }, previous_hash: existing.version,
+    previous_snapshot: existing.item,
+    requested_by: context.userId, client_id: context.clientId,
+  }).select('id,status,created_at').single()
+  if (error || !data) throw new Error('Could not queue deletion request')
+  return {
+    request_id: data.id, status: data.status, created_at: data.created_at,
+    needs_admin_approval: true, review_url: 'https://neuroklast.net/admin/ai-content',
+    deletion_performed: false,
+  }
+}
+
 export async function listMyRequests(context: { userId: string }, limit = 20) {
   const n = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 50)) : 20
   const admin = createAdminClient()
@@ -157,7 +189,7 @@ export function contentCapabilities() {
   return CONTENT_COLLECTIONS.map((collection) => ({
     collection, create: getContentDefinition(collection)?.create === true,
     writable_fields: allowedContentFields(collection),
-    deletion: false, requires_approval: true,
+    deletion: mayRemoveMcpContent(collection), requires_approval: true,
   }))
 }
 

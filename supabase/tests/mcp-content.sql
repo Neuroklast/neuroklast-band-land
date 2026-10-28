@@ -4,6 +4,8 @@ DO $mcp_test$
 DECLARE
   reviewer uuid := '00000000-0000-4000-8000-000000000001';
   original uuid;
+  removed_id uuid;
+  stale_id uuid;
   proposal uuid;
   result text;
   existing_content jsonb;
@@ -32,6 +34,66 @@ BEGIN
   THEN RAISE EXCEPTION 'MCP update was not applied atomically'; END IF;
   IF public.mcp_apply_content_request(proposal, reviewer) <> 'not_pending' THEN
     RAISE EXCEPTION 'MCP approval replay succeeded';
+  END IF;
+
+  -- Deletion requires a separate review, preserves an audit trail and cannot
+  -- execute twice. Deliberately use disposable PostgreSQL fixtures only.
+  INSERT INTO public.news_posts(title, slug, body, active)
+    VALUES ('For review', 'mcp-test-deletable', 'Review before removal', true)
+    RETURNING id INTO removed_id;
+  SELECT to_jsonb(n) INTO existing_content FROM public.news_posts n WHERE id=removed_id;
+  INSERT INTO public.mcp_content_requests (
+    collection, operation, target_id, changes, previous_hash,
+    previous_snapshot, requested_by, client_id
+  ) VALUES (
+    'news_posts','delete',removed_id,'{"reason":"Duplicate editorial item"}',
+    'snapshot-hash',existing_content,reviewer,'test-client'
+  ) RETURNING id INTO proposal;
+  IF NOT EXISTS (SELECT 1 FROM public.news_posts WHERE id=removed_id) THEN
+    RAISE EXCEPTION 'Deletion proposal removed content before approval';
+  END IF;
+  result := public.mcp_apply_content_request(proposal,reviewer);
+  IF result <> 'approved'
+    OR EXISTS (SELECT 1 FROM public.news_posts WHERE id=removed_id)
+    OR (SELECT status FROM public.mcp_content_requests WHERE id=proposal) <> 'approved'
+  THEN RAISE EXCEPTION 'Editorial deletion approval did not remove row and audit atomically'; END IF;
+  IF public.mcp_apply_content_request(proposal,reviewer) <> 'not_pending' THEN
+    RAISE EXCEPTION 'Deletion approval replay was accepted';
+  END IF;
+
+  -- A concurrent edit must cause a conflict, never delete the edited row.
+  INSERT INTO public.news_posts(title, slug, body, active)
+    VALUES ('Old title', 'mcp-test-stale-removal', 'Keep updated content', true)
+    RETURNING id INTO stale_id;
+  SELECT to_jsonb(n) INTO existing_content FROM public.news_posts n WHERE id=stale_id;
+  INSERT INTO public.mcp_content_requests (
+    collection, operation, target_id, changes, previous_hash,
+    previous_snapshot, requested_by, client_id
+  ) VALUES ('news_posts','delete',stale_id,
+    '{"reason":"Remove duplicate article"}','snapshot-hash',
+    existing_content,reviewer,'test-client') RETURNING id INTO proposal;
+  UPDATE public.news_posts SET title='New title' WHERE id=stale_id;
+  IF public.mcp_apply_content_request(proposal,reviewer) <> 'conflict'
+    OR NOT EXISTS (SELECT 1 FROM public.news_posts WHERE id=stale_id)
+  THEN RAISE EXCEPTION 'Stale deletion removed recently edited content'; END IF;
+
+  -- Even a crafted service-role proposal may not delete commerce records.
+  INSERT INTO public.mcp_content_requests (
+    collection,operation,target_id,changes,previous_hash,
+    previous_snapshot,requested_by,client_id
+  ) VALUES (
+    'products','delete','00000000-0000-4000-8000-000000000099',
+    '{"reason":"Attempted commerce deletion"}','snapshot-hash',
+    '{"id":"00000000-0000-4000-8000-000000000099"}',reviewer,'test-client'
+  ) RETURNING id INTO proposal;
+  BEGIN
+    PERFORM public.mcp_apply_content_request(proposal,reviewer);
+    RAISE EXCEPTION 'Commerce deletion unexpectedly succeeded';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM <> 'Deletion unavailable for this collection' THEN RAISE; END IF;
+  END;
+  IF (SELECT status FROM public.mcp_content_requests WHERE id=proposal) <> 'pending' THEN
+    RAISE EXCEPTION 'Failed commerce deletion did not roll back';
   END IF;
 
   -- Create: attempted active=true must still be an unpublished draft.

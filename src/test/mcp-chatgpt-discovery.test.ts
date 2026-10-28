@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { authenticate } = vi.hoisted(() => ({
+const { authenticate, removal } = vi.hoisted(() => ({
   authenticate: vi.fn(),
+  removal: vi.fn(),
 }))
 
 vi.mock('@/lib/mcp/server', () => {
@@ -18,6 +19,7 @@ vi.mock('@/lib/mcp/server', () => {
     listContent: vi.fn(),
     listMyRequests: vi.fn(),
     queueContentChange: vi.fn(),
+    queueContentRemoval: removal,
     queueSiteContentChange: vi.fn(),
     siteContentCapabilities: () => ({ read: [] }),
   }
@@ -94,6 +96,34 @@ describe('ChatGPT MCP tool discovery compatibility', () => {
       expect(tool.inputSchema.type).toBe('object')
       expect(tool.inputSchema.properties).toBeDefined()
     }
+  })
+
+  it('advertises an explicitly destructive human-reviewed deletion proposal', async () => {
+    const response = await call('tools/list')
+    const data = await response.json()
+    const tool = data.result.tools.find((item: { name: string }) => item.name === 'content_propose_delete')
+    expect(tool?.annotations?.destructiveHint).toBe(true)
+    expect(tool?.annotations?.readOnlyHint).toBe(false)
+    expect(tool?.inputSchema?.required).toEqual(['collection', 'id', 'reason'])
+  })
+
+  it('queues deletion only; tool invocation does not directly remove any content', async () => {
+    removal.mockResolvedValueOnce({ status: 'pending', deletion_performed: false })
+    const response = await call('tools/call', {
+      name: 'content_propose_delete',
+      arguments: {
+        collection: 'news_posts',
+        id: '00000000-0000-4000-8000-000000000009',
+        reason: 'Duplicate article',
+      },
+    })
+    expect(response.status).toBe(200)
+    expect(removal).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: expect.any(String) }),
+      'news_posts', '00000000-0000-4000-8000-000000000009', 'Duplicate article',
+    )
+    const data = await response.json()
+    expect(data.result.content[0].text).toContain('"deletion_performed":false')
   })
 
   it('keeps legacy initialization available to older MCP clients', async () => {
