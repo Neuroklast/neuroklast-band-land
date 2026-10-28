@@ -4,6 +4,12 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-10-28 — ChatGPT action discovery after OAuth
+
+OAuth success only validates client identity and the authorization grant. ChatGPT then performs a separate MCP tool-discovery handshake. The manually implemented MCP server only supported legacy `initialize`/`tools/list`; modern MCP clients can request `server/discover` and require `resultType`, `cacheScope`, `ttlMs`, and supported protocol versions. Implement both modern and legacy paths, preserve authorization on every method, and add tests with representative wire-format requests. Only log sanitized reasons for server-side bearer rejections; never log credentials.
+
+---
+
 ## Session: 2026-10-28 — OAuth authorization redirect and opaque request IDs
 
 Supabase's OAuth Server Authorization Path is independently configured in its dashboard and is concatenated with Auth Site URL. The live setting pointed at `/oauth/consent`, while our only UI lived at `/admin/oauth/consent`, resulting in 404 before login. Always provide a compatible redirect or verify the exact dashboard setting before connecting a client. `authorization_id` is an opaque token, **not necessarily a UUID or hex**, so reject only invalid URL-safe formats and delegate authentication to Supabase. Never insert the token into a client-controlled external redirect.
