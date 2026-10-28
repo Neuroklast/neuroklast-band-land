@@ -8,7 +8,7 @@ As of October 2026, full custom MCP write / modify actions in ChatGPT are availa
 
 ## Purpose
 
-A private, OAuth 2.1 authenticated, **approval-only** Model Context Protocol endpoint at `https://neuroklast.net/api/mcp`. ChatGPT can read editorial content and propose changes. Every change requires a separate logged-in administrator to apply it using `/admin/ai-content`. An MCP deletion proposal is available for editorial records; a separate MFA-authenticated administrator must explicitly approve permanent removal. Products and soundpacks are excluded because they have commerce relations. There is no automatic publishing and no direct SQL or file upload.
+A private, OAuth 2.1 authenticated, **approval-only** Model Context Protocol endpoint at `https://neuroklast.net/api/mcp`. ChatGPT can read editorial content and propose changes. Every change requires a separate logged-in administrator to apply it using `/admin/ai-content`. New music releases become publicly visible only **after** the administrator approves them; they are also marked as manually edited to protect them from subsequent sync. Other newly created editorial records stay unpublished drafts. Older queued release-create requests with `active=false` are normalized to visible upon approval. Review navigation advances optimistically while the server action finishes and displays errors if saving fails. An MCP deletion proposal is available for editorial records; a separate MFA-authenticated administrator must explicitly approve permanent removal. Products and soundpacks are excluded because they have commerce relations. There is no automatic publishing and no direct SQL or file upload.
 
 ### Coverage
 
