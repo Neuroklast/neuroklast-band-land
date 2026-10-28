@@ -2022,7 +2022,7 @@ BEGIN
         AND p.policyname = 'Deny direct OAuth client table access'
     ) THEN
       EXECUTE format(
-        'CREATE POLICY %I ON %I.%I AS RESTRICTIVE FOR ALL TO authenticated USING ((auth.jwt() ->> %L) IS NULL) WITH CHECK ((auth.jwt() ->> %L) IS NULL)',
+        'CREATE POLICY %I ON %I.%I AS RESTRICTIVE FOR ALL TO authenticated USING ((NULLIF(current_setting(''request.jwt.claims'', true), '''')::jsonb ->> %L) IS NULL) WITH CHECK ((NULLIF(current_setting(''request.jwt.claims'', true), '''')::jsonb ->> %L) IS NULL)',
         'Deny direct OAuth client table access',
         r.schema_name, r.table_name, 'client_id', 'client_id'
       );
