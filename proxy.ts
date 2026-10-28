@@ -114,7 +114,9 @@ export async function proxy(request: NextRequest) {
 
   if (authError || !user) {
     const loginUrl = new URL('/admin/login', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
+    // Preserve OAuth authorization_id across the login round-trip. The login
+    // handler's safeAdminRedirect validates the resulting same-origin path.
+    loginUrl.searchParams.set('redirect', `${pathname}${request.nextUrl.search}`)
     return redirectWithCookies(loginUrl)
   }
 
