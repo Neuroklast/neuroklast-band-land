@@ -1963,3 +1963,33 @@ REVOKE ALL ON FUNCTION public.plugin_fulfill(uuid,text,text,text,text)
 GRANT EXECUTE ON FUNCTION public.plugin_record_payment_event(uuid,text,text,text,text,text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_claim_confirmation(uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid,text,text,text,text) TO service_role;
+
+
+-- MCP editorial change proposals. Neither anonymous nor logged-in visitors can read
+-- this table through PostgREST. Only the server-side service role touches it.
+-- No AI tool may write directly to public content tables.
+CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  collection text NOT NULL,
+  operation text NOT NULL CHECK (operation IN ('create', 'update')),
+  target_id uuid,
+  changes jsonb NOT NULL,
+  previous_hash text,
+  requested_by uuid NOT NULL REFERENCES auth.users(id),
+  client_id text NOT NULL,
+  status text NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'approved', 'rejected', 'conflict')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  reviewed_at timestamptz,
+  reviewed_by uuid REFERENCES auth.users(id),
+  error text,
+  CONSTRAINT mcp_target_check CHECK (
+    (operation = 'create' AND target_id IS NULL AND previous_hash IS NULL)
+    OR (operation = 'update' AND target_id IS NOT NULL AND previous_hash IS NOT NULL)
+  )
+);
+CREATE INDEX IF NOT EXISTS mcp_content_requests_queue_idx
+  ON public.mcp_content_requests (status, created_at DESC);
+ALTER TABLE public.mcp_content_requests ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.mcp_content_requests FROM PUBLIC, anon, authenticated;
+GRANT ALL ON public.mcp_content_requests TO service_role;
