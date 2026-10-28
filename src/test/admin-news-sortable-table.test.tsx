@@ -31,7 +31,7 @@ describe('admin news ordering table', () => {
     expect(screen.getByRole('button', { name: 'Visible' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Hidden' })).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Order' })).toBeInTheDocument()
-    expect(screen.getByText(/Saving order/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Saving order/)).not.toBeInTheDocument()
   })
 
   it('preserves admin article links while allowing ordering', () => {
