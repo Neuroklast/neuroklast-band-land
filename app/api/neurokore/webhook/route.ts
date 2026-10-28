@@ -3,6 +3,7 @@ import { sessionSchema } from '@/lib/neurokore/contract-confirmation'
 import { fulfillVerifiedCheckoutSession } from '@/lib/neurokore/fulfillment'
 import { INCIDENT_EVENTS, SUCCESS_EVENTS, refundIncident, disputeIncident, type PaymentIncident } from '@/lib/neurokore/payment-events'
 import { paidPackSessionSchema, fulfillDigitalPackSession, recordDigitalPackPaymentIncident } from '@/lib/digital-packs/fulfillment'
+import type { VerifiedDigitalPackIncident } from '@/lib/digital-packs/payment-incidents'
 import { db, json, required } from '@/lib/neurokore/server'
 import { assertStripeFulfillmentEnvironment, stripe, verifyWebhook } from '@/lib/neurokore/stripe'
 
@@ -25,7 +26,7 @@ async function sessionForIntent(intent: string, secret: string) {
 
 async function recordIncident(
   eventId: string, eventType: string, object: Record<string, unknown>,
-) {
+): Promise<true | VerifiedDigitalPackIncident | undefined> {
   const secret = required('STRIPE_SECRET_KEY')
   let state: PaymentIncident | null = null
   let paymentIntent: string | null = null
@@ -85,7 +86,7 @@ async function recordIncident(
     .select('id,stripe_session,license_id,payment_intent')
     .eq('id', orderId).maybeSingle()
   if (orderError) throw orderError
-  if (!order) return false // Stripe event belongs to another application
+  if (!order) return { orderId, sessionId, paymentIntent, state } // Verified Stripe payment may belong to a digital pack
   if (order.stripe_session !== sessionId ||
     (order.payment_intent && paymentIntent && order.payment_intent !== paymentIntent)) {
     throw new Error('Stripe payment ownership mismatch')
@@ -122,9 +123,14 @@ export async function POST(request: Request) {
       .parse(JSON.parse(raw))
     if (INCIDENT_EVENTS.has(event.type)) {
       stage = 'payment-incident'
-      const matchedPlugin = await recordIncident(event.id, event.type, event.data.object)
-      if (!matchedPlugin && ['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed'].includes(event.type)) {
-        await recordDigitalPackPaymentIncident(event)
+      if (event.livemode !== (process.env.VERCEL_ENV === 'production')) {
+        throw new Error('Cross-environment Stripe incident')
+      }
+      // Resolve authoritative Stripe objects first. Never revoke paid packs
+      // based on payment_intent supplied by an unverified event payload.
+      const resolved = await recordIncident(event.id, event.type, event.data.object)
+      if (resolved && resolved !== true) {
+        await recordDigitalPackPaymentIncident(resolved, event.livemode)
       }
       return json({ received: true })
     }
