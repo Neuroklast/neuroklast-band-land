@@ -2,10 +2,13 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { GET as getOAuthMetadata } from '@/app/.well-known/oauth-protected-resource/api/mcp/route'
 import { authenticateMcp, McpAccessError } from '@/lib/mcp/server'
 
+const originalSite = process.env.NEXT_PUBLIC_SITE_URL
 const originalIssuer = process.env.NEXT_PUBLIC_SUPABASE_URL
 const originalClientId = process.env.NEUROKLAST_MCP_CLIENT_ID
 
 afterEach(() => {
+  if (originalSite === undefined) delete process.env.NEXT_PUBLIC_SITE_URL
+  else process.env.NEXT_PUBLIC_SITE_URL = originalSite
   if (originalIssuer === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
   else process.env.NEXT_PUBLIC_SUPABASE_URL = originalIssuer
   if (originalClientId === undefined) delete process.env.NEUROKLAST_MCP_CLIENT_ID
@@ -15,6 +18,7 @@ afterEach(() => {
 describe('private content MCP OAuth bootstrap', () => {
   it('advertises Supabase authorization without allowing anonymous content', async () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co'
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://neuroklast.net'
     delete process.env.NEUROKLAST_MCP_CLIENT_ID
 
     const metadata = getOAuthMetadata()
