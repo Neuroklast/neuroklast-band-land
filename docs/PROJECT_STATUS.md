@@ -1,11 +1,13 @@
 # Project Status
 
-**Last updated:** 2026-10-26
+**Last updated:** 2026-10-28
 **Status:** Active — Neuroklast public band site + Next.js admin CMS
 
 Live stack: Next.js App Router, React, Supabase (PostgreSQL), Cloudflare R2, Resend, TypeScript, Tailwind 4, Framer Motion. Default look: Neuroklast Classic.
 
 ---
+
+**New feature branch:** OAuth-protected editorial MCP content proposals with human approval. Not deployed or enabled until CI, migration and security checks pass. See [MCP setup](MCP_CONTENT_INTEGRATION.md).
 
 ## Feature Completion Checklist
 

@@ -50,7 +50,7 @@ function createRequest(
 ): NextRequest {
   const cookieJar = new Map<string, string>()
   return {
-    nextUrl: { pathname },
+    nextUrl: { pathname, search: new URL(init?.url ?? `https://example.com${pathname}`).search },
     url: init?.url ?? `https://example.com${pathname}`,
     headers: new Headers(init?.headers),
     cookies: {
@@ -86,6 +86,18 @@ describe('middleware admin auth', () => {
 
     expect(response.headers.get('location')).toBe('https://example.com/admin/login?redirect=%2Fadmin%2Freleases')
     // We expect cookies to not be manually persisted on the redirect, just letting it flow.
+  })
+
+  it('preserves the OAuth authorization ID across admin login', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: new Error('not signed in') })
+    const response = await proxy(createRequest('/admin/oauth/consent', {
+      url: 'https://example.com/admin/oauth/consent?authorization_id=00000000-0000-4000-8000-000000000001',
+    }))
+    const destination = new URL(response.headers.get('location')!)
+    expect(destination.pathname).toBe('/admin/login')
+    expect(destination.searchParams.get('redirect')).toBe(
+      '/admin/oauth/consent?authorization_id=00000000-0000-4000-8000-000000000001',
+    )
   })
 
   it('returns next response for admin user and preserves refreshed cookies', async () => {
