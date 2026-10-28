@@ -67,7 +67,7 @@ jobs:
             oauth_client_id uuid REFERENCES auth.oauth_clients(id),
             aal text, factor_id uuid
           );
-          CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $ SELECT NULL::uuid $;
+          CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
           SQL
       - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/mcp-content.sql
