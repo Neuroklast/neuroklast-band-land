@@ -53,7 +53,7 @@ export default async function AiContentReviewPage({
       <div>
         <h1 className="text-xl font-bold">AI Content Review</h1>
         <p className="mt-2 text-sm text-zinc-400">
-          Proposals from the OAuth-protected MCP integration. Nothing is published without your explicit approval.
+          Proposals from the OAuth-protected MCP integration. Nothing is changed without your explicit approval and an MFA-assured admin session.
           New items are created inactive. Rejected proposals cannot alter website content.
         </p>
       </div>
