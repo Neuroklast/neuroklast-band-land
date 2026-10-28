@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { resolveRemoteImageUrl } from '@/lib/remote-image-url'
 import {
   assertRemoteVideoSize,
   isAllowedVideoContentType,
@@ -7,6 +8,17 @@ import {
 } from '@/lib/remote-video-url'
 
 describe('remote-video-url', () => {
+  it.each([
+    '',
+    'https://cdn.example.com/bg.mp4',
+    'https://drive.google.com/file/d/vid123/view',
+    'http://cdn.example.com/bg.mp4',
+    'https://localhost/private.mp4',
+    'javascript:alert(1)',
+  ])('shares the image importer URL policy for %s', (url) => {
+    expect(resolveRemoteVideoUrl(url)).toEqual(resolveRemoteImageUrl(url))
+  })
+
   it('resolves Google Drive share links', () => {
     const resolved = resolveRemoteVideoUrl('https://drive.google.com/file/d/vid123/view')
     expect(resolved?.source).toBe('google_drive')
