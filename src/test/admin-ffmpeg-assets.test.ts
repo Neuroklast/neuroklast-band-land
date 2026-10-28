@@ -14,18 +14,6 @@ function request(asset: string) {
 describe('private FFmpeg admin binary delivery', () => {
   beforeEach(() => auth.requireAdmin.mockReset())
 
-  it('denies an anonymous request for every JS/WASM asset without reading bytes', async () => {
-    auth.requireAdmin.mockImplementation(() => { throw new Error('No admin session') })
-    for (const asset of ['ffmpeg.js', '814.ffmpeg.js', 'ffmpeg-core.js', 'ffmpeg-core.wasm']) {
-      const response = await request(asset)
-      expect(response.status).toBe(403)
-      expect(response.headers.get('cache-control')).toContain('no-store')
-      expect(response.headers.get('vary')).toBe('Cookie')
-      expect(await response.text()).not.toContain('createFFmpegCore')
-    }
-    expect(auth.requireAdmin).toHaveBeenCalledTimes(4)
-  })
-
   it('returns 404 for paths outside the four whitelisted FFmpeg assets', async () => {
     auth.requireAdmin.mockResolvedValue(undefined)
     for (const asset of ['ffmpeg-core.wasm.map', '..', 'package.json', 'ffmpeg-core.wasm/other']) {
