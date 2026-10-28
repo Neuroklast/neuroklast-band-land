@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/app/admin/_actions/auth'
 import { reviewMcpContent } from '@/app/admin/_actions/mcpContent'
+import { DeleteReviewActions } from './DeleteReviewActions'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 
 type ContentReviewRow = {
@@ -55,7 +56,7 @@ export default async function AiContentReviewPage({
         <h1 className="text-xl font-bold">AI Content Review</h1>
         <p className="mt-2 text-sm text-zinc-400">
           Proposals from the OAuth-protected MCP integration. Nothing is changed without your explicit approval and an MFA-assured admin session.
-          New items are created inactive. Rejected proposals cannot alter website content.
+          New items are created inactive. Deletion requests remove one database row only after a second explicit confirmation; rejected requests cannot alter website content.
         </p>
       </div>
       {params.result === 'ok' ? <p className="rounded border border-emerald-800 p-3 text-sm">Decision saved.</p> : null}
@@ -89,7 +90,13 @@ export default async function AiContentReviewPage({
               <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded border border-zinc-800 bg-zinc-950 p-3 text-xs text-zinc-300">
                 {JSON.stringify(request.changes, null, 2)}
               </pre>
-              <form action={review} className="mt-4 flex gap-2">
+              {request.operation === 'delete' ? (
+                <DeleteReviewActions
+                  requestId={request.id}
+                  title={request.collection + ' / ' + (request.target_id ?? '')}
+                  reviewAction={review}
+                />
+              ) : <form action={review} className="mt-4 flex gap-2">
                 <input type="hidden" name="id" value={request.id} />
                 <button name="decision" value="approve" type="submit" className="rounded bg-zinc-200 px-4 py-2 text-sm font-semibold text-black hover:bg-white">
                   Apply change
@@ -97,7 +104,7 @@ export default async function AiContentReviewPage({
                 <button name="decision" value="reject" type="submit" className="rounded border border-zinc-600 px-4 py-2 text-sm hover:bg-zinc-800">
                   Reject
                 </button>
-              </form>
+              </form>}
             </article>
           ))}
         </div>
