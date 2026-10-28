@@ -2,6 +2,17 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-28 — Supabase OAuth consent 404 and opaque authorization ID
+
+**Agent:** ChatGPT
+**Branch:** `fix/oauth-consent-redirect-and-opaque-authorization-id`
+
+Added a same-origin 303 redirect from the live Supabase Authorization Path `/oauth/consent` to the canonical, admin-protected `/admin/oauth/consent`. Preserves the OAuth `authorization_id` but discards unrelated query parameters. Fixed consent page and approve/deny action validation to accept URL-safe opaque IDs instead of UUID/hex-only values. Added route/validation regression tests; no changes to MFA, roles, allowlist, tokens, or Supabase schema.
+
+**Validation:** CI lint, typecheck, tests, security audit and production build, followed by Vercel production SHA verification; manual OAuth approval still needs browser login and a fresh authorization request.
+
+---
+
 ## Session: 2026-10-28 — OAuth client duplicate-handling and deletion
 
 **Agent:** ChatGPT
