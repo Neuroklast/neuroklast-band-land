@@ -29,6 +29,7 @@ import {
   Scroll,
   Cpu,
   Cube,
+  Robot,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import {
@@ -59,6 +60,8 @@ const NAV_ICONS: Record<string, Icon> = {
   '/admin/news': Newspaper,
   '/admin/social': Share,
   '/admin/analytics': ChartBar,
+  '/admin/ai-content': Robot,
+  '/admin/integrations': Robot,
   '/admin/api-keys': Key,
   '/admin/health': Heartbeat,
   '/admin/data': Export,
