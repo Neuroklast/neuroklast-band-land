@@ -138,8 +138,9 @@ export function parseContentChanges(collection: string, action: 'create' | 'upda
     for (const field of definition.required) {
       if (normalized[field] === undefined) throw new Error('Required field missing: ' + field)
     }
-    // Nothing from an AI becomes public without an independent admin approval.
-    if ('active' in fields) normalized.active = false
+    // The proposal itself is never public. On explicit MFA-backed approval,
+    // new releases publish to the artist discography; other content stays draft.
+    if ('active' in fields) normalized.active = collection === 'releases'
   }
   return normalized
 }
