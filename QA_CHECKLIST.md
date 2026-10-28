@@ -2,6 +2,9 @@
 
 ## Private MCP editorial integration
 
+- [ ] Supabase OAuth Authorization Path `/oauth/consent` redirects (303) to `/admin/oauth/consent`, preserving the exact opaque `authorization_id`; malformed IDs get 400 with no external redirect.
+- [ ] Protected admin login round-trip, MFA challenge, consent decision and callback preserve the original authorization request. Verify non-hex characters in Supabase-generated IDs.
+
 - [ ] Empty OAuth client allowlist: MCP rejects all bearer tokens; no anonymous reads.
 - [ ] Each registered client ID must be separately enabled by an MFA-backed admin; disabled clients are rejected on the next request.
 - [ ] Direct anon/authenticated database access to `mcp_oauth_clients` is denied.

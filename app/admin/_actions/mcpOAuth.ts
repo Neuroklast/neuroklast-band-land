@@ -4,12 +4,13 @@ import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/app/admin/_actions/auth'
 import { createActionClient } from '@/lib/supabaseServer'
 import { getActiveMcpClient } from '@/lib/mcp/client-registry'
+import { isValidOAuthAuthorizationId } from '@/lib/mcp/authorization-id'
 
 export async function decideMcpOAuth(formData: FormData) {
   await requireAdmin()
   const authorizationId = String(formData.get('authorization_id') ?? '')
   const decision = formData.get('decision')
-  if (!/^[a-f0-9-]{20,100}$/i.test(authorizationId) || !['approve', 'deny'].includes(String(decision))) {
+  if (!isValidOAuthAuthorizationId(authorizationId) || !['approve', 'deny'].includes(String(decision))) {
     throw new Error('Invalid authorization decision')
   }
   const supabase = await createActionClient()
