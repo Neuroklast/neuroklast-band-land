@@ -2,6 +2,9 @@
 
 ## Private MCP editorial integration
 
+- [ ] Reviewed MCP removal queues a pending request; approval with MFA deletes exactly one editorial record, rejection leaves it unchanged.
+- [ ] Stale removal requests conflict, repeated approval does nothing, and commerce records are excluded.
+
 - [ ] Supabase OAuth JWT AAL1 with real OAuth session, active OAuth consent, current 30-day MFA attestation and admin profile is accepted for discovery; same JWT without attestation is rejected with 403.
 - [ ] Direct anonymous/authenticated access to `mcp_oauth_mfa_grants` and `mcp_verify_oauth_mfa_grant` is denied. Expired, revoked or forged OAuth sessions and disabled clients fail closed.
 - [ ] Existing client can use admin **Confirm MFA for OAuth** without rotating keys; server action requires current browser MFA AAL2.
