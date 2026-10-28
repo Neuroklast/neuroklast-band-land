@@ -46,6 +46,14 @@ function record(value: unknown): Record<string, unknown> {
     ? value as Record<string, unknown> : {}
 }
 
+/** Show the effective result of approval, not the older queued active=false payload. */
+function effectiveReviewChanges(item: ContentReviewRow): Record<string, unknown> {
+  const changes = record(item.changes)
+  return item.collection === 'releases' && item.operation === 'create'
+    ? { ...changes, active: true }
+    : changes
+}
+
 function fieldLabel(field: string) {
   return FIELD_NAMES[field] ?? field.replaceAll('_', ' ').replace(/(^|\s)\S/g, (part) => part.toUpperCase())
 }
@@ -103,7 +111,7 @@ function proposalTitle(row: ContentReviewRow) {
 }
 
 function ChangeFields({ item }: { item: ContentReviewRow }) {
-  const changed = Object.entries(record(item.changes))
+  const changed = Object.entries(effectiveReviewChanges(item))
   const previous = item.operation === 'config' ? record(record(item.previous_snapshot).value) : record(item.previous_snapshot)
   if (item.operation === 'delete') {
     return <div className="rounded-lg border border-red-900/60 bg-red-950/20 p-4">
@@ -231,7 +239,7 @@ export function ReviewSlider({
   const activeIndex = queue.length ? Math.min(index, queue.length - 1) : 0
   const active = queue[activeIndex]
   const confirmDelete = confirmDeleteFor === active?.id
-  const changeCount = active ? Object.keys(record(active.changes)).length : 0
+  const changeCount = active ? Object.keys(effectiveReviewChanges(active)).length : 0
 
   const navigate = useCallback((direction: number) => {
     if (busy || queue.length <= 1 || detailsOpen || historyOpen || confirmDeleteFor) return
@@ -339,6 +347,9 @@ export function ReviewSlider({
               <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Change highlights
               </p>
+              {active.collection === 'releases' && active.operation === 'create' ? (
+                <span className="text-[11px] font-medium text-emerald-300">Visible after Accept</span>
+              ) : null}
               <button type="button" onClick={() => setDetailsOpen(true)}
                 className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-800">
                 <ArrowsOut size={14} /> Review all {changeCount} {changeCount === 1 ? 'field' : 'fields'}
@@ -387,6 +398,9 @@ export function ReviewSlider({
           <DialogHeader className="shrink-0 border-b border-zinc-800 px-5 py-4 pr-12">
             <DialogTitle>Complete proposal: {active ? proposalTitle(active) : ''}</DialogTitle>
             <p className="text-xs text-zinc-400">Review all fields before accepting or rejecting. The content is not changed by opening this view.</p>
+            {active?.collection === 'releases' && active.operation === 'create' ? (
+              <p className="text-xs text-emerald-300">This release becomes publicly visible after Accept. Older proposals may still contain active=false in their original technical JSON.</p>
+            ) : null}
           </DialogHeader>
           {active ? <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5" data-testid="review-details-scroll">
             {active.target_id && ADMIN_PATHS[active.collection] ? (
