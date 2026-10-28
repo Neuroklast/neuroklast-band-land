@@ -226,14 +226,17 @@ export function ReviewSlider({
   recentDecisions: ContentReviewRow[]
 }) {
   const router = useRouter()
-  const [reviewedIds, setReviewedIds] = useState<string[]>([])
-  const queue = useMemo(() => initialPending.filter((row) => !reviewedIds.includes(row.id)), [initialPending, reviewedIds])
+  // Hide an item as soon as the admin decides; the server write then settles
+  // independently while the next card is already usable.
+  const [hiddenIds, setHiddenIds] = useState<string[]>([])
+  const queue = useMemo(() => initialPending.filter((row) => !hiddenIds.includes(row.id)), [initialPending, hiddenIds])
   const [index, setIndex] = useState(0)
-  const [busy, setBusy] = useState(false)
+  const pendingRef = useRef(new Set<string>())
+  const [saving, setSaving] = useState<Record<string, string>>({})
+  const [failures, setFailures] = useState<Record<string, string>>({})
   const [confirmDeleteFor, setConfirmDeleteFor] = useState<string | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const startTouch = useRef<{ x: number; y: number } | null>(null)
 
   const activeIndex = queue.length ? Math.min(index, queue.length - 1) : 0
@@ -242,10 +245,18 @@ export function ReviewSlider({
   const changeCount = active ? Object.keys(effectiveReviewChanges(active)).length : 0
 
   const navigate = useCallback((direction: number) => {
-    if (busy || queue.length <= 1 || detailsOpen || historyOpen || confirmDeleteFor) return
+    if (queue.length <= 1 || detailsOpen || historyOpen || confirmDeleteFor) return
     setIndex((current) => (current + direction + queue.length) % queue.length)
-    setMessage(null)
-  }, [busy, queue.length, detailsOpen, historyOpen, confirmDeleteFor])
+  }, [queue.length, detailsOpen, historyOpen, confirmDeleteFor])
+
+  useEffect(() => {
+    const warnOnExit = (event: BeforeUnloadEvent) => {
+      if (pendingRef.current.size === 0) return
+      event.preventDefault()
+    }
+    window.addEventListener('beforeunload', warnOnExit)
+    return () => window.removeEventListener('beforeunload', warnOnExit)
+  }, [])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -273,31 +284,58 @@ export function ReviewSlider({
     if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) navigate(dx < 0 ? 1 : -1)
   }
 
-  const decide = async (decision: 'approve' | 'reject') => {
-    if (!active || busy) return
+  const decide = (decision: 'approve' | 'reject') => {
+    if (!active || pendingRef.current.has(active.id)) return
     if (active.operation === 'delete' && decision === 'approve' && !confirmDelete) {
       setConfirmDeleteFor(active.id)
       return
     }
+
     const id = active.id
-    setBusy(true)
+    const title = proposalTitle(active)
+    // Synchronous guard against double submissions before React re-renders.
+    pendingRef.current.add(id)
+    setSaving((current) => ({ ...current, [id]: title }))
+    setFailures((current) => {
+      const next = { ...current }
+      delete next[id]
+      return next
+    })
     setMessage(null)
-    try {
-      const result = await reviewMcpContent(id, decision)
-      if (!result.success) {
-        setMessage({ kind: 'error', text: result.error ?? 'The decision could not be saved. Nothing was applied.' })
-        return
+    setConfirmDeleteFor(null)
+    // Optimistic queue navigation, never a false "approved" success message.
+    setHiddenIds((ids) => [...ids, id])
+    setIndex((current) => current >= queue.length - 1 ? 0 : current)
+    setDetailsOpen(false)
+
+    const submit = async () => {
+      try {
+        const result = await reviewMcpContent(id, decision)
+        if (!result.success) {
+          const reason = result.error ?? 'Decision could not be saved. The proposal remains pending.'
+          setHiddenIds((ids) => ids.filter((value) => value !== id))
+          setFailures((items) => ({ ...items, [id]: reason }))
+          return
+        }
+        // A successful server response alone confirms the decision.
+        // The server RPC is still responsible for MFA and atomic database writes.
+        router.refresh()
+      } catch {
+        setHiddenIds((ids) => ids.filter((value) => value !== id))
+        setFailures((items) => ({
+          ...items,
+          [id]: 'Could not confirm the result. Refresh and check the status before trying again.',
+        }))
+      } finally {
+        pendingRef.current.delete(id)
+        setSaving((current) => {
+          const next = { ...current }
+          delete next[id]
+          return next
+        })
       }
-      setReviewedIds((ids) => [...ids, id])
-      setIndex((current) => Math.min(current, Math.max(0, queue.length - 2)))
-      setMessage({ kind: 'success', text: decision === 'approve' ? 'Change approved and applied.' : 'Proposal rejected.' })
-      router.refresh()
-    } catch {
-      setMessage({ kind: 'error', text: 'Review could not be completed. Check your connection and refresh to verify its status.' })
-    } finally {
-      setBusy(false)
-      setConfirmDeleteFor(null)
     }
+    void submit()
   }
 
   return (
@@ -314,6 +352,9 @@ export function ReviewSlider({
             <div className="h-full rounded-full bg-red-600 transition-[width] duration-200"
               style={{ width: queue.length ? ((activeIndex + 1) / queue.length) * 100 + '%' : '0%' }} />
           </div>
+          <span className="shrink-0 text-xs text-amber-300" role="status" aria-live="polite">
+            {Object.keys(saving).length ? Object.keys(saving).length + ' saving…' : ''}
+          </span>
           <button type="button" onClick={() => setHistoryOpen(true)} disabled={!recentDecisions.length}
             className="inline-flex shrink-0 items-center gap-1.5 text-xs text-zinc-400 hover:text-white disabled:opacity-40">
             <ClockCounterClockwise size={16} /> History
@@ -321,6 +362,22 @@ export function ReviewSlider({
         </div>
       </div>
 
+      {Object.keys(failures).length > 0 ? (
+        <div role="alert" className="shrink-0 rounded-lg border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-red-200">
+          {Object.entries(failures).map(([id, error]) => {
+            const item = queue.find((row) => row.id === id)
+            return <div key={id} className="flex flex-wrap items-center gap-2">
+              <span className="min-w-0 flex-1">{item ? proposalTitle(item) + ': ' : ''}{error}</span>
+              {item ? <button type="button" onClick={() => {
+                setIndex(queue.findIndex((row) => row.id === id))
+                setFailures((entries) => { const next = { ...entries }; delete next[id]; return next })
+              }} className="rounded border border-red-700 px-2 py-1 font-semibold hover:bg-red-900/40">
+                Review failed item
+              </button> : null}
+            </div>
+          })}
+        </div>
+      ) : null}
       {active ? (
         <article key={active.id} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
           className="flex min-h-0 flex-1 touch-pan-y flex-col overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900/70 shadow-xl shadow-black/20">
@@ -338,11 +395,7 @@ export function ReviewSlider({
           </header>
 
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 py-3 sm:px-5">
-            {message ? <div role="status" className={message.kind === 'error'
-              ? 'shrink-0 rounded border border-red-800 bg-red-950/30 px-3 py-2 text-xs text-red-200'
-              : 'shrink-0 rounded border border-zinc-700 px-3 py-2 text-xs text-zinc-200'}>
-              {message.text}
-            </div> : null}
+
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Change highlights
@@ -363,20 +416,20 @@ export function ReviewSlider({
 
           <footer className="grid shrink-0 grid-cols-2 gap-2 border-t border-zinc-800 bg-zinc-950/50 p-3 sm:grid-cols-4 sm:px-5"
             aria-label="Review actions">
-            <button type="button" onClick={() => navigate(-1)} disabled={busy || queue.length <= 1}
+            <button type="button" onClick={() => navigate(-1)} disabled={queue.length <= 1}
               aria-label="Back to previous proposal"
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">
               <ArrowCounterClockwise size={17} /> Back
             </button>
-            <button type="button" onClick={() => void decide('reject')} disabled={busy}
+            <button type="button" onClick={() => decide('reject')}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-red-900/70 px-3 py-2 text-sm font-semibold text-red-300 hover:bg-red-950/50 disabled:opacity-40">
               <X size={17} /> Reject
             </button>
-            <button type="button" onClick={() => void decide('approve')} disabled={busy}
+            <button type="button" onClick={() => decide('approve')}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-zinc-100 px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-white disabled:opacity-40">
-              <Check size={17} /> {busy ? 'Saving…' : active.operation === 'delete' ? 'Review delete' : 'Accept'}
+              <Check size={17} /> {active.operation === 'delete' ? 'Review delete' : 'Accept'}
             </button>
-            <button type="button" onClick={() => navigate(1)} disabled={busy || queue.length <= 1}
+            <button type="button" onClick={() => navigate(1)} disabled={queue.length <= 1}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">
               Skip <ArrowRight size={17} />
             </button>
@@ -387,7 +440,11 @@ export function ReviewSlider({
           <Check className="mb-3 h-9 w-9 text-zinc-400" />
           <p className="text-lg font-semibold">No proposals waiting</p>
           <p className="mt-2 text-sm text-zinc-500">New AI proposals will appear here for your approval.</p>
-          {message ? <p role="status" className="mt-2 text-xs text-zinc-300">{message.text}</p> : null}
+          {Object.keys(saving).length > 0 ? (
+            <p role="status" className="mt-2 text-xs text-amber-300">
+              Saving {Object.keys(saving).length} {Object.keys(saving).length === 1 ? 'decision' : 'decisions'}…
+            </p>
+          ) : <p className="mt-2 text-xs text-zinc-400">All decisions have finished processing.</p>}
           <button type="button" className="mt-5 rounded-lg border border-zinc-700 px-4 py-2 text-sm hover:bg-zinc-800"
             onClick={() => router.refresh()}>Refresh queue</button>
         </div>
@@ -440,11 +497,11 @@ export function ReviewSlider({
             <p className="mt-2">This deletes {active ? proposalTitle(active) : 'the record'} from the database. It cannot be undone here. Referenced R2 files are not automatically removed.</p>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            <button type="button" disabled={busy} onClick={() => setConfirmDeleteFor(null)}
+            <button type="button" onClick={() => setConfirmDeleteFor(null)}
               className="min-h-11 rounded-lg border border-zinc-700 px-4 py-2 text-sm">Cancel deletion</button>
-            <button type="button" disabled={busy} onClick={() => void decide('approve')}
+            <button type="button" onClick={() => decide('approve')}
               className="min-h-11 rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">
-              {busy ? 'Deleting…' : 'Confirm delete'}
+              Confirm delete
             </button>
           </div>
         </DialogContent>
