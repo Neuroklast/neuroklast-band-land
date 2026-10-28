@@ -181,3 +181,36 @@ export async function toggleNewsPostVisibility(id: string, active: boolean) {
     return { success: true }
   }, 'Unable to update news visibility.')
 }
+
+
+/**
+ * Persist the exact order of every news row (including hidden ones).
+ * The RPC checks the previous full list and updates all positions in one
+ * transaction. No partial writes on network/database errors.
+ */
+export async function reorderNewsPosts(orderedIds: string[], expectedIds: string[]) {
+  const ids = z.array(z.string().uuid()).min(1).max(2000)
+  const next = ids.safeParse(orderedIds)
+  const previous = ids.safeParse(expectedIds)
+  if (!next.success || !previous.success
+    || new Set(orderedIds).size !== orderedIds.length
+    || new Set(expectedIds).size !== expectedIds.length
+    || orderedIds.length !== expectedIds.length
+    || !orderedIds.every((id) => expectedIds.includes(id))
+  ) {
+    return { error: 'Invalid news order. Reload the list and try again.' }
+  }
+
+  return runAdminAction(async () => {
+    const { data, error } = await createAdminClient().rpc('reorder_news_posts', {
+      p_ids: orderedIds,
+      p_expected_ids: expectedIds,
+    })
+    if (error || data !== 'saved') {
+      return { error: 'News order could not be saved. Reload the list and try again.' }
+    }
+    revalidatePath('/admin/news')
+    revalidatePath('/')
+    return { success: true }
+  }, 'Unable to reorder news.')
+}
