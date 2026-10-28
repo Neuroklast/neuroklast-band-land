@@ -39,6 +39,22 @@ export default async function IntegrationsPage({
       OAuth signs you in with your existing admin account; it cannot automatically install a connector in every AI application.</p>
       <Link href="/admin/mfa" className="text-sm text-red-300 underline">Set up or verify your authenticator</Link>
     </section>
+    <section className="grid gap-3 sm:grid-cols-2">
+      <article className="space-y-2 rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+        <h2 className="font-semibold">Claude</h2>
+        <p className="text-sm text-zinc-400">Customize → Connectors → Add custom connector.
+          Enter the MCP URL once and complete the NEUROKLAST OAuth login.</p>
+        <a href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp"
+          rel="noopener noreferrer" target="_blank" className="text-sm text-red-300 underline">Claude setup guide</a>
+      </article>
+      <article className="space-y-2 rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+        <h2 className="font-semibold">OpenCode</h2>
+        <p className="text-sm text-zinc-400">Configure this remote MCP endpoint and authorize in the browser.
+          OpenCode supports OAuth for remote servers.</p>
+        <a href="https://opencode.ai/docs/en/mcp-servers/"
+          rel="noopener noreferrer" target="_blank" className="text-sm text-red-300 underline">OpenCode setup guide</a>
+      </article>
+    </section>
     <section className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900 p-5">
       <h2 className="font-semibold">Authorize an OAuth client</h2>
       <form action={addClient} className="grid gap-3 sm:grid-cols-2">
