@@ -270,7 +270,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     news: {
       title: '7. News and blog content',
       paragraphs: [
-        "You can read our news without creating an account. Article images are generally delivered directly from their image source, especially Cloudflare R2. Those sources may receive connection data such as your IP address (Art. 6(1)(f) GDPR). An additional external image proxy is disabled by default.",
+        "You can read our news without creating an account. Article images are generally delivered directly from their image source, especially Cloudflare. Those sources may receive connection data such as your IP address (Art. 6(1)(f) GDPR). An additional external image proxy is disabled by default.",
       ],
     },
     cdn: {
@@ -360,7 +360,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     news: {
       title: '7. News und redaktionelle Inhalte',
       paragraphs: [
-        "Unsere News kannst du ohne Kundenkonto lesen. Artikelbilder werden grundsätzlich über die Quelle des jeweiligen Bildes ausgeliefert, insbesondere Cloudflare R2. Dabei können technische Verbindungsdaten an den Bildanbieter übermittelt werden (Art. 6 Abs. 1 lit. f DSGVO). Ein zusätzlicher externer Bildproxy ist standardmäßig deaktiviert.",
+        "Unsere News kannst du ohne Kundenkonto lesen. Artikelbilder werden grundsätzlich über die Quelle des jeweiligen Bildes ausgeliefert, insbesondere Cloudflare. Dabei können technische Verbindungsdaten an den Bildanbieter übermittelt werden (Art. 6 Abs. 1 lit. f DSGVO). Ein zusätzlicher externer Bildproxy ist standardmäßig deaktiviert.",
       ],
     },
     cdn: {
