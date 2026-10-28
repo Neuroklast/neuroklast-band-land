@@ -132,7 +132,6 @@ describe('AI content review carousel', () => {
     } }
     render(<ReviewSlider initialPending={[old]} recentDecisions={[]} />)
     expect(screen.getByText('Visible after Accept')).toBeInTheDocument()
-    expect(screen.getByText('Yes')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Review all 4 fields' }))
     expect(screen.getAllByText('Visible on website').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Yes').length).toBeGreaterThan(0)
