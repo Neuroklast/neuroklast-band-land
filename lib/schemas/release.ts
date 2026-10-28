@@ -10,7 +10,7 @@ export const streamingLinkSchema = z.object({
 export const releaseSchema = z.object({
   id: z.string(),
   title: z.string(),
-  type: z.enum(['album', 'ep', 'single', 'remix', 'compilation']).default('single'),
+  type: z.enum(['album', 'ep', 'single', 'song', 'remix', 'compilation']).default('single'),
   releaseDate: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   coverUrl: z.string().nullable().optional(),
