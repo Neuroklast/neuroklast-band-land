@@ -11,6 +11,7 @@ on:
       - 'app/api/license/**'
       - 'supabase/schema.sql'
       - 'supabase/tests/plugin.sql'
+      - 'supabase/tests/mcp-content.sql'
       - 'src/test/neurokore*'
       - 'src/test/plugin*'
       - '.github/workflows/plugin-contract.yml'
@@ -58,6 +59,7 @@ jobs:
           CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
           SQL
       - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/mcp-content.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin.sql
       - run: node supabase/tests/plugin-concurrency.mjs
       - name: Reset public schema for the migration path
