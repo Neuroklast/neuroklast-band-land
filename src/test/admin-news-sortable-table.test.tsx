@@ -36,7 +36,7 @@ describe('admin news ordering table', () => {
 
   it('preserves admin article links while allowing ordering', () => {
     render(<NewsSortableTable initialPosts={entries} />)
-    const link = screen.getByRole('link', { name: 'Edit' })
+    const link = screen.getAllByRole('link', { name: 'Edit' })[0]
     expect(link).toHaveAttribute('href', '/admin/news/11111111-1111-4111-8111-111111111111')
     expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute('href', '/news/first')
     expect(screen.getAllByRole('row')).toHaveLength(3)
