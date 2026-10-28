@@ -19,7 +19,10 @@ export async function proxy(request: NextRequest) {
 
   // Edge-level crawler shield — cheap string test on every path. Blocked bots
   // never start a function instance nor hit the database.
-  if (isBlockedCrawlerUserAgent(request.headers.get('user-agent'))) {
+  // MCP relies on OAuth bearer tokens and a fail-closed rate limiter.
+  // A ChatGPT connector must reach the OAuth challenge regardless of user-agent.
+  const isMcpAuthPath = pathname === '/api/mcp' || pathname.startsWith('/.well-known/oauth-protected-resource')
+  if (!isMcpAuthPath && isBlockedCrawlerUserAgent(request.headers.get('user-agent'))) {
     return new NextResponse(null, { status: 403 })
   }
 
