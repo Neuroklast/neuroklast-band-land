@@ -15,7 +15,7 @@ describe('private FFmpeg admin binary delivery', () => {
   beforeEach(() => auth.requireAdmin.mockReset())
 
   it('denies an anonymous request for every JS/WASM asset without reading bytes', async () => {
-    auth.requireAdmin.mockImplementation(async () => { throw new Error('No admin session') })
+    auth.requireAdmin.mockImplementation(() => { throw new Error('No admin session') })
     for (const asset of ['ffmpeg.js', '814.ffmpeg.js', 'ffmpeg-core.js', 'ffmpeg-core.wasm']) {
       const response = await request(asset)
       expect(response.status).toBe(403)
