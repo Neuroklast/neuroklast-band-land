@@ -2,6 +2,8 @@
 
 ## Private MCP editorial integration
 
+- [ ] Release types Song, Single, EP, Album, Remix and Compilation can be proposed over MCP and reviewed in the admin; the site shows distinct Single/EP/Song filters.
+
 - [ ] Reviewed MCP removal queues a pending request; approval with MFA deletes exactly one editorial record, rejection leaves it unchanged.
 - [ ] Stale removal requests conflict, repeated approval does nothing, and commerce records are excluded.
 
