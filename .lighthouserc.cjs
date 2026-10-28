@@ -5,20 +5,20 @@
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: 'npm run start',
+      startServerCommand: 'npm run start -- --hostname 127.0.0.1',
       startServerReadyPattern: 'Ready in',
       startServerReadyTimeout: 60000,
       url: [
-        'http://localhost:3000/',
-        'http://localhost:3000/plugins',
-        'http://localhost:3000/releases',
+        'http://127.0.0.1:3000/',
+        'http://127.0.0.1:3000/plugins',
+        'http://127.0.0.1:3000/releases',
       ],
       numberOfRuns: 2,
       settings: {
         formFactor: 'mobile',
         throttlingMethod: 'simulate',
         screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2, disabled: false },
-        chromeFlags: '--no-sandbox --headless',
+        chromeFlags: '--no-sandbox --headless --no-proxy-server --disable-dev-shm-usage',
       },
     },
     assert: {

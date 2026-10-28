@@ -113,7 +113,8 @@ export function BackgroundStack({
   // Decorative canvas is never an LCP prerequisite. Defer heavy JS + paints
   // until idle, while keeping the primary hero and content immediately usable.
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     let cancelled = false
     const activate = () => { if (!cancelled) setDecorationsReady(true) }
     if (typeof window.requestIdleCallback === 'function') {
