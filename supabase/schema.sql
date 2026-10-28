@@ -1692,14 +1692,14 @@ REVOKE ALL ON FUNCTION public.plugin_delete_sandbox_license(uuid, uuid, uuid) FR
 REVOKE ALL ON FUNCTION public.plugin_publish_release(uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_withdraw_release(uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.plugin_delete_product(uuid) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.plugin_public_catalog() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.plugin_public_catalog() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.plugin_activate(text, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid, text, text, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_delete_sandbox_license(uuid, uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_publish_release(uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_withdraw_release(uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.plugin_delete_product(uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.plugin_public_catalog() TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.plugin_public_catalog() TO service_role;
 
 -- ============================================================
 -- Data API table grants (idempotent)
