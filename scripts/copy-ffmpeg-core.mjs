@@ -5,7 +5,10 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 // The package exports its entrypoint but not package.json.
 const coreDir = dirname(require.resolve('@ffmpeg/core'))
-// Never place GPL FFmpeg binaries in Next.js public/: every public file bypasses admin auth.\nconst outputDir = join(process.cwd(), '.ffmpeg-admin-assets')\n// Remove assets left by previous builds; never publish this legacy URL again.\nrmSync(join(process.cwd(), 'public/vendor/ffmpeg-core'), { recursive: true, force: true })
+// Never place GPL FFmpeg binaries in Next.js public/: every public file bypasses admin auth.
+const outputDir = join(process.cwd(), '.ffmpeg-admin-assets')
+// Remove assets left by previous builds; never publish this legacy URL again.
+rmSync(join(process.cwd(), 'public/vendor/ffmpeg-core'), { recursive: true, force: true })
 mkdirSync(outputDir, { recursive: true })
 
 for (const name of ['ffmpeg-core.js', 'ffmpeg-core.wasm']) {
