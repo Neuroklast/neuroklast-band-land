@@ -22,6 +22,13 @@ export default async function McpOAuthConsent({
   if (!expected || (client.id ?? client.client_id) !== expected) {
     return <p>This OAuth client is not permitted to access NEUROKLAST content.</p>
   }
+  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (assuranceError) return <p>Cannot verify MFA assurance. Authorization was not granted.</p>
+  if (assurance?.currentLevel !== 'aal2') {
+    const returnTo = '/admin/oauth/consent?authorization_id=' + encodeURIComponent(id)
+    redirect('/admin/mfa?returnTo=' + encodeURIComponent(returnTo))
+  }
+
   return (
     <main className="mx-auto w-full max-w-xl space-y-5 rounded-lg border border-zinc-700 bg-zinc-900 p-6">
       <h1 className="text-xl font-bold">Connect NEUROKLAST Content</h1>

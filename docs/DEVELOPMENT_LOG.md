@@ -2,6 +2,17 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-28 — Admin OAuth TOTP challenge
+
+**Agent:** ChatGPT
+**Branch:** `feat/admin-oauth-mfa`
+
+Implemented admin-only Supabase TOTP enrolment, a six-digit challenge/verify page, MFA security-settings access, and redirect back to the original OAuth consent request after reaching AAL2. Added unit tests for administrative authorization, malformed code rejection and AAL2. The feature does not automatically enable a new OAuth client or store TOTP secrets in the database.
+
+**Validation:** GitHub CI run to confirm test, lint, typecheck and build. Live enrollment remains an explicit browser action by the administrator.
+
+---
+
 ## Session: 2026-10-28 — Secure NEUROKLAST content MCP hardening
 
 **Agent:** ChatGPT

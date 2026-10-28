@@ -9,7 +9,7 @@ Project: cvxhbdmhtesnkubublar.
 1. Authentication > URL Configuration: confirm Site URL https://neuroklast.net.
 2. Authentication > OAuth Server: enable OAuth 2.1. Authorization Path: /admin/oauth/consent. Prefer a dedicated pre-registered OAuth client; keep dynamic registration off if supported by your ChatGPT integration.
 3. Authentication > OAuth Apps: register a client named NEUROKLAST Content. Use the exact ChatGPT callback URI shown during the client connection workflow. Choose public/confidential according to the ChatGPT configuration; do not guess the callback.
-4. Require MFA for the content administrator, and enable breached-password protection in Authentication security settings.
+4. Use /admin/security > Two-factor authentication to enroll a TOTP factor and confirm a six-digit code (this promotes the admin session to AAL2). The OAuth consent page redirects to /admin/mfa when the session has not reached AAL2. Enable breached-password protection in Authentication security settings.
 
 ## Vercel
 
