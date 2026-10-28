@@ -6,9 +6,10 @@ import { getAdminUserId } from '@/lib/api-admin-auth'
 import { createActionClient } from '@/lib/supabaseServer'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { MCP_PROVIDER_IDS, type McpProviderId } from '@/lib/mcp/client-registry'
+import { attestMcpOAuthMfa } from '@/lib/mcp/mfa-grants'
 
 export type McpClientChange =
-  | { success: true; outcome: 'added' | 'updated' | 'unchanged' | 'deleted' }
+  | { success: true; outcome: 'added' | 'updated' | 'unchanged' | 'deleted' | 'verified' }
   | { success: false; error: 'mfa' | 'invalid' | 'database' | 'not_found' }
 
 function changeError(error: unknown): McpClientChange {
@@ -107,6 +108,24 @@ export async function deleteMcpClient(clientId: string): Promise<McpClientChange
     if (!data) return { success: false, error: 'not_found' }
     revalidatePath('/admin/integrations')
     return { success: true, outcome: 'deleted' }
+  } catch (error) {
+    return changeError(error)
+  }
+}
+
+/**
+ * Recover previously connected OAuth clients without creating new credentials.
+ * Only a currently MFA-verified admin may attest their own authorized client.
+ * The protected RPC checks that actual Supabase OAuth consent still exists
+ * when processing future MCP tool requests.
+ */
+export async function verifyMcpClientMfa(clientId: string): Promise<McpClientChange> {
+  try {
+    const userId = await mfaAdminUser()
+    if (!clientIdRegex.test(clientId)) return { success: false, error: 'invalid' }
+    await attestMcpOAuthMfa(userId, clientId)
+    revalidatePath('/admin/integrations')
+    return { success: true, outcome: 'verified' }
   } catch (error) {
     return changeError(error)
   }
