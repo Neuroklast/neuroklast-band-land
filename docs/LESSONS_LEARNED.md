@@ -4,6 +4,12 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-10-28 — OAuth MFA assurance does not propagate to tokens
+
+Supabase creates a distinct OAuth session with AAL1 when the browser's admin consent session is AAL2. Requiring JWT `aal2` on the MCP API guarantees 403 `action discovery failed` even after successful OAuth. Keep MFA as a verified condition of the server-side approval and record a private, expiring user/client attestation. MCP bearer requests must verify both the genuine `auth.sessions.oauth_client_id` and nonrevoked `auth.oauth_consents` using a service-role-only function. Never silently accept arbitrary AAL1 tokens and never grant a client access merely because it is in the allowlist. Existing already-approved clients need a secure admin MFA re-attestation path.
+
+---
+
 ## Session: 2026-10-28 — ChatGPT action discovery after OAuth
 
 OAuth success only validates client identity and the authorization grant. ChatGPT then performs a separate MCP tool-discovery handshake. The manually implemented MCP server only supported legacy `initialize`/`tools/list`; modern MCP clients can request `server/discover` and require `resultType`, `cacheScope`, `ttlMs`, and supported protocol versions. Implement both modern and legacy paths, preserve authorization on every method, and add tests with representative wire-format requests. Only log sanitized reasons for server-side bearer rejections; never log credentials.
