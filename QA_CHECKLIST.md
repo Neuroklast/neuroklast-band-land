@@ -1,5 +1,15 @@
 # QA checklist
 
+## Private MCP editorial integration
+
+- [ ] Unset OAuth client ID: MCP rejects all requests; no anonymous reads.
+- [ ] OAuth login requires an allowlisted client ID, real administrator account and AAL2 MFA.
+- [ ] Verify no access to legal content, orders, personal information, plugin keys or payment pricing.
+- [ ] Check content read, paginated collections, draft proposal, admin approval/rejection and audit history.
+- [ ] Verify stale edit conflicts, double-click approvals, failed database writes and bot-shield compatibility.
+- [ ] Confirm new items remain unpublished until explicitly activated from native admin.
+- [ ] Confirm MCP OAuth provider metadata and ChatGPT connector setup in a staging environment.
+
 ## YouTube embeds
 
 - [ ] On the homepage Music Highlights section, confirm YouTube is not contacted until the consent button is clicked.
