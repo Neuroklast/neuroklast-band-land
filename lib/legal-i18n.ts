@@ -270,13 +270,13 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     news: {
       title: '7. News and blog content',
       paragraphs: [
-        "You can read our news without creating an account. Images in articles may be delivered by Cloudflare or the image service wsrv.nl. These providers may receive your IP address when the images are displayed (Art. 6(1)(f) GDPR).",
+        "You can read our news without creating an account. Article images are generally delivered directly from their image source, especially Cloudflare. Those sources may receive connection data such as your IP address (Art. 6(1)(f) GDPR). An additional external image proxy is disabled by default.",
       ],
     },
     cdn: {
       title: "8. Images and website fonts",
       paragraphs: [
-        "Some images are delivered through the external service wsrv.nl so they load faster. Your IP address is technically transferred when you load such images. Our legitimate interest in reliable page delivery is the legal basis (Art. 6(1)(f) GDPR). Details: https://wsrv.nl.",
+        "Images are normally loaded from their original source, particularly Cloudflare, without an additional proxy. If the operator enables the optional wsrv.nl service in the administration interface, connection data including your IP address is transmitted to that image service. The operator must first review the applicable privacy and processing requirements. Details: https://wsrv.nl.",
         "Website fonts are loaded from our own website, not directly from Google's font service.",
       ],
     },
@@ -360,13 +360,13 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
     news: {
       title: '7. News und redaktionelle Inhalte',
       paragraphs: [
-        "Unsere News kannst du ohne Kundenkonto lesen. Artikelbilder können über Cloudflare oder den Bilddienst wsrv.nl geladen werden. Dabei kann deine IP-Adresse an diese Anbieter übermittelt werden (Art. 6 Abs. 1 lit. f DSGVO).",
+        "Unsere News kannst du ohne Kundenkonto lesen. Artikelbilder werden grundsätzlich über die Quelle des jeweiligen Bildes ausgeliefert, insbesondere Cloudflare. Dabei können technische Verbindungsdaten an den Bildanbieter übermittelt werden (Art. 6 Abs. 1 lit. f DSGVO). Ein zusätzlicher externer Bildproxy ist standardmäßig deaktiviert.",
       ],
     },
     cdn: {
       title: "8. Bilder und Schriftarten",
       paragraphs: [
-        "Einige Bilder werden über den externen Dienst wsrv.nl ausgeliefert, damit sie schneller laden. Beim Abruf wird deine IP-Adresse aus technischen Gründen übermittelt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: https://wsrv.nl.",
+        "Standardmäßig werden Bilder ohne zusätzlichen Bildproxy direkt über die jeweilige Bildquelle, insbesondere Cloudflare, geladen. Falls der Betreiber den optionalen Dienst wsrv.nl im Administrationsbereich aktiviert, werden bei Bildabrufen Verbindungsdaten einschließlich der IP-Adresse an diesen Bilddienst übertragen. Die Nutzung setzt eine vorherige Datenschutzprüfung voraus. Informationen: https://wsrv.nl.",
         "Die Schriftarten der Website werden von unserer eigenen Website geladen. Dabei wird keine Verbindung zum Schriftendienst von Google aufgebaut.",
       ],
     },

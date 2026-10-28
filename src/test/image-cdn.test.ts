@@ -20,10 +20,10 @@ describe('parseImageCdnMode', () => {
     expect(parseImageCdnMode({ mode: 'wsrv' })).toBe('wsrv')
   })
 
-  it('falls back to wsrv for unknown shapes', () => {
-    expect(parseImageCdnMode(null)).toBe('wsrv')
-    expect(parseImageCdnMode({ mode: 'ftp' })).toBe('wsrv')
-    expect(parseImageCdnMode('vercel')).toBe('wsrv')
+  it('defaults to direct origin without sending visits to an uncontracted proxy', () => {
+    expect(parseImageCdnMode(null)).toBe('direct')
+    expect(parseImageCdnMode({ mode: 'ftp' })).toBe('direct')
+    expect(parseImageCdnMode('vercel')).toBe('direct')
   })
 })
 
@@ -94,6 +94,11 @@ describe('isOptimizerAllowed', () => {
 })
 
 describe('buildImageSrcSet', () => {
+  it('does not produce fictitious sizes for direct or unconfigured Vercel mode', () => {
+    expect(buildImageSrcSet(R2_URL, 'direct', [480, 1200])).toBeUndefined()
+    vi.stubEnv('NEXT_PUBLIC_IMAGE_OPTIMIZATION', '')
+    expect(buildImageSrcSet(R2_URL, 'vercel', [480, 1200])).toBeUndefined()
+  })
   it('builds width descriptors in wsrv mode', () => {
     const srcSet = buildImageSrcSet(R2_URL, 'wsrv', [480, 1200])
     expect(srcSet).toContain(' 480w')

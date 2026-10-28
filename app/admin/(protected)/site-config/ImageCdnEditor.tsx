@@ -13,9 +13,9 @@ interface ImageCdnEditorProps {
 
 const MODE_COPY: Record<ImageCdnMode, { label: string; description: string }> = {
   wsrv: {
-    label: 'wsrv.nl proxy (default)',
+    label: 'wsrv.nl external proxy (optional)',
     description:
-      'Free image proxy. Resizes and converts to WebP, caches on a global CDN. No quota, no extra cost.',
+      'Routes visitor requests and IP addresses through a third-party service. Enable only after reviewing its privacy terms and data processing arrangement.',
   },
   vercel: {
     label: 'Vercel Image Optimization',
@@ -23,7 +23,7 @@ const MODE_COPY: Record<ImageCdnMode, { label: string; description: string }> = 
       'Serves images through /_next/image. Requires the deploy flag NEXT_PUBLIC_IMAGE_OPTIMIZATION=on and consumes the Vercel image quota (requests fail with 402 once exceeded). Falls back to the raw URL while the flag is off.',
   },
   direct: {
-    label: 'Direct origin URL',
+    label: 'Direct image delivery (default)',
     description:
       'No proxy and no resizing. Fastest to configure, but every visitor downloads the original file size.',
   },
@@ -97,6 +97,11 @@ export function ImageCdnEditor({ currentValue }: ImageCdnEditorProps) {
         })}
       </div>
 
+      {mode === 'wsrv' && (
+        <p role="alert" className="rounded border border-amber-800/50 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
+          Privacy review required: visitor IP addresses are sent to wsrv.nl. Confirm a lawful processing basis and applicable contracts before enabling this service.
+        </p>
+      )}
       {mode === 'vercel' && (
         <p className="rounded border border-amber-800/50 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
           Reminder: set <code className="font-mono">NEXT_PUBLIC_IMAGE_OPTIMIZATION=on</code> in the

@@ -2,10 +2,10 @@
  * Image CDN resolver.
  *
  * One pure entry point decides how a remote image URL is delivered:
- *   - `wsrv`   → wsrv.nl proxy (default; free, resizes + converts to WebP)
+ *   - `wsrv`   → optional wsrv.nl proxy (requires separate privacy/processor review)
  *   - `vercel` → Vercel Image Optimization (`/_next/image`, needs quota + the
  *                `NEXT_PUBLIC_IMAGE_OPTIMIZATION=on` deploy flag)
- *   - `direct` → the raw origin URL
+ *   - `direct` → the raw origin URL (privacy-preserving default; no proxy)
  *
  * Relative URLs, data URLs and empty values always pass through unchanged.
  */
@@ -14,7 +14,7 @@ export type ImageCdnMode = 'wsrv' | 'vercel' | 'direct'
 
 export const IMAGE_CDN_MODES: readonly ImageCdnMode[] = ['wsrv', 'vercel', 'direct']
 
-export const DEFAULT_IMAGE_CDN_MODE: ImageCdnMode = 'wsrv'
+export const DEFAULT_IMAGE_CDN_MODE: ImageCdnMode = 'direct'
 
 export interface ImageTransformOptions {
   /** Target width in CSS pixels. */
@@ -150,7 +150,7 @@ export function buildImageSrcSet(
   options: Omit<ImageTransformOptions, 'w'> = {},
 ): string | undefined {
   const url = (rawUrl ?? '').trim()
-  if (!url || !isTransformable(url) || isSvgUrl(url) || widths.length === 0) return undefined
+  if (!url || !isTransformable(url) || isSvgUrl(url) || widths.length === 0 || mode === 'direct' || (mode === 'vercel' && !isVercelOptimizerEnabled())) return undefined
 
   const entries = widths
     .filter((width) => Number.isFinite(width) && width > 0)
