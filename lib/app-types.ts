@@ -36,7 +36,7 @@ export interface Release {
   releaseDate?: string
   featured?: boolean
   streamingLinks?: Array<{ platform: string; url: string }>
-  type?: '' | 'album' | 'ep' | 'single' | 'remix' | 'compilation'
+  type?: '' | 'album' | 'ep' | 'single' | 'song' | 'remix' | 'compilation'
   description?: string
   artists?: string[]
   tracks?: Array<{
