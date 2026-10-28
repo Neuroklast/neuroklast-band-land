@@ -2,6 +2,10 @@
 
 ## Private MCP editorial integration
 
+- [ ] Supabase OAuth JWT AAL1 with real OAuth session, active OAuth consent, current 30-day MFA attestation and admin profile is accepted for discovery; same JWT without attestation is rejected with 403.
+- [ ] Direct anonymous/authenticated access to `mcp_oauth_mfa_grants` and `mcp_verify_oauth_mfa_grant` is denied. Expired, revoked or forged OAuth sessions and disabled clients fail closed.
+- [ ] Existing client can use admin **Confirm MFA for OAuth** without rotating keys; server action requires current browser MFA AAL2.
+
 - [ ] ChatGPT OAuth callback followed by `server/discover` (2026-07-28), `tools/list` and a read-only tool call returns valid complete results. Inspect `[MCP_AUTH_DENIED]` only for sanitized reason codes.
 - [ ] Legacy 2025-06-18 `initialize` and `tools/list` still work, anonymous requests fail, and revoked clients fail with previously issued tokens.
 
@@ -11,7 +15,7 @@
 - [ ] Empty OAuth client allowlist: MCP rejects all bearer tokens; no anonymous reads.
 - [ ] Each registered client ID must be separately enabled by an MFA-backed admin; disabled clients are rejected on the next request.
 - [ ] Direct anon/authenticated database access to `mcp_oauth_clients` is denied.
-- [ ] OAuth login requires an allowlisted client ID, real administrator account and AAL2 MFA.
+- [ ] OAuth login requires an allowlisted client ID, real administrator account and AAL2 MFA at consent / separate current admin re-attestation; bearer request requires validated grant.
 - [ ] Verify no access to legal content, orders, personal information, plugin keys or payment pricing.
 - [ ] Check content read, paginated collections, draft proposal, admin approval/rejection and audit history.
 - [ ] Run PostgreSQL integration test `supabase/tests/mcp-content.sql`; verify atomic update, draft visibility, stale conflicts, replay prevention, restricted RPC grants.
