@@ -6,7 +6,7 @@ import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurok
 export const runtime = 'nodejs'
 
 interface RouteContext {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }
 
 const inputSchema = z.discriminatedUnion('action', [
@@ -49,7 +49,7 @@ export async function GET(request: Request, context: RouteContext) {
   try {
     await limit(request, 'plugin-licenses-read', 60)
     await admin()
-    const { id } = await context.params
+    const { slug: id } = await context.params
     if (!z.uuid().safeParse(id).success) return json({ error: 'Plugin not found.' }, 404)
     const client = db()
     if (!(await loadProduct(client, id))) return json({ error: 'Plugin not found.' }, 404)
@@ -68,7 +68,7 @@ export async function POST(request: Request, context: RouteContext) {
     sameOrigin(request)
     await limit(request, 'plugin-licenses-write', 30)
     const actor = await admin()
-    const { id: productId } = await context.params
+    const { slug: productId } = await context.params
     if (!z.uuid().safeParse(productId).success) return json({ error: 'Plugin not found.' }, 404)
     const input = inputSchema.parse(await body(request))
     const client = db()
