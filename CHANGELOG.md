@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-- Add an OAuth-protected editorial MCP API for AI-assisted news, gigs, discography and site copy with administrator review, per-field allowlists and a server-side approval history.
+- Add an OAuth-protected editorial MCP API for AI-assisted news, gigs, discography and site copy with administrator review, per-field allowlists, atomic PostgreSQL approval transactions and a server-side approval history.
 
 - Add fail-closed tax regime verification before checkout and enable paid Stripe post-payment invoices with the appropriate §19 note or active Stripe Tax registration requirement.
 
