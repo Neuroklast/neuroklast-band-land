@@ -28,7 +28,7 @@ export default async function AiContentReviewPage({
   await requireAdmin()
   const supabase = createAdminClient()
   const { data, error } = await supabase.from('mcp_content_requests')
-    .select('id, collection, operation, target_id, changes, status, created_at, requested_by, reviewed_at, error')
+    .select('id, collection, operation, target_id, target_key, changes, status, created_at, requested_by, reviewed_at, error')
     .order('created_at', { ascending: false }).limit(70)
   const pending = (data ?? []).filter((row) => row.status === 'pending')
   const history = (data ?? []).filter((row) => row.status !== 'pending')
@@ -55,6 +55,7 @@ export default async function AiContentReviewPage({
                 <strong className="text-sm">{request.operation.toUpperCase()} · {request.collection}</strong>
                 <time className="text-xs text-zinc-500">{new Date(request.created_at).toLocaleString('de-DE')}</time>
               </div>
+              {request.target_key ? <p className="mt-2 text-xs text-zinc-400">Site text key: {request.target_key}</p> : null}
               {request.target_id ? (
                 <p className="mt-2 text-xs text-zinc-400">
                   Existing item: <Link className="underline" href={`/admin/${URLS[request.collection] ?? ''}/${request.target_id}`}>{request.target_id}</Link>
