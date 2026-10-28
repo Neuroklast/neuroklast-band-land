@@ -1995,3 +1995,38 @@ CREATE INDEX IF NOT EXISTS mcp_content_requests_queue_idx
 ALTER TABLE public.mcp_content_requests ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.mcp_content_requests FROM PUBLIC, anon, authenticated;
 GRANT ALL ON public.mcp_content_requests TO service_role;
+
+
+-- OWASP A01 defense in depth: do not allow external OAuth access tokens to use
+-- the existing admin role's broad PostgREST RLS policies directly. OAuth clients
+-- have only our dedicated MCP endpoint, which checks the exact client ID + MFA,
+-- applies a field allowlist, and queues all writes for separate human approval.
+-- Normal Supabase login sessions (without client_id) remain unchanged.
+-- This applies to every currently RLS-protected public table, including any
+-- future table that has RLS enabled when the schema is next applied.
+DO $mcp_oauth_isolation$
+DECLARE r record;
+BEGIN
+  FOR r IN
+    SELECT n.nspname AS schema_name, c.relname AS table_name
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relkind IN ('r', 'p')
+      AND c.relrowsecurity
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies p
+      WHERE p.schemaname = r.schema_name
+        AND p.tablename = r.table_name
+        AND p.policyname = 'Deny direct OAuth client table access'
+    ) THEN
+      EXECUTE format(
+        'CREATE POLICY %I ON %I.%I AS RESTRICTIVE FOR ALL TO authenticated USING ((auth.jwt() ->> %L) IS NULL) WITH CHECK ((auth.jwt() ->> %L) IS NULL)',
+        'Deny direct OAuth client table access',
+        r.schema_name, r.table_name, 'client_id', 'client_id'
+      );
+    END IF;
+  END LOOP;
+END;
+$mcp_oauth_isolation$;
