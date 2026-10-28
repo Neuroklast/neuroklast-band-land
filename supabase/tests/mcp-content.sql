@@ -102,6 +102,23 @@ BEGIN
     VALUES ('mcp-test-client', 'claude', 'Test provider', true, reviewer, reviewer);
   IF NOT EXISTS (SELECT 1 FROM public.mcp_oauth_clients WHERE client_id='mcp-test-client' AND enabled)
   THEN RAISE EXCEPTION 'MCP OAuth registry insert failed'; END IF;
+  -- OAuth MFA grants are service-role only and bind to a real Supabase OAuth
+  -- session and consent; a fabricated UUID must never verify.
+  INSERT INTO public.mcp_oauth_mfa_grants(user_id,client_id)
+    VALUES (reviewer,'mcp-test-client');
+  IF public.mcp_verify_oauth_mfa_grant('00000000-0000-4000-8000-000000000009',reviewer,'mcp-test-client')
+  THEN RAISE EXCEPTION 'Fabricated OAuth session bypassed verified MFA'; END IF;
+  IF NOT has_table_privilege('service_role','public.mcp_oauth_mfa_grants','INSERT')
+    OR has_table_privilege('anon','public.mcp_oauth_mfa_grants','SELECT')
+    OR has_table_privilege('authenticated','public.mcp_oauth_mfa_grants','INSERT')
+    OR has_function_privilege('anon','public.mcp_verify_oauth_mfa_grant(uuid,uuid,text)','EXECUTE')
+    OR has_function_privilege('authenticated','public.mcp_verify_oauth_mfa_grant(uuid,uuid,text)','EXECUTE')
+  THEN RAISE EXCEPTION 'MCP OAuth MFA grant access control broken'; END IF;
+  UPDATE public.mcp_oauth_mfa_grants
+    SET verified_at=now()-interval '31 days', expires_at=now()-interval '1 day'
+    WHERE user_id=reviewer AND client_id='mcp-test-client';
+  IF public.mcp_verify_oauth_mfa_grant('00000000-0000-4000-8000-000000000009',reviewer,'mcp-test-client')
+  THEN RAISE EXCEPTION 'Expired OAuth MFA grant accepted'; END IF;
   UPDATE public.mcp_oauth_clients SET enabled=false WHERE client_id='mcp-test-client';
   IF EXISTS (SELECT 1 FROM public.mcp_oauth_clients WHERE client_id='mcp-test-client' AND enabled)
   THEN RAISE EXCEPTION 'MCP OAuth client revocation failed'; END IF;
