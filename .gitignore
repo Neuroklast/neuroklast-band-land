@@ -45,3 +45,4 @@ patch_*.cjs
 
 # Local classic-theme snapshot (not part of the Next.js app)
 _nk-classic-ref/
+\n# Build-only FFmpeg WASM/worker files; delivered through authenticated admin route.\n.ffmpeg-admin-assets/\npublic/vendor/ffmpeg-core/\n
