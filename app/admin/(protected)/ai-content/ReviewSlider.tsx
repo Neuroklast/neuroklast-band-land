@@ -301,7 +301,6 @@ export function ReviewSlider({
       delete next[id]
       return next
     })
-    setMessage(null)
     setConfirmDeleteFor(null)
     // Optimistic queue navigation, never a false "approved" success message.
     setHiddenIds((ids) => [...ids, id])
