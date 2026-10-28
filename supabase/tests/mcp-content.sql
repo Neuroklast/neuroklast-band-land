@@ -105,10 +105,17 @@ BEGIN
   UPDATE public.mcp_oauth_clients SET enabled=false WHERE client_id='mcp-test-client';
   IF EXISTS (SELECT 1 FROM public.mcp_oauth_clients WHERE client_id='mcp-test-client' AND enabled)
   THEN RAISE EXCEPTION 'MCP OAuth client revocation failed'; END IF;
+  DELETE FROM public.mcp_oauth_clients WHERE client_id='mcp-test-client';
+  IF EXISTS (SELECT 1 FROM public.mcp_oauth_clients WHERE client_id='mcp-test-client')
+  THEN RAISE EXCEPTION 'MCP OAuth client permanent removal failed'; END IF;
+  IF NOT has_table_privilege('service_role', 'public.mcp_oauth_clients', 'DELETE')
+  THEN RAISE EXCEPTION 'Service role cannot remove MCP OAuth client'; END IF;
   IF has_table_privilege('anon', 'public.mcp_oauth_clients', 'SELECT')
      OR has_table_privilege('authenticated', 'public.mcp_oauth_clients', 'SELECT')
      OR has_table_privilege('authenticated', 'public.mcp_oauth_clients', 'INSERT')
      OR has_table_privilege('authenticated', 'public.mcp_oauth_clients', 'UPDATE')
+     OR has_table_privilege('authenticated', 'public.mcp_oauth_clients', 'DELETE')
+     OR has_table_privilege('anon', 'public.mcp_oauth_clients', 'DELETE')
   THEN RAISE EXCEPTION 'Public OAuth client management privileges detected'; END IF;
 
   -- No role other than service_role (or the table owner) can call the RPC.

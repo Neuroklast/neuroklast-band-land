@@ -13,7 +13,7 @@ Project: cvxhbdmhtesnkubublar.
 
 ## Provider access in NEUROKLAST Admin
 
-Open /admin/integrations. After verifying MFA, add each provider's pre-registered Supabase OAuth client ID to the private allowlist. The page permits immediate per-client block and re-enable, without redeployment. An OAuth application must still be installed once in the provider account, unless the provider supports one-click installation. Do not copy client secrets into the admin form.
+Open /admin/integrations. After verifying MFA, add each provider's pre-registered Supabase OAuth client ID to the private allowlist. The page permits immediate per-client block, re-enable, edit-by-registering-the-same-ID, and permanent removal from the NEUROKLAST allowlist, without redeployment. Removing the allowlist entry does not delete the OAuth app registered with Supabase Auth; delete/revoke that separately. Duplicate client registration now returns a correct Already registered status. An OAuth application must still be installed once in the provider account, unless the provider supports one-click installation. Do not copy client secrets into the admin form.
 
 ## Validate
 
