@@ -2,6 +2,17 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-28 — ChatGPT MCP OAuth success, tool-discovery failure
+
+**Agent:** ChatGPT
+**Branch:** `fix/mcp-chatgpt-tool-discovery-2026`
+
+Live Vercel logs confirmed `POST /api/mcp` after a successful ChatGPT OAuth callback, while the site only supported legacy MCP `initialize`. Added modern `server/discover` metadata (2026-07-28), modern `resultType` and protocol response headers, retained legacy 2025-06-18 flow, and introduced sanitized bearer denial logs without credentials. Regression tests assert modern/legacy tools/list and deny unauthorized discovery. No changes to JWT checks, Supabase admin RLS, MFA, or content approval flow.
+
+**Validation:** PR CI and production deployment to be verified. A live ChatGPT refresh is required to confirm end-to-end action discovery and no AAL/token rejection.
+
+---
+
 ## Session: 2026-10-28 — Supabase OAuth consent 404 and opaque authorization ID
 
 **Agent:** ChatGPT

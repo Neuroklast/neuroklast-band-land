@@ -4,6 +4,26 @@ import { CONTENT_COLLECTIONS } from '@/lib/mcp/content'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const MODERN_MCP_VERSION = '2026-07-28'
+const LEGACY_MCP_VERSION = '2025-06-18'
+const SERVER_INFO = { name: 'neuroklast-content', version: '1.1.0' }
+const SERVER_INSTRUCTIONS = 'NEUROKLAST editorial content only. Read first. Submit proposals for administrator review; never directly publish or delete.'
+const SERVER_CAPABILITIES = { tools: { listChanged: false } }
+
+function messageProtocolVersion(request: Request, message: Record<string, unknown>): string {
+  const header = request.headers.get('MCP-Protocol-Version')
+  const params = message.params
+  const meta = params && typeof params === 'object' && !Array.isArray(params)
+    ? (params as Record<string, unknown>)._meta
+    : null
+  const declared = meta && typeof meta === 'object' && !Array.isArray(meta)
+    ? (meta as Record<string, unknown>)['io.modelcontextprotocol/protocolVersion']
+    : undefined
+  return header === MODERN_MCP_VERSION || declared === MODERN_MCP_VERSION || message.method === 'server/discover'
+    ? MODERN_MCP_VERSION
+    : LEGACY_MCP_VERSION
+}
+
 const COLLECTION_ENUM = [...CONTENT_COLLECTIONS]
 const collection = { type: 'string', enum: COLLECTION_ENUM }
 const id = { type: 'string', format: 'uuid' }
@@ -65,8 +85,14 @@ const TOOLS = [
   },
 ] as const
 
-function rpc(id: unknown, result: unknown, status = 200) {
-  return Response.json({ jsonrpc: '2.0', id, result }, { status, headers: { 'Cache-Control': 'no-store', 'MCP-Protocol-Version': '2025-06-18' } })
+function rpc(id: unknown, result: Record<string, unknown>, version = LEGACY_MCP_VERSION, status = 200) {
+  const modernResult = version === MODERN_MCP_VERSION
+    ? { resultType: 'complete', ...result }
+    : result
+  return Response.json({ jsonrpc: '2.0', id, result: modernResult }, {
+    status,
+    headers: { 'Cache-Control': 'no-store', 'MCP-Protocol-Version': version },
+  })
 }
 function rpcError(id: unknown, code: number, message: string, status = 200) {
   return Response.json({ jsonrpc: '2.0', id, error: { code, message } }, { status, headers: { 'Cache-Control': 'no-store' } })
@@ -86,19 +112,33 @@ export async function POST(request: Request) {
     const requestId = typeof message.id === 'number' || typeof message.id === 'string' ? message.id : null
     if (message.jsonrpc !== '2.0' || typeof message.method !== 'string') return rpcError(requestId, -32600, 'Invalid JSON-RPC request', 400)
 
+    const version = messageProtocolVersion(request, message)
+    // 2026-07-28 requires server/discover and resultType for all successful
+    // responses. Do not drop the legacy initialize / tools/list flow.
+    if (message.method === 'server/discover') {
+      return rpc(requestId, {
+        supportedVersions: [MODERN_MCP_VERSION, LEGACY_MCP_VERSION],
+        capabilities: SERVER_CAPABILITIES,
+        cacheScope: 'private',
+        ttlMs: 0,
+        instructions: SERVER_INSTRUCTIONS,
+        _meta: { 'io.modelcontextprotocol/serverInfo': SERVER_INFO },
+      }, MODERN_MCP_VERSION)
+    }
+
     // Stateless MCP over Streamable HTTP. A notification has no response body.
     if (message.method === 'notifications/initialized') return new Response(null, { status: 202, headers: { 'Cache-Control': 'no-store' } })
     if (requestId === null) return new Response(null, { status: 202, headers: { 'Cache-Control': 'no-store' } })
-    if (message.method === 'ping') return rpc(requestId, {})
+    if (message.method === 'ping') return rpc(requestId, {}, version)
     if (message.method === 'initialize') {
       return rpc(requestId, {
-        protocolVersion: '2025-06-18',
-        capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: 'neuroklast-content', version: '1.0.0' },
-        instructions: 'Editorial content only. Read content first. Submit proposals; only a human administrator can approve. No direct publication or deletion.',
+        protocolVersion: LEGACY_MCP_VERSION,
+        capabilities: SERVER_CAPABILITIES,
+        serverInfo: SERVER_INFO,
+        instructions: SERVER_INSTRUCTIONS,
       })
     }
-    if (message.method === 'tools/list') return rpc(requestId, { tools: TOOLS })
+    if (message.method === 'tools/list') return rpc(requestId, { tools: TOOLS }, version)
     if (message.method !== 'tools/call') return rpcError(requestId, -32601, 'Method not found')
 
     const params = message.params
@@ -135,7 +175,7 @@ export async function POST(request: Request) {
         value = await listMyRequests(context, args.limit === undefined ? 20 : Number(args.limit)); break
       default: return rpcError(requestId, -32601, 'Unknown tool')
     }
-    return rpc(requestId, { content: [{ type: 'text', text: JSON.stringify(value) }] })
+    return rpc(requestId, { content: [{ type: 'text', text: JSON.stringify(value) }] }, version)
   } catch (error) {
     if (error instanceof McpAccessError) {
       if (error.status === 401 || error.status === 403 || error.status === 429 || error.status === 503) return mcpUnauthorized(error, request)
