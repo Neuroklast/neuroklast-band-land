@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabaseAdmin'
+import { getActiveMcpClient } from '@/lib/mcp/client-registry'
 import { consumeRateLimitForRequest } from '@/lib/rate-limit'
 import { allowedContentFields, CONTENT_COLLECTIONS, digestContent, filterContentRow, getContentDefinition, parseContentChanges } from '@/lib/mcp/content'
 import { z } from 'zod'
@@ -13,11 +14,10 @@ export class McpAccessError extends Error {
 }
 
 export async function authenticateMcp(request: Request): Promise<{ userId: string; clientId: string }> {
-  // OWASP A07: Fail closed unless an explicitly registered OAuth client is configured.
-  const expected = process.env.NEUROKLAST_MCP_CLIENT_ID
+  // OWASP A07: Fail closed unless the request carries an authorized OAuth client.
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!expected || !url || !key) throw new McpAccessError('MCP integration is not configured', 503)
+  if (!url || !key) throw new McpAccessError('MCP integration is not configured', 503)
 
   const auth = request.headers.get('authorization') ?? ''
   if (!/^Bearer [A-Za-z0-9._-]+$/.test(auth) || auth.length > 6000) throw new McpAccessError('Bearer OAuth access token required')
@@ -36,9 +36,16 @@ export async function authenticateMcp(request: Request): Promise<{ userId: strin
   } catch {
     throw new McpAccessError('Malformed token claims')
   }
-  if (claims.client_id !== expected || claims.sub !== user.id || claims.aal !== 'aal2') {
+  if (typeof claims.client_id !== 'string' || claims.sub !== user.id || claims.aal !== 'aal2') {
     throw new McpAccessError('OAuth client or MFA assurance not authorized', 403)
   }
+  let client
+  try {
+    client = await getActiveMcpClient(claims.client_id)
+  } catch {
+    throw new McpAccessError('MCP allowlist unavailable', 503)
+  }
+  if (!client) throw new McpAccessError('OAuth client is disabled or not allowlisted', 403)
   const admin = createAdminClient()
   const { data: profile, error: profileError } = await admin.from('profiles')
     .select('role').eq('id', user.id).maybeSingle()
@@ -47,7 +54,7 @@ export async function authenticateMcp(request: Request): Promise<{ userId: strin
   // Distributed limit, deliberately fail closed if DB is unreachable.
   const limit = await consumeRateLimitForRequest(request, { namespace: 'mcp:' + user.id, limit: 90, windowSeconds: 60 })
   if (!limit.allowed) throw new McpAccessError('Rate limit exceeded', 429)
-  return { userId: user.id, clientId: expected }
+  return { userId: user.id, clientId: client.client_id }
 }
 
 export function mcpUnauthorized(error: McpAccessError, request: Request) {

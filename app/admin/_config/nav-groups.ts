@@ -60,6 +60,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
       { href: '/admin/translations', label: 'Translations' },
       { href: '/admin/analytics', label: 'Analytics' },
       { href: '/admin/api-keys', label: 'API Keys' },
+      { href: '/admin/integrations', label: 'AI Integrations' },
       { href: '/admin/security', label: 'Security' },
       { href: '/admin/health', label: 'API Health' },
       { href: '/admin/data', label: 'Data Import/Export' },

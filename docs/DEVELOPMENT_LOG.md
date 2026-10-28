@@ -2,6 +2,18 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-28 — Multi-provider editorial AI integration hub
+
+**Agent:** ChatGPT
+**Branch:** `feat/ai-integrations-hub`
+
+Introduced a private `mcp_oauth_clients` allowlist and live per-request client checks. Added admin MFA-gated registration, disabling and re-enabling at `/admin/integrations`, with official setup instructions for Claude and OpenCode. Supabase OAuth application registration remains a separate administrative action and providers may require one-time client-side setup. Client disabling blocks future MCP requests even when the token is still valid. Added SQL privilege and revocation tests and an allowlist unit test.
+
+**Validation:** GitHub CI, disposable PostgreSQL contract, OAuth handshake and a live registered client still require verification. Existing edit approvals and AAL2 checks remain unchanged.
+
+---
+
+
 ## Session: 2026-10-28 — Admin OAuth TOTP challenge
 
 **Agent:** ChatGPT

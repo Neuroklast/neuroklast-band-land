@@ -1967,6 +1967,22 @@ GRANT EXECUTE ON FUNCTION public.plugin_claim_confirmation(uuid) TO service_role
 GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid,text,text,text,text) TO service_role;
 
 
+-- Private registration of trusted third-party OAuth clients.
+-- The token must be issued by Supabase Auth and explicitly allowed here.
+CREATE TABLE IF NOT EXISTS public.mcp_oauth_clients (
+  client_id text PRIMARY KEY CHECK (client_id ~ '^[A-Za-z0-9._:-]{8,180}$'),
+  provider text NOT NULL CHECK (provider IN ('claude','opencode','gemini','cursor','other')),
+  display_name text NOT NULL CHECK (char_length(display_name) BETWEEN 2 AND 80),
+  enabled boolean NOT NULL DEFAULT false,
+  created_by uuid NOT NULL REFERENCES auth.users(id),
+  updated_by uuid NOT NULL REFERENCES auth.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.mcp_oauth_clients ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.mcp_oauth_clients FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.mcp_oauth_clients TO service_role;
+
 -- MCP editorial change proposals. Neither anonymous nor logged-in visitors can read
 -- this table through PostgREST. Only the server-side service role touches it.
 -- No AI tool may write directly to public content tables.
