@@ -78,6 +78,32 @@ describe('overlay host', () => {
     expect(screen.getByTestId('overlay-type')).toHaveTextContent('news')
   })
 
+  it('limits homepage news to one wide lead and three recent entries', () => {
+    const posts = Array.from({ length: 6 }, (_, index) => ({
+      id: `news-${index}`,
+      title: `News ${index}`,
+      slug: `news-${index}`,
+      excerpt: 'Announcement',
+      body: 'Article',
+      link: null,
+      coverUrl: null,
+      publishedAt: `2026-10-${String(index + 10).padStart(2, '0')}T12:00:00Z`,
+    }))
+    const { container } = render(
+      <OverlayProvider>
+        <LocaleProvider>
+          <NewsSection posts={posts} featuredId="news-0" />
+        </LocaleProvider>
+      </OverlayProvider>,
+    )
+
+    expect(screen.getAllByRole('button', { name: /^open news \d/i })).toHaveLength(4)
+    expect(screen.getByText('FEATURED // NEWS')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open News 0' })).toHaveClass('md:flex-row')
+    expect(screen.getByRole('link', { name: /all news \/ archive/i })).toHaveAttribute('href', '/news')
+    expect(container.querySelectorAll('article')).toHaveLength(4)
+  })
+
   it('opens members in the shared cyberpunk overlay', () => {
     render(
       <OverlayProvider>
