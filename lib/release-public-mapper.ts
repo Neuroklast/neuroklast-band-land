@@ -25,6 +25,7 @@ export function normalizeReleaseType(value: string): Release['type'] {
     normalized === 'album' ||
     normalized === 'ep' ||
     normalized === 'single' ||
+    normalized === 'song' ||
     normalized === 'remix' ||
     normalized === 'compilation'
   ) {
