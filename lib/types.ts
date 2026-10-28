@@ -802,6 +802,7 @@ export interface FooterSlotProps {
   siteName?: string
   genres?: string[]
   label?: string
+  legalNoticeUrl?: string
   privacyPolicyUrl?: string
   onAdminLogin?: () => void
   onImpressum?: () => void
