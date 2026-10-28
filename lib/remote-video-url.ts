@@ -1,29 +1,10 @@
-import {
-  extractGoogleDriveFileId,
-  googleDriveDirectUrl,
-  isAllowedRemoteHost,
-} from '@/lib/remote-image-url'
+import { resolveRemoteImageUrl } from '@/lib/remote-image-url'
 
 const MAX_REMOTE_VIDEO_BYTES = 50 * 1024 * 1024
 
 /** Normalize pasted URLs (incl. Google Drive) to a fetchable HTTPS video URL. */
 export function resolveRemoteVideoUrl(input: string): { url: string; source: 'direct' | 'google_drive' } | null {
-  const trimmed = input.trim()
-  if (!trimmed) return null
-
-  const driveId = extractGoogleDriveFileId(trimmed)
-  if (driveId) {
-    return { url: googleDriveDirectUrl(driveId), source: 'google_drive' }
-  }
-
-  try {
-    const parsed = new URL(trimmed)
-    if (parsed.protocol !== 'https:') return null
-    if (!isAllowedRemoteHost(parsed.hostname)) return null
-    return { url: parsed.toString(), source: 'direct' }
-  } catch {
-    return null
-  }
+  return resolveRemoteImageUrl(input)
 }
 
 export function isAllowedVideoContentType(contentType: string | null): boolean {

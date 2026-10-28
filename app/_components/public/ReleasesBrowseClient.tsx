@@ -2,15 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { m } from 'framer-motion'
-import {
-  ApplePodcastsLogo,
-  Link as LinkIcon,
-  MusicNote,
-  SoundcloudLogo,
-  SpotifyLogo,
-  Storefront,
-  YoutubeLogo,
-} from '@phosphor-icons/react'
+import { MusicNote } from '@phosphor-icons/react'
 import { sanitizeExternalHref } from '@/lib/sanitize-href'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { ReleasesSwipeLayout } from '@/components/releases/ReleasesSwipeLayout'
@@ -21,7 +13,7 @@ import {
   RELEASE_TYPE_FILTERS,
   type ReleaseTypeFilter,
 } from '@/lib/release-browse'
-import { formatReleaseDate } from '@/lib/format-release-date'
+import { formatCardReleaseDate, getPlatformIcon } from './release-card-helpers'
 import { displayReleaseType } from '@/lib/release-type'
 import { toDirectImageUrl } from '@/lib/image-cache'
 import { onMediaImageError } from '@/lib/media-fallback'
@@ -35,30 +27,6 @@ import { SectionEmpty } from './SectionWrapper'
 interface ReleasesBrowseClientProps {
   releases: PublicReleaseCardItem[]
   artistName?: string
-}
-
-function formatCardReleaseDate(value: string | null) {
-  if (!value) return 'UNKNOWN'
-  const formatted = formatReleaseDate(value, value.slice(0, 4))
-  return formatted || value
-}
-
-function getPlatformIcon(platform: string) {
-  switch (platform.trim().toLowerCase()) {
-    case 'spotify':
-      return SpotifyLogo
-    case 'youtube':
-      return YoutubeLogo
-    case 'soundcloud':
-      return SoundcloudLogo
-    case 'bandcamp':
-      return Storefront
-    case 'applemusic':
-    case 'apple music':
-      return ApplePodcastsLogo
-    default:
-      return LinkIcon
-  }
 }
 
 function ReleaseBrowseCard({

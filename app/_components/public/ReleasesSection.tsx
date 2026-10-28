@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { m, useReducedMotion } from 'framer-motion'
-import { formatReleaseDate } from '@/lib/format-release-date'
+import { formatCardReleaseDate, getPlatformIcon } from './release-card-helpers'
 import { HOMEPAGE_RELEASE_LIMIT } from '@/lib/browse-pagination'
 import {
   matchesReleaseFilterType,
@@ -18,16 +18,7 @@ import { sanitizeExternalHref } from '@/lib/sanitize-href'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { SectionWrapper, SectionEmpty, SectionHeading, SectionIntro } from './SectionWrapper'
-import {
-  ApplePodcastsLogo,
-  ArrowRight,
-  Link as LinkIcon,
-  MusicNote,
-  SoundcloudLogo,
-  SpotifyLogo,
-  Storefront,
-  YoutubeLogo,
-} from '@phosphor-icons/react'
+import { ArrowRight, MusicNote } from '@phosphor-icons/react'
 
 interface Release {
   id: string
@@ -46,30 +37,6 @@ interface ReleasesSectionProps {
   columns?: string
   cardVariant?: string
   hoverEffect?: string
-}
-
-function formatCardReleaseDate(value: string | null) {
-  if (!value) return 'UNKNOWN'
-  const formatted = formatReleaseDate(value, value.slice(0, 4))
-  return formatted || value
-}
-
-function getPlatformIcon(platform: string) {
-  switch (platform.trim().toLowerCase()) {
-    case 'spotify':
-      return SpotifyLogo
-    case 'youtube':
-      return YoutubeLogo
-    case 'soundcloud':
-      return SoundcloudLogo
-    case 'bandcamp':
-      return Storefront
-    case 'applemusic':
-    case 'apple music':
-      return ApplePodcastsLogo
-    default:
-      return LinkIcon
-  }
 }
 
 export function ReleasesSection({

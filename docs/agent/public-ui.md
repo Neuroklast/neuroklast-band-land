@@ -34,6 +34,10 @@ The public `/news/[slug]` metadata uses `newsSocialImageMetadata` from `lib/news
 
 Public content SSR: `createPublicClient()` (cookie-less), not session `createClient()`.
 
+Release cards on the homepage and `/releases` share date formatting and streaming-provider icon mapping in `app/_components/public/release-card-helpers.ts`. Keep the mapping in one place so both views stay consistent.
+
+JSON-LD on public pages uses `app/_components/public/JsonLd.tsx` and the pure builders in `lib/structured-data.ts`. Do not reintroduce a second legacy schema component.
+
 ### Event status badges
 
 `gigs.status` (`confirmed` / `announced` / `cancelled`) plus the independent `gigs.sold_out` flag are surfaced publicly:
