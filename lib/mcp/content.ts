@@ -12,7 +12,7 @@ const nullableText = text.nullable()
 const httpsUrl = z.string().url().max(2048).refine((s) => s.startsWith('https://'), 'HTTPS required')
 const url = httpsUrl.nullable()
 const siteHref = z.string().max(2048).refine((s) =>
-  (s.startsWith('/') && !s.startsWith('//') && !s.includes('\\\\') && !s.includes(':')) ||
+  (s.startsWith('/') && !s.startsWith('//') && !s.includes('\\') && !s.includes(':')) ||
   s.startsWith('https://'), 'Site-relative or HTTPS link required')
 const linkMap = z.record(z.string().regex(/^[a-zA-Z0-9_-]{1,40}$/), httpsUrl)
   .refine((value) => Object.keys(value).length <= 20)
