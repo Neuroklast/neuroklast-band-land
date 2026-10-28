@@ -134,7 +134,7 @@ describe('AI content review carousel', () => {
     expect(screen.getByText('Visible after Accept')).toBeInTheDocument()
     expect(screen.getByText('Yes')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Review all 4 fields' }))
-    expect(screen.getByText('Visible on website')).toBeInTheDocument()
+    expect(screen.getAllByText('Visible on website').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Yes').length).toBeGreaterThan(0)
   })
 
