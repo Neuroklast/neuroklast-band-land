@@ -42,7 +42,8 @@ BEGIN
     '{"title":"New draft","slug":"mcp-test-draft","body":"Draft","active":true}',
     reviewer, 'test-client'
   ) RETURNING id INTO proposal;
-  IF public.mcp_apply_content_request(proposal, reviewer) <> 'approved' OR
+  result := public.mcp_apply_content_request(proposal, reviewer);
+  IF result <> 'approved' OR
      (SELECT active FROM public.news_posts WHERE slug='mcp-test-draft') IS DISTINCT FROM false
   THEN RAISE EXCEPTION 'MCP created a published article'; END IF;
 
@@ -54,7 +55,8 @@ BEGIN
     'news_posts', 'update', original, '{"title":"Should not land"}',
     'old-hash', '{"title":"Original"}', reviewer, 'test-client'
   ) RETURNING id INTO proposal;
-  IF public.mcp_apply_content_request(proposal, reviewer) <> 'conflict' OR
+  result := public.mcp_apply_content_request(proposal, reviewer);
+  IF result <> 'conflict' OR
      (SELECT title FROM public.news_posts WHERE id=original) <> 'Approved'
   THEN RAISE EXCEPTION 'MCP stale overwrite succeeded'; END IF;
 
@@ -71,7 +73,8 @@ BEGIN
     '{"value":{"headline":"Original","tagline":"Remain"}}',
     reviewer, 'test-client'
   ) RETURNING id INTO proposal;
-  IF public.mcp_apply_content_request(proposal, reviewer) <> 'approved' OR
+  result := public.mcp_apply_content_request(proposal, reviewer);
+  IF result <> 'approved' OR
      (SELECT value->>'headline' FROM public.site_config WHERE key='hero') <> 'Approved' OR
      (SELECT value->>'tagline' FROM public.site_config WHERE key='hero') <> 'Remain'
   THEN RAISE EXCEPTION 'MCP site text patch lost content'; END IF;
