@@ -1,12 +1,14 @@
 import { normalizeSearchQuery } from '@/lib/browse-pagination'
 import { normalizeReleaseType } from '@/lib/release-public-mapper'
 
-export type ReleaseTypeFilter = '' | 'album' | 'single-ep' | 'remix' | 'compilation'
+export type ReleaseTypeFilter = '' | 'album' | 'ep' | 'single' | 'song' | 'remix' | 'compilation'
 
 export const RELEASE_TYPE_FILTERS: Array<{ value: ReleaseTypeFilter; label: string }> = [
   { value: '', label: 'All' },
   { value: 'album', label: 'Album' },
-  { value: 'single-ep', label: 'Single / EP' },
+  { value: 'ep', label: 'EP' },
+  { value: 'single', label: 'Single' },
+  { value: 'song', label: 'Song' },
   { value: 'remix', label: 'Remix' },
   { value: 'compilation', label: 'Compilation' },
 ]
@@ -20,7 +22,6 @@ export interface BrowsableRelease {
 
 export function normalizeReleaseFilterType(value: string | null | undefined): ReleaseTypeFilter {
   const normalized = normalizeReleaseType(value ?? '')
-  if (normalized === 'ep' || normalized === 'single') return 'single-ep'
   return (normalized as ReleaseTypeFilter) || ''
 }
 
@@ -33,7 +34,6 @@ export function matchesReleaseFilterType(
   filter: ReleaseTypeFilter,
 ): boolean {
   const normalized = normalizeReleaseFilterType(releaseType)
-  if (filter === 'single-ep') return normalized === 'single-ep'
   return normalized === filter
 }
 
