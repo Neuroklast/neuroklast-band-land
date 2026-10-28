@@ -42,7 +42,7 @@ export function CrtGlitchMark({ src, alt, imgClassName, variant = 'mark' }: CrtG
       className={`nk-crt-mark${variant === 'word' ? ' nk-crt-mark--word' : ''}${on ? ' nk-crt-g-on' : ''}`}
       style={{ ['--nk-mark' as string]: `url("${src}")`, ...crtGlitchVars(seed) }}
     >
-      <img src={src} alt={alt} className={`nk-crt-mark__base ${imgClassName}`} decoding="async" />
+      <img src={src} alt={alt} className={`nk-crt-mark__base ${imgClassName}`} decoding="async" loading="eager" fetchPriority="high" />
       <img src={src} alt="" className="nk-crt-mark__ghost nk-crt-mark__ghost--a" />
       <img src={src} alt="" className="nk-crt-mark__ghost nk-crt-mark__ghost--b" />
       <img src={src} alt="" className="nk-crt-mark__ghost nk-crt-mark__ghost--c" />

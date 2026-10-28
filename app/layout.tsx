@@ -73,8 +73,8 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   const icon = faviconUrl || DEFAULT_ICON
-  const title = 'Neuroklast'
-  const description = 'Official website of Neuroklast – industrial / electronic'
+  const title = 'NEUROKLAST | Hard Techno & Dark Electronic Music'
+  const description = 'NEUROKLAST makes hard techno, drum & bass and dark electronic music. Discover releases, live shows and NEUROKORE audio plugins.'
   let metadataBase: URL
   try {
     metadataBase = new URL(`${getSiteOrigin()}/`)
@@ -86,9 +86,11 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase,
     title: {
       default: title,
-      template: '%s | Neuroklast',
+      template: '%s | NEUROKLAST',
     },
     description,
+    applicationName: 'NEUROKLAST',
+    category: 'music',
     icons: {
       icon,
       shortcut: icon,
@@ -98,7 +100,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       type: 'website',
-      siteName: title,
+      siteName: 'NEUROKLAST',
+      url: 'https://neuroklast.net/',
       images: [{ url: '/og-image.png' }],
     },
     twitter: {
@@ -110,6 +113,13 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
     },
   }
 }

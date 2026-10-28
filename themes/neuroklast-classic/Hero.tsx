@@ -95,7 +95,7 @@ export default function NeuroklastClassicHero({
             ['--hero-logo-width' as string]: `${logoWidthPercent ?? 55}%`,
             ['--hero-logo-width-mobile' as string]: `${logoWidthPercentMobile ?? 86}%`,
           }}
-          initial={{ opacity: 0, y: 14 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
@@ -136,7 +136,7 @@ export default function NeuroklastClassicHero({
         {tagline ? (
           <motion.p
             className="mb-6 max-w-3xl px-4 text-center font-mono text-xs uppercase tracking-[0.22em] text-foreground/85 md:mb-8 md:text-sm lg:text-base lg:tracking-[0.28em]"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
@@ -147,14 +147,14 @@ export default function NeuroklastClassicHero({
         {(genres || []).length > 0 ? (
           <motion.div
             className="mb-8 flex flex-wrap items-center justify-center gap-2 px-2 md:mb-10 md:gap-3"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.45 }}
           >
             {(genres || []).map((genre, index) => (
               <motion.div
                 key={genre}
-                initial={{ opacity: 0, x: -8 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.5 + index * 0.06 }}
               >
@@ -165,7 +165,7 @@ export default function NeuroklastClassicHero({
         ) : null}
 
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.7 }}
           className="flex gap-3 flex-wrap justify-center"
@@ -194,7 +194,7 @@ export default function NeuroklastClassicHero({
       {/* Bottom scroll indicator */}
       <motion.div
         className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:bottom-8 left-1/2 -translate-x-1/2"
-        initial={prefersReducedMotion ? false : { opacity: 0 }}
+        initial={false}
         animate={{ opacity: 1 }}
         transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: prefersReducedMotion ? 0 : 1 }}
       >

@@ -44,7 +44,8 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
 
   return (
     <motion.div
-      className="fixed inset-0 flex items-center justify-center bg-background overflow-hidden"
+      data-public-boot
+      className="fixed inset-0 hidden sm:flex motion-reduce:hidden items-center justify-center bg-background overflow-hidden"
       style={{ zIndex: 'var(--z-system)' }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
@@ -88,6 +89,8 @@ export default function NeuroklastClassicLoadingScreen({ onComplete, config }: L
             src={settings.logoUrl}
             alt={settings.bootLabel || 'Neuroklast'}
             className="object-contain"
+            loading="lazy"
+            fetchPriority="low"
             style={{ width: settings.logoSizePx, height: settings.logoSizePx }}
           />
         </motion.div>
