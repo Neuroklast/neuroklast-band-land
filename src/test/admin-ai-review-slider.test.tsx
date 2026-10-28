@@ -48,9 +48,30 @@ describe('AI content review carousel', () => {
     expect(screen.getByRole('heading', { name: 'First track' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Second track' })).not.toBeInTheDocument()
     expect(screen.getByText('Release type')).toBeInTheDocument()
-    expect(screen.getByText('Original title')).toBeInTheDocument()
     expect(screen.getByText('1 / 2')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Review all 2 fields' })).toBeInTheDocument()
+    expect(screen.queryByText('Original title')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Review all 2 fields' }))
+    expect(screen.getByText('Original title')).toBeInTheDocument()
     expect(screen.getByText('Technical JSON details')).toBeInTheDocument()
+  })
+
+  it('keeps all review actions in a fixed-height card while allowing a separate full-details view', () => {
+    const manyFields = { ...first, changes: {
+      title: 'First track', type: 'ep', active: false, tracks: [{ title: 'First mix' }, { title: 'Second mix' }],
+      artists: ['Neuroklast', 'Mechanical Vein'], streaming_links: [{ platform: 'spotify', url: 'https://spotify.com/example' }],
+    } }
+    const { container } = render(<ReviewSlider initialPending={[manyFields]} recentDecisions={[]} />)
+    const root = container.firstElementChild
+    expect(root).toHaveClass('overflow-hidden', 'flex-1')
+    const card = screen.getByRole('article')
+    expect(card).toHaveClass('min-h-0', 'flex-1', 'overflow-hidden')
+    expect(screen.getByRole('region', { name: 'Review actions' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Review all 6 fields' })).toBeInTheDocument()
+    expect(screen.queryByText('First mix')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Review all 6 fields' }))
+    expect(screen.getByTestId('review-details-scroll')).toHaveClass('overflow-y-auto')
+    expect(screen.getByText('First mix')).toBeInTheDocument()
   })
 
   it('skips and returns without submitting a review', () => {
