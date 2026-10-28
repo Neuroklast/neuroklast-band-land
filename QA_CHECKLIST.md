@@ -2,6 +2,9 @@
 
 ## Private MCP editorial integration
 
+- [ ] ChatGPT OAuth callback followed by `server/discover` (2026-07-28), `tools/list` and a read-only tool call returns valid complete results. Inspect `[MCP_AUTH_DENIED]` only for sanitized reason codes.
+- [ ] Legacy 2025-06-18 `initialize` and `tools/list` still work, anonymous requests fail, and revoked clients fail with previously issued tokens.
+
 - [ ] Supabase OAuth Authorization Path `/oauth/consent` redirects (303) to `/admin/oauth/consent`, preserving the exact opaque `authorization_id`; malformed IDs get 400 with no external redirect.
 - [ ] Protected admin login round-trip, MFA challenge, consent decision and callback preserve the original authorization request. Verify non-hex characters in Supabase-generated IDs.
 
