@@ -1971,8 +1971,9 @@ GRANT EXECUTE ON FUNCTION public.plugin_fulfill(uuid,text,text,text,text) TO ser
 CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   collection text NOT NULL,
-  operation text NOT NULL CHECK (operation IN ('create', 'update')),
+  operation text NOT NULL CHECK (operation IN ('create', 'update', 'config')),
   target_id uuid,
+  target_key text,
   changes jsonb NOT NULL,
   previous_hash text,
   requested_by uuid NOT NULL REFERENCES auth.users(id),
@@ -1984,8 +1985,9 @@ CREATE TABLE IF NOT EXISTS public.mcp_content_requests (
   reviewed_by uuid REFERENCES auth.users(id),
   error text,
   CONSTRAINT mcp_target_check CHECK (
-    (operation = 'create' AND target_id IS NULL AND previous_hash IS NULL)
-    OR (operation = 'update' AND target_id IS NOT NULL AND previous_hash IS NOT NULL)
+    (operation = 'create' AND target_id IS NULL AND target_key IS NULL AND previous_hash IS NULL)
+    OR (operation = 'update' AND target_id IS NOT NULL AND target_key IS NULL AND previous_hash IS NOT NULL)
+    OR (operation = 'config' AND target_id IS NULL AND target_key IN ('hero','merchandise','translations') AND previous_hash IS NOT NULL)
   )
 );
 CREATE INDEX IF NOT EXISTS mcp_content_requests_queue_idx
