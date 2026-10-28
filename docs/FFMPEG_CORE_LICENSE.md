@@ -1,18 +1,1 @@
-# Background-video encoder: FFmpeg licensing
-
-The admin build uses @ffmpeg/ffmpeg 0.12.15 (MIT) with @ffmpeg/core 0.12.10
-(GPL-2.0-or-later), including the GPL-licensed x264 video encoder.
-
-The prebuild/predev script copies the unmodified @ffmpeg/core dist/umd runtime
-into public/vendor/ffmpeg-core alongside the MIT-licensed wrapper, so users downloading the encoder receive GPL
-binary code. Keep the upstream copyright and license notices and make the
-complete corresponding source code and build scripts available as required by
-GPL-2.0-or-later before distributing this runtime in production.
-
-Upstream source and licenses:
-- https://github.com/ffmpegwasm/ffmpeg.wasm
-- https://github.com/ffmpegwasm/ffmpeg.wasm-core
-- https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-
-The website code (BSL-1.1) and separately distributed core must not be conflated.
-Get a license compliance review if you are unsure about your obligations.
+# Background-video encoder: admin-only FFmpeg runtime\n\nThe site uses `@ffmpeg/ffmpeg` 0.12.15 (MIT) and the `@ffmpeg/core` 0.12.10 build with GPL-licensed x264.\n\nThe `predev`/`prebuild` script copies the unmodified runtime to `.ffmpeg-admin-assets/` (never to `public/`), removes the legacy public directory, and bundles the files **only** into the protected Node.js API function with `outputFileTracingIncludes`.\n\n`GET /api/admin/ffmpeg/[asset]` must verify a real Supabase-authenticated administrator on every request, fail closed, allowlist the four exact runtime files, and return `Cache-Control: private, no-store`. Browser video encoding continues on the administrator's device. Check that anonymous requests are denied and the old `/vendor/ffmpeg-core/*` paths return 404 after deployment.\n\n**Licensing:** An admin session is not a general GPL exemption. This setup is intended only for the site owner's own internal use. If other legal entities or external service providers receive the runtime, GPL distribution requirements may apply, including supplying the full corresponding source and licence notices. Earlier public releases cannot be made retroactively private, and old immutable deployment URLs may remain available until they are removed.\n\nUpstream: https://github.com/ffmpegwasm/ffmpeg.wasm-core — https://ffmpeg.org/legal.html — https://www.gnu.org/licenses/old-licenses/gpl-2.0.html\n
