@@ -1981,7 +1981,7 @@ CREATE TABLE IF NOT EXISTS public.mcp_oauth_clients (
 );
 ALTER TABLE public.mcp_oauth_clients ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.mcp_oauth_clients FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.mcp_oauth_clients TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.mcp_oauth_clients TO service_role;
 
 -- MCP editorial change proposals. Neither anonymous nor logged-in visitors can read
 -- this table through PostgREST. Only the server-side service role touches it.
