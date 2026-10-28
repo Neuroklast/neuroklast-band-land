@@ -133,13 +133,13 @@ export default async function GigDetailPage({ params }: GigPageParams) {
         <GigStatusBadge status={gig.status} soldOut={gig.sold_out} eventDate={gig.event_date} />
 
         {overlayGig.photoUrl ? (
-          <div className="mt-8 aspect-video overflow-hidden border border-border bg-muted">
+          <div className="mt-8 flex justify-center overflow-hidden border border-border bg-muted">
             <CdnImage
               src={overlayGig.photoUrl}
               alt={headline}
               widths={[480, 768, 1200]}
               sizes="(max-width: 768px) 100vw, 768px"
-              className="h-full w-full object-cover"
+              className="block h-auto max-h-[80svh] max-w-full object-contain"
               priority
             />
           </div>
