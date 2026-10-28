@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabaseAdmin'
 import { consumeRateLimitForRequest } from '@/lib/rate-limit'
 import { allowedContentFields, CONTENT_COLLECTIONS, digestContent, filterContentRow, getContentDefinition, parseContentChanges } from '@/lib/mcp/content'
 import { z } from 'zod'
+import { canReadSiteContent, parseSiteContentPatch, READABLE_SITE_CONTENT, WRITABLE_SITE_CONTENT } from '@/lib/mcp/site-config'
 
 const uuid = z.string().uuid()
 const noCache = { 'Cache-Control': 'no-store' }
@@ -118,7 +119,7 @@ export async function listMyRequests(context: { userId: string }, limit = 20) {
   const n = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 50)) : 20
   const admin = createAdminClient()
   const { data, error } = await admin.from('mcp_content_requests')
-    .select('id, collection, operation, target_id, status, created_at, reviewed_at, error')
+    .select('id, collection, operation, target_id, target_key, status, created_at, reviewed_at, error')
     .eq('requested_by', context.userId).order('created_at', { ascending: false }).limit(n)
   if (error) throw new Error('Approval history unavailable')
   return { requests: data }
@@ -130,6 +131,34 @@ export function contentCapabilities() {
     writable_fields: allowedContentFields(collection),
     deletion: false, requires_approval: true,
   }))
+}
+
+
+export async function getSiteContent(key: string) {
+  if (!canReadSiteContent(key)) throw new McpAccessError('Site content key not readable', 403)
+  const admin = createAdminClient()
+  const { data, error } = await admin.from('site_config').select('key, value').eq('key', key).maybeSingle()
+  if (error) throw new Error('Site text lookup unavailable')
+  return { key, value: data?.value ?? null, version: digestContent({ value: data?.value ?? null }) }
+}
+
+export async function queueSiteContentChange(
+  context: { userId: string; clientId: string }, key: string, changes: unknown,
+) {
+  const cleaned = parseSiteContentPatch(key, changes)
+  const current = await getSiteContent(key)
+  const admin = createAdminClient()
+  const { data, error } = await admin.from('mcp_content_requests').insert({
+    collection: 'site_config', operation: 'config', target_id: null, target_key: key,
+    changes: cleaned, previous_hash: current.version,
+    requested_by: context.userId, client_id: context.clientId,
+  }).select('id, status, created_at').single()
+  if (error || !data) throw new Error('Could not store site text proposal')
+  return { request_id: data.id, status: data.status, needs_admin_approval: true, review_url: 'https://neuroklast.net/admin/ai-content' }
+}
+
+export function siteContentCapabilities() {
+  return { read: READABLE_SITE_CONTENT, edit: WRITABLE_SITE_CONTENT, action: 'manual approval required' }
 }
 
 export { digestContent, filterContentRow }
