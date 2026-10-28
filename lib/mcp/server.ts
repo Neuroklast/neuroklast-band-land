@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { getActiveMcpClient } from '@/lib/mcp/client-registry'
+import { verifyMcpOAuthMfaGrant } from '@/lib/mcp/mfa-grants'
 import { consumeRateLimitForRequest } from '@/lib/rate-limit'
 import { allowedContentFields, CONTENT_COLLECTIONS, digestContent, filterContentRow, getContentDefinition, parseContentChanges } from '@/lib/mcp/content'
 import { z } from 'zod'
@@ -36,8 +37,13 @@ export async function authenticateMcp(request: Request): Promise<{ userId: strin
   } catch {
     throw new McpAccessError('Malformed token claims')
   }
-  if (typeof claims.client_id !== 'string' || claims.sub !== user.id || claims.aal !== 'aal2') {
-    throw new McpAccessError('OAuth client or MFA assurance not authorized', 403)
+  // Supabase creates a separate OAuth session with AAL1 after an AAL2 browser
+  // consent. Require that new session to be a genuine Supabase OAuth session
+  // AND have explicit unexpired server-recorded MFA authorization.
+  if (typeof claims.client_id !== 'string' || claims.sub !== user.id ||
+      typeof claims.session_id !== 'string' ||
+      (claims.aal !== 'aal1' && claims.aal !== 'aal2')) {
+    throw new McpAccessError('OAuth token claims not authorized', 403)
   }
   let client
   try {
@@ -50,6 +56,14 @@ export async function authenticateMcp(request: Request): Promise<{ userId: strin
   const { data: profile, error: profileError } = await admin.from('profiles')
     .select('role').eq('id', user.id).maybeSingle()
   if (profileError || profile?.role !== 'admin') throw new McpAccessError('Administrator permission required', 403)
+
+  let mfaAttested = false
+  try {
+    mfaAttested = await verifyMcpOAuthMfaGrant(user.id, client.client_id, claims.session_id)
+  } catch {
+    throw new McpAccessError('MCP OAuth MFA verification unavailable', 503)
+  }
+  if (!mfaAttested) throw new McpAccessError('OAuth session requires MFA-approved client consent', 403)
 
   // Distributed limit, deliberately fail closed if DB is unreachable.
   const limit = await consumeRateLimitForRequest(request, { namespace: 'mcp:' + user.id, limit: 90, windowSeconds: 60 })

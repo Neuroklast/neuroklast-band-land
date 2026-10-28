@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Fix ChatGPT OAuth token discovery 403: Supabase issues independent OAuth AAL1 sessions even if the administrator's browser session passed MFA at AAL2. Require a private, expiring MFA attestation for the OAuth client and validate its actual Supabase OAuth session and active consent on every MCP request; add a recovery button for existing integrations.
+
 - Repair ChatGPT post-OAuth MCP action discovery: implement the 2026-07-28 `server/discover` exchange with required metadata, protocol-specific `resultType`/version headers and preserved 2025-06-18 legacy behavior. Log only sanitized authorization-denial categories for diagnostics.
 
 - Fix Supabase OAuth consent 404: redirect the configured `/oauth/consent` path to the protected `/admin/oauth/consent` page, preserving opaque authorization IDs, and accept those IDs during approval/denial without relaxing admin/MFA checks.

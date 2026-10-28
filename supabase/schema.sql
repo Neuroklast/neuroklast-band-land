@@ -1983,6 +1983,50 @@ ALTER TABLE public.mcp_oauth_clients ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.mcp_oauth_clients FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.mcp_oauth_clients TO service_role;
 
+-- MFA-attested MCP grants: Supabase OAuth exchange creates a NEW AAL1 session,
+-- even when the browser's approval session was verified at AAL2.
+-- Keep MFA proof in a private, short-lived server-side grant; never weaken
+-- the MFA check on the administrator's approval/verification actions.
+CREATE TABLE IF NOT EXISTS public.mcp_oauth_mfa_grants (
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  client_id text NOT NULL REFERENCES public.mcp_oauth_clients(client_id) ON DELETE CASCADE,
+  verified_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL DEFAULT (now() + interval '30 days'),
+  PRIMARY KEY (user_id, client_id),
+  CONSTRAINT mcp_oauth_mfa_grant_validity CHECK (expires_at > verified_at)
+);
+ALTER TABLE public.mcp_oauth_mfa_grants ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.mcp_oauth_mfa_grants FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.mcp_oauth_mfa_grants TO service_role;
+
+-- Validate actual Supabase OAuth session and user consent before accepting
+-- the signed OAuth JWT. AAL1 is expected for a separately created OAuth session,
+-- but a live MFA-attested authorization MUST exist for the same user and client.
+-- SQL SECURITY DEFINER reads private auth.sessions and auth.oauth_consents,
+-- while only the server service role can execute the RPC.
+CREATE OR REPLACE FUNCTION public.mcp_verify_oauth_mfa_grant(
+  p_session_id uuid, p_user_id uuid, p_client_id text
+) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+      FROM auth.sessions s
+      JOIN public.mcp_oauth_mfa_grants g
+        ON g.user_id = s.user_id AND g.client_id = p_client_id
+      JOIN auth.oauth_consents c
+        ON c.user_id = s.user_id AND c.client_id = s.oauth_client_id
+     WHERE s.id = p_session_id
+       AND s.user_id = p_user_id
+       AND s.oauth_client_id::text = p_client_id
+       AND c.revoked_at IS NULL
+       AND g.verified_at <= now()
+       AND g.expires_at > now()
+  );
+$$;
+REVOKE ALL ON FUNCTION public.mcp_verify_oauth_mfa_grant(uuid, uuid, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.mcp_verify_oauth_mfa_grant(uuid, uuid, text) TO service_role;
+
 -- MCP editorial change proposals. Neither anonymous nor logged-in visitors can read
 -- this table through PostgREST. Only the server-side service role touches it.
 -- No AI tool may write directly to public content tables.

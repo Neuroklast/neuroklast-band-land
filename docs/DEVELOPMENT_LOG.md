@@ -2,6 +2,17 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-10-28 — ChatGPT OAuth session AAL1 despite administrator MFA
+
+**Agent:** ChatGPT
+**Branch:** `fix/mcp-supabase-oauth-aal-proof`
+
+Vercel logs confirmed `/api/mcp` HTTP 403 during ChatGPT discovery after OAuth. Supabase `auth.sessions` showed the OAuth client sessions AAL1 while the separate browser admin session was MFA-verified AAL2. Added private `mcp_oauth_mfa_grants` with a 30-day expiry, restricted `mcp_verify_oauth_mfa_grant` SECURITY DEFINER validation of user/session/client + active consent, MFA attestation after successful OAuth approval and admin **Confirm MFA for OAuth** recovery action for existing clients. Changed MCP JWT checks to accept an OAuth-issued AAL1 session **only with the additional verified attestation and genuine Supabase OAuth session**. No password/MFA downgrade, no API write bypass.
+
+**Validation:** CI + database contract and production deployment, followed by real ChatGPT action discovery, are required. Explicit human browser MFA confirmation is required for previously approved clients.
+
+---
+
 ## Session: 2026-10-28 — ChatGPT MCP OAuth success, tool-discovery failure
 
 **Agent:** ChatGPT
