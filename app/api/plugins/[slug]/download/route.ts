@@ -12,8 +12,8 @@ import {
   type Platform,
 } from '@/lib/plugins/releases'
 import { r2StorageProvider } from '@/lib/storage/r2'
-import { comparePublicReleaseVersions, githubArtifactUrl } from '@/lib/plugins/github-releases'
-import { loadNeurokoreGitHubReleases } from '@/lib/plugins/github-releases-server'
+import { comparePublicReleaseVersions, pluginGithubArtifactUrl } from '@/lib/plugins/github-releases'
+import { loadNeurokoreGitHubReleases, loadPluginGitHubReleases } from '@/lib/plugins/github-releases-server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -62,7 +62,7 @@ function downloadRedirect(location: string): Response {
 }
 
 /**
- * Resolves enabled downloads to R2 or official NEUROKORE release assets.
+ * Resolves enabled downloads to R2 or official product-specific binary release assets.
  */
 export async function GET(request: Request, context: RouteContext) {
   try {
@@ -110,11 +110,13 @@ export async function GET(request: Request, context: RouteContext) {
     const artifacts = z.array(artifactSchema).parse(artifactsResult.data ?? [])
     const candidates = parsed.data.package ? artifacts.filter(item => item.package_type === parsed.data.package) : artifacts
     const chosen = pickArtifact(candidates, parsed.data.platform as Platform)
-    if (product.slug === 'neurokore' && parsed.data.platform === 'windows-x64') {
-      const github = (await loadNeurokoreGitHubReleases()).find(item => item.channel === channel
-        && githubArtifactUrl(item, parsed.data.platform, parsed.data.package))
+    if ((product.slug === 'neurokore' || product.slug === 'neurometer') && parsed.data.platform === 'windows-x64') {
+      const official = product.slug === 'neurokore'
+        ? await loadNeurokoreGitHubReleases() : await loadPluginGitHubReleases('neurometer')
+      const github = official.find(item => item.channel === channel
+        && pluginGithubArtifactUrl(product.slug as 'neurokore' | 'neurometer', item, parsed.data.platform, parsed.data.package))
       if (github && (!chosen || !release || comparePublicReleaseVersions(github, release) > 0)) {
-        const url = githubArtifactUrl(github, parsed.data.platform, parsed.data.package)
+        const url = pluginGithubArtifactUrl(product.slug as 'neurokore' | 'neurometer', github, parsed.data.platform, parsed.data.package)
         if (url) return downloadRedirect(url)
       }
     }

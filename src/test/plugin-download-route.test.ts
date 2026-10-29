@@ -8,9 +8,10 @@ const state = vi.hoisted(() => ({
   productError: null as { message: string } | null,
   signed: 'https://media.example/signed',
   github: [] as PublicRelease[],
+  meter: [] as PublicRelease[],
 }))
 
-vi.mock('@/lib/plugins/github-releases-server', () => ({ loadNeurokoreGitHubReleases: async () => state.github }))
+vi.mock('@/lib/plugins/github-releases-server', () => ({ loadNeurokoreGitHubReleases: async () => state.github, loadPluginGitHubReleases: async (slug: string) => slug === 'neurometer' ? state.meter : [] }))
 
 vi.mock('@/lib/neurokore/server', () => ({
   limit: async () => undefined,
@@ -97,6 +98,7 @@ beforeEach(() => {
   state.artifacts = [artifact()]
   state.productError = null
   state.github = []
+  state.meter = []
 })
 
 describe('public plugin download route', () => {
@@ -112,9 +114,20 @@ describe('public plugin download route', () => {
   it('serves the newer official GitHub installer and the explicitly selected ZIP', async () => {
     state.github = [github()]
     const installer = await GET(request(), context())
-    expect(installer.headers.get('location')).toBe('https://github.com/Neuroklast/NeuroCore/releases/download/v1.1.0/NEUROKORE-1.1.0-Setup.exe')
+    expect(installer.headers.get('location')).toBe('https://github.com/Neuroklast/vst-releases/releases/download/neurokore-v1.1.0/NEUROKORE-1.1.0-Setup.exe')
     const bundle = await GET(request('platform=windows-x64&package=bundle'), context())
     expect(bundle.headers.get('location')).toContain('NEUROKORE-1.1.0-win64.zip')
+  })
+
+  it('downloads only matching NEUROMETER assets from the public binary feed', async () => {
+    state.product = { ...state.product!, slug: 'neurometer' }
+    state.release = null
+    state.meter = [{ ...github('1.2.0'), artifacts: github('1.2.0').artifacts.map(a => ({ ...a, filename: a.filename.replace('NEUROKORE', 'NEUROMETER') })) }]
+    const response = await GET(request(), context('neurometer'))
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toContain('vst-releases/releases/download/neurometer-v1.2.0/NEUROMETER-1.2.0-Setup.exe')
+    state.meter = []
+    expect((await GET(request(), context('neurometer'))).status).toBe(404)
   })
 
   it('does not bypass disabled downloads or replace a newer R2 installer', async () => {

@@ -14,7 +14,7 @@ import { parseNeurokoreGitHubReleases } from './github-releases'
 import { releaseStorageKey } from './releases'
 import { importRelease, type ImportFile, type ImportPlan } from './release-import'
 
-const source = 'https://api.github.com/repos/Neuroklast/NeuroCore'
+const source = 'https://api.github.com/repos/Neuroklast/vst-releases'
 export const importVersionSchema = z.string().max(64).regex(/^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:[.-]\d+)?)?$/)
 const recordSchema = z.object({ id: z.uuid(), status: z.enum(['draft', 'validated', 'published', 'withdrawn']), git_commit_sha: z.string().nullable() })
 
@@ -35,11 +35,15 @@ async function githubJson(path: string): Promise<unknown> {
 
 export async function officialImportPlan(version: string): Promise<ImportPlan> {
   importVersionSchema.parse(version)
-  const payload = await githubJson(`/releases/tags/v${version}`)
+  const payload = await githubJson(`/releases/tags/neurokore-v${version}`)
   const release = parseNeurokoreGitHubReleases([payload])[0]
   if (!release || release.version !== version || release.artifacts.length !== 2) throw new Error('Publish a complete official GitHub release first')
-  const raw = z.object({ assets: z.array(z.object({ name: z.string(), size: z.number(), digest: z.string() })) }).parse(payload)
-  const commit = z.object({ sha: z.string().regex(/^[a-f0-9]{40}$/) }).parse(await githubJson(`/commits/v${version}`)).sha
+  const raw = z.object({ body: z.string(), assets: z.array(z.object({ name: z.string(), size: z.number(), digest: z.string() })) }).parse(payload)
+  // The public release tag points to a harmless binary-repository commit.
+  // The private source SHA is embedded by the publisher in release notes.
+  const markers = [...raw.body.matchAll(/<!-- neurokore-source-commit:([0-9a-f]{40}) -->/g)]
+  if (markers.length !== 1) throw new Error('Missing or ambiguous private source commit provenance')
+  const commit = markers[0][1]
   return { version, channel: release.channel, commit, notes: release.release_notes ?? '',
     files: release.artifacts.flatMap(artifact => [artifact.filename, artifact.filename + '.sha256'].map(filename => {
       const asset = raw.assets.find(item => item.name === filename)!
@@ -50,7 +54,7 @@ export async function officialImportPlan(version: string): Promise<ImportPlan> {
 }
 
 async function assetResponse(plan: ImportPlan, file: ImportFile): Promise<Response> {
-  let url = `https://github.com/Neuroklast/NeuroCore/releases/download/v${plan.version}/${file.filename}`
+  let url = `https://github.com/Neuroklast/vst-releases/releases/download/neurokore-v${plan.version}/${file.filename}`
   for (let attempt = 0; attempt < 4; attempt++) {
     const parsed = new URL(url)
     if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !['github.com', 'release-assets.githubusercontent.com', 'objects.githubusercontent.com'].includes(parsed.hostname)) throw new Error('Unexpected GitHub asset redirect')
@@ -181,7 +185,7 @@ export async function importOfficialRelease(version: string) {
         // A simultaneous retry may already have published the same immutable files.
         if (!(await importedReleaseStatus(version)).ready) throw result.error
       }
-      await client.from('plugin_admin_audit').insert({ actor: null, product_id: productId, action: 'release.import', target: id, detail: { source: 'Neuroklast/NeuroCore', trigger: 'release-manager' } })
+      await client.from('plugin_admin_audit').insert({ actor: null, product_id: productId, action: 'release.import', target: id, detail: { source: 'Neuroklast/vst-releases', sourceRepository: 'Neuroklast/NeuroCore', trigger: 'release-manager' } })
     },
   })
 }
