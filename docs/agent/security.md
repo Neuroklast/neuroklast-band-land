@@ -71,6 +71,10 @@ Production CSP lives in `security-headers.mjs` (imported by `next.config.mjs`), 
 
 ## SSRF
 
+## Shared remote media download (2026-10-29)
+
+Admin image/video cache actions use `lib/remote-media-download.ts` for guarded GET, AbortController timeout, MIME validation and byte-size assertion. The helper **always** calls `fetchUrlWithResolvedCheck`; do not replace it with ordinary `fetch` or move it outside `runAdminAction`. Image imports retain their 20-second/10 MB limits, videos 60-second/50 MB limits and each type's MIME policy.
+
 `app/api/partner-logo/route.ts` and the admin media-fetch actions use `lib/ssrf-guard.ts` (`assertSafeRemoteUrl`): block private/metadata hosts, resolve DNS before fetch, protocol allowlist. `lib/remote-image-url.ts` shares the host blocklist for client-side URL validation.
 
 ## URLs — scheme hardening
