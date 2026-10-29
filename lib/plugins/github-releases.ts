@@ -44,7 +44,7 @@ export function comparePublicReleaseVersions(left: Pick<PublicRelease, 'version'
 }
 
 function assetUrl(version: string, filename: string): string {
-  return `https://github.com/Neuroklast/NeuroCore/releases/download/v${version}/${filename}`
+  return `https://github.com/Neuroklast/NeuroKore-Releases/releases/download/v${version}/${filename}`
 }
 
 /**
@@ -78,7 +78,7 @@ export function parseNeurokoreGitHubReleases(value: unknown): PublicRelease[] {
     releases.push(publicReleaseSchema.parse({ source: 'github',
       id: `d7680219-83f1-4c18-a000-${item.id.toString(16).padStart(12, '0')}`, version,
       channel: version.includes('-alpha') ? 'alpha' : version.includes('-') ? 'beta' : 'stable',
-      title: `NEUROKORE ${version}`, changelog: null, release_notes: item.body?.slice(0, 12000) || null,
+      title: `NEUROKORE ${version}`, changelog: null, release_notes: item.body?.replace(/<!-- neurokore-source-commit:[0-9a-f]{40} -->\s*/g, '').slice(0, 12000) || null,
       published_at: item.published_at, artifacts: bundle ? [installer, bundle] : [installer] }))
   }
   return mergePublicReleaseDownloads([], releases)
