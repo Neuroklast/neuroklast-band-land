@@ -53,7 +53,7 @@ describe('hero wordmark controlled media and responsive widths', () => {
 
   it('shows the reset control only for a selected logo', () => {
     const onResetLogo = vi.fn()
-    render(
+    const { container } = render(
       <HeroWordmarkControls
         logoImageUrl="https://cdn.example/logo.png"
         logoImageStoragePath="hero/logo/logo.png"
@@ -68,6 +68,6 @@ describe('hero wordmark controlled media and responsive widths', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: 'Reset to default wordmark' }))
     expect(onResetLogo).toHaveBeenCalledOnce()
-    expect(screen.getAllByRole('img', { hidden: true })).toHaveLength(2)
+    expect(container.querySelectorAll('img')).toHaveLength(2)
   })
 })
