@@ -24,7 +24,7 @@ export default function BookingPage() {
         { name: 'Home', url: absoluteUrl(origin, '/') },
         { name: 'Booking & Press', url: absoluteUrl(origin, '/booking') },
       ])} />
-      <main className="relative mx-auto w-full max-w-6xl px-card pb-section pt-[calc(var(--nk-nav-h)+1.5rem)]"
+      <div className="relative mx-auto w-full max-w-6xl px-card pb-section pt-[calc(var(--nk-nav-h)+1.5rem)]"
         style={{ zIndex: 'var(--z-content)' }}>
         <header className="mb-10 max-w-3xl">
           <p className="mb-2 font-mono text-xs uppercase tracking-widest text-primary">// NEUROKLAST.BOOKING</p>
@@ -45,7 +45,7 @@ export default function BookingPage() {
             </p>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Include your event date, city, venue, expected set length and the best way to reach you.
-              Stage requirements and the technical rider are available directly on request.
+              Please ask about stage requirements and a technical rider in your inquiry.
             </p>
             <Link href="/#contact" className={actionClass}>Send a booking inquiry</Link>
           </section>
@@ -53,7 +53,7 @@ export default function BookingPage() {
             <h2 id="booking-press-title" className="font-mono text-xl font-bold uppercase text-foreground">Press resources</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Find available press photos, logos and electronic press kit documents in the media archive.
-              Please check the supplied credits and usage information for each asset.
+              Contact us to confirm usage rights and photographer credits before publication.
             </p>
             <div className="mt-auto flex flex-wrap gap-3">
               <Link href="/media" className={actionClass}>Open media archive</Link>
@@ -64,7 +64,7 @@ export default function BookingPage() {
         <p className="mt-8 font-mono text-xs text-muted-foreground">
           Event dates and public announcements are listed separately in the <Link href="/gigs" className="text-primary underline underline-offset-4">events archive</Link>.
         </p>
-      </main>
+      </div>
     </LegalPageShell>
   )
 }
