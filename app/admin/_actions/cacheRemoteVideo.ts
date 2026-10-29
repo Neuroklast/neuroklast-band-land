@@ -10,7 +10,7 @@ import {
   isAllowedVideoContentType,
   resolveRemoteVideoUrl,
 } from '@/lib/remote-video-url'
-import { fetchUrlWithResolvedCheck } from '@/lib/ssrf-guard'
+import { downloadRemoteMediaBuffer } from '@/lib/remote-media-download'
 
 export interface CacheRemoteVideoResult {
   ok: boolean
@@ -30,33 +30,14 @@ export async function cacheRemoteVideoToR2(
       return { ok: false as const, error: 'Invalid or unsupported video URL' }
     }
 
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 60_000)
-
     try {
-      const response = await fetchUrlWithResolvedCheck(resolved.url, {
-        method: 'GET',
-        signal: controller.signal,
-        headers: {
-          Accept: 'video/*,application/octet-stream',
-          'User-Agent': 'NeuroklastAdmin/1.0',
-        },
+      const { buffer, contentType } = await downloadRemoteMediaBuffer({
+        kind: 'video',
+        url: resolved.url,
+        timeoutMs: 60_000,
+        isAllowedContentType: isAllowedVideoContentType,
+        assertSize: assertRemoteVideoSize,
       })
-
-      if (!response.ok) {
-        return { ok: false as const, error: `Failed to download video (HTTP ${response.status})` }
-      }
-
-      const contentType = response.headers.get('content-type')
-      if (!isAllowedVideoContentType(contentType)) {
-        return {
-          ok: false as const,
-          error: 'URL did not return a video. For Google Drive, ensure the file is shared publicly.',
-        }
-      }
-
-      const buffer = Buffer.from(await response.arrayBuffer())
-      assertRemoteVideoSize(buffer.byteLength)
 
       const ext = extensionFromVideoContentType(contentType)
       const prefix = options?.prefix ?? 'imports/videos'
@@ -87,8 +68,6 @@ export async function cacheRemoteVideoToR2(
         ok: false as const,
         error: error instanceof Error ? error.message : 'Failed to cache remote video',
       }
-    } finally {
-      clearTimeout(timeout)
     }
   }, 'Unable to cache remote video.')
 

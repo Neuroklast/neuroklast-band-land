@@ -17,6 +17,10 @@ Next.js App Router (public + admin), Supabase (`site_config`, content tables, au
 
 ## Import paths
 
+## Safe legacy migration boundary (2026-10-29)
+
+The `src/` tree still includes Vitest tests and the live `src/animations.css` import from `app/globals.css`. It is not simply unused. Use `npm run audit:architecture` (read-only) to inventory byte-identical duplicates and reject new runtime TS/JS imports into `src/`. See `docs/REFACTOR_AUDIT_2026-10-29.md` for the staged migration plan. Do not bulk-remove mirrored files.
+
 Root-level `components/`, `hooks/`, `contexts/`, `layouts/`, `lib/`, `cms/`, `app/` are canonical `@/*` targets. Mirror `src/` only where migration bridge requires it.
 
 ## Background performance budget
