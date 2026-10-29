@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## Session: 2026-10-29 — extract pure sitemap mapping without changing ISR
+
+Sitemap XML, published URL mapping, and public Supabase selection were combined in a single route handler. Move deterministic XML serialization and mapping into `lib/sitemap-entries.ts`, but leave auth-free cookie-less Supabase reads, `active=true` filters, publication limits, domain-level fallbacks, response headers and revalidation in `app/api/sitemap/route.ts`. Guard exact static URL order, XML escaping, locale coverage and query filters with pure and adapter-level regression tests. Do not replace `createPublicClient()` with cookie-based clients; this would disable ISR. GitHub Actions must remain free of build steps.
+
+---
+
 ## Session 2026-10-29 — avoid costly GitHub build jobs
 
 Both the general CI and Lighthouse workflows contained `npm run build`, contrary to the explicit local-build-only requirement. Remove the build job and the auto-building Lighthouse workflow, then enforce the restriction with a script that scans the remaining workflows. Keep non-build tests, typechecking and security audit. A green CI means **no** GitHub production build was attempted; local build and browser/Lighthouse checks must be reported separately. Consolidate duplicated API domain contracts as pure functions with regression cases before editing route adapters.
