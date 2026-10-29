@@ -11,6 +11,8 @@ import { createAppearanceDraft, appearanceDraftReducer } from '@/lib/admin-appea
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { parseConfig, type AppearanceConfig } from '@/lib/admin-appearance-config'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
+import type { AppearanceTheme, SavedAppearancePreset } from '@/lib/appearance-presets'
+import type { LookDefinition } from '@/lib/looks'
 
 interface AppearanceEditorProps {
   currentValue: Record<string, unknown>
@@ -28,8 +30,6 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
     glitchEnabled,
     noiseIntensity,
     filmGrain,
-    accentColor,
-    accentColorSecondary,
     vignetteOpacity,
     chromaticStrength,
     sectionPanelOpacity,
@@ -61,11 +61,11 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
     broadcastAdminDraft('appearance', payload as unknown as Record<string, unknown>)
   }, [payload])
 
-  function applyLook(look: Parameters<typeof appearanceDraftReducer>[1] & { type: 'applyLook' }['look']) {
+  function applyLook(look: LookDefinition) {
     dispatch({ type: 'applyLook', look })
   }
 
-  function applyPreset(preset: Parameters<typeof appearanceDraftReducer>[1] & { type: 'applyPreset' }['preset']) {
+  function applyPreset(preset: SavedAppearancePreset) {
     dispatch({ type: 'applyPreset', preset })
   }
 
@@ -73,7 +73,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
     dispatch({ type: 'readableMode' })
   }
 
-  function updateThemeField(key: keyof typeof theme, value: string) {
+  function updateThemeField(key: keyof AppearanceTheme, value: string) {
     dispatch({ type: 'themeField', key, value })
   }
 
