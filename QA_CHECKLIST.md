@@ -4,11 +4,12 @@
 
 ## Refactor regression checks (2026-10-29)
 
+- [ ] Verify the public glitch animations, overlay transitions, keyframes, mobile effects and reduced-motion rules after migrating `src/animations.css` byte-for-byte to `styles/animations.css`. The legacy stylesheet entrypoint and the public site must import the same canonical file.
 - [ ] MCP protected-resource discovery responds identically on `/.well-known/oauth-protected-resource/api/mcp` and `/.well-known/oauth-protected-resource/mcp`, with 503 when unconfigured, no-store cache and no anonymous content access.
 - [ ] Admin gallery, media, member, partner, product and release visibility buttons preserve their labels, hover styles and saved visibility. Fail the update and confirm the optimistic label reverts.
 - [ ] Remote-image import from a public HTTPS URL or Google Drive still optimizes and stores the image in R2; video import still stores its original source in the expected R2 prefix before the existing background transcode workflow.
 - [ ] Invalid MIME, private hosts, oversized content and timeout produce errors without changing the previously saved item. The two media types retain different limits.
-- [ ] `npm run audit:architecture` reports legacy mirrors without deleting anything. Live `src/animations.css` still loads and 216 legacy tests remain executable.
+- [ ] `npm run audit:architecture` reports legacy mirrors without deleting anything. The live `styles/animations.css` is imported from both entrypoints and existing legacy tests remain executable.
 
 - [ ] Share a news post with a stored R2 cover on WhatsApp, Facebook, X and Discord: OG and Twitter metadata resolve to `/news/[slug]/social-image?v=...`, return HTTP 200 with `image/jpeg`, 1200×630, and visibly match the news photo.
 - [ ] The share image is letterboxed to preserve the entire photo without stretching. Copy/share links continue pointing to the individual public article.
