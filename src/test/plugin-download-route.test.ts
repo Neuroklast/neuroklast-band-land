@@ -112,7 +112,7 @@ describe('public plugin download route', () => {
   it('serves the newer official GitHub installer and the explicitly selected ZIP', async () => {
     state.github = [github()]
     const installer = await GET(request(), context())
-    expect(installer.headers.get('location')).toBe('https://github.com/Neuroklast/NeuroCore/releases/download/v1.1.0/NEUROKORE-1.1.0-Setup.exe')
+    expect(installer.headers.get('location')).toBe('https://github.com/Neuroklast/NeuroKore-Releases/releases/download/v1.1.0/NEUROKORE-1.1.0-Setup.exe')
     const bundle = await GET(request('platform=windows-x64&package=bundle'), context())
     expect(bundle.headers.get('location')).toContain('NEUROKORE-1.1.0-win64.zip')
   })
