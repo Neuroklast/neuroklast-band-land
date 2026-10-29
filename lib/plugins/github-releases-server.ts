@@ -7,7 +7,7 @@ import type { PublicRelease } from './releases'
  */
 export async function loadNeurokoreGitHubReleases(): Promise<PublicRelease[]> {
   try {
-    const response = await fetch('https://api.github.com/repos/Neuroklast/NeuroCore/releases?per_page=40', {
+    const response = await fetch('https://api.github.com/repos/Neuroklast/NeuroKore-Releases/releases?per_page=40', {
       headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'neuroklast.net' },
       next: { revalidate: 300, tags: ['neurokore-github-releases'] },
       signal: AbortSignal.timeout(5000), redirect: 'error',
