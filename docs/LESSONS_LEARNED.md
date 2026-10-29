@@ -1,4 +1,10 @@
 # Lessons Learned
+## Session: 2026-10-29 — serialize hero draft deterministically and update media atomically
+
+The hero editor has one saved configuration representing text, two independent media sources, two wordmark width settings, a boot flag and nested PowerGlitch configuration. A pure reducer makes media resolve/reset, boot toggle and nested glitch updates atomic. Preserve the old optional-URL rule on media resolution: a path-only success retains the prior URL. Keep the fallback logo **only in the preview broadcast**, never in persisted JSON. Serialized field order also matters for saved-snapshot dirty comparisons; protect it with tests. Keep transient save UI outside the reducer and never run builds inside GitHub Actions.
+
+---
+
 ## Session: 2026-10-29 — hero media previews are not saved media URLs
 
 The HeroConfigEditor must broadcast the fallback `DEFAULT_HERO_LOGO_URL` for rendering the preview, but must serialize `logoImageUrl: null` when no custom logo exists. Extract media pickers and wordmark previews as **controlled presentation** components without moving this distinction, server actions or errors to the child. Keep R2 prefixes, image crop mode, max dimension, logo reset behavior and separate mobile/desktop width styling exactly. Test the parent draft and save integration separately from component callback wiring; no builds in GitHub Actions.
