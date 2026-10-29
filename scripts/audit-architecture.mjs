@@ -3,7 +3,7 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { dirname, extname, relative, resolve, sep } from 'node:path'
+import { dirname, extname, resolve, sep } from 'node:path'
 
 const root = process.cwd()
 const files = execFileSync('git', ['ls-files', '-z'], { cwd: root, maxBuffer: 10 * 1024 * 1024 })
