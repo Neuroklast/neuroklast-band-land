@@ -9,6 +9,7 @@ import { BackgroundOpacitySlider } from './BackgroundOpacitySlider'
 import { BackgroundDesktopVideoControls } from './BackgroundDesktopVideoControls'
 import { BackgroundMobileVideoControls } from './BackgroundMobileVideoControls'
 import { resolveImageUrl } from '@/lib/r2'
+import { composeBackgroundPreview, composeBackgroundSave, type BackgroundEditorFields } from '@/lib/admin-background-payload'
 import {
   DEFAULT_BACKGROUND_VIDEO_OPACITY,
   parseBackgroundVideoEnabled,
@@ -85,14 +86,14 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [savedSnapshot, setSavedSnapshot] = useState('')
 
-  const draftPayload = useMemo(
+  const fields = useMemo<BackgroundEditorFields>(
     () => ({
-      storage_path: imageStoragePath || undefined,
-      url: imageUrl || undefined,
-      video_storage_path: videoStoragePath || undefined,
-      video_url: videoUrl || undefined,
-      video_mobile_storage_path: mobileVideoStoragePath || undefined,
-      video_mobile_url: mobileVideoUrl || undefined,
+      imageStoragePath,
+      imageUrl,
+      videoStoragePath,
+      videoUrl,
+      mobileVideoStoragePath,
+      mobileVideoUrl,
       mobileVideoMode,
       backgroundType,
       backgroundImageOpacity,
@@ -113,6 +114,7 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
       backgroundVideoEnabled,
     ],
   )
+  const draftPayload = useMemo(() => composeBackgroundPreview(fields), [fields])
 
   useEffect(() => {
     setSavedSnapshot((current) => current || JSON.stringify(draftPayload))
@@ -125,20 +127,7 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
   }, [draftPayload])
 
   function buildSavePayload() {
-    return {
-      storage_path: imageStoragePath || null,
-      url: imageUrl || null,
-      video_storage_path: videoStoragePath || null,
-      video_url: videoUrl || null,
-      video_mobile_storage_path:
-        mobileVideoMode === 'separate' ? mobileVideoStoragePath || null : null,
-      video_mobile_url: mobileVideoMode === 'separate' ? mobileVideoUrl || null : null,
-      mobileVideoMode,
-      backgroundType,
-      backgroundImageOpacity,
-      backgroundVideoOpacity,
-      backgroundVideoEnabled,
-    }
+    return composeBackgroundSave(fields)
   }
 
   async function handleSave() {
