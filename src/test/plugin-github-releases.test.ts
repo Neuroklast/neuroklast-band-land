@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { githubArtifactUrl, mergePublicReleaseDownloads, parseNeurokoreGitHubReleases } from '@/lib/plugins/github-releases'
+import { githubArtifactUrl, mergePublicReleaseDownloads, parseNeurokoreGitHubReleases, parsePluginGitHubReleases, pluginGithubArtifactUrl } from '@/lib/plugins/github-releases'
 import type { PublicRelease } from '@/lib/plugins/releases'
 
 function release(version = '0.9.0-beta.1', id = 123) {
-  const tag = `v${version}`
+  const tag = `neurokore-v${version}`
   const names = [`NEUROKORE-${version}-Setup.exe`, `NEUROKORE-${version}-win64.zip`]
   return { id, tag_name: tag, draft: false, prerelease: version.includes('-'), published_at: '2026-10-26T12:00:00Z', body: 'Release notes',
     assets: names.flatMap(name => [name, `${name}.sha256`]).map(name => ({ name, size: 200000, state: 'uploaded', digest: `sha256:${'a'.repeat(64)}`,
-      browser_download_url: `https://github.com/Neuroklast/NeuroKore-Releases/releases/download/${tag}/${name}` })) }
+      browser_download_url: `https://github.com/Neuroklast/vst-releases/releases/download/${tag}/${name}` })) }
 }
 
 describe('automatic NEUROKORE website releases', () => {
@@ -31,12 +31,26 @@ describe('automatic NEUROKORE website releases', () => {
       (item: ReturnType<typeof release>) => { item.assets[0].browser_download_url = 'https://example.invalid/setup.exe' },
       (item: ReturnType<typeof release>) => { item.assets.push({ ...item.assets[0] }) },
       (item: ReturnType<typeof release>) => { item.assets[0].digest = '' },
-      (item: ReturnType<typeof release>) => { item.tag_name = 'v0.9.0-beta.1/other' },
+      (item: ReturnType<typeof release>) => { item.tag_name = 'neurokore-v0.9.0-beta.1/other' },
     ]) {
       const item = release()
       mutate(item)
       expect(parseNeurokoreGitHubReleases([item])).toEqual([])
     }
+  })
+
+  it('uses distinct product tags and refuses cross-plugin releases', () => {
+    const version = '0.9.0-beta.1'
+    const meterTag = 'neurometer-v' + version
+    const meter = { ...release(), tag_name: meterTag, assets: release().assets.map(asset => ({
+      ...asset, name: asset.name.replace('NEUROKORE', 'NEUROMETER'),
+      browser_download_url: asset.browser_download_url.replace('neurokore-v', 'neurometer-v').replace('NEUROKORE', 'NEUROMETER'),
+    })) }
+    expect(parseNeurokoreGitHubReleases([meter])).toEqual([])
+    const [mapped] = parsePluginGitHubReleases([meter, release()], 'neurometer')
+    expect(mapped.version).toBe(version)
+    expect(pluginGithubArtifactUrl('neurometer', mapped, 'windows-x64', 'installer')).toContain('neurometer-v' + version)
+    expect(pluginGithubArtifactUrl('neurokore', mapped, 'windows-x64', 'installer')).toBeNull()
   })
 
   it('keeps channels separate and prefers versions instead of GitHub publication order', () => {
