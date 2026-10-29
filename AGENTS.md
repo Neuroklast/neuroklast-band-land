@@ -6,6 +6,8 @@ Public artist site + admin CMS (template: Band Land).
 
 **Package manager:** npm only (`package-lock.json`). NEVER introduce pnpm/yarn lockfiles.
 
+**Build location rule (2026-10-29): NEVER run `next build`, `npm run build`, Vercel builds, or Lighthouse production builds in GitHub Actions.** GitHub CI may lint, typecheck, unit-test and audit. The maintainer builds and runs browser/Lighthouse tests **locally** on their own machine; Vercel Production deployment from `main` is separate. `npm run check:github-builds` enforces the GitHub Actions restriction. Do not reintroduce `.github/workflows/lighthouse.yml` or a build job in `.github/workflows/ci.yml`.
+
 ## Commands (copy exactly)
 
 ```bash
