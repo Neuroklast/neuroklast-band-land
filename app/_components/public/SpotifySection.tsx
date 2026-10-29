@@ -2,6 +2,7 @@
 
 import { useLocale } from '@/contexts/LocaleContext'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+import { spotifyEmbedHeight } from '@/lib/spotify-artist'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { SectionWrapper, SectionHeading, SectionIntro } from './SectionWrapper'
 
@@ -14,6 +15,7 @@ interface SpotifySectionProps {
 export function SpotifySection({ uri, heading, intro }: SpotifySectionProps) {
   const { t } = useLocale()
   const title = resolveSectionHeading(heading, 'spotify', t)
+  const playerHeight = spotifyEmbedHeight(uri)
 
   return (
     <SectionWrapper id="spotify" data-theme-color="foreground card border primary">
@@ -21,8 +23,8 @@ export function SpotifySection({ uri, heading, intro }: SpotifySectionProps) {
         {title}
       </SectionHeading>
       <SectionIntro sectionId="spotify">{intro}</SectionIntro>
-      <div className="h-[232px] w-full overflow-hidden border border-border sm:h-[352px]">
-        <SpotifyEmbed uri={uri} height={352} className="h-full w-full" />
+      <div className="w-full overflow-hidden border border-border" style={{ height: playerHeight + 2 }}>
+        <SpotifyEmbed uri={uri} height={playerHeight} className="w-full" />
       </div>
     </SectionWrapper>
   )
