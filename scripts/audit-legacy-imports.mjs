@@ -9,7 +9,7 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { dirname, extname, join, normalize, posix } from 'node:path'
+import { extname, posix } from 'node:path'
 
 const paths = execFileSync('git', ['ls-files', '-z'], { maxBuffer: 12 * 1024 * 1024 })
   .toString('utf8').split('\0').filter(Boolean)
