@@ -15,7 +15,7 @@ describe('cached server-side release discovery', () => {
       return Response.json([{ id: 1, draft: true }])
     })
     expect(await loadNeurokoreGitHubReleases()).toEqual([])
-    expect(endpoint).toBe('https://api.github.com/repos/Neuroklast/NeuroCore/releases?per_page=40')
+    expect(endpoint).toBe('https://api.github.com/repos/Neuroklast/NeuroKore-Releases/releases?per_page=40')
     expect(received?.next.revalidate).toBe(300)
     expect(received?.redirect).toBe('error')
   })
