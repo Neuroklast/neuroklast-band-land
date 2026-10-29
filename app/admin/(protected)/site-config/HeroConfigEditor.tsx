@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useReducer, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { HeroWordmarkControls } from './HeroWordmarkControls'
@@ -8,13 +8,8 @@ import { HeroBackgroundControls } from './HeroBackgroundControls'
 import { HeroGlitchControls } from './HeroGlitchControls'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { DEFAULT_HERO_LOGO_URL } from '@/lib/hero-defaults'
-import { resolveImageUrl } from '@/lib/r2'
-import { parseHeroDesktopLogoWidth, parseHeroMobileLogoWidth } from '@/lib/hero-logo-widths'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
-import {
-  parseHeroPowerGlitch,
-  type HeroPowerGlitchMode,
-} from '@/lib/hero-glitch-config'
+import { composeHeroPayload, createHeroEditorDraft, heroEditorReducer } from '@/lib/admin-hero-draft'
 
 interface HeroConfigEditorProps {
   currentValue: Record<string, unknown>
@@ -22,103 +17,39 @@ interface HeroConfigEditorProps {
 
 export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
   const router = useRouter()
-  const [headline, setHeadline] = useState(typeof currentValue.headline === 'string' ? currentValue.headline : 'NEUROKLAST')
-  const [tagline, setTagline] = useState(
-    typeof currentValue.tagline === 'string' ? currentValue.tagline : 'Industrial Metal / Drum & Bass',
-  )
-  const [ctaLabel, setCtaLabel] = useState(typeof currentValue.ctaLabel === 'string' ? currentValue.ctaLabel : 'Listen Now')
-  const [ctaUrl, setCtaUrl] = useState(typeof currentValue.ctaUrl === 'string' ? currentValue.ctaUrl : '#releases')
-  const [logoImageStoragePath, setLogoImageStoragePath] = useState(
-    typeof currentValue.logoImageStoragePath === 'string' ? currentValue.logoImageStoragePath : '',
-  )
-  const [logoImageUrl, setLogoImageUrl] = useState(
-    resolveImageUrl(
-      typeof currentValue.logoImageStoragePath === 'string' ? currentValue.logoImageStoragePath : null,
-      typeof currentValue.logoImageUrl === 'string' ? currentValue.logoImageUrl : null,
-    ) ?? '',
-  )
-  const [backgroundImageStoragePath, setBackgroundImageStoragePath] = useState(
-    typeof currentValue.backgroundImageStoragePath === 'string' ? currentValue.backgroundImageStoragePath : '',
-  )
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState(
-    resolveImageUrl(
-      typeof currentValue.backgroundImageStoragePath === 'string' ? currentValue.backgroundImageStoragePath : null,
-      typeof currentValue.backgroundImageUrl === 'string' ? currentValue.backgroundImageUrl : null,
-    ) ?? '',
-  )
-  const [backgroundImageOpacity, setBackgroundImageOpacity] = useState<number>(
-    typeof currentValue.backgroundImageOpacity === 'number' ? currentValue.backgroundImageOpacity : 0.35,
-  )
-  const [bootSequenceEnabled, setBootSequenceEnabled] = useState<boolean>(
-    currentValue.bootSequenceEnabled === false ? false : true,
-  )
-  const initialGlitch = parseHeroPowerGlitch(currentValue.powerGlitch)
-  const [glitchMode, setGlitchMode] = useState<HeroPowerGlitchMode>(initialGlitch.mode)
-  const [glitchDurationMs, setGlitchDurationMs] = useState(initialGlitch.durationMs)
-  const [glitchSliceCount, setGlitchSliceCount] = useState(initialGlitch.sliceCount)
-  const [glitchShake, setGlitchShake] = useState(initialGlitch.shake)
-  const [glitchHue, setGlitchHue] = useState(initialGlitch.hueRotate)
-  const [glitchPulse, setGlitchPulse] = useState(initialGlitch.pulse)
-  const [glitchContinuous, setGlitchContinuous] = useState(initialGlitch.continuous)
-  /** Desktop and mobile hero widths keep their original persisted defaults. */
-  const [logoWidthPercent, setLogoWidthPercent] = useState<number>(() =>
-    parseHeroDesktopLogoWidth(currentValue),
-  )
-  const [logoWidthPercentMobile, setLogoWidthPercentMobile] = useState<number>(() =>
-    parseHeroMobileLogoWidth(currentValue),
-  )
+  const [draft, dispatch] = useReducer(heroEditorReducer, currentValue, createHeroEditorDraft)
+  const {
+    headline,
+    tagline,
+    ctaLabel,
+    ctaUrl,
+    logoImageStoragePath,
+    logoImageUrl,
+    backgroundImageStoragePath,
+    backgroundImageUrl,
+    backgroundImageOpacity,
+    bootSequenceEnabled,
+    logoWidthPercent,
+    logoWidthPercentMobile,
+    powerGlitch,
+  } = draft
+  const {
+    mode: glitchMode,
+    durationMs: glitchDurationMs,
+    sliceCount: glitchSliceCount,
+    shake: glitchShake,
+    hueRotate: glitchHue,
+    pulse: glitchPulse,
+    continuous: glitchContinuous,
+  } = powerGlitch
+
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [savedSnapshot, setSavedSnapshot] = useState('')
 
   const resolvedLogoPreview = logoImageUrl || DEFAULT_HERO_LOGO_URL
 
-  const draftPayload = useMemo(
-    () => ({
-      headline,
-      tagline,
-      ctaLabel,
-      ctaUrl,
-      logoImageStoragePath: logoImageStoragePath || null,
-      logoImageUrl: logoImageUrl || null,
-      backgroundImageStoragePath: backgroundImageStoragePath || null,
-      backgroundImageUrl: backgroundImageUrl || null,
-      backgroundImageOpacity,
-      bootSequenceEnabled,
-      logoWidthPercent,
-      logoWidthPercentMobile,
-      powerGlitch: {
-        mode: glitchMode,
-        durationMs: glitchDurationMs,
-        sliceCount: glitchSliceCount,
-        shake: glitchShake,
-        hueRotate: glitchHue,
-        pulse: glitchPulse,
-        continuous: glitchContinuous,
-      },
-    }),
-    [
-      headline,
-      tagline,
-      ctaLabel,
-      ctaUrl,
-      logoImageStoragePath,
-      logoImageUrl,
-      backgroundImageStoragePath,
-      backgroundImageUrl,
-      backgroundImageOpacity,
-      bootSequenceEnabled,
-      logoWidthPercent,
-      logoWidthPercentMobile,
-      glitchMode,
-      glitchDurationMs,
-      glitchSliceCount,
-      glitchShake,
-      glitchHue,
-      glitchPulse,
-      glitchContinuous,
-    ],
-  )
+  const draftPayload = useMemo(() => composeHeroPayload(draft), [draft])
 
   useEffect(() => {
     setSavedSnapshot((current) => current || JSON.stringify(draftPayload))
@@ -169,16 +100,12 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
           logoWidthPercent={logoWidthPercent}
           logoWidthPercentMobile={logoWidthPercentMobile}
           onLogoResolved={(path, publicUrl) => {
-            setLogoImageStoragePath(path)
-            if (publicUrl) setLogoImageUrl(publicUrl)
+            dispatch({ type: 'logoResolved', path, publicUrl })
             setErrorMsg(null)
           }}
-          onResetLogo={() => {
-            setLogoImageStoragePath('')
-            setLogoImageUrl('')
-          }}
-          onDesktopWidthChange={setLogoWidthPercent}
-          onMobileWidthChange={setLogoWidthPercentMobile}
+          onResetLogo={() => dispatch({ type: 'resetLogo' })}
+          onDesktopWidthChange={(value) => dispatch({ type: 'patch', changes: { logoWidthPercent: value } })}
+          onMobileWidthChange={(value) => dispatch({ type: 'patch', changes: { logoWidthPercentMobile: value } })}
           onError={setErrorMsg}
         />
 
@@ -188,7 +115,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
             id="hero-alt-text"
             type="text"
             value={headline}
-            onChange={(e) => setHeadline(e.target.value)}
+            onChange={(e) => dispatch({ type: 'patch', changes: { headline: e.target.value } })}
             className="w-full font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-zinc-300 focus:outline-none focus:border-zinc-600"
           />
         </div>
@@ -199,7 +126,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
             id="hero-tagline"
             type="text"
             value={tagline}
-            onChange={(e) => setTagline(e.target.value)}
+            onChange={(e) => dispatch({ type: 'patch', changes: { tagline: e.target.value } })}
             className="w-full font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-zinc-300 focus:outline-none focus:border-zinc-600"
           />
         </div>
@@ -211,7 +138,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
               id="hero-cta-label"
               type="text"
               value={ctaLabel}
-              onChange={(e) => setCtaLabel(e.target.value)}
+              onChange={(e) => dispatch({ type: 'patch', changes: { ctaLabel: e.target.value } })}
               className="w-full font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-zinc-300 focus:outline-none focus:border-zinc-600"
             />
           </div>
@@ -221,7 +148,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
               id="hero-cta-url"
               type="text"
               value={ctaUrl}
-              onChange={(e) => setCtaUrl(e.target.value)}
+              onChange={(e) => dispatch({ type: 'patch', changes: { ctaUrl: e.target.value } })}
               className="w-full font-mono text-xs bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-zinc-300 focus:outline-none focus:border-zinc-600"
             />
           </div>
@@ -232,16 +159,14 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
           backgroundImageStoragePath={backgroundImageStoragePath}
           backgroundImageOpacity={backgroundImageOpacity}
           onBackgroundResolved={(path, publicUrl) => {
-            setBackgroundImageStoragePath(path)
-            if (publicUrl) setBackgroundImageUrl(publicUrl)
+            dispatch({ type: 'backgroundResolved', path, publicUrl })
             setErrorMsg(null)
           }}
           onBackgroundCleared={() => {
-            setBackgroundImageStoragePath('')
-            setBackgroundImageUrl('')
+            dispatch({ type: 'clearBackground' })
             setErrorMsg(null)
           }}
-          onOpacityChange={setBackgroundImageOpacity}
+          onOpacityChange={(value) => dispatch({ type: 'patch', changes: { backgroundImageOpacity: value } })}
           onError={setErrorMsg}
         />
 
@@ -255,7 +180,7 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
           </div>
           <button
             type="button"
-            onClick={() => setBootSequenceEnabled((v) => !v)}
+            onClick={() => dispatch({ type: 'toggleBoot' })}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
               bootSequenceEnabled ? 'bg-red-600' : 'bg-zinc-700'
             }`}
@@ -282,13 +207,13 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
           hueRotate={glitchHue}
           pulse={glitchPulse}
           continuous={glitchContinuous}
-          onModeChange={setGlitchMode}
-          onDurationMsChange={setGlitchDurationMs}
-          onSliceCountChange={setGlitchSliceCount}
-          onShakeChange={setGlitchShake}
-          onHueRotateChange={setGlitchHue}
-          onPulseChange={setGlitchPulse}
-          onContinuousChange={setGlitchContinuous}
+          onModeChange={(value) => dispatch({ type: 'powerGlitch', changes: { mode: value } })}
+          onDurationMsChange={(value) => dispatch({ type: 'powerGlitch', changes: { durationMs: value } })}
+          onSliceCountChange={(value) => dispatch({ type: 'powerGlitch', changes: { sliceCount: value } })}
+          onShakeChange={(value) => dispatch({ type: 'powerGlitch', changes: { shake: value } })}
+          onHueRotateChange={(value) => dispatch({ type: 'powerGlitch', changes: { hueRotate: value } })}
+          onPulseChange={(value) => dispatch({ type: 'powerGlitch', changes: { pulse: value } })}
+          onContinuousChange={(value) => dispatch({ type: 'powerGlitch', changes: { continuous: value } })}
         />
       </div>
 
