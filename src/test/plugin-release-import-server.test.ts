@@ -26,7 +26,7 @@ describe('release sync authentication and product ownership', () => {
 describe('public binary repository provenance', () => {
   const version = '0.8.8-beta'
   const sha = 'a'.repeat(40)
-  const url = 'https://github.com/Neuroklast/NeuroKore-Releases/releases/download/v' + version + '/'
+  const url = 'https://github.com/Neuroklast/vst-releases/releases/download/neurokore-v' + version + '/'
   const assets = ['NEUROKORE-' + version + '-Setup.exe', 'NEUROKORE-' + version + '-win64.zip']
     .flatMap(name => [name, name + '.sha256'])
     .map(name => ({
@@ -34,7 +34,7 @@ describe('public binary repository provenance', () => {
       state: 'uploaded', digest: 'sha256:' + 'b'.repeat(64),
       browser_download_url: url + name
     }))
-  const payload = { id: 123, tag_name: 'v' + version, draft: false, prerelease: true,
+  const payload = { id: 123, tag_name: 'neurokore-v' + version, draft: false, prerelease: true,
     published_at: '2026-10-29T00:00:00Z', assets, body: 'Notes\\n\\n<!-- neurokore-source-commit:' + sha + ' -->' }
 
   it('uses embedded private source commit, never public README tag commit', async () => {
@@ -46,7 +46,7 @@ describe('public binary repository provenance', () => {
     const plan = await officialImportPlan(version)
     expect(plan.commit).toBe(sha)
     expect(plan.files).toHaveLength(4)
-    expect(requested).toEqual(['https://api.github.com/repos/Neuroklast/NeuroKore-Releases/releases/tags/v' + version])
+    expect(requested).toEqual(['https://api.github.com/repos/Neuroklast/vst-releases/releases/tags/neurokore-v' + version])
   })
 
   it('rejects releases lacking verifiable private source provenance', async () => {
