@@ -15,6 +15,8 @@ const STATIC_URLS: SitemapUrl[] = [
   { loc: `${BASE_URL}/releases`, changefreq: 'weekly', priority: '0.8' },
   { loc: `${BASE_URL}/gigs`, changefreq: 'weekly', priority: '0.8' },
   { loc: `${BASE_URL}/media`, changefreq: 'weekly', priority: '0.7' },
+  { loc: `${BASE_URL}/booking`, changefreq: 'monthly', priority: '0.7' },
+  { loc: `${BASE_URL}/news`, changefreq: 'daily', priority: '0.7' },
   { loc: `${BASE_URL}/plugins`, changefreq: 'weekly', priority: '0.8' },
   { loc: `${BASE_URL}/soundpacks`, changefreq: 'weekly', priority: '0.7' },
 

@@ -6,7 +6,7 @@ import { m, useReducedMotion } from 'framer-motion'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { HOMEPAGE_GIG_LIMIT } from '@/lib/browse-pagination'
 import { buildGigSlugMap } from '@/lib/gig-slug'
-import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, gigTypeLabel, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useOverlay } from '@/contexts/OverlayContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
@@ -87,11 +87,18 @@ function GigList({
                   <h3 className="font-mono text-xl font-bold uppercase text-primary">
                     {headline}
                   </h3>
-                  <GigStatusBadge
-                    status={gig.status}
-                    soldOut={gig.sold_out}
-                    eventDate={gig.event_date}
-                  />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <GigStatusBadge
+                      status={gig.status}
+                      soldOut={gig.sold_out}
+                      eventDate={gig.event_date}
+                    />
+                    {gigTypeLabel(gig.gig_type) ? (
+                      <span className="inline-flex border border-primary/30 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-primary">
+                        {gigTypeLabel(gig.gig_type)}
+                      </span>
+                    ) : null}
+                  </div>
                   <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
                     {location ? (
                       <span className="flex items-center gap-2">
