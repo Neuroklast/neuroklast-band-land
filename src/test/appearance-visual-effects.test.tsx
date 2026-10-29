@@ -63,13 +63,16 @@ describe('appearance visual effect controls', () => {
     const row = screen.getByText('Scanlines').parentElement
     expect(row).not.toBeNull()
     fireEvent.click(within(row!).getByRole('switch', { hidden: true }))
-    expect(callbacks.onScanlineEnabledChange).toHaveBeenCalledExactlyOnceWith(true)
+    expect(callbacks.onScanlineEnabledChange).toHaveBeenCalledOnce()
+    expect(callbacks.onScanlineEnabledChange).toHaveBeenCalledWith(true)
     const glitchRow = screen.getByText('Glitch').parentElement!
     fireEvent.click(within(glitchRow).getByRole('switch', { hidden: true }))
-    expect(callbacks.onGlitchEnabledChange).toHaveBeenCalledExactlyOnceWith(true)
+    expect(callbacks.onGlitchEnabledChange).toHaveBeenCalledOnce()
+    expect(callbacks.onGlitchEnabledChange).toHaveBeenCalledWith(true)
     const crtRow = screen.getByText('CRT overlay & vignette').parentElement!
     fireEvent.click(within(crtRow).getByRole('switch', { hidden: true }))
-    expect(callbacks.onCrtEnabledChange).toHaveBeenCalledExactlyOnceWith(false)
+    expect(callbacks.onCrtEnabledChange).toHaveBeenCalledOnce()
+    expect(callbacks.onCrtEnabledChange).toHaveBeenCalledWith(false)
     expect(callbacks.onNoiseIntensityChange).not.toHaveBeenCalled()
     expect(callbacks.onVignetteOpacityChange).not.toHaveBeenCalled()
     expect(callbacks.onChromaticStrengthChange).not.toHaveBeenCalled()
