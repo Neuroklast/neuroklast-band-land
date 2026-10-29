@@ -23,6 +23,10 @@ The `src/` tree still includes Vitest tests and legacy modules. The live animati
 
 Root-level `components/`, `hooks/`, `contexts/`, `layouts/`, `lib/`, `cms/`, `app/` are canonical `@/*` targets. Mirror `src/` only where migration bridge requires it.
 
+## Canonical root modules after mirror cleanup (2026-10-29)
+
+The root `components/`, `hooks/` and `lib/` directories are authoritative for files that previously had byte-identical legacy counterparts. After verified SHA parity and static-import inventory, 16 redundant `src/` copies were removed; root implementations remain unchanged. The new test requires the inventory to report zero exact mirrors. Non-identical legacy modules remain out of scope until their dynamic and static consumers are understood.
+
 ## Background performance budget
 
 Shared helpers in [`lib/canvas-perf.ts`](../../lib/canvas-perf.ts):

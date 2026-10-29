@@ -39,6 +39,13 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added `npm run audit:legacy` for a read-only, tracked-source inventory of **literal static import references**. Reports identical mirrors, their static importers and directly referenced legacy files. This is NOT proof of dead code: dynamically computed imports, asset paths, framework conventions and runtime string lookups require separate validation.
 - Remaining legacy files and tests are retained until cross-entrypoint usage is understood and CI/E2E coverage is available.
 
+## Phase 1 progress — eliminate identical source mirrors (2026-10-29)
+
+- The static tracked-import inventory identified 16 byte-identical root/`src/` source mirrors with no literal importers of their legacy paths. Targeted code searches found no explicit legacy-path references for the sampled modules.
+- Removed the 16 legacy copies only after each Git blob SHA matched its retained canonical counterpart. Root implementations in `components/`, `hooks/` and `lib/` were not modified.
+- Added a test requiring `exactMirrors === 0` in the read-only inventory to prevent reintroduction of redundant copies.
+- **Limitation:** literal import reachability cannot detect constructed paths, framework conventions or runtime assets. CI success reduces risk but does not prove other non-identical legacy source is dead. Do not mass-delete the remaining `src/` tree.
+
 ## Remaining staged refactor work
 
 ### Phase 1: resolve the legacy root and test boundaries
