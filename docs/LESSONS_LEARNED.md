@@ -1,4 +1,10 @@
 # Lessons Learned
+## Session 2026-10-29 — background preview is intentionally different from storage
+
+A background editor preview may retain video URLs that are not active on mobile, while the save payload explicitly clears mobile fields except when mobile mode is 'separate'. Empty preview media fields are undefined (omitted in JSON), while save uses null. Do not collapse these representations into one normalizer. Extract controlled media UI without moving automatic desktop-enable-on-upload, existing MediaSourcePicker error callbacks, draft broadcasts or server mutations out of the parent. Never use GitHub builds.
+
+---
+
 ## Session: 2026-10-29 — serialize hero draft deterministically and update media atomically
 
 The hero editor has one saved configuration representing text, two independent media sources, two wordmark width settings, a boot flag and nested PowerGlitch configuration. A pure reducer makes media resolve/reset, boot toggle and nested glitch updates atomic. Preserve the old optional-URL rule on media resolution: a path-only success retains the prior URL. Keep the fallback logo **only in the preview broadcast**, never in persisted JSON. Serialized field order also matters for saved-snapshot dirty comparisons; protect it with tests. Keep transient save UI outside the reducer and never run builds inside GitHub Actions.
