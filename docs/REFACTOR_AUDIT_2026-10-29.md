@@ -59,7 +59,15 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
 - The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
 
-## Remaining staged refactor work## Phase 2 progress — hero glitch controls and historic width parsing (2026-10-29)
+## Remaining staged refactor work## Phase 2 progress — hero media controls and responsive previews (2026-10-29)
+
+- Extracted the wordmark upload, reset, width sliders and desktop/mobile previews into controlled `HeroWordmarkControls.tsx`; extracted the hero background overlay media picker, clear action and opacity slider into `HeroBackgroundControls.tsx`.
+- Reduced `HeroConfigEditor.tsx` from **437 to 309 lines** without changing the original parent state, draft payload object, live-preview broadcast, server-action save or post-save refresh.
+- Preserved the preview-only fallback logo (save still persists null when empty), wordmark R2 media picker options and background 16:9 crop/cover options.
+- Added component-level tests and parent integration tests for upload/reset, preview-vs-save fidelity and save errors. The next isolated task is a hero draft reducer after these presentation boundaries are established.
+- GitHub Actions remains build-free. Browser E2E, screenshot comparison and Lighthouse remain local maintainer checks.
+
+## Phase 2 progress — hero glitch controls and historic width parsing (2026-10-29)
 
 - Started the HeroConfigEditor extraction: wordmark PowerGlitch control markup has been moved to the controlled `HeroGlitchControls.tsx`, keeping the existing mode buttons, sliders and checkbox callbacks.
 - Extracted desktop/mobile logo width initialization to `lib/hero-logo-widths.ts` with existing precedence for modern percentage, legacy numeric REM, legacy string REM and defaults (55% desktop, 90% mobile).
