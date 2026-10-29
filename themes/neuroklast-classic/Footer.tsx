@@ -65,6 +65,15 @@ export default function NeuroklastClassicFooter({
             </div>
           )}
 
+          <nav aria-label="Artist resources" className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <Link href="/booking" className="nk-os-nav inline-flex min-h-[44px] items-center font-mono text-xs uppercase tracking-widest">
+              {locale === 'de' ? 'Booking & Presse' : 'Booking & Press'}
+            </Link>
+            <Link href="/media" className="nk-os-nav inline-flex min-h-[44px] items-center font-mono text-xs uppercase tracking-widest">
+              {locale === 'de' ? 'Presse-Downloads' : 'Press downloads'}
+            </Link>
+          </nav>
+
           <div className="w-full max-w-xs mx-auto flex items-center gap-2">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/40" />
             <div className="w-1.5 h-1.5 rotate-45 border border-primary/60" />
