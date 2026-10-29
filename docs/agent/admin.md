@@ -1,5 +1,11 @@
 # Admin Patterns
 
+## Shared admin visibility and remote media imports (2026-10-29)
+
+Six protected list toggles (gallery, media, members, partners, products, releases) delegate only their visual state and optimistic rollback to `app/admin/_components/AdminVisibilityToggle.tsx`. Each wrapper still calls its original server action. Preserve the distinct accessibility labels and hover behavior. Do not move authorization, database mutations or revalidation into the UI.
+
+Image/video URL imports share `lib/remote-media-download.ts` for the **SSRF-guarded** fetch, timeout and content-size check. Media-specific URL validation, MIME allowlists, image optimization, prefixes and R2 writes stay in `cacheRemoteImage.ts` and `cacheRemoteVideo.ts`. Tests validate header parity, HTTP/content-type errors and abort behavior.
+
 ## News ordering
 
 `/admin/news` renders `NewsSortableTable` using existing `@dnd-kit` sortable sensors; only the grip initiates drag. The full list, including inactive posts, is submitted to `reorderNewsPosts(orderedIds, expectedIds)`. The server action validates UUID sets, requires the current admin session and calls the service-role-only `reorder_news_posts` RPC. The RPC locks the table, compares its current sorted IDs to the previous order and updates all `display_order` values in one transaction. A mismatch aborts without partial writes. The list rolls back and shows a message if saving fails. The public homepage orders by `display_order`, then `published_at` and ID. New posts are inserted before the first existing post; editing a post does not overwrite ordering. Numeric sort controls have been removed from the news forms.
