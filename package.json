@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "audit:architecture": "node scripts/audit-architecture.mjs --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
