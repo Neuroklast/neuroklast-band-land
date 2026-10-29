@@ -6,7 +6,7 @@ import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
 import Footer from './Footer'
 import OverlayModal from './OverlayModal'
-import './styles.css'
+import '../../../themes/umbrella-corp/styles.css'
 
 import type { ThemePackage } from '@/lib/types'
 
