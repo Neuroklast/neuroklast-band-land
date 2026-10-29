@@ -10,7 +10,7 @@ export function parseHeroDesktopLogoWidth(raw: Record<string, unknown>): number 
     return clampWordmarkWidth((raw.logoMaxHeightRem / 48) * 100)
   }
   if (typeof raw.logoMaxHeight === 'string') {
-    const match = raw.logoMaxHeight.match(/^([\\d.]+)\\s*rem$/i)
+    const match = raw.logoMaxHeight.match(/^([\d.]+)\s*rem$/i)
     if (match) return clampWordmarkWidth((Number(match[1]) / 48) * 100)
   }
   return 55
