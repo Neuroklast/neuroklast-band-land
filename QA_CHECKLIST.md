@@ -1,5 +1,13 @@
 # QA checklist
 
+## Local-only build and sync-job contract (2026-10-29)
+
+- [ ] Verify `.github/workflows/ci.yml` has no build job, the former auto-building Lighthouse workflow is absent, and `npm run check:github-builds` passes. All Next.js and Lighthouse builds must run locally, never in GitHub Actions.
+- [ ] Run `npm run build` and `bash scripts/run-mobile-audit.sh` on the maintainer's machine; document failures rather than claiming CI covered these jobs.
+- [ ] Admin: create every supported sync-job type, including the purge types, and verify initial phases/payloads and 201 response remain unchanged.
+- [ ] Admin: `/api/sync-jobs/active?types=spotify_sync,itunes_sync` filters both types; empty/blank filter means all, invalid type yields 400, unauthenticated access 401, success `Cache-Control: no-store`.
+
+
 ## Legacy source mirror consolidation (2026-10-29)
 
 - [ ] `npm run audit:legacy` reports zero identical root/`src/` source mirrors. Treat its static importer report as evidence, not proof of no dynamic use.

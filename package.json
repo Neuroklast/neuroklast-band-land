@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "audit:architecture": "node scripts/audit-architecture.mjs --check",
     "audit:legacy": "node scripts/audit-legacy-imports.mjs",
+    "check:github-builds": "node scripts/check-github-builds.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

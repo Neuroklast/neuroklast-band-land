@@ -6,38 +6,15 @@ import {
   createSyncJob,
   updateSyncJob,
   type SyncJobPayload,
-  type SyncJobType,
 } from '@/lib/sync-jobs'
+import { SYNC_JOB_TYPES, initialSyncJobPayload, initialSyncJobPhase } from '@/lib/sync-job-types'
 
 export const dynamic = 'force-dynamic'
 
 const createJobSchema = z.object({
-  type: z.enum([
-    'discogs_sync',
-    'spotify_sync',
-    'itunes_sync',
-    'track_enrichment',
-    'bandsintown_sync',
-    'purge_and_sync_releases',
-    'purge_and_sync_gigs',
-  ]),
+  type: z.enum(SYNC_JOB_TYPES),
   payload: z.record(z.string(), z.unknown()).optional(),
 })
-
-function initialPhase(type: SyncJobType): 'purge' | 'fetch' | 'import' | 'enrich' | 'sync' | null {
-  if (type === 'purge_and_sync_releases' || type === 'purge_and_sync_gigs') return 'purge'
-  if (type === 'track_enrichment') return 'enrich'
-  return 'fetch'
-}
-
-function initialPayload(type: SyncJobType): Record<string, unknown> {
-  if (type === 'discogs_sync') return { source: 'discogs', stagedItems: [], importCursor: 0 }
-  if (type === 'spotify_sync') return { source: 'spotify', stagedItems: [], importCursor: 0 }
-  if (type === 'itunes_sync') return { source: 'itunes', stagedItems: [], importCursor: 0 }
-  if (type === 'track_enrichment') return { enrichCursor: 0 }
-  if (type === 'bandsintown_sync') return { gigImportCursor: 0 }
-  return {}
-}
 
 export async function POST(request: Request) {
   const admin = await isAdminSession()
@@ -61,12 +38,12 @@ export async function POST(request: Request) {
     const userId = await getAdminUserId()
     const type = parsed.data.type
     const payload = {
-      ...initialPayload(type),
+      ...initialSyncJobPayload(type),
       ...(parsed.data.payload ?? {}),
     }
 
     const job = await createSyncJob(type, payload as SyncJobPayload, userId)
-    const phase = initialPhase(type)
+    const phase = initialSyncJobPhase(type)
     if (phase) {
       await updateSyncJob(job.id, { phase })
     }

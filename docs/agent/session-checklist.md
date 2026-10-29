@@ -6,7 +6,7 @@
 [ ] Topic docs read (AGENTS.md + matching docs/agent/*.md)
 [ ] npm run lint        → 0 errors (no new warnings if avoidable)
 [ ] npm run typecheck   → 0 errors
-[ ] npm run build       → 0 errors
+[ ] npm run build       → local maintainer machine ONLY (never GitHub Actions); report if not run
 [ ] npm run test        → all tests pass (or document pre-existing failures)
 [ ] CHANGELOG.md        → [Unreleased] entry when user-visible
 [ ] docs/LESSONS_LEARNED.md → row for non-trivial lessons
@@ -17,7 +17,7 @@
 ## Before claiming “fixed on production”
 
 ```
-[ ] PR CI green
+[ ] PR non-build CI green; local build/Lighthouse status reported separately
 [ ] Merged to main
 [ ] Vercel Production deployment SHA == merge commit
 [ ] User told to hard-refresh for visual fixes
