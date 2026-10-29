@@ -1,4 +1,13 @@
 # QA checklist
+## Background desktop/mobile video controls (2026-10-29)
+
+- [ ] Desktop video enable switch toggles without clearing stored media. Uploading a video automatically enables it; clearing a video does not disable the switch.
+- [ ] Desktop picker retains background/videos R2 prefix and desktop scrub variant. Video opacity is shown only when enabled, without resetting its previous value.
+- [ ] Mobile modes Same as desktop / Different video / No video on mobile select correctly; separate mobile picker appears only in Different video mode with mobile scrub variant.
+- [ ] Unsaved live preview retains selected-but-inactive mobile media; save stores mobile paths/URLs only in separate mode. Empty preview values are omitted, empty saved values are explicit null.
+- [ ] Image picker, animation style, image opacity, dirty warning, error messages and save success/refresh work unchanged.
+- [ ] Run build-free CI then local production build, browser E2E/responsive screenshots and Lighthouse separately for visual sign-off.
+
 ## Hero reducer and persistent draft state (2026-10-29)
 
 - [ ] Edit tagline, alt text, CTA label/URL, boot switch and PowerGlitch controls in sequence; the live-preview broadcast and saved payload contain all recent edits without losing sibling fields.
