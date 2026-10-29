@@ -1,4 +1,13 @@
 # QA checklist
+## Hero reducer and persistent draft state (2026-10-29)
+
+- [ ] Edit tagline, alt text, CTA label/URL, boot switch and PowerGlitch controls in sequence; the live-preview broadcast and saved payload contain all recent edits without losing sibling fields.
+- [ ] Upload or clear background and logo; verify path-only media resolution retains prior preview URL while reset/clear stores null URL/path in JSON.
+- [ ] Check legacy wordmark widths, custom logo preview and independently sized mobile/desktop preview remain correct.
+- [ ] Verify `powerGlitch` mode/duration/slices/shake/hue/pulse/continuous field order and values; switching one never resets others.
+- [ ] Verify unsaved warning, saved snapshot, save failure and success-refresh exactly as before; fallback wordmark appears in draft preview only.
+- [ ] CI lint/typecheck/tests/security only (no GitHub build); run production build, Playwright E2E and Lighthouse locally for manual visual sign-off.
+
 ## Hero media controls / responsive previews (2026-10-29)
 
 - [ ] Upload a hero wordmark; confirm R2 picker still uses contain, maximum 4096px, and both desktop/mobile previews show the same custom logo at independent percentages.
