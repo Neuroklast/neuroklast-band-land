@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { Dispatch, SetStateAction } from 'react'
 import { AppearanceQuickStart } from '@/app/admin/(protected)/site-config/AppearanceQuickStart'
@@ -24,6 +24,19 @@ vi.mock('@/app/admin/_components/MediaSourcePicker', () => ({
     </div>
   ),
 }))
+
+// Radix Slider measures its thumb with ResizeObserver. jsdom does not implement it.
+beforeAll(() => {
+  vi.stubGlobal('ResizeObserver', class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  })
+})
+
+afterAll(() => {
+  vi.unstubAllGlobals()
+})
 
 afterEach(() => {
   cleanup()
