@@ -1,5 +1,5 @@
 import type { Release } from './types'
-import { fetchWithRetry } from './fetch-retry'
+import { fetchWithRetry } from '@/lib/fetch-retry'
 
 export async function fetchITunesReleases(artistName: string): Promise<Release[]> {
   try {
