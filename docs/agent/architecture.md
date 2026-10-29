@@ -98,6 +98,10 @@ Key-value rows in `site_config`. Public homepage and legal pages read from here.
 
 Admin edits via `app/admin/_actions/siteConfig.ts` → `update_site_config` action.
 
+## Sync-job API contracts (2026-10-29)
+
+The seven supported job types and their initial states are defined once in `lib/sync-job-types.ts`. Creation (`app/api/sync-jobs/route.ts`) and protected read-only polling (`app/api/sync-jobs/active/route.ts`) share it. Keep the admin authorization before parsing, preserve the existing no-store response, and validate any new type in this shared contract and its tests. No private database functions should be imported into the pure contract module.
+
 ## Release enrichment (Supabase)
 
 | Layer | File | Role |
