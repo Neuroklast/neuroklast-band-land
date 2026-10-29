@@ -46,6 +46,12 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added a test requiring `exactMirrors === 0` in the read-only inventory to prevent reintroduction of redundant copies.
 - **Limitation:** literal import reachability cannot detect constructed paths, framework conventions or runtime assets. CI success reduces risk but does not prove other non-identical legacy source is dead. Do not mass-delete the remaining `src/` tree.
 
+## Phase 2 progress — sync-job contracts and build execution policy (2026-10-29)
+
+- Centralized the seven allowed sync-job types, admin read-only filter parser, initial phase and payload defaults in `lib/sync-job-types.ts`. Both `/api/sync-jobs` creation and `/api/sync-jobs/active` polling reuse the same contract; existing authorization, rate limits, database queries, query semantics, error responses and cache headers are retained. Added pure unit tests for valid/invalid queries and defaults.
+- Removed Next.js builds from GitHub Actions CI and removed the auto-building Lighthouse workflow. Added `npm run check:github-builds`, enforced in CI, to prevent reintroduction. GitHub still runs lint, tests, typecheck and security audit. Production build and Lighthouse are **local maintainer tasks**; Vercel Production deployment from `main` remains an independent platform step.
+- **Verification limitation:** without access to the maintainer's local build environment, a green GitHub test/typecheck does not establish local build, Lighthouse or manual E2E success.
+
 ## Remaining staged refactor work
 
 ### Phase 1: resolve the legacy root and test boundaries
@@ -71,7 +77,7 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 
 ### Phase 4: regression and rollout
 
-- Run `npm ci`, `npm run audit:architecture`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build`, `npm run test:e2e` where a runnable environment exists; also check `npm audit` and the mobile Lighthouse budget.
+- Run `npm ci`, `npm run audit:architecture`, `npm run check:github-builds`, `npm run lint`, `npm run typecheck`, `npm run test` in GitHub CI as configured. **Do not build in GitHub.** Run `npm run build`, Playwright E2E and mobile Lighthouse only on the maintainer's local machine and report unverified checks distinctly; Vercel builds automatically for production deploys.
 - Verify public home, releases, gig and news routes, login, editor toggles, remote-media import, MCP discovery, download routes, legal and cookie screens.
 - Each independent domain gets a small PR; merge only green checks and verify the Vercel production SHA. New behavior needs its own rollback plan.
 - Do not close unrelated pending PRs as part of cleanup. Rebase on the newest `main` and re-run checks when concurrent branches land.
