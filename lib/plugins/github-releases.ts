@@ -44,7 +44,7 @@ export function comparePublicReleaseVersions(left: Pick<PublicRelease, 'version'
 }
 
 function assetUrl(version: string, filename: string): string {
-  return `https://github.com/Neuroklast/NeuroKore-Releases/releases/download/v${version}/${filename}`
+  return `https://github.com/Neuroklast/vst-releases/releases/download/neurokore-v${version}/${filename}`
 }
 
 /**
@@ -57,8 +57,8 @@ export function parseNeurokoreGitHubReleases(value: unknown): PublicRelease[] {
     const parsed = releaseSchema.safeParse(input)
     if (!parsed.success) continue
     const item = parsed.data
-    if (!item.tag_name.startsWith('v') || !versionParts(item.tag_name)) continue
-    const version = item.tag_name.slice(1)
+    if (!item.tag_name.startsWith('neurokore-v') || !versionParts(item.tag_name.slice('neurokore-'.length))) continue
+    const version = item.tag_name.slice('neurokore-v'.length)
     if (item.prerelease !== version.includes('-')) continue
     const artifact = (filename: string, packageType: PackageType): PublicArtifact | null => {
       const find = (name: string) => {
