@@ -59,7 +59,14 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
 - The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
 
-## Remaining staged refactor work
+## Remaining staged refactor work## Phase 2 progress — controlled visual effects and appearance draft composition (2026-10-29)
+
+- Extracted the remaining Visual effects accordion from `AppearanceEditor.tsx` into `AppearanceVisualEffects.tsx`, retaining all five switches, three sliders, current labels/appearance, and controlled parent state.
+- Moved the exact serialized appearance payload assembly into pure `lib/admin-appearance-payload.ts`. It preserves field ordering, media URL/path null handling, selected animation and legacy fallback without changing `updateSiteConfig` or live preview.
+- Added separate tests for controlled effect switches and for the full serialized payload contract, including false/zero, blank favicon fields and empty animation pools.
+- GitHub Actions remains free of Next.js builds. Production build, Playwright E2E and Lighthouse must be completed locally by the maintainer before visual or end-to-end guarantees.
+
+
 ## Phase 2 progress — split appearance editor presentation (2026-10-29)
 
 - Following the stored-config parser extraction (#588), extracted controlled Quick start and Colors & fonts accordion sections plus shared opacity slider into dedicated client components with their original markup and UI behavior.
