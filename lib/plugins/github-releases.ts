@@ -43,46 +43,48 @@ export function comparePublicReleaseVersions(left: Pick<PublicRelease, 'version'
   return comparePluginVersions(normalized(left), normalized(right))
 }
 
-function assetUrl(version: string, filename: string): string {
-  return `https://github.com/Neuroklast/vst-releases/releases/download/neurokore-v${version}/${filename}`
+export type OfficialPluginSlug = 'neurokore' | 'neurometer'
+function releaseTag(slug: OfficialPluginSlug, version: string): string { return `${slug}-v${version}` }
+function assetUrl(version: string, filename: string, slug: OfficialPluginSlug = 'neurokore'): string {
+  return `https://github.com/Neuroklast/vst-releases/releases/download/${releaseTag(slug, version)}/${filename}`
 }
 
-/**
- * Selects complete public NEUROKORE releases without trusting external URLs.
- */
-export function parseNeurokoreGitHubReleases(value: unknown): PublicRelease[] {
+/** Validates a product-scoped release and prevents cross-plugin downloads. */
+export function parsePluginGitHubReleases(value: unknown, slug: OfficialPluginSlug): PublicRelease[] {
   if (!Array.isArray(value)) return []
   const releases: PublicRelease[] = []
   for (const input of value) {
     const parsed = releaseSchema.safeParse(input)
     if (!parsed.success) continue
     const item = parsed.data
-    if (!item.tag_name.startsWith('neurokore-v') || !versionParts(item.tag_name.slice('neurokore-'.length))) continue
-    const version = item.tag_name.slice('neurokore-v'.length)
+    if (!item.tag_name.startsWith(slug + '-v') || !versionParts(item.tag_name.slice(slug.length + 1))) continue
+    const version = item.tag_name.slice(slug.length + 2)
     if (item.prerelease !== version.includes('-')) continue
     const artifact = (filename: string, packageType: PackageType): PublicArtifact | null => {
       const find = (name: string) => {
         const matches = item.assets.filter(asset => asset.name === name)
         const asset = matches[0]
         return matches.length === 1 && asset && asset.size <= 524288000 && /^sha256:[\da-f]{64}$/i.test(asset.digest)
-          && asset.browser_download_url === assetUrl(version, name) ? asset : null
+          && asset.browser_download_url === assetUrl(version, name, slug) ? asset : null
       }
       const file = find(filename)
       if (!file || !find(filename + '.sha256')) return null
       return { platform: 'windows-x64', architecture: 'x64', package_type: packageType, filename,
         filesize_bytes: file.size, sha256: file.digest.slice(7).toLowerCase(), signing_status: 'unverified' }
     }
-    const installer = artifact(`NEUROKORE-${version}-Setup.exe`, 'installer')
+    const installer = artifact(`${slug.toUpperCase()}-${version}-Setup.exe`, 'installer')
     if (!installer) continue
-    const bundle = artifact(`NEUROKORE-${version}-win64.zip`, 'bundle')
+    const bundle = artifact(`${slug.toUpperCase()}-${version}-win64.zip`, 'bundle')
     releases.push(publicReleaseSchema.parse({ source: 'github',
       id: `d7680219-83f1-4c18-a000-${item.id.toString(16).padStart(12, '0')}`, version,
       channel: version.includes('-alpha') ? 'alpha' : version.includes('-') ? 'beta' : 'stable',
-      title: `NEUROKORE ${version}`, changelog: null, release_notes: item.body?.replace(/<!-- neurokore-source-commit:[0-9a-f]{40} -->\s*/g, '').slice(0, 12000) || null,
+      title: `${slug.toUpperCase()} ${version}`, changelog: null, release_notes: item.body?.replace(/<!-- (?:neurokore|neurometer)-source-commit:[0-9a-f]{40} -->\s*/g, '').slice(0, 12000) || null,
       published_at: item.published_at, artifacts: bundle ? [installer, bundle] : [installer] }))
   }
   return mergePublicReleaseDownloads([], releases)
 }
+
+export const parseNeurokoreGitHubReleases = (value: unknown): PublicRelease[] => parsePluginGitHubReleases(value, 'neurokore')
 
 /**
  * Preserves the latest download for each channel, platform and package type.
@@ -108,11 +110,14 @@ export function mergePublicReleaseDownloads(cms: readonly PublicRelease[], githu
 /**
  * Resolves an official GitHub asset without accepting a caller-supplied URL.
  */
-export function githubArtifactUrl(release: PublicRelease, platform: Platform, packageType?: PackageType): string | null {
+export function pluginGithubArtifactUrl(slug: OfficialPluginSlug, release: PublicRelease, platform: Platform, packageType?: PackageType): string | null {
   if (release.source !== 'github' || !versionParts(release.version) || platform !== 'windows-x64') return null
   const candidates = release.artifacts.filter(item => item.platform === platform && (!packageType || item.package_type === packageType))
   const selected = candidates.find(item => item.package_type === 'installer') ?? candidates.find(item => item.package_type === 'bundle')
   if (!selected) return null
-  const filename = `NEUROKORE-${release.version}-${selected.package_type === 'installer' ? 'Setup.exe' : 'win64.zip'}`
-  return selected.filename === filename ? assetUrl(release.version, filename) : null
+  const filename = `${slug.toUpperCase()}-${release.version}-${selected.package_type === 'installer' ? 'Setup.exe' : 'win64.zip'}`
+  return selected.filename === filename ? assetUrl(release.version, filename, slug) : null
 }
+
+export const githubArtifactUrl = (release: PublicRelease, platform: Platform, packageType?: PackageType): string | null =>
+  pluginGithubArtifactUrl('neurokore', release, platform, packageType)
