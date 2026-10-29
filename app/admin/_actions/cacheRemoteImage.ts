@@ -10,7 +10,7 @@ import {
   isAllowedImageContentType,
   resolveRemoteImageUrl,
 } from '@/lib/remote-image-url'
-import { fetchUrlWithResolvedCheck } from '@/lib/ssrf-guard'
+import { downloadRemoteMediaBuffer } from '@/lib/remote-media-download'
 
 export interface CacheRemoteImageResult {
   ok: boolean
@@ -30,33 +30,14 @@ export async function cacheRemoteImageToR2(
       return { ok: false as const, error: 'Invalid or unsupported image URL' }
     }
 
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 20_000)
-
     try {
-      const response = await fetchUrlWithResolvedCheck(resolved.url, {
-        method: 'GET',
-        signal: controller.signal,
-        headers: {
-          Accept: 'image/*,application/octet-stream',
-          'User-Agent': 'NeuroklastAdmin/1.0',
-        },
+      const { buffer, contentType } = await downloadRemoteMediaBuffer({
+        kind: 'image',
+        url: resolved.url,
+        timeoutMs: 20_000,
+        isAllowedContentType: isAllowedImageContentType,
+        assertSize: assertRemoteImageSize,
       })
-
-      if (!response.ok) {
-        return { ok: false as const, error: `Failed to download image (HTTP ${response.status})` }
-      }
-
-      const contentType = response.headers.get('content-type')
-      if (!isAllowedImageContentType(contentType)) {
-        return {
-          ok: false as const,
-          error: 'URL did not return an image. For Google Drive, ensure the file is shared publicly.',
-        }
-      }
-
-      const buffer = Buffer.from(await response.arrayBuffer())
-      assertRemoteImageSize(buffer.byteLength)
 
       const mimeType = contentType?.split(';')[0].trim() ?? 'image/jpeg'
       const optimized = await optimizeImageBuffer(buffer, mimeType)
@@ -89,8 +70,6 @@ export async function cacheRemoteImageToR2(
         ok: false as const,
         error: error instanceof Error ? error.message : 'Failed to cache remote image',
       }
-    } finally {
-      clearTimeout(timeout)
     }
   }, 'Unable to cache remote image.')
 
