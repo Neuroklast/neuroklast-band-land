@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { BackgroundConfigEditor } from '@/app/admin/(protected)/site-config/BackgroundConfigEditor'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
@@ -41,6 +41,12 @@ vi.mock('@/app/admin/(protected)/site-config/BackgroundMobileVideoControls', () 
   </div>,
 }))
 
+beforeAll(() => vi.stubGlobal('ResizeObserver', class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}))
+afterAll(() => vi.unstubAllGlobals())
 beforeEach(() => vi.mocked(updateSiteConfig).mockResolvedValue({ success: true }))
 afterEach(() => { cleanup(); vi.clearAllMocks() })
 
