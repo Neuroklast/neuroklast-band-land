@@ -104,7 +104,7 @@ describe('appearance quick-start controlled form', () => {
       expect(update(['circuitBreak', 'glitchScan'])).toEqual(['glitchScan'])
     }
     expect(screen.getByText(/Low section background makes text harder to read/)).toBeInTheDocument()
-    expect(screen.getByRole('slider', { name: 'Grid lines on sections' })).toHaveAttribute('data-disabled')
+    expect(ui.container.querySelector('[aria-label="Grid lines on sections"]')).toHaveAttribute('data-disabled')
   })
 })
 
