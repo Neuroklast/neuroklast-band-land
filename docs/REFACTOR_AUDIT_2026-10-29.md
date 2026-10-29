@@ -33,6 +33,12 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - The architecture audit additionally guards against new runtime CSS imports into the legacy `src/` tree.
 - The remaining legacy files are not presumed unused. Continue dependency classification before further removals.
 
+## Phase 1 progress — shared legacy utilities (2026-10-29)
+
+- Migrated two byte-identical legacy utilities to their canonical root modules: `src/lib/fetch-retry.ts` and `src/lib/contrast.ts`. The three former relative consumers in `src/lib/{odesli,itunes,color-utils}.ts` now import the existing `lib/` implementations. No retry, color or API behavior was changed.
+- Added `npm run audit:legacy` for a read-only, tracked-source inventory of **literal static import references**. Reports identical mirrors, their static importers and directly referenced legacy files. This is NOT proof of dead code: dynamically computed imports, asset paths, framework conventions and runtime string lookups require separate validation.
+- Remaining legacy files and tests are retained until cross-entrypoint usage is understood and CI/E2E coverage is available.
+
 ## Remaining staged refactor work
 
 ### Phase 1: resolve the legacy root and test boundaries
