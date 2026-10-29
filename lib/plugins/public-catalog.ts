@@ -11,14 +11,15 @@ export async function loadPublicCatalog(): Promise<PublicProduct[]> {
     const { data, error } = await supabase.rpc('plugin_public_catalog')
     if (error) return []
     const products = parsePublicCatalog(data)
-    if (!products.some(product => ['neurokore', 'neurometer'].includes(product.slug) && product.demo_downloads_enabled)) return products
-    const [neurokore, neurometer] = await Promise.all([
+    if (!products.some(product => ['neurokore', 'neurometer', 'neurosub'].includes(product.slug) && product.demo_downloads_enabled)) return products
+    const [neurokore, neurometer, neurosub] = await Promise.all([
       products.some(product => product.slug === 'neurokore' && product.demo_downloads_enabled) ? loadNeurokoreGitHubReleases() : Promise.resolve([]),
       products.some(product => product.slug === 'neurometer' && product.demo_downloads_enabled) ? loadPluginGitHubReleases('neurometer') : Promise.resolve([]),
+      products.some(product => product.slug === 'neurosub' && product.demo_downloads_enabled) ? loadPluginGitHubReleases('neurosub') : Promise.resolve([]),
     ])
     return products.map(product => {
       if (!product.demo_downloads_enabled) return product
-      const github = product.slug === 'neurokore' ? neurokore : product.slug === 'neurometer' ? neurometer : []
+      const github = product.slug === 'neurokore' ? neurokore : product.slug === 'neurometer' ? neurometer : product.slug === 'neurosub' ? neurosub : []
       return github.length ? { ...product, releases: mergePublicReleaseDownloads(latestByChannel(product.releases), github) } : product
     })
   } catch {

@@ -110,11 +110,11 @@ export async function GET(request: Request, context: RouteContext) {
     const artifacts = z.array(artifactSchema).parse(artifactsResult.data ?? [])
     const candidates = parsed.data.package ? artifacts.filter(item => item.package_type === parsed.data.package) : artifacts
     const chosen = pickArtifact(candidates, parsed.data.platform as Platform)
-    if ((product.slug === 'neurokore' || product.slug === 'neurometer') && parsed.data.platform === 'windows-x64') {
+    if ((product.slug === 'neurokore' || product.slug === 'neurometer' || product.slug === 'neurosub') && parsed.data.platform === 'windows-x64') {
       const official = product.slug === 'neurokore'
-        ? await loadNeurokoreGitHubReleases() : await loadPluginGitHubReleases('neurometer')
+        ? await loadNeurokoreGitHubReleases() : await loadPluginGitHubReleases(product.slug)
       const github = official.find(item => item.channel === channel
-        && pluginGithubArtifactUrl(product.slug as 'neurokore' | 'neurometer', item, parsed.data.platform, parsed.data.package))
+        && pluginGithubArtifactUrl(product.slug as 'neurokore' | 'neurometer' | 'neurosub' | 'neurosub', item, parsed.data.platform, parsed.data.package))
       if (github && (!chosen || !release || comparePublicReleaseVersions(github, release) > 0)) {
         const url = pluginGithubArtifactUrl(product.slug as 'neurokore' | 'neurometer', github, parsed.data.platform, parsed.data.package)
         if (url) return downloadRedirect(url)

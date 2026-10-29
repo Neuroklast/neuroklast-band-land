@@ -274,8 +274,13 @@ export default async function PluginPage({ params }: { params: Promise<{ slug: s
                 </ul>
               )}
               <div className="flex flex-col items-start gap-2">
-                <Link className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-red-400"
-                  href="/neurokore/account">Manage your licences</Link>
+                {product.slug === 'neurokore' ? (
+                  <Link className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-red-400"
+                    href="/neurokore/account">Manage your licences</Link>
+                ) : (
+                  <Link className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-red-400"
+                    href="/#contact">Licensing and account support</Link>
+                )}
                 {product.slug === 'neurokore' &&
                   <Link className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-red-400"
                     href="/neurokore/activate">Create an offline licence file</Link>}
