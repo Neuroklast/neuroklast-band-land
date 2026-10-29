@@ -1,4 +1,11 @@
 # Lessons Learned
+
+## Session: 2026-10-29 — extract stateful admin UI as controlled sections
+
+A large React editor can be reduced safely by first extracting **controlled visual sections**, not moving its form state or server action. Keep accordion default-open behavior, all Radix props, current selection styling, callback order and the exact serialized `payload` unchanged. For shared visual controls, preserve one source of markup and use interaction-focused tests. The parent remains the sole owner of the `updateSiteConfig` call, dirty tracking and live preview broadcasts. Do not run Next.js builds in GitHub Actions.
+
+---
+
 ## Session: 2026-10-29 — parse appearance storage outside the React editor
 
 The `AppearanceEditor` combined UI rendering and state with pure compatibility parsing for stored site settings. Extract the latter **without altering its default values or validation behavior**. Contract tests must pin boolean `false`, numeric `0`, legacy look aliases, custom presets and clip animation fallbacks. UI draft broadcasts, unsaved-change prompts and the `updateSiteConfig` action stay in the component. Keep the refactor separate from design changes and check non-build GitHub CI; local production build/E2E still requires the maintainer.
