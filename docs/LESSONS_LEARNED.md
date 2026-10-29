@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## Session 2026-10-29 — avoid costly GitHub build jobs
+
+Both the general CI and Lighthouse workflows contained `npm run build`, contrary to the explicit local-build-only requirement. Remove the build job and the auto-building Lighthouse workflow, then enforce the restriction with a script that scans the remaining workflows. Keep non-build tests, typechecking and security audit. A green CI means **no** GitHub production build was attempted; local build and browser/Lighthouse checks must be reported separately. Consolidate duplicated API domain contracts as pure functions with regression cases before editing route adapters.
+
+---
+
+
 ## Session: 2026-10-29 — remove exact mirrors only after dependency classification
 
 The import inventory reported 16 remaining exact `src/` mirrors with no literal importers. Each file's SHA was compared to its canonical counterpart before deleting the legacy copy. A zero-exact-mirrors regression test protects the structure, but zero literal imports does not establish runtime dead code in the presence of dynamic names, asset URLs or conventions. Other legacy modules require a separate dependency review.
