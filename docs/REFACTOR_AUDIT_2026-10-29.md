@@ -59,7 +59,14 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
 - The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
 
-## Remaining staged refactor work## Phase 2 progress — hero draft reducer and saved-config contract (2026-10-29)
+## Remaining staged refactor work## Phase 2 progress — background video controls and serialization boundary (2026-10-29)
+
+- Moved desktop and mobile background video controls into separate controlled components and shared the original Radix opacity slider; `BackgroundConfigEditor.tsx` now retains the parent settings, asset path updates, draft broadcasts and saving.
+- Centralized the two deliberately different background media representations: unsaved previews omit blank paths/URLs with `undefined`, persisted site config stores explicit `null`, and non-separate mobile video is nulled on save while preview retains the selection.
+- Added pure payload contract, React control and parent save/broadcast integration tests. No schema, auth, server action, Stripe, MCP, public animation/CSS or R2 storage changes.
+- GitHub CI remains lint/typecheck/tests/security only; no builds in GitHub Actions. Local browser/visual/Lighthouse verification remains outstanding.
+
+## Phase 2 progress — hero draft reducer and saved-config contract (2026-10-29)
 
 - Consolidated hero site-config fields in one pure `heroEditorReducer` and typed `HeroEditorDraft`, retaining default/legacy value interpretation and media URL resolution.
 - Consolidated exact serialized payload composition in `composeHeroPayload`. This preserves JSON field order for unsaved snapshots and original `powerGlitch` nested shape, separate preview-only fallback wordmark and null persisted media values.
