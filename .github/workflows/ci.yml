@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       - name: Run ESLint
         run: npm run lint
+      - name: Check architecture boundaries
+        run: npm run audit:architecture
 
   typecheck:
     name: Typecheck
