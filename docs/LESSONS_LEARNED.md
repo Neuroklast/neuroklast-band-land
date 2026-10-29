@@ -1,4 +1,10 @@
 # Lessons Learned
+## Session 2026-10-29 — centralize editor payloads without changing JSON semantics
+
+A controlled React editor can safely delegate the final visual-effects accordion, but the parent must still own all state and save/draft side effects. When extracting the form payload into a pure helper, preserve exact serialized key order (used by unsaved-change comparisons), null handling for blank media and the fallback animation when the pool is empty. Test the data mapping separately from Radix UI. jsdom requires a local ResizeObserver stub for slider component tests. GitHub workflows must remain build-free.
+
+---
+
 
 ## Session: 2026-10-29 — extract stateful admin UI as controlled sections
 
