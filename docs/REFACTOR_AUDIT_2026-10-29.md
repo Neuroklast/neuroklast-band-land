@@ -59,7 +59,15 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
 - The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
 
-## Remaining staged refactor work## Phase 2 progress — hero media controls and responsive previews (2026-10-29)
+## Remaining staged refactor work## Phase 2 progress — hero draft reducer and saved-config contract (2026-10-29)
+
+- Consolidated hero site-config fields in one pure `heroEditorReducer` and typed `HeroEditorDraft`, retaining default/legacy value interpretation and media URL resolution.
+- Consolidated exact serialized payload composition in `composeHeroPayload`. This preserves JSON field order for unsaved snapshots and original `powerGlitch` nested shape, separate preview-only fallback wordmark and null persisted media values.
+- Wordmark/background media resolve/clear/reset transitions are atomic; PowerGlitch updates merge against current state and boot toggle remains functional. Error/saving/savedSnapshot state intentionally remains outside the reducer.
+- `HeroConfigEditor.tsx` decreased from **309 to 234 lines** (previously 523 lines at the start of the staged refactor).
+- Added pure reducer tests and React parent integration tests. No public UI, CSS, commerce, auth, MCP, API or database schema changes. GitHub CI remains build-free. Manual browser E2E, local production build and Lighthouse are still outstanding.
+
+## Phase 2 progress — hero media controls and responsive previews (2026-10-29)
 
 - Extracted the wordmark upload, reset, width sliders and desktop/mobile previews into controlled `HeroWordmarkControls.tsx`; extracted the hero background overlay media picker, clear action and opacity slider into `HeroBackgroundControls.tsx`.
 - Reduced `HeroConfigEditor.tsx` from **437 to 309 lines** without changing the original parent state, draft payload object, live-preview broadcast, server-action save or post-save refresh.
