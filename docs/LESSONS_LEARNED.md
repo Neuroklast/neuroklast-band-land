@@ -1,4 +1,10 @@
 # Lessons Learned
+## Session 2026-10-29 — hero wordmark legacy widths are a storage contract
+
+The hero editor contains two independent width settings with different defaults and backward-compatibility conversion from historical max-height values. Extract the **same parsing semantics** into pure functions with regression tests before refactoring state. A long JSX controls block can be split into a controlled child without moving the parent state, draft broadcast, save action or media cleanup. Keep the exact existing PowerGlitch slider ranges and hide detail controls when mode is Off. Do not run any Next.js builds inside GitHub Actions.
+
+---
+
 ## Session: 2026-10-29 — atomically update theme state, not several React hooks
 
 A selected look modifies the theme, accent, chromatic strength, grain, vignette, CRT, scanlines and noise together. A pure reducer avoids spreading this transition across independent setters and makes invariants directly testable. Keep `useReducer` field updates typed, honor functional overlay update callbacks against the **latest** draft, and leave save-state and user input concerns outside the persisted draft. Confirm that the exact serialized payload and cross-tab preview broadcast are unchanged. Never run builds in GitHub Actions.
