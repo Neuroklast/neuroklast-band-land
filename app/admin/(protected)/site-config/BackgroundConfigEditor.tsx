@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
-import { VideoSourcePicker } from '@/app/admin/_components/VideoSourcePicker'
+import { BackgroundOpacitySlider } from './BackgroundOpacitySlider'
+import { BackgroundDesktopVideoControls } from './BackgroundDesktopVideoControls'
+import { BackgroundMobileVideoControls } from './BackgroundMobileVideoControls'
 import { resolveImageUrl } from '@/lib/r2'
 import {
   DEFAULT_BACKGROUND_VIDEO_OPACITY,
@@ -19,7 +21,6 @@ import {
   parsePublicBackgroundType,
   type PublicBackgroundType,
 } from '@/lib/public-background-types'
-import * as SliderPrimitive from '@radix-ui/react-slider'
 import * as RadioGroupPrimitive from '@radix-ui/react-radio-group'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 
@@ -27,37 +28,6 @@ interface BackgroundConfigEditorProps {
   currentValue: Record<string, unknown>
 }
 
-function OpacitySlider({
-  label,
-  value,
-  onChange,
-}: {
-  label: string
-  value: number
-  onChange: (v: number) => void
-}) {
-  return (
-    <div className="space-y-2">
-      <label className="block text-xs text-zinc-400">
-        {label}: <span className="font-mono text-zinc-300">{Math.round(value * 100)}%</span>
-      </label>
-      <SliderPrimitive.Root
-        min={0}
-        max={1}
-        step={0.05}
-        value={[value]}
-        onValueChange={([v]) => onChange(v)}
-        className="relative flex items-center w-full touch-none select-none h-5"
-        aria-label={label}
-      >
-        <SliderPrimitive.Track className="relative h-1 grow rounded-full bg-zinc-700">
-          <SliderPrimitive.Range className="absolute h-full rounded-full bg-red-500" />
-        </SliderPrimitive.Track>
-        <SliderPrimitive.Thumb className="block size-4 rounded-full border border-red-500 bg-zinc-900 shadow focus:outline-none cursor-grab" />
-      </SliderPrimitive.Root>
-    </div>
-  )
-}
 
 export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorProps) {
   const router = useRouter()
@@ -229,7 +199,7 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
         </p>
       </div>
 
-      <OpacitySlider
+      <BackgroundOpacitySlider
         label="Background image opacity"
         value={backgroundImageOpacity}
         onChange={setBackgroundImageOpacity}
@@ -255,124 +225,44 @@ export function BackgroundConfigEditor({ currentValue }: BackgroundConfigEditorP
         onError={setErrorMsg}
       />
 
-      <div className="space-y-4 pt-2 border-t border-zinc-800">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Desktop video</p>
-            <p className="text-xs text-zinc-500 mt-1">
-              Upload MP4, MOV or WebM. Videos are automatically converted to fast-seeking MP4 for scroll scrubbing.
-              Use the switch to turn video off without deleting the file.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setBackgroundVideoEnabled((v) => !v)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-              backgroundVideoEnabled ? 'bg-red-600' : 'bg-zinc-700'
-            }`}
-            role="switch"
-            aria-checked={backgroundVideoEnabled}
-            aria-label="Enable background video"
-          >
-            <span
-              className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${
-                backgroundVideoEnabled ? 'translate-x-5' : 'translate-x-0'
-              }`}
-            />
-          </button>
-        </div>
-        <p className="text-xs font-mono text-zinc-400">
-          Background video: {backgroundVideoEnabled ? 'ON' : 'OFF'}
-        </p>
+      <BackgroundDesktopVideoControls
+        backgroundVideoEnabled={backgroundVideoEnabled}
+        videoUrl={videoUrl}
+        videoStoragePath={videoStoragePath}
+        backgroundVideoOpacity={backgroundVideoOpacity}
+        onToggleEnabled={() => setBackgroundVideoEnabled((v) => !v)}
+        onResolved={(path, publicUrl) => {
+          setVideoStoragePath(path)
+          if (publicUrl) setVideoUrl(publicUrl)
+          setBackgroundVideoEnabled(true)
+          setErrorMsg(null)
+        }}
+        onCleared={() => {
+          setVideoStoragePath('')
+          setVideoUrl('')
+          setErrorMsg(null)
+        }}
+        onOpacityChange={setBackgroundVideoOpacity}
+        onError={setErrorMsg}
+      />
 
-        <VideoSourcePicker
-          label="Desktop video (optional)"
-          currentUrl={videoUrl || null}
-          currentStoragePath={videoStoragePath || null}
-          storagePrefix="background/videos"
-          scrubVariant="desktop"
-          onResolved={(path, publicUrl) => {
-            setVideoStoragePath(path)
-            if (publicUrl) setVideoUrl(publicUrl)
-            setBackgroundVideoEnabled(true)
-            setErrorMsg(null)
-          }}
-          onCleared={() => {
-            setVideoStoragePath('')
-            setVideoUrl('')
-            setErrorMsg(null)
-          }}
-          onError={setErrorMsg}
-        />
-
-        {backgroundVideoEnabled ? (
-          <OpacitySlider
-            label="Video opacity"
-            value={backgroundVideoOpacity}
-            onChange={setBackgroundVideoOpacity}
-          />
-        ) : (
-          <p className="text-xs text-zinc-500">
-            Video is off. Opacity is ignored until you turn video back on.
-          </p>
-        )}
-      </div>
-
-      <div className="space-y-3 pt-2 border-t border-zinc-800">
-        <div>
-          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">Mobile video</p>
-          <p className="text-xs text-zinc-500 mt-1">
-            Phones and small tablets. Separate video saves bandwidth; &quot;No video&quot; skips video
-            and uses the background image as fallback (desktop video can stay on).
-          </p>
-        </div>
-        <RadioGroupPrimitive.Root
-          value={mobileVideoMode}
-          onValueChange={(v) => setMobileVideoMode(v as MobileVideoMode)}
-          className="space-y-2"
-        >
-          {(
-            [
-              { value: 'same', label: 'Same as desktop' },
-              { value: 'separate', label: 'Different video' },
-              { value: 'off', label: 'No video on mobile (use image)' },
-            ] as const
-          ).map(({ value, label }) => (
-            <label key={value} className="flex items-center gap-2 cursor-pointer">
-              <RadioGroupPrimitive.Item
-                value={value}
-                className="size-4 rounded-full border border-zinc-600 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500/20 focus:outline-none"
-              >
-                <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-                  <span className="block size-2 rounded-full bg-red-500" />
-                </RadioGroupPrimitive.Indicator>
-              </RadioGroupPrimitive.Item>
-              <span className="text-xs text-zinc-300">{label}</span>
-            </label>
-          ))}
-        </RadioGroupPrimitive.Root>
-
-        {mobileVideoMode === 'separate' && (
-          <VideoSourcePicker
-            label="Mobile video"
-            currentUrl={mobileVideoUrl || null}
-            currentStoragePath={mobileVideoStoragePath || null}
-            storagePrefix="background/videos/mobile"
-            scrubVariant="mobile"
-            onResolved={(path, publicUrl) => {
-              setMobileVideoStoragePath(path)
-              if (publicUrl) setMobileVideoUrl(publicUrl)
-              setErrorMsg(null)
-            }}
-            onCleared={() => {
-              setMobileVideoStoragePath('')
-              setMobileVideoUrl('')
-              setErrorMsg(null)
-            }}
-            onError={setErrorMsg}
-          />
-        )}
-      </div>
+      <BackgroundMobileVideoControls
+        mobileVideoMode={mobileVideoMode}
+        mobileVideoUrl={mobileVideoUrl}
+        mobileVideoStoragePath={mobileVideoStoragePath}
+        onModeChange={setMobileVideoMode}
+        onResolved={(path, publicUrl) => {
+          setMobileVideoStoragePath(path)
+          if (publicUrl) setMobileVideoUrl(publicUrl)
+          setErrorMsg(null)
+        }}
+        onCleared={() => {
+          setMobileVideoStoragePath('')
+          setMobileVideoUrl('')
+          setErrorMsg(null)
+        }}
+        onError={setErrorMsg}
+      />
 
       <div className="flex items-center gap-3 pt-1">
         <button
