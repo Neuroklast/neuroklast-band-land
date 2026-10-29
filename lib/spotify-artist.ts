@@ -22,6 +22,16 @@ export function resolveSpotifyArtistUri(
 const SPOTIFY_EMBED_URI =
   /^spotify:(artist|album|track|playlist|episode|show):([A-Za-z0-9]+)$/i
 
+/**
+ * Artist embeds render as a compact 152px player. A 352px iframe leaves a
+ * non-interactive black area beneath it, so size the host to the actual UI.
+ * Spotify collections retain their full-height 352px player.
+ */
+export function spotifyEmbedHeight(uri: string): number {
+  const match = SPOTIFY_EMBED_URI.exec(uri.trim())
+  return match?.[1]?.toLowerCase() === 'artist' ? 152 : 352
+}
+
 /** Static embed URL. Do not use the Spotify iframe-api script — it eval()s and fails production CSP. */
 export function spotifyEmbedUrl(uri: string, theme: '0' | '1' = '0'): string | null {
   const match = SPOTIFY_EMBED_URI.exec(uri.trim())
