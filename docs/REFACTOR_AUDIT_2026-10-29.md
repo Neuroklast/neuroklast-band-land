@@ -16,7 +16,7 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 | `src/` files with a matching filename outside `src/` | 106 |
 | Groups of files with byte-identical Git blobs | 25 |
 
-**Important:** matching names do **not** imply identical functionality. Some legacy modules have diverged, and tests under `src/test` are still executed by Vitest. `app/globals.css` directly imports `src/animations.css`. `src/` is excluded from application TypeScript checks and ESLint, not from test execution or asset references. Do not delete or re-export it wholesale.
+**Important:** matching names do **not** imply identical functionality. Some legacy modules have diverged, and tests under `src/test` are still executed by Vitest. `app/globals.css` previously imported `src/animations.css`, now moved byte-for-byte to `styles/animations.css`. The legacy `src/index.css` entrypoint and affected overlay test now resolve the canonical stylesheet. `src/` is excluded from application TypeScript checks and ESLint, not from test execution or asset references. Do not delete or re-export it wholesale.
 
 `npm run audit:architecture` produces a current read-only inventory and fails if runtime JS/TS imports legacy `src/` modules directly. The exception for legacy CSS is intentional. A `--json` invocation emits machine-readable counts. Byte duplicates are candidates for inspection, **not** automatic deletion.
 
@@ -26,6 +26,12 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 2. Shared SSRF-guarded media download transport for remote image/video imports, with existing authorization, MIME allowlists, per-media limits, image optimization and R2 storage left intact. Tests cover headers, errors, limits and timeouts.
 3. Shared optimistic visibility button for six protected admin lists; all domain actions retain their own authorization and invalidation behavior. Tests cover state changes and rollback.
 4. A read-only legacy inventory and CI guard against new runtime JS/TS dependencies on `src/`.
+
+## Phase 1 progress (2026-10-29)
+
+- Moved the live 40 KB animation stylesheet from `src/animations.css` to `styles/animations.css`, preserving its Git blob SHA and updating all known imports/tests. The legacy stylesheet entrypoint remains compatible without a second copy.
+- The architecture audit additionally guards against new runtime CSS imports into the legacy `src/` tree.
+- The remaining legacy files are not presumed unused. Continue dependency classification before further removals.
 
 ## Remaining staged refactor work
 
