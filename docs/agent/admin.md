@@ -1,4 +1,10 @@
 # Admin Patterns
+## Hero wordmark glitch controls and width migration (2026-10-29)
+
+`app/admin/(protected)/site-config/HeroConfigEditor.tsx` retains the hero form's state, `draftPayload`, unsaved-change snapshot, live preview broadcasts, `updateSiteConfig` server action and post-save refresh. Its PowerGlitch controls (mode Off/Hover/Always, duration, slice count, four checkboxes) now live in the controlled `HeroGlitchControls.tsx`. Existing labels, slider ranges, initial conditional visibility and CSS classes are intentionally unchanged. Callbacks only update parent state and never perform mutations themselves.
+
+The pure `lib/hero-logo-widths.ts` exports `parseHeroDesktopLogoWidth` / `parseHeroMobileLogoWidth` and pins the legacy percentage/REM precedence and rounding/clamp behavior. Desktop default remains 55%, mobile 90%; do not merge the widths or discard legacy `logoMaxHeightRem` / `logoMaxHeight` conversion. Tests: `lib/hero-logo-widths.test.ts` and `src/test/hero-glitch-controls.test.tsx`. This is a behavior-preserving structural change only.
+
 ## Appearance editor atomic draft state (2026-10-29)
 
 The editor owns one `useReducer(appearanceDraftReducer, init, createAppearanceDraft)` draft instead of fragmented per-field React state. The pure transitions in `lib/admin-appearance-reducer.ts` support individual `patch` changes, functional overlay animation updates, look/preset selection, readable surface defaults, theme field changes and deduplicated custom presets. A look switch updates the entire public-preview draft atomically rather than scheduling eight independent state setters.
