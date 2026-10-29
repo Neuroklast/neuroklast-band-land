@@ -1,4 +1,11 @@
 # QA checklist
+## Appearance editor extraction (2026-10-29)
+
+- [ ] Verify `/admin/site-config` appearance controls load persisted and absent/default values identically. Preserve the default classic look, surface opacity values, favicon, font settings and saved custom themes.
+- [ ] Test stored `false` and `0` sliders, legacy `zardonic-industrial` look mapping and overlay animation pool selection. The site preview should continue broadcasting draft settings before save.
+- [ ] Verify unsaved changes, save error handling, success refresh and unchanged `updateSiteConfig` mutation. Compare the public appearance and mobile/desktop after saving.
+- [ ] Run lint, typecheck, tests and security checks through build-free GitHub CI; production build, E2E and Lighthouse remain local-only maintainer checks.
+
 
 ## Sitemap refactor regression (2026-10-29)
 

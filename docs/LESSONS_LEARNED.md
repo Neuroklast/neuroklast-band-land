@@ -1,4 +1,10 @@
 # Lessons Learned
+## Session: 2026-10-29 — parse appearance storage outside the React editor
+
+The `AppearanceEditor` combined UI rendering and state with pure compatibility parsing for stored site settings. Extract the latter **without altering its default values or validation behavior**. Contract tests must pin boolean `false`, numeric `0`, legacy look aliases, custom presets and clip animation fallbacks. UI draft broadcasts, unsaved-change prompts and the `updateSiteConfig` action stay in the component. Keep the refactor separate from design changes and check non-build GitHub CI; local production build/E2E still requires the maintainer.
+
+---
+
 
 ## Session: 2026-10-29 — extract pure sitemap mapping without changing ISR
 

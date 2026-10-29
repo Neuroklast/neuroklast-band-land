@@ -1,4 +1,8 @@
 # Admin Patterns
+## Appearance editor storage boundary (2026-10-29)
+
+The appearance admin screen at `app/admin/(protected)/site-config/AppearanceEditor.tsx` renders the controls, tracks unsaved changes, broadcasts preview drafts and invokes the unchanged `updateSiteConfig` server action. Its persisted storage defaults and theme/overlay parsing now live in the pure `lib/admin-appearance-config.ts` module; use `parseConfig()` when initializing the editor. Preserve all previously accepted fields, defaults, user presets, the `zardonic-industrial` legacy look alias and fallback clip animation pool. `lib/admin-appearance-config.test.ts` verifies backwards compatibility. **Do not** add Supabase writes, revalidation or browser side effects to the pure parser.
+
 
 ## Shared admin visibility and remote media imports (2026-10-29)
 
