@@ -4,6 +4,12 @@ This file captures technical decisions, pitfalls, and actionable lessons from ea
 
 ---
 
+## Session: 2026-10-29 — refactor by contracts, not filenames
+
+`src/` contains 486 files, including 216 tests and a CSS file imported by the live app. 106 files have a same-named root counterpart, but many have diverged. A filename overlap or identical blob is not evidence that a file can be removed. Preserve known entrypoints and server-action permissions, add behavior-parity tests before consolidating implementations, and keep legacy discovery as a read-only audit until a dependency graph and UI tests prove removal safe. See `docs/REFACTOR_AUDIT_2026-10-29.md`.
+
+---
+
 ## Session: 2026-10-28 — OAuth MFA assurance does not propagate to tokens
 
 Supabase creates a distinct OAuth session with AAL1 when the browser's admin consent session is AAL2. Requiring JWT `aal2` on the MCP API guarantees 403 `action discovery failed` even after successful OAuth. Keep MFA as a verified condition of the server-side approval and record a private, expiring user/client attestation. MCP bearer requests must verify both the genuine `auth.sessions.oauth_client_id` and nonrevoked `auth.oauth_consents` using a service-role-only function. Never silently accept arbitrary AAL1 tokens and never grant a client access merely because it is in the allowlist. Existing already-approved clients need a secure admin MFA re-attestation path.
