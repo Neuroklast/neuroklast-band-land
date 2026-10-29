@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## Session: 2026-10-29 — separate exact duplication from static reachability
+
+A duplicate Git blob is safe to consolidate only after updating every known importer to the canonical implementation. `src/lib/fetch-retry.ts` and `src/lib/contrast.ts` were identical to root counterparts but still used by legacy relative imports. Preserve behavior by changing those imports first. For remaining modules, `npm run audit:legacy` gives **static import evidence**, not authorization to delete files with zero static importers; assets and dynamic resolution can escape that graph.
+
+---
+
 This file captures technical decisions, pitfalls, and actionable lessons from each development session. Future agents and developers should read this before starting a new session.
 
 ---
