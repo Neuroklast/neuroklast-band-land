@@ -1,4 +1,10 @@
 # Admin Patterns
+## Hero media controls and preview boundary (2026-10-29)
+
+The hero form now delegates **wordmark upload, desktop/mobile width sliders and responsive previews** to `app/admin/(protected)/site-config/HeroWordmarkControls.tsx`. The separate `HeroBackgroundControls.tsx` owns only the visual markup for the hero background picker and opacity slider. Both are controlled children: media resolution, clearing, errors, upload state, serialized draft and saving remain owned by `HeroConfigEditor.tsx`.
+
+Preserved storage contract: empty media URL/path values save as `null`; the *broadcast preview only* substitutes `DEFAULT_HERO_LOGO_URL` for a missing logo, while the DB payload stores no substitute URL. The wordmark picker is still `hero/logo`, contain, max 4096px. The hero overlay picker is still `hero/background`, 16:9, cover. Preserve both responsive preview rail CSS, image width percentages, reset visibility and exact callback behavior (a path-only resolution does not overwrite the existing URL). The parent still controls `updateSiteConfig`, `useUnsavedChanges`, `broadcastAdminDraft`, status and refresh. Regression tests: `src/test/hero-wordmark-controls.test.tsx`, `src/test/hero-background-controls.test.tsx`, `src/test/hero-editor-media-integration.test.tsx`. No server-side authorization or R2 cleanup belongs in the child components.
+
 ## Hero wordmark glitch controls and width migration (2026-10-29)
 
 `app/admin/(protected)/site-config/HeroConfigEditor.tsx` retains the hero form's state, `draftPayload`, unsaved-change snapshot, live preview broadcasts, `updateSiteConfig` server action and post-save refresh. Its PowerGlitch controls (mode Off/Hover/Always, duration, slice count, four checkboxes) now live in the controlled `HeroGlitchControls.tsx`. Existing labels, slider ranges, initial conditional visibility and CSS classes are intentionally unchanged. Callbacks only update parent state and never perform mutations themselves.
