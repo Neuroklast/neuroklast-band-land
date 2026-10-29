@@ -6,6 +6,7 @@ import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { AppearanceColorsFonts } from './AppearanceColorsFonts'
 import { AppearanceQuickStart } from './AppearanceQuickStart'
 import { AppearanceVisualEffects } from './AppearanceVisualEffects'
+import { composeAppearancePayload } from '@/lib/admin-appearance-payload'
 import { resolveImageUrl } from '@/lib/r2'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { type AppearanceTheme, type SavedAppearancePreset } from '@/lib/appearance-presets'
@@ -56,7 +57,7 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
   const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(init))
 
   const payload = useMemo<AppearanceConfig>(
-    () => ({
+    () => composeAppearancePayload({
       crtEnabled,
       scanlineEnabled,
       noiseEnabled,
@@ -70,12 +71,11 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
       sectionPanelOpacity,
       sectionGridOpacity,
       cardSurfaceOpacity,
-      faviconUrl: faviconUrl || null,
-      faviconStoragePath: faviconStoragePath || null,
+      faviconUrl,
+      faviconStoragePath,
       theme,
       lookId,
       overlayAnimations,
-      overlayAnimation: overlayAnimations[0] ?? DEFAULTS.overlayAnimation,
       savedPresets,
     }),
     [
