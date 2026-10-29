@@ -21,18 +21,18 @@ src/themes/
 │   └── styles.css
 ├── glitch-noir/              # Free minimal dark techno theme
 │   ├── index.ts
-│   ├── Hero.tsx
-│   └── styles.css
+│   └── Hero.tsx
 ├── neuroklast-industrial/      # Exclusive industrial cyberpunk theme
 │   ├── index.ts
-│   ├── Navigation.tsx
-│   └── styles.css
+│   └── Navigation.tsx
 ├── umbrella-corp/            # Exclusive corporate horror theme
 │   └── index.ts
 └── README.md                 # This file
 ```
 
 ---
+
+For the legacy `glitch-noir`, `neuroklast-industrial` and `umbrella-corp` entrypoints, the stylesheet is shared with the canonical root `themes/<theme>/styles.css`. Do not copy it back into `src/themes/`. The legacy `neuroklast-classic` stylesheet remains separate until its dependencies have been reviewed.
 
 ## Theme Types
 
