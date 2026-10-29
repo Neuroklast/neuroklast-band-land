@@ -7,6 +7,7 @@ import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { DEFAULT_HERO_LOGO_URL } from '@/lib/hero-defaults'
 import { resolveImageUrl } from '@/lib/r2'
+import { parseHeroDesktopLogoWidth, parseHeroMobileLogoWidth } from '@/lib/hero-logo-widths'
 import * as SliderPrimitive from '@radix-ui/react-slider'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import {
@@ -58,33 +59,13 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
   const [glitchHue, setGlitchHue] = useState(initialGlitch.hueRotate)
   const [glitchPulse, setGlitchPulse] = useState(initialGlitch.pulse)
   const [glitchContinuous, setGlitchContinuous] = useState(initialGlitch.continuous)
-  const clampW = (n: number) => Math.min(100, Math.max(15, Math.round(n)))
-  /** Desktop wordmark width as % of content column (15–100). Height follows aspect ratio. */
-  const [logoWidthPercent, setLogoWidthPercent] = useState<number>(() => {
-    if (typeof currentValue.logoWidthPercent === 'number' && Number.isFinite(currentValue.logoWidthPercent)) {
-      return clampW(currentValue.logoWidthPercent)
-    }
-    // Legacy height-rem → approximate width %
-    if (typeof currentValue.logoMaxHeightRem === 'number' && Number.isFinite(currentValue.logoMaxHeightRem)) {
-      return clampW((currentValue.logoMaxHeightRem / 48) * 100)
-    }
-    if (typeof currentValue.logoMaxHeight === 'string') {
-      const m = currentValue.logoMaxHeight.match(/^([\d.]+)\s*rem$/i)
-      if (m) return clampW((Number(m[1]) / 48) * 100)
-    }
-    return 55
-  })
-  /** Mobile wordmark width — separate because desktop % looks tiny on a phone column. */
-  const [logoWidthPercentMobile, setLogoWidthPercentMobile] = useState<number>(() => {
-    if (
-      typeof currentValue.logoWidthPercentMobile === 'number' &&
-      Number.isFinite(currentValue.logoWidthPercentMobile)
-    ) {
-      return clampW(currentValue.logoWidthPercentMobile)
-    }
-    // Sensible first paint: nearly full content width on phones (matches original wordmark feel).
-    return 90
-  })
+  /** Desktop and mobile hero widths keep their original persisted defaults. */
+  const [logoWidthPercent, setLogoWidthPercent] = useState<number>(() =>
+    parseHeroDesktopLogoWidth(currentValue),
+  )
+  const [logoWidthPercentMobile, setLogoWidthPercentMobile] = useState<number>(() =>
+    parseHeroMobileLogoWidth(currentValue),
+  )
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [savedSnapshot, setSavedSnapshot] = useState('')
