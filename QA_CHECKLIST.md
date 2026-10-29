@@ -4,6 +4,9 @@
 
 ## Refactor regression checks (2026-10-29)
 
+- [ ] Verify legacy iTunes/Odesli HTTP 429 retry behavior and browser color conversions after deduplicating `src/lib/fetch-retry.ts` and `src/lib/contrast.ts`. Ensure no new runtime dependency on `src/` is introduced.
+- [ ] Run `npm run audit:legacy` and confirm it only inventories tracked imports and does not auto-delete modules; review dynamically resolved code and asset dependencies separately.
+
 - [ ] Verify the public glitch animations, overlay transitions, keyframes, mobile effects and reduced-motion rules after migrating `src/animations.css` byte-for-byte to `styles/animations.css`. The legacy stylesheet entrypoint and the public site must import the same canonical file.
 - [ ] MCP protected-resource discovery responds identically on `/.well-known/oauth-protected-resource/api/mcp` and `/.well-known/oauth-protected-resource/mcp`, with 503 when unconfigured, no-store cache and no anonymous content access.
 - [ ] Admin gallery, media, member, partner, product and release visibility buttons preserve their labels, hover styles and saved visibility. Fail the update and confirm the optimistic label reverts.

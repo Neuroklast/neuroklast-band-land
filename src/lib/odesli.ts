@@ -1,4 +1,4 @@
-import { fetchWithRetry } from './fetch-retry'
+import { fetchWithRetry } from '@/lib/fetch-retry'
 
 interface OdesliPlatformLink {
   url: string

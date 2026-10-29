@@ -19,7 +19,7 @@ Next.js App Router (public + admin), Supabase (`site_config`, content tables, au
 
 ## Safe legacy migration boundary (2026-10-29)
 
-The `src/` tree still includes Vitest tests and legacy modules. The live animation stylesheet now lives at `styles/animations.css`, used by `app/globals.css` and the legacy `src/index.css` bridge. Do not treat the remaining tree as unused. Use `npm run audit:architecture` (read-only) to inventory byte-identical duplicates and reject new runtime TS/JS imports into `src/`. See `docs/REFACTOR_AUDIT_2026-10-29.md` for the staged migration plan. Do not bulk-remove mirrored files.
+The `src/` tree still includes Vitest tests and legacy modules. The live animation stylesheet now lives at `styles/animations.css`, used by `app/globals.css` and the legacy `src/index.css` bridge. Do not treat the remaining tree as unused. Use `npm run audit:architecture` (read-only) to inventory byte-identical duplicates and reject new runtime TS/JS imports into `src/`. See `docs/REFACTOR_AUDIT_2026-10-29.md` for the staged migration plan. Do not bulk-remove mirrored files. `npm run audit:legacy` reports literal static importers for identical source mirrors; results are advisory and never trigger deletion. The canonical `lib/fetch-retry.ts` and `lib/contrast.ts` are shared by retained legacy consumers.
 
 Root-level `components/`, `hooks/`, `contexts/`, `layouts/`, `lib/`, `cms/`, `app/` are canonical `@/*` targets. Mirror `src/` only where migration bridge requires it.
 

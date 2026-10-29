@@ -5,7 +5,7 @@
  * Previously duplicated in ThemeCustomizerDialog and SetupWizard.
  */
 
-import { cssColorToRgb } from './contrast'
+import { cssColorToRgb } from '@/lib/contrast'
 
 /**
  * Convert any CSS color value (oklch, hsl, rgb, named, …) to a hex string.
