@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { AppearanceColorsFonts } from './AppearanceColorsFonts'
 import { AppearanceQuickStart } from './AppearanceQuickStart'
-import { AppearanceOpacitySlider } from './AppearanceOpacitySlider'
-import { AdminAccordion } from '@/app/admin/_components/AdminAccordion'
+import { AppearanceVisualEffects } from './AppearanceVisualEffects'
 import { resolveImageUrl } from '@/lib/r2'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { type AppearanceTheme, type SavedAppearancePreset } from '@/lib/appearance-presets'
@@ -19,7 +18,6 @@ import {
 } from '@/lib/admin-appearance-config'
 import { oklchToHex } from '@/lib/color-utils'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
-import * as SwitchPrimitive from '@radix-ui/react-switch'
 
 interface AppearanceEditorProps {
   currentValue: Record<string, unknown>
@@ -203,47 +201,24 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
         onError={setErrorMsg}
       />
 
-      <AdminAccordion title="Visual effects" description="CRT overlay, scanlines and intensity">
-        {[
-          { label: 'CRT overlay & vignette', checked: crtEnabled, onChange: setCrtEnabled },
-          { label: 'Scanlines', checked: scanlineEnabled, onChange: setScanlineEnabled },
-          { label: 'Noise / grain', checked: noiseEnabled, onChange: setNoiseEnabled },
-          { label: 'Glitch', checked: glitchEnabled, onChange: setGlitchEnabled },
-          { label: 'Film grain pattern (denser)', checked: filmGrain, onChange: setFilmGrain },
-        ].map(({ label, checked, onChange }) => (
-          <div key={label} className="flex items-center justify-between">
-            <span className="text-xs text-zinc-300">{label}</span>
-            <SwitchPrimitive.Root
-              checked={checked}
-              onCheckedChange={onChange}
-              className="relative inline-flex h-5 w-9 items-center rounded-full border border-zinc-600 transition-colors data-[state=checked]:bg-red-600 data-[state=unchecked]:bg-zinc-700"
-            >
-              <SwitchPrimitive.Thumb className="pointer-events-none block size-3.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0.5" />
-            </SwitchPrimitive.Root>
-          </div>
-        ))}
-
-        <div className="space-y-4 pt-2 border-t border-zinc-800">
-          <AppearanceOpacitySlider
-            label="Noise grain intensity"
-            value={noiseIntensity}
-            onChange={setNoiseIntensity}
-            description="Strength of the full-page grain overlay (only when Noise is on)."
-          />
-          <AppearanceOpacitySlider
-            label="Vignette (dark edges)"
-            value={vignetteOpacity}
-            onChange={setVignetteOpacity}
-            description="Darkening around the screen edges."
-          />
-          <AppearanceOpacitySlider
-            label="Chromatic aberration"
-            value={chromaticStrength}
-            onChange={setChromaticStrength}
-            description="Full-page RGB fringe + stronger hover fringing. 0 = off, 1 = strong."
-          />
-        </div>
-      </AdminAccordion>
+      <AppearanceVisualEffects
+        crtEnabled={crtEnabled}
+        scanlineEnabled={scanlineEnabled}
+        noiseEnabled={noiseEnabled}
+        glitchEnabled={glitchEnabled}
+        filmGrain={filmGrain}
+        noiseIntensity={noiseIntensity}
+        vignetteOpacity={vignetteOpacity}
+        chromaticStrength={chromaticStrength}
+        onCrtEnabledChange={setCrtEnabled}
+        onScanlineEnabledChange={setScanlineEnabled}
+        onNoiseEnabledChange={setNoiseEnabled}
+        onGlitchEnabledChange={setGlitchEnabled}
+        onFilmGrainChange={setFilmGrain}
+        onNoiseIntensityChange={setNoiseIntensity}
+        onVignetteOpacityChange={setVignetteOpacity}
+        onChromaticStrengthChange={setChromaticStrength}
+      />
 
       <div className="flex items-center gap-3 pt-2">
         <button
