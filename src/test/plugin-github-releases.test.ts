@@ -7,7 +7,7 @@ function release(version = '0.9.0-beta.1', id = 123) {
   const names = [`NEUROKORE-${version}-Setup.exe`, `NEUROKORE-${version}-win64.zip`]
   return { id, tag_name: tag, draft: false, prerelease: version.includes('-'), published_at: '2026-10-26T12:00:00Z', body: 'Release notes',
     assets: names.flatMap(name => [name, `${name}.sha256`]).map(name => ({ name, size: 200000, state: 'uploaded', digest: `sha256:${'a'.repeat(64)}`,
-      browser_download_url: `https://github.com/Neuroklast/NeuroCore/releases/download/${tag}/${name}` })) }
+      browser_download_url: `https://github.com/Neuroklast/NeuroKore-Releases/releases/download/${tag}/${name}` })) }
 }
 
 describe('automatic NEUROKORE website releases', () => {
