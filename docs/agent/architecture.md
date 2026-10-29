@@ -116,7 +116,7 @@ Schema: `releases.tracks`, `tracks_source`, `last_enriched_at`, `manually_edited
 
 ## Sitemap
 
-`/sitemap.xml` is a rewrite to `app/api/sitemap/route.ts` (`next.config.mjs` + `vercel.json`). It lists `/`, `/releases`, `/gigs`, `/media`, legal routes, and published news. **Never** add `public/sitemap.xml` — a static file shadows the rewrite.
+`/sitemap.xml` is a rewrite to `app/api/sitemap/route.ts` (`next.config.mjs` + `vercel.json`). The route adapter owns the cookie-less public Supabase reads (active records only), existing limits and ordering, parallel fetches, response caching and `revalidate = 300`. Pure XML escaping, static and localized legal URLs, news/gig/plugin/soundpack URL mapping live in `lib/sitemap-entries.ts`. Gig entries reuse the public `buildGigSlugMap`; no event date should be emitted as `lastmod`. Keep the order **static → legal → plugins → soundpacks → gigs → news** and retain the existing XML and cache headers. Unit tests: `lib/sitemap-entries.test.ts` and `lib/sitemap-route-contract.test.ts`. **Never** add `public/sitemap.xml` — a static file shadows the rewrite.
 
 ## Legal pages
 
