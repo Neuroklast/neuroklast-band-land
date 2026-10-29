@@ -2,14 +2,8 @@ import { createAdminClient } from '@/lib/supabaseAdmin'
 import type { CatalogueImportItem } from '@/lib/catalogue-import'
 import type { BandsintownGigRow } from '@/lib/bandsintown-sync'
 
-export type SyncJobType =
-  | 'discogs_sync'
-  | 'spotify_sync'
-  | 'itunes_sync'
-  | 'track_enrichment'
-  | 'bandsintown_sync'
-  | 'purge_and_sync_releases'
-  | 'purge_and_sync_gigs'
+import type { SyncJobType } from '@/lib/sync-job-types'
+export type { SyncJobType } from '@/lib/sync-job-types'
 
 export type SyncJobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
 
