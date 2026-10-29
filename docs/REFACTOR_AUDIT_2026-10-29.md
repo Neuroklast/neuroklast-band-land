@@ -59,7 +59,15 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
 - The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
 
-## Remaining staged refactor work## Phase 2 progress — controlled visual effects and appearance draft composition (2026-10-29)
+## Remaining staged refactor work## Phase 2 progress — appearance reducer and integration regression (2026-10-29)
+
+- Consolidated persisted appearance fields into one typed `AppearanceEditorDraft` state with a pure reducer. Look and theme updates are atomic. Functional overlay toggles are evaluated against the latest reducer state, preserving the existing child component API and queued interaction semantics.
+- Kept the old initialization from `parseConfig`, `resolveImageUrl`, `DEFAULTS`, and `DEFAULT_THEME`; kept `composeAppearancePayload` and existing JSON serialization, live-preview draft broadcast, dirty snapshot comparison and `updateSiteConfig` server action.
+- Preset name, save status/error and saved snapshot are transient UI state, intentionally outside the reducer.
+- Added pure transition tests and mocked-child integration tests for look changes, live draft parity with saved payload, presets, CRT toggle and save errors.
+- No authentication, commerce, schema, CSS or public UI changes. GitHub CI remains build-free; local build/Playwright/Lighthouse have not been performed in this refactor.
+
+## Phase 2 progress — controlled visual effects and appearance draft composition (2026-10-29)
 
 - Extracted the remaining Visual effects accordion from `AppearanceEditor.tsx` into `AppearanceVisualEffects.tsx`, retaining all five switches, three sliders, current labels/appearance, and controlled parent state.
 - Moved the exact serialized appearance payload assembly into pure `lib/admin-appearance-payload.ts`. It preserves field ordering, media URL/path null handling, selected animation and legacy fallback without changing `updateSiteConfig` or live preview.
