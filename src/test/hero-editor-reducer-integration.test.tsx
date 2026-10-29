@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { HeroConfigEditor } from '@/app/admin/(protected)/site-config/HeroConfigEditor'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { broadcastAdminDraft, broadcastAdminRefresh } from '@/lib/admin-draft-channel'
+import { DEFAULT_HERO_LOGO_URL } from '@/lib/hero-defaults'
 
 const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
@@ -63,6 +64,8 @@ describe('hero reducer parent integration', () => {
     expect(saved.logoImageUrl).toBeNull()
     expect(vi.mocked(broadcastAdminDraft).mock.lastCall?.[1]).toMatchObject({
       ...saved,
+      // The public draft has a preview fallback; the saved JSON must keep null.
+      logoImageUrl: DEFAULT_HERO_LOGO_URL,
     })
     await waitFor(() => expect(broadcastAdminRefresh).toHaveBeenCalledOnce())
     expect(refresh).toHaveBeenCalledOnce()
