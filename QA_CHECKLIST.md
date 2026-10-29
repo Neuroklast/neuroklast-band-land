@@ -1,5 +1,14 @@
 # QA checklist
 
+## Sitemap refactor regression (2026-10-29)
+
+- [ ] `/sitemap.xml` and `/api/sitemap` return well-formed XML, retain the correct content type and `Cache-Control: public, max-age=300, s-maxage=300`, and refresh with 300-second ISR.
+- [ ] Static and DE/EN legal URLs remain ordered as before, with booking/news index entries present and no unpublished legal locales.
+- [ ] Only active news, gigs, plugin products and soundpacks appear. Plugin kind and slug validation, UUID-format soundpack IDs and encoded news slugs remain unchanged. Event date is never used for `lastmod`; the last modification timestamp of news is used when available.
+- [ ] Failure of one public Supabase table query leaves the other sitemap sections intact; confirm no login cookies are needed for sitemap reads.
+- [ ] Run `npm run lint`, `npm run typecheck`, and `npm run test` via non-build GitHub CI; production build and Lighthouse remain **local only**.
+
+
 ## Local-only build and sync-job contract (2026-10-29)
 
 - [ ] Verify `.github/workflows/ci.yml` has no build job, the former auto-building Lighthouse workflow is absent, and `npm run check:github-builds` passes. All Next.js and Lighthouse builds must run locally, never in GitHub Actions.

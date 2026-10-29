@@ -52,6 +52,13 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Removed Next.js builds from GitHub Actions CI and removed the auto-building Lighthouse workflow. Added `npm run check:github-builds`, enforced in CI, to prevent reintroduction. GitHub still runs lint, tests, typecheck and security audit. Production build and Lighthouse are **local maintainer tasks**; Vercel Production deployment from `main` remains an independent platform step.
 - **Verification limitation:** without access to the maintainer's local build environment, a green GitHub test/typecheck does not establish local build, Lighthouse or manual E2E success.
 
+## Phase 2 progress — public sitemap adapter separation (2026-10-29)
+
+- Extracted exact XML serialization (escaping, headers and element order), static and localized legal entries and pure mapping functions for news, gigs, plugins and soundpacks to `lib/sitemap-entries.ts`. `app/api/sitemap/route.ts` now only queries public Supabase and composes the XML response.
+- Kept the site origin, all existing public URL paths including booking/news, status filters (`active=true`, plugins `kind=plugin`), query limits, ISR revalidation, browser/cache response headers and per-domain failure isolation unchanged.
+- Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
+- The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
+
 ## Remaining staged refactor work
 
 ### Phase 1: resolve the legacy root and test boundaries
