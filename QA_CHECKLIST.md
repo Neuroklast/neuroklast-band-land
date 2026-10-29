@@ -1,4 +1,12 @@
 # QA checklist
+## Hero media controls / responsive previews (2026-10-29)
+
+- [ ] Upload a hero wordmark; confirm R2 picker still uses contain, maximum 4096px, and both desktop/mobile previews show the same custom logo at independent percentages.
+- [ ] Reset to default wordmark; the preview uses the default image but saved `logoImageUrl` / `logoImageStoragePath` remain null. Verify no replacement path is invented.
+- [ ] Upload/clear the hero background overlay: 16:9 cover crop, existing image preview and 0–1 opacity slider. Empty saved URL/path remain null.
+- [ ] Check alt text, tagline, CTA, boot sequence, PowerGlitch fields, dirty warning, live preview, save/refresh and error responses are unchanged.
+- [ ] Run build-free CI, and independently run local Playwright responsive screenshot/interaction checks, Next.js build and Lighthouse before visual sign-off.
+
 ## Hero editor extraction (2026-10-29)
 
 - [ ] Hero wordmark desktop width and mobile width preserve their independent percentages and existing preview widths, including older stored `logoMaxHeightRem` / `logoMaxHeight` settings.
