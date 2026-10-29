@@ -48,7 +48,7 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 
 ## Phase 2 progress — sync-job contracts and build execution policy (2026-10-29)
 
-- Centralized the seven allowed sync-job types, admin read-only filter parser, initial phase and payload defaults in `lib/sync-job-types.ts`. Both `/api/sync-jobs` creation and `/api/sync-jobs/active` polling reuse the same contract; existing authorization, rate limits, database queries, query semantics, error responses and cache headers are retained. Added pure unit tests for valid/invalid queries and defaults.
+- Centralized the seven allowed sync-job types, admin read-only filter parser, initial phase and payload defaults in `lib/sync-job-types.ts`. Both `/api/sync-jobs` creation and `/api/sync-jobs/active` polling reuse the same contract; existing admin authorization, database queries, query semantics, error responses and cache headers are retained. Added pure unit tests for valid/invalid queries and defaults.
 - Removed Next.js builds from GitHub Actions CI and removed the auto-building Lighthouse workflow. Added `npm run check:github-builds`, enforced in CI, to prevent reintroduction. GitHub still runs lint, tests, typecheck and security audit. Production build and Lighthouse are **local maintainer tasks**; Vercel Production deployment from `main` remains an independent platform step.
 - **Verification limitation:** without access to the maintainer's local build environment, a green GitHub test/typecheck does not establish local build, Lighthouse or manual E2E success.
 
