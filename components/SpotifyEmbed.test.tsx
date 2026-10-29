@@ -58,6 +58,27 @@ describe('SpotifyEmbed', () => {
     expect(btn).toHaveAttribute('tabindex', '0')
   })
 
+  it('fits artist embeds to their compact player height, including the consent gate', async () => {
+    const { container, getByRole } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
+    expect(container.firstElementChild).toHaveStyle({ height: '152px' })
+
+    const gate = getByRole('button', { name: /Load Spotify Player/i })
+    expect(gate).toHaveClass('gap-2')
+    await act(async () => {
+      fireEvent.click(gate)
+    })
+    await waitFor(() => {
+      const iframe = document.querySelector('iframe[src*="open.spotify.com/embed/"]')
+      expect(iframe).toHaveAttribute('height', '152')
+      expect(iframe).toHaveStyle({ height: '152px' })
+    })
+  })
+
+  it('preserves full-height embeds for albums', () => {
+    const { container } = renderEmbed(<SpotifyEmbed uri="spotify:album:6TElDMiCO7UEj3G0S2B8X0" />)
+    expect(container.firstElementChild).toHaveStyle({ height: '352px' })
+  })
+
   it('mounts a static embed iframe after the consent click, without the iframe-api script', async () => {
     const { getByRole } = renderEmbed(<SpotifyEmbed uri={ARTIST_URI} />)
 

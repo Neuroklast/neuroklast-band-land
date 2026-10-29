@@ -3,6 +3,7 @@ import {
   NEUROKLAST_SPOTIFY_ARTIST_ID,
   resolveSpotifyArtistUri,
   spotifyArtistUri,
+  spotifyEmbedHeight,
   spotifyEmbedUrl,
 } from '@/lib/spotify-artist'
 
@@ -33,5 +34,17 @@ describe('spotifyEmbedUrl', () => {
 
   it('rejects a non-URI string', () => {
     expect(spotifyEmbedUrl('https://open.spotify.com/artist/7BqEidErPMNiUXCRE0dV2n')).toBeNull()
+  })
+})
+
+describe('spotifyEmbedHeight', () => {
+  it('uses the compact artist player height rather than leaving an empty region', () => {
+    expect(spotifyEmbedHeight('spotify:artist:5xfQSijbVetvH1QAS58n30')).toBe(152)
+  })
+
+  it('keeps album, track and playlist embeds at full height', () => {
+    expect(spotifyEmbedHeight('spotify:album:6TElDMiCO7UEj3G0S2B8X0')).toBe(352)
+    expect(spotifyEmbedHeight('spotify:track:6TElDMiCO7UEj3G0S2B8X0')).toBe(352)
+    expect(spotifyEmbedHeight('spotify:playlist:6TElDMiCO7UEj3G0S2B8X0')).toBe(352)
   })
 })
