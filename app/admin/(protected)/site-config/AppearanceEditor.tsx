@@ -1,24 +1,18 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useReducer, useState, type SetStateAction } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { AppearanceColorsFonts } from './AppearanceColorsFonts'
 import { AppearanceQuickStart } from './AppearanceQuickStart'
 import { AppearanceVisualEffects } from './AppearanceVisualEffects'
 import { composeAppearancePayload } from '@/lib/admin-appearance-payload'
-import { resolveImageUrl } from '@/lib/r2'
+import { createAppearanceDraft, appearanceDraftReducer } from '@/lib/admin-appearance-reducer'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
-import { type AppearanceTheme, type SavedAppearancePreset } from '@/lib/appearance-presets'
-import { type LookDefinition } from '@/lib/looks'
-import {
-  DEFAULTS,
-  DEFAULT_THEME,
-  parseConfig,
-  type AppearanceConfig,
-} from '@/lib/admin-appearance-config'
-import { oklchToHex } from '@/lib/color-utils'
+import { parseConfig, type AppearanceConfig } from '@/lib/admin-appearance-config'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
+import type { AppearanceTheme, SavedAppearancePreset } from '@/lib/appearance-presets'
+import type { LookDefinition } from '@/lib/looks'
 
 interface AppearanceEditorProps {
   currentValue: Record<string, unknown>
@@ -28,78 +22,38 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
   const router = useRouter()
   const init = useMemo(() => parseConfig(currentValue), [currentValue])
 
-  const [crtEnabled, setCrtEnabled] = useState(init.crtEnabled)
-  const [scanlineEnabled, setScanlineEnabled] = useState(init.scanlineEnabled)
-  const [noiseEnabled, setNoiseEnabled] = useState(init.noiseEnabled)
-  const [glitchEnabled, setGlitchEnabled] = useState(init.glitchEnabled)
-  const [noiseIntensity, setNoiseIntensity] = useState(init.noiseIntensity)
-  const [filmGrain, setFilmGrain] = useState(init.filmGrain)
-  const [accentColor, setAccentColor] = useState(init.accentColor)
-  const [accentColorSecondary] = useState(init.accentColorSecondary)
-  const [vignetteOpacity, setVignetteOpacity] = useState(init.vignetteOpacity)
-  const [chromaticStrength, setChromaticStrength] = useState(init.chromaticStrength)
-  const [sectionPanelOpacity, setSectionPanelOpacity] = useState(init.sectionPanelOpacity)
-  const [sectionGridOpacity, setSectionGridOpacity] = useState(init.sectionGridOpacity)
-  const [cardSurfaceOpacity, setCardSurfaceOpacity] = useState(init.cardSurfaceOpacity)
-  const [faviconStoragePath, setFaviconStoragePath] = useState(init.faviconStoragePath ?? '')
-  const [faviconUrl, setFaviconUrl] = useState(
-    resolveImageUrl(init.faviconStoragePath, init.faviconUrl) ?? '',
-  )
-  const [theme, setTheme] = useState<AppearanceTheme>(init.theme ?? DEFAULT_THEME)
-  const [lookId, setLookId] = useState(init.lookId ?? 'neuroklast-classic')
-  const [overlayAnimations, setOverlayAnimations] = useState<string[]>(
-    init.overlayAnimations ?? DEFAULTS.overlayAnimations ?? [],
-  )
-  const [savedPresets, setSavedPresets] = useState<SavedAppearancePreset[]>(init.savedPresets ?? [])
+  const [draft, dispatch] = useReducer(appearanceDraftReducer, init, createAppearanceDraft)
+  const {
+    crtEnabled,
+    scanlineEnabled,
+    noiseEnabled,
+    glitchEnabled,
+    noiseIntensity,
+    filmGrain,
+    vignetteOpacity,
+    chromaticStrength,
+    sectionPanelOpacity,
+    sectionGridOpacity,
+    cardSurfaceOpacity,
+    faviconStoragePath,
+    faviconUrl,
+    theme,
+    lookId,
+    overlayAnimations,
+    savedPresets,
+  } = draft
+
+  // Keep the child animation toggle's functional updater semantics.
+  const setOverlayAnimations = (update: SetStateAction<string[]>) => {
+    dispatch({ type: 'overlayAnimations', update })
+  }
+
   const [presetName, setPresetName] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(init))
 
-  const payload = useMemo<AppearanceConfig>(
-    () => composeAppearancePayload({
-      crtEnabled,
-      scanlineEnabled,
-      noiseEnabled,
-      glitchEnabled,
-      noiseIntensity,
-      filmGrain,
-      accentColor,
-      accentColorSecondary,
-      vignetteOpacity,
-      chromaticStrength,
-      sectionPanelOpacity,
-      sectionGridOpacity,
-      cardSurfaceOpacity,
-      faviconUrl,
-      faviconStoragePath,
-      theme,
-      lookId,
-      overlayAnimations,
-      savedPresets,
-    }),
-    [
-      crtEnabled,
-      scanlineEnabled,
-      noiseEnabled,
-      glitchEnabled,
-      noiseIntensity,
-      filmGrain,
-      accentColor,
-      accentColorSecondary,
-      vignetteOpacity,
-      chromaticStrength,
-      sectionPanelOpacity,
-      sectionGridOpacity,
-      cardSurfaceOpacity,
-      faviconUrl,
-      faviconStoragePath,
-      theme,
-      lookId,
-      overlayAnimations,
-      savedPresets,
-    ],
-  )
+  const payload = useMemo<AppearanceConfig>(() => composeAppearancePayload(draft), [draft])
 
   useUnsavedChanges(JSON.stringify(payload) !== savedSnapshot)
 
@@ -108,37 +62,24 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
   }, [payload])
 
   function applyLook(look: LookDefinition) {
-    setLookId(look.id)
-    setTheme({ ...look.theme })
-    if (look.theme.accentColor) setAccentColor(oklchToHex(look.theme.accentColor))
-    setChromaticStrength(look.overlayEffects.chromatic?.enabled ? look.overlayEffects.chromatic.intensity : 0)
-    setNoiseIntensity(look.overlayEffects.noise?.intensity ?? 0.15)
-    setVignetteOpacity(look.overlayEffects.vignette?.intensity ?? 0.5)
-    setCrtEnabled(look.overlayEffects.crt?.enabled !== false)
-    setScanlineEnabled(look.overlayEffects.scanlines?.enabled !== false)
-    setNoiseEnabled(look.overlayEffects.noise?.enabled !== false)
+    dispatch({ type: 'applyLook', look })
   }
 
   function applyPreset(preset: SavedAppearancePreset) {
-    setTheme({ ...preset.theme })
-    if (preset.theme.accentColor) setAccentColor(oklchToHex(preset.theme.accentColor))
+    dispatch({ type: 'applyPreset', preset })
   }
 
   function applyReadableMode() {
-    setSectionPanelOpacity(0.7)
-    setCardSurfaceOpacity(0.9)
+    dispatch({ type: 'readableMode' })
   }
 
   function updateThemeField(key: keyof AppearanceTheme, value: string) {
-    setTheme((prev) => ({ ...prev, [key]: value }))
-    if (key === 'accentColor') setAccentColor(oklchToHex(value))
+    dispatch({ type: 'themeField', key, value })
   }
 
   function saveCustomPreset() {
-    const name = presetName.trim()
-    if (!name) return
-    const next = [...savedPresets.filter((p) => p.name !== name), { name, theme: { ...theme } }]
-    setSavedPresets(next)
+    if (!presetName.trim()) return
+    dispatch({ type: 'savePreset', name: presetName })
     setPresetName('')
   }
 
@@ -185,9 +126,9 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
         sectionPanelOpacity={sectionPanelOpacity}
         sectionGridOpacity={sectionGridOpacity}
         cardSurfaceOpacity={cardSurfaceOpacity}
-        onSectionPanelOpacityChange={setSectionPanelOpacity}
-        onSectionGridOpacityChange={setSectionGridOpacity}
-        onCardSurfaceOpacityChange={setCardSurfaceOpacity}
+        onSectionPanelOpacityChange={(value) => dispatch({ type: 'patch', values: { sectionPanelOpacity: value } })}
+        onSectionGridOpacityChange={(value) => dispatch({ type: 'patch', values: { sectionGridOpacity: value } })}
+        onCardSurfaceOpacityChange={(value) => dispatch({ type: 'patch', values: { cardSurfaceOpacity: value } })}
         onApplyReadableMode={applyReadableMode}
       />
 
@@ -196,8 +137,8 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
         onThemeFieldChange={updateThemeField}
         faviconUrl={faviconUrl}
         faviconStoragePath={faviconStoragePath}
-        onFaviconStoragePathChange={setFaviconStoragePath}
-        onFaviconUrlChange={setFaviconUrl}
+        onFaviconStoragePathChange={(value) => dispatch({ type: 'patch', values: { faviconStoragePath: value } })}
+        onFaviconUrlChange={(value) => dispatch({ type: 'patch', values: { faviconUrl: value } })}
         onError={setErrorMsg}
       />
 
@@ -210,14 +151,14 @@ export function AppearanceEditor({ currentValue }: AppearanceEditorProps) {
         noiseIntensity={noiseIntensity}
         vignetteOpacity={vignetteOpacity}
         chromaticStrength={chromaticStrength}
-        onCrtEnabledChange={setCrtEnabled}
-        onScanlineEnabledChange={setScanlineEnabled}
-        onNoiseEnabledChange={setNoiseEnabled}
-        onGlitchEnabledChange={setGlitchEnabled}
-        onFilmGrainChange={setFilmGrain}
-        onNoiseIntensityChange={setNoiseIntensity}
-        onVignetteOpacityChange={setVignetteOpacity}
-        onChromaticStrengthChange={setChromaticStrength}
+        onCrtEnabledChange={(value) => dispatch({ type: 'patch', values: { crtEnabled: value } })}
+        onScanlineEnabledChange={(value) => dispatch({ type: 'patch', values: { scanlineEnabled: value } })}
+        onNoiseEnabledChange={(value) => dispatch({ type: 'patch', values: { noiseEnabled: value } })}
+        onGlitchEnabledChange={(value) => dispatch({ type: 'patch', values: { glitchEnabled: value } })}
+        onFilmGrainChange={(value) => dispatch({ type: 'patch', values: { filmGrain: value } })}
+        onNoiseIntensityChange={(value) => dispatch({ type: 'patch', values: { noiseIntensity: value } })}
+        onVignetteOpacityChange={(value) => dispatch({ type: 'patch', values: { vignetteOpacity: value } })}
+        onChromaticStrengthChange={(value) => dispatch({ type: 'patch', values: { chromaticStrength: value } })}
       />
 
       <div className="flex items-center gap-3 pt-2">

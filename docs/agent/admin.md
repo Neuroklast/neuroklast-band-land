@@ -1,4 +1,10 @@
 # Admin Patterns
+## Appearance editor atomic draft state (2026-10-29)
+
+The editor owns one `useReducer(appearanceDraftReducer, init, createAppearanceDraft)` draft instead of fragmented per-field React state. The pure transitions in `lib/admin-appearance-reducer.ts` support individual `patch` changes, functional overlay animation updates, look/preset selection, readable surface defaults, theme field changes and deduplicated custom presets. A look switch updates the entire public-preview draft atomically rather than scheduling eight independent state setters.
+
+`AppearanceEditor.tsx` still owns save status, error message, unsaved snapshot, the temporary preset-name input, `updateSiteConfig`, live draft broadcast and success refresh. Existing child components and their props have not changed. `composeAppearancePayload(draft)` retains the exact JSON field order, fallback animation and empty favicon values. Tests: `lib/admin-appearance-reducer.test.ts`, `src/test/appearance-editor-reducer.test.tsx`, plus the earlier appearance section/payload tests. Do not put persistence or browser effects in the reducer.
+
 ## Appearance visual effects and serialized draft contract (2026-10-29)
 
 The remaining Visual effects accordion is now `app/admin/(protected)/site-config/AppearanceVisualEffects.tsx` (controlled boolean switches and numeric opacity sliders). Its original markup, switch labels, slider ranges, CSS and initially collapsed behavior were retained. All change handlers still belong to the parent `AppearanceEditor.tsx`, as do draft broadcasts, unsaved-change detection, server-action persistence and refresh.
