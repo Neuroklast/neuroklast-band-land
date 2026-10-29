@@ -1,4 +1,10 @@
 # Lessons Learned
+## Session: 2026-10-29 — atomically update theme state, not several React hooks
+
+A selected look modifies the theme, accent, chromatic strength, grain, vignette, CRT, scanlines and noise together. A pure reducer avoids spreading this transition across independent setters and makes invariants directly testable. Keep `useReducer` field updates typed, honor functional overlay update callbacks against the **latest** draft, and leave save-state and user input concerns outside the persisted draft. Confirm that the exact serialized payload and cross-tab preview broadcast are unchanged. Never run builds in GitHub Actions.
+
+---
+
 ## Session 2026-10-29 — centralize editor payloads without changing JSON semantics
 
 A controlled React editor can safely delegate the final visual-effects accordion, but the parent must still own all state and save/draft side effects. When extracting the form payload into a pure helper, preserve exact serialized key order (used by unsaved-change comparisons), null handling for blank media and the fallback animation when the pool is empty. Test the data mapping separately from Radix UI. jsdom requires a local ResizeObserver stub for slider component tests. GitHub workflows must remain build-free.
