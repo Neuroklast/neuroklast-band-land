@@ -1,4 +1,4 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 @import './base.css';
-@import './animations.css';
+@import '../styles/animations.css';

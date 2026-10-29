@@ -10,6 +10,7 @@ const files = execFileSync('git', ['ls-files', '-z'], { cwd: root, maxBuffer: 10
   .toString('utf8').split('\0').filter(Boolean)
 const runtimeRoots = ['api/', 'app/', 'components/', 'contexts/', 'hooks/', 'layouts/', 'lib/', 'services/', 'themes/']
 const codeExt = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'])
+const styleRoots = ['app/', 'styles/', 'themes/']
 const legacyRoot = resolve(root, 'src')
 const hashes = new Map()
 const forbiddenImports = []
@@ -23,6 +24,19 @@ for (const path of files) {
   const digest = createHash('sha256').update(bytes).digest('hex')
   if (!hashes.has(digest)) hashes.set(digest, [])
   hashes.get(digest).push(path)
+
+  if (styleRoots.some(prefix => path.startsWith(prefix)) && extname(path) === '.css') {
+    // CSS was a live dependency on src/ even when JavaScript imports were clean.
+    // Only @import is a module edge; local url() assets require separate auditing.
+    const content = bytes.toString('utf8')
+    const cssImports = /@import\s+(?:url\(\s*)?['"]([^'"]+)['"]/g
+    for (const match of content.matchAll(cssImports)) {
+      const specifier = match[1]
+      if (!specifier.startsWith('.')) continue
+      const target = resolve(root, dirname(path), specifier)
+      if (isInLegacy(target)) forbiddenImports.push({ file: path, import: specifier })
+    }
+  }
 
   if (!runtimeRoots.some(prefix => path.startsWith(prefix)) || !codeExt.has(extname(path))) continue
   const text = bytes.toString('utf8')
@@ -66,6 +80,6 @@ if (process.argv.includes('--json')) {
   if (identical.length) console.log('Exact duplicate groups (inspect, do not auto-delete):', identical.slice(0, 20))
 }
 if (process.argv.includes('--check') && forbiddenImports.length) {
-  console.error('Runtime modules must not import legacy src/ modules. CSS and test fixtures remain supported.')
+  console.error('Runtime JS, TS and CSS must not import legacy src/ modules or styles. Legacy test fixtures remain supported.')
   process.exitCode = 1
 }

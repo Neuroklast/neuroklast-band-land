@@ -144,7 +144,7 @@ describe('CyberpunkOverlay boot animation', () => {
 
 describe('overlay loader CSS', () => {
   it('does not flatten overlay-loader classes in animations.css', () => {
-    const css = readFileSync(resolve('src/animations.css'), 'utf8')
+    const css = readFileSync(resolve('styles/animations.css'), 'utf8')
     expect(css).not.toMatch(/\.overlay-loader-circuit,\s*\n\.overlay-loader-boot/)
     expect(css).not.toMatch(/overlay-loader-blink/)
   })
