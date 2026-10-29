@@ -1,4 +1,10 @@
 # Admin Patterns
+## Hero editor atomic draft state and save payload (2026-10-29)
+
+`HeroConfigEditor.tsx` now owns a single `useReducer(heroEditorReducer, currentValue, createHeroEditorDraft)` persisted draft rather than separate state hooks. Pure transitions in `lib/admin-hero-draft.ts` handle text/slider patches, nested PowerGlitch changes, atomic wordmark/background media resolve/reset/clear and the boot toggle. Parent still owns transient `status`, `errorMsg`, saved snapshot, `useUnsavedChanges`, `broadcastAdminDraft('hero')`, `updateSiteConfig`, and the save refresh. Existing `HeroWordmarkControls`, `HeroBackgroundControls` and `HeroGlitchControls` APIs and styles are unchanged.
+
+`composeHeroPayload(draft)` retains every original persisted key in its original JSON order, the full nested PowerGlitch field order, blank media path/URL -> null conversion, and separate preview-only `DEFAULT_HERO_LOGO_URL`. `createHeroEditorDraft` keeps old defaults and legacy logo size parsing, and resolves R2 media exactly as before. A path-only successful media resolution updates the path but **does not** clear/overwrite the URL; reset/clear does. No server mutations belong in the reducer. See `lib/admin-hero-draft.test.ts`, `src/test/hero-editor-reducer-integration.test.tsx`, and earlier media integration tests.
+
 ## Hero media controls and preview boundary (2026-10-29)
 
 The hero form now delegates **wordmark upload, desktop/mobile width sliders and responsive previews** to `app/admin/(protected)/site-config/HeroWordmarkControls.tsx`. The separate `HeroBackgroundControls.tsx` owns only the visual markup for the hero background picker and opacity slider. Both are controlled children: media resolution, clearing, errors, upload state, serialized draft and saving remain owned by `HeroConfigEditor.tsx`.
