@@ -1,5 +1,11 @@
 # QA checklist
 
+## Legacy source mirror consolidation (2026-10-29)
+
+- [ ] `npm run audit:legacy` reports zero identical root/`src/` source mirrors. Treat its static importer report as evidence, not proof of no dynamic use.
+- [ ] Spot-check theme switching, terminal/overlays, keyboard shortcuts, locales, admin activity log and color contrast; the root canonical implementations must remain unchanged.
+- [ ] Run lint, typecheck, unit tests, security audit, build and mobile Lighthouse; test public and protected admin workflows in a browser before declaring full migration complete.
+
 ## News social previews
 
 ## Refactor regression checks (2026-10-29)
