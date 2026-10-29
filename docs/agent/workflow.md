@@ -4,15 +4,19 @@ Rules for AI agent runs on this project. Session start + mandatory CI live in ro
 
 ---
 
-## Local CI
+## Local validation and GitHub cost boundary
 
-Same gate surface as `.github/workflows/ci.yml` (approx.):
+**NEVER run a Next.js build or Lighthouse build in GitHub Actions.** GitHub CI checks lint, typecheck, tests, security and `npm run check:github-builds` only. The maintainer runs production builds **locally** (not on GitHub runners):
 
 ```bash
-npm run lint && npm run typecheck && npm run build && npm run test
+npm ci
+npm run lint && npm run typecheck && npm run test
+npm run build
 ```
 
-Prefer the full chain before every PR. Re-run a single command when debugging a failure.
+For mobile performance validation, run `npm run build`, install Chromium and the Lighthouse CLI, then execute `bash scripts/run-mobile-audit.sh` **locally** (the script starts the built app). These checks are required for full sign-off, but do not claim they passed unless actually executed. Avoid GitHub workflows that trigger a build, including a "manual" workflow.
+
+Re-run individual commands when debugging.
 
 ---
 
@@ -21,7 +25,7 @@ Prefer the full chain before every PR. Re-run a single command when debugging a 
 1. Branch from up-to-date `main`.
 2. Smallest commits that each leave the tree green when practical.
 3. PR description: what / why / how to verify (include visual checks for public UI).
-4. **Merge only when CI is green.**
+4. **Merge only when the non-build CI is green.** Document local build/Lighthouse validation separately; a green CI alone is not proof of a passing production build.
 5. After merge: confirm Vercel **Production** deploy SHA matches the merge commit.
 6. If the user reported visual bugs: require hard-refresh and list what to re-check.
 
@@ -108,5 +112,5 @@ When the user reports screenshot bugs:
 **Session closeout (non-negotiable):**
 
 ```
-code complete → mandatory checks → docs/markdown update → merge + Production confirm → only then report done
+code complete → non-build CI + available local checks → docs update → merge + Vercel Production confirm → report any unverified local checks
 ```
