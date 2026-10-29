@@ -1,4 +1,13 @@
 # QA checklist
+## Appearance editor reducer (2026-10-29)
+
+- [ ] Selecting a look updates all visual settings together, while not overwriting the overlay animation pool, custom presets or favicon.
+- [ ] Changing a color-theme preset changes the palette and accent only. Editing a single theme field preserves other settings, including booleans set to false and numeric values set to 0.
+- [ ] Overlay animation selection supports rapid toggles and deselecting the last animation; saved JSON retains the original fallback animation.
+- [ ] Custom preset names are trimmed, duplicate names replaced, and empty names ignored. Readable defaults change only section and card opacity.
+- [ ] Unsaved-change warning, cross-tab live preview, successful save refresh and save error recovery remain functional; saved JSON equals last preview payload.
+- [ ] GitHub CI runs lint/typecheck/test/security without any build. Run local build, Playwright and Lighthouse separately before claiming UI equivalence.
+
 ## Appearance visual effects and serialized draft (2026-10-29)
 
 - [ ] Appearance > Visual effects stays collapsed initially and retains switches for CRT, Scanlines, Noise, Glitch and Film grain, plus the three original intensity sliders.
