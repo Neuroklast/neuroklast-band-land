@@ -1,4 +1,10 @@
 # Admin Patterns
+## Appearance visual effects and serialized draft contract (2026-10-29)
+
+The remaining Visual effects accordion is now `app/admin/(protected)/site-config/AppearanceVisualEffects.tsx` (controlled boolean switches and numeric opacity sliders). Its original markup, switch labels, slider ranges, CSS and initially collapsed behavior were retained. All change handlers still belong to the parent `AppearanceEditor.tsx`, as do draft broadcasts, unsaved-change detection, server-action persistence and refresh.
+
+The parent assembles its precise site-config JSON with the pure `lib/admin-appearance-payload.ts` `composeAppearancePayload()` helper. Field order is preserved because the same JSON representation drives dirty comparison, draft broadcasts and saving. Preserve the original empty favicon-to-null conversion and empty animation-pool fallback. Regression tests: `src/test/appearance-visual-effects.test.tsx` and `lib/admin-appearance-payload.test.ts`. Do not move admin authorization or persistence into either presentation module or this helper.
+
 ## Appearance editor storage boundary (2026-10-29)
 ## Appearance editor presentation sections (2026-10-29)
 
