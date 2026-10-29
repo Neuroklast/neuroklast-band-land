@@ -44,7 +44,7 @@ Product secrets live in `plugin_product_secrets` (service-role only): `stripe_pr
 
 ### Automatic NEUROKORE releases
 
-Published Windows releases from the fixed public repository `Neuroklast/NeuroCore` are discovered server-side. The GitHub response is cached for five minutes; public page revalidation can add a short delay. Publishing with NeuroCore's local `publish_release.bat` updates the public download catalogue without another website deployment, webhook or scheduled job. No GitHub token or visitor-side API request is needed.
+Published Windows releases from the dedicated public binary-only repository `Neuroklast/NeuroKore-Releases`. The source repository `Neuroklast/NeuroCore` remains private are discovered server-side. The GitHub response is cached for five minutes; public page revalidation can add a short delay. Publishing with NeuroCore's local `publish_release.bat` updates the public download catalogue without another website deployment, webhook or scheduled job. No GitHub token or visitor-side API request is needed.
 
 Only published, non-draft versions with the expected installer, matching checksum asset, positive bounded sizes, GitHub SHA-256 digests and exact official download URLs are accepted. A ZIP is shown only with its own checksum asset. Stable, beta and alpha channels remain separate; RC tags use the beta channel. Legacy numeric-only CMS betas are compared using their channel, so `0.8.0` in beta does not hide a newer `0.8.0-beta.1`.
 
