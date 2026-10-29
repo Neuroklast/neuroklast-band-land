@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateSiteConfig } from '@/app/admin/_actions/siteConfig'
 import { MediaSourcePicker } from '@/app/admin/_components/MediaSourcePicker'
+import { HeroGlitchControls } from './HeroGlitchControls'
 import { broadcastAdminDraft } from '@/lib/admin-draft-channel'
 import { DEFAULT_HERO_LOGO_URL } from '@/lib/hero-defaults'
 import { resolveImageUrl } from '@/lib/r2'
@@ -401,90 +402,22 @@ export function HeroConfigEditor({ currentValue }: HeroConfigEditorProps) {
           Boot sequence: {bootSequenceEnabled ? 'ON' : 'OFF'}
         </p>
 
-        <div className="space-y-3 border-t border-zinc-800 pt-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Wordmark glitch</p>
-            <p className="mt-1 text-xs text-zinc-500">
-              PowerGlitch on the hero image. Off keeps the CRT idle burst. Hover glitches on mouseover; always loops.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {([
-              ['off', 'Off'],
-              ['hover', 'Hover'],
-              ['always', 'Always'],
-            ] as const).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setGlitchMode(value)}
-                className={`min-h-[44px] rounded border px-3 text-sm ${
-                  glitchMode === value
-                    ? 'border-red-700/50 bg-red-900/40 text-white'
-                    : 'border-zinc-700 text-zinc-400 hover:text-white'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          {glitchMode !== 'off' ? (
-            <div className="space-y-3">
-              <label className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                Duration — {glitchDurationMs}ms
-              </label>
-              <SliderPrimitive.Root
-                aria-label="Glitch duration"
-                min={120}
-                max={8000}
-                step={50}
-                value={[glitchDurationMs]}
-                onValueChange={([value]) => setGlitchDurationMs(value)}
-                className="relative flex h-5 w-full touch-none select-none items-center"
-              >
-                <SliderPrimitive.Track className="relative h-1 grow rounded-full bg-zinc-700">
-                  <SliderPrimitive.Range className="absolute h-full rounded-full bg-red-500" />
-                </SliderPrimitive.Track>
-                <SliderPrimitive.Thumb className="block size-4 cursor-grab rounded-full border border-red-500 bg-zinc-900 shadow focus:outline-none" />
-              </SliderPrimitive.Root>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                Slices — {glitchSliceCount}
-              </label>
-              <SliderPrimitive.Root
-                aria-label="Glitch slice count"
-                min={2}
-                max={16}
-                step={1}
-                value={[glitchSliceCount]}
-                onValueChange={([value]) => setGlitchSliceCount(value)}
-                className="relative flex h-5 w-full touch-none select-none items-center"
-              >
-                <SliderPrimitive.Track className="relative h-1 grow rounded-full bg-zinc-700">
-                  <SliderPrimitive.Range className="absolute h-full rounded-full bg-red-500" />
-                </SliderPrimitive.Track>
-                <SliderPrimitive.Thumb className="block size-4 cursor-grab rounded-full border border-red-500 bg-zinc-900 shadow focus:outline-none" />
-              </SliderPrimitive.Root>
-              <div className="flex flex-wrap gap-4 text-xs text-zinc-300">
-                <label className="flex min-h-[44px] items-center gap-2">
-                  <input type="checkbox" checked={glitchShake} onChange={(e) => setGlitchShake(e.target.checked)} />
-                  Shake
-                </label>
-                <label className="flex min-h-[44px] items-center gap-2">
-                  <input type="checkbox" checked={glitchHue} onChange={(e) => setGlitchHue(e.target.checked)} />
-                  Hue rotate
-                </label>
-                <label className="flex min-h-[44px] items-center gap-2">
-                  <input type="checkbox" checked={glitchPulse} onChange={(e) => setGlitchPulse(e.target.checked)} />
-                  Pulse
-                </label>
-                <label className="flex min-h-[44px] items-center gap-2">
-                  <input type="checkbox" checked={glitchContinuous} onChange={(e) => setGlitchContinuous(e.target.checked)} />
-                  Continuous
-                </label>
-              </div>
-            </div>
-          ) : null}
-        </div>
+        <HeroGlitchControls
+          mode={glitchMode}
+          durationMs={glitchDurationMs}
+          sliceCount={glitchSliceCount}
+          shake={glitchShake}
+          hueRotate={glitchHue}
+          pulse={glitchPulse}
+          continuous={glitchContinuous}
+          onModeChange={setGlitchMode}
+          onDurationMsChange={setGlitchDurationMs}
+          onSliceCountChange={setGlitchSliceCount}
+          onShakeChange={setGlitchShake}
+          onHueRotateChange={setGlitchHue}
+          onPulseChange={setGlitchPulse}
+          onContinuousChange={setGlitchContinuous}
+        />
       </div>
 
       <div className="flex items-center gap-3 pt-1">
