@@ -14,7 +14,7 @@ import {
 } from '@/lib/gig-browse'
 import { formatIsoDateCompact, formatIsoDateLong } from '@/lib/format-display-date'
 import { buildGigSlugMap } from '@/lib/gig-slug'
-import { eventDisplayName, formatGigLocation, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
+import { eventDisplayName, formatGigLocation, gigTypeLabel, mapGigRowToOverlayGig, type PublicGigRow } from '@/lib/gig-public-mapper'
 import { useLocale } from '@/contexts/LocaleContext'
 import { GigStatusBadge } from '@/components/overlays/GigStatusBadge'
 import { BrowsePagination } from './BrowsePagination'
@@ -69,11 +69,18 @@ function GigBrowseCard({
         <div className="pointer-events-none relative z-[2] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0 space-y-2">
             <h3 className="font-mono text-xl font-bold uppercase hover-chromatic">{headline}</h3>
-            <GigStatusBadge
-              status={gig.status}
-              soldOut={gig.sold_out}
-              eventDate={gig.event_date}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <GigStatusBadge
+                status={gig.status}
+                soldOut={gig.sold_out}
+                eventDate={gig.event_date}
+              />
+              {gigTypeLabel(gig.gig_type) ? (
+                <span className="inline-flex border border-primary/30 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-primary">
+                  {gigTypeLabel(gig.gig_type)}
+                </span>
+              ) : null}
+            </div>
             <div className="flex flex-wrap gap-4 font-mono text-sm text-muted-foreground">
               {location ? (
                 <span className="flex items-center gap-2">
