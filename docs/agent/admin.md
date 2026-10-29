@@ -1,4 +1,10 @@
 # Admin Patterns
+## Background editor video presentation and preview/save boundary (2026-10-29)
+
+The site-wide `BackgroundConfigEditor.tsx` owns all media/path state, `useUnsavedChanges`, `broadcastAdminDraft('background')`, `updateSiteConfig` saving and post-save refresh. Controlled display sections have been extracted: `BackgroundDesktopVideoControls.tsx` for the desktop video enable switch, picker and opacity; `BackgroundMobileVideoControls.tsx` for the mobile 'same', 'separate', 'off' selector and conditional video picker; `BackgroundOpacitySlider.tsx` reuses original Radix slider markup. Keep existing picker R2 prefixes, scrub variants, labels and CSS. The parent remains responsible for automatically enabling desktop video after successful upload and clearing errors.
+
+`lib/admin-background-payload.ts` deliberately exports **different** `composeBackgroundPreview(fields)` and `composeBackgroundSave(fields)`: in the preview an empty media path/URL is `undefined` (omitted by JSON), whereas storage uses `null`. In save mode mobile paths/URLs are always null unless `mobileVideoMode === 'separate'`; the preview still retains the unselected media fields. Preserve this distinction and the exact field ordering, dirty snapshot and existing server action. Tests: `lib/admin-background-payload.test.ts`, `src/test/background-video-controls.test.tsx`, `src/test/background-editor-video-integration.test.tsx`.
+
 ## Hero editor atomic draft state and save payload (2026-10-29)
 
 `HeroConfigEditor.tsx` now owns a single `useReducer(heroEditorReducer, currentValue, createHeroEditorDraft)` persisted draft rather than separate state hooks. Pure transitions in `lib/admin-hero-draft.ts` handle text/slider patches, nested PowerGlitch changes, atomic wordmark/background media resolve/reset/clear and the boot toggle. Parent still owns transient `status`, `errorMsg`, saved snapshot, `useUnsavedChanges`, `broadcastAdminDraft('hero')`, `updateSiteConfig`, and the save refresh. Existing `HeroWordmarkControls`, `HeroBackgroundControls` and `HeroGlitchControls` APIs and styles are unchanged.
