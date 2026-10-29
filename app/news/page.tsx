@@ -35,7 +35,7 @@ export default async function NewsArchivePage() {
       .from('news_posts')
       .select('id, title, slug, excerpt, cover_storage_path, cover_url, published_at, display_order')
       .eq('active', true)
-      .order('display_order', { ascending: true, nullsFirst: false })
+      // Archive order is chronological; homepage editorial order is kept separate.
       .order('published_at', { ascending: false, nullsFirst: false })
       .order('id', { ascending: true })
 
