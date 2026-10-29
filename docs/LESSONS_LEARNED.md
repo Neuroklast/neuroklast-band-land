@@ -1,4 +1,10 @@
 # Lessons Learned
+## Session: 2026-10-29 — hero media previews are not saved media URLs
+
+The HeroConfigEditor must broadcast the fallback `DEFAULT_HERO_LOGO_URL` for rendering the preview, but must serialize `logoImageUrl: null` when no custom logo exists. Extract media pickers and wordmark previews as **controlled presentation** components without moving this distinction, server actions or errors to the child. Keep R2 prefixes, image crop mode, max dimension, logo reset behavior and separate mobile/desktop width styling exactly. Test the parent draft and save integration separately from component callback wiring; no builds in GitHub Actions.
+
+---
+
 ## Session 2026-10-29 — hero wordmark legacy widths are a storage contract
 
 The hero editor contains two independent width settings with different defaults and backward-compatibility conversion from historical max-height values. Extract the **same parsing semantics** into pure functions with regression tests before refactoring state. A long JSX controls block can be split into a controlled child without moving the parent state, draft broadcast, save action or media cleanup. Keep the exact existing PowerGlitch slider ranges and hide detail controls when mode is Off. Do not run any Next.js builds inside GitHub Actions.
