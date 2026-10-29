@@ -1,4 +1,14 @@
 # QA checklist
+
+## Appearance editor controlled sections (2026-10-29)
+
+- [ ] Appearance > Quick start opens by default; switching a look, built-in preset or saved custom preset updates the same theme and preview as before.
+- [ ] Selecting/deselecting overlay animations updates the same pool, including disabling the last active animation. Saving a custom theme and switching to readable defaults still work.
+- [ ] Section opacity 0 disables the grid slider and shows the readability warning. Test nonzero opacity, grid and card controls.
+- [ ] Colors & fonts remains initially collapsed; color-picker and HEX changes update the theme; typography and font-size controls keep their values.
+- [ ] Favicon selection, clearing and error feedback work. Parent still warns for unsaved changes, broadcasts drafts, persists the unchanged JSON and refreshes on success.
+- [ ] Non-build CI green; independently run local production build, E2E and mobile Lighthouse before declaring complete manual QA.
+
 ## Appearance editor extraction (2026-10-29)
 
 - [ ] Verify `/admin/site-config` appearance controls load persisted and absent/default values identically. Preserve the default classic look, surface opacity values, favicon, font settings and saved custom themes.

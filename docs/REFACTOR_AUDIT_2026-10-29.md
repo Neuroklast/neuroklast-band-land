@@ -59,7 +59,15 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
 - The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
 
-## Remaining staged refactor work## Phase 2 progress — appearance editor config contract (2026-10-29)
+## Remaining staged refactor work
+## Phase 2 progress — split appearance editor presentation (2026-10-29)
+
+- Following the stored-config parser extraction (#588), extracted controlled Quick start and Colors & fonts accordion sections plus shared opacity slider into dedicated client components with their original markup and UI behavior.
+- `AppearanceEditor.tsx` was reduced from **588 to 262 lines**. It still owns every draft field, the serialized site-config payload, the unsaved-change warning, the live-preview broadcast, save action and success/error status.
+- Added UI regression tests for look/preset selection, animation-pool toggle, readable defaults, opacity disabled warning, hex color conversion and favicon resolve/clear/error callbacks.
+- No pricing/commerce, auth, public page, database or API changes. GitHub CI still runs without builds. A locally executed build and screenshot/E2E/Lighthouse review are outstanding until independently performed.
+
+## Phase 2 progress — appearance editor config contract (2026-10-29)
 
 - Extracted the exact persisted appearance configuration type, default theme, default settings and stored-value parsers from the large `AppearanceEditor` into `lib/admin-appearance-config.ts`. This reduces the component by over 120 source lines without changing layout, preview, browser state transitions, server actions or stored JSON representation.
 - Added direct regression tests for defaults, typed field fallback, false/zero inputs, extended theme settings, saved custom presets, overlay pool handling and legacy look identifiers.

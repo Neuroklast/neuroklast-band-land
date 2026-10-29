@@ -1,5 +1,16 @@
 # Admin Patterns
 ## Appearance editor storage boundary (2026-10-29)
+## Appearance editor presentation sections (2026-10-29)
+
+The parent `AppearanceEditor.tsx` owns all React state, `payload`, dirty tracking, `broadcastAdminDraft('appearance', payload)`, existing `updateSiteConfig` submission and save/refresh notifications. Controlled children in the same `site-config` folder render the original controls with identical labels, CSS classes, accordion defaults and handlers:
+
+- `AppearanceQuickStart.tsx`: looks, overlay animation pool, built-in/user presets, section surfaces.
+- `AppearanceColorsFonts.tsx`: color fields, font settings, font-size controls, Favicon `MediaSourcePicker`.
+- `AppearanceOpacitySlider.tsx`: shared original Radix slider markup, also used by Visual effects in the parent.
+
+State setters and domain callbacks are passed down; **do not** move saving, Supabase mutations, transient errors or public draft broadcasts to the child components. Tests in `src/test/appearance-editor-sections.test.tsx` cover interactions, overlay pool toggles, favicon callbacks and editor layout contracts. This is a structural extraction, not a redesign.
+
+
 
 The appearance admin screen at `app/admin/(protected)/site-config/AppearanceEditor.tsx` renders the controls, tracks unsaved changes, broadcasts preview drafts and invokes the unchanged `updateSiteConfig` server action. Its persisted storage defaults and theme/overlay parsing now live in the pure `lib/admin-appearance-config.ts` module; use `parseConfig()` when initializing the editor. Preserve all previously accepted fields, defaults, user presets, the `zardonic-industrial` legacy look alias and fallback clip animation pool. `lib/admin-appearance-config.test.ts` verifies backwards compatibility. **Do not** add Supabase writes, revalidation or browser side effects to the pure parser.
 
