@@ -41,7 +41,7 @@ describe('hero reducer parent integration', () => {
   it('updates several hero controls and persists the exact latest draft while preserving preview contract', async () => {
     render(<HeroConfigEditor currentValue={{ tagline: 'Original tagline' }} />)
     fireEvent.change(screen.getByLabelText('Tagline'), { target: { value: 'New tagline' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Enable wordmark boot sequence' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Enable wordmark boot sequence' }))
     fireEvent.click(screen.getByRole('button', { name: 'Set Hover' }))
     fireEvent.click(screen.getByRole('button', { name: 'Set Slices' }))
     fireEvent.click(screen.getByRole('button', { name: 'Disable Shake' }))
