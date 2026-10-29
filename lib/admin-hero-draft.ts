@@ -31,12 +31,12 @@ export function createHeroEditorDraft(value: Record<string, unknown>): HeroEdito
     ctaUrl: typeof value.ctaUrl === 'string' ? value.ctaUrl : '#releases',
     logoImageStoragePath,
     logoImageUrl: resolveImageUrl(
-      logoImageStoragePath || null,
+      typeof value.logoImageStoragePath === 'string' ? value.logoImageStoragePath : null,
       typeof value.logoImageUrl === 'string' ? value.logoImageUrl : null,
     ) ?? '',
     backgroundImageStoragePath,
     backgroundImageUrl: resolveImageUrl(
-      backgroundImageStoragePath || null,
+      typeof value.backgroundImageStoragePath === 'string' ? value.backgroundImageStoragePath : null,
       typeof value.backgroundImageUrl === 'string' ? value.backgroundImageUrl : null,
     ) ?? '',
     backgroundImageOpacity: typeof value.backgroundImageOpacity === 'number'
