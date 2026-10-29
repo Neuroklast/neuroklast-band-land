@@ -1,4 +1,12 @@
 # QA checklist
+## Appearance visual effects and serialized draft (2026-10-29)
+
+- [ ] Appearance > Visual effects stays collapsed initially and retains switches for CRT, Scanlines, Noise, Glitch and Film grain, plus the three original intensity sliders.
+- [ ] Toggle each switch and update each slider: live preview changes before save, unsaved warning remains, and no field resets another value.
+- [ ] Verify favicon URLs/storage paths are stored as null when blank and as entered when set; empty animation-pool falls back to the original overlayAnimation while preserving an empty array.
+- [ ] Verify save success/error, unsaved-change tracking and refresh through the original `updateSiteConfig` server action; no extra API calls from child UI controls.
+- [ ] Run build-free CI (lint, Typecheck, Vitest, security), and separately run local Next.js build, Playwright and Lighthouse.
+
 
 ## Appearance editor controlled sections (2026-10-29)
 
