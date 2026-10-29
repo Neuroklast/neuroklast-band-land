@@ -5,7 +5,7 @@ import BackgroundEffects from './BackgroundEffects'
 import SectionDivider from './SectionDivider'
 import LoadingScreen from './LoadingScreen'
 import OverlayModal from './OverlayModal'
-import './styles.css'
+import '../../../themes/glitch-noir/styles.css'
 
 import type { ThemePackage } from '@/lib/types'
 
