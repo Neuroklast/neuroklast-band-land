@@ -1,4 +1,12 @@
 # QA checklist
+## Hero editor extraction (2026-10-29)
+
+- [ ] Hero wordmark desktop width and mobile width preserve their independent percentages and existing preview widths, including older stored `logoMaxHeightRem` / `logoMaxHeight` settings.
+- [ ] PowerGlitch Off hides duration, slice and checkbox controls; Hover and Always show them with original labels and selections.
+- [ ] PowerGlitch duration 120–8000 ms, slice count 2–16, Shake, Hue rotate, Pulse and Continuous update the same hero draft before saving.
+- [ ] Verify logo and background pickers, fallback wordmark preview, boot-sequence toggle, alt text, CTA fields, unsaved warning and save success/error remain unchanged.
+- [ ] Run build-free GitHub CI. Independently perform local browser, responsive screenshot and Lighthouse checks before claiming visual equivalence.
+
 ## Appearance editor reducer (2026-10-29)
 
 - [ ] Selecting a look updates all visual settings together, while not overwriting the overlay animation pool, custom presets or favicon.

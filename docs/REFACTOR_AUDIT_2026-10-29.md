@@ -59,7 +59,14 @@ This is a read-only architecture inventory plus a sequence for a full, staged re
 - Added tests for XML escaping, optional `lastmod`, localized language coverage, invalid slugs/IDs, gig slug collisions, public filter queries and output ordering.
 - The prior `src/` legacy migration remains separate; no broad cleanup or edits to commerce, license, MCP or authentication were made. **Local** production build, browser E2E and Lighthouse must still be run by the maintainer; never run builds in GitHub Actions.
 
-## Remaining staged refactor work## Phase 2 progress — appearance reducer and integration regression (2026-10-29)
+## Remaining staged refactor work## Phase 2 progress — hero glitch controls and historic width parsing (2026-10-29)
+
+- Started the HeroConfigEditor extraction: wordmark PowerGlitch control markup has been moved to the controlled `HeroGlitchControls.tsx`, keeping the existing mode buttons, sliders and checkbox callbacks.
+- Extracted desktop/mobile logo width initialization to `lib/hero-logo-widths.ts` with existing precedence for modern percentage, legacy numeric REM, legacy string REM and defaults (55% desktop, 90% mobile).
+- Added pure parsing tests and React interaction tests for conditional controls and switch callbacks. Hero draft serialization, media picker, boot switch and `updateSiteConfig` server action remain unchanged.
+- GitHub CI runs lint, typecheck, tests and security only. A production build is performed by Vercel after merge; local Playwright and Lighthouse remain unverified.
+
+## Phase 2 progress — appearance reducer and integration regression (2026-10-29)
 
 - Consolidated persisted appearance fields into one typed `AppearanceEditorDraft` state with a pure reducer. Look and theme updates are atomic. Functional overlay toggles are evaluated against the latest reducer state, preserving the existing child component API and queued interaction semantics.
 - Kept the old initialization from `parseConfig`, `resolveImageUrl`, `DEFAULTS`, and `DEFAULT_THEME`; kept `composeAppearancePayload` and existing JSON serialization, live-preview draft broadcast, dirty snapshot comparison and `updateSiteConfig` server action.
