@@ -14,7 +14,7 @@ import { parseNeurokoreGitHubReleases } from './github-releases'
 import { releaseStorageKey } from './releases'
 import { importRelease, type ImportFile, type ImportPlan } from './release-import'
 
-const source = 'https://api.github.com/repos/Neuroklast/NeuroKore-Releases'
+const source = 'https://api.github.com/repos/Neuroklast/vst-releases'
 export const importVersionSchema = z.string().max(64).regex(/^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:[.-]\d+)?)?$/)
 const recordSchema = z.object({ id: z.uuid(), status: z.enum(['draft', 'validated', 'published', 'withdrawn']), git_commit_sha: z.string().nullable() })
 
@@ -35,7 +35,7 @@ async function githubJson(path: string): Promise<unknown> {
 
 export async function officialImportPlan(version: string): Promise<ImportPlan> {
   importVersionSchema.parse(version)
-  const payload = await githubJson(`/releases/tags/v${version}`)
+  const payload = await githubJson(`/releases/tags/neurokore-v${version}`)
   const release = parseNeurokoreGitHubReleases([payload])[0]
   if (!release || release.version !== version || release.artifacts.length !== 2) throw new Error('Publish a complete official GitHub release first')
   const raw = z.object({ body: z.string(), assets: z.array(z.object({ name: z.string(), size: z.number(), digest: z.string() })) }).parse(payload)
@@ -54,7 +54,7 @@ export async function officialImportPlan(version: string): Promise<ImportPlan> {
 }
 
 async function assetResponse(plan: ImportPlan, file: ImportFile): Promise<Response> {
-  let url = `https://github.com/Neuroklast/NeuroKore-Releases/releases/download/v${plan.version}/${file.filename}`
+  let url = `https://github.com/Neuroklast/vst-releases/releases/download/neurokore-v${plan.version}/${file.filename}`
   for (let attempt = 0; attempt < 4; attempt++) {
     const parsed = new URL(url)
     if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !['github.com', 'release-assets.githubusercontent.com', 'objects.githubusercontent.com'].includes(parsed.hostname)) throw new Error('Unexpected GitHub asset redirect')
@@ -185,7 +185,7 @@ export async function importOfficialRelease(version: string) {
         // A simultaneous retry may already have published the same immutable files.
         if (!(await importedReleaseStatus(version)).ready) throw result.error
       }
-      await client.from('plugin_admin_audit').insert({ actor: null, product_id: productId, action: 'release.import', target: id, detail: { source: 'Neuroklast/NeuroKore-Releases', sourceRepository: 'Neuroklast/NeuroCore', trigger: 'release-manager' } })
+      await client.from('plugin_admin_audit').insert({ actor: null, product_id: productId, action: 'release.import', target: id, detail: { source: 'Neuroklast/vst-releases', sourceRepository: 'Neuroklast/NeuroCore', trigger: 'release-manager' } })
     },
   })
 }
