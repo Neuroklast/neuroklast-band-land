@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { SignOut, List, X, MagnifyingGlass } from '@phosphor-icons/react'
+import { useEffect, useId, useState } from 'react'
+import { SignOut, List, X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
 import { openAdminHelp } from '@/app/admin/_components/AdminHelpPalette'
 import { getAdminHelpShortcutLabel } from '@/lib/admin-help-shortcut'
 import {
@@ -35,6 +35,7 @@ import type { Icon } from '@phosphor-icons/react'
 import {
   ADMIN_NAV_GROUPS,
   isNavItemActive,
+  resolveActiveNavGroupId,
   type AdminNavItemData,
 } from '@/app/admin/_config/nav-groups'
 
@@ -67,6 +68,16 @@ const NAV_ICONS: Record<string, Icon> = {
   '/admin/data': Export,
 }
 
+const NAV_GROUP_ICONS: Record<string, Icon> = {
+  site: Gear,
+  artist: UserCircle,
+  music: Disc,
+  shop: Package,
+  support: Heartbeat,
+  ai: Robot,
+  system: Lock,
+}
+
 function NavLink({ item, onClick }: { item: AdminNavItemData; onClick?: () => void }) {
   const pathname = usePathname()
   const active = isNavItemActive(pathname, item)
@@ -76,8 +87,10 @@ function NavLink({ item, onClick }: { item: AdminNavItemData; onClick?: () => vo
     <Link
       href={item.href}
       onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      title={item.label}
       className={[
-        'flex items-center gap-3 rounded px-3 py-3 text-sm font-medium transition-colors',
+        'flex min-h-10 items-center gap-3 rounded px-3 py-2 text-sm font-medium transition-colors',
         active
           ? 'bg-red-900/30 text-red-400 border border-red-900/40'
           : 'text-zinc-400 hover:bg-zinc-800 hover:text-white border border-transparent',
@@ -112,21 +125,64 @@ function HelpSearchButton({ onClick }: { onClick?: () => void }) {
 }
 
 function NavLinks({ onNavClick }: { onNavClick?: () => void }) {
-  return (
-    <nav className="flex flex-col gap-4 flex-1" aria-label="Admin navigation">
-      {ADMIN_NAV_GROUPS.map((group) => (
-        <div key={group.id}>
-          <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-            {group.label}
-          </p>
-          <div className="flex flex-col gap-0.5">
-            {group.items.map((item) => (
-              <NavLink key={item.href} item={item} onClick={onNavClick} />
-            ))}
-          </div>
-        </div>
-      ))}
+  const pathname = usePathname()
+  const activeGroupId = resolveActiveNavGroupId(pathname)
+  const [expandedOverrides, setExpandedOverrides] = useState<Record<string, boolean>>({})
+  const accordionId = useId()
 
+  return (
+    <nav className="flex flex-col gap-2" aria-label="Admin navigation">
+      {/* The dashboard is always visible, not buried inside an accordion. */}
+      <div className="pb-2 border-b border-zinc-800/80">
+        <NavLink item={ADMIN_NAV_GROUPS[0].items[0]} onClick={onNavClick} />
+      </div>
+      <div className="flex flex-col gap-1">
+        {ADMIN_NAV_GROUPS.filter((group) => group.id !== 'overview').map((group) => {
+          const expanded = expandedOverrides[group.id] ?? group.id === activeGroupId
+          const GroupIcon = NAV_GROUP_ICONS[group.id] ?? Gear
+          const containsActive = group.id === activeGroupId
+          const panelId = `${accordionId}-${group.id}`
+
+          return (
+            <section key={group.id}>
+              <button
+                type="button"
+                aria-expanded={expanded}
+                aria-controls={panelId}
+                onClick={() => setExpandedOverrides((prev) => ({
+                  ...prev,
+                  [group.id]: !expanded,
+                }))}
+                className={[
+                  'flex w-full min-h-11 items-center gap-2.5 rounded px-3 py-2.5 text-left text-xs font-semibold transition-colors',
+                  containsActive
+                    ? 'text-zinc-100 bg-zinc-900/80'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100',
+                ].join(' ')}
+              >
+                <GroupIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate">{group.label}</span>
+                <CaretDown
+                  className={`h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? '' : '-rotate-90'}`}
+                  aria-hidden="true"
+                />
+              </button>
+              {expanded ? (
+                <div
+                  id={panelId}
+                  role="group"
+                  aria-label={group.label}
+                  className="ml-5 mt-0.5 mb-2 border-l border-zinc-800 pl-2 flex flex-col gap-0.5"
+                >
+                  {group.items.map((item) => (
+                    <NavLink key={item.href} item={item} onClick={onNavClick} />
+                  ))}
+                </div>
+              ) : null}
+            </section>
+          )
+        })}
+      </div>
     </nav>
   )
 }
@@ -139,29 +195,36 @@ interface AdminNavProps {
   className?: string
 }
 
+function SignOutButton({ onClick }: { onClick?: () => void }) {
+  return (
+    <form method="POST" action="/admin/logout" className="contents">
+      <button
+        type="submit"
+        onClick={onClick}
+        className="w-full flex min-h-11 items-center gap-3 rounded px-3 py-2 text-sm font-medium text-red-400 hover:bg-zinc-900 hover:text-red-300 transition-colors text-left"
+      >
+        <SignOut className="h-4 w-4 shrink-0" aria-hidden="true" />
+        Sign Out
+      </button>
+    </form>
+  )
+}
+
 function DesktopSidebar({ className = '' }: { className?: string }) {
   return (
-    <aside
-      className={`flex flex-col w-full bg-zinc-950 border-r border-zinc-800 min-h-0 h-full ${className}`}
-    >
+    <aside className={`flex flex-col w-full bg-zinc-950 border-r border-zinc-800 min-h-0 h-full ${className}`}>
       <div className="p-4 border-b border-zinc-800 shrink-0">
         <span className="font-mono font-bold tracking-[0.2em] text-sm text-white uppercase">Neuroklast</span>
         <span className="ml-2 text-[10px] text-zinc-500 font-mono uppercase tracking-widest">Admin</span>
       </div>
-      <div className="flex flex-col flex-1 min-h-0 p-3 overflow-y-auto">
+      <div className="shrink-0 px-3 pt-3">
         <HelpSearchButton />
+      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">
         <NavLinks />
-        <div className="mt-4 pt-4 border-t border-zinc-800 shrink-0">
-          <form method="POST" action="/admin/logout" className="contents">
-            <button
-              type="submit"
-              className="w-full flex items-center gap-3 rounded px-3 py-3 text-sm font-medium text-red-500 hover:bg-zinc-800 hover:text-red-400 border border-transparent transition-colors text-left"
-            >
-              <SignOut className="h-4 w-4 shrink-0" aria-hidden="true" />
-              Sign Out
-            </button>
-          </form>
-        </div>
+      </div>
+      <div className="shrink-0 border-t border-zinc-800 px-3 py-2">
+        <SignOutButton />
       </div>
     </aside>
   )
@@ -232,10 +295,10 @@ export function AdminNav({ mobileOnly = false, sidebarOnly = false, className = 
           onClick={() => setMobileOpen(false)}
         />
       <aside
-        className="md:hidden fixed inset-y-0 left-0 z-[60] w-64 bg-zinc-950 border-r border-zinc-800"
+        className="md:hidden fixed inset-y-0 left-0 z-[60] w-72 max-w-[90vw] bg-zinc-950 border-r border-zinc-800 flex flex-col"
         aria-label="Mobile admin navigation"
       >
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+        <div className="p-4 border-b border-zinc-800 flex shrink-0 items-center justify-between">
           <span className="font-mono font-bold tracking-[0.2em] text-sm text-white uppercase">Admin</span>
           <button
             type="button"
@@ -246,21 +309,14 @@ export function AdminNav({ mobileOnly = false, sidebarOnly = false, className = 
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex flex-col flex-1 p-3 overflow-y-auto h-[calc(100vh-56px)]">
+        <div className="shrink-0 px-3 pt-3">
           <HelpSearchButton onClick={() => setMobileOpen(false)} />
+        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">
           <NavLinks onNavClick={() => setMobileOpen(false)} />
-          <div className="mt-4 pt-4 border-t border-zinc-800">
-            <form method="POST" action="/admin/logout" className="contents">
-              <button
-                type="submit"
-                onClick={() => setMobileOpen(false)}
-                className="w-full flex items-center gap-3 rounded px-3 py-3 text-sm font-medium text-red-500 hover:bg-zinc-800 hover:text-red-400 border border-transparent transition-colors text-left"
-              >
-                <SignOut className="h-4 w-4 shrink-0" aria-hidden="true" />
-                Sign Out
-              </button>
-            </form>
-          </div>
+        </div>
+        <div className="shrink-0 border-t border-zinc-800 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <SignOutButton onClick={() => setMobileOpen(false)} />
         </div>
       </aside>
         </>
