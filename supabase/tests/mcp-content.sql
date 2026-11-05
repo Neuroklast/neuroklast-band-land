@@ -96,18 +96,41 @@ BEGIN
     RAISE EXCEPTION 'Failed commerce deletion did not roll back';
   END IF;
 
-  -- Create: attempted active=true must still be an unpublished draft.
+  -- Queued proposals do not publish anything before explicit review.
+  -- Older queued news proposals can contain active=false; approval must
+  -- publish them without a second visibility toggle.
   INSERT INTO public.mcp_content_requests (
     collection, operation, changes, requested_by, client_id
   ) VALUES (
     'news_posts', 'create',
-    '{"title":"New draft","slug":"mcp-test-draft","body":"Draft","active":true}',
+    '{"title":"New approved article","slug":"mcp-test-draft","body":"News","active":false}',
     reviewer, 'test-client'
   ) RETURNING id INTO proposal;
+  IF EXISTS (SELECT 1 FROM public.news_posts WHERE slug='mcp-test-draft') THEN
+    RAISE EXCEPTION 'MCP news proposal bypassed approval';
+  END IF;
   result := public.mcp_apply_content_request(proposal, reviewer);
   IF result <> 'approved' OR
-     (SELECT active FROM public.news_posts WHERE slug='mcp-test-draft') IS DISTINCT FROM false
-  THEN RAISE EXCEPTION 'MCP created a published article'; END IF;
+     (SELECT active FROM public.news_posts WHERE slug='mcp-test-draft') IS DISTINCT FROM true
+  THEN RAISE EXCEPTION 'MCP news approval did not publish'; END IF;
+  IF public.mcp_apply_content_request(proposal, reviewer) <> 'not_pending' THEN
+    RAISE EXCEPTION 'News approval replay was accepted';
+  END IF;
+
+  INSERT INTO public.mcp_content_requests (
+    collection, operation, changes, requested_by, client_id
+  ) VALUES (
+    'gigs', 'create',
+    '{"title":"MCP approved gig","event_date":"2027-01-01T22:00:00+01:00","status":"confirmed","active":false}',
+    reviewer, 'test-client'
+  ) RETURNING id INTO proposal;
+  IF EXISTS (SELECT 1 FROM public.gigs WHERE title='MCP approved gig') THEN
+    RAISE EXCEPTION 'MCP gig proposal bypassed approval';
+  END IF;
+  result := public.mcp_apply_content_request(proposal, reviewer);
+  IF result <> 'approved' OR
+     (SELECT active FROM public.gigs WHERE title='MCP approved gig') IS DISTINCT FROM true
+  THEN RAISE EXCEPTION 'MCP gig approval did not publish'; END IF;
 
   -- New artist releases go live only after a separate explicit administrator
   -- approval. Old queued requests can still contain active=false, but the
