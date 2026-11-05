@@ -49,7 +49,7 @@ function record(value: unknown): Record<string, unknown> {
 /** Show the effective result of approval, not the older queued active=false payload. */
 function effectiveReviewChanges(item: ContentReviewRow): Record<string, unknown> {
   const changes = record(item.changes)
-  return item.collection === 'releases' && item.operation === 'create'
+  return item.operation === 'create'
     ? { ...changes, active: true }
     : changes
 }
@@ -175,7 +175,7 @@ function previewValue(value: unknown): string {
 }
 
 function ChangesPreview({ item }: { item: ContentReviewRow }) {
-  const changed = Object.entries(record(item.changes))
+  const changed = Object.entries(effectiveReviewChanges(item))
   if (item.operation === 'delete') {
     return (
       <div className="rounded-lg border border-red-900/60 bg-red-950/20 p-4">
@@ -399,7 +399,7 @@ export function ReviewSlider({
               <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Change highlights
               </p>
-              {active.collection === 'releases' && active.operation === 'create' ? (
+              {active.operation === 'create' ? (
                 <span className="text-[11px] font-medium text-emerald-300">Visible after Accept</span>
               ) : null}
               <button type="button" onClick={() => setDetailsOpen(true)}
