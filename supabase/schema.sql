@@ -2273,13 +2273,14 @@ BEGIN
       IF proposed.collection IN ('bio','gallery','media_downloads','soundpacks') THEN
         RAISE EXCEPTION 'Creation disabled for this collection';
       END IF;
-      -- Human-approved discography additions are published on the artist site.
-      -- Old pending release proposals contain active=false: override them here
-      -- atomically after MFA review. Other editorial creations remain drafts.
+      -- No content is created before explicit MFA-backed administrator review.
+      -- Once approved, every new editorial item is immediately published.
+      -- Override old queued proposals containing active=false as well.
+      -- Existing-record updates can still hide content explicitly.
       IF proposed.collection = 'releases' THEN
         new_row := proposed.changes || '{"active":true,"manually_edited":true}'::jsonb;
       ELSE
-        new_row := proposed.changes || '{"active":false}'::jsonb;
+        new_row := proposed.changes || '{"active":true}'::jsonb;
       END IF;
     ELSIF proposed.operation = 'update' THEN
       new_row := proposed.changes;
