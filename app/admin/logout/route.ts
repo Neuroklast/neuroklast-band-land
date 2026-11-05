@@ -10,7 +10,9 @@ import { createActionClient } from '@/lib/supabaseServer'
 async function handleLogout(request: Request) {
   if (request.method === 'POST') {
     const supabase = await createActionClient()
-    await supabase.auth.signOut()
+    // Never revoke other sessions here: Supabase's default 'global' sign-out
+    // also invalidates OAuth refresh tokens used by external MCP clients.
+    await supabase.auth.signOut({ scope: 'local' })
   }
   redirect('/admin/login')
 }
