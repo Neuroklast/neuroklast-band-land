@@ -1,4 +1,7 @@
+'use client'
+
 import { useState } from 'react'
+import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { ContactTurnstile } from '@/components/forms/ContactTurnstile'
 import { Input } from '@/components/ui/input'
@@ -22,7 +25,9 @@ export function ContactOverlayContent({
   decorativeTexts,
   closing,
 }: ContactOverlayContentProps) {
+  const { t } = useLocale()
   const [verificationAttempt, setVerificationAttempt] = useState(0)
+  const [spamRejected, setSpamRejected] = useState(false)
   const streamLabel = decorativeTexts?.contactStreamLabel ?? '// CONTACT.INTERFACE'
   const formLabel = decorativeTexts?.contactFormLabel ?? '// CONTACT.FORM'
   const statusLabel = decorativeTexts?.contactStatusLabel ?? '// SYSTEM.STATUS: [ACTIVE]'
@@ -109,6 +114,7 @@ export function ContactOverlayContent({
           <form
             onSubmit={async (e) => {
               e.preventDefault()
+              setSpamRejected(false)
               const form = e.currentTarget
               const formData = new FormData(form)
               const data = {
@@ -143,6 +149,9 @@ export function ContactOverlayContent({
                 if (result.success) {
                   toast.success('Message sent successfully!', { id: 'contact-submit' })
                   form.reset()
+                } else if (result.error === 'spam_suspected') {
+                  setSpamRejected(true)
+                  toast.dismiss('contact-submit')
                 } else {
                   toast.error(result.error === 'verification_failed'
                     ? 'Spam protection verification failed. Please try again.'
@@ -241,6 +250,12 @@ export function ContactOverlayContent({
                 className="mt-1 min-h-[120px] border-border bg-card font-mono"
               />
             </div>
+            {spamRejected && (
+              <p role="alert" aria-live="assertive" className="border border-destructive p-3 font-mono text-xs text-destructive">
+                {t('contact.errorSpamSuspected')}{' '}
+                <a href="/legal-notice" className="underline underline-offset-2">{t('footer.legalNotice')}</a>.
+              </p>
+            )}
             <ContactTurnstile resetSignal={verificationAttempt} />
             <Button type="submit" className="w-full font-mono uppercase hover-glitch">
               <PaperPlaneTilt className="mr-2 h-5 w-5" />

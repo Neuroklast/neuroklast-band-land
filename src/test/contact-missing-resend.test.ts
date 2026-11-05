@@ -4,6 +4,16 @@ vi.mock('@/lib/server-rate-limit', () => ({
   checkContactRateLimit: vi.fn(async () => true),
 }))
 
+// Contact persistence is optional for this test, but the spam configuration
+// lookup must succeed before the action can attempt email delivery.
+vi.mock('@/lib/neurokore/server', () => ({
+  db: () => ({
+    from: (table: string) => table === 'site_config'
+      ? { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) }
+      : { insert: () => { throw new Error('Test support inbox unavailable') } },
+  }),
+}))
+
 vi.mock('@/lib/api-secrets', () => ({
   getApiSecret: vi.fn(async () => null),
 }))

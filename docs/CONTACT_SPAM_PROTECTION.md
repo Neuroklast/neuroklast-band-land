@@ -1,17 +1,21 @@
 # Contact form bot protection
 
 The public contact forms use one shared server action: `app/_actions/contact.ts`.
-Blocked submissions return an ordinary success response to avoid revealing exact
-spam-detection criteria. They are **not** saved in `plugin_contact_requests`
-and **not** delivered via Resend.
+Honeypot submissions and messages caught by the conservative automatic sales-pitch
+screen receive an ordinary success response so detection criteria are not disclosed.
+The separate **admin-managed word/phrase blacklist** instead explicitly rejects
+matching messages with a spam-suspicion notice and a link to the legal notice.
+All rejected messages are **not** saved in `plugin_contact_requests` and
+**not** delivered via Resend.
 
 ## Layers (cheapest checks first)
 
 1. Two hidden input decoys (`_hp` and `website`).
-2. Conservative filter for obvious unsolicited B2B lead-generation pitches.
-3. Existing distributed Supabase IP rate limit (5 requests / 15 minutes), fail-closed.
-4. Optional Cloudflare Turnstile, verified through Siteverify on the server **before** any contact inbox insert or email.
-5. A three-page, static, cacheable crawler decoy under `/crawl-decoy/`. It is deliberately fixed and does not create unbounded URLs, database entries, jobs, or server-side delays. Compliant search crawlers should ignore the nofollow/noindex links.
+2. Existing distributed Supabase IP rate limit (5 requests / 15 minutes), fail-closed.
+3. Admin-configurable word and phrase blacklist under `/admin/contact-spam`, with whole-word Unicode matching on subject and body.
+4. Conservative filter for obvious unsolicited B2B lead-generation pitches.
+5. Optional Cloudflare Turnstile, verified through Siteverify on the server **before** any contact inbox insert or email.
+6. A three-page, static, cacheable crawler decoy under `/crawl-decoy/`. It is deliberately fixed and does not create unbounded URLs, database entries, jobs, or server-side delays. Compliant search crawlers should ignore the nofollow/noindex links.
 
 These layers reduce ordinary form-filling spam, but do not guarantee blocking
 a human adversary or an advanced bot with valid challenge tokens.
@@ -42,7 +46,7 @@ the provider's bot-protection data processing and any required disclosures.
 
 ## Verification
 
-- `npx vitest run src/test/contact-spam.test.ts src/test/contact-turnstile.test.ts`
+- `npx vitest run src/test/contact-spam.test.ts src/test/contact-turnstile.test.ts lib/contact-spam-filter.test.ts src/test/contact-spam-action.test.ts`
 - `npm run typecheck`
 - `npm run lint`
 - Check a real test submission on the deployed domain, then verify the admin

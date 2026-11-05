@@ -28,8 +28,10 @@ export function ContactSection({
       ? t('contact.errorInvalid')
       : state?.error === 'rate_limit'
         ? t('contact.errorRateLimit')
-        : state?.error
-          ? t('contact.sendError')
+        : state?.error === 'spam_suspected'
+          ? t('contact.errorSpamSuspected')
+          : state?.error
+            ? t('contact.sendError')
           : null
 
   return (
@@ -117,6 +119,11 @@ export function ContactSection({
           {errorMessage ? (
             <p id="contact-form-error" role="alert" aria-live="assertive" className="font-mono text-xs text-destructive">
               {errorMessage}
+              {state?.error === 'spam_suspected' ? (
+                <> <a href="/legal-notice" className="underline underline-offset-2">
+                  {t('footer.legalNotice')}
+                </a>.</>
+              ) : null}
             </p>
           ) : null}
           <ContactTurnstile resetSignal={state} />

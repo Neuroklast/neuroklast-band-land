@@ -258,7 +258,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. Contact form',
       paragraphs: [
         "If you contact us through the form, we use your name, email address, subject and message to respond. We store the request in an access-restricted Supabase support database and forward it to our email inbox using Resend. For support triage, we may check the number of licence orders sharing the submitted email address without treating this as proof of identity. Legal basis: Art. 6(1)(b) GDPR for enquiries about a contract, otherwise Art. 6(1)(f) GDPR.",
-        "Closed support requests are scheduled for deletion from our support database after 180 days, with other requests deleted after 365 days, unless statutory retention duties or legal claims require longer preservation. Mailbox and processor copies may follow different retention periods. To protect the form from spam, we may briefly process connection information such as your IP address (Art. 6(1)(f) GDPR).",
+        "Closed support requests are scheduled for deletion from our support database after 180 days, with other requests deleted after 365 days, unless statutory retention duties or legal claims require longer preservation. Mailbox and processor copies may follow different retention periods. To protect the form from spam, we may briefly process connection information such as your IP address (Art. 6(1)(f) GDPR). We also automatically check the subject and message for blocked words or phrases. If the filter rejects a message, it is not stored in the support inbox or sent by email (Art. 6(1)(f) GDPR).",
       ],
     },
     newsletter: {
@@ -348,7 +348,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. Kontaktformular',
       paragraphs: [
         "Wenn du uns über das Kontaktformular schreibst, verarbeiten wir deinen Namen, deine E-Mail-Adresse, den Betreff und deine Nachricht, um dir antworten zu können. Die Anfrage wird in unserer zugriffsgeschützten Support-Datenbank bei Supabase gespeichert und über Resend an unser E-Mail-Postfach übermittelt. Zur Zuordnung von Supportanfragen prüfen wir bei gleicher E-Mail-Adresse die Anzahl vorhandener Lizenzbestellungen, ohne daraus eine Identitätsbestätigung abzuleiten. Rechtsgrundlage ist bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO, ansonsten Art. 6 Abs. 1 lit. f DSGVO.",
-        "Abgeschlossene Supportanfragen werden planmäßig nach 180 Tagen und sonstige Anfragen spätestens nach 365 Tagen aus unserer Support-Datenbank gelöscht, soweit keine gesetzlichen Aufbewahrungspflichten oder offenen rechtlichen Ansprüche entgegenstehen. Im E-Mail-Postfach und bei Dienstleistern können weitere Kopien nach deren Löschfristen verbleiben. Zum Schutz vor Spam können wir Verbindungsdaten wie die IP-Adresse kurzzeitig verarbeiten (Art. 6 Abs. 1 lit. f DSGVO).",
+        "Abgeschlossene Supportanfragen werden planmäßig nach 180 Tagen und sonstige Anfragen spätestens nach 365 Tagen aus unserer Support-Datenbank gelöscht, soweit keine gesetzlichen Aufbewahrungspflichten oder offenen rechtlichen Ansprüche entgegenstehen. Im E-Mail-Postfach und bei Dienstleistern können weitere Kopien nach deren Löschfristen verbleiben. Zum Schutz vor Spam können wir Verbindungsdaten wie die IP-Adresse kurzzeitig verarbeiten (Art. 6 Abs. 1 lit. f DSGVO). Außerdem prüfen wir Betreff und Nachricht automatisiert auf gesperrte Wörter oder Formulierungen. Abgelehnte Nachrichten werden weder in unserem Support-Postfach gespeichert noch per E-Mail versendet (Art. 6 Abs. 1 lit. f DSGVO).",
       ],
     },
     newsletter: {
@@ -438,7 +438,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. Контактна форма',
       paragraphs: [
         "Для відповіді на запит ми обробляємо ім’я, email, тему та повідомлення. Resend надсилає його до нашої пошти (ст. 6(1)(b) або (f) GDPR).",
-        "Листування зберігається на час розгляду або визначений законом строк. Для захисту від спаму можуть короткочасно оброблятися дані з’єднання, наприклад IP-адреса (ст. 6(1)(f) GDPR).",
+        "Листування зберігається на час розгляду або визначений законом строк. Для захисту від спаму можуть короткочасно оброблятися дані з’єднання, наприклад IP-адреса (ст. 6(1)(f) GDPR). Тему та текст повідомлення також автоматично перевіряємо на заборонені слова або фрази. Відхилені повідомлення не зберігаються у службі підтримки та не надсилаються електронною поштою.",
       ],
     },
     newsletter: {
@@ -528,7 +528,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. Modulo di contatto',
       paragraphs: [
         "Trattiamo nome, email, oggetto e messaggio per rispondere alle richieste. Resend consegna il messaggio alla nostra casella email (art. 6(1)(b) o (f) GDPR).",
-        "Conserviamo la corrispondenza per il tempo necessario o previsto dalla legge. Per prevenire spam, i dati di connessione, compreso l'IP, possono essere trattati brevemente (art. 6(1)(f) GDPR).",
+        "Conserviamo la corrispondenza per il tempo necessario o previsto dalla legge. Per prevenire spam, i dati di connessione, compreso l'IP, possono essere trattati brevemente (art. 6(1)(f) GDPR). Controlliamo inoltre automaticamente oggetto e testo per parole o frasi bloccate. I messaggi rifiutati non sono salvati nella casella di assistenza né inviati via email.",
       ],
     },
     newsletter: {
@@ -618,7 +618,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. Formulario de contacto',
       paragraphs: [
         "Tratamos tu nombre, correo, asunto y mensaje para responder. Resend entrega la consulta a nuestro buzón (art. 6.1.b o f RGPD).",
-        "Guardamos la correspondencia el tiempo necesario o exigido por ley. Para evitar el spam podemos procesar brevemente datos de conexión como la dirección IP (art. 6.1.f RGPD).",
+        "Guardamos la correspondencia el tiempo necesario o exigido por ley. Para evitar el spam podemos procesar brevemente datos de conexión como la dirección IP (art. 6.1.f RGPD). También comprobamos automáticamente si el asunto y el mensaje contienen palabras o frases bloqueadas. Los mensajes rechazados no se guardan en soporte ni se envían por correo.",
       ],
     },
     newsletter: {
@@ -708,7 +708,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. Formulário de contacto',
       paragraphs: [
         "Tratamos nome, email, assunto e mensagem para responder às tuas questões. A Resend entrega a mensagem à nossa caixa de correio (artigo 6.º, n.º 1, alíneas b) ou f), RGPD).",
-        "Guardamos a correspondência durante o período necessário ou imposto por lei. Para combater spam, podemos tratar brevemente dados de ligação como o IP (artigo 6.º, n.º 1, alínea f), RGPD).",
+        "Guardamos a correspondência durante o período necessário ou imposto por lei. Para combater spam, podemos tratar brevemente dados de ligação como o IP (artigo 6.º, n.º 1, alínea f), RGPD). Também verificamos automaticamente o assunto e a mensagem quanto a palavras ou expressões bloqueadas. As mensagens rejeitadas não são guardadas no apoio nem enviadas por email.",
       ],
     },
     newsletter: {
@@ -798,7 +798,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. お問い合わせフォーム',
       paragraphs: [
         "お問い合わせへの回答のため、氏名、メールアドレス、件名、本文を処理します。Resendが当社のメールボックスへ送信します（GDPR第6条第1項(b)または(f)）。",
-        "通信内容は対応に必要な期間または法定期間保存します。迷惑送信を防ぐためIPアドレスなどの接続情報を短期間扱うことがあります（GDPR第6条第1項(f)）。",
+        "通信内容は対応に必要な期間または法定期間保存します。迷惑送信を防ぐためIPアドレスなどの接続情報を短期間扱うことがあります（GDPR第6条第1項(f)）。 件名と本文も禁止語句が含まれるか自動確認します。拒否されたメッセージはサポート用データベースに保存されず、メール送信もされません。",
       ],
     },
     newsletter: {
@@ -888,7 +888,7 @@ export const PRIVACY_COPY: Record<LegalLocale, Record<string, LegalCopySection>>
       title: '5. 문의 양식',
       paragraphs: [
         "문의에 답하기 위해 이름, 이메일, 제목, 메시지를 처리합니다. Resend가 당사의 이메일로 전달합니다(GDPR 제6조 제1항 (b) 또는 (f)).",
-        "문의 내역은 처리에 필요한 기간 또는 법정 기간 보관합니다. 스팸 방지를 위해 IP 주소 등 연결 정보를 잠시 처리할 수 있습니다(GDPR 제6조 제1항 (f)).",
+        "문의 내역은 처리에 필요한 기간 또는 법정 기간 보관합니다. 스팸 방지를 위해 IP 주소 등 연결 정보를 잠시 처리할 수 있습니다(GDPR 제6조 제1항 (f)). 제목과 본문에 차단된 단어나 구문이 있는지 자동으로 확인합니다. 거부된 메시지는 지원 데이터베이스에 저장되거나 이메일로 전송되지 않습니다.",
       ],
     },
     newsletter: {

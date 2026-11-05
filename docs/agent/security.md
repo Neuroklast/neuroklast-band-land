@@ -9,6 +9,7 @@ YouTube iframes must use `referrerPolicy="strict-origin-when-cross-origin"` beca
 ## Public forms
 
 - Contact + newsletter: honeypot (`_hp`), Zod validation, Resend delivery
+- Contact subject/body word blacklist: admin-only `/admin/contact-spam` (`site_config.contact_spam_filter`), Unicode whole-word/phrase matching before DB insertion or Resend; the sender sees an explicit spam-suspicion rejection with Impressum fallback. Malformed or unreadable config fails closed. The `site_config` RLS public-read policy excludes `contact_spam_filter`; admin/service-role access remains available. Do not expose rule lists publicly or log rejected message content.
 - Rate limits via `lib/rate-limit.ts` (Supabase Postgres, hashed IP + `RATE_LIMIT_SALT`, fail-closed)
 
 ## Rate limiting (no Redis)

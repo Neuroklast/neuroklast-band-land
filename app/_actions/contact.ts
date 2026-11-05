@@ -2,6 +2,7 @@
 
 import { getApiSecret } from '@/lib/api-secrets'
 import { contactFormSchema } from '@/lib/contact-form'
+import { CONTACT_SPAM_CONFIG_KEY, isContactSpam, parseContactSpamConfig } from '@/lib/contact-spam-filter'
 import { hasFilledHoneypot, isUnsolicitedSalesPitch } from '@/lib/contact-spam'
 import { verifyContactTurnstile } from '@/lib/contact-turnstile'
 import { checkContactRateLimit } from '@/lib/server-rate-limit'
@@ -37,20 +38,35 @@ export async function submitContact(
     return { error: 'invalid' }
   }
 
-  if (isUnsolicitedSalesPitch(parsed.data)) {
-    return { success: true }
-  }
-
   const allowed = await checkContactRateLimit()
   if (!allowed) {
     return { error: 'rate_limit' }
   }
 
+  const { name, email, subject, message } = parsed.data
+  // Explicit admin blacklist takes precedence over heuristic auto-discard.
+  // Block before persistence, email delivery or challenge verification.
+  try {
+    const { data, error } = await db().from('site_config')
+      .select('value').eq('key', CONTACT_SPAM_CONFIG_KEY).maybeSingle()
+    if (error) throw error
+    const config = parseContactSpamConfig(data?.value)
+    if (!config) throw new Error('Invalid contact spam filter configuration')
+    if (isContactSpam(subject, message, config)) {
+      return { error: 'spam_suspected' }
+    }
+  } catch {
+    console.error('[contact] spam filter unavailable; message not sent')
+    return { error: 'send_failed' }
+  }
+
+  if (isUnsolicitedSalesPitch(parsed.data)) {
+    return { success: true }
+  }
+
   if (!(await verifyContactTurnstile(formData))) {
     return { error: 'verification_failed' }
   }
-
-  const { name, email, subject, message } = parsed.data
   // Contact details are self-reported. Matching orders helps support triage
   // but is never treated as proof of ownership of a licence.
   let contactId: string | null = null
