@@ -9,6 +9,17 @@ import { McpAccessError } from '@/lib/mcp/server'
  */
 export type ContactInboxStatus = 'open' | 'closed' | 'all'
 
+type ContactInboxRow = {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  delivery_state: string
+  created_at: string
+  closed_at: string | null
+}
+
 const contactFields = 'id,name,email,subject,message,delivery_state,created_at,closed_at'
 const inboxUrl = 'https://neuroklast.net/admin/contact-inbox'
 
@@ -33,7 +44,7 @@ export async function listContactInbox(
 
   // Small snippets for triage. Full message bodies require a separate get by UUID.
   return {
-    items: data.map(item => ({
+    items: data.map((item: ContactInboxRow) => ({
       id: item.id,
       name: item.name,
       email: item.email,
