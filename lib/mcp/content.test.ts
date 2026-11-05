@@ -13,23 +13,25 @@ describe('MCP editorial allowlist', () => {
     expect(() => parseContentChanges('soundpacks', 'update', { archive_key: 'private.zip' })).toThrow('not writable')
   })
 
-  it('keeps news and gig proposals as drafts even if publication is requested', () => {
+  it('prepares new news and gig proposals to go live after approval', () => {
     expect(parseContentChanges('news_posts', 'create', {
       title: 'Next release', slug: 'next-release', active: true, body: 'A new single',
-    }).active).toBe(false)
+    }).active).toBe(true)
     expect(parseContentChanges('gigs', 'create', {
       title: 'Concert', event_date: '2027-01-01T20:00:00+01:00',
-    }).active).toBe(false)
+    }).active).toBe(true)
   })
 
-  it('publishes new releases on explicit approval while other new content remains in drafts', () => {
+  it('publishes all editorial creates on explicit approval, but preserves update visibility', () => {
     expect(parseContentChanges('releases', 'create', {
       title: 'Empyrean Remix', type: 'remix', active: false, artists: ['Neuroklast'],
     }).active).toBe(true)
     expect(parseContentChanges('releases', 'create', { title: 'New release', type: 'ep' }).active).toBe(true)
     expect(parseContentChanges('releases', 'update', { title: 'Corrected title' })).not.toHaveProperty('active')
     expect(parseContentChanges('releases', 'update', { active: false }).active).toBe(false)
-    expect(parseContentChanges('news_posts', 'create', { title: 'Draft', slug: 'draft', active: true }).active).toBe(false)
+    expect(parseContentChanges('news_posts', 'create', { title: 'Draft', slug: 'draft', active: false }).active).toBe(true)
+    expect(parseContentChanges('gigs', 'update', { active: false }).active).toBe(false)
+    expect(parseContentChanges('news_posts', 'update', { title: 'Revised' })).not.toHaveProperty('active')
   })
 
   it('rejects incomplete records, wrong URLs, bad IDs and forbidden creation', () => {
