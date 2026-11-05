@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { ContactTurnstile } from '@/components/forms/ContactTurnstile'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -20,6 +22,7 @@ export function ContactOverlayContent({
   decorativeTexts,
   closing,
 }: ContactOverlayContentProps) {
+  const [verificationAttempt, setVerificationAttempt] = useState(0)
   const streamLabel = decorativeTexts?.contactStreamLabel ?? '// CONTACT.INTERFACE'
   const formLabel = decorativeTexts?.contactFormLabel ?? '// CONTACT.FORM'
   const statusLabel = decorativeTexts?.contactStatusLabel ?? '// SYSTEM.STATUS: [ACTIVE]'
@@ -114,6 +117,7 @@ export function ContactOverlayContent({
                 subject: formData.get('subject') as string,
                 message: formData.get('message') as string,
                 _hp: (formData.get('_hp') as string) ?? '',
+                website: (formData.get('website') as string) ?? '',
               }
 
               const validation = contactFormSchema.safeParse(data)
@@ -132,16 +136,24 @@ export function ContactOverlayContent({
               fd.set('subject', data.subject)
               fd.set('message', data.message)
               fd.set('_hp', data._hp ?? '')
-              const result = await submitContact(null, fd)
-
-              if (result.success) {
-                toast.success('Message sent successfully!', { id: 'contact-submit' })
-                form.reset()
-              } else {
-                toast.error(result.error || 'Failed to send message', { id: 'contact-submit' })
+              fd.set('website', data.website)
+              fd.set('cf-turnstile-response', String(formData.get('cf-turnstile-response') ?? ''))
+              try {
+                const result = await submitContact(null, fd)
+                if (result.success) {
+                  toast.success('Message sent successfully!', { id: 'contact-submit' })
+                  form.reset()
+                } else {
+                  toast.error(result.error === 'verification_failed'
+                    ? 'Spam protection verification failed. Please try again.'
+                    : result.error || 'Failed to send message', { id: 'contact-submit' })
+                }
+              } catch {
+                toast.error('Failed to send message', { id: 'contact-submit' })
+              } finally {
+                setVerificationAttempt((attempt) => attempt + 1)
+                if (submitBtn) submitBtn.disabled = false
               }
-
-              if (submitBtn) submitBtn.disabled = false
             }}
             className="space-y-4"
           >
@@ -154,6 +166,11 @@ export function ContactOverlayContent({
               aria-hidden="true"
               className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
             />
+            <div aria-hidden="true" className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0">
+              <label htmlFor="overlay-contact-website">Website</label>
+              <input type="text" id="overlay-contact-website" name="website" tabIndex={-1} autoComplete="off" />
+              <a href="/crawl-decoy/entry.html" rel="nofollow" tabIndex={-1}>Cached archive</a>
+            </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label className="font-mono text-xs uppercase tracking-wide">
@@ -224,6 +241,7 @@ export function ContactOverlayContent({
                 className="mt-1 min-h-[120px] border-border bg-card font-mono"
               />
             </div>
+            <ContactTurnstile resetSignal={verificationAttempt} />
             <Button type="submit" className="w-full font-mono uppercase hover-glitch">
               <PaperPlaneTilt className="mr-2 h-5 w-5" />
               <span className="hover-chromatic">

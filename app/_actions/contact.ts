@@ -2,6 +2,8 @@
 
 import { getApiSecret } from '@/lib/api-secrets'
 import { contactFormSchema } from '@/lib/contact-form'
+import { hasFilledHoneypot, isUnsolicitedSalesPitch } from '@/lib/contact-spam'
+import { verifyContactTurnstile } from '@/lib/contact-turnstile'
 import { checkContactRateLimit } from '@/lib/server-rate-limit'
 import { db } from '@/lib/neurokore/server'
 
@@ -18,9 +20,8 @@ export async function submitContact(
   _prev: { error?: string; success?: boolean } | null,
   formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
-  const hp = (formData.get('_hp') as string | null) ?? ''
-  // Honeypot filled → pretend success (do not tip off bots)
-  if (hp.trim()) {
+  // Silently discard obvious bots, without storing them or sending mail.
+  if (hasFilledHoneypot(formData)) {
     return { success: true }
   }
 
@@ -36,9 +37,17 @@ export async function submitContact(
     return { error: 'invalid' }
   }
 
+  if (isUnsolicitedSalesPitch(parsed.data)) {
+    return { success: true }
+  }
+
   const allowed = await checkContactRateLimit()
   if (!allowed) {
     return { error: 'rate_limit' }
+  }
+
+  if (!(await verifyContactTurnstile(formData))) {
+    return { error: 'verification_failed' }
   }
 
   const { name, email, subject, message } = parsed.data

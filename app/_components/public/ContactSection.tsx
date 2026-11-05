@@ -5,6 +5,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { resolveSectionHeading } from '@/lib/section-display'
 import { SectionWrapper, SectionHeading, SectionIntro } from './SectionWrapper'
 import { submitContact } from '@/app/_actions/contact'
+import { ContactTurnstile } from '@/components/forms/ContactTurnstile'
 
 const fieldClass = 'nk-os-field'
 
@@ -51,6 +52,12 @@ export function ContactSection({
             aria-hidden="true"
             className="sr-only"
           />
+          {/* More natural field name catches form-filling bots that skip _hp. */}
+          <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden opacity-0 pointer-events-none">
+            <label htmlFor="contact-website">Website</label>
+            <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+            <a href="/crawl-decoy/entry.html" rel="nofollow" tabIndex={-1}>Cached archive</a>
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="contact-name" className="mb-1 block font-mono text-xs uppercase tracking-wider text-muted-foreground">
@@ -112,6 +119,7 @@ export function ContactSection({
               {errorMessage}
             </p>
           ) : null}
+          <ContactTurnstile resetSignal={state} />
           <div>
             <button
               type="submit"
