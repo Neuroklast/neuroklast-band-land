@@ -169,6 +169,7 @@ export function ContactOverlayContent({
             <div aria-hidden="true" className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0">
               <label htmlFor="overlay-contact-website">Website</label>
               <input type="text" id="overlay-contact-website" name="website" tabIndex={-1} autoComplete="off" />
+              <a href="/crawl-decoy/entry.html" rel="nofollow" tabIndex={-1}>Cached archive</a>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
