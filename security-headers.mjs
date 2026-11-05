@@ -22,6 +22,7 @@ export function buildContentSecurityPolicy({ isDev = false } = {}) {
     'https://embed-cdn.spotifycdn.com',
     'https://www.youtube.com',
     'https://www.youtube-nocookie.com',
+    'https://challenges.cloudflare.com',
   ]
 
   return [
