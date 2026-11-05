@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { authenticate, removal } = vi.hoisted(() => ({
+const { authenticate, removal, inboxList, inboxGet } = vi.hoisted(() => ({
   authenticate: vi.fn(),
   removal: vi.fn(),
+  inboxList: vi.fn(),
+  inboxGet: vi.fn(),
 }))
 
 vi.mock('@/lib/mcp/server', () => {
@@ -24,6 +26,11 @@ vi.mock('@/lib/mcp/server', () => {
     siteContentCapabilities: () => ({ read: [] }),
   }
 })
+
+vi.mock('@/lib/mcp/contact-inbox', () => ({
+  listContactInbox: inboxList,
+  getContactInboxMessage: inboxGet,
+}))
 
 import { POST, GET } from '@/app/api/mcp/route'
 import { McpAccessError } from '@/lib/mcp/server'
@@ -96,6 +103,58 @@ describe('ChatGPT MCP tool discovery compatibility', () => {
       expect(tool.inputSchema.type).toBe('object')
       expect(tool.inputSchema.properties).toBeDefined()
     }
+  })
+
+  it('discovers only read-only contact inbox tools', async () => {
+    const response = await call('tools/list')
+    const data = await response.json()
+    for (const name of ['contact_inbox_list', 'contact_inbox_get']) {
+      const tool = data.result.tools.find((item: { name: string }) => item.name === name)
+      expect(tool).toBeDefined()
+      expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false })
+    }
+    const get = data.result.tools.find((item: { name: string }) => item.name === 'contact_inbox_get')
+    expect(get.inputSchema.required).toEqual(['id'])
+  })
+
+  it('reads contact previews only after authenticated MCP access', async () => {
+    inboxList.mockResolvedValueOnce({ items: [{ id: 'one', preview: 'Example' }] })
+    const response = await call('tools/call', {
+      name: 'contact_inbox_list',
+      arguments: { status: 'all', limit: 5, offset: 10 },
+    })
+    expect(response.status).toBe(200)
+    expect(inboxList).toHaveBeenCalledWith('all', 5, 10)
+    expect((await response.json()).result.content[0].text).toContain('Example')
+    expect(authenticate).toHaveBeenCalledTimes(1)
+  })
+
+  it('gets a single contact message by id with no mutation', async () => {
+    const uuid = '00000000-0000-4000-8000-000000000009'
+    inboxGet.mockResolvedValueOnce({ id: uuid, message: 'Untrusted text' })
+    const response = await call('tools/call', {
+      name: 'contact_inbox_get', arguments: { id: uuid },
+    })
+    expect(response.status).toBe(200)
+    expect(inboxGet).toHaveBeenCalledWith(uuid)
+    expect((await response.json()).result.content[0].text).toContain('Untrusted text')
+  })
+
+  it('rejects unauthorized contact tool calls before reading any messages', async () => {
+    authenticate.mockRejectedValueOnce(new McpAccessError('Administrator permission required', 403))
+    const response = await call('tools/call', {
+      name: 'contact_inbox_list', arguments: {},
+    })
+    expect(response.status).toBe(403)
+    expect(inboxList).not.toHaveBeenCalled()
+  })
+
+  it('rejects contact get calls without an id', async () => {
+    const response = await call('tools/call', {
+      name: 'contact_inbox_get', arguments: {},
+    })
+    expect(response.status).toBe(400)
+    expect(inboxGet).not.toHaveBeenCalled()
   })
 
   it('advertises an explicitly destructive human-reviewed deletion proposal', async () => {
