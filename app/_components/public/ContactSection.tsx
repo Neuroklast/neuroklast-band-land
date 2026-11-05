@@ -56,6 +56,7 @@ export function ContactSection({
           <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden opacity-0 pointer-events-none">
             <label htmlFor="contact-website">Website</label>
             <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+            <a href="/crawl-decoy/entry.html" rel="nofollow" tabIndex={-1}>Cached archive</a>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
