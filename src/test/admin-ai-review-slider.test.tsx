@@ -137,6 +137,20 @@ describe('AI content review carousel', () => {
     expect(screen.getAllByText('Yes').length).toBeGreaterThan(0)
   })
 
+  it.each([
+    ['news_posts', { title: 'Approved article', slug: 'approved-article', active: false }],
+    ['gigs', { title: 'Approved gig', event_date: '2027-01-01T22:00:00+01:00', active: false }],
+  ])('shows publication after Accept for old queued %s creates', (collection, changes) => {
+    const proposal: ContentReviewRow = {
+      ...first, collection, operation: 'create', target_id: null, changes,
+    }
+    render(<ReviewSlider initialPending={[proposal]} recentDecisions={[]} />)
+    expect(screen.getByText('Visible after Accept')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Review all 3 fields' }))
+    expect(screen.getAllByText('Visible on website').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Yes').length).toBeGreaterThan(0)
+  })
+
   it('requires a separate confirmation before approving a deletion', async () => {
     render(<ReviewSlider initialPending={[request('55555555-5555-4555-8555-555555555555', 'Delete me', 'delete')]} recentDecisions={[]} />)
     fireEvent.click(screen.getByRole('button', { name: 'Review delete' }))

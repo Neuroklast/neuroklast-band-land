@@ -128,7 +128,7 @@
 
 ## Private MCP editorial integration
 
-- [ ] Existing queued release create proposals with active=false display Visible after Accept; accepting them inserts publicly visible and manually protected releases. Other new content remains drafts; approved existing release updates do not inadvertently change visibility.
+- [ ] Existing queued create proposals with active=false display Visible after Accept for releases, news, gigs, and other editorial collections; accepting inserts publicly visible items. Releases remain manually protected. Existing-record updates do not inadvertently change visibility.
 - [ ] Accept/Reject immediately moves to the next card before the server returns. Multiple rapid decisions persist independently, an in-flight counter stays visible, double submissions are prevented, and server failures restore the proposal with a review shortcut.
 - [ ] Do not leave the page while operations are in flight; navigation/reload warning appears. A missing response must never be shown as a successful approval.
 
@@ -165,7 +165,7 @@
 - [ ] Check content read, paginated collections, draft proposal, admin approval/rejection and audit history.
 - [ ] Run PostgreSQL integration test `supabase/tests/mcp-content.sql`; verify atomic update, draft visibility, stale conflicts, replay prevention, restricted RPC grants.
 - [ ] Verify stale edit conflicts, double-click approvals, failed database writes and bot-shield compatibility.
-- [ ] Confirm new items remain unpublished until explicitly activated from native admin.
+- [ ] Confirm new items remain unpublished until administrator Accept, then become visible immediately without an extra admin toggle. Existing-record visibility updates still honor explicit active=false.
 - [ ] Confirm MCP OAuth provider metadata and ChatGPT connector setup in a staging environment.
 
 ## YouTube embeds
