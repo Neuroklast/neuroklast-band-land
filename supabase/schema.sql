@@ -827,8 +827,11 @@ END; $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_config' AND policyname='Public read config') THEN
-    EXECUTE 'CREATE POLICY "Public read config" ON public.site_config FOR SELECT USING (true)';
+    EXECUTE 'CREATE POLICY "Public read config" ON public.site_config FOR SELECT USING (key <> ''contact_spam_filter'')';
   END IF;
+  -- Existing installations may still have the legacy USING (true) policy.
+  -- Keep blacklist contents unreadable through anon/authenticated Data API.
+  EXECUTE 'ALTER POLICY "Public read config" ON public.site_config USING (key <> ''contact_spam_filter'')';
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='site_config' AND policyname='Admin all config') THEN
     EXECUTE $p$CREATE POLICY "Admin all config" ON public.site_config USING (
       EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')

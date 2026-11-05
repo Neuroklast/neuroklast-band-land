@@ -26,6 +26,7 @@ Root `GDPR_COMPLIANCE.md` is historical (pre-App-Router / KV). When it conflicts
 - Runtime Google Fonts requests are disabled. Five next/font families are bundled at build time; legacy non-bundled theme selections gracefully fall back to system/bundled fonts. Never reintroduce dynamic Google Fonts CDN links.
 - Analytics referrers exclude query/fragment; interaction targets exclude button text and URL query strings. Account/admin/withdrawal pages are not tracked.
 - Contact: honeypot `_hp` + Zod + Resend. Prefer honeypot over a cookie-heavy CAPTCHA.
+- Contact-Blacklist (`/admin/contact-spam`): prüft Betreff und Nachricht serverseitig auf ganze Wörter/Phrasen; Treffer werden vor Support-Speicherung und Resend abgewiesen. Fehlerhinweis und Kontaktalternative im Impressum, Regelbegriffe nicht öffentlich: die RLS-Policy `Public read config` schließt `contact_spam_filter` aus. Die Datenverarbeitung zur Spamabwehr ist in der Datenschutzerklärung beschrieben.
 
 ## BFSG (since 28 June 2025)
 

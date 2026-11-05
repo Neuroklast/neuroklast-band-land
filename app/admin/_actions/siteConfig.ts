@@ -7,6 +7,7 @@ import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { mergeSiteConfigValue, replacedConfigStoragePaths } from '@/lib/site-config-save'
+import { CONTACT_SPAM_CONFIG_KEY, contactSpamConfigSchema, normalizeBlockedWords } from '@/lib/contact-spam-filter'
 
 const schema = z.object({
   key: z.string().min(1),
@@ -43,6 +44,17 @@ export async function updateSiteConfig(formData: FormData) {
     parsedJson = JSON.parse(parsed.data.value)
   } catch {
     return { error: 'Value must be valid JSON' }
+  }
+
+  if (parsed.data.key === CONTACT_SPAM_CONFIG_KEY) {
+    const validated = contactSpamConfigSchema.safeParse(parsedJson)
+    if (!validated.success) {
+      return { error: 'Invalid contact spam rules: use up to 200 whole words or phrases of 2–80 characters.' }
+    }
+    parsedJson = {
+      enabled: validated.data.enabled,
+      blockedWords: normalizeBlockedWords(validated.data.blockedWords),
+    }
   }
 
   if (parsed.data.key === 'legal') {
@@ -116,6 +128,7 @@ export async function updateSiteConfig(formData: FormData) {
     revalidatePath('/admin/legal')
     revalidatePath('/admin/translations')
     revalidatePath('/admin/analytics')
+    revalidatePath('/admin/contact-spam')
     revalidatePath('/admin/sections')
     return { success: true }
   }, 'Unable to save site configuration.')

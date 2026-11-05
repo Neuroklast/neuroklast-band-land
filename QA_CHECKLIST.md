@@ -1,4 +1,12 @@
 # QA checklist
+## Contact spam blacklist (2026-11-05)
+
+- [ ] Set whole-word and multiword rules under /admin/contact-spam; save, reload and verify persistence across deployments. Test with enabled and disabled filtering.
+- [ ] Submit mixed-case and Unicode rules in subject/body; confirm visible spam-suspicion rejection with a working Impressum link and retained form text. Ensure no Supabase contact-inbox row or Resend email exists for the rejected message.
+- [ ] Verify substrings in innocent longer words are not blocked; empty blacklist permits ordinary valid enquiries. Malformed rule input and database failure must never bypass configured rules.
+- [ ] Confirm `anon` and regular authenticated users cannot SELECT the `site_config.contact_spam_filter` row through Data API, while admins can edit it, and existing honeypot + rate limit still operate.
+- [ ] Review privacy wording in all supported languages and test keyboard/screen-reader alert behavior.
+
 ## Background desktop/mobile video controls (2026-10-29)
 
 - [ ] Desktop video enable switch toggles without clearing stored media. Uploading a video automatically enables it; clearing a video does not disable the switch.
