@@ -44,7 +44,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
     ],
   },
   {
-    id: 'music',
+    id: 'content',
     label: 'Music & Content',
     items: [
       { href: '/admin/releases', label: 'Discography', countKey: 'releases' },
