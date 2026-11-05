@@ -98,7 +98,7 @@ function NavLink({ item, onClick }: { item: AdminNavItemData; onClick?: () => vo
       aria-current={active ? 'page' : undefined}
       title={item.label}
       className={[
-        'flex min-h-10 items-center gap-3 rounded px-3 py-2 text-sm font-medium transition-colors',
+        'flex min-h-11 items-center gap-3 rounded px-3 py-3 text-sm font-medium transition-colors',
         active
           ? 'bg-red-900/30 text-red-400 border border-red-900/40'
           : 'text-zinc-400 hover:bg-zinc-800 hover:text-white border border-transparent',
