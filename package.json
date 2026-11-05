@@ -87,7 +87,7 @@
     "react-is": "^19.3.1",
     "react-powerglitch": "^1.1.0",
     "react-resizable-panels": "^4.15.2",
-    "resend": "^6.34.1",
+    "resend": "^6.37.0",
     "sharp": "^0.35.3",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
