@@ -26,6 +26,9 @@ import {
   Key,
   Newspaper,
   Lock,
+  Envelope,
+  Receipt,
+  ShieldCheck,
   Scroll,
   Cpu,
   Cube,
@@ -44,6 +47,11 @@ const NAV_ICONS: Record<string, Icon> = {
   '/admin/site-config': Gear,
   '/admin/legal': Scroll,
   '/admin/security': Lock,
+  '/admin/privacy': ShieldCheck,
+  '/admin/orders': Receipt,
+  '/admin/contact-inbox': Envelope,
+  '/admin/contact-spam': ShieldCheck,
+  '/admin/withdrawals': Receipt,
   '/admin/media': Images,
   '/admin/translations': Translate,
   '/admin/bio': TextAlignLeft,
@@ -71,7 +79,7 @@ const NAV_ICONS: Record<string, Icon> = {
 const NAV_GROUP_ICONS: Record<string, Icon> = {
   site: Gear,
   artist: UserCircle,
-  music: Disc,
+  content: Disc,
   shop: Package,
   support: Heartbeat,
   ai: Robot,
@@ -167,18 +175,16 @@ function NavLinks({ onNavClick }: { onNavClick?: () => void }) {
                   aria-hidden="true"
                 />
               </button>
-              {expanded ? (
-                <div
-                  id={panelId}
-                  role="group"
-                  aria-label={group.label}
-                  className="ml-5 mt-0.5 mb-2 border-l border-zinc-800 pl-2 flex flex-col gap-0.5"
-                >
-                  {group.items.map((item) => (
-                    <NavLink key={item.href} item={item} onClick={onNavClick} />
-                  ))}
-                </div>
-              ) : null}
+              <div
+                id={panelId}
+                role="group"
+                aria-label={group.label}
+                className={`ml-5 mt-0.5 mb-2 border-l border-zinc-800 pl-2 flex-col gap-0.5 ${expanded ? 'flex' : 'hidden'}`}
+              >
+                {group.items.map((item) => (
+                  <NavLink key={item.href} item={item} onClick={onNavClick} />
+                ))}
+              </div>
             </section>
           )
         })}
