@@ -62,7 +62,7 @@ const TOOLS = [
   },
   {
     name: 'content_propose_create',
-    description: 'Submit a new editorial item as an inactive draft for human approval. Does not publish or modify live content.',
+    description: 'Queue a new editorial item for administrator approval. Nothing goes live until approval. Accepting creates the item as visible on the website (no second publish step).',
     inputSchema: { type: 'object', properties: { collection, changes: { type: 'object', additionalProperties: true } }, required: ['collection', 'changes'], additionalProperties: false },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
   },
