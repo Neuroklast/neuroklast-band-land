@@ -1,4 +1,11 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true
+    }
+  },
   "crons": [
     { "path": "/api/cron/privacy-retention", "schedule": "0 3 * * *" },
     { "path": "/api/cron/withdrawal-receipts", "schedule": "*/15 * * * *" }
