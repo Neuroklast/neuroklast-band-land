@@ -1,5 +1,16 @@
 # Architecture & Code Structure
 
+## Mandatory architecture quality
+
+**No lazy or dirty fixes, under any circumstances.** A change must repair the owning architectural boundary, not patch the nearest component until the visible symptom disappears. Apply the canonical [engineering standard](../../AGENTS.md#mandatory-engineering-standard-no-quick-fixes).
+
+- Shared concerns belong in a **single typed contract** or owned service, with every route/action consuming it and contract tests preventing divergence.
+- Do not substitute fake contexts, dummy setters, validation-only `ok` responses or schema-error string sniffing for a real domain interface.
+- Distinguish successful empty data from database/query failure, and durable success from best-effort secondary work.
+- Keep asynchronous maintenance out of ordinary request boot paths. Provide idempotent workers, leases, retries and operator-visible failure states.
+- Test failure modes and migrations, not just the happy path. Preserve compatibility deliberately and remove obsolete bridges when the migration has been validated.
+- Existing violations, severity and owner proposals are recorded in [the 2026-11-15 architecture audit](../ARCHITECTURE_DEBT_AUDIT_2026-11-15.md); none is waived by being listed.
+
 ## Stack
 
 Next.js App Router (public + admin), Supabase (`site_config`, content tables, auth), Cloudflare R2, Resend. Legacy root `api/` remains for some proxies (rate-limited via Upstash) — prefer `app/api/**` for new routes.

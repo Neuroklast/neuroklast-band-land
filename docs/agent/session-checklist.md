@@ -1,5 +1,21 @@
 # Agent Session Checklist
 
+## Absolute release-blocking architecture checks
+
+A lazy/dirty/one-off patch is **not merge-ready**, even when unit tests pass. Enforce [AGENTS.md](../../AGENTS.md#mandatory-engineering-standard-no-quick-fixes), [workflow.md](./workflow.md) and the current [architecture debt audit](../ARCHITECTURE_DEBT_AUDIT_2026-11-15.md). Complete this checklist for every change:
+
+```
+[ ] Root cause is demonstrated and all affected callers/modules have been inspected
+[ ] Fix is placed in the canonical layer; no duplicate per-route workaround
+[ ] No no-op success, fake type/context, unchecked database error or hidden data loss
+[ ] Successful empty state and loading failure are explicitly distinct
+[ ] Failure injection, regression and relevant security/data tests cover the behavior
+[ ] Persistent work has idempotency, retry/rollback and operational error visibility
+[ ] No leftover temporary branch switches or undocumented production compatibility hacks
+[ ] Existing architectural debt is not extended; new debt is not disguised as a fix
+[ ] Review records actual validation performed and explicitly names unverified checks
+```
+
 ## Before claiming “done” / opening a PR
 
 ```

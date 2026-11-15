@@ -1,5 +1,11 @@
 # Security & GDPR
 
+## Security and audit completeness: never use dirty fixes
+
+The [mandatory root-cause engineering standard](../../AGENTS.md#mandatory-engineering-standard-no-quick-fixes) applies especially to auth, MFA, financial transactions, licences, customer data and auditing. **No silent security or audit failures, fake success responses, disabled guards, local-only security evidence or ad hoc bypasses.** Check returned Supabase `error` objects, not just thrown exceptions. Design atomic, audited mutations or a durable, monitored outbox when events cannot be committed together.
+
+Differentiate unauthenticated, forbidden, invalid, conflicting and unavailable responses. Refuse to claim a protected operation succeeded without evidence. Never sacrifice these guarantees to make a page load. See [A-01, A-06 and A-08 in the audit](../ARCHITECTURE_DEBT_AUDIT_2026-11-15.md).
+
 ## Embeds (TDDDG / GDPR)
 
 Spotify, YouTube, SoundCloud: **never** auto-load. Two-click consent before `<iframe>`. Spotify must be a static `open.spotify.com/embed` iframe. Do **not** load `https://open.spotify.com/embed/iframe-api/v1` — that script eval()s and production CSP forbids `unsafe-eval`.

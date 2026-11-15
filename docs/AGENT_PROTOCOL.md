@@ -4,6 +4,14 @@
 
 ---
 
+## Mandatory clean-implementation rule
+
+**Lazy fixes and dirty fixes are absolutely forbidden.** Do not ship a workaround that merely removes an error message, returns misleading success, hard-codes a case-specific exception, inserts placeholder implementations, duplicates domain logic or swallows a real failure. Every reported fix must solve the root cause at the owning abstraction, include tests for the failure and its regressions, and preserve security, persistence and recovery guarantees. If a clean implementation is blocked, report the blocked state rather than pretending the task is complete.
+
+The single authoritative policy is [AGENTS.md](../AGENTS.md#mandatory-engineering-standard-no-quick-fixes). The review and delivery gates are in [docs/agent/workflow.md](agent/workflow.md), with existing violations documented in [the architectural debt audit](ARCHITECTURE_DEBT_AUDIT_2026-11-15.md).
+
+---
+
 ## The Mandate
 
 Every agent session MUST follow this cycle — no exceptions:
