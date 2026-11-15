@@ -67,7 +67,7 @@ export function adminFailureStatus(error: unknown): 400 | 401 | 403 | 409 | 413 
   // Schema/privilege/missing-RPC errors indicate an unavailable backend, not bad user input.
   if (['42P01', '42703', '42501', 'PGRST202', 'PGRST205'].includes(code) ||
       code.startsWith('08') || code.startsWith('PGRST5') ||
-      message === 'Licensing configuration incomplete' || message === 'HTTPS required' ||
+      message === 'Licensing configuration incomplete' || message === 'Audit infrastructure unavailable' || message === 'HTTPS required' ||
       message.startsWith('Invalid license encryption key') ||
       /Could not find the function|schema cache|does not exist|fetch failed|network error/i.test(message)) return 503
 
