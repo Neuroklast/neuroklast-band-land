@@ -5,6 +5,7 @@ import { createActionClient } from '@/lib/supabaseServer'
 import { getAdminUserId } from '@/lib/api-admin-auth'
 import { consumeRateLimitForRequest } from '@/lib/rate-limit'
 import { z } from 'zod'
+import { requiresAdminMfaChallenge } from '@/lib/admin-mfa-policy'
 
 export function required(name: string): string {
   const value = process.env[name]
@@ -36,7 +37,7 @@ export async function admin() {
   if (!id) throw new Error('Administrator required')
   const client: SupabaseClient = await createActionClient()
   const { data, error } = await client.auth.mfa.getAuthenticatorAssuranceLevel()
-  if (error || (data?.nextLevel === 'aal2' && data.currentLevel !== 'aal2')) throw new Error('MFA required')
+  if (requiresAdminMfaChallenge(data, error)) throw new Error('MFA required')
   return id
 }
 export async function limit(request: Request, namespace: string, count = 10) {
