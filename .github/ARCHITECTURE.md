@@ -1,3 +1,13 @@
+## ADR-2026-11-15: Treat documentation as a versioned source contract
+
+**Status:** Accepted.
+
+**Decision:** A separate CI check enforces dated evidence and updates to canonical architecture/security/data/operations documentation for changed source paths. Missing git ancestry fails closed. Documentation presence does not prove truth; review remains mandatory. Existing no-GitHub-build policy is unchanged.
+
+**Consequences:** Small code PRs require proportionate documentation updates. Branch protection must require the Living docs gate.
+
+---
+
 # Architecture Decision Records
 
 ## ADR-QUALITY-2026-11-15: Prohibit quick fixes and mandate root-cause complete delivery

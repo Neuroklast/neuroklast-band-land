@@ -71,6 +71,10 @@ Implementation is NOT acceptable if it:
 
 Review the current findings and remediation order in [Architecture Debt Audit (2026-11-15)](docs/ARCHITECTURE_DEBT_AUDIT_2026-11-15.md). For the mandatory delivery process read [workflow.md](docs/agent/workflow.md).
 
+## Mandatory living documentation
+
+The quality baseline, journal and document owners are defined in [architecture quality](docs/ARCHITECTURE_QUALITY.md), [quality journal](docs/QUALITY_JOURNAL.md) and [mapping](docs/living-docs.json). Every source PR updates the journal and all mapped topic docs, with honest test evidence and residual risk. Run `npm run test:living-docs`. Never bypass with meaningless prose, invent verified results or reintroduce GitHub builds.
+
 ## Legal routes
 
 - Public: `/legal-notice`, `/privacy-policy`
