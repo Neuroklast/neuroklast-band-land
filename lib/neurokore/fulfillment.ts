@@ -1,7 +1,7 @@
 import 'server-only'
 import { z } from 'zod'
 import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
-import { db, required } from '@/lib/neurokore/server'
+import { assertDurablePluginAudit, db, required } from '@/lib/neurokore/server'
 import { assertStripeFulfillmentEnvironment } from '@/lib/neurokore/stripe'
 import { sessionSchema, sendContractConfirmation } from '@/lib/neurokore/contract-confirmation'
 
@@ -20,6 +20,7 @@ export async function fulfillVerifiedCheckoutSession(session: z.infer<typeof ses
     metadataOrderId: session.metadata?.plugin_order,
   })
     const client = db()
+    await assertDurablePluginAudit(client)
     const orderResult = await client.from('plugin_orders')
       .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version,test_deleted_at,payment_state')
       .eq('id', session.client_reference_id).single()
