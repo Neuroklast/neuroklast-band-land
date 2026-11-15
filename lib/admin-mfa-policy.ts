@@ -24,9 +24,9 @@ export function requiresAdminMfaPage(pathname: string, method: string): boolean 
 
 /** Match the server-side admin() AAL2 contract, failing closed on auth errors. */
 export function requiresAdminMfaChallenge(
-  assurance: { currentLevel: string; nextLevel: string } | null | undefined,
+  assurance: { currentLevel: string | null; nextLevel: string | null } | null | undefined,
   error: unknown,
 ): boolean {
-  return Boolean(error || !assurance ||
+  return Boolean(error || !assurance || !assurance.currentLevel || !assurance.nextLevel ||
     (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2'))
 }
