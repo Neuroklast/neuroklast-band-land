@@ -93,6 +93,9 @@ export default function ActivityLogDialog({ open, onClose }: Props) {
               ))}
             </div>
           )}
+          <p className="px-1 py-2 text-xs text-muted-foreground" role="note">
+            Personal history stored only in this browser. It can be cleared and is not a verified security audit log.
+          </p>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto p-4 space-y-1">
           {filtered.length === 0 ? (
