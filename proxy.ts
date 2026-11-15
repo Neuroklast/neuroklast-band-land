@@ -139,8 +139,14 @@ export async function proxy(request: NextRequest) {
   // Centralized navigation for MFA-protected *pages*, after verifying admin role.
   // Do not redirect JSON APIs or form submissions: their own guards retain control.
   if (requiresAdminMfaPage(pathname, request.method)) {
-    const { data: assurance, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (requiresAdminMfaChallenge(assurance, mfaError)) {
+    let needsChallenge = true
+    try {
+      const { data: assurance, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      needsChallenge = requiresAdminMfaChallenge(assurance, mfaError)
+    } catch {
+      // Auth service failures must not accidentally allow a protected page.
+    }
+    if (needsChallenge) {
       const mfaUrl = new URL('/admin/mfa', request.url)
       mfaUrl.searchParams.set('returnTo', pathname + request.nextUrl.search)
       return redirectWithCookies(mfaUrl)
