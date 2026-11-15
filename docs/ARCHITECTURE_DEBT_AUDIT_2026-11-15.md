@@ -70,6 +70,8 @@ Both paths repeat full, legacy and minimal `releases` SELECT lists. When the ini
 
 ### A-06 — P1: a local browser activity log is described as an audit log
 
+**Remediation (2026-11-15):** The browser-side log is explicitly classified in code and its visible dialog as optional, user-modifiable local history, *not* durable audit evidence. This correction does not replace server-side mutation auditing; A-01 remains separate and blocking for compliance/security guarantees.
+
 **File:** `lib/activity-log.ts:1-76`.
 
 Admin activity and login-related entries are stored only in localStorage, capped at 200 and silently ignored if storage fails. Browser storage is user-modifiable and cleared independently from server-side history. This can be acceptable for a **personal UI history**, but cannot serve as a durable, tamper-resistant administrative audit trail.

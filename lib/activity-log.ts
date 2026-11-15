@@ -1,8 +1,9 @@
 /**
- * Activity Log — records admin actions (theme changes, config changes, login
- * attempts) for audit purposes.  Entries are stored in localStorage under
- * the key `kv:activity-log` so they survive page reloads.  The log is
- * capped at MAX_ENTRIES to prevent unbounded growth.
+ * Optional personal UI history, stored in this browser only. NOT a security,
+ * compliance, licensing or server-side administrative audit log. Entries can
+ * be modified, lost or cleared by the browser user. Do not rely on this module
+ * for durable evidence of privileged actions. It only provides a local timeline
+ * (up to 200 entries) for convenience.
  */
 
 export type ActivityLogAction =
