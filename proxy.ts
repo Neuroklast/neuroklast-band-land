@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { shouldForceInsecureCookies } from '@/lib/supabaseServer'
 import { isBlockedCrawlerUserAgent } from '@/lib/crawler-blocklist'
 import { httpsRedirectLocation } from '@/lib/force-https'
+import { requiresAdminMfaChallenge, requiresAdminMfaPage } from '@/lib/admin-mfa-policy'
 
 /**
  * Canonical admin auth "proxy" (the active protection file per this Next.js version's convention).
@@ -133,6 +134,17 @@ export async function proxy(request: NextRequest) {
     }
   } catch {
     return redirectWithCookies(forbiddenUrl)
+  }
+
+  // Centralized navigation for MFA-protected *pages*, after verifying admin role.
+  // Do not redirect JSON APIs or form submissions: their own guards retain control.
+  if (requiresAdminMfaPage(pathname, request.method)) {
+    const { data: assurance, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (requiresAdminMfaChallenge(assurance, mfaError)) {
+      const mfaUrl = new URL('/admin/mfa', request.url)
+      mfaUrl.searchParams.set('returnTo', pathname + request.nextUrl.search)
+      return redirectWithCookies(mfaUrl)
+    }
   }
 
   return supabaseResponse
