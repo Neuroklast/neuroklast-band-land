@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Repair admin data-read contracts: Look & Feel, Sections, Bio and Analytics no longer display editable empty defaults or zeroed analytics after backend failures. Show a non-editable error state with retry; preserve actual empty results.
+- Consolidate public release SELECT into the shared repository backed by the verified live schema, remove duplicate error-message-based schema guessing, and render an explicit unavailable state for discography load failures.
+- Remove expired branch-only NEUROKORE preview diagnostic code and enforce a CI route-coverage contract for strict MFA-protected admin pages.
+
+
 - Remove obsolete Supabase Storage-to-R2 migration, legacy dashboard scan, and automatic R2 reconcile at production server start. Keep R2 media operations intact and make reconciliation explicitly admin-triggered; GET preview can no longer write database rows.
 
 - Establish a mandatory no-quick-fixes engineering policy for all agents and reviewers, with documented root-cause, regression, persistence and observability checks. Add the 2026-11-15 architecture debt audit and correct outdated README claims about production schema application. This commit documents findings; it does not implement the listed remediation work.

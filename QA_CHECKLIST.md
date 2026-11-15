@@ -1,5 +1,15 @@
 # QA checklist
 
+## Architecture contract fixes (2026-11-15)
+
+- [ ] Disconnect Supabase / simulate a returned PostgREST error on Look & Feel, Sections and Bio: the editor must not mount with blank defaults; show an explicit retryable error instead.
+- [ ] With a legitimately absent config/bio row, verify the editor renders true defaults, and persists the intended new entry.
+- [ ] On Analytics, returned errors in counts, events or config must not render false zero metrics or editable fallback settings.
+- [ ] Check both homepage and discography use one canonical release projection. A schema error must be logged and not trigger an error-text-based fallback query.
+- [ ] Opening discography during backend errors must show unavailable (not an empty catalogue). Test valid empty discography separately.
+- [ ] Verify strict admin MFA page-coverage contract with the full test suite and keep page registry synchronized.
+
+
 ## Mandatory architecture and root-cause review (all PRs, 2026-11-15)
 
 - [ ] Demonstrate a reproduced failure and evidence for its root cause, then enumerate affected pages, APIs, jobs and other callers.

@@ -4,6 +4,7 @@ import { unstable_cache } from 'next/cache'
 import { createPublicClient } from '@/lib/supabaseServer'
 import { resolveImageUrl, resolvePublicAssetUrl } from '@/lib/r2'
 import { splitGigsByDate } from '@/lib/gig-browse'
+import { fetchPublicReleaseRows } from '@/lib/public-fetch'
 import { PageLayout } from '@/layouts/PageLayout'
 import { CookieConsent } from '@/components/CookieConsent'
 import { JsonLd } from './_components/public/JsonLd'
@@ -153,47 +154,6 @@ interface NewsPostRow {
 }
 
 // ─── Data fetching ────────────────────────────────────────────────────────────
-async function fetchReleases(supabase: ReturnType<typeof createPublicClient>): Promise<ReleaseRow[]> {
-  const fullSelect =
-    'id, title, type, release_date, description, cover_storage_path, cover_url, streaming_links, artists, tracks, custom_links, manually_edited'
-  const legacySelect =
-    'id, title, type, release_date, cover_storage_path, cover_url, streaming_links, manually_edited'
-  const minimalSelect =
-    'id, title, type, release_date, cover_storage_path, cover_url, streaming_links'
-
-  const { data, error } = await supabase
-    .from('releases')
-    .select(fullSelect)
-    .eq('active', true)
-    .order('display_order', { ascending: true })
-
-  if (!error) return (data ?? []) as ReleaseRow[]
-
-  console.error('[fetchAll] releases query failed:', error.message)
-
-  const fallbackSelect = error.message.includes('manually_edited') ? minimalSelect : legacySelect
-  const { data: fallbackData, error: fallbackError } = await supabase
-    .from('releases')
-    .select(fallbackSelect)
-    .eq('active', true)
-    .order('display_order', { ascending: true })
-
-  if (fallbackError) {
-    console.error('[fetchAll] releases fallback query failed:', fallbackError.message)
-    return []
-  }
-
-  // Dynamic select strings are not const-literal-parsed by supabase-js generics
-  const rows = (fallbackData ?? []) as Partial<ReleaseDbRow>[]
-  return rows.map((row) => ({
-    ...(row as ReleaseDbRow),
-    description: null,
-    artists: [],
-    tracks: [],
-    custom_links: [],
-    manually_edited: 'manually_edited' in row ? !!row.manually_edited : false,
-  }))
-}
 
 async function fetchAll() {
   try {
@@ -255,7 +215,7 @@ async function fetchAll() {
     logQueryError('social_links', socialResult.error)
     logQueryError('news_posts', newsResult.error)
 
-    const releaseRows = await fetchReleases(supabase)
+    const releaseRows = await fetchPublicReleaseRows(supabase)
 
     return {
       configRows: (configResult.data ?? []) as SiteConfigRow[],
@@ -275,8 +235,9 @@ async function fetchAll() {
       social: (socialResult.data ?? []) as SocialRow[],
       newsPosts: (newsResult.data ?? []) as NewsPostRow[],
     }
-  } catch {
-    // Return safe empty defaults when Supabase is not configured (local dev)
+  } catch (error) {
+    console.error('[homepage] failed to load public content:', error)
+    // Preserve the site's degraded public shell, but log the actual read failure.
     return {
       configRows: [] as SiteConfigRow[],
       bio: '',
