@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## 2026-11-15 — browser history is not a durable audit trail
+
+A client-only localStorage timeline cannot prove who performed a security-sensitive action. It is mutable, capped and removable by the browser user. Classify it as optional personal UI history and tell the user that explicitly; preserve a separate, server-side transactional audit contract for products, licensing, release publication and privileged operations. Never rely on a harmless browser preference/history API for compliance.
+
+---
+
 ## 2026-11-15 — error responses are part of the API contract
 
 A generic HTTP 400 for every plugin admin exception collapses invalid inputs, expired MFA, authorization failures, database outages and real conflicts into one user-unhelpful error. Map typed/known failures to correct status classes and retain sanitized response messages. Supabase queries return `{ data, error }` instead of always throwing: a product overview must not quietly show zero licences or missing signing credentials when one of its related-table queries failed. Check every returned error before presenting derived counts. Use contract tests for each class.
