@@ -92,8 +92,8 @@ begin
   if not has_function_privilege('service_role','public.plugin_public_catalog()','EXECUTE') then
     raise exception 'TEST FAILED: service-role public website catalog unavailable';
   end if;
-  -- Hidden product with an alpha licence, audit rows, a release and an abandoned
-  -- checkout: everything goes, including the audit rows and the licence.
+  -- Hidden product with an alpha licence, audit rows, release and abandoned
+  -- checkout: commerce rows are deleted, but audit history MUST survive.
   insert into public.products(title,slug,kind,active)
   values ('Temp Plugin','temp-plugin','plugin',false) returning id into tmp;
   insert into public.plugin_releases(product_id,version,channel,status)
@@ -125,7 +125,15 @@ begin
     raise exception 'TEST FAILED: abandoned order not deleted';
   end if;
   if exists (select 1 from public.plugin_admin_audit where product_id = tmp) then
-    raise exception 'TEST FAILED: audit rows not deleted';
+    raise exception 'TEST FAILED: audit product FK was not detached after deletion';
+  end if;
+  if not exists (select 1 from public.plugin_admin_audit
+      where action = 'test.audit' and product_id is null) then
+    raise exception 'TEST FAILED: product deletion destroyed historical audit records';
+  end if;
+  if not exists (select 1 from public.plugin_admin_audit
+      where action = 'row.products.delete' and target = tmp::text) then
+    raise exception 'TEST FAILED: product deletion was not audited atomically';
   end if;
 
   -- A public product cannot be deleted.
@@ -156,3 +164,52 @@ end $$;
 
 
 
+
+
+-- Verify the audit contract on the disposable PostgreSQL fixture.
+DO $atomic_audit$
+BEGIN
+  IF NOT public.plugin_durable_audit_ready() THEN
+    RAISE EXCEPTION 'TEST FAILED: one or more durable plugin audit triggers are absent';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.plugin_admin_audit
+                 WHERE action = 'row.plugin_licenses.insert') THEN
+    RAISE EXCEPTION 'TEST FAILED: licence insertion did not write an audit row';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.plugin_admin_audit
+             WHERE detail::text LIKE '%test-cipher%' OR detail::text LIKE '%meter-hash%') THEN
+    RAISE EXCEPTION 'TEST FAILED: audit exposed secret licence values';
+  END IF;
+END
+$atomic_audit$;
+
+-- A failing journal insert must roll the parent mutation back in the SAME
+-- transaction. This fixture lives only in the disposable CI database.
+CREATE FUNCTION public.test_reject_durable_audit()
+RETURNS trigger LANGUAGE plpgsql AS $reject$
+BEGIN
+  RAISE EXCEPTION 'forced audit storage failure';
+END
+$reject$;
+
+CREATE TRIGGER test_reject_durable_audit
+BEFORE INSERT ON public.plugin_admin_audit
+FOR EACH ROW EXECUTE FUNCTION public.test_reject_durable_audit();
+
+DO $rollback_test$
+BEGIN
+  BEGIN
+    INSERT INTO public.products(title,slug,kind,active)
+    VALUES ('Audit rollback test', 'test-audit-must-rollback', 'plugin', false);
+    RAISE EXCEPTION 'TEST FAILED: product insert succeeded with a broken audit journal';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM <> 'forced audit storage failure' THEN RAISE; END IF;
+  END;
+  IF EXISTS (SELECT 1 FROM public.products WHERE slug = 'test-audit-must-rollback') THEN
+    RAISE EXCEPTION 'TEST FAILED: write committed despite failed audit storage';
+  END IF;
+END
+$rollback_test$;
+
+DROP TRIGGER test_reject_durable_audit ON public.plugin_admin_audit;
+DROP FUNCTION public.test_reject_durable_audit();
