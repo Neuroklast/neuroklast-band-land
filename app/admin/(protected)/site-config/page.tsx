@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabaseServer'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { SiteConfigTabs } from './SiteConfigTabs'
@@ -10,7 +11,7 @@ export default async function SiteConfigPage() {
     const supabase = await createClient()
     const { data, error } = await supabase.from('site_config').select('key, value')
     checkAdminReadError(error, 'site-config')
-    return data ?? []
+    return z.array(z.object({ key: z.string(), value: z.unknown() })).parse(data ?? [])
   })
   if (!loaded.ok) return <AdminDataUnavailable title="Look & Feel" href="/admin/site-config" />
 
