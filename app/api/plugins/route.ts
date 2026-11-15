@@ -1,7 +1,7 @@
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { adminFailureMessage, adminFailureStatus } from '@/lib/neurokore/admin-error'
-import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
+import { admin, assertDurablePluginAudit, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
 import { generateSigningKeyPair, normalizeSigningPem, signingPublicHex } from '@/lib/neurokore/protocol'
 import { encryptSigningKey } from '@/lib/plugins/signing'
 import { RELEASE_CHANNELS, slugSchema } from '@/lib/plugins/releases'
@@ -46,20 +46,6 @@ const inputSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('generate_key'), id: z.uuid() }).strict(),
   z.object({ action: z.literal('import_key'), id: z.uuid(), private_pem: z.string().min(32).max(4096) }).strict(),
 ])
-
-async function audit(
-  client: ReturnType<typeof db>,
-  actor: string,
-  productId: string,
-  action: string,
-  detail: Record<string, unknown> = {},
-) {
-  try {
-    await client.from('plugin_admin_audit').insert({ actor, product_id: productId, action, target: productId, detail })
-  } catch {
-    // Audit is best-effort; the primary mutation already succeeded.
-  }
-}
 
 function revalidateProductSurface(slug: string) {
   revalidateTag('homepage-site-data', 'max')
@@ -124,7 +110,8 @@ export async function POST(request: Request) {
     await limit(request, 'plugins-write', 30)
     const actor = await admin()
     const input = inputSchema.parse(await body(request))
-    const client = db()
+    const client = db(actor)
+    await assertDurablePluginAudit(client)
 
     if (input.action === 'create') {
       const { data, error } = await client.from('products').insert({
@@ -137,7 +124,6 @@ export async function POST(request: Request) {
         license_format: 'v3',
       }).select('id').single()
       if (error) throw error
-      await audit(client, actor, data.id, 'product.create', { slug: input.slug })
       return json({ id: data.id })
     }
 
@@ -182,7 +168,6 @@ export async function POST(request: Request) {
         .upsert({ product_id: id, stripe_price_id: stripe_price_id || null, updated_at: new Date().toISOString() },
           { onConflict: 'product_id' })
       if (secretError) throw secretError
-      await audit(client, actor, id, 'product.update', { pricing_mode: input.pricing_mode, active: input.active })
       revalidateProductSurface(product.slug)
       return json({ ok: true })
     }
@@ -193,7 +178,6 @@ export async function POST(request: Request) {
       if (!existing.data) return json({ error: 'Product not found.' }, 404)
       const { error } = await client.from('products').update({ active: input.active }).eq('id', input.id)
       if (error) throw error
-      await audit(client, actor, input.id, 'product.visibility', { active: input.active })
       revalidateProductSurface(existing.data.slug)
       return json({ ok: true, active: input.active })
     }
@@ -244,7 +228,6 @@ export async function POST(request: Request) {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'product_id' })
       if (error) throw error
-      await audit(client, actor, product.data.id, 'product.key.generate', { slug: product.data.slug })
       return json({ public_key_hex: publicHex })
     }
 
@@ -258,7 +241,6 @@ export async function POST(request: Request) {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'product_id' })
     if (error) throw error
-    await audit(client, actor, product.data.id, 'product.key.import', { slug: product.data.slug })
     return json({ public_key_hex: publicHex })
   } catch (error) {
     console.error('[plugins-api]', error)
