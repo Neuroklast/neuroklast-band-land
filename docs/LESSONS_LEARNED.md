@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## 2026-11-15 — command validation must not masquerade as execution
+
+The admin action registry mixed actual in-memory UI state mutations with 54 server command descriptors that returned `ok: true` without writing any data. A forged context with empty settings and dummy setters made that possible. Model `execution: 'local' | 'server'` explicitly. Let the pure validator verify input and disclosure, while only the dedicated authorized server action performs persistence. A local dispatcher must reject a server command instead of manufacturing success. Use tests for no-op classification, invalid input, disclosure, and error outcomes.
+
+---
+
+
 ## 2026-11-15 — distinguish failed reads from absent content
 
 Admin editors must not use catch-and-default patterns around privileged reads: an unavailable DB is not an intentionally empty draft. Central `loadAdminData` + `checkAdminReadError` differentiates successful empty data from query errors, and the editor never mounts on a failed read. Public release projections are canonical and schema-versioned by the real deployment contract, not selected by matching error-message text. A CI test walks protected admin pages and ensures every strict `admin()` invocation has MFA navigation coverage. This work addresses audit findings A-04, A-05, A-09 (obsolete preview code) and A-11 without changing storage or existing content.

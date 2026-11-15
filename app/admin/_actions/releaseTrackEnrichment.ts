@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { parseCatalogueSyncConfig } from '@/lib/catalogue-sync-config'
 import {
   buildReleaseEnrichmentUpdate,
@@ -45,10 +45,9 @@ export async function enrichReleaseTracks(
   releaseId: string,
   options?: { force?: boolean },
 ): Promise<EnrichReleaseTracksResult> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'enrich_release_tracks',
-    { releaseId, force: options?.force ?? false },
-    createSupabaseActionContext(createAdminClient()),
+    { releaseId, force: options?.force ?? false }
   )
   if (!dispatchResult.ok) return { ok: false, error: dispatchResult.error }
 
@@ -103,10 +102,9 @@ export async function enrichAllReleasesTracks(
 ): Promise<EnrichAllReleasesTracksResult | { error: string }> {
   const limit = options?.limit ?? 25
 
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'enrich_all_release_tracks',
-    { force: options?.force ?? false, limit },
-    createSupabaseActionContext(createAdminClient()),
+    { force: options?.force ?? false, limit }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

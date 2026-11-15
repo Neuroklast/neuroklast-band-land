@@ -1,5 +1,15 @@
 # QA checklist
 
+## Server command validation contract (2026-11-15)
+
+- [ ] Every server command descriptor has `execution: 'server'` and no executable placeholder.
+- [ ] Calling `dispatchAdminAction()` for a server command returns explicit refusal, not success.
+- [ ] Next.js admin actions validate schema/disclosure before their existing authorized mutation; failed writes cannot be confused with validation success.
+- [ ] Local UI state commands remain executable and keep their original behavior.
+- [ ] Test create, edit, delete, import, factory reset and media sync flows without changing saved data unless the actual authorized handler is invoked.
+
+
+
 ## Architecture contract fixes (2026-11-15)
 
 - [ ] Disconnect Supabase / simulate a returned PostgREST error on Look & Feel, Sections and Bio: the editor must not mount with blank defaults; show an explicit retryable error instead.

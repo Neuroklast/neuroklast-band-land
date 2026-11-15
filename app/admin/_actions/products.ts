@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { safeProductHrefOptional } from '@/lib/safe-external-url'
@@ -53,10 +53,9 @@ export async function createProduct(formData: FormData) {
   if (!parsed.success) return { error: parsed.error.message }
 
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'create_product',
-    parsed.data,
-    createSupabaseActionContext(supabaseAdmin),
+    parsed.data
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -84,10 +83,9 @@ export async function updateProduct(id: string, formData: FormData) {
   if (!parsed.success) return { error: parsed.error.message }
 
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_product',
-    { ...parsed.data, id },
-    createSupabaseActionContext(supabaseAdmin),
+    { ...parsed.data, id }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -113,10 +111,9 @@ export async function updateProduct(id: string, formData: FormData) {
 
 export async function deleteProduct(id: string) {
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'delete_product',
-    { id },
-    createSupabaseActionContext(supabaseAdmin),
+    { id }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -130,10 +127,9 @@ export async function deleteProduct(id: string) {
 
 export async function toggleProductVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_product',
-    { id, active },
-    createSupabaseActionContext(supabaseAdmin),
+    { id, active }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -147,10 +143,9 @@ export async function toggleProductVisibility(id: string, active: boolean) {
 
 export async function setProductsSectionVisible(visible: boolean) {
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_site_config',
-    { key: 'sections', value: { visible } },
-    createSupabaseActionContext(supabaseAdmin),
+    { key: 'sections', value: { visible } }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

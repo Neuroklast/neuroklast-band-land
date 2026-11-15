@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Split 54 server-side admin command descriptors from local executable actions, remove their misleading no-op success handlers and delete the forged Supabase action context. Server actions now call a typed, pure validation contract and remain responsible for actual mutations. The legacy dispatcher refuses to pretend a server command was executed.
+
 - Repair admin data-read contracts: Look & Feel, Sections, Bio and Analytics no longer display editable empty defaults or zeroed analytics after backend failures. Show a non-editable error state with retry; preserve actual empty results.
 - Consolidate public release SELECT into the shared repository backed by the verified live schema, remove duplicate error-message-based schema guessing, and render an explicit unavailable state for discography load failures.
 - Remove expired branch-only NEUROKORE preview diagnostic code and enforce a CI route-coverage contract for strict MFA-protected admin pages.

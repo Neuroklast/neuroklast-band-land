@@ -26,6 +26,8 @@ Three `audit()` helpers call `await client.from('plugin_admin_audit').insert(...
 
 ### A-02 — P1: the admin registry advertises success for no-op command handlers
 
+**Remediation (refactor branch, 2026-11-15):** Distinct `execution: 'server'` descriptors replace the 54 no-op handlers. A pure validator is used by all authorized Next.js server actions; the local dispatcher refuses to execute server commands; forged Supabase contexts have been deleted. CI and production validation are required before closing this finding.
+
 **Files:** `lib/admin-action-registry.ts:780-888` and other registry entries; `app/admin/_actions/context.ts:20-32`.
 
 Multiple registered commands, including `merge_releases`, `purge_releases`, `purge_gigs`, `factory_reset` and media reconciliation, check that `supabaseAdmin` exists and then return `{ ok: true }` without performing the named operation. This may be used as a validation/disclosure registry today, but the contract is `dispatchAdminAction()` / `execute()`: a caller cannot infer that a reported success means the operation happened. The Supabase action context itself supplies type-cast empty settings/data and no-op setter callbacks, explicitly annotated `temp for migration`.

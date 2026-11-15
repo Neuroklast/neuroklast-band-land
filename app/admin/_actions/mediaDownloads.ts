@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { parseMediaCategory, validateMediaUpload } from '@/lib/media-download'
@@ -78,10 +78,9 @@ export async function createMediaDownload(formData: FormData) {
   if (!check.ok) return { error: check.error }
 
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'create_media_download',
-    parsed.data,
-    createSupabaseActionContext(supabaseAdmin),
+    parsed.data
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -111,10 +110,9 @@ export async function updateMediaDownload(id: string, formData: FormData) {
   if (!check.ok) return { error: check.error }
 
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_media_download',
-    { ...parsed.data, id },
-    createSupabaseActionContext(supabaseAdmin),
+    { ...parsed.data, id }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -132,10 +130,9 @@ export async function updateMediaDownload(id: string, formData: FormData) {
 
 export async function deleteMediaDownload(id: string) {
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'delete_media_download',
-    { id },
-    createSupabaseActionContext(supabaseAdmin),
+    { id }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -152,10 +149,9 @@ export async function deleteMediaDownload(id: string) {
 
 export async function toggleMediaDownloadVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_media_download_visibility',
-    { id, active },
-    createSupabaseActionContext(supabaseAdmin),
+    { id, active }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

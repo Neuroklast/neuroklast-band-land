@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { safeExternalUrlOptional } from '@/lib/safe-external-url'
@@ -42,7 +42,7 @@ export async function createMember(formData: FormData) {
   if (!parsed.success) return { error: parsed.error.message }
 
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin('create_member', parsed.data, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('create_member', parsed.data)
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -59,7 +59,7 @@ export async function updateMember(id: string, formData: FormData) {
   if (!parsed.success) return { error: parsed.error.message }
 
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin('update_member', { ...parsed.data, id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_member', { ...parsed.data, id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -76,7 +76,7 @@ export async function updateMember(id: string, formData: FormData) {
 
 export async function deleteMember(id: string) {
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin('delete_member', { id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('delete_member', { id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -90,7 +90,7 @@ export async function deleteMember(id: string) {
 
 export async function toggleMemberVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
-  const dispatchResult = dispatchAdminActionAsAdmin('update_member', { id, active }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_member', { id, active })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {

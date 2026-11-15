@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { cacheReleaseCoverToR2 } from '@/lib/release-cover-r2'
 import {
   buildItunesCatalogueImportItems,
@@ -77,10 +77,9 @@ export async function syncReleasesFromItunes(artist?: string): Promise<ItunesSyn
       }
     }
 
-    const dispatchResult = dispatchAdminActionAsAdmin(
+    const dispatchResult = validateAdminActionAsAdmin(
       'itunes_sync',
-      { artist: artistName, itunesArtistId: itunesArtistId ?? undefined },
-      createSupabaseActionContext(supabase),
+      { artist: artistName, itunesArtistId: itunesArtistId ?? undefined }
     )
     if (!dispatchResult.ok) {
       return { synced: 0, skipped: 0, errors: [dispatchResult.error] }

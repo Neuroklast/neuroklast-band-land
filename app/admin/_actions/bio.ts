@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 
 function parseStringListField(formData: FormData, name: string): string[] {
@@ -32,10 +32,9 @@ export async function updateBio(formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_bio',
-    { content, achievements, collabs },
-    createSupabaseActionContext(supabaseAdmin),
+    { content, achievements, collabs }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

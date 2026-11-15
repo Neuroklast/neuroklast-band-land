@@ -1,13 +1,13 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { syncGigsFromBandsintown } from '@/app/admin/_actions/gigsSync'
 import { syncReleasesFromSpotify } from '@/app/admin/_actions/releaseExternalSync'
 import { enrichAllReleasesTracks } from '@/app/admin/_actions/releaseTrackEnrichment'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { consolidateDuplicateReleases } from '@/lib/release-consolidation'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 
 export interface PurgeResult {
@@ -48,10 +48,9 @@ async function purgeAllGigs(): Promise<PurgeResult> {
 }
 
 export async function consolidateReleases(): Promise<ConsolidateReleasesResult | { error: string }> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'consolidate_releases',
-    {},
-    createSupabaseActionContext(createAdminClient()),
+    {}
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -65,10 +64,9 @@ export async function consolidateReleases(): Promise<ConsolidateReleasesResult |
 }
 
 export async function purgeReleases(): Promise<PurgeResult | { error: string }> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'purge_releases',
-    { scope: 'all' },
-    createSupabaseActionContext(createAdminClient()),
+    { scope: 'all' }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -81,10 +79,9 @@ export async function purgeReleases(): Promise<PurgeResult | { error: string }> 
 }
 
 export async function purgeGigs(): Promise<PurgeResult | { error: string }> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'purge_gigs',
-    {},
-    createSupabaseActionContext(createAdminClient()),
+    {}
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -97,10 +94,9 @@ export async function purgeGigs(): Promise<PurgeResult | { error: string }> {
 }
 
 export async function resetReleaseTracklists(): Promise<PurgeResult | { error: string }> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'reset_release_tracklists',
-    {},
-    createSupabaseActionContext(createAdminClient()),
+    {}
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -125,10 +121,9 @@ export async function resetReleaseTracklists(): Promise<PurgeResult | { error: s
 }
 
 export async function purgeAndSyncReleases(): Promise<MaintenanceSyncResult | { error: string }> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'purge_and_sync_releases',
-    {},
-    createSupabaseActionContext(createAdminClient()),
+    {}
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -151,10 +146,9 @@ export async function purgeAndSyncReleases(): Promise<MaintenanceSyncResult | { 
 }
 
 export async function purgeAndSyncGigs(): Promise<MaintenanceSyncResult | { error: string }> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'purge_and_sync_gigs',
-    {},
-    createSupabaseActionContext(createAdminClient()),
+    {}
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

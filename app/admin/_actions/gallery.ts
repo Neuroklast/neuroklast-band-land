@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { safeExternalUrlOptional } from '@/lib/safe-external-url'
@@ -44,7 +44,7 @@ export async function saveGalleryImage(formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('create_gallery_item', parsed.data, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('create_gallery_item', parsed.data)
   if (!dispatchResult.ok) {
     // Prefer human-readable validation messages over raw Zod JSON dumps
     const msg = dispatchResult.error
@@ -95,10 +95,9 @@ export async function updateGalleryImage(id: string, formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_gallery_item',
-    { ...parsed.data, id },
-    createSupabaseActionContext(supabaseAdmin),
+    { ...parsed.data, id }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
@@ -125,7 +124,7 @@ export async function updateGalleryImage(id: string, formData: FormData) {
 export async function deleteGalleryImage(id: string) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('delete_gallery_item', { id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('delete_gallery_item', { id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -141,7 +140,7 @@ export async function deleteGalleryImage(id: string) {
 export async function toggleGalleryImageVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('update_gallery_visibility', { id, active }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_gallery_visibility', { id, active })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {

@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { getApiSecret } from '@/lib/api-secrets'
 import {
   resolveBandsintownArtistName,
@@ -24,10 +24,9 @@ export async function syncGigsFromBandsintown(): Promise<GigsSyncResult | { erro
     }
 
     const supabaseAdmin = createAdminClient()
-    const dispatchResult = dispatchAdminActionAsAdmin(
+    const dispatchResult = validateAdminActionAsAdmin(
       'bandsintown_gigs_sync',
-      {},
-      createSupabaseActionContext(supabaseAdmin),
+      {}
     )
     if (!dispatchResult.ok) return { error: dispatchResult.error }
 

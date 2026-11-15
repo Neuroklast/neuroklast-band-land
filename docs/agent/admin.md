@@ -146,7 +146,7 @@ Do not replace the existing site-config editor actions with plugin actions.
 
 ## Site config mutations
 
-`updateSiteConfig` in `app/admin/_actions/siteConfig.ts` dispatches `update_site_config` via `lib/admin-action-registry.ts`.
+`updateSiteConfig` in `app/admin/_actions/siteConfig.ts` validates the `update_site_config` command through `validateAdminActionAsAdmin`, then performs the real checked database write inside `runAdminAction`. Validation is not execution.
 
 Revalidate paths include `/`, `/legal-notice`, `/privacy-policy` after saves.
 
@@ -174,7 +174,7 @@ Always pass `requestChecksumCalculation: 'WHEN_REQUIRED'` to every R2 `S3Client`
 
 ## AdminActionRegistry
 
-Mutations register in `lib/admin-action-registry.ts` with Zod schemas + tests in `src/test/admin-action-registry.test.ts`.
+`lib/admin-action-registry.ts` is a **typed command catalogue**, not a general database executor. Local UI actions have executable `execution: 'local'` handlers. Every persistent command uses `execution: 'server'` with **no fake execute callback**. Next.js server actions call `validateAdminActionAsAdmin` for schema/disclosure checks, then execute the real write with the correct auth and error checks. Calling `dispatchAdminAction` on a server command returns an explicit error, never `ok: true`. Tests: `src/test/admin-action-registry.test.ts` and `src/test/admin-action-validation.test.ts`.
 
 ### Release & data maintenance actions
 
