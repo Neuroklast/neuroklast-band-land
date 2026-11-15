@@ -19,7 +19,7 @@ export async function fulfillVerifiedCheckoutSession(session: z.infer<typeof ses
     clientReferenceId: session.client_reference_id,
     metadataOrderId: session.metadata?.plugin_order,
   })
-    const client = db()
+    const client = db(auditActor)
     await assertDurablePluginAudit(client)
     const orderResult = await client.from('plugin_orders')
       .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version,test_deleted_at,payment_state')
