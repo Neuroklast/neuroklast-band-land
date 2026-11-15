@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { z } from 'zod'
-import { db } from '@/lib/neurokore/server'
+import { assertDurablePluginAudit, db } from '@/lib/neurokore/server'
 import { MEDIA_BUCKET } from '@/lib/constants'
 import { createR2S3Client } from '@/lib/r2-s3-client'
 import { assertSafeRemoteUrl } from '@/lib/ssrf-guard'
@@ -147,6 +147,7 @@ export async function importedReleaseStatus(version: string) {
 
 export async function importOfficialRelease(version: string) {
   const client = db(), productId = await product(client)
+  await assertDurablePluginAudit(client)
   return importRelease(version, {
     load: officialImportPlan,
     prepare: async plan => {
@@ -185,7 +186,6 @@ export async function importOfficialRelease(version: string) {
         // A simultaneous retry may already have published the same immutable files.
         if (!(await importedReleaseStatus(version)).ready) throw result.error
       }
-      await client.from('plugin_admin_audit').insert({ actor: null, product_id: productId, action: 'release.import', target: id, detail: { source: 'Neuroklast/vst-releases', sourceRepository: 'Neuroklast/NeuroCore', trigger: 'release-manager' } })
     },
   })
 }
