@@ -1,4 +1,11 @@
 # QA checklist
+
+## Contact admin MFA navigation (2026-11-15)
+
+- [ ] With an enrolled authenticator but AAL1 browser session, opening `/admin/contact-inbox` or `/admin/contact-spam` redirects to `/admin/mfa` without an internal server error or premature private data queries.
+- [ ] Verify a TOTP code and return to the original page. Inbox `q` and `show=all` filters survive verification.
+- [ ] Confirm AAL2 sessions load both pages without redirect, while non-admin sessions remain denied. Confirm no MFA bypass on API endpoints, order pages or server actions.
+- [ ] Verify on mobile and desktop after production deployment. Validate with non-build CI, and run the full Next.js build/browser tests locally.
 ## Contact spam blacklist (2026-11-05)
 
 - [ ] Set whole-word and multiword rules under /admin/contact-spam; save, reload and verify persistence across deployments. Test with enabled and disabled filtering.
