@@ -143,3 +143,42 @@ $ready$;
 REVOKE ALL ON FUNCTION public.plugin_durable_audit_ready()
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.plugin_durable_audit_ready() TO service_role;
+
+
+-- Existing production function must also be redefined to preserve history.
+CREATE OR REPLACE FUNCTION public.plugin_delete_product(p_product uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  is_public boolean;
+BEGIN
+  SELECT active INTO is_public FROM public.products WHERE id = p_product;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product not found';
+  END IF;
+  IF COALESCE(is_public, false) THEN
+    RAISE EXCEPTION 'Hide the product before deleting it';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.plugin_orders
+    WHERE product_id = p_product AND license_id IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Product has paid orders';
+  END IF;
+
+  DELETE FROM public.plugin_download_events WHERE product_id = p_product;
+  DELETE FROM public.plugin_release_artifacts
+    WHERE release_id IN (SELECT id FROM public.plugin_releases WHERE product_id = p_product);
+  DELETE FROM public.plugin_releases WHERE product_id = p_product;
+  DELETE FROM public.plugin_devices
+    WHERE license_id IN (SELECT id FROM public.plugin_licenses WHERE product_id = p_product);
+  DELETE FROM public.plugin_licenses WHERE product_id = p_product;
+  DELETE FROM public.plugin_orders WHERE product_id = p_product;
+  DELETE FROM public.plugin_product_secrets WHERE product_id = p_product;
+  -- Preserve audit history; FK ON DELETE SET NULL detaches the product.
+  DELETE FROM public.products WHERE id = p_product;
+END;
+$$;
