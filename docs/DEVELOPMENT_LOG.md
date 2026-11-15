@@ -2,6 +2,20 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-11-15 — repository architecture debt audit and no-quick-fixes policy
+
+**Agent:** ChatGPT  
+**Branch:** `docs/architecture-no-quick-fixes-audit-20261115`
+
+**Objective:** identify concrete architectural shortcuts across NEUROKLAST Band Land, document evidence-based remediation in one tracked audit, and make a complete root-cause implementation mandatory for future agent work and pull-request review.
+
+**What changed:** inventoried the complete Git tree (1,517 blobs), inspected representative critical code paths and added `docs/ARCHITECTURE_DEBT_AUDIT_2026-11-15.md` with 12 prioritized findings, evidence, boundaries and acceptance criteria. Added an absolute prohibition of lazy/dirty fixes to `AGENTS.md` and linked standards in agent workflow, admin/security/architecture rules, protocol, checklist, ADR and PR template. Corrected a stale README claim about automatic DB schema application and marked project-status notes as historical.
+
+**Verification:** This is documentation and review only. The audited runtime defects **remain open** and no fix to them is claimed. GitHub non-build CI must pass before merge. A local Next.js build, authenticated browser E2E and verification of current Preview/Production secrets were not performed as part of this audit.
+
+---
+
+
 ## Session: 2026-10-28 — ChatGPT OAuth session AAL1 despite administrator MFA
 
 **Agent:** ChatGPT
