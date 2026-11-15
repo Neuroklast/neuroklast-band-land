@@ -52,6 +52,8 @@ Never browser `signInWithPassword` + `router.push` (cookie race / redirect loops
 
 `proxy.ts` copies refreshed cookies onto **every** redirect branch.
 
+**Central MFA navigation:** `lib/admin-mfa-policy.ts` is the single route registry and AAL2 decision predicate for strict admin pages. `proxy.ts` checks those *GET/HEAD page routes* only after authentication and the admin-role check and redirects AAL1 administrators to `/admin/mfa?returnTo=...` with original same-origin path, query string and refreshed cookies. `/admin/mfa`, unrelated pages, API endpoints and form submissions are excluded to avoid loops or surprising HTML responses. `lib/neurokore/server.ts` reuses the predicate in `admin()` as an independent security gate. Keep the route registry in sync with any new strict admin page; never use the proxy as a substitute for server-side authorization.
+
 **Login hardening:** the submit route is rate-limited per-IP (fail-closed) and adds a small delay on failed sign-in. It does **not** modify `profiles.role` — admin rows are created in Supabase, never auto-promoted.
 
 **Form gotcha:** Do not `disabled` email/password inputs during submit — only disable the submit button.

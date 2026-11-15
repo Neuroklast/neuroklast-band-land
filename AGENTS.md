@@ -47,7 +47,7 @@ Roles: `.agents/*.md`. Skills: `.agents/skills/*/SKILL.md`.
 - ALWAYS two-click embeds for Spotify / YouTube / SoundCloud. NEVER auto-load third-party iframes.
 - ALWAYS use CSS z-index tokens. NEVER raw `z-index` numbers.
 - ALWAYS keep Secret Terminal reachable: Konami, Morse on logo, `?access-secret-terminal-NK-666` → overlay type `terminal`.
-- NEVER weaken rate limits, DOMPurify, SSRF guards, honeypots, or admin MFA paths.
+- NEVER weaken rate limits, DOMPurify, SSRF guards, honeypots, or admin MFA paths. Use `lib/admin-mfa-policy.ts` and `proxy.ts` for strict-page MFA navigation instead of per-page redirect try/catch; keep server-side `admin()` as defense in depth.
 - NEVER commit secrets, `.env`, or `SECRETS_ENCRYPTION_KEY` / `RATE_LIMIT_SALT` values.
 - NEVER silence TypeScript/ESLint with `as any`, `@ts-ignore`, or bare `eslint-disable`.
 - NEVER rewrite working public UI, animation, or look unless the user asked.

@@ -1,11 +1,12 @@
 # QA checklist
 
-## Contact admin MFA navigation (2026-11-15)
+## Centralized admin MFA navigation (2026-11-15)
 
-- [ ] With an enrolled authenticator but AAL1 browser session, opening `/admin/contact-inbox` or `/admin/contact-spam` redirects to `/admin/mfa` without an internal server error or premature private data queries.
-- [ ] Verify a TOTP code and return to the original page. Inbox `q` and `show=all` filters survive verification.
-- [ ] Confirm AAL2 sessions load both pages without redirect, while non-admin sessions remain denied. Confirm no MFA bypass on API endpoints, order pages or server actions.
-- [ ] Verify on mobile and desktop after production deployment. Validate with non-build CI, and run the full Next.js build/browser tests locally.
+- [ ] With an enrolled authenticator but AAL1 session, navigate to `/admin/contact-inbox`, `/admin/contact-spam`, `/admin/orders`, `/admin/privacy`, `/admin/withdrawals`, `/admin/plugins/beta-diagnostics` and an existing `/admin/soundpacks/{id}` route. Every protected page must redirect to `/admin/mfa` rather than show the generic server error.
+- [ ] Verify TOTP and return to the requested page with the full query string preserved (Inbox `q` / `show=all`, Orders `q` / `payment`).
+- [ ] Confirm AAL2 sessions load directly, refreshed auth cookies and cache-control headers survive redirect, and non-admin sessions remain denied.
+- [ ] Check `/admin/mfa`, `/admin/security`, unrelated admin routes, all API/form POST endpoints and `/admin/soundpacks/new` avoid accidental MFA navigation loops. Server guards and MFA enforcement must remain active.
+- [ ] Verify on mobile and desktop after production deployment. Non-build CI plus local Next.js build and authenticated browser MFA test are required for end-to-end sign-off.
 ## Contact spam blacklist (2026-11-05)
 
 - [ ] Set whole-word and multiword rules under /admin/contact-spam; save, reload and verify persistence across deployments. Test with enabled and disabled filtering.

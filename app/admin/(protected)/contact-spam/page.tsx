@@ -1,5 +1,4 @@
 import { admin, db } from '@/lib/neurokore/server'
-import { redirect } from 'next/navigation'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import {
   CONTACT_SPAM_CONFIG_KEY,
@@ -10,14 +9,7 @@ import { ContactSpamEditor } from './ContactSpamEditor'
 export const dynamic = 'force-dynamic'
 
 export default async function ContactSpamPage() {
-  try {
-    await admin()
-  } catch (error) {
-    if (error instanceof Error && error.message === 'MFA required') {
-      redirect('/admin/mfa?returnTo=%2Fadmin%2Fcontact-spam')
-    }
-    throw error
-  }
+  await admin()
 
   try {
     const { data, error } = await db().from('site_config')
