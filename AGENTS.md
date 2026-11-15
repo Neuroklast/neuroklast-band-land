@@ -30,9 +30,6 @@ Read `AGENTS.md` first. Load topic files ONLY when the task touches that domain:
 | [docs/agent/public-ui.md](docs/agent/public-ui.md) | Nav, overlays, footer, public sections |
 | [docs/agent/admin.md](docs/agent/admin.md) | Admin CMS, site_config mutations |
 | [docs/agent/security.md](docs/agent/security.md) | Auth, consent, SSRF, rate limits |
-| [docs/TYPESCRIPT.md](docs/TYPESCRIPT.md) | `.ts` / `.tsx` changes |
-| [docs/FRONTEND.md](docs/FRONTEND.md) | Public UI, motion, canvas, a11y |
-| [docs/BACKEND.md](docs/BACKEND.md) | `app/api`, actions, schema, R2 |
 | [docs/COMPLIANCE-DE.md](docs/COMPLIANCE-DE.md) | Legal pages, cookies, launch |
 | [docs/AGENT_PROTOCOL.md](docs/AGENT_PROTOCOL.md) | Session log + hard UI constraints |
 
@@ -52,6 +49,26 @@ Roles: `.agents/*.md`. Skills: `.agents/skills/*/SKILL.md`.
 - NEVER silence TypeScript/ESLint with `as any`, `@ts-ignore`, or bare `eslint-disable`.
 - NEVER rewrite working public UI, animation, or look unless the user asked.
 - Default look: Neuroklast Classic (crimson, JetBrains Mono, Space Grotesk, HUD).
+
+## Mandatory engineering standard: no quick fixes
+
+**ABSOLUTE RULE: lazy fixes, dirty fixes, symptom-only patches, deceptive success states, temporary production stubs and undocumented workarounds are forbidden. A complete, maintainable, architecturally correct implementation is mandatory for every change, including urgent bug fixes.** Time pressure never justifies a bypass.
+
+Before editing code:
+1. Reproduce and trace the **root cause**, affected callers, data flow and ownership boundaries. Search for all occurrences and related modules; do not treat one failed route as the whole defect.
+2. Choose the **canonical existing abstraction**, or design one when responsibilities are duplicated. Put behavior at the correct layer and keep every security/data invariant. Do not add another per-page/per-endpoint special case for a shared concern.
+3. Specify correctness, failure modes, persistence, observability, compatibility and migration/rollback needs **before** implementation.
+
+Implementation is NOT acceptable if it:
+- Swallows database, security, payment or audit errors; returns success for a no-op; substitutes editable empty defaults for failed reads; or hides a broken service behind plausible output.
+- Uses fake or partial typed contexts, inert setters, placeholder handlers, arbitrary casts, skipped validation, or hard-coded one-off values to avoid modeling the problem.
+- Duplicates the same domain rule across controllers, pages or APIs instead of extracting a tested canonical boundary.
+- Adds a temporary path to production with no real implementation, or merely suppresses exceptions/logs rather than resolving the failure.
+- Leaves a feature half-implemented while claiming it is finished.
+
+**Completion gate:** root-cause evidence, correct ownership/model, regression and failure-injection tests, reliable error handling, explicit state and rollback, observability for durable work, updated docs, review, green applicable CI and verified deployment behavior. If the correct fix cannot be completed, **report it as blocked or partial**, keep the defect open, and do not present a workaround or a successful PR as a completed repair. Exceptions for intentionally optional features must be designed and tested as explicit product behavior, never improvised to mask a failure.
+
+Review the current findings and remediation order in [Architecture Debt Audit (2026-11-15)](docs/ARCHITECTURE_DEBT_AUDIT_2026-11-15.md). For the mandatory delivery process read [workflow.md](docs/agent/workflow.md).
 
 ## Legal routes
 
