@@ -1,4 +1,17 @@
 # Admin Patterns
+
+## Mandatory clean admin implementation
+
+**Lazy and dirty fixes are prohibited.** Follow the [root engineering mandate](../../AGENTS.md#mandatory-engineering-standard-no-quick-fixes), not a one-off page or action patch. Treat every admin operation as a complete contract across authentication, authorization, validation, mutation, confirmation, persistence and audit.
+
+- No `{ ok: true }` without actual execution and checked storage results. Validation-only dispatchers must identify themselves as validation-only, not executable commands.
+- No partial `AdminActionContext` built from `{} as Type` or inert setters. Use accurately typed contexts with explicit capabilities.
+- No editable fallback data after an unsuccessful Supabase read; distinguish successful absence, loading and error. Never permit overwriting unknown live config.
+- No silent failure of contact, product, licence, release, security or admin audit events. Separate best-effort UI conveniences from durable business effects.
+- No scattered MFA/server-error redirect handlers. Extend canonical policies and regression tests for all strict admin pages.
+
+Tracked violations and remediation criteria: [Architecture Debt Audit A-01, A-02, A-04 and A-11](../ARCHITECTURE_DEBT_AUDIT_2026-11-15.md).
+
 ## Background editor video presentation and preview/save boundary (2026-10-29)
 
 The site-wide `BackgroundConfigEditor.tsx` owns all media/path state, `useUnsavedChanges`, `broadcastAdminDraft('background')`, `updateSiteConfig` saving and post-save refresh. Controlled display sections have been extracted: `BackgroundDesktopVideoControls.tsx` for the desktop video enable switch, picker and opacity; `BackgroundMobileVideoControls.tsx` for the mobile 'same', 'separate', 'off' selector and conditional video picker; `BackgroundOpacitySlider.tsx` reuses original Radix slider markup. Keep existing picker R2 prefixes, scrub variants, labels and CSS. The parent remains responsible for automatically enabling desktop video after successful upload and clearing errors.
