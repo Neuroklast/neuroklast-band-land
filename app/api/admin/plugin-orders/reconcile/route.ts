@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       required('STRIPE_SECRET_KEY'),
     ))
     if (session.client_reference_id !== order.id) return json({ error: 'Session does not match this order.' }, 409)
-    const result = await fulfillVerifiedCheckoutSession(session)
+    const result = await fulfillVerifiedCheckoutSession(session, actor)
     return json({ status: result.status })
   } catch (error) {
     console.error('[neurokore-reconcile] failed', {
