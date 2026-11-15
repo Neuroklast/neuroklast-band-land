@@ -22,6 +22,7 @@ export function adminFailureMessage(error: unknown): string {
       : 'Set NEUROKORE_KEY_ENCRYPTION_SECRET (64 hex chars, not the PEM) and NEUROKORE_SIGNING_PRIVATE_KEY, then redeploy.'
   }
   if (message === 'MFA required') return 'Complete MFA, then retry.'
+  if (message === 'Audit infrastructure unavailable') return 'Audit database migration is missing or unavailable. No changes were made.'
   if (message.startsWith('Too many requests')) return 'Too many requests. Please retry shortly.'
   if (message === 'Administrator required') return 'Administrator sign-in required.'
   if (message === 'Hide the product before deleting it') {
@@ -66,7 +67,7 @@ export function adminFailureStatus(error: unknown): 400 | 401 | 403 | 409 | 413 
   // Schema/privilege/missing-RPC errors indicate an unavailable backend, not bad user input.
   if (['42P01', '42703', '42501', 'PGRST202', 'PGRST205'].includes(code) ||
       code.startsWith('08') || code.startsWith('PGRST5') ||
-      message === 'Licensing configuration incomplete' || message === 'HTTPS required' ||
+      message === 'Licensing configuration incomplete' || message === 'Audit infrastructure unavailable' || message === 'HTTPS required' ||
       message.startsWith('Invalid license encryption key') ||
       /Could not find the function|schema cache|does not exist|fetch failed|network error/i.test(message)) return 503
 

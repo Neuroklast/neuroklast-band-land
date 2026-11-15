@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## 2026-11-15 — privileged mutations and audit evidence must commit atomically
+
+A PostgREST `.insert()` can return `{ error }` without throwing, and standalone audit writes after a committed mutation cannot make the original write atomic. Catch-and-ignore audit callbacks therefore create undetectable gaps, while turning them into HTTP errors after success risks duplicate retries. Use a PostgreSQL AFTER ROW audit trigger in the same transaction as the mutation. Do not log keys, license material, contact messages or payment PII; store metadata such as changed column names and record IDs. Preserve history when products are deleted. Privileged routes must assert that the migration is installed before changing data, and use the verified actor in PostgREST request metadata. CI should inject journal failures and prove the parent mutation rolls back.
+
+---
+
 ## 2026-11-15 — browser history is not a durable audit trail
 
 A client-only localStorage timeline cannot prove who performed a security-sensitive action. It is mutable, capped and removable by the browser user. Classify it as optional personal UI history and tell the user that explicitly; preserve a separate, server-side transactional audit contract for products, licensing, release publication and privileged operations. Never rely on a harmless browser preference/history API for compliance.

@@ -39,6 +39,7 @@ describe('adminFailureStatus HTTP classification', () => {
     expect(adminFailureStatus({ code: 'PGRST202', message: 'function missing' })).toBe(503)
     expect(adminFailureStatus(new Error('TypeError: fetch failed'))).toBe(503)
     expect(adminFailureStatus(new Error('Licensing configuration incomplete'))).toBe(503)
+    expect(adminFailureStatus(new Error('Audit infrastructure unavailable'))).toBe(503)
     expect(adminFailureStatus(new Error('unexpected server failure'))).toBe(500)
   })
 })

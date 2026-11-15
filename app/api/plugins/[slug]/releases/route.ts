@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { adminFailureMessage, adminFailureStatus } from '@/lib/neurokore/admin-error'
 import { MEDIA_BUCKET } from '@/lib/constants'
 import { headR2Object, r2StorageProvider } from '@/lib/storage/r2'
-import { admin, body, db, json, limit, sameOrigin } from '@/lib/neurokore/server'
+import { admin, assertDurablePluginAudit, body, db, json, limit, sameOrigin } from '@/lib/neurokore/server'
 import {
   PLATFORMS,
   PACKAGE_TYPES,
@@ -68,21 +68,6 @@ function revalidateProduct(slug: string) {
   revalidatePath('/')
 }
 
-async function audit(
-  client: ReturnType<typeof db>,
-  actor: string,
-  productId: string,
-  action: string,
-  target: string,
-  detail: Record<string, unknown> = {},
-) {
-  try {
-    await client.from('plugin_admin_audit').insert({ actor, product_id: productId, action, target, detail })
-  } catch {
-    // Audit is best-effort; the primary mutation already succeeded.
-  }
-}
-
 async function loadProduct(client: ReturnType<typeof db>, id: string) {
   const { data, error } = await client.from('products').select('id,slug,title').eq('id', id)
     .maybeSingle()
@@ -119,7 +104,8 @@ export async function POST(request: Request, context: RouteContext) {
     const { slug: productId } = await context.params
     if (!z.uuid().safeParse(productId).success) return json({ error: 'Plugin not found.' }, 404)
     const input = inputSchema.parse(await body(request))
-    const client = db()
+    const client = db(actor)
+    await assertDurablePluginAudit(client)
     const product = await loadProduct(client, productId)
     if (!product) return json({ error: 'Plugin not found.' }, 404)
 
@@ -137,7 +123,6 @@ export async function POST(request: Request, context: RouteContext) {
         if (error.code === '23505') return json({ error: 'That version already exists on this channel.' }, 409)
         throw error
       }
-      await audit(client, actor, productId, 'release.create', data.id, { version: input.version, channel: input.channel })
       return json({ id: data.id })
     }
 
@@ -160,7 +145,6 @@ export async function POST(request: Request, context: RouteContext) {
         if (error.code === '23505') return json({ error: 'That version already exists on this channel.' }, 409)
         throw error
       }
-      await audit(client, actor, productId, 'release.update', input.id, { fields: Object.keys(patch) })
       return json({ ok: true })
     }
 
@@ -216,10 +200,6 @@ export async function POST(request: Request, context: RouteContext) {
           // The new file is registered; an orphaned object must not block the admin.
         }
       }
-      await audit(client, actor, productId, 'artifact.register', input.release_id, {
-        platform: input.platform,
-        package_type: input.package_type,
-      })
       return json({ ok: true })
     }
 
@@ -247,7 +227,6 @@ export async function POST(request: Request, context: RouteContext) {
       } catch {
         // The database row is gone; an orphaned object must not block the admin.
       }
-      await audit(client, actor, productId, 'artifact.delete', input.release_id, { artifact: input.artifact_id })
       return json({ ok: true })
     }
 
@@ -268,7 +247,6 @@ export async function POST(request: Request, context: RouteContext) {
       }
       const { error } = await client.rpc('plugin_publish_release', { p_release: input.id, p_admin: actor })
       if (error) throw error
-      await audit(client, actor, productId, 'release.publish', input.id)
       revalidateProduct(product.slug)
       return json({ ok: true })
     }
@@ -276,7 +254,6 @@ export async function POST(request: Request, context: RouteContext) {
     if (input.action === 'withdraw') {
       const { error } = await client.rpc('plugin_withdraw_release', { p_release: input.id })
       if (error) throw error
-      await audit(client, actor, productId, 'release.withdraw', input.id)
       revalidateProduct(product.slug)
       return json({ ok: true })
     }
@@ -297,7 +274,6 @@ export async function POST(request: Request, context: RouteContext) {
       .eq('id', input.id)
       .in('status', ['draft', 'validated', 'withdrawn'])
     if (releaseError) throw releaseError
-    await audit(client, actor, productId, 'release.validate', input.id)
     return json({ ok: true })
   } catch (error) {
     return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))

@@ -1,7 +1,7 @@
 import 'server-only'
 import { z } from 'zod'
 import { encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
-import { db, required } from '@/lib/neurokore/server'
+import { assertDurablePluginAudit, db, required } from '@/lib/neurokore/server'
 import { assertStripeFulfillmentEnvironment } from '@/lib/neurokore/stripe'
 import { sessionSchema, sendContractConfirmation } from '@/lib/neurokore/contract-confirmation'
 
@@ -10,7 +10,7 @@ import { sessionSchema, sendContractConfirmation } from '@/lib/neurokore/contrac
  * Stripe Checkout Session may enter here, never client-supplied payment state.
  * Called from signed webhooks or the separately authenticated admin reconciler.
  */
-export async function fulfillVerifiedCheckoutSession(session: z.infer<typeof sessionSchema>) {
+export async function fulfillVerifiedCheckoutSession(session: z.infer<typeof sessionSchema>, auditActor?: string) {
   assertStripeFulfillmentEnvironment({
     eventLivemode: session.livemode,
     sessionLivemode: session.livemode,
@@ -19,7 +19,8 @@ export async function fulfillVerifiedCheckoutSession(session: z.infer<typeof ses
     clientReferenceId: session.client_reference_id,
     metadataOrderId: session.metadata?.plugin_order,
   })
-    const client = db()
+    const client = db(auditActor)
+    await assertDurablePluginAudit(client)
     const orderResult = await client.from('plugin_orders')
       .select('id,product_id,email,price_id,stripe_session,confirmation_sent_at,terms_snapshot,licence_snapshot,terms_version,test_deleted_at,payment_state')
       .eq('id', session.client_reference_id).single()

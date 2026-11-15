@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { decryptKey, encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
 import { adminFailureMessage, adminFailureStatus } from '@/lib/neurokore/admin-error'
-import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
+import { admin, assertDurablePluginAudit, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
 
 export const runtime = 'nodejs'
 
@@ -30,21 +30,6 @@ async function loadProduct(client: ReturnType<typeof db>, productId: string) {
   return data
 }
 
-async function audit(
-  client: ReturnType<typeof db>,
-  actor: string,
-  productId: string,
-  action: string,
-  target: string,
-  detail: Record<string, unknown> = {},
-) {
-  try {
-    await client.from('plugin_admin_audit').insert({ actor, product_id: productId, action, target, detail })
-  } catch {
-    // Audit is best-effort.
-  }
-}
-
 export async function GET(request: Request, context: RouteContext) {
   try {
     await limit(request, 'plugin-licenses-read', 60)
@@ -71,7 +56,8 @@ export async function POST(request: Request, context: RouteContext) {
     const { slug: productId } = await context.params
     if (!z.uuid().safeParse(productId).success) return json({ error: 'Plugin not found.' }, 404)
     const input = inputSchema.parse(await body(request))
-    const client = db()
+    const client = db(actor)
+    await assertDurablePluginAudit(client)
     const product = await loadProduct(client, productId)
     if (!product) return json({ error: 'Plugin not found.' }, 404)
     const secret = required('NEUROKORE_KEY_ENCRYPTION_SECRET')
@@ -90,7 +76,6 @@ export async function POST(request: Request, context: RouteContext) {
         created_by: actor,
       }).select('id').single()
       if (error) throw error
-      await audit(client, actor, productId, 'license.issue', data.id, { tier: input.tier, days: input.days ?? null })
       return json({ id: data.id, key })
     }
 
@@ -114,19 +99,16 @@ export async function POST(request: Request, context: RouteContext) {
       const { error } = await client.from('plugin_licenses')
         .update({ revoked_at: new Date().toISOString() }).eq('id', input.id)
       if (error) throw error
-      await audit(client, actor, productId, 'license.revoke', input.id)
       return json({ ok: true })
     }
     if (input.action === 'remove_device') {
       const { error } = await client.from('plugin_devices')
         .delete().eq('license_id', input.id).eq('device', input.device)
       if (error) throw error
-      await audit(client, actor, productId, 'license.device.remove', input.id, { device: input.device })
       return json({ ok: true })
     }
     const { error } = await client.from('plugin_devices').delete().eq('license_id', input.id)
     if (error) throw error
-    await audit(client, actor, productId, 'license.devices.reset', input.id)
     return json({ ok: true })
   } catch (error) {
     return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))

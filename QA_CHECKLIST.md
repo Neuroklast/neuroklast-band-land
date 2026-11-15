@@ -1,5 +1,15 @@
 # QA checklist
 
+## Durable plugin audit (2026-11-15)
+
+- [ ] Run the disposable PostgreSQL plugin commerce contract after applying canonical `supabase/schema.sql`; confirm eight audit triggers are present and enabled, including contact-case status changes.
+- [ ] Inject an audit insert failure and verify the parent product insert fully rolls back. Verify audit `detail` never contains key ciphertext, hashes, email or contact message.
+- [ ] Delete an eligible hidden test product: its audit records must survive with product FK detached; a final `row.products.delete` event must remain.
+- [ ] Verify actor user UUID for admin product/licence/release mutations, including manual order reconcile; automated system writes may have a null actor.
+- [ ] Missing/unavailable `plugin_durable_audit_ready()` must stop privileged writes with a safe 503 before any mutation.
+- [ ] **Deploy order:** apply `supabase/migrations/202611150935_atomic_plugin_audit.sql` to Production explicitly before merging this app change; verify readiness and production journal; never execute migrations at runtime startup.
+
+
 ## Plugin admin API error contracts (2026-11-15)
 
 - [ ] Missing sign-in returns 401; missing admin permission or MFA returns 403, with the existing MFA remediation text.

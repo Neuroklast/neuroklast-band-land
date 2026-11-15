@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
+import { admin, assertDurablePluginAudit, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
 import { stripe } from '@/lib/neurokore/stripe'
 import { sessionSchema } from '@/lib/neurokore/contract-confirmation'
 import { fulfillVerifiedCheckoutSession } from '@/lib/neurokore/fulfillment'
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
       orderId: z.uuid(),
       sessionId: z.string().regex(/^cs_(test|live)_[a-zA-Z0-9_]+$/).optional(),
     }).strict().parse(await body(request))
-    const client = db()
+    const client = db(actor)
+    await assertDurablePluginAudit(client)
     const { data: order, error } = await client.from('plugin_orders')
       .select('id,stripe_session,test_deleted_at,payment_state')
       .eq('id', input.orderId).single()
@@ -36,11 +37,7 @@ export async function POST(request: Request) {
       required('STRIPE_SECRET_KEY'),
     ))
     if (session.client_reference_id !== order.id) return json({ error: 'Session does not match this order.' }, 409)
-    const result = await fulfillVerifiedCheckoutSession(session)
-    // This audit record does not include email addresses, keys or payment data.
-    await client.from('plugin_admin_audit').insert({
-      actor, action: 'order.reconcile', target: order.id, detail: { result: result.status },
-    })
+    const result = await fulfillVerifiedCheckoutSession(session, actor)
     return json({ status: result.status })
   } catch (error) {
     console.error('[neurokore-reconcile] failed', {

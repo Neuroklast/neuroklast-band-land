@@ -12,9 +12,20 @@ export function required(name: string): string {
   if (!value) throw new Error('Licensing configuration incomplete')
   return value
 }
-export function db() {
-  return createClient(required('NEXT_PUBLIC_SUPABASE_URL'), required('SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false, autoRefreshToken: false } })
+export function db(auditActor?: string) {
+  return createClient(required('NEXT_PUBLIC_SUPABASE_URL'), required('SUPABASE_SERVICE_ROLE_KEY'), {
+    auth: { persistSession: false, autoRefreshToken: false },
+    ...(auditActor ? { global: { headers: { 'x-neuroklast-audit-actor': auditActor } } } : {}),
+  })
+}
+
+/**
+ * Call before a privileged plugin mutation. A missing migration must fail closed:
+ * the authoritative AFTER ROW audit triggers store records atomically with writes.
+ */
+export async function assertDurablePluginAudit(client: ReturnType<typeof db>): Promise<void> {
+  const { data, error } = await client.rpc('plugin_durable_audit_ready')
+  if (error || data !== true) throw new Error('Audit infrastructure unavailable')
 }
 export function origin(): string {
   const raw = process.env.NEUROKORE_SITE_URL || process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL
