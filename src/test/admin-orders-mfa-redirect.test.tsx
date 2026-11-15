@@ -1,20 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { mockAdmin, mockDb, mockRedirect } = vi.hoisted(() => ({
+const { mockAdmin, mockDb } = vi.hoisted(() => ({
   mockAdmin: vi.fn(),
   mockDb: vi.fn(),
-  mockRedirect: vi.fn(),
 }))
 
 vi.mock('@/lib/neurokore/server', () => ({
   admin: mockAdmin,
   db: mockDb,
-}))
-vi.mock('next/navigation', () => ({
-  redirect: (path: string) => {
-    mockRedirect(path)
-    throw new Error('NEXT_REDIRECT')
-  },
 }))
 vi.mock('@/app/admin/_components/AdminPageHeader', () => ({
   AdminPageHeader: () => null,
@@ -43,12 +36,11 @@ describe('Plugin orders admin MFA gate', () => {
     })
   })
 
-  it('redirects expired AAL1 sessions to the existing MFA challenge', async () => {
+  it('keeps server-side MFA enforcement if the proxy is bypassed', async () => {
     mockAdmin.mockRejectedValueOnce(new Error('MFA required'))
 
     await expect(PluginOrdersPage({ searchParams: Promise.resolve({}) }))
-      .rejects.toThrow('NEXT_REDIRECT')
-    expect(mockRedirect).toHaveBeenCalledExactlyOnceWith('/admin/mfa?returnTo=%2Fadmin%2Forders')
+      .rejects.toThrow('MFA required')
     expect(mockDb).not.toHaveBeenCalled()
   })
 
@@ -57,7 +49,6 @@ describe('Plugin orders admin MFA gate', () => {
 
     await expect(PluginOrdersPage({ searchParams: Promise.resolve({}) }))
       .rejects.toThrow('Administrator required')
-    expect(mockRedirect).not.toHaveBeenCalled()
     expect(mockDb).not.toHaveBeenCalled()
   })
 
@@ -66,6 +57,5 @@ describe('Plugin orders admin MFA gate', () => {
     expect(page.type).toBe('main')
     expect(mockAdmin).toHaveBeenCalledOnce()
     expect(mockDb).toHaveBeenCalledOnce()
-    expect(mockRedirect).not.toHaveBeenCalled()
   })
 })
