@@ -4,6 +4,9 @@ Progressive-disclosure guides. Root control plane: [AGENTS.md](../../AGENTS.md).
 
 Read **only** what your task needs. End every session with [workflow.md](./workflow.md).
 
+**Mandatory on all tasks:** no lazy/dirty fixes, no symptom-only patches or fake success. The complete [engineering standard](../../AGENTS.md#mandatory-engineering-standard-no-quick-fixes) and the [architecture audit](../ARCHITECTURE_DEBT_AUDIT_2026-11-15.md) are authoritative.
+Read **only** what your task needs. End every session with [workflow.md](./workflow.md).
+
 | File | When to read |
 |------|----------------|
 | [workflow.md](./workflow.md) | Session loop, CI, docs closeout, PR → Production |
