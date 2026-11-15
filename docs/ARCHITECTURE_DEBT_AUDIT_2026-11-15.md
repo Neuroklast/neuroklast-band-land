@@ -36,6 +36,8 @@ Multiple registered commands, including `merge_releases`, `purge_releases`, `pur
 
 ### A-03 — P1: R2 and legacy media maintenance is launched from application startup
 
+**Remediation update (PR #631, 2026-11-15):** Obsolete legacy migration and automatic R2 reconcile have been deleted, together with the server startup hook. Explicit authenticated R2 dry-run/apply remains in `/admin/data`, and GET cannot write. CI passed before rebasing onto the architecture policy change. Confirm new production runtime logs after deploy; this entry documents the historical failure, not a currently active startup job.
+
 **Files:** `instrumentation.ts:11-19`, `lib/r2-reconcile-on-deploy.ts:66-116`, `lib/legacy-url-migration-on-deploy.ts:100-150`.
 
 The production startup hook triggers two asynchronous jobs with `void runProduction...`. These jobs perform database/state reads and potentially full R2 inventory/migration work as a side effect of new server instances. The R2 reconcile path has a claim guard, but transient read failures abort the work; the legacy migration uses a different progress/claim approach. Vercel runtime error groups observed on 2026-11-15 repeatedly logged `[legacy-url-migration] could not read deploy state: TypeError: fetch failed` and `[r2-reconcile] could not read deploy state: TypeError: fetch failed`.

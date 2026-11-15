@@ -208,19 +208,17 @@ Full-site JSON backup of **editorial** tables via `lib/site-data-backup.ts`:
 
 Do not add a second backup format; extend `SITE_BACKUP_SECTIONS` when a new content table appears.
 
-### R2 host rewrite + bucket reconcile (migration)
+### R2 host rewrite + bucket reconcile (manual maintenance)
 
 JSON import copies `storage_path` + leftover `*_url` values — not R2 objects. After a re-upload, **keys often change** (dropped prefixes, new timestamps), so swapping only the `pub-….r2.dev` host still 404s.
 
 `/admin/data` → **Match files in current R2 bucket** lists the live bucket, then updates rows when the filename **or content hash** uniquely matches (exact key → suffix → unique basename → content hash). Content-hash matching reconnects rows that changed prefix **and** basename; ambiguous names are skipped. Host-only rewrite remains as a fallback when keys did not change. The reconcile also **backfills the `content_hash` columns** on media tables so future lookups are O(1) by hash.
 
-Runs **automatically on each Vercel Production deploy** (once per git SHA) via `instrumentation.ts` + `lib/r2-reconcile-on-deploy.ts`. Preview / local / CI builds skip it. Manual: `/admin/data` → Match files. Confirm `R2_PUBLIC_HOST` is the new origin on `/admin/health` first.
+Reconciliation is **manual only**. An authenticated administrator opens `/admin/data` → **Match files in current R2 bucket**, reviews the dry-run, and explicitly applies the changes. Check `R2_PUBLIC_HOST` on `/admin/health` first. It never runs during serverless startup, deploys, module imports or GET requests. This prevents repeated cold-start Supabase fetches, implicit full-bucket scans, and unexpected database writes.
 
-**No cron required (Vercel free tier).** Deploys run the reconcile at serverless boot. `/api/media-fix` no longer lists the bucket; it returns no replacement. The old `*/20 * * * *` cron was removed because Vercel Cron Jobs require Pro. `CRON_SECRET` only matters if you keep the optional GitHub `deployment_status` → `POST /api/r2-reconcile` hook.
+The protected `GET /api/r2-reconcile` is **read-only** (dry-run). `POST /api/r2-reconcile?dryRun=1` also previews; only authenticated `POST /api/r2-reconcile` applies. `/api/media-fix` remains a non-mutating compatibility endpoint with no replacement. Logic: `lib/r2-inventory.ts`, `lib/r2-reconcile.ts`, `lib/media-fallback.ts`.
 
-Logic: `lib/r2-inventory.ts`, `lib/r2-reconcile.ts`, `lib/media-fallback.ts`, `app/api/media-fix/route.ts`.
-
-`runProductionDeployR2Reconcile` needs `R2_PUBLIC_HOST`, `R2_BUCKET_MEDIA`, `R2_ACCOUNT_ID` **and** `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` as **server** env vars (not `NEXT_PUBLIC_*`, which are baked at build).
+Manual reconciliation requires server-side `R2_PUBLIC_HOST`, `R2_BUCKET_MEDIA`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY`. A `TypeError: fetch failed` while reading Supabase `site_config` is not evidence of an R2 S3 failure.
 
 ### Async sync jobs
 

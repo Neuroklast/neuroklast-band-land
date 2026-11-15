@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## Session: 2026-11-15 — no media migration at serverless startup
+
+The two Vercel runtime error groups `[legacy-url-migration]` and `[r2-reconcile]` were both `TypeError: fetch failed` when first reading Supabase `site_config`, before any R2 S3 request. Never label these as proved R2 bucket failures. Startup jobs repeat on cold starts, and bucket scans or DB writes must require an explicit authenticated admin action with dry-run. Delete obsolete migration code, preserve R2 upload and media URL guards, keep GET read-only, and check production logs after deployment. This removes the unnecessary failure paths without asserting the underlying Supabase network is permanently repaired.
+
+---
+
 ## Session 2026-11-15 — permanent engineering ban on lazy/dirty shortcuts
 
 Repository-wide inspection identified non-throwing Supabase audit writes with unchecked `error` values, fake/no-op admin registry success handlers, a temporary forged AdminActionContext, production-startup maintenance jobs, editable blank defaults after DB read errors, duplicate schema-error-driven release fallbacks, browser-only activity history and stale migration instructions. The recurring pattern is **reporting apparent success or hiding a failure instead of modeling the correct data and recovery contract**. The repository now forbids lazy/dirty fixes without exception: trace causes across callers, establish a canonical typed owner, test failures, make durable work observable, and reject incomplete changes at review. Full severity and ownership plan: [Architecture Debt Audit](ARCHITECTURE_DEBT_AUDIT_2026-11-15.md). This documentation change does not claim those defects are already repaired.

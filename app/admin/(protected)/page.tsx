@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { ADMIN_NAV_GROUPS } from '@/app/admin/_config/nav-groups'
-import { countLegacySupabaseUrls } from '@/lib/legacy-url-audit'
 
 type CountKey =
   | 'releases'
@@ -60,14 +59,6 @@ async function getCounts(): Promise<Record<CountKey, number> | null> {
 
 export default async function AdminDashboard() {
   const counts = await getCounts()
-  let legacySupabaseUrls = -1
-  try {
-    legacySupabaseUrls = await countLegacySupabaseUrls(await createClient())
-  } catch {
-    // Supabase env missing (e.g. local build without env) — badge stays silent.
-    legacySupabaseUrls = -1
-  }
-
   return (
     <div>
       <AdminPageHeader
@@ -99,15 +90,6 @@ export default async function AdminDashboard() {
 
       {!counts ? (
         <p role="alert" className="mb-6 text-sm text-red-400">Could not load dashboard counts. Check the database connection.</p>
-      ) : null}
-
-      {legacySupabaseUrls > 0 ? (
-        <div className="mb-6 rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
-          <strong className="font-semibold">{legacySupabaseUrls}</strong>{' '}
-          media row(s) still point at the legacy Supabase Storage host — they are
-          served from Supabase and count against egress. Re-upload the file to R2
-          (or clear the URL column) in the respective editor.
-        </div>
       ) : null}
 
       <div className="space-y-8">

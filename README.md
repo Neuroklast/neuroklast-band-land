@@ -39,7 +39,7 @@ Idempotent SQL: `supabase/schema.sql`
 npm run db:schema
 ```
 
-Production schema changes must be applied and verified **explicitly before deployment** using `npm run db:schema:check` and `npm run db:schema` with the restricted migration connection. `instrumentation.ts` does **not** apply database DDL at runtime. Do not infer schema readiness from a successful Vercel build. See [the deployment prerequisites](docs/NEUROKORE_LIVE_LAUNCH_CHECKLIST.md#p0--mandatory-before-accepting-any-real-payments).
+Production schema changes must be applied and verified **explicitly before deployment** using `npm run db:schema:check` and `npm run db:schema` with the restricted migration connection. No database DDL or R2 migration runs at serverless function startup. Do not infer schema readiness from a successful Vercel build. See [the deployment prerequisites](docs/NEUROKORE_LIVE_LAUNCH_CHECKLIST.md#p0--mandatory-before-accepting-any-real-payments).
 
 ## Migrate old Vite/KV + Google Drive
 
