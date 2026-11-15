@@ -1,5 +1,4 @@
 import { admin, db } from '@/lib/neurokore/server'
-import { redirect } from 'next/navigation'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { ReconcileOrderButton } from './ReconcileOrderButton'
 import { OrderLicenceKey } from './OrderLicenceKey'
@@ -24,16 +23,7 @@ export default async function PluginOrdersPage({
 }: {
   searchParams: Promise<{ q?: string; payment?: string }>
 }) {
-  try {
-    await admin() // Keep server-side role and MFA enforcement before querying orders.
-  } catch (error) {
-    // A session with an enrolled authenticator but without AAL2 needs an MFA
-    // challenge, not the generic Server Component error boundary.
-    if (error instanceof Error && error.message === 'MFA required') {
-      redirect('/admin/mfa?returnTo=%2Fadmin%2Forders')
-    }
-    throw error
-  }
+  await admin() // Defense in depth; proxy handles navigation to the MFA challenge.
   const query = await searchParams
   const q = typeof query.q === 'string' ? query.q.trim().slice(0,254) : ''
   const allowedStates = ['pending','paid','partially_refunded','refunded','disputed','dispute_closed','failed','expired']
