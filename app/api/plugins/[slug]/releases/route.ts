@@ -1,6 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { adminFailureMessage } from '@/lib/neurokore/admin-error'
+import { adminFailureMessage, adminFailureStatus } from '@/lib/neurokore/admin-error'
 import { MEDIA_BUCKET } from '@/lib/constants'
 import { headR2Object, r2StorageProvider } from '@/lib/storage/r2'
 import { admin, body, db, json, limit, sameOrigin } from '@/lib/neurokore/server'
@@ -107,7 +107,7 @@ export async function GET(request: Request, context: RouteContext) {
     if (error) throw error
     return json({ releases: data ?? [] })
   } catch (error) {
-    return json({ error: adminFailureMessage(error) }, 400)
+    return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))
   }
 }
 
@@ -300,7 +300,7 @@ export async function POST(request: Request, context: RouteContext) {
     await audit(client, actor, productId, 'release.validate', input.id)
     return json({ ok: true })
   } catch (error) {
-    return json({ error: adminFailureMessage(error) }, 400)
+    return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))
   }
 }
 

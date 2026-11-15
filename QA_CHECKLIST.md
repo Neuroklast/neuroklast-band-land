@@ -1,5 +1,15 @@
 # QA checklist
 
+## Plugin admin API error contracts (2026-11-15)
+
+- [ ] Missing sign-in returns 401; missing admin permission or MFA returns 403, with the existing MFA remediation text.
+- [ ] Zod validation and malformed requests return 422/400, too-large body 413, rate limit 429.
+- [ ] Duplicate key and blocked product deletion return 409. Missing schema/RPC or unavailable storage return 503, unexpected internal exception 500.
+- [ ] Product list must fail explicitly if any secrets/release/licence-count query fails; do not display zeros for failed reads.
+- [ ] Product deletion cannot ignore a failed artifact-key list; check database failures before any destructive operation.
+
+
+
 ## Server command validation contract (2026-11-15)
 
 - [ ] Every server command descriptor has `execution: 'server'` and no executable placeholder.

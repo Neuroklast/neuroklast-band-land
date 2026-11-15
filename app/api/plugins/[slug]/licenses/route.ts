@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { decryptKey, encryptKey, keyHash, newKey } from '@/lib/neurokore/protocol'
-import { adminFailureMessage } from '@/lib/neurokore/admin-error'
+import { adminFailureMessage, adminFailureStatus } from '@/lib/neurokore/admin-error'
 import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
 
 export const runtime = 'nodejs'
@@ -59,7 +59,7 @@ export async function GET(request: Request, context: RouteContext) {
     if (error) throw error
     return json({ licenses: data ?? [] })
   } catch (error) {
-    return json({ error: adminFailureMessage(error) }, 400)
+    return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))
   }
 }
 
@@ -129,7 +129,7 @@ export async function POST(request: Request, context: RouteContext) {
     await audit(client, actor, productId, 'license.devices.reset', input.id)
     return json({ ok: true })
   } catch (error) {
-    return json({ error: adminFailureMessage(error) }, 400)
+    return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))
   }
 }
 

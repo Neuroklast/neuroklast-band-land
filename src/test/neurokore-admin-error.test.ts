@@ -16,3 +16,29 @@ describe('adminFailureMessage mapping', () => {
   })
 })
 
+
+describe('adminFailureStatus HTTP classification', () => {
+  it('distinguishes authentication, authorization and MFA from input errors', async () => {
+    const { adminFailureStatus } = await import('@/lib/neurokore/admin-error')
+    expect(adminFailureStatus(new Error('Sign in first'))).toBe(401)
+    expect(adminFailureStatus(new Error('Administrator required'))).toBe(403)
+    expect(adminFailureStatus(new Error('MFA required'))).toBe(403)
+    expect(adminFailureStatus(new Error('Invalid origin'))).toBe(403)
+    expect(adminFailureStatus(new z.ZodError([]))).toBe(422)
+    expect(adminFailureStatus(new SyntaxError('Invalid JSON'))).toBe(400)
+    expect(adminFailureStatus(new Error('Request too large'))).toBe(413)
+    expect(adminFailureStatus(new Error('Too many requests. Please try again later.'))).toBe(429)
+  })
+
+  it('distinguishes conflicts from temporarily unavailable infrastructure', async () => {
+    const { adminFailureStatus } = await import('@/lib/neurokore/admin-error')
+    expect(adminFailureStatus(new Error('Product has paid orders'))).toBe(409)
+    expect(adminFailureStatus({ code: '23505', message: 'unique constraint' })).toBe(409)
+    expect(adminFailureStatus({ code: '23503', message: 'foreign key failure' })).toBe(409)
+    expect(adminFailureStatus({ code: '42P01', message: 'relation missing' })).toBe(503)
+    expect(adminFailureStatus({ code: 'PGRST202', message: 'function missing' })).toBe(503)
+    expect(adminFailureStatus(new Error('TypeError: fetch failed'))).toBe(503)
+    expect(adminFailureStatus(new Error('Licensing configuration incomplete'))).toBe(503)
+    expect(adminFailureStatus(new Error('unexpected server failure'))).toBe(500)
+  })
+})

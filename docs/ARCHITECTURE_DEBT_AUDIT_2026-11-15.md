@@ -90,6 +90,9 @@ The launch checklist states that Preview and Production share a Supabase databas
 
 ### A-08 — P2: licence/plugin API error classes collapse to HTTP 400
 
+**Remediation in progress (2026-11-15):** shared `adminFailureStatus` classifies Zod, auth, MFA, conflicts, size/rate limits and backend failures; the three plugin routes return these codes. The product list also fails explicitly when related-table reads fail. CI and production verification are required before marking this complete.
+
+
 **Files:** `app/api/plugins/route.ts`, `app/api/plugins/[slug]/releases/route.ts`, `app/api/plugins/[slug]/licenses/route.ts`.
 
 Their outer `catch` generally returns status `400` using `adminFailureMessage(error)` for many different failures (authentication/MFA, validation, network and backend/database failures). Clients and monitoring cannot reliably differentiate invalid input, denied access or temporary infrastructure faults.
