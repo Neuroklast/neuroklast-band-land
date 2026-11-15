@@ -246,3 +246,9 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] R2 file hashes and displayed versions match GitHub; public/admin views refresh.
 - [ ] Interrupted transfer can retry without duplicate versions or replacing published assets.
 - [ ] Missing/wrong sync credentials deny import; withdrawn releases stay withdrawn.
+
+## Living documentation review
+
+- [ ] A source-only PR without quality journal or owning docs is rejected.
+- [ ] A malformed journal entry fails CI; a docs-only PR needs no fake release note.
+- [ ] Documentation claims, failed reads and test evidence match the implementation.

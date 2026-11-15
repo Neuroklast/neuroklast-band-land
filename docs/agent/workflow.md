@@ -126,3 +126,7 @@ When the user reports screenshot bugs:
 ```
 code complete → non-build CI + available local checks → docs update → merge + Vercel Production confirm → report any unverified local checks
 ```
+
+## Enforced living documentation
+
+Run `npm run test:living-docs` and `npm run check:living-docs` locally. The standalone PR status **Living docs gate** compares changed source paths to `docs/living-docs.json` and checks a newly added seven-field evidence entry. It runs no Next.js build or migration. Human reviewers must verify documentation accuracy. Require this named check in GitHub branch protection for unbypassable enforcement.
