@@ -10,7 +10,7 @@ import { sessionSchema, sendContractConfirmation } from '@/lib/neurokore/contrac
  * Stripe Checkout Session may enter here, never client-supplied payment state.
  * Called from signed webhooks or the separately authenticated admin reconciler.
  */
-export async function fulfillVerifiedCheckoutSession(session: z.infer<typeof sessionSchema>) {
+export async function fulfillVerifiedCheckoutSession(session: z.infer<typeof sessionSchema>, auditActor?: string) {
   assertStripeFulfillmentEnvironment({
     eventLivemode: session.livemode,
     sessionLivemode: session.livemode,
