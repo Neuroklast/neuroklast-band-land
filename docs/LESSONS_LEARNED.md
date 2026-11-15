@@ -1,4 +1,10 @@
 # Lessons Learned
+
+## Session: 2026-11-15 — protected server pages must route AAL1 sessions through MFA
+
+The contact inbox and spam filter both invoked the shared admin guard, which deliberately throws `MFA required` for an enrolled but not yet verified administrator. Without a page-level redirect, Next.js exposed a generic Server Component error boundary instead of the existing `/admin/mfa` challenge. Keep the guard and its AAL2 enforcement; catch only this exact error in protected page components, then redirect to a fixed same-origin admin return path. Redirects must not be swallowed by a wider `try/catch`. Preserve sanitized search filters and test that no service-role database query occurs before the administrator passes MFA. Do not build in GitHub Actions.
+
+---
 ## Session 2026-10-29 — background preview is intentionally different from storage
 
 A background editor preview may retain video URLs that are not active on mobile, while the save payload explicitly clears mobile fields except when mobile mode is 'separate'. Empty preview media fields are undefined (omitted in JSON), while save uses null. Do not collapse these representations into one normalizer. Extract controlled media UI without moving automatic desktop-enable-on-upload, existing MediaSourcePicker error callbacks, draft broadcasts or server mutations out of the parent. Never use GitHub builds.
