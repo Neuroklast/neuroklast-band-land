@@ -18,14 +18,16 @@ export const revalidate = 60
 export default async function ReleasesBrowsePage() {
   let releases = [] as Awaited<ReturnType<typeof fetchPublicReleaseCardItems>>
   let artistName = 'NEUROKLAST'
+  let loadFailed = false
 
   try {
     ;[releases, artistName] = await Promise.all([
       fetchPublicReleaseCardItems(),
       fetchPublicArtistName(),
     ])
-  } catch {
-    // Safe defaults when Supabase is unavailable
+  } catch (error) {
+    console.error('[releases] browse failed:', error)
+    loadFailed = true
   }
 
   const origin = getSiteOrigin()
@@ -39,7 +41,11 @@ export default async function ReleasesBrowsePage() {
         ])}
       />
       <BrowsePageShell titleKey="section.releases" streamLabel="// DISCOGRAPHY.BROWSE">
-        <ReleasesBrowseClient releases={releases} artistName={artistName} />
+        {loadFailed ? (
+          <p role="alert" className="p-5 text-sm text-zinc-300">The discography is temporarily unavailable. Please retry later.</p>
+        ) : (
+          <ReleasesBrowseClient releases={releases} artistName={artistName} />
+        )}
       </BrowsePageShell>
     </LegalPageShell>
   )

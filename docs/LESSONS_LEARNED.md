@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## 2026-11-15 — distinguish failed reads from absent content
+
+Admin editors must not use catch-and-default patterns around privileged reads: an unavailable DB is not an intentionally empty draft. Central `loadAdminData` + `checkAdminReadError` differentiates successful empty data from query errors, and the editor never mounts on a failed read. Public release projections are canonical and schema-versioned by the real deployment contract, not selected by matching error-message text. A CI test walks protected admin pages and ensures every strict `admin()` invocation has MFA navigation coverage. This work addresses audit findings A-04, A-05, A-09 (obsolete preview code) and A-11 without changing storage or existing content.
+
+---
+
+
 ## Session: 2026-11-15 — no media migration at serverless startup
 
 The two Vercel runtime error groups `[legacy-url-migration]` and `[r2-reconcile]` were both `TypeError: fetch failed` when first reading Supabase `site_config`, before any R2 S3 request. Never label these as proved R2 bucket failures. Startup jobs repeat on cold starts, and bucket scans or DB writes must require an explicit authenticated admin action with dry-run. Delete obsolete migration code, preserve R2 upload and media URL guards, keep GET read-only, and check production logs after deployment. This removes the unnecessary failure paths without asserting the underlying Supabase network is permanently repaired.

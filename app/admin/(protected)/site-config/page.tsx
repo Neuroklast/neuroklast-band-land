@@ -1,19 +1,21 @@
 import { Suspense } from 'react'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabaseServer'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { SiteConfigTabs } from './SiteConfigTabs'
+import { checkAdminReadError, loadAdminData } from '@/lib/admin-read-state'
+import { AdminDataUnavailable } from '@/app/admin/_components/AdminDataUnavailable'
 
 export default async function SiteConfigPage() {
-  let rows: Array<{ key: string; value: unknown }> = []
-  try {
+  const loaded = await loadAdminData('site-config', async () => {
     const supabase = await createClient()
-    const { data } = await supabase.from('site_config').select('key, value')
-    rows = data ?? []
-  } catch {
-    // ignore
-  }
+    const { data, error } = await supabase.from('site_config').select('key, value')
+    checkAdminReadError(error, 'site-config')
+    return z.array(z.object({ key: z.string(), value: z.unknown() })).parse(data ?? [])
+  })
+  if (!loaded.ok) return <AdminDataUnavailable title="Look & Feel" href="/admin/site-config" />
 
-  const rowMap = Object.fromEntries(rows.map((r) => [r.key, r.value]))
+  const rowMap = Object.fromEntries(loaded.data.map((r) => [r.key, r.value]))
 
   return (
     <div>

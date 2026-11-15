@@ -2,22 +2,22 @@ import { createClient } from '@/lib/supabaseServer'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { parseSections } from '@/lib/site-config-sections'
 import { SectionsSortable } from './SectionsSortable'
+import { checkAdminReadError, loadAdminData } from '@/lib/admin-read-state'
+import { AdminDataUnavailable } from '@/app/admin/_components/AdminDataUnavailable'
 
 export default async function SectionsPage() {
-  let sections = parseSections(null)
-  try {
+  const loaded = await loadAdminData('sections', async () => {
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('site_config')
       .select('value')
       .eq('key', 'sections')
-      .single()
-    if (data?.value) {
-      sections = parseSections(data.value)
-    }
-  } catch {
-    // ignore – use defaults
-  }
+      .maybeSingle()
+    checkAdminReadError(error, 'sections')
+    return parseSections(data?.value ?? null)
+  })
+  if (!loaded.ok) return <AdminDataUnavailable title="Sections" href="/admin/sections" />
+  const sections = loaded.data
 
   return (
     <div>
