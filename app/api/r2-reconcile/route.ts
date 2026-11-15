@@ -13,20 +13,25 @@ export const maxDuration = 60
  * Admin utility: list the current R2 bucket and rewrite DB URLs whose
  * filename matches an object but the stored host/path is stale.
  *
- * POST /api/r2-reconcile          apply
+ * GET  /api/r2-reconcile          preview only (no writes)
  * POST /api/r2-reconcile?dryRun=1 preview
+ * POST /api/r2-reconcile          apply
  */
-export async function GET(request: Request) {
-  return POST(request)
+export async function GET() {
+  return reconcile(true)
 }
 
 export async function POST(request: Request) {
+  const dryRun = new URL(request.url).searchParams.get('dryRun') === '1'
+  return reconcile(dryRun)
+}
+
+async function reconcile(dryRun: boolean) {
   const admin = await isAdminSession()
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const dryRun = new URL(request.url).searchParams.get('dryRun') === '1'
   const publicHost = process.env.R2_PUBLIC_HOST ?? ''
 
   try {

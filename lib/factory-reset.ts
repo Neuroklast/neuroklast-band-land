@@ -30,7 +30,6 @@ export const FACTORY_RESET_TABLES: readonly string[] = [
 
 /** Keys preserved untouched (never restored / wiped). */
 export const FACTORY_RESET_PRESERVED_KEYS = new Set([
-  'r2_reconcile_deploy',
   'catalogue_sync',
   'api_secrets',
 ])

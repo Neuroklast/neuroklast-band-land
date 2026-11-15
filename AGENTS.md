@@ -42,6 +42,8 @@ Roles: `.agents/*.md`. Skills: `.agents/skills/*/SKILL.md`.
 
 - ALWAYS use `createPublicClient()` for public pages. NEVER `createClient()` (cookies) on public reads — it kills ISR.
 - ALWAYS store media on Cloudflare R2. NEVER write new media to Supabase Storage. NEVER render `.supabase.co` media URLs.
+- NEVER run media migrations, whole-bucket scans or database-writing reconciliation at function startup, deployment, GET request or import time. Require explicit authenticated admin action after a dry-run.
+- NEVER use quick, lazy or dirty fixes. Resolve the shared root cause at its architectural owner, test it, remove obsolete code paths and update documentation.
 - ALWAYS wrap public pages in `PageLayout`. NEVER invent a parallel public shell.
 - ALWAYS send contact mail via Resend. NEVER add an inbox, CRM, or newsletter stack unless asked.
 - ALWAYS two-click embeds for Spotify / YouTube / SoundCloud. NEVER auto-load third-party iframes.

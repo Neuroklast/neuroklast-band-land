@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## Session: 2026-11-15 — no media migration at serverless startup
+
+The two Vercel runtime error groups `[legacy-url-migration]` and `[r2-reconcile]` were both `TypeError: fetch failed` when first reading Supabase `site_config`, before any R2 S3 request. Never label these as proved R2 bucket failures. Startup jobs repeat on cold starts, and bucket scans or DB writes must require an explicit authenticated admin action with dry-run. Delete obsolete migration code, preserve R2 upload and media URL guards, keep GET read-only, and check production logs after deployment. This removes the unnecessary failure paths without asserting the underlying Supabase network is permanently repaired.
+
+---
+
 ## Session: 2026-11-15 — protected server pages must route AAL1 sessions through MFA
 
 The contact inbox, spam filter and several other admin pages invoked the strict `admin()` guard, which throws `MFA required` for an enrolled AAL1 session. Scattering try/catch redirects across pages hides the shared architecture problem and loses query filters. Instead, define strict navigation routes in `lib/admin-mfa-policy.ts`, check assurance centrally in `proxy.ts` *after* the role lookup, and redirect through the existing cookie-preserving helper to `/admin/mfa` with an internal return URL. Continue to enforce the same MFA policy inside `admin()` as defense in depth; the proxy is navigation, not authorization. Skip API/form methods, preserve query strings, and leave the MFA page outside the gate to avoid loops. Add proxy-level tests for AAL1/AAL2, exceptions, roles, cookie refresh and failures. Do not build in GitHub Actions.

@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Remove obsolete Supabase Storage-to-R2 migration, legacy dashboard scan, and automatic R2 reconcile at production server start. Keep R2 media operations intact and make reconciliation explicitly admin-triggered; GET preview can no longer write database rows.
+
 - Centralize MFA navigation in the authenticated admin proxy, with a shared route policy and assurance check. Contact Inbox, Contact Spam Filter, Plugin Orders, Privacy, Withdrawals, Beta Diagnostics and Soundpack editing all open the existing MFA challenge instead of a generic server error when AAL2 is missing. Preserve search parameters and refreshed auth cookies without redirecting API/form requests; retain server-side authorization and MFA enforcement.
 
 - Add an admin-managed contact spam word/phrase blacklist. The contact server action rejects matches before persistence or email delivery, with an explicit localized error and a legal-notice contact alternative. Existing honeypot and rate limits remain in place. The blacklist configuration is protected from anonymous reads by a dedicated Supabase RLS policy adjustment.

@@ -4,8 +4,8 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Kept so `<img onError>` has a same-origin URL. It does not list the bucket
- * and does not write a rate-limit row. Stale keys are rewritten by the deploy
- * reconcile (`lib/r2-reconcile-on-deploy.ts`).
+ * and does not write a rate-limit row. Administrators can reconcile stale
+ * keys manually from `/admin/data` after reviewing the dry-run.
  *
  * GET /api/media-fix?path=<objectPath>
  * → { ok: true, url: null }
