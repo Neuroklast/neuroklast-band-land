@@ -17,6 +17,10 @@ Official Neuroklast website: Next.js App Router, Supabase, Cloudflare R2, Resend
 - Spotify **Listen** section: Neuroklast artist player, two-click consent (GDPR)
 - Legal: `/legal-notice`, `/privacy-policy`
 
+## Engineering policy
+
+**Quick/dirty fixes, temporary production stubs and symptom-only workarounds are prohibited.** Follow the mandatory [root-cause engineering standard](AGENTS.md#mandatory-engineering-standard-no-quick-fixes), the [agent workflow](docs/agent/workflow.md) and the [2026-11-15 architecture audit](docs/ARCHITECTURE_DEBT_AUDIT_2026-11-15.md). Code review and tests must verify the full implementation, including failure paths.
+
 ## Dev
 
 ```bash
@@ -35,7 +39,7 @@ Idempotent SQL: `supabase/schema.sql`
 npm run db:schema
 ```
 
-Production deploys apply the schema automatically (`instrumentation.ts`) when `SUPABASE_DB_URL` (direct, port 5432) is set.
+Production schema changes must be applied and verified **explicitly before deployment** using `npm run db:schema:check` and `npm run db:schema` with the restricted migration connection. `instrumentation.ts` does **not** apply database DDL at runtime. Do not infer schema readiness from a successful Vercel build. See [the deployment prerequisites](docs/NEUROKORE_LIVE_LAUNCH_CHECKLIST.md#p0--mandatory-before-accepting-any-real-payments).
 
 ## Migrate old Vite/KV + Google Drive
 
