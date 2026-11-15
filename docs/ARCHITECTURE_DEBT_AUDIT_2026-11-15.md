@@ -16,6 +16,8 @@
 
 ### A-01 — P0: licence, release and product audit failures can disappear
 
+**Remediation in PR (2026-11-15):** PostgreSQL AFTER ROW triggers on eight relevant tables write sanitized metadata into `plugin_admin_audit` *within the same transaction*, failing the parent write if the audit insert fails. Authenticated server calls forward the verified actor through a request header, with RLS-restricted service-role access; missing trigger readiness blocks plugin mutations. Product deletion no longer deletes historical audit rows. The disposable PostgreSQL contract injects a journal insert failure and verifies rollback and no secret-value exposure. This requires applying the explicit `supabase/migrations/202611150935_atomic_plugin_audit.sql` migration **before** merging/deploying changed routes. No claim of success until schema tests, live migration and deployment verification all pass.
+
 **Files:** `app/api/plugins/route.ts:50-62`, `app/api/plugins/[slug]/licenses/route.ts:33-46`, `app/api/plugins/[slug]/releases/route.ts:71-84`, `app/api/admin/contact-inbox/status/route.ts:15-22`.
 
 Three `audit()` helpers call `await client.from('plugin_admin_audit').insert(...)` inside a `try/catch` but do **not inspect the returned `error`**. Supabase PostgREST returns ordinary database errors as `{ data, error }`, without necessarily throwing. Those helpers can therefore return success even if the audit insert failed. The contact-case status endpoint also ignores the insert result. This affects the verifiability of product, licence, release and contact-case operations.
