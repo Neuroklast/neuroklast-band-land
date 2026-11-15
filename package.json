@@ -24,7 +24,7 @@
     "predev": "node scripts/copy-ffmpeg-core.mjs",
     "prebuild": "node scripts/copy-ffmpeg-core.mjs",
     "check:living-docs": "node scripts/check-living-docs.mjs",
-    "test:living-docs": "node --test tests/living-docs-gate.test.mjs"
+    "test:living-docs": "node --test scripts/verify-living-docs.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1163.0",

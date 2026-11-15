@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: '22'
       - name: Test the documentation contract
-        run: node --test tests/living-docs-gate.test.mjs
+        run: node --test scripts/verify-living-docs.mjs
       - name: Verify documentation and pull request diff
         env:
           BASE_REF: ${{ github.base_ref }}

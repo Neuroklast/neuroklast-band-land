@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { requiredDocs, journalProblems, sourceFile } from '../scripts/check-living-docs.mjs';
+import { requiredDocs, journalProblems, sourceFile } from './check-living-docs.mjs';
 const map={journal:'docs/QUALITY_JOURNAL.md',architecture:'docs/ARCHITECTURE.md',security:'docs/SECURITY.md',data:'docs/DATA.md',operations:'docs/OPERATIONS.md',qa:'QA_CHECKLIST.md',changelog:'CHANGELOG.md'};
 const journal = [
   '+## 2026-11-15 | Introduce enforceable living document requirements',
