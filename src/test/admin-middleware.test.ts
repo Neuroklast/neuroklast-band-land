@@ -266,6 +266,12 @@ describe('centralized MFA navigation for protected admin pages', () => {
     expect(new URL(response.headers.get('location')!).pathname).toBe('/admin/mfa')
   })
 
+  it('also fails closed when assurance lookup throws', async () => {
+    mockGetAssurance.mockRejectedValue(new Error('connection failed'))
+    const response = await proxy(createRequest('/admin/contact-inbox'))
+    expect(new URL(response.headers.get('location')!).pathname).toBe('/admin/mfa')
+  })
+
   it.each([
     '/admin/mfa',
     '/admin/security',
