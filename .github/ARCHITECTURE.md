@@ -1,5 +1,30 @@
 # Architecture Decision Records
 
+## ADR-QUALITY-2026-11-15: Prohibit quick fixes and mandate root-cause complete delivery
+
+**Date:** 2026-11-15  
+**Status:** Accepted  
+**Scope:** All source, tests, operations, migrations and agent-authored changes
+
+### Decision
+
+**Lazy, dirty, symptom-only and temporarily incomplete production fixes are forbidden.** All changes must diagnose the root cause, identify the canonical owner, design a maintainable contract, cover affected callers, test failures, preserve security/persistence and be observable in production.
+
+A green build is not evidence that a no-op registry command, silently failed audit insert, empty editable config after a DB outage or fire-and-forget migration completed correctly. Such shortcuts must be rejected at review, even under time pressure.
+
+### Enforcement
+
+- The single normative rule lives in [AGENTS.md](../AGENTS.md#mandatory-engineering-standard-no-quick-fixes).
+- [Workflow](../docs/agent/workflow.md), [session checklist](../docs/agent/session-checklist.md) and [PR template](PULL_REQUEST_TEMPLATE.md) require documented root cause, tests, failure handling, migration/rollback and verifiable results.
+- Existing violations are findings, **not permitted precedents**. See [2026-11-15 architecture debt audit](../docs/ARCHITECTURE_DEBT_AUDIT_2026-11-15.md).
+- If the correct fix cannot be delivered, the change remains **blocked/partial**. Never label it complete to satisfy a schedule.
+
+### Consequences
+
+Review may require a larger but bounded change across the actual owning layer instead of a one-line workaround. Scope is still controlled: do not refactor unrelated modules, and do not silently claim tests or deployment verification that were not performed.
+
+---
+
 This document captures significant architectural decisions for the Neuroklast Band Land project,
 following the ADR (Architecture Decision Record) format.
 
