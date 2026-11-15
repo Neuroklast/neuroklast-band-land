@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { safeExternalUrlOptional } from '@/lib/safe-external-url'
@@ -33,7 +33,7 @@ export async function createMerchandise(formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('create_merchandise', parsed.data, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('create_merchandise', parsed.data)
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -61,7 +61,7 @@ export async function updateMerchandise(id: string, formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('update_merchandise', { ...parsed.data, id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_merchandise', { ...parsed.data, id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -87,7 +87,7 @@ export async function updateMerchandise(id: string, formData: FormData) {
 export async function deleteMerchandise(id: string) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('delete_merchandise', { id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('delete_merchandise', { id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -103,7 +103,7 @@ export async function deleteMerchandise(id: string) {
 export async function toggleMerchandiseVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('update_merchandise', { id, active }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_merchandise', { id, active })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {

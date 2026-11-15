@@ -31,8 +31,6 @@ export interface AdminActionContext {
   siteData: SiteData
   setAdminSettings: (s: AdminSettings) => void
   setSiteData: (updater: SiteData | ((s: SiteData) => SiteData)) => void
-  // For the new Supabase-backed admin (added during migration fix)
-  supabaseAdmin?: ReturnType<typeof import('@/lib/supabaseAdmin').createAdminClient>
 }
 
 // ─── Action descriptor ────────────────────────────────────────────────────────
@@ -41,18 +39,15 @@ export interface AdminActionContext {
  * User-facing typed action definition.
  * @template TSchema  The Zod schema for this action's input payload.
  */
-export interface AdminAction<TSchema extends z.ZodTypeAny> {
-  /** Machine-readable identifier (snake_case) */
+export type AdminAction<TSchema extends z.ZodTypeAny> = {
   id: string
-  /** Human-readable label shown in the UI */
   label: string
-  /** Zod schema used to validate and type the input payload */
   schema: TSchema
-  /** Minimum disclosure level required to execute this action */
   minDisclosure: DisclosureLevel
-  /** Type-safe handler; input has already been validated by `dispatchAdminAction` */
-  execute: (input: z.infer<TSchema>, ctx: AdminActionContext) => AdminActionResult
-}
+} & (
+  | { execution: 'server'; execute?: never }
+  | { execution?: 'local'; execute: (input: z.infer<TSchema>, ctx: AdminActionContext) => AdminActionResult }
+)
 
 /**
  * Internal registered action.
@@ -64,8 +59,9 @@ export interface RegisteredAdminAction {
   label: string
   schema: z.ZodTypeAny
   minDisclosure: DisclosureLevel
-  /** @internal Called by `dispatchAdminAction` with a pre-validated input. */
-  execute: (validatedInput: unknown, ctx: AdminActionContext) => AdminActionResult
+  /** 'server' entries describe validated commands executed only by their owning server actions. */
+  execution: 'local' | 'server'
+  execute?: (validatedInput: unknown, ctx: AdminActionContext) => AdminActionResult
 }
 
 export type AdminActionMap = Record<string, RegisteredAdminAction>
@@ -82,14 +78,16 @@ export type AdminActionMap = Record<string, RegisteredAdminAction>
 function register<TSchema extends z.ZodTypeAny>(
   def: AdminAction<TSchema>,
 ): RegisteredAdminAction {
+  const executor = def.execute
   return {
     id: def.id,
     label: def.label,
     schema: def.schema,
     minDisclosure: def.minDisclosure,
-    execute: (validatedInput, ctx) =>
-      // Safe cast: dispatchAdminAction always calls schema.safeParse before invoking this
-      def.execute(validatedInput as z.infer<TSchema>, ctx),
+    execution: def.execution ?? 'local',
+    execute: executor
+      ? (validatedInput, ctx) => executor(validatedInput as z.infer<TSchema>, ctx)
+      : undefined,
   }
 }
 
@@ -252,17 +250,13 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     },
   }),
 
-  // --- New Supabase-backed actions (added to satisfy AGENTS §12 during deep fix) ---
+  // Server-only command descriptors: schema/disclosure validation, no fake execution.
   create_release: register({
     id: 'create_release',
     label: 'Create Release',
     schema: z.object({ title: z.string().min(1), type: z.string().default('single') }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      // Actual insert happens in the calling action for now; registry provides validation + dispatch
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_site_config: register({
@@ -270,11 +264,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Site Config',
     schema: z.object({ key: z.string(), value: z.unknown() }),
     minDisclosure: 'basic',
-    execute({ key: _key, value: _value }, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      // Placeholder – real mutation stays in _actions until full port
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_gig: register({
@@ -282,10 +272,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Gig',
     schema: z.object({ title: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_partner: register({
@@ -293,10 +280,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Partner',
     schema: z.object({ name: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_member: register({
@@ -304,10 +288,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Member',
     schema: z.object({ name: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_merchandise: register({
@@ -315,10 +296,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Merchandise',
     schema: z.object({ title: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_soundpack: register({
@@ -326,10 +304,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Soundpack',
     schema: z.object({ title: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_product: register({
@@ -337,10 +312,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Product',
     schema: z.object({ title: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_product: register({
@@ -348,10 +320,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Product',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_product: register({
@@ -359,10 +328,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Product',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_media_download: register({
@@ -373,10 +339,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       file_storage_path: z.string().min(1),
     }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_media_download: register({
@@ -384,10 +347,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Media Download',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_media_download: register({
@@ -395,10 +355,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Media Download',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_media_download_visibility: register({
@@ -406,10 +363,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Media Download Visibility',
     schema: z.object({ id: z.string().min(1), active: z.boolean() }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_music_highlight: register({
@@ -417,10 +371,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Music Highlight',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_music_highlight: register({
@@ -428,10 +379,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Music Highlight',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_music_highlight: register({
@@ -439,10 +387,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Music Highlight',
     schema: z.object({ title: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_gallery_item: register({
@@ -455,10 +400,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       display_order: z.coerce.number().optional(),
     }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_gallery_item: register({
@@ -475,10 +417,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       })
       .passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_gallery_item: register({
@@ -486,10 +425,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Gallery Item',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_gallery_visibility: register({
@@ -497,10 +433,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Gallery Visibility',
     schema: z.object({ id: z.string().min(1), active: z.boolean() }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_partner: register({
@@ -508,10 +441,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Partner',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_partner: register({
@@ -519,10 +449,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Partner',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_member: register({
@@ -530,10 +457,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Member',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_member: register({
@@ -541,10 +465,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Member',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_social_link: register({
@@ -552,10 +473,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Social Link',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_social_link: register({
@@ -563,10 +481,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Social Link',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   create_social_link: register({
@@ -574,10 +489,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Create Social Link',
     schema: z.object({ platform: z.string().min(1), url: z.string().url() }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_merchandise: register({
@@ -585,10 +497,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Merchandise',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_merchandise: register({
@@ -596,10 +505,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Merchandise',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_gig: register({
@@ -607,10 +513,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Gig',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_gig: register({
@@ -618,10 +521,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Gig',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   update_bio: register({
@@ -633,10 +533,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       collabs: z.array(z.string()).optional(),
     }),
     minDisclosure: 'basic',
-    execute({ content: _content }, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   // Releases full wiring (update/delete were missing from initial registry population)
@@ -645,10 +542,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Release',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_release: register({
@@ -656,10 +550,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Release',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   // Soundpacks full wiring (update/delete were missing)
@@ -668,10 +559,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Update Soundpack',
     schema: z.object({ id: z.string().min(1) }).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   delete_soundpack: register({
@@ -679,10 +567,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Delete Soundpack',
     schema: z.object({ id: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   itunes_sync: register({
@@ -690,10 +575,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'iTunes Sync Releases',
     schema: z.object({}).passthrough(),
     minDisclosure: 'basic',
-    execute(input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   release_external_sync: register({
@@ -705,10 +587,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       externalId: z.string().min(1),
     }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   spotify_sync: register({
@@ -716,10 +595,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Spotify Sync Releases',
     schema: z.object({ artist: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   discogs_sync: register({
@@ -727,10 +603,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Discogs Sync Releases',
     schema: z.object({ artist: z.string().min(1) }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   bandsintown_gigs_sync: register({
@@ -738,10 +611,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Bandsintown Sync Gigs',
     schema: z.object({}).passthrough(),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   enrich_release_tracks: register({
@@ -752,10 +622,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       force: z.boolean().optional(),
     }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   enrich_all_release_tracks: register({
@@ -766,10 +633,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       limit: z.number().int().positive().max(100).optional(),
     }),
     minDisclosure: 'basic',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   consolidate_releases: register({
@@ -777,10 +641,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Consolidate Duplicate Releases',
     schema: z.object({}),
     minDisclosure: 'advanced',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   merge_releases: register({
@@ -790,10 +651,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       releaseIds: z.array(z.string().min(1)).min(2).max(20),
     }),
     minDisclosure: 'advanced',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   purge_releases: register({
@@ -801,10 +659,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Purge All Releases',
     schema: z.object({ scope: z.literal('all') }),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   purge_gigs: register({
@@ -812,10 +667,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Purge All Gigs',
     schema: z.object({}),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   reset_release_tracklists: register({
@@ -823,10 +675,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Reset Release Tracklists',
     schema: z.object({}),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   purge_and_sync_releases: register({
@@ -834,10 +683,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Purge All and Resync Releases',
     schema: z.object({}),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   purge_and_sync_gigs: register({
@@ -845,10 +691,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Purge and Sync Gigs',
     schema: z.object({}),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   factory_reset: register({
@@ -859,10 +702,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
       deleteR2Media: z.boolean(),
     }),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   rewrite_media_hosts: register({
@@ -870,10 +710,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Rewrite Media Hosts to Current R2',
     schema: z.object({ dryRun: z.boolean() }),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 
   reconcile_r2_media: register({
@@ -881,10 +718,7 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
     label: 'Reconcile Media URLs with Current R2 Bucket',
     schema: z.object({ dryRun: z.boolean() }),
     minDisclosure: 'expert',
-    execute(_input, { supabaseAdmin }) {
-      if (!supabaseAdmin) return { ok: false, error: 'Supabase admin client required' }
-      return { ok: true }
-    },
+    execution: 'server',
   }),
 }
 
@@ -893,19 +727,12 @@ export const ADMIN_ACTION_REGISTRY: AdminActionMap = {
 const DISCLOSURE_ORDER: DisclosureLevel[] = ['basic', 'advanced', 'expert']
 
 /**
- * Execute a registered admin action by id.
- *
- * Returns `{ ok: false, error }` when:
- *   - The action is not found in the registry
- *   - The caller's disclosure level is insufficient
- *   - The input fails Zod schema validation
- *
- * Returns `{ ok: true }` on success.
+ * Validate a command, but do NOT pretend that validation executed a mutation.
+ * Server actions own authorization and persistence after this pure validation.
  */
-export function dispatchAdminAction(
+export function validateAdminAction(
   actionId: string,
   rawInput: unknown,
-  ctx: AdminActionContext,
   callerDisclosure: DisclosureLevel = 'basic',
 ): AdminActionResult {
   const action = ADMIN_ACTION_REGISTRY[actionId]
@@ -929,7 +756,23 @@ export function dispatchAdminAction(
     return { ok: false, error: `Invalid input for "${actionId}": ${parsed.error.message}` }
   }
 
-  return action.execute(parsed.data, ctx)
+  return { ok: true }
+}
+
+/** Execute only legacy in-memory UI commands, never persistent server commands. */
+export function dispatchAdminAction(
+  actionId: string,
+  rawInput: unknown,
+  ctx: AdminActionContext,
+  callerDisclosure: DisclosureLevel = 'basic',
+): AdminActionResult {
+  const validated = validateAdminAction(actionId, rawInput, callerDisclosure)
+  if (!validated.ok) return validated
+  const action = ADMIN_ACTION_REGISTRY[actionId]
+  if (action.execution !== 'local' || !action.execute) {
+    return { ok: false, error: `Action "${actionId}" requires its dedicated authorized server action; validation alone does not execute it.` }
+  }
+  return action.execute(action.schema.parse(rawInput), ctx)
 }
 
 /**

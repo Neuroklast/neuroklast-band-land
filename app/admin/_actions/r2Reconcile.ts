@@ -2,10 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import {
-  createSupabaseActionContext,
-  dispatchAdminActionAsAdmin,
-} from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { listAllR2ObjectKeys } from '@/lib/r2-inventory'
 import { applyR2MediaReconcile, type R2ReconcileResult } from '@/lib/r2-reconcile'
 import { createAdminClient } from '@/lib/supabaseAdmin'
@@ -29,10 +26,9 @@ function revalidateMediaPaths() {
 }
 
 async function runReconcile(dryRun: boolean): Promise<R2ReconcileActionResult> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'reconcile_r2_media',
-    { dryRun },
-    createSupabaseActionContext(createAdminClient()),
+    { dryRun }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

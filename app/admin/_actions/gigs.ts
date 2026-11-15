@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 import { safeExternalUrlOptional } from '@/lib/safe-external-url'
 import { z } from 'zod'
@@ -107,7 +107,7 @@ export async function createGig(formData: FormData) {
 
   // Dispatch via registry for AGENTS compliance
   const row = toGigRow(parsed.data)
-  const dispatchResult = dispatchAdminActionAsAdmin('create_gig', row, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('create_gig', row)
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -128,7 +128,7 @@ export async function updateGig(id: string, formData: FormData) {
   const supabaseAdmin = createAdminClient()
 
   const row = toGigRow(parsed.data)
-  const dispatchResult = dispatchAdminActionAsAdmin('update_gig', { ...row, id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_gig', { ...row, id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -146,7 +146,7 @@ export async function updateGig(id: string, formData: FormData) {
 export async function deleteGig(id: string) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('delete_gig', { id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('delete_gig', { id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -162,7 +162,7 @@ export async function deleteGig(id: string) {
 export async function toggleGigVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('update_gig', { id, active }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_gig', { id, active })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {

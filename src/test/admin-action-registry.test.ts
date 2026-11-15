@@ -47,13 +47,14 @@ describe('ADMIN_ACTION_REGISTRY', () => {
     expect(ids).toContain('delete_product')
   })
 
-  it('every action has id, label, schema, minDisclosure, execute', () => {
+  it('separates executable local commands from validation-only server descriptions', () => {
     for (const [key, action] of Object.entries(ADMIN_ACTION_REGISTRY)) {
       expect(action.id).toBe(key)
       expect(typeof action.label).toBe('string')
       expect(action.schema).toBeDefined()
       expect(['basic', 'advanced', 'expert']).toContain(action.minDisclosure)
-      expect(typeof action.execute).toBe('function')
+      if (action.execution === 'local') expect(typeof action.execute).toBe('function')
+      else expect(action.execute).toBeUndefined()
     }
   })
 })

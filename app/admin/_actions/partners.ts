@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { preferR2StoragePath } from '@/lib/r2-image-preference'
 import { safeExternalUrlOptional } from '@/lib/safe-external-url'
@@ -68,7 +68,7 @@ export async function createPartner(formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('create_partner', parsed.data, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('create_partner', parsed.data)
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -88,7 +88,7 @@ export async function updatePartner(id: string, formData: FormData) {
 
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('update_partner', { ...parsed.data, id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_partner', { ...parsed.data, id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -108,7 +108,7 @@ export async function updatePartner(id: string, formData: FormData) {
 export async function deletePartner(id: string) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('delete_partner', { id }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('delete_partner', { id })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -125,7 +125,7 @@ export async function deletePartner(id: string) {
 export async function togglePartnerVisibility(id: string, active: boolean) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin('update_partner', { id, active }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_partner', { id, active })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
@@ -143,10 +143,9 @@ export async function togglePartnerVisibility(id: string, active: boolean) {
 export async function togglePartnerLogoWhite(id: string, logoWhite: boolean) {
   const supabaseAdmin = createAdminClient()
 
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'update_partner',
-    { id, logo_white: logoWhite },
-    createSupabaseActionContext(supabaseAdmin),
+    { id, logo_white: logoWhite }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

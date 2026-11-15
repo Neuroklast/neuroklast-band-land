@@ -8,7 +8,7 @@ import {
   performFactoryReset,
   type FactoryResetResult,
 } from '@/lib/factory-reset'
-import { dispatchAdminActionAsAdmin, createSupabaseActionContext } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath } from 'next/cache'
 
 export interface FactoryResetActionResult extends FactoryResetResult {
@@ -28,10 +28,9 @@ export async function factoryReset(options: {
     return { error: 'Factory reset aborted: confirmation phrase did not match.' }
   }
 
-  const dispatch = dispatchAdminActionAsAdmin(
+  const dispatch = validateAdminActionAsAdmin(
     'factory_reset',
-    { confirm: options.confirm, deleteR2Media: Boolean(options.deleteR2Media) },
-    createSupabaseActionContext(createAdminClient()),
+    { confirm: options.confirm, deleteR2Media: Boolean(options.deleteR2Media) }
   )
   if (!dispatch.ok) return { error: dispatch.error }
 

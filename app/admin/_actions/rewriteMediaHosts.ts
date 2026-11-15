@@ -2,10 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import {
-  createSupabaseActionContext,
-  dispatchAdminActionAsAdmin,
-} from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import {
   applyMediaHostRewrite,
@@ -31,10 +28,9 @@ function revalidateMediaPaths() {
 }
 
 async function runRewrite(dryRun: boolean): Promise<RewriteMediaHostsResult> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'rewrite_media_hosts',
-    { dryRun },
-    createSupabaseActionContext(createAdminClient()),
+    { dryRun }
   )
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 

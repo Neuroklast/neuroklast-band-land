@@ -1,7 +1,7 @@
 'use server'
 
 import { requireAdmin, runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext, dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { cacheReleaseCoverToR2 } from '@/lib/release-cover-r2'
 import {
@@ -90,10 +90,9 @@ export async function syncReleaseFromExternalId(
   const normalized = normalizeExternalId(source, rawId)
   if (!normalized) return { ok: false, error: 'Invalid external id or URL' }
 
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     'release_external_sync',
-    { releaseId, source, externalId: normalized },
-    createSupabaseActionContext(createAdminClient()),
+    { releaseId, source, externalId: normalized }
   )
   if (!dispatchResult.ok) return { ok: false, error: dispatchResult.error }
 
@@ -165,10 +164,9 @@ async function bulkImportMetadata(
   registryAction: 'itunes_sync' | 'spotify_sync' | 'discogs_sync',
   registryPayload: Record<string, unknown>,
 ): Promise<BulkExternalSyncResult> {
-  const dispatchResult = dispatchAdminActionAsAdmin(
+  const dispatchResult = validateAdminActionAsAdmin(
     registryAction,
-    registryPayload,
-    createSupabaseActionContext(createAdminClient()),
+    registryPayload
   )
   if (!dispatchResult.ok) return { synced: 0, updated: 0, skipped: 0, errors: [dispatchResult.error] }
 

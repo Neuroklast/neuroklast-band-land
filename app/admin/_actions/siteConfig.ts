@@ -1,9 +1,9 @@
 'use server'
 
 import { runAdminAction } from '@/app/admin/_actions/auth'
-import { createSupabaseActionContext } from '@/app/admin/_actions/context'
+
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { dispatchAdminActionAsAdmin } from '@/app/admin/_actions/context'
+import { validateAdminActionAsAdmin } from '@/app/admin/_actions/context'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { mergeSiteConfigValue, replacedConfigStoragePaths } from '@/lib/site-config-save'
@@ -67,7 +67,7 @@ export async function updateSiteConfig(formData: FormData) {
   const supabaseAdmin = createAdminClient()
 
   // Dispatch via registry (AGENTS §12)
-  const dispatchResult = dispatchAdminActionAsAdmin('update_site_config', { key: parsed.data.key, value: parsedJson }, createSupabaseActionContext(supabaseAdmin))
+  const dispatchResult = validateAdminActionAsAdmin('update_site_config', { key: parsed.data.key, value: parsedJson })
   if (!dispatchResult.ok) return { error: dispatchResult.error }
 
   return runAdminAction(async () => {
