@@ -18,6 +18,6 @@ export async function POST(request: Request) {
     return json({ok:true})
   } catch (error) {
     console.error('[contact-inbox] case status failed:', error instanceof Error ? error.name : 'unknown')
-    return json({error:'Unable to change contact status. Check administrator MFA and the database audit status.'},503)
+    return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))
   }
 }
