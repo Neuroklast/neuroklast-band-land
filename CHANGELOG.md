@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Make product, licence, release, artifact, order, device and contact-case changes produce metadata-only audit rows atomically inside PostgreSQL transactions. Preserve history across product deletion. Remove 16 unchecked best-effort route-level audit inserts and fail closed when the audit schema is unavailable; carry the verified admin actor into database writes. Schema migration must be applied before this release.
+
 - Correct the legacy Activity Log contract: browser-only history is labeled as personal, optional and not a verified administrative/security audit trail. No persisted audit assurances are inferred from localStorage.
 
 - Classify plugin admin API errors by cause (unauthorized, MFA/forbidden, validation, conflict, rate limit, payload too large, unavailable backend and internal failure) instead of returning HTTP 400 for every failure. Product overview and artifact deletion no longer ignore partial Supabase query errors.
