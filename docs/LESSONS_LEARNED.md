@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## Session 2026-11-15 — permanent engineering ban on lazy/dirty shortcuts
+
+Repository-wide inspection identified non-throwing Supabase audit writes with unchecked `error` values, fake/no-op admin registry success handlers, a temporary forged AdminActionContext, production-startup maintenance jobs, editable blank defaults after DB read errors, duplicate schema-error-driven release fallbacks, browser-only activity history and stale migration instructions. The recurring pattern is **reporting apparent success or hiding a failure instead of modeling the correct data and recovery contract**. The repository now forbids lazy/dirty fixes without exception: trace causes across callers, establish a canonical typed owner, test failures, make durable work observable, and reject incomplete changes at review. Full severity and ownership plan: [Architecture Debt Audit](ARCHITECTURE_DEBT_AUDIT_2026-11-15.md). This documentation change does not claim those defects are already repaired.
+
+---
+
 ## Session: 2026-11-15 — protected server pages must route AAL1 sessions through MFA
 
 The contact inbox, spam filter and several other admin pages invoked the strict `admin()` guard, which throws `MFA required` for an enrolled AAL1 session. Scattering try/catch redirects across pages hides the shared architecture problem and loses query filters. Instead, define strict navigation routes in `lib/admin-mfa-policy.ts`, check assurance centrally in `proxy.ts` *after* the role lookup, and redirect through the existing cookie-preserving helper to `/admin/mfa` with an internal return URL. Continue to enforce the same MFA policy inside `admin()` as defense in depth; the proxy is navigation, not authorization. Skip API/form methods, preserve query strings, and leave the MFA page outside the gate to avoid loops. Add proxy-level tests for AAL1/AAL2, exceptions, roles, cookie refresh and failures. Do not build in GitHub Actions.
