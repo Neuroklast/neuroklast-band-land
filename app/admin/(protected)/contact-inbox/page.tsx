@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { admin, db } from '@/lib/neurokore/server'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { ContactCaseActions } from './ContactCaseActions'
@@ -16,10 +17,21 @@ export default async function ContactInboxPage({
 }: {
   searchParams: Promise<{ q?: string; show?: string }>
 }) {
-  await admin()
   const query = await searchParams
   const q = typeof query.q === 'string' ? query.q.trim().slice(0,254) : ''
   const showAll = query.show === 'all'
+  try {
+    await admin()
+  } catch (error) {
+    if (error instanceof Error && error.message === 'MFA required') {
+      const preserved = new URLSearchParams()
+      if (q) preserved.set('q', q)
+      if (showAll) preserved.set('show', 'all')
+      const returnTo = '/admin/contact-inbox' + (preserved.size ? '?' + preserved.toString() : '')
+      redirect('/admin/mfa?returnTo=' + encodeURIComponent(returnTo))
+    }
+    throw error
+  }
   let cases: ContactCase[] = []
   let orders: OrderMatch[] = []
   let errorMessage = ''
