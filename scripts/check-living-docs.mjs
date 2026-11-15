@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+const root = process.cwd();
 const keys = ['journal','architecture','security','data','operations','quality','qa','changelog'];
 const entryFields = ['Scope','Root cause','Owner','Tests','Failure path','Docs updated','Residual risk'];
 
@@ -64,6 +63,6 @@ function run() {
   if (problems.length) { for(const p of problems) console.error('::error::'+p); process.exitCode=1; }
   else console.log('Living docs contract passed');
 }
-if (process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
+if (process.argv[1]?.replaceAll('\\', '/').endsWith('scripts/check-living-docs.mjs')) {
   try { run(); } catch(e) { console.error('::error::Cannot verify living docs: '+String(e)); process.exitCode=1; }
 }
