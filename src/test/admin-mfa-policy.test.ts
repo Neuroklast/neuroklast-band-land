@@ -39,6 +39,8 @@ describe('shared admin MFA policy', () => {
     expect(requiresAdminMfaChallenge({ currentLevel: 'aal2', nextLevel: 'aal2' }, null)).toBe(false)
     expect(requiresAdminMfaChallenge({ currentLevel: 'aal1', nextLevel: 'aal1' }, null)).toBe(false)
     expect(requiresAdminMfaChallenge(null, null)).toBe(true)
+    expect(requiresAdminMfaChallenge({ currentLevel: null, nextLevel: 'aal2' }, null)).toBe(true)
+    expect(requiresAdminMfaChallenge({ currentLevel: 'aal1', nextLevel: null }, null)).toBe(true)
     expect(requiresAdminMfaChallenge({ currentLevel: 'aal2', nextLevel: 'aal2' }, new Error('auth unavailable'))).toBe(true)
   })
 })
