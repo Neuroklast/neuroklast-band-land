@@ -1,13 +1,15 @@
 # Project Status
 
-**Last updated:** 2026-10-28
+**Original feature inventory:** 2026-10-28 (historical snapshot; not authoritative for current deployment settings)
 **Status:** Active — Neuroklast public band site + Next.js admin CMS
 
 Live stack: Next.js App Router, React, Supabase (PostgreSQL), Cloudflare R2, Resend, TypeScript, Tailwind 4, Framer Motion. Default look: Neuroklast Classic.
 
+**Architecture review update (2026-11-15):** outstanding root-cause remediation is tracked in [Architecture Debt Audit](ARCHITECTURE_DEBT_AUDIT_2026-11-15.md). Lazy/dirty fixes are forbidden by [AGENTS.md](../AGENTS.md#mandatory-engineering-standard-no-quick-fixes). This document's feature checklist is historical and must not be treated as evidence of verified live readiness.
+
 ---
 
-**New feature branch:** OAuth-protected editorial MCP content proposals with human approval. Not deployed or enabled until CI, migration and security checks pass. See [MCP setup](MCP_CONTENT_INTEGRATION.md).
+**Historical note from 2026-10-28:** OAuth-protected editorial MCP content proposals were in development. This statement does not describe the current deployment. See [MCP setup](MCP_CONTENT_INTEGRATION.md).
 
 ## Feature Completion Checklist
 
@@ -16,7 +18,7 @@ Live stack: Next.js App Router, React, Supabase (PostgreSQL), Cloudflare R2, Res
 - [x] Classic chrome via `LookChrome` (nav, hero, footer, boot loader)
 - [x] Releases, gigs, gallery, media, news, bio, partners, merch, soundpacks, social
 - [x] Shared `CyberpunkOverlay` (release, gig, gallery, media, news, member, explorer, contact, **terminal**)
-- [x] Contact via Resend only (no inbox, no newsletter)
+- [x] Contact messages via Resend; a protected administrative contact-inbox view was added later. See the [architecture audit](ARCHITECTURE_DEBT_AUDIT_2026-11-15.md) for review of its audit logging.
 - [x] Legal: `/legal-notice`, `/privacy-policy`; editor `/admin/legal`
 - [x] Two-click embeds (Spotify / YouTube)
 - [x] Cookie consent + language switcher in Classic footer

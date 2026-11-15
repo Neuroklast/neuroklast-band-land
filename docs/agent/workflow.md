@@ -4,6 +4,18 @@ Rules for AI agent runs on this project. Session start + mandatory CI live in ro
 
 ---
 
+## Non-negotiable root-cause engineering gate
+
+The [repository-wide prohibition of lazy/dirty fixes](../../AGENTS.md#mandatory-engineering-standard-no-quick-fixes) applies to **every** issue, feature, refactor and urgent production incident. **Never trade correctness, maintainability, security or auditability for a fast green check.** A small diff is good only when it delivers a **complete** fix.
+
+Before touching implementation, each change must record: (a) observed symptoms and reproduction, (b) root cause with evidence, (c) **all** affected callers/routes and the canonical owner, (d) data/storage/security invariants, (e) failure and retry semantics, (f) acceptance and regression tests, and (g) migration/rollback when relevant.
+
+During implementation: prefer one typed domain policy/adapter/service rather than repeated local patches. Prohibit fake `ok` results, no-op implementations, stub contexts, unchecked database results, silent data-loss catches, empty editable defaults after failed loads and log-only substitution for recovery. Apply the same rule to maintenance scripts, admin tools, API responses and UI state. If required changes span files, complete the whole dependency path.
+
+Before PR/merge, reviewers **must reject** a change with unaddressed root cause, a silent failure path, inadequate negative/failure-injection tests, stale documentation, or claims of validation not actually performed. Do not merge a partial fix as complete. If blocked, document the blocker and leave it unresolved rather than disguising it. See [architecture debt audit](../ARCHITECTURE_DEBT_AUDIT_2026-11-15.md).
+
+---
+
 ## Local validation and GitHub cost boundary
 
 **NEVER run a Next.js build or Lighthouse build in GitHub Actions.** GitHub CI checks lint, typecheck, tests, security and `npm run check:github-builds` only. The maintainer runs production builds **locally** (not on GitHub runners):

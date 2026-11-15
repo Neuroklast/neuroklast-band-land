@@ -1,5 +1,16 @@
 # QA checklist
 
+## Mandatory architecture and root-cause review (all PRs, 2026-11-15)
+
+- [ ] Demonstrate a reproduced failure and evidence for its root cause, then enumerate affected pages, APIs, jobs and other callers.
+- [ ] Fix the owning abstraction rather than adding another local exception, fallback, dummy handler or silent catch. Verify the new code has no false success paths.
+- [ ] Test Supabase returned errors, network outages, retries/duplicates, missing schema/configuration, authorization and recovery as applicable.
+- [ ] Confirm an empty successful read is distinguishable from a failed load and cannot overwrite real saved data with defaults.
+- [ ] Confirm audit logs, financial changes and media cleanup have explicit durable success/failure and retry behavior.
+- [ ] Ensure the audit backlog is updated or explicitly linked, and no known defect is falsely marked resolved. Refer to [AGENTS.md](AGENTS.md#mandatory-engineering-standard-no-quick-fixes) and [the architecture audit](docs/ARCHITECTURE_DEBT_AUDIT_2026-11-15.md).
+- [ ] Block merge for any dirty/quick fix even if CI is green. Report unavailable local build, browser checks and production checks honestly.
+
+
 ## Centralized admin MFA navigation (2026-11-15)
 
 - [ ] With an enrolled authenticator but AAL1 session, navigate to `/admin/contact-inbox`, `/admin/contact-spam`, `/admin/orders`, `/admin/privacy`, `/admin/withdrawals`, `/admin/plugins/beta-diagnostics` and an existing `/admin/soundpacks/{id}` route. Every protected page must redirect to `/admin/mfa` rather than show the generic server error.
