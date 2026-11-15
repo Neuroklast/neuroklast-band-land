@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Classify plugin admin API errors by cause (unauthorized, MFA/forbidden, validation, conflict, rate limit, payload too large, unavailable backend and internal failure) instead of returning HTTP 400 for every failure. Product overview and artifact deletion no longer ignore partial Supabase query errors.
+
+
 - Split 54 server-side admin command descriptors from local executable actions, remove their misleading no-op success handlers and delete the forged Supabase action context. Server actions now call a typed, pure validation contract and remain responsible for actual mutations. The legacy dispatcher refuses to pretend a server command was executed.
 
 - Repair admin data-read contracts: Look & Feel, Sections, Bio and Analytics no longer display editable empty defaults or zeroed analytics after backend failures. Show a non-editable error state with retry; preserve actual empty results.

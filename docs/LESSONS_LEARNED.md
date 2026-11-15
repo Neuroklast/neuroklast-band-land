@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## 2026-11-15 — error responses are part of the API contract
+
+A generic HTTP 400 for every plugin admin exception collapses invalid inputs, expired MFA, authorization failures, database outages and real conflicts into one user-unhelpful error. Map typed/known failures to correct status classes and retain sanitized response messages. Supabase queries return `{ data, error }` instead of always throwing: a product overview must not quietly show zero licences or missing signing credentials when one of its related-table queries failed. Check every returned error before presenting derived counts. Use contract tests for each class.
+
+---
+
+
 ## 2026-11-15 — command validation must not masquerade as execution
 
 The admin action registry mixed actual in-memory UI state mutations with 54 server command descriptors that returned `ok: true` without writing any data. A forged context with empty settings and dummy setters made that possible. Model `execution: 'local' | 'server'` explicitly. Let the pure validator verify input and disclosure, while only the dedicated authorized server action performs persistence. A local dispatcher must reject a server command instead of manufacturing success. Use tests for no-op classification, invalid input, disclosure, and error outcomes.

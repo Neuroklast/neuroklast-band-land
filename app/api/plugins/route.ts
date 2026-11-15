@@ -1,6 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
-import { adminFailureMessage } from '@/lib/neurokore/admin-error'
+import { adminFailureMessage, adminFailureStatus } from '@/lib/neurokore/admin-error'
 import { admin, body, db, json, limit, required, sameOrigin } from '@/lib/neurokore/server'
 import { generateSigningKeyPair, normalizeSigningPem, signingPublicHex } from '@/lib/neurokore/protocol'
 import { encryptSigningKey } from '@/lib/plugins/signing'
@@ -93,9 +93,12 @@ export async function GET(request: Request) {
       client.from('plugin_releases').select('product_id,status').in('product_id', ids),
       client.from('plugin_licenses').select('product_id').in('product_id', ids),
     ])
-    const secretRows = secrets.error ? [] : secrets.data ?? []
-    const releaseRows = releases.error ? [] : releases.data ?? []
-    const licenseRows = licenses.error ? [] : licenses.data ?? []
+    if (secrets.error) throw secrets.error
+    if (releases.error) throw releases.error
+    if (licenses.error) throw licenses.error
+    const secretRows = secrets.data ?? []
+    const releaseRows = releases.data ?? []
+    const licenseRows = licenses.data ?? []
     return json({
       products: products.map((product) => {
         const secret = secretRows.find((row) => row.product_id === product.id)
@@ -111,7 +114,7 @@ export async function GET(request: Request) {
       }),
     })
   } catch (error) {
-    return json({ error: adminFailureMessage(error) }, 400)
+    return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))
   }
 }
 
@@ -207,8 +210,9 @@ export async function POST(request: Request) {
       const releaseIds = (releases ?? []).map((release) => release.id)
       let storageKeys: string[] = []
       if (releaseIds.length > 0) {
-        const { data: artifacts } = await client.from('plugin_release_artifacts')
+        const { data: artifacts, error: artifactError } = await client.from('plugin_release_artifacts')
           .select('storage_key').in('release_id', releaseIds)
+        if (artifactError) throw artifactError
         storageKeys = (artifacts ?? []).map((artifact) => artifact.storage_key)
       }
       // The RPC enforces "hidden and no paid orders" before anything is removed.
@@ -258,7 +262,7 @@ export async function POST(request: Request) {
     return json({ public_key_hex: publicHex })
   } catch (error) {
     console.error('[plugins-api]', error)
-    return json({ error: adminFailureMessage(error) }, 400)
+    return json({ error: adminFailureMessage(error) }, adminFailureStatus(error))
   }
 }
 
