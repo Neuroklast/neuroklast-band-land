@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+- Reject contact-form submissions containing only the same standalone URL in subject and body, including automated colon-wrapped echoes. Do not persist them or send them through Resend; preserve ordinary enquiries with links. Add regression tests and document the seven-message inbox review.
+
 - Enforce living architecture documentation through a new pull-request CI gate, quality baseline and evidence journal.
 
 - Correct the legacy Activity Log contract: browser-only history is labeled as personal, optional and not a verified administrative/security audit trail. No persisted audit assurances are inferred from localStorage.
