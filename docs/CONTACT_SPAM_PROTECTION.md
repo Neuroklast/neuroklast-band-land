@@ -1,8 +1,9 @@
 # Contact form bot protection
 
 The public contact forms use one shared server action: `app/_actions/contact.ts`.
-Honeypot submissions and messages caught by the conservative automatic sales-pitch
-screen receive an ordinary success response so detection criteria are not disclosed.
+Honeypot submissions, mirrored URL-only bot probes and messages caught by the
+conservative sales-pitch screen receive an ordinary success response so detection
+criteria are not disclosed.
 The separate **admin-managed word/phrase blacklist** instead explicitly rejects
 matching messages with a spam-suspicion notice and a link to the legal notice.
 All rejected messages are **not** saved in `plugin_contact_requests` and
