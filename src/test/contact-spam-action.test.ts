@@ -54,6 +54,14 @@ describe('contact spam rejection before delivery', () => {
     state.resendKey.mockClear()
   })
 
+  it('drops a mirrored URL-only bot probe before touching config, inbox or mail', async () => {
+    state.error = { message: 'config temporarily unavailable' }
+    const result = await submitContact(null, form(':https://neuroklast.net/:', ':https://neuroklast.net/:'))
+    expect(result).toEqual({ success: true })
+    expect(state.inserted).not.toHaveBeenCalled()
+    expect(state.resendKey).not.toHaveBeenCalled()
+  })
+
   it('rejects a blacklisted phrase without storing or emailing the message', async () => {
     const result = await submitContact(null, form('Booking', 'An UNWANTED OFFER for you.'))
     expect(result).toEqual({ error: 'spam_suspected' })
