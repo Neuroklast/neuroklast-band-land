@@ -48,6 +48,13 @@
 - [ ] Confirm AAL2 sessions load directly, refreshed auth cookies and cache-control headers survive redirect, and non-admin sessions remain denied.
 - [ ] Check `/admin/mfa`, `/admin/security`, unrelated admin routes, all API/form POST endpoints and `/admin/soundpacks/new` avoid accidental MFA navigation loops. Server guards and MFA enforcement must remain active.
 - [ ] Verify on mobile and desktop after production deployment. Non-build CI plus local Next.js build and authenticated browser MFA test are required for end-to-end sign-off.
+## Contact form URL-only bot suppression (2026-11-16)
+
+- [ ] Same standalone HTTP(S) URL in subject and body, including `:https://neuroklast.net/:`, is silently rejected without storage or outgoing Resend email.
+- [ ] URL-containing booking, artist, press and licensing enquiries are accepted; different URL subjects/bodies are not accidentally discarded.
+- [ ] Previous blacklist rules, sales-pitch heuristic, Turnstile and 5/15-minute rate limiting retain their behavior.
+- [ ] Confirm a fresh production test submission (without creating false business records) after deployment, and review delivery/inbox side effects. Historical spam entries are not retroactively deleted.
+
 ## Contact spam blacklist (2026-11-05)
 
 - [ ] Set whole-word and multiword rules under /admin/contact-spam; save, reload and verify persistence across deployments. Test with enabled and disabled filtering.
