@@ -3,7 +3,7 @@
 import { getApiSecret } from '@/lib/api-secrets'
 import { contactFormSchema } from '@/lib/contact-form'
 import { CONTACT_SPAM_CONFIG_KEY, isContactSpam, parseContactSpamConfig } from '@/lib/contact-spam-filter'
-import { hasFilledHoneypot, isUnsolicitedSalesPitch } from '@/lib/contact-spam'
+import { hasFilledHoneypot, isMirroredUrlOnlySubmission, isUnsolicitedSalesPitch } from '@/lib/contact-spam'
 import { verifyContactTurnstile } from '@/lib/contact-turnstile'
 import { checkContactRateLimit } from '@/lib/server-rate-limit'
 import { db } from '@/lib/neurokore/server'
@@ -44,7 +44,13 @@ export async function submitContact(
   }
 
   const { name, email, subject, message } = parsed.data
-  // Explicit admin blacklist takes precedence over heuristic auto-discard.
+  // URL-only echoes contain no enquiry. Discard before database/config reads,
+  // inbox insertion or Resend delivery, without exposing the detection rule.
+  if (isMirroredUrlOnlySubmission({ subject, message })) {
+    return { success: true }
+  }
+
+  // Explicit admin blacklist takes precedence over sales-pitch screening.
   // Block before persistence, email delivery or challenge verification.
   try {
     const { data, error } = await db().from('site_config')

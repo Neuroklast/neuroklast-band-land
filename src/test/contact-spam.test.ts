@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { hasFilledHoneypot, isUnsolicitedSalesPitch } from '@/lib/contact-spam'
+import { hasFilledHoneypot, isMirroredUrlOnlySubmission, isUnsolicitedSalesPitch } from '@/lib/contact-spam'
 
 describe('contact spam screening', () => {
   it('rejects the sales pitches shown in the admin inbox', () => {
@@ -25,6 +25,36 @@ describe('contact spam screening', () => {
     expect(isUnsolicitedSalesPitch({
       subject: 'Press interview',
       message: 'We would like to interview the band for our music magazine.',
+    })).toBe(false)
+  })
+
+  it('catches mirrored standalone URLs including colon-wrapped bot probes', () => {
+    expect(isMirroredUrlOnlySubmission({
+      subject: ':https://neuroklast.net/:',
+      message: ':https://neuroklast.net/:',
+    })).toBe(true)
+    expect(isMirroredUrlOnlySubmission({
+      subject: 'https://example.org/',
+      message: 'https://example.org/',
+    })).toBe(true)
+  })
+
+  it('does not suppress messages containing useful context or different URLs', () => {
+    expect(isMirroredUrlOnlySubmission({
+      subject: 'Booking enquiry',
+      message: 'Our venue is at https://example.org/. Can we discuss an upcoming show?',
+    })).toBe(false)
+    expect(isMirroredUrlOnlySubmission({
+      subject: 'https://example.org/',
+      message: 'Can you check https://example.org/ for press materials?',
+    })).toBe(false)
+    expect(isMirroredUrlOnlySubmission({
+      subject: 'https://example.org/',
+      message: 'https://different.example/',
+    })).toBe(false)
+    expect(isMirroredUrlOnlySubmission({
+      subject: 'hello',
+      message: 'hello',
     })).toBe(false)
   })
 

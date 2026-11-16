@@ -31,6 +31,32 @@ export function isUnsolicitedSalesPitch(input: {
     (promotionalSubject && coldOutreach)
 }
 
+/**
+ * A bare URL duplicated into both the subject and body carries no request.
+ * Common automated form probes wrap the URL in colons. Only suppress when
+ * BOTH fields contain the same standalone HTTP(S) URL, never when a real
+ * enquiry includes a link or when the fields differ.
+ */
+function standaloneUrl(value: string): string | null {
+  const candidate = value.trim().replace(/^:+|:+$/g, '').trim()
+  if (!/^https?:\/\/\S+$/i.test(candidate)) return null
+  try {
+    const url = new URL(candidate)
+    if (url.username || url.password) return null
+    return url.href
+  } catch {
+    return null
+  }
+}
+
+export function isMirroredUrlOnlySubmission(input: {
+  subject: string
+  message: string
+}): boolean {
+  const subjectUrl = standaloneUrl(input.subject)
+  return subjectUrl !== null && subjectUrl === standaloneUrl(input.message)
+}
+
 /** Bait fields are not user inputs. Genuine senders never see or fill them. */
 export function hasFilledHoneypot(formData: FormData): boolean {
   return ['_hp', 'website'].some((key) => {

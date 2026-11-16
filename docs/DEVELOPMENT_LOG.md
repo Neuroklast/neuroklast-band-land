@@ -2,6 +2,19 @@
 
 Entries are in **reverse chronological order** (newest first).
 
+## Session: 2026-11-16 — contact form inbox review and URL-only bot screening
+
+**Agent:** ChatGPT
+**Branch:** `fix/contact-url-echo-spam-20261116`
+
+**Evidence:** Seven historical support inbox entries (2026-10-28–2026-11-15); six obvious promotional pitches covered by current blacklist/lead heuristics, and one open URL-only submission whose subject and body exactly repeated a colon-wrapped homepage URL. Current spam blacklist and existing defensive layers were verified directly. Historical submissions alone do not indicate how the current rules would behave.
+
+**Change:** Added a general, side-effect-free URL-only echo predicate to the canonical contact spam module and integrated it in the shared server action after validation/rate limiting and before DB config, persistence and outgoing mail. Preserved conservative marketing rules, admin-configurable blacklist, MFA, Turnstile, and legitimate-link enquiries. Added unit and server-action regression tests. No historic contact records were deleted or changed.
+
+**Validation status:** Code review and tests in CI required. Local checkout unavailable in this environment; production manual controlled form test remains required after deployment. See `docs/CONTACT_SPAM_PROTECTION.md`.
+
+---
+
 ## Session: 2026-11-15 — repository architecture debt audit and no-quick-fixes policy
 
 **Agent:** ChatGPT  
