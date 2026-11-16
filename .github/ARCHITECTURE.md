@@ -1,3 +1,16 @@
+## ADR-2026-11-16: Reject content-free contact submissions by structure
+
+**Status:** Accepted.
+**Scope:** Shared website contact-form processing in `app/_actions/contact.ts` and `lib/contact-spam.ts`.
+
+**Context:** The website support inbox contained an automated submission that put only an identical homepage URL in both subject and message. Existing advertising heuristics and admin blacklist address unsolicited sales pitches, but do not classify content-free form echoes.
+
+**Decision:** Use one pure, generic predicate that recognizes a standalone HTTP(S) URL mirrored in subject and body, including colon-wrapped variants. Invoke it after form validation and rate limiting, before configuration lookup, persistence and email delivery. Preserve real enquiries containing links and keep the heuristic independent of specific domains or hardcoded sender identities. Continue to silently discard obvious bots without logging message contents.
+
+**Consequences:** This narrow class does not create support-inbox records or send Resend email. It avoids keyword false positives and adds no schema changes. The rule does not claim to catch adversarial or human-generated spam; Turnstile, allowlisted admin keyword rules, rate limits and separate marketing heuristics remain necessary. Validate with unit tests, server-action tests and controlled post-deployment submissions.
+
+---
+
 ## ADR-2026-11-15: Treat documentation as a versioned source contract
 
 **Status:** Accepted.
