@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## 2026-11-16 — suppress form garbage by structure, not broad keywords
+
+A real inbox review showed that sales-pitch filters and a blacklist can cover obvious marketing but still accept an automated submission whose subject and body contain only the same URL. A narrow, generic URL-only echo predicate belongs in the shared contact pipeline before persistence and outbound mail, not as a hardcoded offender domain or an overly broad blacklist term. Include negative regression cases for real messages that merely contain URLs, and do not infer a current detector failure solely from historical inbox rows. Make side effects explicit: silent discard, no inbox record, no email.
+
+---
+
+
 ## 2026-11-15 — browser history is not a durable audit trail
 
 A client-only localStorage timeline cannot prove who performed a security-sensitive action. It is mutable, capped and removable by the browser user. Classify it as optional personal UI history and tell the user that explicitly; preserve a separate, server-side transactional audit contract for products, licensing, release publication and privileged operations. Never rely on a harmless browser preference/history API for compliance.
