@@ -1,6 +1,6 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+import { GetObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createR2S3Client } from '@/lib/r2-s3-client'
 
@@ -20,6 +20,15 @@ export function billingArchiveBucket(env: NodeJS.ProcessEnv = process.env): stri
   }
   if (value === env.R2_BUCKET_MEDIA) throw new Error('The private billing bucket must not be the media bucket')
   return value
+}
+
+/** Verify the bucket and S3 credentials before reserving a legal invoice number. */
+export async function assertBillingArchiveReady(bucket:string):Promise<void> {
+  try {
+    await createR2S3Client().send(new HeadBucketCommand({Bucket:bucket}))
+  } catch {
+    throw new Error('Billing archive bucket is unavailable; no new invoice number was reserved')
+  }
 }
 
 export function archiveKey(invoiceId: string, number: string, format: BillingFormat): string {
