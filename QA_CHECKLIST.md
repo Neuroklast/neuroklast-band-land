@@ -274,3 +274,6 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] Check PDF rendering in a real PDF reader and ODT/FODT with LibreOffice.
 - [ ] Add EN16931 XML, XRechnung/ZUGFeRD + PDF/A validation before E-Rechnung claims.
 - [ ] Obtain legal/tax review and validate GoBD archive, retention and backup/restore.
+
+- [x] Add disposable PostgreSQL tests for annual number confirmation, issuance idempotency, immutable issued data and MCP payment review. **CI outcome must be independently verified.**
+- [x] Add filtered, paginated invoice/customer administration and a read-only year-scoped CSV overview. **Browser E2E remains outstanding.**
