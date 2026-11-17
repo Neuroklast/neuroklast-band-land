@@ -1,12 +1,13 @@
 import { admin } from '@/lib/neurokore/server'
-import { getBillingSettings } from '@/lib/billing/service'
+import { getBillingSettings, getBillingSequence } from '@/lib/billing/service'
 import { saveBillingSettings, seedBillingSequenceAction } from '@/app/admin/_actions/billing'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { billingDateInGermany } from '@/lib/billing/date'
 export const dynamic='force-dynamic'
 export default async function BillingSettingsPage({searchParams}:{searchParams:Promise<{saved?:string;sequence?:string}>}) {
  await admin()
- const settings=await getBillingSettings()
+ const currentYear=Number(billingDateInGermany().slice(0,4))
+ const [settings,sequence]=await Promise.all([getBillingSettings(),getBillingSequence(currentYear)])
  const params=await searchParams
  const field=(key:string,label:string,required=false)=><label className="text-sm space-y-1" key={key}>
   <span>{label}</span><input name={key} required={required} defaultValue={String(settings[key]??'')}
@@ -32,9 +33,13 @@ export default async function BillingSettingsPage({searchParams}:{searchParams:P
   </form>
   <section className="border-t border-zinc-700 mt-8 pt-6 space-y-3">
     <h2 className="text-lg font-semibold">Nummernkreis initialisieren</h2>
-    <p className="text-sm text-zinc-400">Bei vorhandenen externen Rechnungen den nächsten noch nicht verwendeten Wert eingeben. Nach der ersten Nummernvergabe für dieses Jahr ist eine Änderung gesperrt.</p>
+    <p className="text-sm text-zinc-400">Für jedes Rechnungsjahr ist eine ausdrückliche Bestätigung des Startwerts erforderlich. Vorhandene externe Rechnungsnummern müssen dabei berücksichtigt werden. Ein bestätigter Nummernkreis kann nicht zurückgesetzt werden.</p>
+    <p className={sequence.confirmed?'text-sm text-green-400':'text-sm text-amber-300'}>
+      {currentYear}: {sequence.confirmed?'Bestätigt':'Noch nicht bestätigt'}.
+      Nächste laufende Nummer: {String(sequence.next_value)}.
+    </p>
     <form action={seedBillingSequenceAction} className="flex flex-wrap gap-3 items-end">
-      <label className="text-sm space-y-1"><span>Jahr</span><input name="year" type="number" min={2000} max={2200} required defaultValue={Number(billingDateInGermany().slice(0,4))} className="block bg-black border border-zinc-700 p-3"/></label>
+      <label className="text-sm space-y-1"><span>Jahr</span><input name="year" type="number" min={2000} max={2200} required defaultValue={currentYear} className="block bg-black border border-zinc-700 p-3"/></label>
       <label className="text-sm space-y-1"><span>Nächste Nummer</span><input name="next_number" type="number" min={1} max={999999} required className="block bg-black border border-zinc-700 p-3"/></label>
       <button className="border border-zinc-700 min-h-11 px-4" type="submit">Einmalig setzen</button>
     </form>
