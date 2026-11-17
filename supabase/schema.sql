@@ -2702,3 +2702,31 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.billing_approve_mcp_payment(uuid,uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.billing_approve_mcp_payment(uuid,uuid) TO service_role;
+
+
+-- One-time sequence alignment for pre-existing externally numbered invoices.
+-- Refuses changes as soon as this module has reserved a number in that year.
+CREATE OR REPLACE FUNCTION public.billing_seed_sequence(
+  p_year integer, p_next bigint
+) RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
+DECLARE current_value bigint;
+BEGIN
+  IF p_year<2000 OR p_year>2200 OR p_next<1 OR p_next>999999 THEN
+    RAISE EXCEPTION 'Invalid invoice sequence seed';
+  END IF;
+  INSERT INTO public.billing_sequences(issue_year,next_value)
+    VALUES(p_year,1) ON CONFLICT(issue_year) DO NOTHING;
+  SELECT next_value INTO current_value FROM public.billing_sequences
+    WHERE issue_year=p_year FOR UPDATE;
+  IF EXISTS(SELECT 1 FROM public.billing_invoices
+      WHERE issue_date>=make_date(p_year,1,1)
+        AND issue_date<make_date(p_year+1,1,1) AND number IS NOT NULL) THEN
+    RAISE EXCEPTION 'This invoice year has already been used; sequence cannot be changed';
+  END IF;
+  UPDATE public.billing_sequences SET next_value=p_next WHERE issue_year=p_year;
+  INSERT INTO public.billing_events(operation,details)
+    VALUES('invoice_sequence_seeded',jsonb_build_object('year',p_year,'previous',current_value,'next',p_next));
+  RETURN p_next;
+END $$;
+REVOKE ALL ON FUNCTION public.billing_seed_sequence(integer,bigint) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.billing_seed_sequence(integer,bigint) TO service_role;
