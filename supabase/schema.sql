@@ -2711,7 +2711,7 @@ GRANT EXECUTE ON FUNCTION public.billing_approve_mcp_payment(uuid,uuid) TO servi
 -- One-time sequence alignment for pre-existing externally numbered invoices.
 -- Refuses changes as soon as this module has reserved a number in that year.
 CREATE OR REPLACE FUNCTION public.billing_seed_sequence(
-  p_year integer, p_next bigint
+  p_year integer, p_next bigint, p_actor uuid
 ) RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
 DECLARE current_value bigint;
 BEGIN
@@ -2728,12 +2728,12 @@ BEGIN
     RAISE EXCEPTION 'This invoice year has already been used; sequence cannot be changed';
   END IF;
   UPDATE public.billing_sequences SET next_value=p_next WHERE issue_year=p_year;
-  INSERT INTO public.billing_events(operation,details)
-    VALUES('invoice_sequence_seeded',jsonb_build_object('year',p_year,'previous',current_value,'next',p_next));
+  INSERT INTO public.billing_events(actor_id,operation,details)
+    VALUES(p_actor,'invoice_sequence_seeded',jsonb_build_object('year',p_year,'previous',current_value,'next',p_next));
   RETURN p_next;
 END $$;
-REVOKE ALL ON FUNCTION public.billing_seed_sequence(integer,bigint) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.billing_seed_sequence(integer,bigint) TO service_role;
+REVOKE ALL ON FUNCTION public.billing_seed_sequence(integer,bigint,uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.billing_seed_sequence(integer,bigint,uuid) TO service_role;
 
 
 -- Durable append-only financial records. Corrections must be new linked events.
@@ -2754,3 +2754,35 @@ FOR EACH ROW EXECUTE FUNCTION public.billing_prevent_destructive_changes();
 DROP TRIGGER IF EXISTS billing_events_prevent_changes ON public.billing_events;
 CREATE TRIGGER billing_events_prevent_changes BEFORE UPDATE OR DELETE ON public.billing_events
 FOR EACH ROW EXECUTE FUNCTION public.billing_prevent_destructive_changes();
+
+
+-- Actor-preserving audit for edits before an invoice is issued.
+ALTER TABLE public.billing_settings ADD COLUMN IF NOT EXISTS updated_by uuid;
+ALTER TABLE public.billing_customers ADD COLUMN IF NOT EXISTS created_by uuid;
+ALTER TABLE public.billing_customers ADD COLUMN IF NOT EXISTS updated_by uuid;
+ALTER TABLE public.billing_invoices ADD COLUMN IF NOT EXISTS updated_by uuid;
+
+CREATE OR REPLACE FUNCTION public.billing_audit_edits() RETURNS trigger
+LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
+BEGIN
+  IF TG_TABLE_NAME='billing_customers' THEN
+    INSERT INTO public.billing_events(customer_id,actor_id,operation)
+    VALUES (NEW.id,NEW.updated_by,CASE WHEN TG_OP='INSERT' THEN 'customer_created' ELSE 'customer_updated' END);
+  ELSIF TG_TABLE_NAME='billing_invoices' AND NEW.status='draft' THEN
+    INSERT INTO public.billing_events(invoice_id,actor_id,operation)
+    VALUES (NEW.id,NEW.updated_by,CASE WHEN TG_OP='INSERT' THEN 'draft_created' ELSE 'draft_updated' END);
+  ELSIF TG_TABLE_NAME='billing_settings' THEN
+    INSERT INTO public.billing_events(actor_id,operation,details)
+    VALUES (NEW.updated_by,'seller_settings_updated',jsonb_build_object('tax_mode',NEW.tax_mode));
+  END IF;
+  RETURN NEW;
+END $$;
+DROP TRIGGER IF EXISTS billing_customer_audit ON public.billing_customers;
+CREATE TRIGGER billing_customer_audit AFTER INSERT OR UPDATE ON public.billing_customers
+FOR EACH ROW EXECUTE FUNCTION public.billing_audit_edits();
+DROP TRIGGER IF EXISTS billing_draft_audit ON public.billing_invoices;
+CREATE TRIGGER billing_draft_audit AFTER INSERT OR UPDATE ON public.billing_invoices
+FOR EACH ROW EXECUTE FUNCTION public.billing_audit_edits();
+DROP TRIGGER IF EXISTS billing_settings_audit ON public.billing_settings;
+CREATE TRIGGER billing_settings_audit AFTER INSERT OR UPDATE ON public.billing_settings
+FOR EACH ROW EXECUTE FUNCTION public.billing_audit_edits();
