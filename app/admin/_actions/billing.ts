@@ -48,7 +48,7 @@ export async function saveBillingDraft(form:FormData) {
     buyer_reference:text(form,'buyer_reference'),
   }
   const id=text(form,'id')
-  let result: {id:unknown}
+  let result: Record<string,unknown>
   try {
     result=id?await updateBillingDraft(id,input,actor,Number(text(form,'revision'))):
       await createBillingDraft(input,actor)
