@@ -5,7 +5,7 @@ import { admin } from '@/lib/neurokore/server'
 import { parseEurosToCents } from '@/lib/billing/domain'
 import { reviewBillingRequest } from '@/lib/mcp/billing'
 import { createBillingCustomer, updateBillingCustomer, updateBillingSettings,
-  createBillingDraft, updateBillingDraft, issueBillingInvoice, recordBillingPayment, seedBillingSequence } from '@/lib/billing/service'
+  createBillingDraft, updateBillingDraft, issueBillingInvoice, recordBillingPayment, seedBillingSequence, BillingDraftConflictError } from '@/lib/billing/service'
 
 const text=(form:FormData,key:string)=>String(form.get(key)??'').trim()
 const requireId=(form:FormData,key:string)=>text(form,key)
@@ -48,8 +48,18 @@ export async function saveBillingDraft(form:FormData) {
     buyer_reference:text(form,'buyer_reference'),
   }
   const id=text(form,'id')
-  const result=id?await updateBillingDraft(id,input,actor,Number(text(form,'revision'))):
-    await createBillingDraft(input,actor)
+  let result: Record<string,unknown>
+  try {
+    result=id?await updateBillingDraft(id,input,actor,Number(text(form,'revision'))):
+      await createBillingDraft(input,actor)
+  } catch(error) {
+    if(id && error instanceof BillingDraftConflictError) {
+      // An issued invoice can no longer be edited. Reload the canonical row instead
+      // of throwing an opaque HTTP 500 or overwriting a newer draft revision.
+      redirect('/admin/billing/'+id+'?stale=1')
+    }
+    throw error
+  }
   touch()
   redirect('/admin/billing/'+String(result.id))
 }

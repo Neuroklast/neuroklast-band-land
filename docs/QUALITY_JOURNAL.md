@@ -90,3 +90,23 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: Broken PDF layout or mismatched amount fails validation before issuing; archive failures keep the same reserved invoice ID for retry without duplicating legal numbers.
 - Docs updated: Updated `.github/ARCHITECTURE.md`, `QA_CHECKLIST.md`, billing architecture and operations, development log, changelog and this quality journal.
 - Residual risk: PDF/A-3 and fully Unicode embedded fonts are not supported; this must not be mistaken for an EN16931 e-invoice or certified GoBD workflow.
+
+## 2026-11-17 | Fix private billing download redirects and incorrect PDF logo
+- Root cause: admin download route returned 302 to presigned R2 S3 endpoint, triggering browser CORS/preflight failures; Next `Link` invoked RSC navigation for files. The renderer used a synthetic NK vector mark instead of the actual branded red wordmark.
+- Implementation: same-origin authenticated binary delivery with verified immutable R2 SHA-256, native document anchors, no-cache headers, approved `nk-logo-red-bold.png` embedded into PDF and explicit Vercel file tracing.
+- Scope: no changes to billing sequence allocation, issued invoice objects, customer identity, financial values, R2 public permissions or MCP signed-URL access.
+- Required verification: CI typecheck/lint/tests, actual PDF visual render, authorized and unauthorized downloads, no external redirects, post-deploy smoke. These validations are not claimed complete here.
+- Owner: Billing archive adapter and canonical service own verified reads; admin route owns same-origin responses; PDF renderer owns actual wordmark layout.
+- Tests: Added route denial/format/redirect/no-store contracts, immutable SHA-256 reads and multipage image XObject checks; CI and visual rendering remain release gates.
+- Failure path: Authentication denial returns 403, invalid format 400, missing or tampered objects fail closed; numbered original invoice objects are never rewritten.
+- Docs updated: Updated architecture ADR, billing architecture, operations runbook, QA checklist, development log, changelog and this journal.
+- Residual risk: CI and live browser checks are pending, rendered PDF logo fidelity is not visually certified, and issued invoice branding cannot be retroactively changed without a reviewed process.
+
+## 2026-11-17 | Explicit stale-draft conflict recovery after invoice issuance
+- Scope: Billing service optimistic draft update, admin server action and invoice detail conflict notice.
+- Root cause: Production invoice `RE-2026-000001` was issued at 17:15:33 UTC, and a stale form submitted an update at 17:15:36 UTC. Revision and issued-status protection worked, but the generic exception surfaced as HTTP 500.
+- Owner: Canonical `lib/billing/service.ts` owns `BillingDraftConflictError`; the admin action maps that domain conflict to a reload; the detail page owns the visible notice.
+- Tests: Added action tests for optimistic conflict, unrelated failure propagation and normal success redirection. End-to-end browser verification remains pending.
+- Failure path: Stale write matches no draft row and must never overwrite a newer revision or issued invoice. Other DB errors must still surface rather than becoming a false conflict.
+- Docs updated: Billing architecture, operations, changelog, QA checklist, development log and this quality journal.
+- Residual risk: No live browser reproduction is completed; the change must pass CI, and original issued invoice `RE-2026-000001` cannot be rebranded by overwriting its stored PDF.

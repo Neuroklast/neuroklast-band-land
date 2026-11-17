@@ -287,9 +287,25 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 
 
 ## 2026-11-17 — Branded invoice PDF QA
-- [x] PDF renderer produces branded vector NK logo, A4 media box, table headings, seller/buyer information, totals and § 19 UStG statement for Kleinunternehmer.
-- [x] Shared `renderPdf` contract remains synchronous and deterministic and requires no network resources at issue time.
+- [x] PDF renderer embeds the approved red NK bold logo as an image XObject, A4 media box, table headings, seller/buyer information, totals and § 19 UStG statement for Kleinunternehmer (source-level validation; viewer rendering is still outstanding).
+- [x] Shared `renderPdf` contract returns `Promise<Buffer>` and reads only a locally bundled brand asset without network requests at issue time.
 - [ ] Inspect 120 EUR Paradox Party PDF visually, verify printed text, right alignment and all tax/payment details.
 - [ ] Complete CI unit tests, typecheck, lint, audit and archive contract tests for the branch.
 - [ ] Verify production deployment and archived R2 document SHA before issuing invoice `26354dad-1098-4d08-97c7-fbb52e46d63a`.
 - [ ] Confirm invoice state `issued`, assigned number and secure PDF availability; never regenerate an issued archive in place.
+
+## Invoice document download regression tests (2026-11-17)
+
+- [x] Automated route contract covers PDF inline, ODT/FODT/XRechnung attachments, missing/unsupported formats, denied admin access, no R2 redirect, no-store/nosniff and archive read failure.
+- [x] Archive unit test checks original R2 bytes against immutable SHA-256 and rejects tampering.
+- [x] PDF unit tests check image XObject, real wordmark draw command, invoice numbers, total fields and repeat logo on multipage invoices. Source-level verification only.
+- [ ] Verify actual PDF in a renderer: full logo present and uncut, no black background, clear text and no collisions.
+- [ ] Verify download behavior in production with authenticated admin session; ensure browser network panel contains no R2 redirect or CORS failure.
+- [ ] Verify expired login and unauthorized session cannot access the bytes.
+- [ ] Confirm old `RE-2026-000001.pdf` remains unchanged and record a separate copy/correction process if branding must be updated.
+
+## Stale invoice editor conflict recovery (2026-11-17)
+
+- [x] Automated action test covers a stale revision redirect to the canonical invoice detail and distinguishes unrelated database errors.
+- [ ] Browser test: open a draft in one tab, issue in another, attempt stale save in first tab. The old form must not overwrite the issued invoice and the current state must display the conflict message, without HTTP 500.
+- [ ] Verify stale revisions on an editable draft require deliberate review of the newer values, not automatic conflict resolution.

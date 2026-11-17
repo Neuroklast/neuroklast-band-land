@@ -252,8 +252,17 @@ The new `lib/billing/service.ts` is the canonical owner of customer and invoice 
 **Status:** Accepted.
 **Scope:** Issued direct-issuer billing PDF only. Existing immutable R2 documents remain untouched.
 
-**Decision:** Keep the finance presentation in `lib/billing/pdf.ts`, called via the existing `renderPdf` export in `lib/billing/documents.ts`. Use PDF 1.4 built-in Helvetica fonts and vector paths matching the existing brand's official `public/brand/nk-mark.svg`. All legal amounts are calculated by the canonical integer-cent domain. Avoid network fetches, external font distribution or browser-dependent headless printing during legal number assignment. Reflow invoice positions with repeated headers and explicit A4 margins.
+**Decision:** Keep the finance presentation in `lib/billing/pdf.ts`, called via the existing `renderPdf` export in `lib/billing/documents.ts`. Use PDF 1.4 built-in Helvetica fonts and embed the actual NEUROKLAST red wordmark from `public/brand/nk-logo-red-bold.png` as a PDF image XObject. The renderer loads only the bundled local brand asset through `sharp` and returns `Promise<Buffer>`; the issuance service must await it before archive writes. Vercel file tracing includes that asset. All legal amounts are calculated by the canonical integer-cent domain. Avoid network fetches, external font distribution or browser-dependent headless printing during legal number assignment. Reflow invoice positions with repeated headers and explicit A4 margins.
 
 **Consequences:** Offline, deterministic, consistent branding, compatible with all existing invoice issuance callers. The renderer is not PDF/A or an E-Rechnung. WinAnsi font encoding is insufficient for some non-Western names and must be upgraded separately before issuing invoices containing those scripts. Future logo changes cannot rewrite already issued invoices. Verify real PDF readers, tax fields and pagination before merge.
 
 ---
+
+## ADR-2026-11-17: Private billing file delivery through authenticated origin
+
+**Status:** Accepted for PR validation.
+**Context:** Client-side Next.js `Link` navigated to a billing API route that returned HTTP 302 pointing at Cloudflare's private R2 S3 endpoint. Browser preflight was blocked by CORS. The document endpoint could also be invoked by RSC prefetch with `_rsc` and no format.
+
+**Decision:** Keep the archive private and preserve immutable stored invoices. Only authenticated admin requests may download file bytes from a same-origin route. The billing service resolves the frozen document key and checksum, and the archive adapter re-reads and checks SHA-256. The route streams bytes with no-store and nosniff, never a signed R2 redirect. Native anchors handle file navigation. MCP retains its separately authorized, expiring signed-URL contract.
+
+**Consequences:** No R2 browser CORS configuration is required for invoice downloads. Tests enforce 403 without admin, 400 for unsupported formats, no redirects, correct content-type/disposition and tamper rejection. There is no retroactive change to issued PDF content. PDF/A and archival compliance still require separate verification.

@@ -9,7 +9,7 @@ const state=vi.hoisted(() => ({
 vi.mock('@/lib/r2-s3-client',()=>({
   createR2S3Client:()=>({send:state.send}),
 }))
-import { archiveBillingDocument,archiveKey,billingArchiveBucket,documentSha } from '../archive'
+import { archiveBillingDocument,readArchivedBillingDocument,archiveKey,billingArchiveBucket,documentSha } from '../archive'
 
 describe('immutable R2 invoice archive',()=>{
  beforeEach(()=>{
@@ -74,6 +74,17 @@ describe('immutable R2 invoice archive',()=>{
    await expect(archiveBillingDocument('private-billing',{format:'pdf',key,bytes:Buffer.from('changed')})).rejects.toThrow()
    expect(state.objects.get(key)?.bytes.toString()).toBe('original')
  })
+ it('verifies the original immutable bytes before private same-origin delivery',async()=>{
+   const key=archiveKey('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee','RE-2026-000001','pdf')
+   const bytes=Buffer.from('%PDF-1.4 original')
+   const expected=documentSha(bytes)
+   await archiveBillingDocument('private-billing',{format:'pdf',key,bytes})
+   expect(await readArchivedBillingDocument('private-billing',key,expected)).toEqual(bytes)
+   state.objects.get(key)!.bytes=Buffer.from('%PDF-1.4 altered!')
+   await expect(readArchivedBillingDocument('private-billing',key,expected)).rejects.toThrow('integrity check')
+   await expect(readArchivedBillingDocument('private-billing',key,'not-a-sha256')).rejects.toThrow('checksum')
+ })
+
  it('detects corruption even when stored metadata and length still match',async()=>{
    const key=archiveKey('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee','RE-2026-000001','pdf')
    await archiveBillingDocument('private-billing',{format:'pdf',key,bytes:Buffer.from('correct!')})

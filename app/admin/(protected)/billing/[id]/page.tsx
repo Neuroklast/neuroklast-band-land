@@ -8,9 +8,10 @@ import Link from 'next/link'
 import { billingDateInGermany } from '@/lib/billing/date'
 import { randomUUID } from 'node:crypto'
 export const dynamic='force-dynamic'
-export default async function InvoiceDetail({params}:{params:Promise<{id:string}>}) {
+export default async function InvoiceDetail({params,searchParams}:{params:Promise<{id:string}>;searchParams?:Promise<{stale?:string}>}) {
  await admin()
  const {id}=await params
+ const stale=(await searchParams)?.stale==='1'
  const [{invoice,payments},customers]=await Promise.all([getBillingInvoice(id),listBillingCustomers()])
  if(invoice.status==='draft' && !customers.some(customer=>customer.id===invoice.customer_id)) {
    customers.unshift(await getBillingCustomer(String(invoice.customer_id)))
@@ -21,6 +22,11 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
  const recipient=invoice.recipient as Record<string,string>
  return <main>
   <AdminPageHeader title={invoice.number?String(invoice.number):'Rechnungsentwurf'} description={'Kunde: '+String(recipient?.name??'')}/>
+  {stale&&<p role="alert" className="my-4 border border-amber-700 bg-amber-950/40 px-4 py-3 text-amber-200">
+    {status==='issued'
+      ?'Diese Rechnung wurde bereits verbindlich ausgestellt. Der zuvor geöffnete Entwurf kann nicht mehr gespeichert werden.'
+      :'Der Entwurf hat sich zwischenzeitlich geändert oder wurde für die Ausstellung reserviert. Der aktuelle Stand wurde neu geladen. Bitte prüfen Sie ihn, bevor Sie erneut speichern.'}
+  </p>}
   {status==='draft'?<>
     <InvoiceForm customers={customers.map(c=>({id:String(c.id),name:String(c.name)}))}
       taxMode={invoice.tax_mode as 'small_business'|'vat_registered'} today={String(invoice.issue_date)}
@@ -52,10 +58,10 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
     </form>
   </div>:<div className="space-y-5">
     <div className="flex gap-3 flex-wrap">
-      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=pdf'}>PDF anzeigen</Link>
-      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=odt'}>OpenDocument (.odt) herunterladen</Link>
-      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=fodt'}>Flat-ODF (.fodt) herunterladen</Link>
-      {invoice.e_invoice_profile==='xrechnung'&&<Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=xrechnung'}>XRechnung (.xml) herunterladen</Link>}
+      <a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=pdf'} target="_blank" rel="noopener noreferrer">PDF anzeigen</a>
+      <a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=odt'}>OpenDocument (.odt) herunterladen</a>
+      <a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=fodt'}>Flat-ODF (.fodt) herunterladen</a>
+      {invoice.e_invoice_profile==='xrechnung'&&<a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=xrechnung'}>XRechnung (.xml) herunterladen</a>}
     </div>
     <section className="border border-zinc-800 p-4 space-y-2">
       <h2 className="font-semibold">Zahlungen</h2>

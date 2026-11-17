@@ -1,6 +1,6 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { archiveBillingDocument, archivedBillingDocumentUrl, archiveKey, billingArchiveBucket, assertBillingArchiveReady } from './archive'
+import { archiveBillingDocument, archivedBillingDocumentUrl, readArchivedBillingDocument, archiveKey, billingArchiveBucket, assertBillingArchiveReady } from './archive'
 import { customerInput, sellerInput, draftInput, calculateInvoice, validateDates, type InvoiceLine } from './domain'
 import { renderPdf, renderFodt, renderOdt, type DocumentInvoice } from './documents'
 import { renderXRechnung } from './einvoice'
@@ -159,6 +159,13 @@ export async function createBillingDraft(input:unknown,actorId:string) {
   assert(error,'Invoice draft could not be created')
   return data as Row
 }
+/** Expected optimistic-concurrency rejection, not an application/server failure. */
+export class BillingDraftConflictError extends Error {
+  constructor() {
+    super('Invoice changed or already reserved; reload the draft')
+    this.name='BillingDraftConflictError'
+  }
+}
 export async function updateBillingDraft(id:string,input:unknown,actorId:string,expectedRevision:number) {
   uuid.parse(id);uuid.parse(actorId)
   if(!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new Error('Invalid draft version')
@@ -166,7 +173,7 @@ export async function updateBillingDraft(id:string,input:unknown,actorId:string,
   const {data,error}=await db().from('billing_invoices').update({...fields,updated_by:actorId,updated_at:new Date().toISOString(),revision:expectedRevision+1})
     .eq('id',id).eq('status','draft').eq('revision',expectedRevision).select('*').maybeSingle()
   assert(error,'Invoice update failed')
-  if(!data)throw new Error('Invoice changed or already reserved; reload the draft')
+  if(!data)throw new BillingDraftConflictError()
   return data as Row
 }
 function documentFromRow(row:Row,id:string,number:string):DocumentInvoice {
@@ -208,7 +215,7 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   if(row.status!=='preparing')throw new Error('Unexpected invoice state')
   const number=str(row.number)
   const invoice=documentFromRow(row,id,number)
-  const pdf=renderPdf(invoice),fodt=renderFodt(invoice),odt=renderOdt(invoice)
+  const pdf=await renderPdf(invoice),fodt=renderFodt(invoice),odt=renderOdt(invoice)
   const pdfKey=archiveKey(id,number,'pdf'),fodtKey=archiveKey(id,number,'fodt')
   const odtKey=archiveKey(id,number,'odt')
   const xrechnung=invoice.e_invoice_profile==='xrechnung'?await renderXRechnung(invoice):null
@@ -236,16 +243,36 @@ export async function issueBillingInvoice(id:string,actorId:string) {
     throw new Error('Document archive unavailable. Number reserved. Retry issuing this invoice; do not create another.')
   }
 }
-export async function invoiceDocumentUrl(id:string,format:'pdf'|'fodt'|'odt'|'xrechnung') {
+/** Resolve only immutable invoice snapshots, never user-supplied object keys. */
+async function invoiceArchiveReference(id:string,format:'pdf'|'fodt'|'odt'|'xrechnung') {
   const {invoice}=await getBillingInvoice(id)
   if(invoice.status!=='issued')throw new Error('Invoice not issued')
   if(format==='xrechnung'&&invoice.e_invoice_profile!=='xrechnung')throw new Error('Electronic invoice not configured')
-  const key=format==='odt' ? archiveKey(id,String(invoice.number),'odt') :
+  const number=str(invoice.number)
+  const expectedKey=archiveKey(id,number,format)
+  const key=format==='odt'?expectedKey:
     format==='xrechnung'?invoice.xrechnung_object_key:
     invoice[format==='pdf'?'pdf_object_key':'fodt_object_key']
-  if(typeof key!=='string')throw new Error('Document not ready')
+  if(key!==expectedKey)throw new Error('Invoice archive path is inconsistent')
   const hashes=invoice.document_sha256 as Record<string,string>
-  return archivedBillingDocumentUrl(billingArchiveBucket(),key,hashes[format])
+  return {bucket:billingArchiveBucket(),key:expectedKey,sha256:hashes[format],number}
+}
+
+/** Short-lived signed URLs are reserved for authenticated non-browser integrations (MCP). */
+export async function invoiceDocumentUrl(id:string,format:'pdf'|'fodt'|'odt'|'xrechnung') {
+  const {bucket,key,sha256}=await invoiceArchiveReference(id,format)
+  return archivedBillingDocumentUrl(bucket,key,sha256)
+}
+
+/** Deliver billing artifacts through the authenticated same-origin API, avoiding R2 browser CORS. */
+export async function invoiceDocumentFile(id:string,format:'pdf'|'fodt'|'odt'|'xrechnung') {
+  const {bucket,key,sha256,number}=await invoiceArchiveReference(id,format)
+  const bytes=await readArchivedBillingDocument(bucket,key,sha256)
+  const extension=format==='xrechnung'?'xml':format
+  const contentType=format==='pdf'?'application/pdf':
+    format==='odt'?'application/vnd.oasis.opendocument.text':
+    format==='fodt'?'application/vnd.oasis.opendocument.text-flat-xml':'application/xml'
+  return {bytes,fileName:number+'.'+extension,contentType}
 }
 export async function recordBillingPayment(id:string,actorId:string,amountCents:number,date:string,reference:string,idempotencyKey:string) {
   uuid.parse(id);uuid.parse(actorId)
