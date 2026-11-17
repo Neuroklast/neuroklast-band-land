@@ -1,6 +1,6 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabaseAdmin'
-import { archiveBillingDocument, archivedBillingDocumentUrl, archiveKey, billingArchiveBucket } from './archive'
+import { archiveBillingDocument, archivedBillingDocumentUrl, archiveKey, billingArchiveBucket, assertBillingArchiveReady } from './archive'
 import { customerInput, sellerInput, draftInput, calculateInvoice, validateDates, type InvoiceLine } from './domain'
 import { renderPdf, renderFodt, renderOdt, type DocumentInvoice } from './documents'
 import { z } from 'zod'
@@ -133,6 +133,7 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   uuid.parse(id);uuid.parse(actorId)
   // Fail before assigning a legal number when private archival is not configured.
   const archiveBucket=billingArchiveBucket()
+  await assertBillingArchiveReady(archiveBucket)
   const {data,error}=await db().rpc('billing_prepare_issue',{p_id:id,p_actor:actorId})
   assert(error,'Invoice cannot be issued: check settings, recipient and numbers')
   const row=dataRow(data)
