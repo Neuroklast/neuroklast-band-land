@@ -26,7 +26,15 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
       }}/>
     <form action={issueBillingDraft} className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
       <input type="hidden" name="id" value={id}/>
-      <p className="text-zinc-300 text-sm">Vor dem Ausstellen alle Angaben prüfen. Danach sind Rechnungsinhalt und Nummer gesperrt.</p>
+      <p className="text-zinc-300 text-sm">Es wird ausschließlich der zuletzt <strong>gespeicherte Entwurf</strong> ausgestellt. Nicht gespeicherte Eingaben im Editor werden nicht übernommen.</p>
+      <div className="border border-zinc-800 p-4 space-y-1 text-sm">
+        <p>Empfänger: {String(recipient.name)}</p><p>Leistungsdatum: {String(invoice.service_date)}</p>
+        <p>Gespeicherte Positionen: {(invoice.lines as unknown[]).length}</p>
+        <p className="font-bold">Gesamtbetrag: {formatCents(total)}</p>
+      </div>
+      <label className="flex items-center gap-3 text-sm"><input type="checkbox" name="confirm" value="yes" required/>
+        <span>Ich habe den gespeicherten Entwurf geprüft und möchte ihn verbindlich ausstellen.</span>
+      </label>
       <button className="border border-red-700 min-h-11 px-5 text-white" type="submit">Verbindlich ausstellen und archivieren</button>
     </form>
   </>:status==='preparing'?<div className="space-y-4">
