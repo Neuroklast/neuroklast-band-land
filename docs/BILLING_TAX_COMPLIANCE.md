@@ -34,3 +34,5 @@ Managed Payments is configured in the existing shop as Merchant of Record. The d
 - Official KoSIT validator specification: https://github.com/itplr-kosit/validator-configuration-xrechnung
 
 Before production: professional review of invoice layout, mandatory particulars, tax treatment, e-invoice obligation, electronic retention, GoBD controls and actual seller identity.
+
+Current revisions produce an ordinary PDF plus standards-based ODT/FODT files. The files themselves are not qualified EN 16931 electronic invoices. Structured XML and an independently validated PDF/A-3 profile remain explicitly outside the production-ready scope.
