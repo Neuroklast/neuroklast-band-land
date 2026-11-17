@@ -13,6 +13,7 @@ on:
       - 'supabase/tests/plugin.sql'
       - 'supabase/tests/mcp-content.sql'
       - 'supabase/tests/billing.sql'
+      - 'supabase/migrations/20261117124726_neuroklast_billing_setup.sql'
       - 'src/test/neurokore*'
       - 'src/test/plugin*'
       - '.github/workflows/plugin-contract.yml'
@@ -71,6 +72,10 @@ jobs:
           CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
           SQL
       - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - name: Apply isolated billing migration twice to prove idempotency
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117124726_neuroklast_billing_setup.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117124726_neuroklast_billing_setup.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/mcp-content.sql
       - name: Billing financial invariants (disposable PostgreSQL only)
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/billing.sql
