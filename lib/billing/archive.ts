@@ -9,7 +9,7 @@ import { createR2S3Client } from '@/lib/r2-s3-client'
  * Retries may only reuse an existing object whose bytes match exactly.
  */
 const SHA256 = /^[a-f0-9]{64}$/
-export type BillingFormat = 'pdf' | 'fodt'
+export type BillingFormat = 'pdf' | 'fodt' | 'odt'
 export type BillingArtifact = { format: BillingFormat; key: string; sha256: string; size: number }
 export type BillingPayload = { format: BillingFormat; key: string; bytes: Buffer }
 
@@ -33,7 +33,9 @@ export function documentSha(bytes: Buffer): string {
 }
 
 function mediaType(format: BillingFormat): string {
-  return format === 'pdf' ? 'application/pdf' : 'application/vnd.oasis.opendocument.text-flat-xml'
+  if (format === 'pdf') return 'application/pdf'
+  if (format === 'odt') return 'application/vnd.oasis.opendocument.text'
+  return 'application/vnd.oasis.opendocument.text-flat-xml'
 }
 
 function isPreconditionFailure(error: unknown): boolean {
