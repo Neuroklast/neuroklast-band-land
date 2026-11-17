@@ -34,7 +34,7 @@ BEGIN
   snapshot_seller:=jsonb_build_object(
     'name','NEUROKLAST','street','Musterweg 1','postal_code','40000',
     'city','Düsseldorf','country','DE','tax_id','TEST-STNR',
-    'email','','iban','','bic','');
+    'email','','phone','','contact_name','','iban','','bic','');
   snapshot_recipient:=jsonb_build_object(
     'name','Demo GmbH','street','Kundenweg 2','postal_code','10000',
     'city','Berlin','country','DE','email','','vat_id','','contact_name','');
