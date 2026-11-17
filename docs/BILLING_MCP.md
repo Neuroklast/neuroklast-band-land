@@ -35,3 +35,5 @@ No tool deletes invoices, changes issued snapshots or manages arbitrary database
 ```
 
 This is a schematic example; tax rate 0 is allowed only if the verified seller is in the `small_business` mode. No live financial actions were performed in this branch.
+
+The invoice listing tool accepts optional `year`, `number`, `status`, `limit` and `offset` inputs. Customer search accepts `q`, `limit` and `offset`. The invoice list includes aggregated paid cents for administrative reconciliation.
