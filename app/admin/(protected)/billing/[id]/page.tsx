@@ -46,7 +46,8 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
   </div>:<div className="space-y-5">
     <div className="flex gap-3 flex-wrap">
       <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=pdf'}>PDF anzeigen</Link>
-      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=fodt'}>ODF (FODT) herunterladen</Link>
+      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=odt'}>OpenDocument (.odt) herunterladen</Link>
+      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=fodt'}>Flat-ODF (.fodt) herunterladen</Link>
     </div>
     <section className="border border-zinc-800 p-4 space-y-2">
       <h2 className="font-semibold">Zahlungen</h2>
