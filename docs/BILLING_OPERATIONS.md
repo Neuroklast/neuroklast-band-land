@@ -43,3 +43,7 @@ References:
 ## Payment submission idempotency
 
 Every manual payment form renders a unique `idempotency_key` UUID. The same form submission and retry must return the same existing payment entry. For a separate real transfer, start a new submission rather than reusing a previous key. SQL rejects a reused key containing a different invoice, amount, date or reference. The database contract in `supabase/tests/billing.sql` covers identical retries and excess payments. Do not confuse this with bank payment reconciliation.
+
+## Optional XRechnung test gate
+
+The extra `billing-kosit.yml` GitHub workflow generates an XRechnung from the actual TypeScript service, downloads the official KoSIT Validator 1.6.3 JAR and XRechnung 3.0.2 rules published 2026-08-31, checks their SHA-256 digests and runs XSD/Schematron validation. A generated document rejected by KoSIT is a release blocker. A locally accepted JSON Schema is not a substitute. Until KoSIT and tax-owner approval, treat `e_invoice_profile=xrechnung` as an experimental branch-only capability and do not deploy it or issue real invoices. ZUGFeRD/PDF/A-3 is not yet available.
