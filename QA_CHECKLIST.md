@@ -303,3 +303,9 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] Verify download behavior in production with authenticated admin session; ensure browser network panel contains no R2 redirect or CORS failure.
 - [ ] Verify expired login and unauthorized session cannot access the bytes.
 - [ ] Confirm old `RE-2026-000001.pdf` remains unchanged and record a separate copy/correction process if branding must be updated.
+
+## Stale invoice editor conflict recovery (2026-11-17)
+
+- [x] Automated action test covers a stale revision redirect to the canonical invoice detail and distinguishes unrelated database errors.
+- [ ] Browser test: open a draft in one tab, issue in another, attempt stale save in first tab. The old form must not overwrite the issued invoice and the current state must display the conflict message, without HTTP 500.
+- [ ] Verify stale revisions on an editable draft require deliberate review of the newer values, not automatic conflict resolution.
