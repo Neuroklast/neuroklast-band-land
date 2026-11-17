@@ -20,7 +20,7 @@ export const BILLING_MCP_TOOLS=[
  {name:'billing_customer_get',description:'Read a customer record.',inputSchema:{type:'object',properties:{id},required:['id'],additionalProperties:false},annotations:readonly},
  {name:'billing_customer_create',description:'Create customer address book entry. Admin-only.',inputSchema:{type:'object',properties:{customer:object},required:['customer'],additionalProperties:false},annotations:write},
  {name:'billing_customer_update',description:'Update a customer. Issued invoice snapshots stay frozen.',inputSchema:{type:'object',properties:{id,customer:object},required:['id','customer'],additionalProperties:false},annotations:write},
- {name:'billing_invoices_list',description:'List own seller invoices, not Stripe Merchant-of-Record receipts.',inputSchema:{type:'object',properties:{limit:{type:'integer',minimum:1,maximum:100}},additionalProperties:false},annotations:readonly},
+ {name:'billing_invoices_list',description:'List own seller invoices, not Stripe Merchant-of-Record receipts.',inputSchema:{type:'object',properties:{limit:{type:'integer',minimum:1,maximum:100},offset:{type:'integer',minimum:0,maximum:1000000}},additionalProperties:false},annotations:readonly},
  {name:'billing_invoice_get',description:'Read invoice and payment history (financial personal data).',inputSchema:{type:'object',properties:{id},required:['id'],additionalProperties:false},annotations:readonly},
  {name:'billing_invoice_create_draft',description:'Create an editable invoice draft without assigning a legal invoice number.',inputSchema:{type:'object',properties:{draft:object},required:['draft'],additionalProperties:false},annotations:write},
  {name:'billing_invoice_update_draft',description:'Edit an unissued draft using revision-based concurrency control.',inputSchema:{type:'object',properties:{id,revision:{type:'integer',minimum:0},draft:object},required:['id','revision','draft'],additionalProperties:false},annotations:write},
@@ -91,7 +91,10 @@ export async function callBillingMcp(name:string,raw:Record<string,unknown>,ctx:
    case 'billing_customer_get': return getBillingCustomer(uuid.parse(raw.id))
    case 'billing_customer_create': return createBillingCustomer(raw.customer,context.userId)
    case 'billing_customer_update': return updateBillingCustomer(uuid.parse(raw.id),raw.customer,context.userId)
-   case 'billing_invoices_list': return listBillingInvoices(z.object({limit:z.number().int().min(1).max(100).optional()}).strict().parse(raw).limit??50)
+   case 'billing_invoices_list': {
+    const value=z.object({limit:z.number().int().min(1).max(100).optional(),offset:z.number().int().min(0).max(1000000).optional()}).strict().parse(raw)
+    return listBillingInvoices(value.limit??50,value.offset??0)
+   }
    case 'billing_invoice_get': return getBillingInvoice(uuid.parse(raw.id))
    case 'billing_invoice_create_draft':return createBillingDraft(raw.draft,context.userId)
    case 'billing_invoice_update_draft':return updateBillingDraft(uuid.parse(raw.id),raw.draft,context.userId,z.number().int().min(0).parse(raw.revision))
