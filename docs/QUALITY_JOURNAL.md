@@ -47,3 +47,12 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: Unconfirmed year fails before allocating any number; paid amounts are aggregated from append-only payment records, and invalid overpayments are flagged. CSV refuses inconsistent balances and escapes untrusted spreadsheet cells.
 - Docs updated: Billing architecture, tax compliance, operations runbook, MCP, agent workflow, QA checklist, development log and changelog.
 - Residual risk: A real R2 bucket lock, tax sign-off, high-concurrency DB/R2 tests, E-Rechnung and live PDF/LibreOffice checks are still outstanding.
+
+## 2026-11-17 | Make manual payment submission retries idempotent
+- Scope: Manual billing payment form, shared payment service and PostgreSQL recording RPC.
+- Root cause: Double-clicks and retried form submissions previously had no stable operation identifier and could create two payment entries when the outstanding balance allowed it.
+- Owner: `public.billing_record_payment` in canonical schema serializes payments and validates the unique payment request ID; the admin form supplies that ID to `lib/billing/service.ts`.
+- Tests: Extended the disposable PostgreSQL billing contract to assert that identical payment retries return one record and that overpayment remains rejected. GitHub plugin contract passed at the latest inspected commit; browser E2E remains outstanding.
+- Failure path: A same-key replay with identical details returns the original row; mismatched reused keys fail closed; invoice-row locking protects the outstanding balance.
+- Docs updated: Billing architecture, operations, MCP, QA checklist, changelog and quality journal.
+- Residual risk: This only prevents duplicate CMS posting, not duplicate external transfers or false manual claims of payment. Production financial reconciliation and accountant review remain necessary.
