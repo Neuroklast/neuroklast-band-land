@@ -21,7 +21,8 @@ export default async function BillingSettingsPage({searchParams}:{searchParams:P
    {field('seller_street','Straße und Hausnummer',true)}
    <div className="grid grid-cols-2 gap-3">{field('seller_postal_code','PLZ',true)}{field('seller_city','Ort',true)}</div>
    {field('seller_country','Ländercode',true)}{field('seller_tax_id','Steuernummer oder USt-IdNr.',true)}
-   {field('seller_email','Kontakt-E-Mail')}{field('seller_iban','IBAN')}{field('seller_bic','BIC')}
+   {field('seller_email','Kontakt-E-Mail')}{field('seller_phone','Kontakt-Telefon für XRechnung')}{field('seller_contact_name','Ansprechpartner für XRechnung')}
+   {field('seller_iban','IBAN')}{field('seller_bic','BIC')}
    <label className="block text-sm space-y-1"><span>Verifizierte Steuerart</span><select name="tax_mode" defaultValue={String(settings.tax_mode)} className="block w-full min-h-11 p-3 border border-zinc-700 bg-black">
     <option value="unverified">Nicht geprüft, Ausstellung gesperrt</option>
     <option value="small_business">Kleinunternehmer nach § 19 UStG</option>
