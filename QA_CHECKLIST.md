@@ -277,3 +277,5 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 
 - [x] Add disposable PostgreSQL tests for annual number confirmation, issuance idempotency, immutable issued data and MCP payment review. **CI outcome must be independently verified.**
 - [x] Add filtered, paginated invoice/customer administration and a read-only year-scoped CSV overview. **Browser E2E remains outstanding.**
+
+- [x] Add one-use idempotency UUID for manual admin payment form, backed by SQL uniqueness and replay checks. **Actual browser double-submit still requires E2E verification.**
