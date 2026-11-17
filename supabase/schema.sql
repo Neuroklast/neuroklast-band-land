@@ -2469,8 +2469,10 @@ CREATE TABLE IF NOT EXISTS public.billing_customers (
 CREATE INDEX IF NOT EXISTS billing_customers_name_idx ON public.billing_customers (name);
 CREATE TABLE IF NOT EXISTS public.billing_sequences (
   issue_year integer PRIMARY KEY CHECK (issue_year BETWEEN 2000 AND 2200),
-  next_value bigint NOT NULL DEFAULT 1 CHECK (next_value BETWEEN 1 AND 1000000)
+  next_value bigint NOT NULL DEFAULT 1 CHECK (next_value BETWEEN 1 AND 1000000),
+  confirmed boolean NOT NULL DEFAULT false
 );
+ALTER TABLE public.billing_sequences ADD COLUMN IF NOT EXISTS confirmed boolean NOT NULL DEFAULT false;
 CREATE TABLE IF NOT EXISTS public.billing_invoices (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id uuid REFERENCES public.billing_customers(id) ON DELETE RESTRICT,
@@ -2558,6 +2560,7 @@ DECLARE
   conf public.billing_settings%ROWTYPE;
   counter bigint;
   v_issue_year integer;
+  v_confirmed boolean;
 BEGIN
   SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'Invoice not found'; END IF;
@@ -2592,6 +2595,11 @@ BEGIN
   v_issue_year := EXTRACT(YEAR FROM v.issue_date)::integer;
   INSERT INTO public.billing_sequences(issue_year,next_value)
     VALUES(v_issue_year,1) ON CONFLICT(issue_year) DO NOTHING;
+  SELECT confirmed INTO v_confirmed FROM public.billing_sequences
+    WHERE issue_year=v_issue_year FOR UPDATE;
+  IF NOT COALESCE(v_confirmed,false) THEN
+    RAISE EXCEPTION 'Confirm the invoice number series and prior external invoices before issuance';
+  END IF;
   UPDATE public.billing_sequences SET next_value=next_value+1
     WHERE billing_sequences.issue_year=v_issue_year AND next_value<1000000
     RETURNING next_value-1 INTO counter;
@@ -2724,21 +2732,25 @@ GRANT EXECUTE ON FUNCTION public.billing_approve_mcp_payment(uuid,uuid) TO servi
 CREATE OR REPLACE FUNCTION public.billing_seed_sequence(
   p_year integer, p_next bigint, p_actor uuid
 ) RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
-DECLARE current_value bigint;
+DECLARE current_value bigint; was_confirmed boolean;
 BEGIN
   IF p_year<2000 OR p_year>2200 OR p_next<1 OR p_next>999999 THEN
     RAISE EXCEPTION 'Invalid invoice sequence seed';
   END IF;
   INSERT INTO public.billing_sequences(issue_year,next_value)
     VALUES(p_year,1) ON CONFLICT(issue_year) DO NOTHING;
-  SELECT next_value INTO current_value FROM public.billing_sequences
+  SELECT next_value,confirmed INTO current_value,was_confirmed FROM public.billing_sequences
     WHERE issue_year=p_year FOR UPDATE;
+  IF was_confirmed THEN
+    IF current_value=p_next THEN RETURN p_next; END IF;
+    RAISE EXCEPTION 'Number series already confirmed; it cannot be reset';
+  END IF;
   IF EXISTS(SELECT 1 FROM public.billing_invoices
       WHERE issue_date>=make_date(p_year,1,1)
         AND issue_date<make_date(p_year+1,1,1) AND number IS NOT NULL) THEN
     RAISE EXCEPTION 'This invoice year has already been used; sequence cannot be changed';
   END IF;
-  UPDATE public.billing_sequences SET next_value=p_next WHERE issue_year=p_year;
+  UPDATE public.billing_sequences SET next_value=p_next,confirmed=true WHERE issue_year=p_year;
   INSERT INTO public.billing_events(actor_id,operation,details)
     VALUES(p_actor,'invoice_sequence_seeded',jsonb_build_object('year',p_year,'previous',current_value,'next',p_next));
   RETURN p_next;
