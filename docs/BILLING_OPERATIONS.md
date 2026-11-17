@@ -49,3 +49,13 @@ Every manual payment form renders a unique `idempotency_key` UUID. The same form
 The extra `billing-kosit.yml` GitHub workflow generates an XRechnung from the actual TypeScript service, downloads the official KoSIT Validator 1.6.3 JAR and XRechnung 3.0.2 rules published 2026-08-31, checks their SHA-256 digests and runs XSD/Schematron validation. A generated document rejected by KoSIT is a release blocker. A locally accepted JSON Schema is not a substitute. Until KoSIT and tax-owner approval, treat `e_invoice_profile=xrechnung` as an experimental branch-only capability and do not deploy it or issue real invoices. ZUGFeRD/PDF/A-3 is not yet available.
 
 **Fail-closed issuance flag:** `BILLING_XRECHNUNG_ENABLE_ISSUANCE=false` by default. XRechnung preview is available without the flag, but final issuance fails before allocating a legal number until it is explicitly set to `true` after KoSIT CI and accountant approval. The flag does not override R2, tax or other existing issuance checks.
+
+
+## Verified environment setup on 2026-11-17
+
+- **Cloudflare R2:** `neuroklast-billing-private` created in the `eu` jurisdiction using the jurisdiction-specific S3 endpoint. The existing NEUROKLAST production R2 credentials successfully completed a signed HeadBucket, conditional PutObject, GetObject and DeleteObject smoke test. The disposable probe object was deleted. No public R2 domain was configured. The existing `neuroklast-media` bucket was not changed.
+- **Vercel:** `R2_BUCKET_BILLING=neuroklast-billing-private` is set in production environment settings. Existing R2 credentials and `R2_JURISDICTION=eu` were reused without changing their values. `BILLING_XRECHNUNG_ENABLE_ISSUANCE=false` is explicitly configured in production.
+- **Supabase:** The `neuroklast-band-land` database received only the two billing migrations `20261117125004_neuroklast_billing_setup` and `20261117125509_neuroklast_billing_role_lockdown`. Both succeeded. Read-only live verification confirmed that `anon` and `authenticated` lack direct billing table permissions, while `service_role` can read invoices and execute issuance RPCs. All seven billing tables have RLS enabled.
+- **Not yet released:** PR #645 is still a draft and has not been merged or deployed in production. An environment-variable change becomes available to new deployments, not automatically to an existing deployment. No customer invoices were issued as part of this setup. Issuer details, tax status and each year's first legal invoice number still require explicit administrator review before use.
+- **Retention:** R2 Bucket Lock/retention policy was not set, pending a verified retention and recovery plan. Do not imply that this alone certifies GoBD compliance.
+
