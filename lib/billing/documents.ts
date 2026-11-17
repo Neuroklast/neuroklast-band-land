@@ -6,6 +6,7 @@ export interface DocumentInvoice {
   id:string; number:string; issue_date:string; service_date:string; due_date:string
   seller:Record<string,string>; recipient:Record<string,string>
   lines:InvoiceLine[]; tax_mode:TaxMode; note:string
+  buyer_reference?:string; e_invoice_profile?:'none'|'xrechnung'
 }
 
 const str=(value:unknown):string=>String(value??'')
@@ -34,6 +35,7 @@ function invoiceLines(doc:DocumentInvoice):string[] {
     'Rechnungsdatum: '+date(doc.issue_date),
     'Leistungsdatum: '+date(doc.service_date),
     'Fälligkeit: '+date(doc.due_date),
+    ...(doc.buyer_reference?['Käuferreferenz: '+doc.buyer_reference]:[]),
     '',
     'Positionen',
     ...doc.lines.flatMap((line,i)=>[
