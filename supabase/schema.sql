@@ -2561,7 +2561,7 @@ DECLARE
 BEGIN
   SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'Invoice not found'; END IF;
-  IF v.status='preparing' THEN RETURN v; END IF;
+  IF v.status IN ('preparing','issued') THEN RETURN v; END IF;
   IF v.status <> 'draft' THEN RAISE EXCEPTION 'Only a draft can be issued'; END IF;
   SELECT * INTO conf FROM public.billing_settings WHERE id=1;
   IF NOT FOUND OR conf.tax_mode='unverified' OR
