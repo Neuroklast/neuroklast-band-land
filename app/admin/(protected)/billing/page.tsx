@@ -24,7 +24,7 @@ export default async function BillingPage() {
     <th className="p-3 text-left">Datum</th><th className="p-3 text-left">Fälligkeit</th>
     <th className="p-3 text-right">Betrag</th><th className="p-3 text-left">Status</th></tr></thead>
     <tbody>{invoices.map(i=><tr key={String(i.id)} className="border-b border-zinc-800 hover:bg-zinc-900">
-      <td className="p-3"><Link className="underline" href={'/admin/billing/'+i.id}>{String(i.number??'Entwurf')}</Link></td>
+      <td className="p-3"><Link className="underline" href={'/admin/billing/'+String(i.id)}>{String(i.number??'Entwurf')}</Link></td>
       <td className="p-3">{String((i.recipient as Record<string,string>)?.name??'')}</td>
       <td className="p-3">{String(i.issue_date)}</td><td className="p-3">{String(i.due_date)}</td>
       <td className="p-3 text-right">{formatCents(Number(i.total_cents))}</td>
