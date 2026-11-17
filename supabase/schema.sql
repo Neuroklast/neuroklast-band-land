@@ -2662,17 +2662,7 @@ BEGIN
   END IF;
   IF v.e_invoice_profile='xrechnung' THEN
     IF p_xrechnung_key IS DISTINCT FROM ('billing/'||p_id||'/'||v.number||'.xml')
-       OR NOT COALESCE((p_hashes->>'xrechnung') ~ '^[0-9a-f]{64}
-    pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,xrechnung_object_key=p_xrechnung_key,
-    document_sha256=p_hashes,document_error_at=NULL,updated_at=now()
-    WHERE id=p_id RETURNING * INTO v;
-  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
-    VALUES(p_id,p_actor,'invoice_issued',jsonb_build_object('number',v.number,'hashes',p_hashes));
-  RETURN v;
-END $$;
-
-DROP FUNCTION IF EXISTS public.billing_record_payment(uuid,uuid,bigint,date,text);
-,false) THEN
+       OR NOT COALESCE((p_hashes->>'xrechnung') ~ '^[0-9a-f]{64}$',false) THEN
       RAISE EXCEPTION 'Validated XRechnung XML archive and checksum are required';
     END IF;
   ELSIF p_xrechnung_key IS NOT NULL OR p_hashes ? 'xrechnung' THEN
@@ -2680,6 +2670,7 @@ DROP FUNCTION IF EXISTS public.billing_record_payment(uuid,uuid,bigint,date,text
   END IF;
   UPDATE public.billing_invoices SET status='issued',issued_at=now(),
     pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,
+    xrechnung_object_key=p_xrechnung_key,
     document_sha256=p_hashes,document_error_at=NULL,updated_at=now()
     WHERE id=p_id RETURNING * INTO v;
   INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
