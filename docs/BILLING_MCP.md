@@ -14,7 +14,7 @@ All money is entered as integer EUR cents in MCP requests. Invoice lines use `qu
 
 MCP queues request in `billing_mcp_requests`. Human reviews the target invoice and amount at `/admin/billing/review` while authenticated with MFA. Issuance reserves a number once. A payment approval runs atomically in Postgres, preventing two separate recordings of a single approved request.
 
-No tool deletes invoices, changes issued snapshots or manages arbitrary database tables. Signed document URLs expire after 90 seconds and require server-side authorization to mint.
+No tool deletes invoices, changes issued snapshots or manages arbitrary database tables. PDF, ODT and Flat-ODF signed document URLs expire after 90 seconds and require server-side authorization to mint.
 
 ## Example input
 
