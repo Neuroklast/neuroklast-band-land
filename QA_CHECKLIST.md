@@ -259,3 +259,17 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] A source-only PR without quality journal or owning docs is rejected.
 - [ ] A malformed journal entry fails CI; a docs-only PR needs no fake release note.
 - [ ] Documentation claims, failed reads and test evidence match the implementation.
+
+
+## Billing feature acceptance (2026-11-17, UNVERIFIED)
+
+- [ ] Verify seller legal name, address, tax identifier, tax status and previous invoice numbers before first issuance.
+- [ ] Set `R2_BUCKET_BILLING` to a private bucket and confirm anonymous access is denied.
+- [ ] Apply canonical billing SQL via controlled migration; verify RLS, grants and immutable-issue trigger.
+- [ ] PR lint, typecheck, unit tests and living-doc checks pass.
+- [ ] Open billing dashboard, customer editor, draft editor, settings and review under MFA.
+- [ ] Test concurrent issuance, retry after R2 failure and identical-number idempotency.
+- [ ] Test duplicate MCP approval and concurrent payment attempts without double credit.
+- [ ] Check PDF rendering in a real PDF reader and FODT with LibreOffice.
+- [ ] Add EN16931 XML, XRechnung/ZUGFeRD + PDF/A validation before E-Rechnung claims.
+- [ ] Obtain legal/tax review and validate GoBD archive, retention and backup/restore.
