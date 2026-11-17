@@ -13,7 +13,8 @@ const touch=()=>{revalidatePath('/admin/billing')}
 const customer=(form:FormData)=>({
   name:text(form,'name'),email:text(form,'email'),street:text(form,'street'),
   postal_code:text(form,'postal_code'),city:text(form,'city'),country:text(form,'country').toUpperCase()||'DE',
-  vat_id:text(form,'vat_id'),contact_name:text(form,'contact_name'),notes:text(form,'notes'),
+  vat_id:text(form,'vat_id'),buyer_reference:text(form,'buyer_reference'),
+  contact_name:text(form,'contact_name'),notes:text(form,'notes'),
 })
 export async function saveBillingCustomer(form:FormData) {
   const actor=await admin()
@@ -29,7 +30,9 @@ export async function saveBillingSettings(form:FormData) {
     seller_name:text(form,'seller_name'),seller_street:text(form,'seller_street'),
     seller_postal_code:text(form,'seller_postal_code'),seller_city:text(form,'seller_city'),
     seller_country:text(form,'seller_country').toUpperCase(),seller_tax_id:text(form,'seller_tax_id'),
-    seller_email:text(form,'seller_email'),seller_iban:text(form,'seller_iban'),seller_bic:text(form,'seller_bic'),
+    seller_email:text(form,'seller_email'),seller_phone:text(form,'seller_phone'),
+    seller_contact_name:text(form,'seller_contact_name'),
+    seller_iban:text(form,'seller_iban'),seller_bic:text(form,'seller_bic'),
     tax_mode:text(form,'tax_mode'),number_prefix:text(form,'number_prefix').toUpperCase(),
   },actor)
   touch()
@@ -41,6 +44,8 @@ export async function saveBillingDraft(form:FormData) {
   const input={
     customer_id:text(form,'customer_id'),issue_date:text(form,'issue_date'),service_date:text(form,'service_date'),
     due_date:text(form,'due_date'),note:text(form,'note'),lines,
+    e_invoice_profile:text(form,'e_invoice_profile')||'none',
+    buyer_reference:text(form,'buyer_reference'),
   }
   const id=text(form,'id')
   const result=id?await updateBillingDraft(id,input,actor,Number(text(form,'revision'))):
