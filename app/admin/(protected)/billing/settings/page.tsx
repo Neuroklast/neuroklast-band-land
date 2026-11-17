@@ -1,9 +1,9 @@
 import { admin } from '@/lib/neurokore/server'
 import { getBillingSettings } from '@/lib/billing/service'
-import { saveBillingSettings } from '@/app/admin/_actions/billing'
+import { saveBillingSettings, seedBillingSequenceAction } from '@/app/admin/_actions/billing'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 export const dynamic='force-dynamic'
-export default async function BillingSettingsPage({searchParams}:{searchParams:Promise<{saved?:string}>}) {
+export default async function BillingSettingsPage({searchParams}:{searchParams:Promise<{saved?:string;sequence?:string}>}) {
  await admin()
  const settings=await getBillingSettings()
  const params=await searchParams
@@ -13,6 +13,7 @@ export default async function BillingSettingsPage({searchParams}:{searchParams:P
  return <main className="max-w-2xl">
   <AdminPageHeader title="Rechnungssteller & Steuerprofil" description="Vor Ausstellung der ersten Rechnung sorgfältig prüfen. Keine automatischen steuerlichen Annahmen."/>
   {params.saved==='1'&&<p className="text-green-400 mb-4">Einstellungen gespeichert.</p>}
+  {params.sequence==='1'&&<p className="text-green-400 mb-4">Nummernkreis initialisiert.</p>}
   <form action={saveBillingSettings} className="space-y-4">
    {field('seller_name','Vollständiger Name / Firma',true)}
    {field('seller_street','Straße und Hausnummer',true)}
@@ -28,5 +29,14 @@ export default async function BillingSettingsPage({searchParams}:{searchParams:P
    <p className="text-sm text-zinc-400">Vorhandene Rechnungsnummern müssen vor dem ersten Ausstellen abgeglichen werden. Der Nummernkreis kann in der Datenbank initialisiert werden. R2_BUCKET_BILLING muss als privater Bucket konfiguriert sein.</p>
    <button className="bg-red-800 min-h-11 px-5 py-3" type="submit">Einstellungen speichern</button>
   </form>
+  <section className="border-t border-zinc-700 mt-8 pt-6 space-y-3">
+    <h2 className="text-lg font-semibold">Nummernkreis initialisieren</h2>
+    <p className="text-sm text-zinc-400">Bei vorhandenen externen Rechnungen den nächsten noch nicht verwendeten Wert eingeben. Nach der ersten Nummernvergabe für dieses Jahr ist eine Änderung gesperrt.</p>
+    <form action={seedBillingSequenceAction} className="flex flex-wrap gap-3 items-end">
+      <label className="text-sm space-y-1"><span>Jahr</span><input name="year" type="number" min={2000} max={2200} required defaultValue={new Date().getFullYear()} className="block bg-black border border-zinc-700 p-3"/></label>
+      <label className="text-sm space-y-1"><span>Nächste Nummer</span><input name="next_number" type="number" min={1} max={999999} required className="block bg-black border border-zinc-700 p-3"/></label>
+      <button className="border border-zinc-700 min-h-11 px-4" type="submit">Einmalig setzen</button>
+    </form>
+  </section>
  </main>
 }
