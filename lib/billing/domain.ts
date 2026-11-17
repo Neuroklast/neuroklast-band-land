@@ -89,3 +89,19 @@ export function calculateInvoice(lines:InvoiceLine[],mode:TaxMode) {
 export function validateDates(draft:DraftInput) {
   if(draft.due_date<draft.issue_date)throw new Error('Due date cannot precede issue date')
 }
+
+export type BillingPaymentStatus = 'draft'|'preparing'|'open'|'partial'|'overdue'|'paid'|'invalid'
+
+/** Display-only status. Source-of-truth invoice status stays immutable after issuance. */
+export function billingPaymentStatus(
+  status:string,dueDate:string,totalCents:number,paidCents:number,today:string,
+):BillingPaymentStatus {
+  if(status==='draft')return 'draft'
+  if(status==='preparing')return 'preparing'
+  if(status!=='issued' || !Number.isSafeInteger(totalCents) || !Number.isSafeInteger(paidCents)
+    || totalCents<0 || paidCents<0 || paidCents>totalCents) return 'invalid'
+  if(paidCents===totalCents)return 'paid'
+  if(dueDate<today)return 'overdue'
+  if(paidCents>0)return 'partial'
+  return 'open'
+}
