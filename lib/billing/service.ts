@@ -191,6 +191,10 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   // Validate with a placeholder number BEFORE allocating any legally meaningful number.
   // On a reserved invoice, a second exact validation uses the frozen legal number.
   const {invoice:current}=await getBillingInvoice(id)
+  if(current.e_invoice_profile==='xrechnung' &&
+     process.env.BILLING_XRECHNUNG_ENABLE_ISSUANCE!=='true') {
+    throw new Error('Official KoSIT validation and tax approval are required before XRechnung issuance is enabled')
+  }
   if(current.status==='draft' && current.e_invoice_profile==='xrechnung') {
     await previewBillingXRechnung(id)
   }
