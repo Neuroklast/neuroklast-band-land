@@ -2,6 +2,7 @@ import { admin } from '@/lib/neurokore/server'
 import { getBillingSettings } from '@/lib/billing/service'
 import { saveBillingSettings, seedBillingSequenceAction } from '@/app/admin/_actions/billing'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
+import { billingDateInGermany } from '@/lib/billing/date'
 export const dynamic='force-dynamic'
 export default async function BillingSettingsPage({searchParams}:{searchParams:Promise<{saved?:string;sequence?:string}>}) {
  await admin()
@@ -33,7 +34,7 @@ export default async function BillingSettingsPage({searchParams}:{searchParams:P
     <h2 className="text-lg font-semibold">Nummernkreis initialisieren</h2>
     <p className="text-sm text-zinc-400">Bei vorhandenen externen Rechnungen den nächsten noch nicht verwendeten Wert eingeben. Nach der ersten Nummernvergabe für dieses Jahr ist eine Änderung gesperrt.</p>
     <form action={seedBillingSequenceAction} className="flex flex-wrap gap-3 items-end">
-      <label className="text-sm space-y-1"><span>Jahr</span><input name="year" type="number" min={2000} max={2200} required defaultValue={new Date().getFullYear()} className="block bg-black border border-zinc-700 p-3"/></label>
+      <label className="text-sm space-y-1"><span>Jahr</span><input name="year" type="number" min={2000} max={2200} required defaultValue={Number(billingDateInGermany().slice(0,4))} className="block bg-black border border-zinc-700 p-3"/></label>
       <label className="text-sm space-y-1"><span>Nächste Nummer</span><input name="next_number" type="number" min={1} max={999999} required className="block bg-black border border-zinc-700 p-3"/></label>
       <button className="border border-zinc-700 min-h-11 px-4" type="submit">Einmalig setzen</button>
     </form>
