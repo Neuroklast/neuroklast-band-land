@@ -34,7 +34,7 @@ describe('billing renderers',()=>{
   const pdf=(await renderPdf(altered)).toString('latin1')
   const n=Number(/\/Count (\d+)/.exec(pdf)?.[1])
   expect(n).toBeGreaterThan(2)
-  expect(pdf.match(/\(NEUROKLAST\) Tj/g)?.length).toBe(n)
+  expect(pdf.match(/\/BrandLogo Do/g)?.length).toBe(n)
   expect(pdf).toContain('ACME \\(Hamburg\\)')
   expect(pdf).toContain('startxref')
   expect(pdf).toContain('%%EOF')
