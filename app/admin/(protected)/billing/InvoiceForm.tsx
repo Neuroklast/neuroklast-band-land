@@ -7,6 +7,7 @@ type Entry={description:string;quantity:string;price:string;rate:0|7|19}
 type Customer={id:string;name:string}
 type Existing={
  id:string; revision:number; customer_id:string; issue_date:string;service_date:string;due_date:string;note:string;
+ buyer_reference?:string;e_invoice_profile?:'none'|'xrechnung';
  lines:{description:string;quantity_milli:number;unit_cents:number;tax_rate:0|7|19}[]
 }
 export function InvoiceForm({customers,taxMode,today,dueDate,initial}:{
@@ -47,6 +48,20 @@ export function InvoiceForm({customers,taxMode,today,dueDate,initial}:{
    <label className="space-y-2 text-sm"><span>Leistungsdatum</span><input className={input} type="date" required name="service_date" defaultValue={initial?.service_date??today}/></label>
    <label className="space-y-2 text-sm"><span>Fällig am</span><input className={input} type="date" required name="due_date" defaultValue={initial?.due_date??dueDate??today}/></label>
   </div>
+  <section className="space-y-4 border border-zinc-800 p-4">
+    <h2 className="font-semibold">Elektronische Rechnung</h2>
+    <label className="text-sm space-y-2 block"><span>Format</span>
+      <select name="e_invoice_profile" className={input} defaultValue={initial?.e_invoice_profile??'none'}>
+        <option value="none">Standard: PDF und OpenDocument</option>
+        {taxMode==='vat_registered'&&<option value="xrechnung">Zusätzlich XRechnung (UBL-XML)</option>}
+      </select>
+    </label>
+    <label className="text-sm space-y-2 block"><span>Käuferreferenz (BT-10, B2G: Leitweg-ID)</span>
+      <input name="buyer_reference" className={input} maxLength={150} defaultValue={initial?.buyer_reference??''}
+        placeholder="Referenz des Rechnungsempfängers"/>
+    </label>
+    <p className="text-xs text-zinc-400">XRechnung benötigt eine Käuferreferenz, E-Mail und Adresse des Empfängers sowie Kontakt- und Steuerangaben des Ausstellers. Die XML wird vor Ausstellung geprüft.</p>
+  </section>
   <section className="space-y-3">
    <h2 className="text-lg font-semibold">Rechnungspositionen</h2>
    {rows.map((r,i)=><div key={i} className="grid gap-3 bg-zinc-950 border border-zinc-800 p-4 sm:grid-cols-12">
