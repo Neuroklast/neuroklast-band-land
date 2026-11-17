@@ -74,3 +74,10 @@ Chronological and append-only record of source changes. The CI check validates n
 - Database: Applied billing-only changes on the connected Supabase instance as migration versions `20261117125004` and `20261117125509`. Per the enforced single-schema architecture, the **only repository source is `supabase/schema.sql`**, not a `supabase/migrations` directory. No existing shop tables were modified. The Supabase client-role privilege checks are negative and service-role checks positive.
 - Tests: CI PostgreSQL tests apply the single canonical schema twice and check payment/number security and direct client role revocation. Infrastructure smoke test used a disposable R2 object; no real invoice data.
 - Residual risk: PR not merged, no end-to-end production admin use, no retention lock, backup/restore, complete GoBD process validation or tax owner approval. Real invoices and number-series activation remain deliberately unperformed.
+
+
+## 2026-11-17 — Invoice-brand visual fidelity and issue gate
+
+- Root cause: Initial PDF generator was plain unbranded Helvetica text despite the available official `nk-mark.svg`; a legal invoice must be reproducible and readable without online rendering.
+- Change: Isolated, deterministic PDF layout module with canonical mark vector, table, pagination, totals and payment details. All issuance paths continue to use the single `renderPdf` contract.
+- Tests: Byte structure, invariant amount/tax rendering, logo commands, multi-page behavior, document reading and controlled live deployment are release gates. Do not touch other signed archived documents. Unicode beyond WinAnsi and PDF/A-3 still require subsequent development.
