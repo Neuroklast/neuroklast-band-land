@@ -38,6 +38,13 @@ export async function updateBillingSettings(input:unknown,actorId:string) {
   assert(error,'Could not save seller settings')
   return data
 }
+export async function getBillingSequence(year:number) {
+  if(!Number.isSafeInteger(year)||year<2000||year>2200)throw new Error('Invalid invoice year')
+  const {data,error}=await db().from('billing_sequences')
+    .select('issue_year,next_value,confirmed').eq('issue_year',year).maybeSingle()
+  assert(error,'Number sequence lookup unavailable')
+  return data??{issue_year:year,next_value:1,confirmed:false}
+}
 export async function seedBillingSequence(year:number,nextValue:number,actorId:string) {
  uuid.parse(actorId)
  if(!Number.isSafeInteger(year)||year<2000||year>2200||!Number.isSafeInteger(nextValue)||nextValue<1||nextValue>999999)
