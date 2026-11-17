@@ -208,7 +208,7 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   if(row.status!=='preparing')throw new Error('Unexpected invoice state')
   const number=str(row.number)
   const invoice=documentFromRow(row,id,number)
-  const pdf=renderPdf(invoice),fodt=renderFodt(invoice),odt=renderOdt(invoice)
+  const pdf=await renderPdf(invoice),fodt=renderFodt(invoice),odt=renderOdt(invoice)
   const pdfKey=archiveKey(id,number,'pdf'),fodtKey=archiveKey(id,number,'fodt')
   const odtKey=archiveKey(id,number,'odt')
   const xrechnung=invoice.e_invoice_profile==='xrechnung'?await renderXRechnung(invoice):null
