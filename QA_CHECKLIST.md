@@ -287,7 +287,7 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 
 
 ## 2026-11-17 — Branded invoice PDF QA
-- [x] PDF renderer embeds the canonical red NEUROKLAST wordmark as an image XObject, A4 media box, table headings, seller/buyer information, totals and § 19 UStG statement for Kleinunternehmer (source-level validation; viewer rendering is still outstanding).
+- [x] PDF renderer embeds the approved red NK bold logo as an image XObject, A4 media box, table headings, seller/buyer information, totals and § 19 UStG statement for Kleinunternehmer (source-level validation; viewer rendering is still outstanding).
 - [x] Shared `renderPdf` contract returns `Promise<Buffer>` and reads only a locally bundled brand asset without network requests at issue time.
 - [ ] Inspect 120 EUR Paradox Party PDF visually, verify printed text, right alignment and all tax/payment details.
 - [ ] Complete CI unit tests, typecheck, lint, audit and archive contract tests for the branch.
