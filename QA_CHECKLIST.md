@@ -279,3 +279,8 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [x] Add filtered, paginated invoice/customer administration and a read-only year-scoped CSV overview. **Browser E2E remains outstanding.**
 
 - [x] Add one-use idempotency UUID for manual admin payment form, backed by SQL uniqueness and replay checks. **Actual browser double-submit still requires E2E verification.**
+
+- [ ] Official KoSIT 1.6.3 validator accepts actual generated XRechnung UBL for reviewed domestic VAT invoices.
+- [ ] Verify XML tax groups, buyer reference, seller contacts and invoice number against an independent EN16931 reference.
+- [ ] Check optional XML profile fails closed for unverified/§19 tax modes, unsupported cross-border customers, and missing electronic addresses.
+- [ ] Verify immutable XRechnung XML SHA-256 and R2 archive retry behavior.
