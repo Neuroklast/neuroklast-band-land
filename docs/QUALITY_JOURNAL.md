@@ -96,3 +96,8 @@ Chronological and append-only record of source changes. The CI check validates n
 - Implementation: same-origin authenticated binary delivery with verified immutable R2 SHA-256, native document anchors, no-cache headers, original `neuroklast-wordmark-red.svg` embedded into PDF and explicit Vercel file tracing.
 - Scope: no changes to billing sequence allocation, issued invoice objects, customer identity, financial values, R2 public permissions or MCP signed-URL access.
 - Required verification: CI typecheck/lint/tests, actual PDF visual render, authorized and unauthorized downloads, no external redirects, post-deploy smoke. These validations are not claimed complete here.
+- Owner: Billing archive adapter and canonical service own verified reads; admin route owns same-origin responses; PDF renderer owns actual wordmark layout.
+- Tests: Added route denial/format/redirect/no-store contracts, immutable SHA-256 reads and multipage image XObject checks; CI and visual rendering remain release gates.
+- Failure path: Authentication denial returns 403, invalid format 400, missing or tampered objects fail closed; numbered original invoice objects are never rewritten.
+- Docs updated: Updated architecture ADR, billing architecture, operations runbook, QA checklist, development log, changelog and this journal.
+- Residual risk: CI and live browser checks are pending, rendered PDF logo fidelity is not visually certified, and issued invoice branding cannot be retroactively changed without a reviewed process.
