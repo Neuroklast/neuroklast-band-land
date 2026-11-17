@@ -8,7 +8,7 @@ export interface DocumentInvoice {
 }
 
 const str=(value:unknown):string=>String(value??'')
-const escapeXml=(text:string)=>text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')
+const escapeXml=(text:string)=>text.replace(/[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')
 const address=(p:Record<string,string>)=>[p.name,p.street,[p.postal_code,p.city].filter(Boolean).join(' '),p.country].filter(Boolean)
 const date=(s:string)=>s.split('-').reverse().join('.')
 function invoiceLines(doc:DocumentInvoice):string[] {
@@ -33,7 +33,10 @@ function invoiceLines(doc:DocumentInvoice):string[] {
     ]),
     '',
     'Netto: '+formatCents(sums.subtotal_cents),
-    ...(doc.tax_mode==='vat_registered'?['Umsatzsteuer: '+formatCents(sums.tax_cents)]:[]),
+    ...(doc.tax_mode==='vat_registered'?sums.tax_groups.flatMap(g=>[
+      'Netto ('+g.rate+'%): '+formatCents(g.base_cents),
+      'Umsatzsteuer ('+g.rate+'%): '+formatCents(g.tax_cents)
+    ]):[]),
     'Gesamtbetrag: '+formatCents(sums.total_cents),
     ...(doc.tax_mode==='small_business'?['Umsatzsteuerfrei nach § 19 UStG. Es wird keine Umsatzsteuer ausgewiesen.']:[]),
     ...(doc.seller.iban?['','IBAN: '+doc.seller.iban]:[]),
