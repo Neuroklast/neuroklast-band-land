@@ -30,10 +30,15 @@ export const BILLING_MCP_TOOLS=[
  {name:'billing_review_requests',description:'List the current pending MCP billing approvals.',inputSchema:{type:'object',properties:{limit:{type:'integer',minimum:1,maximum:50}},additionalProperties:false},annotations:readonly}
 ] as const
 
-export async function listBillingReviewRequests(limit=50) {
+export interface BillingReviewRequest {
+ id:string; operation:'issue_invoice'|'record_payment'; invoice_id:string;
+ payload:Record<string,unknown>; status:'pending'|'processing'|'approved'|'rejected';
+ created_at:string; requested_by:string; client_id:string
+}
+export async function listBillingReviewRequests(limit=50):Promise<BillingReviewRequest[]> {
  const {data,error}=await db().from('billing_mcp_requests').select('*').order('created_at',{ascending:false}).limit(Math.max(1,Math.min(limit,50)))
  if(error)throw new Error('Billing approvals unavailable')
- return data??[]
+ return (data??[]) as BillingReviewRequest[]
 }
 async function queue(context:BillingMcpContext,operation:'issue_invoice'|'record_payment',id:string,payload:Record<string,unknown>) {
  const {invoice}=await getBillingInvoice(id)
