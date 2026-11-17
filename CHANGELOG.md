@@ -316,3 +316,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Add basic PDF 1.4, editable ODT and Flat OpenDocument Text exports in a separate private R2 billing bucket; these are *not* E-Rechnung/PDF-A outputs.
 - Extend existing OAuth/MCP with customer and draft tools plus independently approved issuance/payment requests. Keep Stripe Managed Payments customer invoicing separate.
 - Add tax/format scope documentation, tests and explicit production release gates. This feature is not yet verified in production.
+
+- Harden invoice numbering by requiring per-year administrative confirmation of existing number ranges, add filtered ledgers and reconciliation CSV, and add disposable PostgreSQL financial contract tests in CI.
