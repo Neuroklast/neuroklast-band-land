@@ -27,8 +27,11 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
       initial={{
         id, revision:Number(invoice.revision),customer_id:String(invoice.customer_id),
         issue_date:String(invoice.issue_date),service_date:String(invoice.service_date),due_date:String(invoice.due_date),
-        note:String(invoice.note??''),lines:invoice.lines as {description:string;quantity_milli:number;unit_cents:number;tax_rate:0|7|19}[]
+        note:String(invoice.note??''),buyer_reference:String(invoice.buyer_reference??''),
+        e_invoice_profile:invoice.e_invoice_profile as 'none'|'xrechnung',
+        lines:invoice.lines as {description:string;quantity_milli:number;unit_cents:number;tax_rate:0|7|19}[]
       }}/>
+    {invoice.e_invoice_profile==='xrechnung'&&<Link href={'/admin/billing/'+id+'/e-invoice-check'} className="inline-block mt-4 underline">XRechnung-Vorprüfung ansehen</Link>}
     <form action={issueBillingDraft} className="mt-8 border-t border-zinc-800 pt-6 space-y-3">
       <input type="hidden" name="id" value={id}/>
       <p className="text-zinc-300 text-sm">Es wird ausschließlich der zuletzt <strong>gespeicherte Entwurf</strong> ausgestellt. Nicht gespeicherte Eingaben im Editor werden nicht übernommen.</p>
@@ -52,6 +55,7 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
       <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=pdf'}>PDF anzeigen</Link>
       <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=odt'}>OpenDocument (.odt) herunterladen</Link>
       <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=fodt'}>Flat-ODF (.fodt) herunterladen</Link>
+      {invoice.e_invoice_profile==='xrechnung'&&<Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=xrechnung'}>XRechnung (.xml) herunterladen</Link>}
     </div>
     <section className="border border-zinc-800 p-4 space-y-2">
       <h2 className="font-semibold">Zahlungen</h2>
