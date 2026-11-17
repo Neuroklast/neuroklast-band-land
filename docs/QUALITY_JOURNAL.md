@@ -65,3 +65,12 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: Missing buyer reference or contact data stops local generation; XML checksum is committed with the immutable invoice; KoSIT rejection must block release.
 - Docs updated: Billing architecture, tax compliance, operations, MCP, development log, QA and changelog.
 - Residual risk: No XRechnung production approval until official KoSIT conformance and accountant review; PDF/A-3 and ZUGFeRD not implemented; §19 XML categorization not implemented.
+
+
+## 2026-11-17 | Provision dedicated EU R2 bucket and billing-only Supabase migrations
+- Scope: Existing Cloudflare account, Vercel production environment and connected NEUROKLAST Supabase database.
+- Root cause: Billing artifact archival could not proceed until a dedicated bucket was configured. Existing R2 uses EU jurisdiction, so default Cloudflare REST bucket listings did not see the existing `neuroklast-media` bucket without jurisdiction headers.
+- Implementation: Created `neuroklast-billing-private` via the EU S3 endpoint using existing private R2 credentials. Verified create-only writes, HEAD/GET and object cleanup. Set `R2_BUCKET_BILLING` and explicit XRechnung feature-off flag in Vercel production settings.
+- Database: Committed and applied billing-only migration `20261117125004`, then explicit direct-privilege lockdown `20261117125509`. No existing shop tables were modified. The Supabase client-role privilege checks are negative and service-role checks positive.
+- Tests: CI PostgreSQL tests apply the isolated migrations repeatedly and check payment/number security. Infrastructure smoke test used a disposable R2 object; no real invoice data.
+- Residual risk: PR not merged, no end-to-end production admin use, no retention lock, backup/restore, complete GoBD process validation or tax owner approval. Real invoices and number-series activation remain deliberately unperformed.
