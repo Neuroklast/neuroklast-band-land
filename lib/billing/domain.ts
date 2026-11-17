@@ -11,6 +11,7 @@ export const customerInput = z.object({
   city: z.string().trim().max(120).default(''),
   country: z.string().regex(/^[A-Z]{2}$/).default('DE'),
   vat_id: z.string().trim().max(50).default(''),
+  buyer_reference: z.string().trim().max(150).default(''),
   contact_name: z.string().trim().max(150).default(''),
   notes: z.string().trim().max(2000).default(''),
 }).strict()
@@ -23,6 +24,8 @@ export const sellerInput = z.object({
   seller_country: z.string().regex(/^[A-Z]{2}$/),
   seller_tax_id: z.string().trim().max(60),
   seller_email: z.union([z.email(), z.literal('')]),
+  seller_phone: z.string().trim().max(80).default(''),
+  seller_contact_name: z.string().trim().max(150).default(''),
   seller_iban: z.string().trim().max(40),
   seller_bic: z.string().trim().max(20),
   tax_mode: z.enum(['unverified','small_business','vat_registered']),
@@ -43,6 +46,8 @@ export const draftInput = z.object({
   due_date: z.iso.date(),
   lines: z.array(invoiceLine).min(1).max(100),
   note: z.string().trim().max(2000).default(''),
+  buyer_reference: z.string().trim().max(150).default(''),
+  e_invoice_profile: z.enum(['none','xrechnung']).default('none'),
 }).strict()
 export type InvoiceLine = z.infer<typeof invoiceLine>
 export type DraftInput = z.infer<typeof draftInput>
