@@ -265,7 +265,7 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 
 - [ ] Verify seller legal name, address, tax identifier, tax status and previous invoice numbers before first issuance.
 - [ ] Set `R2_BUCKET_BILLING` to a private bucket and confirm anonymous access is denied.
-- [ ] Apply canonical billing SQL via controlled migration; verify RLS, grants and immutable-issue trigger.
+- [x] Apply billing changes using the canonical `supabase/schema.sql` as repository source; verify RLS, server role permissions, blocked direct client access and immutable-issue SQL contracts on the connected database.
 - [ ] PR lint, typecheck, unit tests and living-doc checks pass.
 - [ ] Open billing dashboard, customer editor, draft editor, settings and review under MFA.
 - [ ] Test concurrent issuance, retry after R2 failure and identical-number idempotency.
