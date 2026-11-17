@@ -38,3 +38,12 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: `If-None-Match: *` prevents overwrites; byte-for-byte verification is required for retries. Archived hashes are checked before issuing a short-lived URL. Conflicting finalization fails and an identical one is idempotent.
 - Docs updated: Billing architecture, MCP, tax compliance, changelog and QA checklist.
 - Residual risk: R2 private bucket lock and real-world recovery tests remain unverified, as do EN 16931/PDF-A and full GoBD compliance.
+
+## 2026-11-17 | Billing number-series confirmation and payment-ledger verification
+- Scope: Confirmed annual numbering sequences, searchable invoices/customers, aggregated payment totals, read-only CSV export and PostgreSQL contract tests.
+- Root cause: An unconfirmed fresh year could allocate number 000001 despite externally issued invoices; the first listing lacked payment balances and only exposed the first page of customer records.
+- Owner: PostgreSQL `billing_prepare_issue`, `billing_seed_sequence` and `billing_invoice_balances` govern integrity; the billing domain service mediates reads; admin and MCP use shared filters.
+- Tests: Added `supabase/tests/billing.sql` to disposable PostgreSQL CI and unit tests for payment state and CSV safety. Independent integration/real-bank verification is still pending.
+- Failure path: Unconfirmed year fails before allocating any number; paid amounts are aggregated from append-only payment records, and invalid overpayments are flagged. CSV refuses inconsistent balances and escapes untrusted spreadsheet cells.
+- Docs updated: Billing architecture, tax compliance, operations runbook, MCP, agent workflow, QA checklist, development log and changelog.
+- Residual risk: A real R2 bucket lock, tax sign-off, high-concurrency DB/R2 tests, E-Rechnung and live PDF/LibreOffice checks are still outstanding.
