@@ -328,3 +328,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
 - Brand new customer-facing billing PDFs with the canonical NK vector logo, legible A4 invoice layout, paginated position table and payment summary while retaining deterministic offline generation.
+
+- Fix authenticated PDF/ODT/FODT/XRechnung downloads by serving checksum-verified private R2 archive bytes through the same-origin admin API rather than redirecting browsers to presigned S3 URLs. Use native links instead of Next.js RSC navigation for documents.
+- Replace the temporary NK PDF monogram with the full canonical red NEUROKLAST wordmark from the bundled brand asset for newly issued PDFs. Already issued archive objects remain unchanged.
