@@ -8,7 +8,7 @@ export interface DocumentInvoice {
 }
 
 const str=(value:unknown):string=>String(value??'')
-const escapeXml=(text:string)=>text.replace(/[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')
+const escapeXml=(text:string)=>text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')
 const address=(p:Record<string,string>)=>[p.name,p.street,[p.postal_code,p.city].filter(Boolean).join(' '),p.country].filter(Boolean)
 const date=(s:string)=>s.split('-').reverse().join('.')
 function invoiceLines(doc:DocumentInvoice):string[] {
