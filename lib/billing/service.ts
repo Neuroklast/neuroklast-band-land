@@ -139,6 +139,8 @@ export async function updateBillingDraft(id:string,input:unknown,actorId:string,
 }
 export async function issueBillingInvoice(id:string,actorId:string) {
   uuid.parse(id);uuid.parse(actorId)
+  // Fail before assigning a legal number when private archival is not configured.
+  const archiveBucket=bucket()
   const {data,error}=await db().rpc('billing_prepare_issue',{p_id:id,p_actor:actorId})
   assert(error,'Invoice cannot be issued: check settings, recipient and numbers')
   const row=dataRow(data)
@@ -154,10 +156,10 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   const pdfKey='billing/'+id+'/'+number+'.pdf',fodtKey='billing/'+id+'/'+number+'.fodt'
   const hashes={pdf:createHash('sha256').update(pdf).digest('hex'),fodt:createHash('sha256').update(fodt).digest('hex')}
   try {
-    const name=bucket(),storage=getStorageProvider()
-    await storage.uploadObject(name,pdfKey,pdf,'application/pdf')
-    await storage.uploadObject(name,fodtKey,fodt,'application/vnd.oasis.opendocument.text-flat-xml')
-    const [p,f]=await Promise.all([headR2Object(name,pdfKey),headR2Object(name,fodtKey)])
+    const storage=getStorageProvider()
+    await storage.uploadObject(archiveBucket,pdfKey,pdf,'application/pdf')
+    await storage.uploadObject(archiveBucket,fodtKey,fodt,'application/vnd.oasis.opendocument.text-flat-xml')
+    const [p,f]=await Promise.all([headR2Object(archiveBucket,pdfKey),headR2Object(archiveBucket,fodtKey)])
     if(p?.size!==pdf.length||f?.size!==fodt.length)throw new Error('Archive verification failed')
     const {data:issued,error:finalError}=await db().rpc('billing_finalize_issue',{
       p_id:id,p_actor:actorId,p_pdf_key:pdfKey,p_fodt_key:fodtKey,p_hashes:hashes
