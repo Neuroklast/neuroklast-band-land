@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabaseAdmin'
 import { archiveBillingDocument, archivedBillingDocumentUrl, archiveKey, billingArchiveBucket, assertBillingArchiveReady } from './archive'
 import { customerInput, sellerInput, draftInput, calculateInvoice, validateDates, type InvoiceLine } from './domain'
 import { renderPdf, renderFodt, renderOdt, type DocumentInvoice } from './documents'
+import { renderXRechnung } from './einvoice'
 import { z } from 'zod'
 
 const uuid=z.uuid()
@@ -14,18 +15,20 @@ const str=(x:unknown)=>String(x??'')
 const issuer=(x:Row)=>({
   name:str(x.seller_name),street:str(x.seller_street),postal_code:str(x.seller_postal_code),
   city:str(x.seller_city),country:str(x.seller_country),tax_id:str(x.seller_tax_id),
-  email:str(x.seller_email),iban:str(x.seller_iban),bic:str(x.seller_bic),
+  email:str(x.seller_email),phone:str(x.seller_phone),contact_name:str(x.seller_contact_name),
+  iban:str(x.seller_iban),bic:str(x.seller_bic),
 })
 const recipient=(x:Row)=>({
   name:str(x.name),street:str(x.street),postal_code:str(x.postal_code),city:str(x.city),
   country:str(x.country),email:str(x.email),vat_id:str(x.vat_id),contact_name:str(x.contact_name),
+  buyer_reference:str(x.buyer_reference),
 })
 async function settingsRow() {
   const {data,error}=await db().from('billing_settings').select('*').eq('id',1).maybeSingle()
   assert(error,'Billing settings unavailable')
   return (data??{
     id:1,seller_name:'',seller_street:'',seller_postal_code:'',seller_city:'',
-    seller_country:'DE',seller_tax_id:'',seller_email:'',seller_iban:'',seller_bic:'',
+    seller_country:'DE',seller_tax_id:'',seller_email:'',seller_phone:'',seller_contact_name:'',seller_iban:'',seller_bic:'',
     tax_mode:'unverified',number_prefix:'RE'
   }) as Row
 }
@@ -141,8 +144,11 @@ async function buildDraft(input:unknown) {
   if(customer.archived)throw new Error('Customer archived')
   const mode=seller.tax_mode
   if(mode!=='small_business'&&mode!=='vat_registered')throw new Error('Verify the seller tax mode first')
+  if(parsed.e_invoice_profile==='xrechnung' && mode!=='vat_registered')
+    throw new Error('XRechnung is currently supported only for reviewed regular VAT invoices')
   const total=calculateInvoice(parsed.lines,mode)
-  return {...parsed,recipient:recipient(customer),seller:issuer(seller),tax_mode:mode,...{
+  const buyerReference=parsed.buyer_reference || str(customer.buyer_reference)
+  return {...parsed,buyer_reference:buyerReference,recipient:recipient(customer),seller:issuer(seller),tax_mode:mode,...{
     subtotal_cents:total.subtotal_cents,tax_cents:total.tax_cents,total_cents:total.total_cents
   }}
 }
@@ -163,8 +169,31 @@ export async function updateBillingDraft(id:string,input:unknown,actorId:string,
   if(!data)throw new Error('Invoice changed or already reserved; reload the draft')
   return data as Row
 }
+function documentFromRow(row:Row,id:string,number:string):DocumentInvoice {
+  return {
+    id,number,issue_date:str(row.issue_date),service_date:str(row.service_date),
+    due_date:str(row.due_date),seller:row.seller as Record<string,string>,
+    recipient:row.recipient as Record<string,string>,lines:row.lines as InvoiceLine[],
+    tax_mode:row.tax_mode as DocumentInvoice['tax_mode'],note:str(row.note),
+    e_invoice_profile:str(row.e_invoice_profile) as DocumentInvoice['e_invoice_profile'],
+    buyer_reference:str(row.buyer_reference),
+  }
+}
+export async function previewBillingXRechnung(id:string) {
+  const {invoice}=await getBillingInvoice(id)
+  if(invoice.e_invoice_profile!=='xrechnung')throw new Error('This draft does not request XRechnung output')
+  const fakeNumber=str(invoice.number)||'RE-'+String(invoice.issue_date).slice(0,4)+'-000000'
+  const rendered=renderXRechnung(documentFromRow(invoice,id,fakeNumber))
+  return {ruleset:rendered.ruleset,warnings:rendered.warnings,byte_length:rendered.xml.length}
+}
 export async function issueBillingInvoice(id:string,actorId:string) {
   uuid.parse(id);uuid.parse(actorId)
+  // Validate with a placeholder number BEFORE allocating any legally meaningful number.
+  // On a reserved invoice, a second exact validation uses the frozen legal number.
+  const {invoice:current}=await getBillingInvoice(id)
+  if(current.status==='draft' && current.e_invoice_profile==='xrechnung') {
+    await previewBillingXRechnung(id)
+  }
   // Fail before assigning a legal number when private archival is not configured.
   const archiveBucket=billingArchiveBucket()
   await assertBillingArchiveReady(archiveBucket)
@@ -174,22 +203,26 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   if(row.status==='issued')return row
   if(row.status!=='preparing')throw new Error('Unexpected invoice state')
   const number=str(row.number)
-  const invoice:DocumentInvoice={
-    id,number,issue_date:str(row.issue_date),service_date:str(row.service_date),
-    due_date:str(row.due_date),seller:row.seller as Record<string,string>,
-    recipient:row.recipient as Record<string,string>,lines:row.lines as InvoiceLine[],
-    tax_mode:row.tax_mode as DocumentInvoice['tax_mode'],note:str(row.note)
-  }
+  const invoice=documentFromRow(row,id,number)
   const pdf=renderPdf(invoice),fodt=renderFodt(invoice),odt=renderOdt(invoice)
   const pdfKey=archiveKey(id,number,'pdf'),fodtKey=archiveKey(id,number,'fodt')
   const odtKey=archiveKey(id,number,'odt')
+  const xrechnung=invoice.e_invoice_profile==='xrechnung'?renderXRechnung(invoice):null
+  const xmlKey=xrechnung?archiveKey(id,number,'xrechnung'):null
   try {
     const pdfStored=await archiveBillingDocument(archiveBucket,{format:'pdf',key:pdfKey,bytes:pdf})
     const fodtStored=await archiveBillingDocument(archiveBucket,{format:'fodt',key:fodtKey,bytes:fodt})
     const odtStored=await archiveBillingDocument(archiveBucket,{format:'odt',key:odtKey,bytes:odt})
-    const hashes={pdf:pdfStored.sha256,fodt:fodtStored.sha256,odt:odtStored.sha256}
+    const xmlStored=xrechnung && xmlKey?await archiveBillingDocument(archiveBucket,{
+      format:'xrechnung',key:xmlKey,bytes:xrechnung.xml
+    }):null
+    const hashes={
+      pdf:pdfStored.sha256,fodt:fodtStored.sha256,odt:odtStored.sha256,
+      ...(xmlStored?{xrechnung:xmlStored.sha256}:{}),
+    }
     const {data:issued,error:finalError}=await db().rpc('billing_finalize_issue',{
-      p_id:id,p_actor:actorId,p_pdf_key:pdfKey,p_fodt_key:fodtKey,p_hashes:hashes
+      p_id:id,p_actor:actorId,p_pdf_key:pdfKey,p_fodt_key:fodtKey,p_hashes:hashes,
+      p_xrechnung_key:xmlKey
     })
     assert(finalError,'Invoice archive commit failed')
     return issued as Row
@@ -199,10 +232,12 @@ export async function issueBillingInvoice(id:string,actorId:string) {
     throw new Error('Document archive unavailable. Number reserved. Retry issuing this invoice; do not create another.')
   }
 }
-export async function invoiceDocumentUrl(id:string,format:'pdf'|'fodt'|'odt') {
+export async function invoiceDocumentUrl(id:string,format:'pdf'|'fodt'|'odt'|'xrechnung') {
   const {invoice}=await getBillingInvoice(id)
   if(invoice.status!=='issued')throw new Error('Invoice not issued')
+  if(format==='xrechnung'&&invoice.e_invoice_profile!=='xrechnung')throw new Error('Electronic invoice not configured')
   const key=format==='odt' ? archiveKey(id,String(invoice.number),'odt') :
+    format==='xrechnung'?invoice.xrechnung_object_key:
     invoice[format==='pdf'?'pdf_object_key':'fodt_object_key']
   if(typeof key!=='string')throw new Error('Document not ready')
   const hashes=invoice.document_sha256 as Record<string,string>
