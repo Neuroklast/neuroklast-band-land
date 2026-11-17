@@ -318,3 +318,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Add tax/format scope documentation, tests and explicit production release gates. This feature is not yet verified in production.
 
 - Harden invoice numbering by requiring per-year administrative confirmation of existing number ranges, add filtered ledgers and reconciliation CSV, and add disposable PostgreSQL financial contract tests in CI.
+
+- Prevent duplicate manual payment records from repeated browser submissions by using transactional payment idempotency keys and regression coverage.
