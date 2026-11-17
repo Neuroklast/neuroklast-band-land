@@ -54,3 +54,7 @@ Configure Cloudflare R2 Bucket Lock for the dedicated private billing bucket, sc
 ## Admin ledger and exports
 
 The admin overview supports number/year/status filters, open/partial/paid/overdue payment states calculated from immutable payment records, searchable paginated customers, and a year-scoped, formula-injection-safe UTF-8 CSV reconciliation export. The CSV is **not** a DATEV or certified tax export. MCP invoice/customer list tools support pagination and the same invoice filters. See `docs/BILLING_OPERATIONS.md` for the release steps and numbering confirmation procedure.
+
+## Manual payment retry safety (2026-11-17)
+
+A manually recorded payment must have a unique UUID supplied with the form, sent to the canonical `recordBillingPayment` service and to the six-parameter `billing_record_payment` SQL RPC. A repeated request with the same UUID and identical invoice, date, amount and reference returns the original payment unchanged. Reusing the UUID for different data fails closed. This handles browser resubmissions but does not prove an incoming bank transfer occurred. The aggregate payment view and invoice row lock still protect against recording more than the outstanding amount.
