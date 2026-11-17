@@ -29,3 +29,12 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: When document upload fails, reserved number remains with `preparing` invoice to retry using same UUID. Database read failures are errors, not empty lists. All MCP financial requests require a separate MFA-approved action.
 - Docs updated: Billing architecture, tax compliance and MCP guides; architecture, security, data, QA, changelog, development log and journal.
 - Residual risk: NO production sign-off; E-Rechnung, PDF/A, real legal review, complete GoBD archival validation, new private R2 bucket setup and live concurrency tests are still outstanding.
+
+## 2026-11-17 | Harden PDF/ODF archive and retry semantics
+- Scope: Direct invoices, immutable Cloudflare R2 objects, three document formats and PostgreSQL issuance finalization.
+- Root cause: Initial version overwrote deterministic R2 object keys during retries and checked only object length, not content integrity; packed ODT was unavailable.
+- Owner: `lib/billing/archive.ts` owns create-only writes and checksum validation; `lib/billing/documents.ts` owns renderers; PostgreSQL `billing_finalize_issue` owns finalization.
+- Tests: Added archive overwrite/tampering and OpenDocument packaging tests; full CI, SQL contract and real LibreOffice/PDF validation remain independent release gates.
+- Failure path: `If-None-Match: *` prevents overwrites; byte-for-byte verification is required for retries. Archived hashes are checked before issuing a short-lived URL. Conflicting finalization fails and an identical one is idempotent.
+- Docs updated: Billing architecture, MCP, tax compliance, changelog and QA checklist.
+- Residual risk: R2 private bucket lock and real-world recovery tests remain unverified, as do EN 16931/PDF-A and full GoBD compliance.
