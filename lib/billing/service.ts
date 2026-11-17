@@ -159,6 +159,13 @@ export async function createBillingDraft(input:unknown,actorId:string) {
   assert(error,'Invoice draft could not be created')
   return data as Row
 }
+/** Expected optimistic-concurrency rejection, not an application/server failure. */
+export class BillingDraftConflictError extends Error {
+  constructor() {
+    super('Invoice changed or already reserved; reload the draft')
+    this.name='BillingDraftConflictError'
+  }
+}
 export async function updateBillingDraft(id:string,input:unknown,actorId:string,expectedRevision:number) {
   uuid.parse(id);uuid.parse(actorId)
   if(!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new Error('Invalid draft version')
@@ -166,7 +173,7 @@ export async function updateBillingDraft(id:string,input:unknown,actorId:string,
   const {data,error}=await db().from('billing_invoices').update({...fields,updated_by:actorId,updated_at:new Date().toISOString(),revision:expectedRevision+1})
     .eq('id',id).eq('status','draft').eq('revision',expectedRevision).select('*').maybeSingle()
   assert(error,'Invoice update failed')
-  if(!data)throw new Error('Invoice changed or already reserved; reload the draft')
+  if(!data)throw new BillingDraftConflictError()
   return data as Row
 }
 function documentFromRow(row:Row,id:string,number:string):DocumentInvoice {
