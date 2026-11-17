@@ -208,12 +208,13 @@ export async function invoiceDocumentUrl(id:string,format:'pdf'|'fodt'|'odt') {
   const hashes=invoice.document_sha256 as Record<string,string>
   return archivedBillingDocumentUrl(billingArchiveBucket(),key,hashes[format])
 }
-export async function recordBillingPayment(id:string,actorId:string,amountCents:number,date:string,reference:string) {
+export async function recordBillingPayment(id:string,actorId:string,amountCents:number,date:string,reference:string,idempotencyKey:string) {
   uuid.parse(id);uuid.parse(actorId)
   if(!Number.isSafeInteger(amountCents)||amountCents<=0)throw new Error('Invalid amount')
   z.iso.date().parse(date)
+  uuid.parse(idempotencyKey)
   const {data,error}=await db().rpc('billing_record_payment',{
-    p_id:id,p_actor:actorId,p_amount:amountCents,p_paid_on:date,p_reference:reference.slice(0,240)
+    p_id:id,p_actor:actorId,p_amount:amountCents,p_paid_on:date,p_reference:reference.slice(0,240),p_idempotency_key:idempotencyKey
   })
   assert(error,'Could not record payment; check remaining balance')
   return data
