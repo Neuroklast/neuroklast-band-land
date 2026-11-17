@@ -5,6 +5,7 @@ import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { saveBillingPayment,issueBillingDraft } from '@/app/admin/_actions/billing'
 import { InvoiceForm } from '../InvoiceForm'
 import Link from 'next/link'
+import { billingDateInGermany } from '@/lib/billing/date'
 export const dynamic='force-dynamic'
 export default async function InvoiceDetail({params}:{params:Promise<{id:string}>}) {
  await admin()
@@ -54,7 +55,7 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
       {paid<total&&<form action={saveBillingPayment} className="flex flex-wrap items-end gap-3 pt-3">
         <input type="hidden" name="id" value={id}/>
         <label className="text-sm space-y-1"><span>Betrag (€)</span><input name="amount" inputMode="decimal" required className="block border border-zinc-700 bg-black p-3"/></label>
-        <label className="text-sm space-y-1"><span>Datum</span><input name="paid_on" type="date" required defaultValue={new Date().toISOString().slice(0,10)} className="block border border-zinc-700 bg-black p-3"/></label>
+        <label className="text-sm space-y-1"><span>Datum</span><input name="paid_on" type="date" required defaultValue={billingDateInGermany()} className="block border border-zinc-700 bg-black p-3"/></label>
         <label className="text-sm space-y-1"><span>Referenz</span><input name="reference" maxLength={240} className="block border border-zinc-700 bg-black p-3"/></label>
         <button type="submit" className="border border-zinc-700 px-4 min-h-11">Zahlung erfassen</button>
       </form>}
