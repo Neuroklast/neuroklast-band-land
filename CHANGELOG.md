@@ -325,3 +325,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
 - Provision a dedicated EU R2 bucket for invoice archives and apply two billing-specific database changes remotely with explicit default-role permission revocation, keeping the repository's canonical-only `supabase/schema.sql` discipline. The feature remains a draft until the production release gates pass.
+
+
+- Brand new customer-facing billing PDFs with the canonical NK vector logo, legible A4 invoice layout, paginated position table and payment summary while retaining deterministic offline generation.
