@@ -47,3 +47,5 @@ Every manual payment form renders a unique `idempotency_key` UUID. The same form
 ## Optional XRechnung test gate
 
 The extra `billing-kosit.yml` GitHub workflow generates an XRechnung from the actual TypeScript service, downloads the official KoSIT Validator 1.6.3 JAR and XRechnung 3.0.2 rules published 2026-08-31, checks their SHA-256 digests and runs XSD/Schematron validation. A generated document rejected by KoSIT is a release blocker. A locally accepted JSON Schema is not a substitute. Until KoSIT and tax-owner approval, treat `e_invoice_profile=xrechnung` as an experimental branch-only capability and do not deploy it or issue real invoices. ZUGFeRD/PDF/A-3 is not yet available.
+
+**Fail-closed issuance flag:** `BILLING_XRECHNUNG_ENABLE_ISSUANCE=false` by default. XRechnung preview is available without the flag, but final issuance fails before allocating a legal number until it is explicitly set to `true` after KoSIT CI and accountant approval. The flag does not override R2, tax or other existing issuance checks.
