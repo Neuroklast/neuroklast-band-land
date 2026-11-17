@@ -75,11 +75,20 @@ export async function updateBillingCustomer(id:string,input:unknown,actorId:stri
   assert(error,'Customer update failed')
   return data
 }
-export async function listBillingInvoices(limit=100) {
+export async function listBillingInvoices(limit=100,offset=0) {
+  if(!Number.isInteger(offset)||offset<0||offset>1000000)throw new Error('Invalid invoice offset')
+  const pageSize=Math.max(1,Math.min(limit,100))
   const {data,error}=await db().from('billing_invoices').select('id,number,status,recipient,issue_date,due_date,total_cents,created_at,customer_id,document_error_at')
-    .order('created_at',{ascending:false}).limit(Math.max(1,Math.min(limit,100)))
+    .order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+pageSize-1)
   assert(error,'Invoice listing failed')
   return (data??[]) as Row[]
+}
+export async function billingInvoiceCounts() {
+  const states=['draft','preparing','issued'] as const
+  const results=await Promise.all(states.map(state=>db().from('billing_invoices')
+    .select('id',{count:'exact',head:true}).eq('status',state)))
+  if(results.some(result=>result.error))throw new Error('Invoice counts unavailable')
+  return Object.fromEntries(states.map((s,i)=>[s,results[i].count??0])) as Record<typeof states[number],number>
 }
 export async function getBillingInvoice(id:string) {
   uuid.parse(id)
