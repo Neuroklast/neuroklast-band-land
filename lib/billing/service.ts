@@ -183,7 +183,7 @@ export async function previewBillingXRechnung(id:string) {
   const {invoice}=await getBillingInvoice(id)
   if(invoice.e_invoice_profile!=='xrechnung')throw new Error('This draft does not request XRechnung output')
   const fakeNumber=str(invoice.number)||'RE-'+String(invoice.issue_date).slice(0,4)+'-000000'
-  const rendered=renderXRechnung(documentFromRow(invoice,id,fakeNumber))
+  const rendered=await renderXRechnung(documentFromRow(invoice,id,fakeNumber))
   return {ruleset:rendered.ruleset,warnings:rendered.warnings,byte_length:rendered.xml.length}
 }
 export async function issueBillingInvoice(id:string,actorId:string) {
@@ -207,7 +207,7 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   const pdf=renderPdf(invoice),fodt=renderFodt(invoice),odt=renderOdt(invoice)
   const pdfKey=archiveKey(id,number,'pdf'),fodtKey=archiveKey(id,number,'fodt')
   const odtKey=archiveKey(id,number,'odt')
-  const xrechnung=invoice.e_invoice_profile==='xrechnung'?renderXRechnung(invoice):null
+  const xrechnung=invoice.e_invoice_profile==='xrechnung'?await renderXRechnung(invoice):null
   const xmlKey=xrechnung?archiveKey(id,number,'xrechnung'):null
   try {
     const pdfStored=await archiveBillingDocument(archiveBucket,{format:'pdf',key:pdfKey,bytes:pdf})
