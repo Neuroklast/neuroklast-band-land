@@ -96,3 +96,8 @@ User/admin-supplied URLs are constrained to `http`/`https`:
 ## Config
 
 `env.mjs` validates server env vars and fails fast in production.
+
+
+## Finance and invoice safeguards (2026-11-17)
+
+The `/admin/billing/**` subtree requires `admin()` and the centralized MFA page guard. Billing data tables have RLS with no anon/authenticated read/write policies. Only server-side service-role code receives financial records. MCP is restricted to the existing OAuth allowlist, MFA grant and administrator identity. MCP may create/update drafts and customers but can only queue issuance/payment requests for separately authenticated human review. Private invoice files must use a dedicated R2 bucket without a public host. Document URLs are signed for 90 seconds. Never reveal these URLs through public endpoints or public caching. Database functions should be callable by service_role only.
