@@ -2657,3 +2657,48 @@ REVOKE ALL ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text)
 GRANT EXECUTE ON FUNCTION public.billing_prepare_issue(uuid,uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb) TO service_role;
 GRANT EXECUTE ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text) TO service_role;
+
+
+-- MCP financial requests are separate from editorial approval requests.
+CREATE TABLE IF NOT EXISTS public.billing_mcp_requests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  operation text NOT NULL CHECK (operation IN ('issue_invoice','record_payment')),
+  invoice_id uuid NOT NULL REFERENCES public.billing_invoices(id) ON DELETE RESTRICT,
+  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  requested_by uuid NOT NULL,
+  client_id text NOT NULL,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','processing','approved','rejected')),
+  reviewed_by uuid,
+  reviewed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS billing_mcp_review_idx ON public.billing_mcp_requests (status,created_at DESC);
+ALTER TABLE public.billing_mcp_requests ENABLE ROW LEVEL SECURITY;
+-- Payment and request approval must be committed in ONE PostgreSQL transaction.
+CREATE OR REPLACE FUNCTION public.billing_approve_mcp_payment(
+  p_request_id uuid, p_actor uuid
+) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
+DECLARE req public.billing_mcp_requests%ROWTYPE;
+  inv public.billing_invoices%ROWTYPE;
+  amount bigint; paid_on date; paid bigint; payment_id uuid;
+BEGIN
+  SELECT * INTO req FROM public.billing_mcp_requests WHERE id=p_request_id FOR UPDATE;
+  IF NOT FOUND OR req.status<>'pending' OR req.operation<>'record_payment' THEN
+    RAISE EXCEPTION 'Payment review request unavailable';
+  END IF;
+  amount := (req.payload->>'amount_cents')::bigint;
+  paid_on := (req.payload->>'paid_on')::date;
+  SELECT * INTO inv FROM public.billing_invoices WHERE id=req.invoice_id FOR UPDATE;
+  IF NOT FOUND OR inv.status<>'issued' THEN RAISE EXCEPTION 'Invoice not issued'; END IF;
+  SELECT COALESCE(SUM(amount_cents),0) INTO paid FROM public.billing_payments WHERE invoice_id=inv.id;
+  IF amount<=0 OR amount>inv.total_cents-paid THEN RAISE EXCEPTION 'Payment exceeds open balance'; END IF;
+  INSERT INTO public.billing_payments(invoice_id,amount_cents,paid_on,reference,created_by)
+    VALUES(inv.id,amount,paid_on,left(coalesce(req.payload->>'reference',''),240),p_actor)
+    RETURNING id INTO payment_id;
+  UPDATE public.billing_mcp_requests SET status='approved',reviewed_by=p_actor,reviewed_at=now() WHERE id=req.id;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(inv.id,p_actor,'mcp_payment_approved',jsonb_build_object('payment_id',payment_id,'request_id',p_request_id));
+  RETURN payment_id;
+END $$;
+REVOKE ALL ON FUNCTION public.billing_approve_mcp_payment(uuid,uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.billing_approve_mcp_payment(uuid,uuid) TO service_role;
