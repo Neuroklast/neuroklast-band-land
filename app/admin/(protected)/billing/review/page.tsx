@@ -15,7 +15,7 @@ export default async function BillingReview() {
           <strong>{req.operation==='issue_invoice'?'Rechnung ausstellen':'Zahlung erfassen'}</strong>
           <span className="text-zinc-400 text-sm">{String(req.status)}</span>
         </div>
-        <p className="text-zinc-400 text-sm">Anfrage: {String(req.created_at)} · Kunde/Rechnung: <Link className="underline" href={'/admin/billing/'+req.invoice_id}>Rechnung prüfen</Link></p>
+        <p className="text-zinc-400 text-sm">Anfrage: {String(req.created_at)} · Kunde/Rechnung: <Link className="underline" href={'/admin/billing/'+String(req.invoice_id)}>Rechnung prüfen</Link></p>
         {req.operation==='record_payment'&&<p className="text-sm">Erfasster Betrag (Cent): {String((req.payload as Record<string,unknown>)?.amount_cents??'')}</p>}
         {req.status==='pending'&&<div className="flex flex-wrap gap-3">
           <form action={reviewBillingMcpAction}><input type="hidden" name="request_id" value={String(req.id)}/><input type="hidden" name="decision" value="approve"/>
