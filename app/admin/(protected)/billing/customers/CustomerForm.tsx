@@ -15,6 +15,7 @@ export function CustomerForm({customer}:{customer?:Record<string,unknown>}) {
     <input className="w-full bg-black border border-zinc-700 p-3" name="country" required maxLength={2}
       defaultValue={String(customer?.country??'DE')}/></label>
   {field('vat_id','USt-IdNr. (optional)')}
+  {field('buyer_reference','Käuferreferenz (BT-10, bei Behörden Leitweg-ID)')}
   <label className="block text-sm space-y-1"><span>Notizen</span><textarea name="notes" rows={3} maxLength={2000}
     className="block w-full border border-zinc-700 bg-black p-3" defaultValue={String(customer?.notes??'')}/></label>
   <button type="submit" className="bg-red-800 px-5 py-3 min-h-11">Speichern</button>
