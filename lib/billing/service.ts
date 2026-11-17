@@ -78,10 +78,28 @@ export async function updateBillingCustomer(id:string,input:unknown,actorId:stri
   assert(error,'Customer update failed')
   return data
 }
-export async function listBillingInvoices(limit=100,offset=0):Promise<Row[]> {
-  if(!Number.isInteger(offset)||offset<0||offset>1000000)throw new Error('Invalid invoice offset')
-  const pageSize=Math.max(1,Math.min(limit,100))
-  const {data,error}=await db().from('billing_invoices').select('id,number,status,recipient,issue_date,service_date,due_date,total_cents,created_at,customer_id,document_error_at')
+export interface BillingInvoiceFilter {
+  year?:number
+  status?:'draft'|'preparing'|'issued'
+  number?:string
+}
+export async function listBillingInvoices(limit=100,offset=0,filter:BillingInvoiceFilter={}):Promise<Row[]> {
+  if(!Number.isSafeInteger(offset)||offset<0||offset>1000000)throw new Error('Invalid invoice offset')
+  if(!Number.isSafeInteger(limit)||limit<1||limit>100)throw new Error('Invalid invoice page size')
+  if(filter.year!==undefined && (!Number.isInteger(filter.year)||filter.year<2000||filter.year>2200))
+    throw new Error('Invalid invoice year')
+  if(filter.status!==undefined && !['draft','preparing','issued'].includes(filter.status))
+    throw new Error('Invalid invoice status')
+  const pageSize=limit
+  let query=db().from('billing_invoices')
+    .select('id,number,status,recipient,issue_date,service_date,due_date,total_cents,created_at,customer_id,document_error_at')
+  if(filter.year!==undefined) {
+    query=query.gte('issue_date',filter.year+'-01-01').lt('issue_date',(filter.year+1)+'-01-01')
+  }
+  if(filter.status)query=query.eq('status',filter.status)
+  const partial=filter.number?.trim().slice(0,80).replace(/[^A-Za-z0-9-]/g,'')
+  if(partial)query=query.ilike('number','%'+partial+'%')
+  const {data,error}=await query
     .order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+pageSize-1)
   assert(error,'Invoice listing failed')
   const invoices=(data??[]) as Row[]
