@@ -2730,3 +2730,23 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.billing_seed_sequence(integer,bigint) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.billing_seed_sequence(integer,bigint) TO service_role;
+
+
+-- Durable append-only financial records. Corrections must be new linked events.
+CREATE OR REPLACE FUNCTION public.billing_prevent_destructive_changes() RETURNS trigger
+LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
+BEGIN
+  IF TG_TABLE_NAME='billing_invoices' AND TG_OP='DELETE' AND OLD.status='draft' THEN
+    RETURN OLD;
+  END IF;
+  RAISE EXCEPTION 'Financial records are append-only; use a formally linked correction';
+END $$;
+DROP TRIGGER IF EXISTS billing_invoice_prevent_delete ON public.billing_invoices;
+CREATE TRIGGER billing_invoice_prevent_delete BEFORE DELETE ON public.billing_invoices
+FOR EACH ROW EXECUTE FUNCTION public.billing_prevent_destructive_changes();
+DROP TRIGGER IF EXISTS billing_payment_prevent_changes ON public.billing_payments;
+CREATE TRIGGER billing_payment_prevent_changes BEFORE UPDATE OR DELETE ON public.billing_payments
+FOR EACH ROW EXECUTE FUNCTION public.billing_prevent_destructive_changes();
+DROP TRIGGER IF EXISTS billing_events_prevent_changes ON public.billing_events;
+CREATE TRIGGER billing_events_prevent_changes BEFORE UPDATE OR DELETE ON public.billing_events
+FOR EACH ROW EXECUTE FUNCTION public.billing_prevent_destructive_changes();
