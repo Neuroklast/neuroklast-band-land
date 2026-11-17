@@ -2651,7 +2651,7 @@ BEGIN
   RETURN v;
 END $$;
 
-DROP FUNCTION IF EXISTS public.billing_record_payment(uuid,uuid,bigint,date,text,uuid);
+DROP FUNCTION IF EXISTS public.billing_record_payment(uuid,uuid,bigint,date,text);
 CREATE OR REPLACE FUNCTION public.billing_record_payment(
   p_id uuid, p_actor uuid, p_amount bigint, p_paid_on date, p_reference text,
   p_idempotency_key uuid
