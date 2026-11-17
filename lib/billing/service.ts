@@ -78,10 +78,16 @@ export async function updateBillingCustomer(id:string,input:unknown,actorId:stri
 export async function listBillingInvoices(limit=100,offset=0) {
   if(!Number.isInteger(offset)||offset<0||offset>1000000)throw new Error('Invalid invoice offset')
   const pageSize=Math.max(1,Math.min(limit,100))
-  const {data,error}=await db().from('billing_invoices').select('id,number,status,recipient,issue_date,due_date,total_cents,created_at,customer_id,document_error_at')
+  const {data,error}=await db().from('billing_invoices').select('id,number,status,recipient,issue_date,service_date,due_date,total_cents,created_at,customer_id,document_error_at')
     .order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+pageSize-1)
   assert(error,'Invoice listing failed')
-  return (data??[]) as Row[]
+  const invoices=(data??[]) as Row[]
+  if(invoices.length===0)return invoices
+  const {data:balances,error:balanceError}=await db().from('billing_invoice_balances')
+    .select('invoice_id,paid_cents').in('invoice_id',invoices.map(i=>String(i.id)))
+  assert(balanceError,'Payment balance lookup failed')
+  const totals=new Map((balances??[]).map(r=>[String(r.invoice_id),Number(r.paid_cents)]))
+  return invoices.map(invoice=>({...invoice,paid_cents:totals.get(String(invoice.id))??0}))
 }
 export async function billingInvoiceCounts() {
   const states=['draft','preparing','issued'] as const
