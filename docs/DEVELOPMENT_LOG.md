@@ -295,3 +295,25 @@ Motion kit (`lib/latch-physics.ts`, `LatchRail`, `PhaseCrossfade`, `HudReadout`)
 ---
 
 *Add new sessions above this line.*
+
+
+## Session: 2026-11-17 — Billing module and MCP finance control
+
+**Agent:** ChatGPT
+**Branch:** `feature/billing-invoices-mcp`
+
+**Work:** Reviewed current Next.js admin/MFA model, canonical Supabase schema, R2 storage adapter, Stripe Managed Payments documentation and OAuth MCP handler. Implemented direct-invoice customer records, draft editor, integer-cent calculations, annual invoice number reservation with row locking, private PDF/FODT archival, issued-state locking, payment ledger and MCP finance human review. Excluded Stripe-MoR invoice duplication.
+
+**Verification:** Unit tests added. Repository CI and local runtime/DB/R2 integration remain to be verified; no live records or DB changes performed. Standardized German E-Rechnung XML/PDF-A and official retention verification are not implemented. See `docs/BILLING_ARCHITECTURE.md`, `docs/BILLING_MCP.md`, `docs/BILLING_TAX_COMPLIANCE.md`.
+
+## Session continuation: 2026-11-17 — billing archive and ledger hardening
+
+Extended archive to an actual zipped ODT using fflate, added conditional create-only R2 writes and full SHA-256 read-back verification, required explicit annual sequence confirmation, added paid/partial/overdue overview, searchable customers and invoice number/year/status filters, read-only CSV export, and a disposable PostgreSQL financial contract. Current branch remains draft until independent CI and production readiness checks pass. See `docs/BILLING_OPERATIONS.md`.
+
+## Session continuation: 2026-11-17 — optional XRechnung implementation
+
+Extended billing domain and schema with buyer references, seller contact fields and an optional XML profile. Implemented locally schema-validated UBL XML via `@e-invoice-eu/core`, preflight before allocating invoice numbers, encrypted/private archive handling with XML hash and authenticated admin/MCP access. Added KoSIT validator v1.6.3 + config v2026-08-31 workflow for independent XSD/Schematron checks. Earlier prototype `@stampbench/core` was removed after npm audit flagged its vulnerable transitive Zod 3 dependency. The new package resolved at 3.4.3 and security audit passed on inspected commits. Official validation, PDF/A/ZUGFeRD and production legal review remain open until independently verified.
+
+
+## 2026-11-17 — R2 and Supabase setup for billing
+Provisioned the private EU `neuroklast-billing-private` bucket and verified S3 read/write/delete via the existing project credentials. Added the production Vercel environment selector without altering public media storage. Applied two billing-only changes through the Supabase migration API while keeping `supabase/schema.sql` as the repository's sole idempotent schema source, without tracked migration files. Applied service-only privilege hardening to the connected database, verified tables/RLS and SQL privileges. Confirmed XRechnung issuance is explicitly disabled in production. PR #645 remains draft and undeployed. See `docs/BILLING_OPERATIONS.md`.

@@ -12,6 +12,7 @@ on:
       - 'supabase/schema.sql'
       - 'supabase/tests/plugin.sql'
       - 'supabase/tests/mcp-content.sql'
+      - 'supabase/tests/billing.sql'
       - 'src/test/neurokore*'
       - 'src/test/plugin*'
       - '.github/workflows/plugin-contract.yml'
@@ -71,6 +72,8 @@ jobs:
           SQL
       - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/mcp-content.sql
+      - name: Billing financial invariants (disposable PostgreSQL only)
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/billing.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/plugin.sql
       - run: node supabase/tests/plugin-concurrency.mjs
       - name: Reset public schema for the migration path

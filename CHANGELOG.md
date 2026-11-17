@@ -309,3 +309,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Unused import warnings in the refactored hook (`toggleSection`, `reorderSections`,
   `SOCIAL_LINKS_INITIAL` were imported but not needed in the hook file; they are now
   imported only in the step components that use them).
+
+
+## Unreleased | 2026-11-17
+- Add an MFA-protected direct-seller invoicing domain in the admin area with customer records, draft invoices, transactionally allocated annual invoice numbers, payment ledger and locked issued snapshots.
+- Add basic PDF 1.4, editable ODT and Flat OpenDocument Text exports in a separate private R2 billing bucket; these are *not* E-Rechnung/PDF-A outputs.
+- Extend existing OAuth/MCP with customer and draft tools plus independently approved issuance/payment requests. Keep Stripe Managed Payments customer invoicing separate.
+- Add tax/format scope documentation, tests and explicit production release gates. This feature is not yet verified in production.
+
+- Harden invoice numbering by requiring per-year administrative confirmation of existing number ranges, add filtered ledgers and reconciliation CSV, and add disposable PostgreSQL financial contract tests in CI.
+
+- Prevent duplicate manual payment records from repeated browser submissions by using transactional payment idempotency keys and regression coverage.
+
+- Introduce experimental XRechnung 3.0 UBL XML, buyer reference and seller contacts, admin/MCP preflight, immutable XML archiving and pinned official KoSIT CI checks. The independent-validator and tax approval gate remains mandatory.
+
+
+- Provision a dedicated EU R2 bucket for invoice archives and apply two billing-specific database changes remotely with explicit default-role permission revocation, keeping the repository's canonical-only `supabase/schema.sql` discipline. The feature remains a draft until the production release gates pass.

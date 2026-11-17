@@ -1,0 +1,67 @@
+name: Billing XRechnung KoSIT validation
+on:
+  pull_request:
+    paths:
+      - 'lib/billing/einvoice.ts'
+      - 'lib/billing/__tests__/einvoice.test.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/billing-kosit.yml'
+permissions:
+  contents: read
+jobs:
+  kosit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - name: Generate XRechnung from billing code
+        env:
+          BILLING_KOSIT_FIXTURE_PATH: ${{ runner.temp }}/billing-xrechnung.xml
+        run: npx vitest run lib/billing/__tests__/einvoice.test.ts
+      - name: Download pinned KoSIT validator and rules
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/kosit
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR/config"
+          curl --fail --location --retry 3 --silent --show-error \
+            https://repo1.maven.org/maven2/org/kosit/validator/1.6.3/validator-1.6.3-standalone.jar \
+            --output "$ARTIFACT_DIR/validator.jar"
+          curl --fail --location --retry 3 --silent --show-error \
+            https://github.com/itplr-kosit/validator-configuration-xrechnung/releases/download/v2026-08-31/xrechnung-3.0.2-validator-configuration-2026-08-31.zip \
+            --output "$ARTIFACT_DIR/config.zip"
+          (cd "$ARTIFACT_DIR" && \
+            sha256sum validator.jar config.zip && \
+            printf '2530cd107c414511c5d0462ec10f886910395abfca820db82e83d70bf01221a8  config.zip\n' | sha256sum -c -)
+          unzip -q "$ARTIFACT_DIR/config.zip" -d "$ARTIFACT_DIR/config"
+      - name: Validate official XRechnung 3.0.2 XSD and Schematron
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/kosit
+          FIXTURE: ${{ runner.temp }}/billing-xrechnung.xml
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR/reports"
+          java -jar "$ARTIFACT_DIR/validator.jar" \
+            -s "$ARTIFACT_DIR/config/scenarios.xml" \
+            -r "$ARTIFACT_DIR/config" \
+            -o "$ARTIFACT_DIR/reports" -h "$FIXTURE"
+          test -s "$ARTIFACT_DIR/reports/billing-xrechnung-report.xml"
+          grep -q '<rep:accept' "$ARTIFACT_DIR/reports/billing-xrechnung-report.xml"
+      - name: Upload validation report if failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: billing-kosit-reports
+          path: ${{ runner.temp }}/kosit/reports/*
+          retention-days: 7
+          if-no-files-found: ignore

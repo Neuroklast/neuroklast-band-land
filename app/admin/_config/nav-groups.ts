@@ -66,6 +66,16 @@ export const ADMIN_NAV_GROUPS: AdminNavGroupData[] = [
     ],
   },
   {
+    id: 'billing',
+    label: 'Finance',
+    items: [
+      { href: '/admin/billing', label: 'Invoices' },
+      { href: '/admin/billing/customers', label: 'Customers' },
+      { href: '/admin/billing/review', label: 'MCP Billing Review' },
+      { href: '/admin/billing/settings', label: 'Billing Settings' },
+    ],
+  },
+  {
     id: 'support',
     label: 'Customer Support',
     items: [

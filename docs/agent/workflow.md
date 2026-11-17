@@ -130,3 +130,7 @@ code complete → non-build CI + available local checks → docs update → merg
 ## Enforced living documentation
 
 Run `npm run test:living-docs` and `npm run check:living-docs` locally. The standalone PR status **Living docs gate** compares changed source paths to `docs/living-docs.json` and checks a newly added seven-field evidence entry. It runs no Next.js build or migration. Human reviewers must verify documentation accuracy. Require this named check in GitHub branch protection for unbypassable enforcement.
+
+## Finance change verification (2026-11-17)
+
+For any changes under `lib/billing/`, `lib/mcp/billing.ts`, `app/admin/(protected)/billing/` or billing SQL, run the full PR CI and the disposable PostgreSQL billing contract. The existing plugin commerce workflow now includes `supabase/tests/billing.sql`. It verifies sequence confirmation, idempotent number allocation, immutable issued documents, no payment overbooking and MCP payment approval protection. Real R2, LibreOffice, tax and backup verification remain separate release gates. Never run invoice migrations in a Vercel build. See `docs/BILLING_OPERATIONS.md`.

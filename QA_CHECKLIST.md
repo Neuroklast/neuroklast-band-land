@@ -259,3 +259,28 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] A source-only PR without quality journal or owning docs is rejected.
 - [ ] A malformed journal entry fails CI; a docs-only PR needs no fake release note.
 - [ ] Documentation claims, failed reads and test evidence match the implementation.
+
+
+## Billing feature acceptance (2026-11-17, UNVERIFIED)
+
+- [ ] Verify seller legal name, address, tax identifier, tax status and previous invoice numbers before first issuance.
+- [ ] Set `R2_BUCKET_BILLING` to a private bucket and confirm anonymous access is denied.
+- [x] Apply billing changes using the canonical `supabase/schema.sql` as repository source; verify RLS, server role permissions, blocked direct client access and immutable-issue SQL contracts on the connected database.
+- [ ] PR lint, typecheck, unit tests and living-doc checks pass.
+- [ ] Open billing dashboard, customer editor, draft editor, settings and review under MFA.
+- [ ] Test concurrent issuance, retry after R2 failure and identical-number idempotency.
+- [ ] Verify R2 Bucket Lock retention rules and checksum verification, including repeat writes and tampered objects.
+- [ ] Test duplicate MCP approval and concurrent payment attempts without double credit.
+- [ ] Check PDF rendering in a real PDF reader and ODT/FODT with LibreOffice.
+- [ ] Add EN16931 XML, XRechnung/ZUGFeRD + PDF/A validation before E-Rechnung claims.
+- [ ] Obtain legal/tax review and validate GoBD archive, retention and backup/restore.
+
+- [x] Add disposable PostgreSQL tests for annual number confirmation, issuance idempotency, immutable issued data and MCP payment review. **CI outcome must be independently verified.**
+- [x] Add filtered, paginated invoice/customer administration and a read-only year-scoped CSV overview. **Browser E2E remains outstanding.**
+
+- [x] Add one-use idempotency UUID for manual admin payment form, backed by SQL uniqueness and replay checks. **Actual browser double-submit still requires E2E verification.**
+
+- [ ] Official KoSIT 1.6.3 validator accepts actual generated XRechnung UBL for reviewed domestic VAT invoices.
+- [ ] Verify XML tax groups, buyer reference, seller contacts and invoice number against an independent EN16931 reference.
+- [ ] Check optional XML profile fails closed for unverified/§19 tax modes, unsupported cross-border customers, and missing electronic addresses.
+- [ ] Verify immutable XRechnung XML SHA-256 and R2 archive retry behavior.

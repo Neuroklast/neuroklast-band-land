@@ -13,19 +13,22 @@ describe('nav-groups active matching', () => {
     expect(resolveActiveNavItem('/admin/releases')?.href).toBe('/admin/releases')
   })
 
-  it('preserves all 30 destinations exactly once after regrouping', () => {
+  it('preserves 30 prior and 4 new billing destinations exactly once', () => {
     const hrefs = ADMIN_NAV_ITEMS.map((item) => item.href)
-    expect(hrefs).toHaveLength(30)
+    expect(hrefs).toHaveLength(34)
     expect(new Set(hrefs).size).toBe(hrefs.length)
     expect(hrefs).toContain('/admin/contact-inbox')
     expect(hrefs).toContain('/admin/contact-spam')
     expect(hrefs).toContain('/admin/withdrawals')
     expect(hrefs).toContain('/admin/releases/sync')
+    for(const href of ['/admin/billing','/admin/billing/customers','/admin/billing/review','/admin/billing/settings']) expect(hrefs).toContain(href)
   })
 
   it('opens the correct section for nested pages without stealing the catalogue sync route', () => {
     expect(resolveActiveNavGroupId('/admin/contact-spam')).toBe('support')
     expect(resolveActiveNavGroupId('/admin/orders')).toBe('shop')
+    expect(resolveActiveNavGroupId('/admin/billing/new')).toBe('billing')
+    expect(resolveActiveNavGroupId('/admin/billing/customers/abc')).toBe('billing')
     expect(resolveActiveNavGroupId('/admin/releases/track-123')).toBe('content')
     expect(resolveActiveNavGroupId('/admin/releases/sync')).toBe('system')
     expect(resolveActiveNavGroupId('/admin')).toBe('overview')
@@ -35,7 +38,7 @@ describe('nav-groups active matching', () => {
   it('keeps navigation sections short and task oriented', () => {
     const sections = ADMIN_NAV_GROUPS.filter((group) => group.id !== 'overview')
     expect(sections.map((group) => group.id)).toEqual([
-      'site', 'artist', 'content', 'shop', 'support', 'ai', 'system',
+      'site', 'artist', 'content', 'shop', 'billing', 'support', 'ai', 'system',
     ])
     expect(sections.every((group) => group.items.length <= 6)).toBe(true)
   })

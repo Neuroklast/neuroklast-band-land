@@ -17,7 +17,7 @@ const MFA_ADMIN_PAGES = new Set([
 export function requiresAdminMfaPage(pathname: string, method: string): boolean {
   if (method !== 'GET' && method !== 'HEAD') return false
   const normalized = pathname !== '/' ? pathname.replace(/\/$/, '') : pathname
-  if (MFA_ADMIN_PAGES.has(normalized)) return true
+  if (MFA_ADMIN_PAGES.has(normalized) || normalized === '/admin/billing' || normalized.startsWith('/admin/billing/')) return true
   const soundpackId = /^\/admin\/soundpacks\/([^/]+)$/.exec(normalized)?.[1]
   return Boolean(soundpackId && soundpackId !== 'new')
 }
