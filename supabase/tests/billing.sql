@@ -7,6 +7,7 @@ DECLARE
   draft_id uuid;
   second_draft uuid;
   paid_record uuid;
+  payment_key uuid := '00000000-0000-4000-8000-000000000043';
   approval_id uuid;
   reserved public.billing_invoices%ROWTYPE;
   issued public.billing_invoices%ROWTYPE;
@@ -137,9 +138,14 @@ BEGIN
   END IF;
 
   SELECT id INTO paid_record FROM public.billing_record_payment(
-    draft_id,actor,20000,'2026-11-17','manual transfer'
+    draft_id,actor,20000,'2026-11-17','manual transfer',payment_key
   );
   IF paid_record IS NULL THEN RAISE EXCEPTION 'TEST FAILED: payment not recorded'; END IF;
+  IF (public.billing_record_payment(
+    draft_id,actor,20000,'2026-11-17','manual transfer',payment_key
+  )).id IS DISTINCT FROM paid_record THEN
+    RAISE EXCEPTION 'TEST FAILED: payment retry created a second payment record';
+  END IF;
 
   INSERT INTO public.billing_mcp_requests(
     operation,invoice_id,payload,requested_by,client_id
@@ -164,7 +170,7 @@ BEGIN
     RAISE EXCEPTION 'TEST FAILED: payment aggregation incorrect';
   END IF;
   BEGIN
-    PERFORM public.billing_record_payment(draft_id,actor,40000,'2026-11-17','overpayment');
+    PERFORM public.billing_record_payment(draft_id,actor,40000,'2026-11-17','overpayment',gen_random_uuid());
     RAISE EXCEPTION 'TEST FAILED: overpayment accepted';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM<>'Invalid payment amount' THEN RAISE; END IF;
@@ -177,7 +183,7 @@ BEGIN
     IF SQLERRM NOT LIKE 'Financial records are append-only%' THEN RAISE; END IF;
   END;
   IF has_function_privilege('anon','public.billing_prepare_issue(uuid,uuid)','EXECUTE') OR
-     has_function_privilege('authenticated','public.billing_record_payment(uuid,uuid,bigint,date,text)','EXECUTE') THEN
+     has_function_privilege('authenticated','public.billing_record_payment(uuid,uuid,bigint,date,text,uuid)','EXECUTE') THEN
     RAISE EXCEPTION 'TEST FAILED: privileged finance RPC exposed to public';
   END IF;
   IF NOT has_function_privilege('service_role','public.billing_prepare_issue(uuid,uuid)','EXECUTE') THEN
