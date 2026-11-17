@@ -1,5 +1,5 @@
 import { admin } from '@/lib/neurokore/server'
-import { getBillingInvoice,listBillingCustomers } from '@/lib/billing/service'
+import { getBillingInvoice,listBillingCustomers,getBillingCustomer } from '@/lib/billing/service'
 import { formatCents } from '@/lib/billing/domain'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
 import { saveBillingPayment,issueBillingDraft } from '@/app/admin/_actions/billing'
@@ -11,6 +11,9 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
  await admin()
  const {id}=await params
  const [{invoice,payments},customers]=await Promise.all([getBillingInvoice(id),listBillingCustomers()])
+ if(invoice.status==='draft' && !customers.some(customer=>customer.id===invoice.customer_id)) {
+   customers.unshift(await getBillingCustomer(String(invoice.customer_id)))
+ }
  const total=Number(invoice.total_cents)
  const paid=payments.reduce((sum,p)=>sum+Number(p.amount_cents),0)
  const status=String(invoice.status)
