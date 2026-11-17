@@ -7,7 +7,7 @@ export async function GET(request:Request,{params}:{params:Promise<{id:string}>}
   await admin()
   const {id}=await params
   const format=new URL(request.url).searchParams.get('format')
-  if(format!=='pdf'&&format!=='fodt'&&format!=='odt')return Response.json({error:'Unsupported format'},{status:400})
+  if(format!=='pdf'&&format!=='fodt'&&format!=='odt'&&format!=='xrechnung')return Response.json({error:'Unsupported format'},{status:400})
   const url=await invoiceDocumentUrl(id,format)
   return Response.redirect(url,302)
  }catch{return Response.json({error:'Document unavailable or access denied'},{status:403,headers:{'Cache-Control':'no-store'}})}
