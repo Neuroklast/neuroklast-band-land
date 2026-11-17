@@ -93,7 +93,7 @@ Chronological and append-only record of source changes. The CI check validates n
 
 ## 2026-11-17 | Fix private billing download redirects and incorrect PDF logo
 - Root cause: admin download route returned 302 to presigned R2 S3 endpoint, triggering browser CORS/preflight failures; Next `Link` invoked RSC navigation for files. The renderer used a synthetic NK vector mark instead of the actual branded red wordmark.
-- Implementation: same-origin authenticated binary delivery with verified immutable R2 SHA-256, native document anchors, no-cache headers, original `neuroklast-wordmark-red.svg` embedded into PDF and explicit Vercel file tracing.
+- Implementation: same-origin authenticated binary delivery with verified immutable R2 SHA-256, native document anchors, no-cache headers, approved `nk-logo-red-bold.png` embedded into PDF and explicit Vercel file tracing.
 - Scope: no changes to billing sequence allocation, issued invoice objects, customer identity, financial values, R2 public permissions or MCP signed-URL access.
 - Required verification: CI typecheck/lint/tests, actual PDF visual render, authorized and unauthorized downloads, no external redirects, post-deploy smoke. These validations are not claimed complete here.
 - Owner: Billing archive adapter and canonical service own verified reads; admin route owns same-origin responses; PDF renderer owns actual wordmark layout.
