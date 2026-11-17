@@ -14,7 +14,7 @@ on:
       - 'supabase/tests/mcp-content.sql'
       - 'supabase/tests/billing.sql'
       - 'supabase/migrations/20261117125004_neuroklast_billing_setup.sql'
-      - 'supabase/migrations/20261117125223_neuroklast_billing_role_lockdown.sql'
+      - 'supabase/migrations/20261117125509_neuroklast_billing_role_lockdown.sql'
       - 'src/test/neurokore*'
       - 'src/test/plugin*'
       - '.github/workflows/plugin-contract.yml'
@@ -77,8 +77,8 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117125004_neuroklast_billing_setup.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117125004_neuroklast_billing_setup.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117125223_neuroklast_billing_role_lockdown.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117125223_neuroklast_billing_role_lockdown.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117125509_neuroklast_billing_role_lockdown.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261117125509_neuroklast_billing_role_lockdown.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/mcp-content.sql
       - name: Billing financial invariants (disposable PostgreSQL only)
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/billing.sql
