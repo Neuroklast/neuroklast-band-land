@@ -30,7 +30,11 @@ export default async function BillingPage({searchParams}:{searchParams:Promise<{
  }catch{error='Rechnungen konnten nicht geladen werden. Datenbankschema prüfen.'}
  return <main>
   <AdminPageHeader title="Rechnungen" description="Eigene Rechnungen und Dokumentenarchiv. Stripe-Managed-Payments-Belege werden hier nicht erneut ausgestellt."
-   action={<Link href="/admin/billing/new" className="bg-red-800 px-4 py-2 min-h-11 text-white">+ Rechnung</Link>}/>
+   action={<div className="flex gap-2 flex-wrap">
+     <Link href={'/api/admin/billing/export?year='+String(year??Number(today.slice(0,4)))}
+       className="border border-zinc-700 px-4 py-2 min-h-11 text-white">CSV-Export</Link>
+     <Link href="/admin/billing/new" className="bg-red-800 px-4 py-2 min-h-11 text-white">+ Rechnung</Link>
+   </div>}/>
   <div className="flex flex-wrap gap-3 text-sm mb-6">
     <div className="border border-zinc-800 p-4">Entwürfe: {counts.draft}</div>
     <div className="border border-zinc-800 p-4">Archivierung offen: {counts.preparing}</div>
