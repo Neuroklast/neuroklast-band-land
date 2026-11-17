@@ -69,7 +69,7 @@ Before the first 120 EUR Four Runners Club DJ invoice is issued, deploy and vali
 
 - Admin invoice downloads use `/api/admin/billing/{id}/document?format=pdf|odt|fodt|xrechnung` with ordinary browser anchors. The authenticated same-origin API checks the frozen archive checksum and streams bytes; browser CORS configuration or access to private R2 S3 URLs is unnecessary.
 - PDF opens inline in a new tab. ODT, FODT and XRechnung XML download as attachments with no-store headers.
-- The old generated NK monogram is no longer used for newly issued invoices. Instead, the server renders the canonical red `public/brand/neuroklast-wordmark-red.svg` inside the PDF. Do not use the trivial Times-font `neuroklast-wordmark.svg` placeholder.
+- The old generated NK monogram is no longer used for newly issued invoices. Instead, the server renders the canonical red `public/brand/nk-logo-red-bold.png` inside the PDF. Do not use the trivial Times-font `neuroklast-wordmark.svg` placeholder.
 - **Already issued numbered invoices remain immutable.** Fixing the renderer changes future issues only. Do not overwrite `RE-2026-000001.pdf` in R2 or silently generate a replacement. Record any necessary non-destructive copy or correction procedure separately after legal review.
 - Verification gate: run `npm run typecheck`, `npm run test`, `npm run lint`, render one disposable PDF to verify actual logo and layout, then perform an authenticated browser smoke test. This section records implementation requirements, not completed production verification.
 
