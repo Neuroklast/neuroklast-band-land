@@ -26,7 +26,7 @@ export const BILLING_MCP_TOOLS=[
  {name:'billing_invoice_update_draft',description:'Edit an unissued draft using revision-based concurrency control.',inputSchema:{type:'object',properties:{id,revision:{type:'integer',minimum:0},draft:object},required:['id','revision','draft'],additionalProperties:false},annotations:write},
  {name:'billing_invoice_request_issue',description:'Queue issuance for separate MFA-verified human approval. Does not issue now.',inputSchema:{type:'object',properties:{id},required:['id'],additionalProperties:false},annotations:write},
  {name:'billing_invoice_request_payment',description:'Queue a recorded payment for human approval. No funds are transferred.',inputSchema:{type:'object',properties:{id,amount_cents:{type:'integer',minimum:1},paid_on:{type:'string'},reference:{type:'string'}},required:['id','amount_cents','paid_on'],additionalProperties:false},annotations:write},
- {name:'billing_invoice_document',description:'Get short-lived signed document URL for an issued invoice.',inputSchema:{type:'object',properties:{id,format:{type:'string',enum:['pdf','fodt']}},required:['id','format'],additionalProperties:false},annotations:readonly},
+ {name:'billing_invoice_document',description:'Get short-lived signed document URL for an issued invoice.',inputSchema:{type:'object',properties:{id,format:{type:'string',enum:['pdf','fodt','odt']}},required:['id','format'],additionalProperties:false},annotations:readonly},
  {name:'billing_review_requests',description:'List the current pending MCP billing approvals.',inputSchema:{type:'object',properties:{limit:{type:'integer',minimum:1,maximum:50}},additionalProperties:false},annotations:readonly}
 ] as const
 
@@ -104,7 +104,7 @@ export async function callBillingMcp(name:string,raw:Record<string,unknown>,ctx:
     return queue(context,'record_payment',value.id,{amount_cents:value.amount_cents,paid_on:value.paid_on,reference:value.reference??''})
    }
    case 'billing_invoice_document':{
-    const value=z.object({id:uuid,format:z.enum(['pdf','fodt'])}).strict().parse(raw)
+    const value=z.object({id:uuid,format:z.enum(['pdf','fodt','odt'])}).strict().parse(raw)
     return {url:await invoiceDocumentUrl(value.id,value.format),expires_in_seconds:90}
    }
    case 'billing_review_requests':{
