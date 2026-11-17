@@ -295,3 +295,13 @@ Motion kit (`lib/latch-physics.ts`, `LatchRail`, `PhaseCrossfade`, `HudReadout`)
 ---
 
 *Add new sessions above this line.*
+
+
+## Session: 2026-11-17 — Billing module and MCP finance control
+
+**Agent:** ChatGPT
+**Branch:** `feature/billing-invoices-mcp`
+
+**Work:** Reviewed current Next.js admin/MFA model, canonical Supabase schema, R2 storage adapter, Stripe Managed Payments documentation and OAuth MCP handler. Implemented direct-invoice customer records, draft editor, integer-cent calculations, annual invoice number reservation with row locking, private PDF/FODT archival, issued-state locking, payment ledger and MCP finance human review. Excluded Stripe-MoR invoice duplication.
+
+**Verification:** Unit tests added. Repository CI and local runtime/DB/R2 integration remain to be verified; no live records or DB changes performed. Standardized German E-Rechnung XML/PDF-A and official retention verification are not implemented. See `docs/BILLING_ARCHITECTURE.md`, `docs/BILLING_MCP.md`, `docs/BILLING_TAX_COMPLIANCE.md`.
