@@ -269,7 +269,8 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] PR lint, typecheck, unit tests and living-doc checks pass.
 - [ ] Open billing dashboard, customer editor, draft editor, settings and review under MFA.
 - [ ] Test concurrent issuance, retry after R2 failure and identical-number idempotency.
+- [ ] Verify R2 Bucket Lock retention rules and checksum verification, including repeat writes and tampered objects.
 - [ ] Test duplicate MCP approval and concurrent payment attempts without double credit.
-- [ ] Check PDF rendering in a real PDF reader and FODT with LibreOffice.
+- [ ] Check PDF rendering in a real PDF reader and ODT/FODT with LibreOffice.
 - [ ] Add EN16931 XML, XRechnung/ZUGFeRD + PDF/A validation before E-Rechnung claims.
 - [ ] Obtain legal/tax review and validate GoBD archive, retention and backup/restore.
