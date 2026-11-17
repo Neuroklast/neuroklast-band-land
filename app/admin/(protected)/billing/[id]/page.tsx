@@ -39,7 +39,7 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
     </form>
   </>:status==='preparing'?<div className="space-y-4">
     <p className="text-amber-300">Nummer ist bereits reserviert. Dokumentarchivierung steht noch aus.</p>
-    <form action={issueBillingDraft}><input type="hidden" name="id" value={id}/>
+    <form action={issueBillingDraft}><input type="hidden" name="id" value={id}/><input type="hidden" name="confirm" value="yes"/>
       <button type="submit" className="border border-zinc-700 p-3 min-h-11">Archivierung erneut versuchen</button>
     </form>
   </div>:<div className="space-y-5">
