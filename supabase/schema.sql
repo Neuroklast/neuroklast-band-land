@@ -2571,6 +2571,15 @@ BEGIN
     RAISE EXCEPTION 'Seller identity, address, tax identifier and tax mode must be configured';
   END IF;
   IF v.tax_mode <> conf.tax_mode THEN RAISE EXCEPTION 'Tax setting changed; review the draft'; END IF;
+  -- The legal seller identity cannot silently change between preview and issuance.
+  IF v.seller IS DISTINCT FROM jsonb_build_object(
+      'name',conf.seller_name,'street',conf.seller_street,
+      'postal_code',conf.seller_postal_code,'city',conf.seller_city,
+      'country',conf.seller_country,'tax_id',conf.seller_tax_id,
+      'email',conf.seller_email,'iban',conf.seller_iban,'bic',conf.seller_bic
+  ) THEN
+    RAISE EXCEPTION 'Seller details changed; save and review the draft again';
+  END IF;
   IF v.total_cents<=0 OR jsonb_array_length(v.lines)=0 THEN
     RAISE EXCEPTION 'Cannot issue an empty invoice';
   END IF;
@@ -2590,11 +2599,6 @@ BEGIN
   UPDATE public.billing_invoices SET
     status='preparing',
     number=conf.number_prefix||'-'||issue_year||'-'||lpad(counter::text,6,'0'),
-    seller=jsonb_build_object(
-      'name',conf.seller_name, 'street',conf.seller_street,
-      'postal_code',conf.seller_postal_code,'city',conf.seller_city,
-      'country',conf.seller_country,'tax_id',conf.seller_tax_id,
-      'email',conf.seller_email,'iban',conf.seller_iban,'bic',conf.seller_bic),
     revision=revision+1, updated_at=now()
     WHERE id=p_id RETURNING * INTO v;
   INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
