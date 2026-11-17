@@ -2510,6 +2510,7 @@ CREATE INDEX IF NOT EXISTS billing_invoices_search_idx ON public.billing_invoice
 CREATE INDEX IF NOT EXISTS billing_invoices_customer_idx ON public.billing_invoices (customer_id, created_at DESC);
 CREATE TABLE IF NOT EXISTS public.billing_payments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  idempotency_key uuid NOT NULL DEFAULT gen_random_uuid(),
   invoice_id uuid NOT NULL REFERENCES public.billing_invoices(id) ON DELETE RESTRICT,
   amount_cents bigint NOT NULL CHECK (amount_cents > 0),
   paid_on date NOT NULL,
@@ -2517,6 +2518,8 @@ CREATE TABLE IF NOT EXISTS public.billing_payments (
   created_by uuid,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.billing_payments ADD COLUMN IF NOT EXISTS idempotency_key uuid NOT NULL DEFAULT gen_random_uuid();
+CREATE UNIQUE INDEX IF NOT EXISTS billing_payments_idempotency_idx ON public.billing_payments(idempotency_key);
 CREATE INDEX IF NOT EXISTS billing_payments_invoice_idx ON public.billing_payments (invoice_id);
 CREATE TABLE IF NOT EXISTS public.billing_events (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -2648,22 +2651,34 @@ BEGIN
   RETURN v;
 END $$;
 
+DROP FUNCTION IF EXISTS public.billing_record_payment(uuid,uuid,bigint,date,text,uuid);
 CREATE OR REPLACE FUNCTION public.billing_record_payment(
-  p_id uuid, p_actor uuid, p_amount bigint, p_paid_on date, p_reference text
+  p_id uuid, p_actor uuid, p_amount bigint, p_paid_on date, p_reference text,
+  p_idempotency_key uuid
 ) RETURNS public.billing_payments LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
 DECLARE v public.billing_invoices%ROWTYPE;
   outstanding bigint; result public.billing_payments%ROWTYPE;
 BEGIN
+  IF p_idempotency_key IS NULL THEN RAISE EXCEPTION 'Payment request ID required'; END IF;
   SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
   IF NOT FOUND OR v.status<>'issued' THEN RAISE EXCEPTION 'Invoice must be issued'; END IF;
+  SELECT * INTO result FROM public.billing_payments WHERE idempotency_key=p_idempotency_key;
+  IF FOUND THEN
+    IF result.invoice_id=p_id AND result.amount_cents=p_amount
+       AND result.paid_on=p_paid_on AND result.reference=left(coalesce(p_reference,''),240) THEN
+      RETURN result;
+    END IF;
+    RAISE EXCEPTION 'Payment request ID already used for another operation';
+  END IF;
   SELECT v.total_cents-COALESCE(SUM(amount_cents),0) INTO outstanding
     FROM public.billing_payments WHERE invoice_id=p_id;
   IF p_amount<=0 OR p_amount>outstanding THEN RAISE EXCEPTION 'Invalid payment amount'; END IF;
-  INSERT INTO public.billing_payments(invoice_id,amount_cents,paid_on,reference,created_by)
-    VALUES(p_id,p_amount,p_paid_on,left(coalesce(p_reference,''),240),p_actor)
+  INSERT INTO public.billing_payments(invoice_id,amount_cents,paid_on,reference,created_by,idempotency_key)
+    VALUES(p_id,p_amount,p_paid_on,left(coalesce(p_reference,''),240),p_actor,p_idempotency_key)
     RETURNING * INTO result;
   INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
-    VALUES(p_id,p_actor,'payment_recorded',jsonb_build_object('payment_id',result.id,'amount_cents',p_amount));
+    VALUES(p_id,p_actor,'payment_recorded',jsonb_build_object(
+      'payment_id',result.id,'amount_cents',p_amount,'idempotency_key',p_idempotency_key));
   RETURN result;
 END $$;
 
@@ -2676,10 +2691,10 @@ ALTER TABLE public.billing_events ENABLE ROW LEVEL SECURITY;
 -- No authenticated/anon policies: all data access is through the authenticated server domain.
 REVOKE ALL ON FUNCTION public.billing_prepare_issue(uuid,uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text,uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.billing_prepare_issue(uuid,uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb) TO service_role;
-GRANT EXECUTE ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text,uuid) TO service_role;
 
 
 -- MCP financial requests are separate from editorial approval requests.
