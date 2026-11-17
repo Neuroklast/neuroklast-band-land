@@ -1,6 +1,7 @@
 import { zipSync, strToU8 } from 'fflate'
 import type { InvoiceLine } from './domain'
 import { calculateInvoice, formatCents, type TaxMode } from './domain'
+import { renderStyledPdf } from './pdf'
 
 export interface DocumentInvoice {
   id:string; number:string; issue_date:string; service_date:string; due_date:string
@@ -94,70 +95,4 @@ export function renderOdt(doc:DocumentInvoice):Buffer {
   },{level:6}))
 }
 
-/** Conservative one-column PDF 1.4 with WinAnsi Helvetica. No PDF/A or EN16931 claim.
- * Keeps issuance independent from browsers, headless processes and external APIs.
- */
-function winAnsi(text:string):Buffer {
-  const aliases:Record<string,number>={'€':128,'–':150,'—':151,'‘':145,'’':146,'“':147,'”':148,'•':149}
-  const bytes:number[]=[]
-  for(const ch of text) {
-    const c=ch.codePointAt(0)!
-    bytes.push(aliases[ch]??(c>=32&&c<=255?c:63))
-  }
-  return Buffer.from(bytes)
-}
-function pdfEscape(s:Buffer):string {
-  let out=''
-  for(const b of s){
-    if(b===40||b===41||b===92)out+='\\'+String.fromCharCode(b)
-    else if(b<32||b>126)out+='\\'+b.toString(8).padStart(3,'0')
-    else out+=String.fromCharCode(b)
-  }
-  return out
-}
-function wrap(line:string,max=88):string[] {
-  if(!line)return ['']
-  const parts:string[]=[]
-  let remaining=line
-  while(remaining.length>max) {
-    let pos=remaining.lastIndexOf(' ',max)
-    if(pos<12)pos=max
-    parts.push(remaining.slice(0,pos))
-    remaining=remaining.slice(pos).trimStart()
-  }
-  parts.push(remaining)
-  return parts
-}
-export function renderPdf(doc:DocumentInvoice):Buffer {
-  const lines=invoiceLines(doc).flatMap(x=>wrap(x))
-  const pages:string[][]=[]
-  for(let i=0;i<lines.length;i+=47)pages.push(lines.slice(i,i+47))
-  if(!pages.length)pages.push([])
-  const objects:string[]=[]
-  const add=(s:string)=>{objects.push(s);return objects.length}
-  const catalog=add('')
-  const pagesRef=add('')
-  const font=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>')
-  const ids:number[]=[]
-  for(let index=0;index<pages.length;index++){
-    const textLines=pages[index].map((line,j)=>
-      'BT /F1 '+(index===0&&j===0?'16':'10')+' Tf 48 '+(790-j*15)+' Td ('+pdfEscape(winAnsi(line))+') Tj ET').join('\n')
-    const stream=Buffer.from(textLines,'latin1')
-    const content=add('<< /Length '+stream.length+' >>\nstream\n'+stream.toString('latin1')+'\nendstream')
-    const page=add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 '+font+' 0 R >> >> /Contents '+content+' 0 R >>')
-    ids.push(page)
-  }
-  objects[catalog-1]='<< /Type /Catalog /Pages 2 0 R >>'
-  objects[pagesRef-1]='<< /Type /Pages /Kids ['+ids.map(x=>x+' 0 R').join(' ')+'] /Count '+ids.length+' >>'
-  let pdf='%PDF-1.4\n%NK01\n'
-  const offsets=[0]
-  for(let i=0;i<objects.length;i++){
-    offsets.push(Buffer.byteLength(pdf,'latin1'))
-    pdf+=(i+1)+' 0 obj\n'+objects[i]+'\nendobj\n'
-  }
-  const start=Buffer.byteLength(pdf,'latin1')
-  pdf+='xref\n0 '+(objects.length+1)+'\n0000000000 65535 f \n'
-  for(let i=1;i<offsets.length;i++)pdf+=String(offsets[i]).padStart(10,'0')+' 00000 n \n'
-  pdf+='trailer\n<< /Size '+(objects.length+1)+' /Root 1 0 R >>\nstartxref\n'+start+'\n%%EOF'
-  return Buffer.from(pdf,'latin1')
-}
+export const renderPdf = renderStyledPdf
