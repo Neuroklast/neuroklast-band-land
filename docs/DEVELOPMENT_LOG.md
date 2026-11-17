@@ -309,3 +309,7 @@ Motion kit (`lib/latch-physics.ts`, `LatchRail`, `PhaseCrossfade`, `HudReadout`)
 ## Session continuation: 2026-11-17 — billing archive and ledger hardening
 
 Extended archive to an actual zipped ODT using fflate, added conditional create-only R2 writes and full SHA-256 read-back verification, required explicit annual sequence confirmation, added paid/partial/overdue overview, searchable customers and invoice number/year/status filters, read-only CSV export, and a disposable PostgreSQL financial contract. Current branch remains draft until independent CI and production readiness checks pass. See `docs/BILLING_OPERATIONS.md`.
+
+## Session continuation: 2026-11-17 — optional XRechnung implementation
+
+Extended billing domain and schema with buyer references, seller contact fields and an optional XML profile. Implemented locally schema-validated UBL XML via `@e-invoice-eu/core`, preflight before allocating invoice numbers, encrypted/private archive handling with XML hash and authenticated admin/MCP access. Added KoSIT validator v1.6.3 + config v2026-08-31 workflow for independent XSD/Schematron checks. Earlier prototype `@stampbench/core` was removed after npm audit flagged its vulnerable transitive Zod 3 dependency. The new package resolved at 3.4.3 and security audit passed on inspected commits. Official validation, PDF/A/ZUGFeRD and production legal review remain open until independently verified.
