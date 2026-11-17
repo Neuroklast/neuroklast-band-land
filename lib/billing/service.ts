@@ -146,6 +146,7 @@ export async function issueBillingInvoice(id:string,actorId:string) {
   const {data,error}=await db().rpc('billing_prepare_issue',{p_id:id,p_actor:actorId})
   assert(error,'Invoice cannot be issued: check settings, recipient and numbers')
   const row=dataRow(data)
+  if(row.status==='issued')return row
   if(row.status!=='preparing')throw new Error('Unexpected invoice state')
   const number=str(row.number)
   const invoice:DocumentInvoice={
