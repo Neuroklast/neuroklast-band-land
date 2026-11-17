@@ -46,6 +46,14 @@ export async function updateBillingSettings(input:unknown,actorId:string) {
   assert(error,'Could not save seller settings')
   return data
 }
+export async function seedBillingSequence(year:number,nextValue:number,actorId:string) {
+ uuid.parse(actorId)
+ if(!Number.isSafeInteger(year)||year<2000||year>2200||!Number.isSafeInteger(nextValue)||nextValue<1||nextValue>999999)
+   throw new Error('Invalid sequence year/next number')
+ const {data,error}=await db().rpc('billing_seed_sequence',{p_year:year,p_next:nextValue})
+ assert(error,'Number sequence already used or unavailable')
+ return data
+}
 export async function listBillingCustomers(q='',limit=100) {
   const search=q.trim().slice(0,100).replace(/[%_,()]/g,'')
   let query=db().from('billing_customers').select('*').eq('archived',false).order('name').limit(Math.min(Math.max(limit,1),100))
