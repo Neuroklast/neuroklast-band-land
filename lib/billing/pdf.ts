@@ -1,11 +1,14 @@
 import { calculateInvoice, formatCents } from './domain'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import sharp from 'sharp'
 import type { DocumentInvoice } from './documents'
 
 /**
- * Deterministic, branded A4 PDF 1.4 renderer. The vector NK mark corresponds
- * to public/brand/nk-mark.svg, converted into ordinary PDF path commands.
- * No external fonts, browsers, API calls, timestamps or image assets are needed
- * during legal invoice issuance. Not PDF/A-3 or an EN 16931 e-invoice.
+ * Deterministic A4 PDF 1.4 invoice renderer. The actual NEUROKLAST logo
+ * comes from the canonical branding asset rather than an invented NK symbol.
+ * Branded image bytes are embedded inside each archived PDF. Existing
+ * issued invoice snapshots remain immutable.
  */
 const PAGE_WIDTH = 595
 const PAGE_HEIGHT = 842
@@ -90,20 +93,31 @@ function wrap(value: string, width: number, size: number, font: Font = 'F1'): st
   if (line) lines.push(line)
   return lines
 }
-function nkMark(p: Sheet, x: number, y: number, size: number) {
-  rect(p, x, y, size, size, '0 0 0')
-  const s = size / 512
-  p.commands.push('q', RED + ' rg',
-    s + ' 0 0 ' + (-s) + ' ' + x + ' ' + (y + size) + ' cm',
-    '72 96 m 160 96 l 272 264 l 272 96 l 360 96 l 360 416 l 272 416 l 160 248 l 160 416 l 72 416 l h',
-    '352 96 m 440 96 l 440 224 l 400 224 l 440 416 l 344 416 l 312 224 l 352 224 l 352 96 l h',
-    'f', 'Q')
+type EmbeddedLogo = { bytes: Buffer; width: number; height: number }
+let logoPromise:Promise<EmbeddedLogo>|undefined
+
+/** The original NEUROKLAST wordmark is bundled into the server function. */
+async function brandedLogo():Promise<EmbeddedLogo> {
+  if (!logoPromise) {
+    logoPromise = (async () => {
+      const source = await readFile(join(process.cwd(),'public/brand/neuroklast-wordmark-red.svg'))
+      const {data,info} = await sharp(source)
+        .resize({width:1200,withoutEnlargement:true})
+        .flatten({background:'#ffffff'})
+        .jpeg({quality:94,chromaSubsampling:'4:4:4'})
+        .toBuffer({resolveWithObject:true})
+      if(info.width<1||info.height<1||info.channels!==3)
+        throw new Error('Invalid canonical invoice logo')
+      return {bytes:data,width:info.width,height:info.height}
+    })().catch(error=>{logoPromise=undefined;throw error})
+  }
+  return logoPromise
 }
+
 function header(p: Sheet, continuation = false) {
   rect(p, 0, PAGE_HEIGHT - 6, PAGE_WIDTH, 6, RED)
-  nkMark(p, LEFT, 757, 58)
-  drawText(p, 'NEUROKLAST', 111, 790, 21, 'F2')
-  drawText(p, 'MUSIC  /  LIVE  /  PRODUCTION', 113, 771, 7.8, 'F1', MUTED)
+  // Actual NEUROKLAST red wordmark. Aspect ratio matches 1870 x 370 source.
+  p.commands.push('q', '294 0 0 58.17 ' + LEFT + ' 762 cm', '/BrandLogo Do', 'Q')
   rule(p, LEFT, 740, RIGHT)
   if (continuation) {
     drawText(p, 'RECHNUNG  /  FORTSETZUNG', LEFT, 710, 16, 'F2')
@@ -229,20 +243,25 @@ function footer(p: Sheet, doc: DocumentInvoice, pageNo: number, count: number) {
   drawText(p, line, LEFT, 45, 7.5, 'F1', MUTED)
   drawRight(p, 'SEITE ' + pageNo + ' / ' + count, RIGHT, 45, 7.5, 'F2', MUTED)
 }
-function pdfFromPages(pages: Sheet[]): Buffer {
+function pdfFromPages(pages: Sheet[], logo:EmbeddedLogo): Buffer {
   const objects: string[] = []
   const add = (object: string) => { objects.push(object); return objects.length }
   const catalog = add('')
   const pagesRef = add('')
   const regular = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>')
   const bold = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>')
+  // JPEG XObject uses the exact branded artwork rather than a substituted font mark.
+  const image = add('<< /Type /XObject /Subtype /Image /Width ' + logo.width +
+    ' /Height ' + logo.height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8' +
+    ' /Filter /DCTDecode /Length ' + logo.bytes.length + ' >>\\nstream\\n' +
+    logo.bytes.toString('latin1') + '\\nendstream')
   const references: number[] = []
   for (const p of pages) {
     const stream = p.commands.join('\n') + '\n'
     const contents = add('<< /Length ' + Buffer.byteLength(stream, 'latin1') + ' >>\nstream\n' + stream + 'endstream')
     const page = add('<< /Type /Page /Parent ' + pagesRef + ' 0 R /MediaBox [0 0 ' +
       PAGE_WIDTH + ' ' + PAGE_HEIGHT + '] /Resources << /Font << /F1 ' + regular +
-      ' 0 R /F2 ' + bold + ' 0 R >> >> /Contents ' + contents + ' 0 R >>')
+      ' 0 R /F2 ' + bold + ' 0 R >> /XObject << /BrandLogo ' + image + ' 0 R >> >> /Contents ' + contents + ' 0 R >>')
     references.push(page)
   }
   objects[catalog - 1] = '<< /Type /Catalog /Pages ' + pagesRef + ' 0 R >>'
@@ -261,7 +280,8 @@ function pdfFromPages(pages: Sheet[]): Buffer {
     ' 0 R >>\nstartxref\n' + xrefStart + '\n%%EOF'
   return Buffer.from(output, 'latin1')
 }
-export function renderStyledPdf(doc: DocumentInvoice): Buffer {
+export async function renderStyledPdf(doc: DocumentInvoice): Promise<Buffer> {
+  const logo=await brandedLogo()
   const amounts = calculateInvoice(doc.lines, doc.tax_mode)
   if (doc.lines.length === 0) throw new Error('Invoice must have positions')
   const rows = doc.lines.map((line, index): MoneyRow => ({
@@ -300,5 +320,5 @@ export function renderStyledPdf(doc: DocumentInvoice): Buffer {
   }
   summary(current, doc, Math.min(405, top - 20))
   pages.forEach((p, i) => footer(p, doc, i + 1, pages.length))
-  return pdfFromPages(pages)
+  return pdfFromPages(pages,logo)
 }
