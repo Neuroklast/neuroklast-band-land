@@ -21,7 +21,7 @@ describe('invoice money invariants',()=>{
    {description:'Service B',quantity_milli:1000,unit_cents:200,tax_rate:19 as const}
   ]
   expect(calculateInvoice(lines,'vat_registered')).toEqual({
-   subtotal_cents:350,tax_cents:67,total_cents:417,line_totals_cents:[150,200]
+   subtotal_cents:350,tax_cents:67,total_cents:417,line_totals_cents:[150,200],tax_groups:[{rate:19,base_cents:350,tax_cents:67}]
   })
  })
  it('does not show VAT for Kleinunternehmer',()=>{
