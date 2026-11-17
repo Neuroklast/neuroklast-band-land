@@ -1,7 +1,7 @@
 import { admin } from '@/lib/neurokore/server'
 import { getBillingCustomer } from '@/lib/billing/service'
 import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader'
-import { CustomerForm } from '../page'
+import { CustomerForm } from '../CustomerForm'
 export const dynamic='force-dynamic'
 export default async function CustomerPage({params}:{params:Promise<{id:string}>}) {
  await admin()
