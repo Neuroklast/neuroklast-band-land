@@ -240,3 +240,8 @@ All security enforcement remains exclusively server-side in the `api/` directory
 
 **Zero visual change:** All DOM elements, CSS classes, and Framer Motion transitions
 are preserved byte-for-byte relative to the original rendering.
+
+
+## Billing domain (2026-11-17)
+
+The new `lib/billing/service.ts` is the canonical owner of customer and invoice workflows. Next.js admin server actions and authenticated MCP tools are adapters, not independent persistence implementations. PostgreSQL `billing_prepare_issue` serializes invoice-number reservation with row locks and a per-year sequence. `billing_finalize_issue` requires separate private R2 document archiving before marking an invoice issued. `billing_record_payment` and `billing_approve_mcp_payment` protect outstanding balances transactionally. Issued invoices have an immutable row trigger; payments are linked records. No second direct invoice for Stripe Managed Payments customer receipts. See `docs/BILLING_ARCHITECTURE.md`.
