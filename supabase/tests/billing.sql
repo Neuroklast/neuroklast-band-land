@@ -6,6 +6,8 @@ DECLARE
   customer uuid;
   draft_id uuid;
   second_draft uuid;
+  xml_draft uuid;
+  xml_issued public.billing_invoices%ROWTYPE;
   paid_record uuid;
   payment_key uuid := '00000000-0000-4000-8000-000000000043';
   approval_id uuid;
@@ -188,5 +190,43 @@ BEGIN
   END IF;
   IF NOT has_function_privilege('service_role','public.billing_prepare_issue(uuid,uuid)','EXECUTE') THEN
     RAISE EXCEPTION 'TEST FAILED: service-role invoice issuance denied';
+  END IF;
+
+  -- An XRechnung profile may only reach issued state when its own XML key/hash
+  -- matches the frozen invoice number. It cannot silently fall back to PDF.
+  UPDATE public.billing_settings SET tax_mode='vat_registered',
+    seller_phone='+49 211 000000',seller_contact_name='Billing Test'
+    WHERE id=1;
+  snapshot_seller:=snapshot_seller || jsonb_build_object(
+    'phone','+49 211 000000','contact_name','Billing Test'
+  );
+  INSERT INTO public.billing_invoices(
+    customer_id,issue_date,service_date,due_date,seller,recipient,
+    lines,tax_mode,e_invoice_profile,buyer_reference,subtotal_cents,tax_cents,total_cents,
+    created_by,updated_by
+  ) VALUES(
+    customer,'2026-11-17','2026-11-14','2026-12-01',snapshot_seller,snapshot_recipient,
+    '[{"description":"Production work","quantity_milli":1000,"unit_cents":10000,"tax_rate":19}]'::jsonb,
+    'vat_registered','xrechnung','ORDER-42',10000,1900,11900,actor,actor
+  ) RETURNING id INTO xml_draft;
+  reserved:=public.billing_prepare_issue(xml_draft,actor);
+  BEGIN
+    PERFORM public.billing_finalize_issue(
+      xml_draft,actor,'billing/'||xml_draft||'/'||reserved.number||'.pdf',
+      'billing/'||xml_draft||'/'||reserved.number||'.fodt',hashes
+    );
+    RAISE EXCEPTION 'TEST FAILED: issued XRechnung without XML evidence';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM<>'Validated XRechnung XML archive and checksum are required' THEN RAISE; END IF;
+  END;
+  xml_issued:=public.billing_finalize_issue(
+    xml_draft,actor,'billing/'||xml_draft||'/'||reserved.number||'.pdf',
+    'billing/'||xml_draft||'/'||reserved.number||'.fodt',
+    hashes || jsonb_build_object('xrechnung',repeat('d',64)),
+    'billing/'||xml_draft||'/'||reserved.number||'.xml'
+  );
+  IF xml_issued.status <> 'issued' OR xml_issued.xrechnung_object_key IS NULL
+    OR xml_issued.document_sha256->>'xrechnung' <> repeat('d',64) THEN
+    RAISE EXCEPTION 'TEST FAILED: XRechnung archive not committed atomically';
   END IF;
 END $billing_test$;
