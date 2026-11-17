@@ -39,3 +39,7 @@ References:
 - https://developers.cloudflare.com/r2/buckets/bucket-locks/
 - https://developers.cloudflare.com/r2/api/s3/conditional-operations/
 - https://www.bundesfinanzministerium.de/Content/DE/FAQ/e-rechnung.html
+
+## Payment submission idempotency
+
+Every manual payment form renders a unique `idempotency_key` UUID. The same form submission and retry must return the same existing payment entry. For a separate real transfer, start a new submission rather than reusing a previous key. SQL rejects a reused key containing a different invoice, amount, date or reference. The database contract in `supabase/tests/billing.sql` covers identical retries and excess payments. Do not confuse this with bank payment reconciliation.
