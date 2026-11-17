@@ -7,7 +7,7 @@ import type { DocumentInvoice } from './documents'
 
 /**
  * Deterministic A4 PDF 1.4 invoice renderer. The actual NEUROKLAST logo
- * comes from the canonical branding asset rather than an invented NK symbol.
+ * comes from the exact approved NK Logo Red Bold original rather than a substitute glyph.
  * Branded image bytes are embedded inside each archived PDF. Existing
  * issued invoice snapshots remain immutable.
  */
@@ -101,9 +101,10 @@ let logoPromise:Promise<EmbeddedLogo>|undefined
 async function brandedLogo():Promise<EmbeddedLogo> {
   if (!logoPromise) {
     logoPromise = (async () => {
-      const source = await readFile(join(process.cwd(),'public/brand/neuroklast-wordmark-red.svg'))
+      const source = await readFile(join(process.cwd(),'public/brand/nk-logo-red-bold.png'))
       const {data,info} = await sharp(source)
-        .resize({width:1200,withoutEnlargement:true})
+        .trim()
+        .resize({width:900,withoutEnlargement:true})
         .flatten({background:'#ffffff'})
         .removeAlpha()
         .raw()
@@ -119,8 +120,10 @@ async function brandedLogo():Promise<EmbeddedLogo> {
 
 function header(p: Sheet, continuation = false) {
   rect(p, 0, PAGE_HEIGHT - 6, PAGE_WIDTH, 6, RED)
-  // Actual NEUROKLAST red wordmark. Aspect ratio matches 1870 x 370 source.
-  p.commands.push('q', '294 0 0 58.17 ' + LEFT + ' 762 cm', '/BrandLogo Do', 'Q')
+  // Exact red NK bold mark (transparent padded image cropped to the artwork).
+  p.commands.push('q', '112 0 0 58 ' + LEFT + ' 762 cm', '/BrandLogo Do', 'Q')
+  drawText(p, 'NEUROKLAST', 168, 791, 21, 'F2')
+  drawText(p, 'MUSIC  /  LIVE  /  PRODUCTION', 170, 774, 7.8, 'F1', MUTED)
   rule(p, LEFT, 740, RIGHT)
   if (continuation) {
     drawText(p, 'RECHNUNG  /  FORTSETZUNG', LEFT, 710, 16, 'F2')
