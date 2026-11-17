@@ -59,3 +59,8 @@ The extra `billing-kosit.yml` GitHub workflow generates an XRechnung from the ac
 - **Not yet released:** PR #645 is still a draft and has not been merged or deployed in production. An environment-variable change becomes available to new deployments, not automatically to an existing deployment. No customer invoices were issued as part of this setup. Issuer details, tax status and each year's first legal invoice number still require explicit administrator review before use.
 - **Retention:** R2 Bucket Lock/retention policy was not set, pending a verified retention and recovery plan. Do not imply that this alone certifies GoBD compliance.
 
+
+
+## 2026-11-17 branded PDF update
+
+Before the first 120 EUR Four Runners Club DJ invoice is issued, deploy and validate the branded PDF renderer. Existing numbered or archived invoices are not retroactively changed. Use the same draft ID `26354dad-1098-4d08-97c7-fbb52e46d63a` for issuance, never create a duplicate. Verify the exact total, line, bank details, § 19 note and A4 layout with a PDF renderer. Only then allocate the first confirmed sequence number. This is an operational release of ordinary PDF; it is **not** a declaration of GoBD/e-invoice certification.

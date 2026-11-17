@@ -16,6 +16,27 @@ describe('billing renderers',()=>{
   expect(bytes.toString('latin1')).toContain('startxref')
   expect(bytes.toString('latin1')).toContain('%%EOF')
  })
+ it('uses the canonical vector NK logo and an A4, branded table without creating image dependencies',()=>{
+  const pdf=renderPdf(invoice).toString('latin1')
+  expect(pdf).toContain('/MediaBox [0 0 595 842]')
+  expect(pdf).toContain('(NEUROKLAST) Tj')
+  expect(pdf).toContain('72 96 m 160 96 l 272 264 l')
+  expect(pdf).toContain('(RECHNUNGSEMPF\\304NGER) Tj'.replace('\\304','\\304'))
+  expect(pdf).toContain('(GESAMTBETRAG) Tj')
+  expect(pdf).toContain('(IBAN: DE00) Tj')
+  expect(pdf).toContain('600,00')
+  expect(pdf).toContain('19 UStG')
+ })
+ it('escapes arbitrary customer PDF text and repeats headers for long invoices',()=>{
+  const altered={...invoice,recipient:{...invoice.recipient,name:'ACME (Hamburg) \\\\ GmbH'},lines:Array.from({length:100},(_,i)=>({...invoice.lines[0],description:'DJ-Auftritt / Service '+i+' mit Zusatzausstattung'}))}
+  const pdf=renderPdf(altered).toString('latin1')
+  const n=Number(/\/Count (\d+)/.exec(pdf)?.[1])
+  expect(n).toBeGreaterThan(2)
+  expect(pdf.match(/\(NEUROKLAST\) Tj/g)?.length).toBe(n)
+  expect(pdf).toContain('ACME \\(Hamburg\\)')
+  expect(pdf).toContain('startxref')
+  expect(pdf).toContain('%%EOF')
+ })
  it('exports editable flat ODF with XML-escaped user text',()=>{
   const xml=renderFodt(invoice).toString('utf8')
   expect(xml).toContain('office:mimetype="application/vnd.oasis.opendocument.text"')

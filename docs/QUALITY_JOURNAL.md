@@ -74,3 +74,19 @@ Chronological and append-only record of source changes. The CI check validates n
 - Database: Applied billing-only changes on the connected Supabase instance as migration versions `20261117125004` and `20261117125509`. Per the enforced single-schema architecture, the **only repository source is `supabase/schema.sql`**, not a `supabase/migrations` directory. No existing shop tables were modified. The Supabase client-role privilege checks are negative and service-role checks positive.
 - Tests: CI PostgreSQL tests apply the single canonical schema twice and check payment/number security and direct client role revocation. Infrastructure smoke test used a disposable R2 object; no real invoice data.
 - Residual risk: PR not merged, no end-to-end production admin use, no retention lock, backup/restore, complete GoBD process validation or tax owner approval. Real invoices and number-series activation remain deliberately unperformed.
+
+
+## 2026-11-17 — Invoice-brand visual fidelity and issue gate
+
+- Root cause: Initial PDF generator was plain unbranded Helvetica text despite the available official `nk-mark.svg`; a legal invoice must be reproducible and readable without online rendering.
+- Change: Isolated, deterministic PDF layout module with canonical mark vector, table, pagination, totals and payment details. All issuance paths continue to use the single `renderPdf` contract.
+- Tests: Byte structure, invariant amount/tax rendering, logo commands, multi-page behavior, document reading and controlled live deployment are release gates. Do not touch other signed archived documents. Unicode beyond WinAnsi and PDF/A-3 still require subsequent development.
+
+## 2026-11-17 | Replace unbranded invoicing PDF before the first Four Runners invoice
+- Scope: Direct-seller invoice presentation, immutable PDF document generation and the first 120 EUR DJ invoice for the Four Runners Club.
+- Root cause: The initial primitive PDF used a one-column monospaced-feeling layout without the canonical NK brand mark, risking a poor professional presentation.
+- Owner: The new `lib/billing/pdf.ts` renderer owns A4 layout and vector branding; `lib/billing/documents.ts` retains the canonical document API for `lib/billing/service.ts`.
+- Tests: Verify PDF structure, logo path, WinAnsi escaping, page count, unit sums, long invoice pagination, independent PDF viewer output and complete GitHub quality checks.
+- Failure path: Broken PDF layout or mismatched amount fails validation before issuing; archive failures keep the same reserved invoice ID for retry without duplicating legal numbers.
+- Docs updated: Updated `.github/ARCHITECTURE.md`, `QA_CHECKLIST.md`, billing architecture and operations, development log, changelog and this quality journal.
+- Residual risk: PDF/A-3 and fully Unicode embedded fonts are not supported; this must not be mistaken for an EN16931 e-invoice or certified GoBD workflow.

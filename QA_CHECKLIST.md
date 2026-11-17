@@ -284,3 +284,12 @@ See [commerce setup and launch checks](docs/NEUROKORE_COMMERCE.md). All launch c
 - [ ] Verify XML tax groups, buyer reference, seller contacts and invoice number against an independent EN16931 reference.
 - [ ] Check optional XML profile fails closed for unverified/§19 tax modes, unsupported cross-border customers, and missing electronic addresses.
 - [ ] Verify immutable XRechnung XML SHA-256 and R2 archive retry behavior.
+
+
+## 2026-11-17 — Branded invoice PDF QA
+- [x] PDF renderer produces branded vector NK logo, A4 media box, table headings, seller/buyer information, totals and § 19 UStG statement for Kleinunternehmer.
+- [x] Shared `renderPdf` contract remains synchronous and deterministic and requires no network resources at issue time.
+- [ ] Inspect 120 EUR Paradox Party PDF visually, verify printed text, right alignment and all tax/payment details.
+- [ ] Complete CI unit tests, typecheck, lint, audit and archive contract tests for the branch.
+- [ ] Verify production deployment and archived R2 document SHA before issuing invoice `26354dad-1098-4d08-97c7-fbb52e46d63a`.
+- [ ] Confirm invoice state `issued`, assigned number and secure PDF availability; never regenerate an issued archive in place.

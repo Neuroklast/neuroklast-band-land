@@ -317,3 +317,8 @@ Extended billing domain and schema with buyer references, seller contact fields 
 
 ## 2026-11-17 — R2 and Supabase setup for billing
 Provisioned the private EU `neuroklast-billing-private` bucket and verified S3 read/write/delete via the existing project credentials. Added the production Vercel environment selector without altering public media storage. Applied two billing-only changes through the Supabase migration API while keeping `supabase/schema.sql` as the repository's sole idempotent schema source, without tracked migration files. Applied service-only privilege hardening to the connected database, verified tables/RLS and SQL privileges. Confirmed XRechnung issuance is explicitly disabled in production. PR #645 remains draft and undeployed. See `docs/BILLING_OPERATIONS.md`.
+
+
+## 2026-11-17 — Invoice PDF branding before first legal issue
+
+User requested the existing red NK logo and professional A4 layout on the 120.00 EUR Paradox Party invoice before final issuance. New deterministic `lib/billing/pdf.ts` draws the canonical NK vector as PDF paths and paginates line items; `lib/billing/documents.ts` retains the synchronous existing API. PDF is generated only from the immutable invoice snapshot, with no remote assets. Added PDF branding and pagination unit tests. The existing draft stays unchanged until the renderer passes CI and a production deployment is verified.
