@@ -64,3 +64,11 @@ The extra `billing-kosit.yml` GitHub workflow generates an XRechnung from the ac
 ## 2026-11-17 branded PDF update
 
 Before the first 120 EUR Four Runners Club DJ invoice is issued, deploy and validate the branded PDF renderer. Existing numbered or archived invoices are not retroactively changed. Use the same draft ID `26354dad-1098-4d08-97c7-fbb52e46d63a` for issuance, never create a duplicate. Verify the exact total, line, bank details, § 19 note and A4 layout with a PDF renderer. Only then allocate the first confirmed sequence number. This is an operational release of ordinary PDF; it is **not** a declaration of GoBD/e-invoice certification.
+
+## 2026-11-17 same-origin invoice download and approved branding repair
+
+- Admin invoice downloads use `/api/admin/billing/{id}/document?format=pdf|odt|fodt|xrechnung` with ordinary browser anchors. The authenticated same-origin API checks the frozen archive checksum and streams bytes; browser CORS configuration or access to private R2 S3 URLs is unnecessary.
+- PDF opens inline in a new tab. ODT, FODT and XRechnung XML download as attachments with no-store headers.
+- The old generated NK monogram is no longer used for newly issued invoices. Instead, the server renders the canonical red `public/brand/neuroklast-wordmark-red.svg` inside the PDF. Do not use the trivial Times-font `neuroklast-wordmark.svg` placeholder.
+- **Already issued numbered invoices remain immutable.** Fixing the renderer changes future issues only. Do not overwrite `RE-2026-000001.pdf` in R2 or silently generate a replacement. Record any necessary non-destructive copy or correction procedure separately after legal review.
+- Verification gate: run `npm run typecheck`, `npm run test`, `npm run lint`, render one disposable PDF to verify actual logo and layout, then perform an authenticated browser smoke test. This section records implementation requirements, not completed production verification.
