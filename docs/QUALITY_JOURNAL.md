@@ -56,3 +56,12 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: A same-key replay with identical details returns the original row; mismatched reused keys fail closed; invoice-row locking protects the outstanding balance.
 - Docs updated: Billing architecture, operations, MCP, QA checklist, changelog and quality journal.
 - Residual risk: This only prevents duplicate CMS posting, not duplicate external transfers or false manual claims of payment. Production financial reconciliation and accountant review remain necessary.
+
+## 2026-11-17 | Optional XRechnung and independent validator gate
+- Scope: XRechnung 3.0 UBL generator, admin/MCP preflight, seller/buyer metadata, immutable XML archive.
+- Root cause: Existing printable PDF and editable ODF formats cannot satisfy structured B2B e-invoice requirements.
+- Owner: `lib/billing/einvoice.ts` maps frozen integer-cent invoice data into standardized UBL; `lib/billing/service.ts` preflights before legal number allocation; PostgreSQL finalization enforces XML archive/hash when selected.
+- Tests: Added local XML regression fixture and a dedicated GitHub KoSIT workflow using pinned official validator/configuration. Official run acceptance has not been independently confirmed yet.
+- Failure path: Missing buyer reference or contact data stops local generation; XML checksum is committed with the immutable invoice; KoSIT rejection must block release.
+- Docs updated: Billing architecture, tax compliance, operations, MCP, development log, QA and changelog.
+- Residual risk: No XRechnung production approval until official KoSIT conformance and accountant review; PDF/A-3 and ZUGFeRD not implemented; §19 XML categorization not implemented.
