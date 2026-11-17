@@ -21,7 +21,7 @@ describe('billing renderers',()=>{
   expect(pdf).toContain('/MediaBox [0 0 595 842]')
   expect(pdf).toContain('/Subtype /Image')
   expect(pdf).toContain('/BrandLogo Do')
-  expect(pdf).toContain('/DCTDecode')
+  expect(pdf).toContain('/FlateDecode')
   expect(pdf).not.toContain('72 96 m 160 96 l 272 264 l')
   expect(pdf).toContain('(RECHNUNGSEMPF\\304NGER) Tj'.replace('\\304','\\304'))
   expect(pdf).toContain('(GESAMTBETRAG) Tj')
