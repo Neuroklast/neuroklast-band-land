@@ -5,7 +5,7 @@ import { admin } from '@/lib/neurokore/server'
 import { parseEurosToCents } from '@/lib/billing/domain'
 import { reviewBillingRequest } from '@/lib/mcp/billing'
 import { createBillingCustomer, updateBillingCustomer, updateBillingSettings,
-  createBillingDraft, updateBillingDraft, issueBillingInvoice, recordBillingPayment } from '@/lib/billing/service'
+  createBillingDraft, updateBillingDraft, issueBillingInvoice, recordBillingPayment, seedBillingSequence } from '@/lib/billing/service'
 
 const text=(form:FormData,key:string)=>String(form.get(key)??'').trim()
 const requireId=(form:FormData,key:string)=>text(form,key)
@@ -70,4 +70,11 @@ export async function reviewBillingMcpAction(form:FormData) {
   await reviewBillingRequest(text(form,'request_id'),actor,decision)
   revalidatePath('/admin/billing/review')
   redirect('/admin/billing/review')
+}
+
+export async function seedBillingSequenceAction(form:FormData) {
+ const actor=await admin()
+ await seedBillingSequence(Number(text(form,'year')),Number(text(form,'next_number')),actor)
+ revalidatePath('/admin/billing/settings')
+ redirect('/admin/billing/settings?sequence=1')
 }
