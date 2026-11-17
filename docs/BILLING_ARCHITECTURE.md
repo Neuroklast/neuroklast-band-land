@@ -14,7 +14,7 @@ Status: feature branch implementation, NOT production-approved. Applies to direc
 
 ## States / invariants
 
-1. Draft: user can edit with optimistic revision CAS; no invoice number.
+1. Draft: user can edit with optimistic revision CAS; no invoice number. Each year must have a manually confirmed starting sequence before any number allocation.
 2. Preparing: PostgreSQL RPC atomically allocates a unique `RE-YYYY-000001` number and freezes seller, recipient, positions, dates and totals. A unique year sequence row is locked by its UPDATE. Do not create a second invoice when preparation fails.
 3. The renderer computes PDF, Flat ODF (FODT), and packed ODT from the frozen snapshot. Each object is uploaded with atomic `If-None-Match: *` and fully verified with SHA-256, including on retries; existing keys are never overwritten.
 4. A second PostgreSQL RPC advances to issued only when all three artifact hashes and canonical object keys have been recorded. An identical repeated finalization returns the issued row. Failure leaves invoice preparing for same-ID retry. The immutable-issue trigger blocks subsequent invoice changes.
@@ -50,3 +50,7 @@ No silent fallback from a failed DB read to an empty customer/invoice list. Do n
 ## R2 retention and immutability
 
 Configure Cloudflare R2 Bucket Lock for the dedicated private billing bucket, scoped to `billing/`, after agreeing a legally appropriate retention period and restoration/backup plan with the responsible accountant. The application implements conditional create-only writes, but IAM administrators may still change bucket configuration. Bucket Lock is an additional technical control, **not itself a complete GoBD certification**. Documentation: https://developers.cloudflare.com/r2/buckets/bucket-locks/ and https://developers.cloudflare.com/r2/api/s3/conditional-operations/. Archive access is checked with HeadBucket before allocating an invoice number; if temporarily unavailable, the number is not newly reserved. A later object-upload failure leaves the already reserved number attached to the same invoice.
+
+## Admin ledger and exports
+
+The admin overview supports number/year/status filters, open/partial/paid/overdue payment states calculated from immutable payment records, searchable paginated customers, and a year-scoped, formula-injection-safe UTF-8 CSV reconciliation export. The CSV is **not** a DATEV or certified tax export. MCP invoice/customer list tools support pagination and the same invoice filters. See `docs/BILLING_OPERATIONS.md` for the release steps and numbering confirmation procedure.
