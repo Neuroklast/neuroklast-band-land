@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { admin } from '@/lib/neurokore/server'
 import { parseEurosToCents } from '@/lib/billing/domain'
+import { reviewBillingRequest } from '@/lib/mcp/billing'
 import { createBillingCustomer, updateBillingCustomer, updateBillingSettings,
   createBillingDraft, updateBillingDraft, issueBillingInvoice, recordBillingPayment } from '@/lib/billing/service'
 
@@ -60,4 +61,13 @@ export async function saveBillingPayment(form:FormData) {
   await recordBillingPayment(id,actor,parseEurosToCents(text(form,'amount')),text(form,'paid_on'),text(form,'reference'))
   touch()
   redirect('/admin/billing/'+id)
+}
+
+export async function reviewBillingMcpAction(form:FormData) {
+  const actor=await admin()
+  const decision=text(form,'decision')
+  if(decision!=='approve'&&decision!=='reject')throw new Error('Invalid review decision')
+  await reviewBillingRequest(text(form,'request_id'),actor,decision)
+  revalidatePath('/admin/billing/review')
+  redirect('/admin/billing/review')
 }
