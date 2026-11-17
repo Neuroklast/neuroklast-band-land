@@ -109,11 +109,21 @@ export async function archivedBillingDocumentUrl(
   key: string,
   expectedSha256: string,
 ): Promise<string> {
-  if (!SHA256.test(expectedSha256)) throw new Error('Missing verified archive checksum')
-  const bytes = await getExactObject(bucket, key, 8 * 1024 * 1024)
-  if (documentSha(bytes) !== expectedSha256) throw new Error('Invoice archive failed integrity check')
+  await readArchivedBillingDocument(bucket, key, expectedSha256)
   const client = createR2S3Client()
   return getSignedUrl(client, new GetObjectCommand({
     Bucket: bucket, Key: key, ResponseCacheControl: 'private, no-store',
   }), { expiresIn: 90 })
+}
+
+/** Authorized server-side document read. The archive is never exposed to browser CORS or redirects. */
+export async function readArchivedBillingDocument(
+  bucket: string,
+  key: string,
+  expectedSha256: string,
+): Promise<Buffer> {
+  if (!SHA256.test(expectedSha256)) throw new Error('Missing verified archive checksum')
+  const bytes = await getExactObject(bucket, key, 8 * 1024 * 1024)
+  if (documentSha(bytes) !== expectedSha256) throw new Error('Invoice archive failed integrity check')
+  return bytes
 }
