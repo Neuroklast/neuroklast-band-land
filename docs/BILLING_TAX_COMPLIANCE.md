@@ -36,3 +36,5 @@ Managed Payments is configured in the existing shop as Merchant of Record. The d
 Before production: professional review of invoice layout, mandatory particulars, tax treatment, e-invoice obligation, electronic retention, GoBD controls and actual seller identity.
 
 Current revisions produce an ordinary PDF plus standards-based ODT/FODT files. The files themselves are not qualified EN 16931 electronic invoices. Structured XML and an independently validated PDF/A-3 profile remain explicitly outside the production-ready scope.
+
+**Sequence activation:** Every annual invoice-number range must be explicitly confirmed through the MFA-protected billing settings, after reconciling prior external/paper invoices. SQL blocks issuance of any invoice dated in a year whose start value has not been confirmed. Reconfirmation with the exact same starting value is idempotent, but changing a confirmed value is forbidden.
