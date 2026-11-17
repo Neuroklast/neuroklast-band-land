@@ -6,6 +6,7 @@ import { saveBillingPayment,issueBillingDraft } from '@/app/admin/_actions/billi
 import { InvoiceForm } from '../InvoiceForm'
 import Link from 'next/link'
 import { billingDateInGermany } from '@/lib/billing/date'
+import { randomUUID } from 'node:crypto'
 export const dynamic='force-dynamic'
 export default async function InvoiceDetail({params}:{params:Promise<{id:string}>}) {
  await admin()
@@ -58,6 +59,7 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
       {payments.map(p=><p key={String(p.id)} className="text-sm text-zinc-400">{String(p.paid_on)}: {formatCents(Number(p.amount_cents))} {String(p.reference||'')}</p>)}
       {paid<total&&<form action={saveBillingPayment} className="flex flex-wrap items-end gap-3 pt-3">
         <input type="hidden" name="id" value={id}/>
+        <input type="hidden" name="idempotency_key" value={randomUUID()}/>
         <label className="text-sm space-y-1"><span>Betrag (€)</span><input name="amount" inputMode="decimal" required className="block border border-zinc-700 bg-black p-3"/></label>
         <label className="text-sm space-y-1"><span>Datum</span><input name="paid_on" type="date" required defaultValue={billingDateInGermany()} className="block border border-zinc-700 bg-black p-3"/></label>
         <label className="text-sm space-y-1"><span>Referenz</span><input name="reference" maxLength={240} className="block border border-zinc-700 bg-black p-3"/></label>
