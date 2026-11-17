@@ -9,27 +9,29 @@ const invoice:DocumentInvoice={
  lines:[{description:'DJ-Auftritt',quantity_milli:1000,unit_cents:60000,tax_rate:0}]
 }
 describe('billing renderers',()=>{
- it('generates a PDF with an xref and immutable invoice number',()=>{
-  const bytes=renderPdf(invoice)
+ it('generates a PDF with an xref and immutable invoice number',async()=>{
+  const bytes=await renderPdf(invoice)
   expect(bytes.subarray(0,8).toString('latin1')).toBe('%PDF-1.4')
   expect(bytes.toString('latin1')).toContain('RE-2026-000001')
   expect(bytes.toString('latin1')).toContain('startxref')
   expect(bytes.toString('latin1')).toContain('%%EOF')
  })
- it('uses the canonical vector NK logo and an A4, branded table without creating image dependencies',()=>{
-  const pdf=renderPdf(invoice).toString('latin1')
+ it('embeds the real NEUROKLAST logo and an A4, branded table',async()=>{
+  const pdf=(await renderPdf(invoice)).toString('latin1')
   expect(pdf).toContain('/MediaBox [0 0 595 842]')
-  expect(pdf).toContain('(NEUROKLAST) Tj')
-  expect(pdf).toContain('72 96 m 160 96 l 272 264 l')
+  expect(pdf).toContain('/Subtype /Image')
+  expect(pdf).toContain('/BrandLogo Do')
+  expect(pdf).toContain('/DCTDecode')
+  expect(pdf).not.toContain('72 96 m 160 96 l 272 264 l')
   expect(pdf).toContain('(RECHNUNGSEMPF\\304NGER) Tj'.replace('\\304','\\304'))
   expect(pdf).toContain('(GESAMTBETRAG) Tj')
   expect(pdf).toContain('(IBAN: DE00) Tj')
   expect(pdf).toContain('600,00')
   expect(pdf).toContain('19 UStG')
  })
- it('escapes arbitrary customer PDF text and repeats headers for long invoices',()=>{
+ it('escapes arbitrary customer PDF text and repeats headers for long invoices',async()=>{
   const altered={...invoice,recipient:{...invoice.recipient,name:'ACME (Hamburg) \\\\ GmbH'},lines:Array.from({length:100},(_,i)=>({...invoice.lines[0],description:'DJ-Auftritt / Service '+i+' mit Zusatzausstattung'}))}
-  const pdf=renderPdf(altered).toString('latin1')
+  const pdf=(await renderPdf(altered)).toString('latin1')
   const n=Number(/\/Count (\d+)/.exec(pdf)?.[1])
   expect(n).toBeGreaterThan(2)
   expect(pdf.match(/\(NEUROKLAST\) Tj/g)?.length).toBe(n)
@@ -54,9 +56,9 @@ describe('billing renderers',()=>{
   expect(strFromU8(content['content.xml'])).toContain('office:document-content')
   expect(strFromU8(content['META-INF/manifest.xml'])).toContain('manifest:manifest')
  })
- it('supports multi-page PDFs without breaking the trailer',()=>{
+ it('supports multi-page PDFs without breaking the trailer',async()=>{
   const doc={...invoice,lines:Array.from({length:100},(_,i)=>({...invoice.lines[0],description:'Service '+i}))}
-  const pdf=renderPdf(doc).toString('latin1')
+  const pdf=(await renderPdf(doc)).toString('latin1')
   expect(pdf).toContain('/Count ')
   expect(pdf).toContain('xref')
   expect(pdf).toContain('%%EOF')
