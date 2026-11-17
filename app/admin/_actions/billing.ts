@@ -46,7 +46,7 @@ export async function saveBillingDraft(form:FormData) {
   const result=id?await updateBillingDraft(id,input,actor,Number(text(form,'revision'))):
     await createBillingDraft(input,actor)
   touch()
-  redirect('/admin/billing/'+result.id)
+  redirect('/admin/billing/'+String(result.id))
 }
 export async function issueBillingDraft(form:FormData) {
   const actor=await admin()
