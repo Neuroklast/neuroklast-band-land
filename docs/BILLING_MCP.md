@@ -39,3 +39,7 @@ This is a schematic example; tax rate 0 is allowed only if the verified seller i
 The invoice listing tool accepts optional `year`, `number`, `status`, `limit` and `offset` inputs. Customer search accepts `q`, `limit` and `offset`. The invoice list includes aggregated paid cents for administrative reconciliation.
 
 Manual admin payment records use a stable per-submission UUID to prevent double booking. MCP payment requests remain separately review-gated and their approval is locked transactionally by the approval request ID. Neither route transfers money or automatically verifies a bank statement.
+
+## XRechnung tools
+
+`billing_invoice_create_draft` and `billing_invoice_update_draft` can use `e_invoice_profile: "xrechnung"` and `buyer_reference`, provided the issuer is VAT registered and German domestic B2B details are complete. `billing_invoice_check_xrechnung` locally tests stored invoice data without assigning a legal number. For issued invoices with an XML artifact, `billing_invoice_document` accepts `format: "xrechnung"` and returns a short-lived URL to the immutable `.xml` file. This remains under the existing OAuth/MFA and human issue-approval boundaries. Official KoSIT conformance and production tax approval remain separately required.
