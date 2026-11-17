@@ -73,14 +73,14 @@ export function calculateInvoice(lines:InvoiceLine[],mode:TaxMode) {
   const itemTotals=lines.map(line=>{
     if (mode==='small_business' && line.tax_rate!==0) throw new Error('Kleinunternehmer invoices may not show VAT')
     if (mode==='vat_registered' && line.tax_rate===0) throw new Error('Zero-rated transactions require a separately reviewed tax category')
-    const subtotal=(BigInt(line.unit_cents)*BigInt(line.quantity_milli)+500n)/1000n
-    groups.set(line.tax_rate,(groups.get(line.tax_rate)||0n)+subtotal)
+    const subtotal=(BigInt(line.unit_cents)*BigInt(line.quantity_milli)+BigInt(500))/BigInt(1000)
+    groups.set(line.tax_rate,(groups.get(line.tax_rate)||BigInt(0))+subtotal)
     return Number(subtotal)
   })
-  const subtotal=[...groups.values()].reduce((a,b)=>a+b,0n)
-  const tax=[...groups].reduce((sum,[rate,net])=>sum+(net*BigInt(rate)+50n)/100n,0n)
+  const subtotal=[...groups.values()].reduce((a,b)=>a+b,BigInt(0))
+  const tax=[...groups].reduce((sum,[rate,net])=>sum+(net*BigInt(rate)+BigInt(50))/BigInt(100),BigInt(0))
   const total=subtotal+tax
-  if(total<=0n || total>BigInt(Number.MAX_SAFE_INTEGER))throw new Error('Invoice total is out of range')
+  if(total<=BigInt(0) || total>BigInt(Number.MAX_SAFE_INTEGER))throw new Error('Invoice total is out of range')
   return { subtotal_cents:Number(subtotal),tax_cents:Number(tax),total_cents:Number(total),line_totals_cents:itemTotals }
 }
 export function validateDates(draft:DraftInput) {
