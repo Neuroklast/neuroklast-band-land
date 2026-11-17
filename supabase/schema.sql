@@ -2469,7 +2469,7 @@ CREATE TABLE IF NOT EXISTS public.billing_customers (
 CREATE INDEX IF NOT EXISTS billing_customers_name_idx ON public.billing_customers (name);
 CREATE TABLE IF NOT EXISTS public.billing_sequences (
   issue_year integer PRIMARY KEY CHECK (issue_year BETWEEN 2000 AND 2200),
-  next_value bigint NOT NULL DEFAULT 1 CHECK (next_value BETWEEN 1 AND 999999)
+  next_value bigint NOT NULL DEFAULT 1 CHECK (next_value BETWEEN 1 AND 1000000)
 );
 CREATE TABLE IF NOT EXISTS public.billing_invoices (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2612,13 +2612,54 @@ CREATE OR REPLACE FUNCTION public.billing_finalize_issue(
 DECLARE v public.billing_invoices%ROWTYPE;
 BEGIN
   SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
-  IF NOT FOUND OR v.status<>'preparing' THEN RAISE EXCEPTION 'Invoice not preparing'; END IF;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Invoice not found'; END IF;
+  IF v.status='issued' THEN
+    IF v.pdf_object_key=p_pdf_key AND v.fodt_object_key=p_fodt_key
+       AND v.document_sha256=p_hashes THEN
+      RETURN v;
+    END IF;
+    RAISE EXCEPTION 'Issued document archive cannot be modified';
+  END IF;
+  IF v.status<>'preparing' THEN RAISE EXCEPTION 'Invoice not preparing'; END IF;
   IF p_pdf_key<>('billing/'||p_id||'/'||v.number||'.pdf') OR
      p_fodt_key<>('billing/'||p_id||'/'||v.number||'.fodt') THEN
      RAISE EXCEPTION 'Unexpected document key';
   END IF;
-  IF length(coalesce(p_hashes->>'pdf',''))<>64 OR length(coalesce(p_hashes->>'fodt',''))<>64 THEN
-    RAISE EXCEPTION 'Document hashes are required';
+  IF jsonb_typeof(p_hashes) IS DISTINCT FROM 'object'
+    OR coalesce((p_hashes->>'pdf') ~ '^[0-9a-f]{64}
+  UPDATE public.billing_invoices SET status='issued',issued_at=now(),
+    pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,
+    document_sha256=p_hashes,document_error_at=NULL,updated_at=now()
+    WHERE id=p_id RETURNING * INTO v;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(p_id,p_actor,'invoice_issued',jsonb_build_object('number',v.number,'hashes',p_hashes));
+  RETURN v;
+END $$;
+
+,false)=false
+    OR coalesce((p_hashes->>'fodt') ~ '^[0-9a-f]{64}
+  UPDATE public.billing_invoices SET status='issued',issued_at=now(),
+    pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,
+    document_sha256=p_hashes,document_error_at=NULL,updated_at=now()
+    WHERE id=p_id RETURNING * INTO v;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(p_id,p_actor,'invoice_issued',jsonb_build_object('number',v.number,'hashes',p_hashes));
+  RETURN v;
+END $$;
+
+,false)=false
+    OR coalesce((p_hashes->>'odt') ~ '^[0-9a-f]{64}
+  UPDATE public.billing_invoices SET status='issued',issued_at=now(),
+    pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,
+    document_sha256=p_hashes,document_error_at=NULL,updated_at=now()
+    WHERE id=p_id RETURNING * INTO v;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(p_id,p_actor,'invoice_issued',jsonb_build_object('number',v.number,'hashes',p_hashes));
+  RETURN v;
+END $$;
+
+,false)=false THEN
+    RAISE EXCEPTION 'PDF, FODT and ODT SHA-256 checksums are required';
   END IF;
   UPDATE public.billing_invoices SET status='issued',issued_at=now(),
     pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,
