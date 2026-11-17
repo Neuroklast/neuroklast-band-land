@@ -72,3 +72,7 @@ Before the first 120 EUR Four Runners Club DJ invoice is issued, deploy and vali
 - The old generated NK monogram is no longer used for newly issued invoices. Instead, the server renders the canonical red `public/brand/neuroklast-wordmark-red.svg` inside the PDF. Do not use the trivial Times-font `neuroklast-wordmark.svg` placeholder.
 - **Already issued numbered invoices remain immutable.** Fixing the renderer changes future issues only. Do not overwrite `RE-2026-000001.pdf` in R2 or silently generate a replacement. Record any necessary non-destructive copy or correction procedure separately after legal review.
 - Verification gate: run `npm run typecheck`, `npm run test`, `npm run lint`, render one disposable PDF to verify actual logo and layout, then perform an authenticated browser smoke test. This section records implementation requirements, not completed production verification.
+
+### Stale draft browser recovery
+
+An already issued invoice remains immutable. If a browser tab submits a prior draft revision after issuance, `saveBillingDraft` must reload the current invoice and show the stale-draft notice, not emit an HTTP 500 and not apply a stale write. If the invoice is still a draft with a newer revision, review the current values before saving again. Do not suppress an unrelated database failure as a conflict. This was observed on invoice `RE-2026-000001` after issuance and verified read-only against the production row.
