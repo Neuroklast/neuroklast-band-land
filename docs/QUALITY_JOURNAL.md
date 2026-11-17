@@ -90,3 +90,9 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: Broken PDF layout or mismatched amount fails validation before issuing; archive failures keep the same reserved invoice ID for retry without duplicating legal numbers.
 - Docs updated: Updated `.github/ARCHITECTURE.md`, `QA_CHECKLIST.md`, billing architecture and operations, development log, changelog and this quality journal.
 - Residual risk: PDF/A-3 and fully Unicode embedded fonts are not supported; this must not be mistaken for an EN16931 e-invoice or certified GoBD workflow.
+
+## 2026-11-17 | Fix private billing download redirects and incorrect PDF logo
+- Root cause: admin download route returned 302 to presigned R2 S3 endpoint, triggering browser CORS/preflight failures; Next `Link` invoked RSC navigation for files. The renderer used a synthetic NK vector mark instead of the actual branded red wordmark.
+- Implementation: same-origin authenticated binary delivery with verified immutable R2 SHA-256, native document anchors, no-cache headers, original `neuroklast-wordmark-red.svg` embedded into PDF and explicit Vercel file tracing.
+- Scope: no changes to billing sequence allocation, issued invoice objects, customer identity, financial values, R2 public permissions or MCP signed-URL access.
+- Required verification: CI typecheck/lint/tests, actual PDF visual render, authorized and unauthorized downloads, no external redirects, post-deploy smoke. These validations are not claimed complete here.
