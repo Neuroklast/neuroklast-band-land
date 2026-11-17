@@ -81,7 +81,7 @@ describe('immutable R2 invoice archive',()=>{
    await archiveBillingDocument('private-billing',{format:'pdf',key,bytes})
    expect(await readArchivedBillingDocument('private-billing',key,expected)).toEqual(bytes)
    state.objects.get(key)!.bytes=Buffer.from('%PDF-1.4 altered!')
-   await expect(readArchivedBillingDocument('private-billing',key,expected)).rejects.toThrow('SHA-256')
+   await expect(readArchivedBillingDocument('private-billing',key,expected)).rejects.toThrow('integrity check')
    await expect(readArchivedBillingDocument('private-billing',key,'not-a-sha256')).rejects.toThrow('checksum')
  })
 
