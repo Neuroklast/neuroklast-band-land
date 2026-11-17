@@ -253,8 +253,8 @@ function pdfFromPages(pages: Sheet[], logo:EmbeddedLogo): Buffer {
   // JPEG XObject uses the exact branded artwork rather than a substituted font mark.
   const image = add('<< /Type /XObject /Subtype /Image /Width ' + logo.width +
     ' /Height ' + logo.height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8' +
-    ' /Filter /DCTDecode /Length ' + logo.bytes.length + ' >>\\nstream\\n' +
-    logo.bytes.toString('latin1') + '\\nendstream')
+    ' /Filter /DCTDecode /Length ' + logo.bytes.length + ' >>\nstream\n' +
+    logo.bytes.toString('latin1') + '\nendstream')
   const references: number[] = []
   for (const p of pages) {
     const stream = p.commands.join('\n') + '\n'
