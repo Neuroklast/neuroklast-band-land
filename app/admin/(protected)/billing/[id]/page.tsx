@@ -52,10 +52,10 @@ export default async function InvoiceDetail({params}:{params:Promise<{id:string}
     </form>
   </div>:<div className="space-y-5">
     <div className="flex gap-3 flex-wrap">
-      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=pdf'}>PDF anzeigen</Link>
-      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=odt'}>OpenDocument (.odt) herunterladen</Link>
-      <Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=fodt'}>Flat-ODF (.fodt) herunterladen</Link>
-      {invoice.e_invoice_profile==='xrechnung'&&<Link className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=xrechnung'}>XRechnung (.xml) herunterladen</Link>}
+      <a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=pdf'} target="_blank" rel="noopener noreferrer">PDF anzeigen</a>
+      <a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=odt'}>OpenDocument (.odt) herunterladen</a>
+      <a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=fodt'}>Flat-ODF (.fodt) herunterladen</a>
+      {invoice.e_invoice_profile==='xrechnung'&&<a className="border border-zinc-700 px-5 py-3" href={'/api/admin/billing/'+id+'/document?format=xrechnung'}>XRechnung (.xml) herunterladen</a>}
     </div>
     <section className="border border-zinc-800 p-4 space-y-2">
       <h2 className="font-semibold">Zahlungen</h2>
