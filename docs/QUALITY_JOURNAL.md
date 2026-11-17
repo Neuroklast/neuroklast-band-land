@@ -101,3 +101,12 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: Authentication denial returns 403, invalid format 400, missing or tampered objects fail closed; numbered original invoice objects are never rewritten.
 - Docs updated: Updated architecture ADR, billing architecture, operations runbook, QA checklist, development log, changelog and this journal.
 - Residual risk: CI and live browser checks are pending, rendered PDF logo fidelity is not visually certified, and issued invoice branding cannot be retroactively changed without a reviewed process.
+
+## 2026-11-17 | Explicit stale-draft conflict recovery after invoice issuance
+- Scope: Billing service optimistic draft update, admin server action and invoice detail conflict notice.
+- Root cause: Production invoice `RE-2026-000001` was issued at 17:15:33 UTC, and a stale form submitted an update at 17:15:36 UTC. Revision and issued-status protection worked, but the generic exception surfaced as HTTP 500.
+- Owner: Canonical `lib/billing/service.ts` owns `BillingDraftConflictError`; the admin action maps that domain conflict to a reload; the detail page owns the visible notice.
+- Tests: Added action tests for optimistic conflict, unrelated failure propagation and normal success redirection. End-to-end browser verification remains pending.
+- Failure path: Stale write matches no draft row and must never overwrite a newer revision or issued invoice. Other DB errors must still surface rather than becoming a false conflict.
+- Docs updated: Billing architecture, operations, changelog, QA checklist, development log and this quality journal.
+- Residual risk: No live browser reproduction is completed; the change must pass CI, and original issued invoice `RE-2026-000001` cannot be rebranded by overwriting its stored PDF.
