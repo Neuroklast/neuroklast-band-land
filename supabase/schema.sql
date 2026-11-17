@@ -2797,3 +2797,13 @@ FOR EACH ROW EXECUTE FUNCTION public.billing_audit_edits();
 DROP TRIGGER IF EXISTS billing_settings_audit ON public.billing_settings;
 CREATE TRIGGER billing_settings_audit AFTER INSERT OR UPDATE ON public.billing_settings
 FOR EACH ROW EXECUTE FUNCTION public.billing_audit_edits();
+
+
+-- Permission-safe, aggregated payment totals for paginated invoice overviews.
+CREATE OR REPLACE VIEW public.billing_invoice_balances
+WITH (security_invoker = true) AS
+SELECT invoice_id, SUM(amount_cents)::bigint AS paid_cents
+FROM public.billing_payments
+GROUP BY invoice_id;
+REVOKE ALL ON public.billing_invoice_balances FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.billing_invoice_balances TO service_role;
