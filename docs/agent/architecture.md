@@ -144,3 +144,5 @@ Cover source priority is **iTunes > Spotify > Discogs** (`coverSourceScore` 100/
 ## Direct billing (2026-11-17)
 
 Billing is its own domain under `lib/billing/`. Generated PDF/FODT documents live in private R2 via the shared `getStorageProvider()` abstraction, never the public media bucket. Persistent state is in `billing_` Postgres tables in the canonical `supabase/schema.sql`. Do not generate invoices at cold start or auto-migrate. Number reservation is database-transactional. Do not duplicate monetary calculations in route components. See `docs/BILLING_ARCHITECTURE.md` for state machine and known format limitations.
+
+Billing invoice payment balances are aggregated in the security-invoker `billing_invoice_balances` view and served only to authenticated administrator endpoints. Every year requires an explicitly confirmed sequence. The CSV ledger export is read-only and excludes tax-filing or DATEV claims. See `docs/BILLING_ARCHITECTURE.md`.
