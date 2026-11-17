@@ -9,8 +9,8 @@ type Existing={
  id:string; revision:number; customer_id:string; issue_date:string;service_date:string;due_date:string;note:string;
  lines:{description:string;quantity_milli:number;unit_cents:number;tax_rate:0|7|19}[]
 }
-export function InvoiceForm({customers,taxMode,today,initial}:{
- customers:Customer[];taxMode:TaxMode;today:string;initial?:Existing
+export function InvoiceForm({customers,taxMode,today,dueDate,initial}:{
+ customers:Customer[];taxMode:TaxMode;today:string;dueDate?:string;initial?:Existing
 }) {
  const [rows,setRows]=useState<Entry[]>(initial?.lines.map(l=>({
   description:l.description,quantity:String(l.quantity_milli/1000),price:(l.unit_cents/100).toFixed(2),rate:l.tax_rate
@@ -45,7 +45,7 @@ export function InvoiceForm({customers,taxMode,today,initial}:{
    <div className="text-sm text-zinc-400 self-end pb-2">Umsatzsteuer-Modus: {taxMode==='small_business'?'Kleinunternehmer § 19 UStG':'Regelbesteuerung'}</div>
    <label className="space-y-2 text-sm"><span>Rechnungsdatum</span><input className={input} type="date" required name="issue_date" defaultValue={initial?.issue_date??today}/></label>
    <label className="space-y-2 text-sm"><span>Leistungsdatum</span><input className={input} type="date" required name="service_date" defaultValue={initial?.service_date??today}/></label>
-   <label className="space-y-2 text-sm"><span>Fällig am</span><input className={input} type="date" required name="due_date" defaultValue={initial?.due_date??today}/></label>
+   <label className="space-y-2 text-sm"><span>Fällig am</span><input className={input} type="date" required name="due_date" defaultValue={initial?.due_date??dueDate??today}/></label>
   </div>
   <section className="space-y-3">
    <h2 className="text-lg font-semibold">Rechnungspositionen</h2>
