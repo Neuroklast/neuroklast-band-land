@@ -4,6 +4,7 @@ vi.mock('server-only', () => ({}))
 const state=vi.hoisted(() => ({
   objects: new Map<string,{bytes:Buffer;sha:string;type:string}>(),
   send:vi.fn(),
+  conflictStatus:412,
 }))
 vi.mock('@/lib/r2-s3-client',()=>({
   createR2S3Client:()=>({send:state.send}),
@@ -13,13 +14,15 @@ import { archiveBillingDocument,archiveKey,billingArchiveBucket,documentSha } fr
 describe('immutable R2 invoice archive',()=>{
  beforeEach(()=>{
    state.objects.clear()
+   state.conflictStatus=412
    state.send.mockReset()
    state.send.mockImplementation(async (command:unknown)=>{
      if(command instanceof PutObjectCommand){
        const input=command.input
        const key=String(input.Key)
        if(state.objects.has(key))throw Object.assign(new Error('Precondition failed'),{
-         name:'PreconditionFailed',$metadata:{httpStatusCode:412}
+         name:state.conflictStatus===409?'ObjectLockedByBucketPolicy':'PreconditionFailed',
+         $metadata:{httpStatusCode:state.conflictStatus}
        })
        const bytes=Buffer.from(input.Body as Uint8Array)
        state.objects.set(key,{
@@ -53,6 +56,17 @@ describe('immutable R2 invoice archive',()=>{
    expect(first).toEqual(again)
    expect(first.sha256).toBe(documentSha(payload.bytes))
    expect(state.objects.get(key)?.bytes.toString()).toBe('invoice A')
+ })
+ it('accepts only verified identical files when R2 Bucket Lock returns 409',async()=>{
+   const key=archiveKey('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee','RE-2026-000001','odt')
+   const value={format:'odt' as const,key,bytes:Buffer.from('original odt')}
+   await archiveBillingDocument('private-billing',value)
+   state.conflictStatus=409
+   const reused=await archiveBillingDocument('private-billing',value)
+   expect(reused.sha256).toBe(documentSha(value.bytes))
+   await expect(archiveBillingDocument('private-billing',{
+     ...value,bytes:Buffer.from('different odt')
+   })).rejects.toThrow()
  })
  it('rejects different bytes for an existing invoice key',async()=>{
    const key=archiveKey('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee','RE-2026-000001','pdf')
