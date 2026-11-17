@@ -1,3 +1,4 @@
+import { zipSync, strToU8 } from 'fflate'
 import type { InvoiceLine } from './domain'
 import { calculateInvoice, formatCents, type TaxMode } from './domain'
 
@@ -67,6 +68,28 @@ export function renderFodt(doc:DocumentInvoice):Buffer {
     '<style:style style:name="Body" style:family="paragraph"/>'+
     '</office:automatic-styles><office:body><office:text>'+paragraphs+
     '</office:text></office:body></office:document>','utf8')
+}
+
+/** Standard compressed OpenDocument text package (.odt).
+ * mimetype must be the first ZIP member and must be stored uncompressed.
+ */
+export function renderOdt(doc:DocumentInvoice):Buffer {
+  const mimetype='application/vnd.oasis.opendocument.text'
+  const flat=renderFodt(doc).toString('utf8')
+  const content=flat
+    .replace('<office:document ', '<office:document-content ')
+    .replace(' office:mimetype="'+mimetype+'"', '')
+    .replace('</office:document>', '</office:document-content>')
+  const manifest='<?xml version="1.0" encoding="UTF-8"?>'+
+    '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.3">'+
+    '<manifest:file-entry manifest:full-path="/" manifest:media-type="'+mimetype+'"/>'+
+    '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>'+
+    '</manifest:manifest>'
+  return Buffer.from(zipSync({
+    mimetype:[strToU8(mimetype),{level:0}],
+    'content.xml':strToU8(content),
+    'META-INF/manifest.xml':strToU8(manifest),
+  },{level:6}))
 }
 
 /** Conservative one-column PDF 1.4 with WinAnsi Helvetica. No PDF/A or EN16931 claim.
