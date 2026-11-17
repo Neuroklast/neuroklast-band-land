@@ -2557,7 +2557,7 @@ DECLARE
   v public.billing_invoices%ROWTYPE;
   conf public.billing_settings%ROWTYPE;
   counter bigint;
-  issue_year integer;
+  v_issue_year integer;
 BEGIN
   SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'Invoice not found'; END IF;
@@ -2589,16 +2589,16 @@ BEGIN
      nullif(trim(v.recipient->>'city'),'') IS NULL THEN
     RAISE EXCEPTION 'Recipient billing address is incomplete';
   END IF;
-  issue_year := EXTRACT(YEAR FROM v.issue_date)::integer;
+  v_issue_year := EXTRACT(YEAR FROM v.issue_date)::integer;
   INSERT INTO public.billing_sequences(issue_year,next_value)
-    VALUES(issue_year,1) ON CONFLICT(issue_year) DO NOTHING;
+    VALUES(v_issue_year,1) ON CONFLICT(issue_year) DO NOTHING;
   UPDATE public.billing_sequences SET next_value=next_value+1
-    WHERE billing_sequences.issue_year=issue_year AND next_value<1000000
+    WHERE billing_sequences.issue_year=v_issue_year AND next_value<1000000
     RETURNING next_value-1 INTO counter;
   IF counter IS NULL THEN RAISE EXCEPTION 'Invoice number sequence exhausted'; END IF;
   UPDATE public.billing_invoices SET
     status='preparing',
-    number=conf.number_prefix||'-'||issue_year||'-'||lpad(counter::text,6,'0'),
+    number=conf.number_prefix||'-'||v_issue_year||'-'||lpad(counter::text,6,'0'),
     revision=revision+1, updated_at=now()
     WHERE id=p_id RETURNING * INTO v;
   INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
