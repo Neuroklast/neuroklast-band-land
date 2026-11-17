@@ -305,3 +305,7 @@ Motion kit (`lib/latch-physics.ts`, `LatchRail`, `PhaseCrossfade`, `HudReadout`)
 **Work:** Reviewed current Next.js admin/MFA model, canonical Supabase schema, R2 storage adapter, Stripe Managed Payments documentation and OAuth MCP handler. Implemented direct-invoice customer records, draft editor, integer-cent calculations, annual invoice number reservation with row locking, private PDF/FODT archival, issued-state locking, payment ledger and MCP finance human review. Excluded Stripe-MoR invoice duplication.
 
 **Verification:** Unit tests added. Repository CI and local runtime/DB/R2 integration remain to be verified; no live records or DB changes performed. Standardized German E-Rechnung XML/PDF-A and official retention verification are not implemented. See `docs/BILLING_ARCHITECTURE.md`, `docs/BILLING_MCP.md`, `docs/BILLING_TAX_COMPLIANCE.md`.
+
+## Session continuation: 2026-11-17 — billing archive and ledger hardening
+
+Extended archive to an actual zipped ODT using fflate, added conditional create-only R2 writes and full SHA-256 read-back verification, required explicit annual sequence confirmation, added paid/partial/overdue overview, searchable customers and invoice number/year/status filters, read-only CSV export, and a disposable PostgreSQL financial contract. Current branch remains draft until independent CI and production readiness checks pass. See `docs/BILLING_OPERATIONS.md`.
