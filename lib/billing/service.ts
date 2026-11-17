@@ -46,9 +46,12 @@ export async function seedBillingSequence(year:number,nextValue:number,actorId:s
  assert(error,'Number sequence already used or unavailable')
  return data
 }
-export async function listBillingCustomers(q='',limit=100) {
+export async function listBillingCustomers(q='',limit=100,offset=0) {
+  if(!Number.isSafeInteger(offset)||offset<0||offset>1000000)throw new Error('Invalid customer offset')
   const search=q.trim().slice(0,100).replace(/[%_,()]/g,'')
-  let query=db().from('billing_customers').select('*').eq('archived',false).order('name').limit(Math.min(Math.max(limit,1),100))
+  const pageSize=Math.min(Math.max(limit,1),100)
+  let query=db().from('billing_customers').select('*').eq('archived',false)
+    .order('name').order('id').range(offset,offset+pageSize-1)
   if(search)query=query.ilike('name','%'+search+'%')
   const {data,error}=await query
   assert(error,'Customer lookup failed')
