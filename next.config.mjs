@@ -31,7 +31,7 @@ const nextConfig = {
     },
   },
   outputFileTracingIncludes: {
-    '*': ['./supabase/schema.sql', './public/brand/neuroklast-wordmark-red.svg'],
+    '*': ['./supabase/schema.sql', './public/brand/nk-logo-red-bold.png'],
     // Include the untracked, private runtime binary assets in this API function only.
     '/api/admin/ffmpeg/[asset]': ['./.ffmpeg-admin-assets/*'],
   },
