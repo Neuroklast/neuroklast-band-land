@@ -78,10 +78,13 @@ export function calculateInvoice(lines:InvoiceLine[],mode:TaxMode) {
     return Number(subtotal)
   })
   const subtotal=[...groups.values()].reduce((a,b)=>a+b,BigInt(0))
-  const tax=[...groups].reduce((sum,[rate,net])=>sum+(net*BigInt(rate)+BigInt(50))/BigInt(100),BigInt(0))
+  const tax_groups=[...groups].sort(([a],[b])=>a-b).map(([rate,net])=>({
+    rate,base_cents:Number(net),tax_cents:Number((net*BigInt(rate)+BigInt(50))/BigInt(100))
+  }))
+  const tax=tax_groups.reduce((sum,group)=>sum+BigInt(group.tax_cents),BigInt(0))
   const total=subtotal+tax
   if(total<=BigInt(0) || total>BigInt(Number.MAX_SAFE_INTEGER))throw new Error('Invoice total is out of range')
-  return { subtotal_cents:Number(subtotal),tax_cents:Number(tax),total_cents:Number(total),line_totals_cents:itemTotals }
+  return { subtotal_cents:Number(subtotal),tax_cents:Number(tax),total_cents:Number(total),line_totals_cents:itemTotals,tax_groups }
 }
 export function validateDates(draft:DraftInput) {
   if(draft.due_date<draft.issue_date)throw new Error('Due date cannot precede issue date')
