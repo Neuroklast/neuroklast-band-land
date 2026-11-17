@@ -320,3 +320,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Harden invoice numbering by requiring per-year administrative confirmation of existing number ranges, add filtered ledgers and reconciliation CSV, and add disposable PostgreSQL financial contract tests in CI.
 
 - Prevent duplicate manual payment records from repeated browser submissions by using transactional payment idempotency keys and regression coverage.
+
+- Introduce experimental XRechnung 3.0 UBL XML, buyer reference and seller contacts, admin/MCP preflight, immutable XML archiving and pinned official KoSIT CI checks. The independent-validator and tax approval gate remains mandatory.
