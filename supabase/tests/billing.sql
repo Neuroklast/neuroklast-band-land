@@ -188,6 +188,14 @@ BEGIN
      has_function_privilege('authenticated','public.billing_record_payment(uuid,uuid,bigint,date,text,uuid)','EXECUTE') THEN
     RAISE EXCEPTION 'TEST FAILED: privileged finance RPC exposed to public';
   END IF;
+  IF has_table_privilege('anon','public.billing_invoices','SELECT') OR
+     has_table_privilege('authenticated','public.billing_customers','SELECT') OR
+     has_table_privilege('authenticated','public.billing_mcp_requests','INSERT') THEN
+    RAISE EXCEPTION 'TEST FAILED: billing table privileges exposed to clients';
+  END IF;
+  IF NOT has_table_privilege('service_role','public.billing_invoices','SELECT') THEN
+    RAISE EXCEPTION 'TEST FAILED: service role cannot read billing tables';
+  END IF;
   IF NOT has_function_privilege('service_role','public.billing_prepare_issue(uuid,uuid)','EXECUTE') THEN
     RAISE EXCEPTION 'TEST FAILED: service-role invoice issuance denied';
   END IF;
