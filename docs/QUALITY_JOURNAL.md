@@ -19,3 +19,13 @@ Chronological and append-only record of source changes. The CI check validates n
 - Failure path: Exact mirrored URL-only submissions are acknowledged but never stored or emailed; normal booking and licensing enquiries with embedded URLs continue through the existing configured checks.
 - Docs updated: ADR in .github/ARCHITECTURE.md, contact protection guide, QA checklist, development log, lessons learned and changelog.
 - Residual risk: Sophisticated spam may contain plausible text; keyword widening could reject legitimate contacts, and a real production submission test is required after deployment.
+
+
+## 2026-11-17 | Introduce seller invoice domain, private archive and MCP finance review
+- Scope: Direct NEUROKLAST invoice drafts, customer address book, issuance numbers, payment records, Flat ODF/PDF exports, admin and MCP access.
+- Root cause: Existing CMS supported checkout orders but had no independent issuer-controlled invoicing workflow or customer registry.
+- Owner: `lib/billing/service.ts` controls billing mutations; `lib/billing/domain.ts` owns money validation; PostgreSQL RPCs own number/payment concurrency; `lib/mcp/billing.ts` owns finance tool definitions.
+- Tests: Added deterministic monetary arithmetic and document structure unit tests. PR CI, database transaction isolation, R2 integration and human review remain outstanding pending independent execution evidence.
+- Failure path: When document upload fails, reserved number remains with `preparing` invoice to retry using same UUID. Database read failures are errors, not empty lists. All MCP financial requests require a separate MFA-approved action.
+- Docs updated: Billing architecture, tax compliance and MCP guides; architecture, security, data, QA, changelog, development log and journal.
+- Residual risk: NO production sign-off; E-Rechnung, PDF/A, real legal review, complete GoBD archival validation, new private R2 bucket setup and live concurrency tests are still outstanding.
