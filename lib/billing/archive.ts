@@ -49,7 +49,10 @@ function mediaType(format: BillingFormat): string {
 
 function isPreconditionFailure(error: unknown): boolean {
   const e = error as { name?: unknown; $metadata?: { httpStatusCode?: number } } | null
-  return e?.name === 'PreconditionFailed' || e?.$metadata?.httpStatusCode === 412
+  // R2 Bucket Lock may return 409 ObjectLockedByBucketPolicy instead of 412
+  // for an existing key. Verify the actual stored bytes before accepting reuse.
+  return e?.name === 'PreconditionFailed' || e?.$metadata?.httpStatusCode === 412 ||
+    (e?.$metadata?.httpStatusCode === 409 && e?.name === 'ObjectLockedByBucketPolicy')
 }
 
 async function getExactObject(bucket: string, key: string, maxSize: number): Promise<Buffer> {
