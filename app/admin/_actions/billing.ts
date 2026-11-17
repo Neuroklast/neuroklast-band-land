@@ -59,7 +59,7 @@ export async function issueBillingDraft(form:FormData) {
 export async function saveBillingPayment(form:FormData) {
   const actor=await admin()
   const id=requireId(form,'id')
-  await recordBillingPayment(id,actor,parseEurosToCents(text(form,'amount')),text(form,'paid_on'),text(form,'reference'))
+  await recordBillingPayment(id,actor,parseEurosToCents(text(form,'amount')),text(form,'paid_on'),text(form,'reference'),text(form,'idempotency_key'))
   touch()
   redirect('/admin/billing/'+id)
 }
