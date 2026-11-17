@@ -1,5 +1,4 @@
 import { describe,expect,it } from 'vitest'
-import { validateUblXml } from '@stampbench/core'
 import { renderXRechnung } from '../einvoice'
 import type { DocumentInvoice } from '../documents'
 
@@ -24,27 +23,26 @@ const example: DocumentInvoice={
  ],
 }
 describe('XRechnung 3.0 UBL',()=>{
- it('generates valid-looking structured XML with exact VAT groups and total',()=>{
-  const result=renderXRechnung(example)
+ it('generates structured XML from schema-validated UBL with correct VAT groups',async()=>{
+  const result=await renderXRechnung(example)
   const xml=result.xml.toString('utf8')
   expect(xml).toContain('RE-2026-000001')
   expect(xml).toContain('PO-2026-123')
   expect(xml).toContain('321.25')
   expect(xml).toContain('cbc:CustomizationID')
   expect(xml).toContain('xrechnung_3.0')
-  const validation=validateUblXml(xml,{profile:'xrechnung'})
-  expect(validation.valid).toBe(true)
-  expect(validation.invoice?.totals?.taxInclusive).toBe(321.25)
+  expect(result.ruleset).toContain('XRechnung')
+  expect(xml).toContain('<cbc:PayableAmount currencyID="EUR">321.25</cbc:PayableAmount>')
  })
- it('fails closed if essential B2B identities are absent',()=>{
-  expect(()=>renderXRechnung({...example,buyer_reference:''})).toThrow('BT-10')
-  expect(()=>renderXRechnung({...example,seller:{...example.seller,phone:''}})).toThrow('BT-42')
-  expect(()=>renderXRechnung({...example,recipient:{...example.recipient,email:''}})).toThrow('BT-49')
+ it('fails closed if essential B2B identities are absent',async()=>{
+  await expect(renderXRechnung({...example,buyer_reference:''})).rejects.toThrow('BT-10')
+  await expect(renderXRechnung({...example,seller:{...example.seller,phone:''}})).rejects.toThrow('BT-42')
+  await expect(renderXRechnung({...example,recipient:{...example.recipient,email:''}})).rejects.toThrow('BT-49')
  })
- it('does not silently map §19 exemption to regular VAT',()=>{
-  expect(()=>renderXRechnung({...example,tax_mode:'small_business'})).toThrow()
+ it('does not silently map §19 exemption to regular VAT',async()=>{
+  await expect(renderXRechnung({...example,tax_mode:'small_business'})).rejects.toThrow()
  })
- it('rejects foreign and unverified tax configurations',()=>{
-  expect(()=>renderXRechnung({...example,recipient:{...example.recipient,country:'FR'}})).toThrow()
+ it('rejects foreign and unverified tax configurations',async()=>{
+  await expect(renderXRechnung({...example,recipient:{...example.recipient,country:'FR'}})).rejects.toThrow()
  })
 })
