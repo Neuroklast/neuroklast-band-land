@@ -140,3 +140,7 @@ Do not reintroduce impressum overlays or `admin:settings.legal` KV paths.
 ### Release cover priority (2026-09-01)
 
 Cover source priority is **iTunes > Spotify > Discogs** (`coverSourceScore` 100/60/40 in `lib/release-cover-art.ts`). `resolveMergedCoverUpdate` adopts the higher-priority cover and discards the losing R2 object. `shouldImportCoverFromSource` allows all three sources. All covers are cached to R2 via `lib/release-cover-r2.ts` (`cacheReleaseCoverToR2`), which both server actions and the async job runner use. When a release has multiple ids, enrichment tries iTunes first, then Spotify, then Discogs (`resolveBestCoverSource` in `lib/release-cover-r2.ts`, invoked during the `lib/release-enrichment.ts` pass).
+
+## Direct billing (2026-11-17)
+
+Billing is its own domain under `lib/billing/`. Generated PDF/FODT documents live in private R2 via the shared `getStorageProvider()` abstraction, never the public media bucket. Persistent state is in `billing_` Postgres tables in the canonical `supabase/schema.sql`. Do not generate invoices at cold start or auto-migrate. Number reservation is database-transactional. Do not duplicate monetary calculations in route components. See `docs/BILLING_ARCHITECTURE.md` for state machine and known format limitations.
