@@ -23,7 +23,7 @@ function invoiceLines(doc:DocumentInvoice):string[] {
     '',
     'Rechnungsdatum: '+date(doc.issue_date),
     'Leistungsdatum: '+date(doc.service_date),
-    'Faelligkeit: '+date(doc.due_date),
+    'Fälligkeit: '+date(doc.due_date),
     '',
     'Positionen',
     ...doc.lines.flatMap((line,i)=>[
