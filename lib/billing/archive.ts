@@ -9,7 +9,7 @@ import { createR2S3Client } from '@/lib/r2-s3-client'
  * Retries may only reuse an existing object whose bytes match exactly.
  */
 const SHA256 = /^[a-f0-9]{64}$/
-export type BillingFormat = 'pdf' | 'fodt' | 'odt'
+export type BillingFormat = 'pdf' | 'fodt' | 'odt' | 'xrechnung'
 export type BillingArtifact = { format: BillingFormat; key: string; sha256: string; size: number }
 export type BillingPayload = { format: BillingFormat; key: string; bytes: Buffer }
 
@@ -34,7 +34,7 @@ export async function assertBillingArchiveReady(bucket:string):Promise<void> {
 export function archiveKey(invoiceId: string, number: string, format: BillingFormat): string {
   if (!/^[a-f0-9-]{36}$/i.test(invoiceId)) throw new Error('Invalid invoice archive id')
   if (!/^[A-Z]{2,8}-\d{4}-\d{6}$/.test(number)) throw new Error('Invalid invoice number')
-  return 'billing/' + invoiceId + '/' + number + '.' + format
+  return 'billing/' + invoiceId + '/' + number + '.' + (format === 'xrechnung' ? 'xml' : format)
 }
 
 export function documentSha(bytes: Buffer): string {
@@ -43,6 +43,7 @@ export function documentSha(bytes: Buffer): string {
 
 function mediaType(format: BillingFormat): string {
   if (format === 'pdf') return 'application/pdf'
+  if (format === 'xrechnung') return 'application/xml'
   if (format === 'odt') return 'application/vnd.oasis.opendocument.text'
   return 'application/vnd.oasis.opendocument.text-flat-xml'
 }
