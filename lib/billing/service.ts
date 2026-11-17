@@ -2,7 +2,7 @@ import 'server-only'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { archiveBillingDocument, archivedBillingDocumentUrl, archiveKey, billingArchiveBucket } from './archive'
 import { customerInput, sellerInput, draftInput, calculateInvoice, validateDates, type InvoiceLine } from './domain'
-import { renderPdf, renderFodt, type DocumentInvoice } from './documents'
+import { renderPdf, renderFodt, renderOdt, type DocumentInvoice } from './documents'
 import { z } from 'zod'
 
 const uuid=z.uuid()
@@ -144,12 +144,14 @@ export async function issueBillingInvoice(id:string,actorId:string) {
     recipient:row.recipient as Record<string,string>,lines:row.lines as InvoiceLine[],
     tax_mode:row.tax_mode as DocumentInvoice['tax_mode'],note:str(row.note)
   }
-  const pdf=renderPdf(invoice),fodt=renderFodt(invoice)
+  const pdf=renderPdf(invoice),fodt=renderFodt(invoice),odt=renderOdt(invoice)
   const pdfKey=archiveKey(id,number,'pdf'),fodtKey=archiveKey(id,number,'fodt')
+  const odtKey=archiveKey(id,number,'odt')
   try {
     const pdfStored=await archiveBillingDocument(archiveBucket,{format:'pdf',key:pdfKey,bytes:pdf})
     const fodtStored=await archiveBillingDocument(archiveBucket,{format:'fodt',key:fodtKey,bytes:fodt})
-    const hashes={pdf:pdfStored.sha256,fodt:fodtStored.sha256}
+    const odtStored=await archiveBillingDocument(archiveBucket,{format:'odt',key:odtKey,bytes:odt})
+    const hashes={pdf:pdfStored.sha256,fodt:fodtStored.sha256,odt:odtStored.sha256}
     const {data:issued,error:finalError}=await db().rpc('billing_finalize_issue',{
       p_id:id,p_actor:actorId,p_pdf_key:pdfKey,p_fodt_key:fodtKey,p_hashes:hashes
     })
@@ -161,10 +163,11 @@ export async function issueBillingInvoice(id:string,actorId:string) {
     throw new Error('Document archive unavailable. Number reserved. Retry issuing this invoice; do not create another.')
   }
 }
-export async function invoiceDocumentUrl(id:string,format:'pdf'|'fodt') {
+export async function invoiceDocumentUrl(id:string,format:'pdf'|'fodt'|'odt') {
   const {invoice}=await getBillingInvoice(id)
   if(invoice.status!=='issued')throw new Error('Invoice not issued')
-  const key=invoice[format==='pdf'?'pdf_object_key':'fodt_object_key']
+  const key=format==='odt' ? archiveKey(id,String(invoice.number),'odt') :
+    invoice[format==='pdf'?'pdf_object_key':'fodt_object_key']
   if(typeof key!=='string')throw new Error('Document not ready')
   const hashes=invoice.document_sha256 as Record<string,string>
   return archivedBillingDocumentUrl(billingArchiveBucket(),key,hashes[format])
