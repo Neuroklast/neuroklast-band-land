@@ -325,7 +325,7 @@ User requested the existing red NK logo and professional A4 layout on the 120.00
 
 ## 2026-11-17 — Billing download and canonical logo follow-up
 
-Corrected the authenticated billing document download flow so that the browser receives binary PDF/ODT/FODT/XML from `neuroklast.net` instead of following a 302 to R2 S3 and failing CORS. Replaced Next.js `Link` navigation with document anchors. Shared R2 archive reader validates frozen SHA-256 and canonical key. The invoice PDF now embeds `public/brand/neuroklast-wordmark-red.svg`, not the synthetic NK symbol. Added route/archive and logo tests. Existing issued documents are immutable and not overwritten. Actual rendered PDF, CI and production smoke verification are still required.
+Corrected the authenticated billing document download flow so that the browser receives binary PDF/ODT/FODT/XML from `neuroklast.net` instead of following a 302 to R2 S3 and failing CORS. Replaced Next.js `Link` navigation with document anchors. Shared R2 archive reader validates frozen SHA-256 and canonical key. The invoice PDF now embeds `public/brand/nk-logo-red-bold.png`, not the synthetic NK symbol. Added route/archive and logo tests. Existing issued documents are immutable and not overwritten. Actual rendered PDF, CI and production smoke verification are still required.
 
 ## 2026-11-17 — Stale billing draft revision recovery
 
