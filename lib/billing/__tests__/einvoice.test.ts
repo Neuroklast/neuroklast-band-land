@@ -1,4 +1,5 @@
 import { describe,expect,it } from 'vitest'
+import { writeFileSync } from 'node:fs'
 import { renderXRechnung } from '../einvoice'
 import type { DocumentInvoice } from '../documents'
 
@@ -26,6 +27,7 @@ describe('XRechnung 3.0 UBL',()=>{
  it('generates structured XML from schema-validated UBL with correct VAT groups',async()=>{
   const result=await renderXRechnung(example)
   const xml=result.xml.toString('utf8')
+  if(process.env.BILLING_KOSIT_FIXTURE_PATH)writeFileSync(process.env.BILLING_KOSIT_FIXTURE_PATH,result.xml)
   expect(xml).toContain('RE-2026-000001')
   expect(xml).toContain('PO-2026-123')
   expect(xml).toContain('321.25')
