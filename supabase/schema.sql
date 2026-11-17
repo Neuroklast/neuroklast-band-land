@@ -2445,6 +2445,8 @@ CREATE TABLE IF NOT EXISTS public.billing_settings (
   seller_country text NOT NULL DEFAULT 'DE',
   seller_tax_id text NOT NULL DEFAULT '',
   seller_email text NOT NULL DEFAULT '',
+  seller_phone text NOT NULL DEFAULT '',
+  seller_contact_name text NOT NULL DEFAULT '',
   seller_iban text NOT NULL DEFAULT '',
   seller_bic text NOT NULL DEFAULT '',
   tax_mode text NOT NULL DEFAULT 'unverified' CHECK (tax_mode IN ('unverified','small_business','vat_registered')),
@@ -2460,12 +2462,16 @@ CREATE TABLE IF NOT EXISTS public.billing_customers (
   city text NOT NULL DEFAULT '',
   country text NOT NULL DEFAULT 'DE',
   vat_id text,
+  buyer_reference text NOT NULL DEFAULT '',
   contact_name text,
   notes text,
   archived boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.billing_customers ADD COLUMN IF NOT EXISTS buyer_reference text NOT NULL DEFAULT '';
+ALTER TABLE public.billing_settings ADD COLUMN IF NOT EXISTS seller_phone text NOT NULL DEFAULT '';
+ALTER TABLE public.billing_settings ADD COLUMN IF NOT EXISTS seller_contact_name text NOT NULL DEFAULT '';
 CREATE INDEX IF NOT EXISTS billing_customers_name_idx ON public.billing_customers (name);
 CREATE TABLE IF NOT EXISTS public.billing_sequences (
   issue_year integer PRIMARY KEY CHECK (issue_year BETWEEN 2000 AND 2200),
@@ -2486,6 +2492,8 @@ CREATE TABLE IF NOT EXISTS public.billing_invoices (
   recipient jsonb NOT NULL DEFAULT '{}'::jsonb,
   lines jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(lines)='array'),
   tax_mode text NOT NULL DEFAULT 'unverified' CHECK (tax_mode IN ('unverified','small_business','vat_registered')),
+  e_invoice_profile text NOT NULL DEFAULT 'none' CHECK (e_invoice_profile IN ('none','xrechnung')),
+  buyer_reference text NOT NULL DEFAULT '',
   subtotal_cents bigint NOT NULL DEFAULT 0 CHECK (subtotal_cents >= 0),
   tax_cents bigint NOT NULL DEFAULT 0 CHECK (tax_cents >= 0),
   total_cents bigint NOT NULL DEFAULT 0 CHECK (total_cents >= 0),
@@ -2494,11 +2502,13 @@ CREATE TABLE IF NOT EXISTS public.billing_invoices (
   issued_at timestamptz,
   pdf_object_key text,
   fodt_object_key text,
+  xrechnung_object_key text,
   document_sha256 jsonb NOT NULL DEFAULT '{}'::jsonb,
   document_error_at timestamptz,
   revision integer NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT billing_invoice_xrechnung_archive CHECK (status <> 'issued' OR e_invoice_profile <> 'xrechnung' OR xrechnung_object_key IS NOT NULL),
   CONSTRAINT billing_invoice_state CHECK (
     (status='draft' AND number IS NULL AND issued_at IS NULL)
     OR (status='preparing' AND number IS NOT NULL AND issued_at IS NULL)
@@ -2506,6 +2516,9 @@ CREATE TABLE IF NOT EXISTS public.billing_invoices (
        AND pdf_object_key IS NOT NULL AND fodt_object_key IS NOT NULL)
   )
 );
+ALTER TABLE public.billing_invoices ADD COLUMN IF NOT EXISTS e_invoice_profile text NOT NULL DEFAULT 'none';
+ALTER TABLE public.billing_invoices ADD COLUMN IF NOT EXISTS buyer_reference text NOT NULL DEFAULT '';
+ALTER TABLE public.billing_invoices ADD COLUMN IF NOT EXISTS xrechnung_object_key text;
 CREATE INDEX IF NOT EXISTS billing_invoices_search_idx ON public.billing_invoices (created_at DESC);
 CREATE INDEX IF NOT EXISTS billing_invoices_customer_idx ON public.billing_invoices (customer_id, created_at DESC);
 CREATE TABLE IF NOT EXISTS public.billing_payments (
@@ -2544,7 +2557,8 @@ BEGIN
     OR NEW.service_date IS DISTINCT FROM OLD.service_date OR NEW.due_date IS DISTINCT FROM OLD.due_date
     OR NEW.lines IS DISTINCT FROM OLD.lines OR NEW.seller IS DISTINCT FROM OLD.seller
     OR NEW.recipient IS DISTINCT FROM OLD.recipient OR NEW.note IS DISTINCT FROM OLD.note
-    OR NEW.tax_mode IS DISTINCT FROM OLD.tax_mode OR NEW.total_cents IS DISTINCT FROM OLD.total_cents
+    OR NEW.tax_mode IS DISTINCT FROM OLD.tax_mode OR NEW.e_invoice_profile IS DISTINCT FROM OLD.e_invoice_profile
+    OR NEW.buyer_reference IS DISTINCT FROM OLD.buyer_reference OR NEW.total_cents IS DISTINCT FROM OLD.total_cents
     OR NEW.subtotal_cents IS DISTINCT FROM OLD.subtotal_cents OR NEW.tax_cents IS DISTINCT FROM OLD.tax_cents
     OR NEW.number IS DISTINCT FROM OLD.number
   ) THEN
@@ -2582,7 +2596,8 @@ BEGIN
       'name',conf.seller_name,'street',conf.seller_street,
       'postal_code',conf.seller_postal_code,'city',conf.seller_city,
       'country',conf.seller_country,'tax_id',conf.seller_tax_id,
-      'email',conf.seller_email,'iban',conf.seller_iban,'bic',conf.seller_bic
+      'email',conf.seller_email,'phone',conf.seller_phone,'contact_name',conf.seller_contact_name,
+      'iban',conf.seller_iban,'bic',conf.seller_bic
   ) THEN
     RAISE EXCEPTION 'Seller details changed; save and review the draft again';
   END IF;
@@ -2617,8 +2632,10 @@ BEGIN
   RETURN v;
 END $$;
 
+DROP FUNCTION IF EXISTS public.billing_finalize_issue(uuid,uuid,text,text,jsonb);
 CREATE OR REPLACE FUNCTION public.billing_finalize_issue(
-  p_id uuid, p_actor uuid, p_pdf_key text, p_fodt_key text, p_hashes jsonb
+  p_id uuid, p_actor uuid, p_pdf_key text, p_fodt_key text, p_hashes jsonb,
+  p_xrechnung_key text DEFAULT NULL
 ) RETURNS public.billing_invoices LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
 DECLARE v public.billing_invoices%ROWTYPE;
 BEGIN
@@ -2626,6 +2643,7 @@ BEGIN
   IF NOT FOUND THEN RAISE EXCEPTION 'Invoice not found'; END IF;
   IF v.status='issued' THEN
     IF v.pdf_object_key=p_pdf_key AND v.fodt_object_key=p_fodt_key
+       AND v.xrechnung_object_key IS NOT DISTINCT FROM p_xrechnung_key
        AND v.document_sha256=p_hashes THEN
       RETURN v;
     END IF;
@@ -2641,6 +2659,24 @@ BEGIN
      OR NOT COALESCE((p_hashes->>'fodt') ~ '^[0-9a-f]{64}$',false)
      OR NOT COALESCE((p_hashes->>'odt') ~ '^[0-9a-f]{64}$',false) THEN
     RAISE EXCEPTION 'PDF, FODT and ODT SHA-256 checksums are required';
+  END IF;
+  IF v.e_invoice_profile='xrechnung' THEN
+    IF p_xrechnung_key IS DISTINCT FROM ('billing/'||p_id||'/'||v.number||'.xml')
+       OR NOT COALESCE((p_hashes->>'xrechnung') ~ '^[0-9a-f]{64}
+    pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,xrechnung_object_key=p_xrechnung_key,
+    document_sha256=p_hashes,document_error_at=NULL,updated_at=now()
+    WHERE id=p_id RETURNING * INTO v;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(p_id,p_actor,'invoice_issued',jsonb_build_object('number',v.number,'hashes',p_hashes));
+  RETURN v;
+END $$;
+
+DROP FUNCTION IF EXISTS public.billing_record_payment(uuid,uuid,bigint,date,text);
+,false) THEN
+      RAISE EXCEPTION 'Validated XRechnung XML archive and checksum are required';
+    END IF;
+  ELSIF p_xrechnung_key IS NOT NULL OR p_hashes ? 'xrechnung' THEN
+    RAISE EXCEPTION 'Unexpected electronic invoice for standard document';
   END IF;
   UPDATE public.billing_invoices SET status='issued',issued_at=now(),
     pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,
@@ -2690,10 +2726,10 @@ ALTER TABLE public.billing_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.billing_events ENABLE ROW LEVEL SECURITY;
 -- No authenticated/anon policies: all data access is through the authenticated server domain.
 REVOKE ALL ON FUNCTION public.billing_prepare_issue(uuid,uuid) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb,text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text,uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.billing_prepare_issue(uuid,uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb) TO service_role;
+GRANT EXECUTE ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb,text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text,uuid) TO service_role;
 
 
