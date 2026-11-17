@@ -50,6 +50,7 @@ export async function saveBillingDraft(form:FormData) {
 }
 export async function issueBillingDraft(form:FormData) {
   const actor=await admin()
+  if(text(form,'confirm')!=='yes')throw new Error('Confirm the stored draft before issuing')
   const id=requireId(form,'id')
   await issueBillingInvoice(id,actor)
   touch()
