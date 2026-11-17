@@ -3,7 +3,7 @@ import { z, ZodError } from 'zod'
 import { createAdminClient } from '@/lib/supabaseAdmin'
 import { createBillingCustomer, updateBillingCustomer, createBillingDraft, updateBillingDraft,
   getBillingCustomer, listBillingCustomers, listBillingInvoices, getBillingInvoice,
-  issueBillingInvoice, invoiceDocumentUrl } from '@/lib/billing/service'
+  issueBillingInvoice, invoiceDocumentUrl, previewBillingXRechnung } from '@/lib/billing/service'
 import { McpAccessError } from './server'
 
 const db=()=>createAdminClient()
@@ -26,7 +26,8 @@ export const BILLING_MCP_TOOLS=[
  {name:'billing_invoice_update_draft',description:'Edit an unissued draft using revision-based concurrency control.',inputSchema:{type:'object',properties:{id,revision:{type:'integer',minimum:0},draft:object},required:['id','revision','draft'],additionalProperties:false},annotations:write},
  {name:'billing_invoice_request_issue',description:'Queue issuance for separate MFA-verified human approval. Does not issue now.',inputSchema:{type:'object',properties:{id},required:['id'],additionalProperties:false},annotations:write},
  {name:'billing_invoice_request_payment',description:'Queue a recorded payment for human approval. No funds are transferred.',inputSchema:{type:'object',properties:{id,amount_cents:{type:'integer',minimum:1},paid_on:{type:'string'},reference:{type:'string'}},required:['id','amount_cents','paid_on'],additionalProperties:false},annotations:write},
- {name:'billing_invoice_document',description:'Get short-lived signed document URL for an issued invoice.',inputSchema:{type:'object',properties:{id,format:{type:'string',enum:['pdf','fodt','odt']}},required:['id','format'],additionalProperties:false},annotations:readonly},
+ {name:'billing_invoice_check_xrechnung',description:'Validate stored invoice data against local XRechnung rules before issuance.',inputSchema:{type:'object',properties:{id},required:['id'],additionalProperties:false},annotations:readonly},
+ {name:'billing_invoice_document',description:'Get short-lived signed document URL for an issued invoice.',inputSchema:{type:'object',properties:{id,format:{type:'string',enum:['pdf','fodt','odt','xrechnung']}},required:['id','format'],additionalProperties:false},annotations:readonly},
  {name:'billing_review_requests',description:'List the current pending MCP billing approvals.',inputSchema:{type:'object',properties:{limit:{type:'integer',minimum:1,maximum:50}},additionalProperties:false},annotations:readonly}
 ] as const
 
@@ -114,8 +115,9 @@ export async function callBillingMcp(name:string,raw:Record<string,unknown>,ctx:
     const value=z.object({id:uuid,amount_cents:z.number().int().positive().safe(),paid_on:z.iso.date(),reference:z.string().max(240).optional()}).strict().parse(raw)
     return queue(context,'record_payment',value.id,{amount_cents:value.amount_cents,paid_on:value.paid_on,reference:value.reference??''})
    }
+   case 'billing_invoice_check_xrechnung':return previewBillingXRechnung(uuid.parse(raw.id))
    case 'billing_invoice_document':{
-    const value=z.object({id:uuid,format:z.enum(['pdf','fodt','odt'])}).strict().parse(raw)
+    const value=z.object({id:uuid,format:z.enum(['pdf','fodt','odt','xrechnung'])}).strict().parse(raw)
     return {url:await invoiceDocumentUrl(value.id,value.format),expires_in_seconds:90}
    }
    case 'billing_review_requests':{
