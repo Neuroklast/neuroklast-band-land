@@ -2763,8 +2763,10 @@ GRANT EXECUTE ON FUNCTION public.billing_seed_sequence(integer,bigint,uuid) TO s
 CREATE OR REPLACE FUNCTION public.billing_prevent_destructive_changes() RETURNS trigger
 LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
 BEGIN
-  IF TG_TABLE_NAME='billing_invoices' AND TG_OP='DELETE' AND OLD.status='draft' THEN
-    RETURN OLD;
+  IF TG_TABLE_NAME='billing_invoices' THEN
+    IF TG_OP='DELETE' AND OLD.status='draft' THEN
+      RETURN OLD;
+    END IF;
   END IF;
   RAISE EXCEPTION 'Financial records are append-only; use a formally linked correction';
 END $$;
@@ -2791,9 +2793,11 @@ BEGIN
   IF TG_TABLE_NAME='billing_customers' THEN
     INSERT INTO public.billing_events(customer_id,actor_id,operation)
     VALUES (NEW.id,NEW.updated_by,CASE WHEN TG_OP='INSERT' THEN 'customer_created' ELSE 'customer_updated' END);
-  ELSIF TG_TABLE_NAME='billing_invoices' AND NEW.status='draft' THEN
-    INSERT INTO public.billing_events(invoice_id,actor_id,operation)
-    VALUES (NEW.id,NEW.updated_by,CASE WHEN TG_OP='INSERT' THEN 'draft_created' ELSE 'draft_updated' END);
+  ELSIF TG_TABLE_NAME='billing_invoices' THEN
+    IF NEW.status='draft' THEN
+      INSERT INTO public.billing_events(invoice_id,actor_id,operation)
+      VALUES (NEW.id,NEW.updated_by,CASE WHEN TG_OP='INSERT' THEN 'draft_created' ELSE 'draft_updated' END);
+    END IF;
   ELSIF TG_TABLE_NAME='billing_settings' THEN
     INSERT INTO public.billing_events(actor_id,operation,details)
     VALUES (NEW.updated_by,'seller_settings_updated',jsonb_build_object('tax_mode',NEW.tax_mode));
