@@ -42,7 +42,7 @@ export async function updateBillingSettings(input:unknown,actorId:string) {
   uuid.parse(actorId)
   const clean=sellerInput.parse(input)
   // Changing the tax mode affects only new drafts. Previously reserved numbers stay immutable.
-  const {data,error}=await db().from('billing_settings').upsert({id:1,...clean,updated_at:new Date().toISOString()}).select('*').single()
+  const {data,error}=await db().from('billing_settings').upsert({id:1,...clean,updated_by:actorId,updated_at:new Date().toISOString()}).select('*').single()
   assert(error,'Could not save seller settings')
   return data
 }
@@ -50,7 +50,7 @@ export async function seedBillingSequence(year:number,nextValue:number,actorId:s
  uuid.parse(actorId)
  if(!Number.isSafeInteger(year)||year<2000||year>2200||!Number.isSafeInteger(nextValue)||nextValue<1||nextValue>999999)
    throw new Error('Invalid sequence year/next number')
- const {data,error}=await db().rpc('billing_seed_sequence',{p_year:year,p_next:nextValue})
+ const {data,error}=await db().rpc('billing_seed_sequence',{p_year:year,p_next:nextValue,p_actor:actorId})
  assert(error,'Number sequence already used or unavailable')
  return data
 }
@@ -72,14 +72,14 @@ export async function getBillingCustomer(id:string) {
 export async function createBillingCustomer(input:unknown,actorId:string) {
   uuid.parse(actorId)
   const clean=customerInput.parse(input)
-  const {data,error}=await db().from('billing_customers').insert(clean).select('*').single()
+  const {data,error}=await db().from('billing_customers').insert({...clean,created_by:actorId,updated_by:actorId}).select('*').single()
   assert(error,'Customer creation failed')
   return data
 }
 export async function updateBillingCustomer(id:string,input:unknown,actorId:string) {
   uuid.parse(actorId); uuid.parse(id)
   const clean=customerInput.parse(input)
-  const {data,error}=await db().from('billing_customers').update({...clean,updated_at:new Date().toISOString()}).eq('id',id).select('*').single()
+  const {data,error}=await db().from('billing_customers').update({...clean,updated_by:actorId,updated_at:new Date().toISOString()}).eq('id',id).select('*').single()
   assert(error,'Customer update failed')
   return data
 }
@@ -123,7 +123,7 @@ async function buildDraft(input:unknown) {
 export async function createBillingDraft(input:unknown,actorId:string) {
   uuid.parse(actorId)
   const fields=await buildDraft(input)
-  const {data,error}=await db().from('billing_invoices').insert({...fields,created_by:actorId}).select('*').single()
+  const {data,error}=await db().from('billing_invoices').insert({...fields,created_by:actorId,updated_by:actorId}).select('*').single()
   assert(error,'Invoice draft could not be created')
   return data as Row
 }
@@ -131,7 +131,7 @@ export async function updateBillingDraft(id:string,input:unknown,actorId:string,
   uuid.parse(id);uuid.parse(actorId)
   if(!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new Error('Invalid draft version')
   const fields=await buildDraft(input)
-  const {data,error}=await db().from('billing_invoices').update({...fields,updated_at:new Date().toISOString(),revision:expectedRevision+1})
+  const {data,error}=await db().from('billing_invoices').update({...fields,updated_by:actorId,updated_at:new Date().toISOString(),revision:expectedRevision+1})
     .eq('id',id).eq('status','draft').eq('revision',expectedRevision).select('*').maybeSingle()
   assert(error,'Invoice update failed')
   if(!data)throw new Error('Invoice changed or already reserved; reload the draft')
