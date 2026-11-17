@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateInvoice, parseEurosToCents, parseQuantityMilli, draftInput } from '../domain'
+import { calculateInvoice, parseEurosToCents, parseQuantityMilli, draftInput, billingPaymentStatus } from '../domain'
 
 describe('invoice money invariants',()=>{
  it('parses decimal money without binary floating-point rounding',()=>{
@@ -35,5 +35,21 @@ describe('invoice money invariants',()=>{
  })
  it('requires valid customer ID, dates and at least one line',()=>{
   expect(draftInput.safeParse({customer_id:'x',issue_date:'2026-11-17',service_date:'2026-11-17',due_date:'2026-11-30',lines:[]}).success).toBe(false)
+ })
+})
+
+describe('invoice payment display state',()=>{
+ it('keeps drafts separate from funds',()=>{
+  expect(billingPaymentStatus('draft','2026-11-01',60000,0,'2026-11-17')).toBe('draft')
+  expect(billingPaymentStatus('preparing','2026-11-01',60000,0,'2026-11-17')).toBe('preparing')
+ })
+ it('shows overdue, partial, and settled invoices',()=>{
+  expect(billingPaymentStatus('issued','2026-11-01',60000,10000,'2026-11-17')).toBe('overdue')
+  expect(billingPaymentStatus('issued','2026-12-01',60000,10000,'2026-11-17')).toBe('partial')
+  expect(billingPaymentStatus('issued','2026-12-01',60000,60000,'2026-11-17')).toBe('paid')
+  expect(billingPaymentStatus('issued','2026-12-01',60000,0,'2026-11-17')).toBe('open')
+ })
+ it('flags overpayments as inconsistent instead of showing negative outstanding',()=>{
+  expect(billingPaymentStatus('issued','2026-12-01',60000,70000,'2026-11-17')).toBe('invalid')
  })
 })
