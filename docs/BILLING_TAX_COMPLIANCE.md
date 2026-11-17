@@ -19,7 +19,7 @@ Status: design constraints and implementation limitations, **not** tax/legal app
 - A simple PDF, FODT/ODT or printable HTML is a **sonstige Rechnung**, not the XML-based E-Rechnung required by EN 16931.
 - Since 2025-01-01, in-scope German B2B billing requires E-Rechnung with transition windows for issuance. The general transition through 2026 and qualifying 800,000-euro turnover transition through 2027 are not a waiver of recipients' ability to receive e-invoices.
 - Kleinunternehmer remain excluded from mandatory E-Rechnung issuance in their exemption cases, but must be able to receive E-Rechnungen.
-- ZUGFeRD/Factur-X and XRechnung require genuine validated EN 16931 structured XML and, in the former case, suitable PDF/A-3 embedding. None is implemented yet. Do not rename ordinary PDF to ZUGFeRD.
+- Optional XRechnung 3.x UBL XML generation is present for domestic German VAT-registered B2B scenarios, backed by `@e-invoice-eu/core`; the independent KoSIT validator must pass before release. ZUGFeRD/Factur-X requires independently validated EN16931 XML and PDF/A-3 embedding and is **not** implemented. Never rename an ordinary PDF to ZUGFeRD.
 - Payment event recording in CMS is not itself bank settlement verification and does not move money.
 
 ## Stripe Managed Payments
@@ -35,6 +35,8 @@ Managed Payments is configured in the existing shop as Merchant of Record. The d
 
 Before production: professional review of invoice layout, mandatory particulars, tax treatment, e-invoice obligation, electronic retention, GoBD controls and actual seller identity.
 
-Current revisions produce an ordinary PDF plus standards-based ODT/FODT files. The files themselves are not qualified EN 16931 electronic invoices. Structured XML and an independently validated PDF/A-3 profile remain explicitly outside the production-ready scope.
+Current revisions produce an ordinary PDF plus standards-based ODT/FODT files. The files themselves are not qualified EN 16931 electronic invoices. The XRechnung XML generator is implemented but still awaiting independent KoSIT and accounting acceptance. PDF/A-3 and Factur-X remain outside the implemented scope.
 
 **Sequence activation:** Every annual invoice-number range must be explicitly confirmed through the MFA-protected billing settings, after reconciling prior external/paper invoices. SQL blocks issuance of any invoice dated in a year whose start value has not been confirmed. Reconfirmation with the exact same starting value is idempotent, but changing a confirmed value is forbidden.
+
+Current XRechnung restrictions: no §19 XML category mapping, no international VAT treatment, no reverse charge, no credit notes, no automatic Leitweg-ID guess. An explicit buyer reference is required. The official validator release used for CI is KoSIT 1.6.3 with the 2026-08-31 XRechnung 3.0.2 configuration. The module must not claim blanket conformity from local JSON Schema validation alone.
