@@ -2,6 +2,7 @@ import { calculateInvoice, formatCents } from './domain'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import sharp from 'sharp'
+import { deflateSync } from 'node:zlib'
 import type { DocumentInvoice } from './documents'
 
 /**
@@ -104,11 +105,13 @@ async function brandedLogo():Promise<EmbeddedLogo> {
       const {data,info} = await sharp(source)
         .resize({width:1200,withoutEnlargement:true})
         .flatten({background:'#ffffff'})
-        .jpeg({quality:94,chromaSubsampling:'4:4:4'})
+        .removeAlpha()
+        .raw()
         .toBuffer({resolveWithObject:true})
       if(info.width<1||info.height<1||info.channels!==3)
         throw new Error('Invalid canonical invoice logo')
-      return {bytes:data,width:info.width,height:info.height}
+      // A lossless RGB XObject preserves the original hard-edged wordmark.
+      return {bytes:deflateSync(data,{level:9}),width:info.width,height:info.height}
     })().catch(error=>{logoPromise=undefined;throw error})
   }
   return logoPromise
@@ -250,10 +253,10 @@ function pdfFromPages(pages: Sheet[], logo:EmbeddedLogo): Buffer {
   const pagesRef = add('')
   const regular = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>')
   const bold = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>')
-  // JPEG XObject uses the exact branded artwork rather than a substituted font mark.
+  // Lossless compressed RGB image XObject preserves the actual branded artwork.
   const image = add('<< /Type /XObject /Subtype /Image /Width ' + logo.width +
     ' /Height ' + logo.height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8' +
-    ' /Filter /DCTDecode /Length ' + logo.bytes.length + ' >>\nstream\n' +
+    ' /Filter /FlateDecode /Length ' + logo.bytes.length + ' >>\nstream\n' +
     logo.bytes.toString('latin1') + '\nendstream')
   const references: number[] = []
   for (const p of pages) {
