@@ -2429,3 +2429,231 @@ CREATE INDEX IF NOT EXISTS idx_plugin_releases_published_by_fk ON public.plugin_
 CREATE INDEX IF NOT EXISTS idx_privacy_requests_completed_by_fk ON public.privacy_requests (completed_by);
 CREATE INDEX IF NOT EXISTS idx_privacy_requests_identity_verified_by_fk ON public.privacy_requests (identity_verified_by);
 CREATE INDEX IF NOT EXISTS idx_sync_jobs_created_by_fk ON public.sync_jobs (created_by);
+
+
+-- ============================================================
+-- Billing domain: invoices for services sold by the actual seller.
+-- Stripe Managed Payments / merchant-of-record sales remain external.
+-- Changes are create-only/idempotent; no destructive migration.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.billing_settings (
+  id integer PRIMARY KEY DEFAULT 1 CHECK (id=1),
+  seller_name text NOT NULL DEFAULT '',
+  seller_street text NOT NULL DEFAULT '',
+  seller_postal_code text NOT NULL DEFAULT '',
+  seller_city text NOT NULL DEFAULT '',
+  seller_country text NOT NULL DEFAULT 'DE',
+  seller_tax_id text NOT NULL DEFAULT '',
+  seller_email text NOT NULL DEFAULT '',
+  seller_iban text NOT NULL DEFAULT '',
+  seller_bic text NOT NULL DEFAULT '',
+  tax_mode text NOT NULL DEFAULT 'unverified' CHECK (tax_mode IN ('unverified','small_business','vat_registered')),
+  number_prefix text NOT NULL DEFAULT 'RE' CHECK (number_prefix ~ '^[A-Z]{2,8}$'),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS public.billing_customers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL CHECK (length(trim(name)) > 0),
+  email text,
+  street text NOT NULL DEFAULT '',
+  postal_code text NOT NULL DEFAULT '',
+  city text NOT NULL DEFAULT '',
+  country text NOT NULL DEFAULT 'DE',
+  vat_id text,
+  contact_name text,
+  notes text,
+  archived boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS billing_customers_name_idx ON public.billing_customers (name);
+CREATE TABLE IF NOT EXISTS public.billing_sequences (
+  issue_year integer PRIMARY KEY CHECK (issue_year BETWEEN 2000 AND 2200),
+  next_value bigint NOT NULL DEFAULT 1 CHECK (next_value BETWEEN 1 AND 999999)
+);
+CREATE TABLE IF NOT EXISTS public.billing_invoices (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id uuid REFERENCES public.billing_customers(id) ON DELETE RESTRICT,
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','preparing','issued')),
+  number text UNIQUE,
+  issue_date date NOT NULL DEFAULT CURRENT_DATE,
+  service_date date NOT NULL DEFAULT CURRENT_DATE,
+  due_date date NOT NULL DEFAULT (CURRENT_DATE + 14),
+  currency text NOT NULL DEFAULT 'EUR' CHECK (currency='EUR'),
+  seller jsonb NOT NULL DEFAULT '{}'::jsonb,
+  recipient jsonb NOT NULL DEFAULT '{}'::jsonb,
+  lines jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(lines)='array'),
+  tax_mode text NOT NULL DEFAULT 'unverified' CHECK (tax_mode IN ('unverified','small_business','vat_registered')),
+  subtotal_cents bigint NOT NULL DEFAULT 0 CHECK (subtotal_cents >= 0),
+  tax_cents bigint NOT NULL DEFAULT 0 CHECK (tax_cents >= 0),
+  total_cents bigint NOT NULL DEFAULT 0 CHECK (total_cents >= 0),
+  note text NOT NULL DEFAULT '',
+  created_by uuid,
+  issued_at timestamptz,
+  pdf_object_key text,
+  fodt_object_key text,
+  document_sha256 jsonb NOT NULL DEFAULT '{}'::jsonb,
+  document_error_at timestamptz,
+  revision integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT billing_invoice_state CHECK (
+    (status='draft' AND number IS NULL AND issued_at IS NULL)
+    OR (status='preparing' AND number IS NOT NULL AND issued_at IS NULL)
+    OR (status='issued' AND number IS NOT NULL AND issued_at IS NOT NULL
+       AND pdf_object_key IS NOT NULL AND fodt_object_key IS NOT NULL)
+  )
+);
+CREATE INDEX IF NOT EXISTS billing_invoices_search_idx ON public.billing_invoices (created_at DESC);
+CREATE INDEX IF NOT EXISTS billing_invoices_customer_idx ON public.billing_invoices (customer_id, created_at DESC);
+CREATE TABLE IF NOT EXISTS public.billing_payments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  invoice_id uuid NOT NULL REFERENCES public.billing_invoices(id) ON DELETE RESTRICT,
+  amount_cents bigint NOT NULL CHECK (amount_cents > 0),
+  paid_on date NOT NULL,
+  reference text NOT NULL DEFAULT '',
+  created_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS billing_payments_invoice_idx ON public.billing_payments (invoice_id);
+CREATE TABLE IF NOT EXISTS public.billing_events (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  invoice_id uuid REFERENCES public.billing_invoices(id) ON DELETE RESTRICT,
+  customer_id uuid REFERENCES public.billing_customers(id) ON DELETE RESTRICT,
+  actor_id uuid,
+  operation text NOT NULL,
+  details jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS billing_events_invoice_idx ON public.billing_events (invoice_id, created_at DESC);
+
+-- Never mutate any committed document/amount after issuance, including via service role.
+CREATE OR REPLACE FUNCTION public.billing_protect_issued() RETURNS trigger
+LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
+BEGIN
+  IF OLD.status = 'issued' AND NEW IS DISTINCT FROM OLD THEN
+    RAISE EXCEPTION 'An issued invoice is immutable; create a correction document';
+  END IF;
+  IF OLD.status = 'preparing' AND (
+    NEW.customer_id IS DISTINCT FROM OLD.customer_id OR NEW.issue_date IS DISTINCT FROM OLD.issue_date
+    OR NEW.service_date IS DISTINCT FROM OLD.service_date OR NEW.due_date IS DISTINCT FROM OLD.due_date
+    OR NEW.lines IS DISTINCT FROM OLD.lines OR NEW.seller IS DISTINCT FROM OLD.seller
+    OR NEW.recipient IS DISTINCT FROM OLD.recipient OR NEW.note IS DISTINCT FROM OLD.note
+    OR NEW.tax_mode IS DISTINCT FROM OLD.tax_mode OR NEW.total_cents IS DISTINCT FROM OLD.total_cents
+    OR NEW.subtotal_cents IS DISTINCT FROM OLD.subtotal_cents OR NEW.tax_cents IS DISTINCT FROM OLD.tax_cents
+    OR NEW.number IS DISTINCT FROM OLD.number
+  ) THEN
+    RAISE EXCEPTION 'Preparing invoice content is frozen';
+  END IF;
+  RETURN NEW;
+END $$;
+DROP TRIGGER IF EXISTS billing_protect_issued_trigger ON public.billing_invoices;
+CREATE TRIGGER billing_protect_issued_trigger BEFORE UPDATE ON public.billing_invoices
+FOR EACH ROW EXECUTE FUNCTION public.billing_protect_issued();
+
+CREATE OR REPLACE FUNCTION public.billing_prepare_issue(p_id uuid, p_actor uuid)
+RETURNS public.billing_invoices LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
+DECLARE
+  v public.billing_invoices%ROWTYPE;
+  conf public.billing_settings%ROWTYPE;
+  counter bigint;
+  issue_year integer;
+BEGIN
+  SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Invoice not found'; END IF;
+  IF v.status='preparing' THEN RETURN v; END IF;
+  IF v.status <> 'draft' THEN RAISE EXCEPTION 'Only a draft can be issued'; END IF;
+  SELECT * INTO conf FROM public.billing_settings WHERE id=1;
+  IF NOT FOUND OR conf.tax_mode='unverified' OR
+     trim(conf.seller_name)='' OR trim(conf.seller_street)='' OR
+     trim(conf.seller_postal_code)='' OR trim(conf.seller_city)='' OR
+     trim(conf.seller_tax_id)='' THEN
+    RAISE EXCEPTION 'Seller identity, address, tax identifier and tax mode must be configured';
+  END IF;
+  IF v.tax_mode <> conf.tax_mode THEN RAISE EXCEPTION 'Tax setting changed; review the draft'; END IF;
+  IF v.total_cents<=0 OR jsonb_array_length(v.lines)=0 THEN
+    RAISE EXCEPTION 'Cannot issue an empty invoice';
+  END IF;
+  IF nullif(trim(v.recipient->>'name'),'') IS NULL OR
+     nullif(trim(v.recipient->>'street'),'') IS NULL OR
+     nullif(trim(v.recipient->>'postal_code'),'') IS NULL OR
+     nullif(trim(v.recipient->>'city'),'') IS NULL THEN
+    RAISE EXCEPTION 'Recipient billing address is incomplete';
+  END IF;
+  issue_year := EXTRACT(YEAR FROM v.issue_date)::integer;
+  INSERT INTO public.billing_sequences(issue_year,next_value)
+    VALUES(issue_year,1) ON CONFLICT(issue_year) DO NOTHING;
+  UPDATE public.billing_sequences SET next_value=next_value+1
+    WHERE billing_sequences.issue_year=issue_year AND next_value<1000000
+    RETURNING next_value-1 INTO counter;
+  IF counter IS NULL THEN RAISE EXCEPTION 'Invoice number sequence exhausted'; END IF;
+  UPDATE public.billing_invoices SET
+    status='preparing',
+    number=conf.number_prefix||'-'||issue_year||'-'||lpad(counter::text,6,'0'),
+    seller=jsonb_build_object(
+      'name',conf.seller_name, 'street',conf.seller_street,
+      'postal_code',conf.seller_postal_code,'city',conf.seller_city,
+      'country',conf.seller_country,'tax_id',conf.seller_tax_id,
+      'email',conf.seller_email,'iban',conf.seller_iban,'bic',conf.seller_bic),
+    revision=revision+1, updated_at=now()
+    WHERE id=p_id RETURNING * INTO v;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(p_id,p_actor,'invoice_number_reserved',jsonb_build_object('number',v.number));
+  RETURN v;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.billing_finalize_issue(
+  p_id uuid, p_actor uuid, p_pdf_key text, p_fodt_key text, p_hashes jsonb
+) RETURNS public.billing_invoices LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
+DECLARE v public.billing_invoices%ROWTYPE;
+BEGIN
+  SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
+  IF NOT FOUND OR v.status<>'preparing' THEN RAISE EXCEPTION 'Invoice not preparing'; END IF;
+  IF p_pdf_key<>('billing/'||p_id||'/'||v.number||'.pdf') OR
+     p_fodt_key<>('billing/'||p_id||'/'||v.number||'.fodt') THEN
+     RAISE EXCEPTION 'Unexpected document key';
+  END IF;
+  IF length(coalesce(p_hashes->>'pdf',''))<>64 OR length(coalesce(p_hashes->>'fodt',''))<>64 THEN
+    RAISE EXCEPTION 'Document hashes are required';
+  END IF;
+  UPDATE public.billing_invoices SET status='issued',issued_at=now(),
+    pdf_object_key=p_pdf_key,fodt_object_key=p_fodt_key,
+    document_sha256=p_hashes,document_error_at=NULL,updated_at=now()
+    WHERE id=p_id RETURNING * INTO v;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(p_id,p_actor,'invoice_issued',jsonb_build_object('number',v.number,'hashes',p_hashes));
+  RETURN v;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.billing_record_payment(
+  p_id uuid, p_actor uuid, p_amount bigint, p_paid_on date, p_reference text
+) RETURNS public.billing_payments LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
+DECLARE v public.billing_invoices%ROWTYPE;
+  outstanding bigint; result public.billing_payments%ROWTYPE;
+BEGIN
+  SELECT * INTO v FROM public.billing_invoices WHERE id=p_id FOR UPDATE;
+  IF NOT FOUND OR v.status<>'issued' THEN RAISE EXCEPTION 'Invoice must be issued'; END IF;
+  SELECT v.total_cents-COALESCE(SUM(amount_cents),0) INTO outstanding
+    FROM public.billing_payments WHERE invoice_id=p_id;
+  IF p_amount<=0 OR p_amount>outstanding THEN RAISE EXCEPTION 'Invalid payment amount'; END IF;
+  INSERT INTO public.billing_payments(invoice_id,amount_cents,paid_on,reference,created_by)
+    VALUES(p_id,p_amount,p_paid_on,left(coalesce(p_reference,''),240),p_actor)
+    RETURNING * INTO result;
+  INSERT INTO public.billing_events(invoice_id,actor_id,operation,details)
+    VALUES(p_id,p_actor,'payment_recorded',jsonb_build_object('payment_id',result.id,'amount_cents',p_amount));
+  RETURN result;
+END $$;
+
+ALTER TABLE public.billing_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_sequences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_invoices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_events ENABLE ROW LEVEL SECURITY;
+-- No authenticated/anon policies: all data access is through the authenticated server domain.
+REVOKE ALL ON FUNCTION public.billing_prepare_issue(uuid,uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.billing_prepare_issue(uuid,uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.billing_finalize_issue(uuid,uuid,text,text,jsonb) TO service_role;
+GRANT EXECUTE ON FUNCTION public.billing_record_payment(uuid,uuid,bigint,date,text) TO service_role;
