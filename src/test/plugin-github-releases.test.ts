@@ -39,6 +39,27 @@ describe('automatic NEUROKORE website releases', () => {
     }
   })
 
+
+  it('accepts product-scoped NeuroSub binaries and rejects other plugin artifacts', () => {
+    const version = '0.2.0-beta.1'
+    const tag = 'neurosub-v' + version
+    const names = ['NEUROSUB-' + version + '-Setup.exe', 'NEUROSUB-' + version + '-win64.zip']
+    const valid = { ...release(), tag_name: tag, assets: names.flatMap(name => [name, name + '.sha256'])
+      .map(name => ({ name, size: 150000, state: 'uploaded', digest: 'sha256:' + 'b'.repeat(64),
+        browser_download_url: 'https://github.com/Neuroklast/vst-releases/releases/download/' + tag + '/' + name })) }
+    expect(parseNeurokoreGitHubReleases([valid])).toEqual([])
+    expect(parsePluginGitHubReleases([valid], 'neurometer')).toEqual([])
+    const [sub] = parsePluginGitHubReleases([valid], 'neurosub')
+    expect(sub.version).toBe(version)
+    expect(sub.artifacts.map(asset => asset.package_type)).toEqual(['installer', 'bundle'])
+    expect(pluginGithubArtifactUrl('neurosub', sub, 'windows-x64', 'installer')).toContain('/' + names[0])
+    expect(pluginGithubArtifactUrl('neurosub', sub, 'windows-x64', 'bundle')).toContain('/' + names[1])
+    expect(pluginGithubArtifactUrl('neurokore', sub, 'windows-x64', 'installer')).toBeNull()
+    const foreign = { ...valid, assets: valid.assets.map(asset => ({ ...asset,
+      browser_download_url: asset.browser_download_url.replace(tag, 'neurokore-v' + version) })) }
+    expect(parsePluginGitHubReleases([foreign], 'neurosub')).toEqual([])
+  })
+
   it('uses distinct product tags and refuses cross-plugin releases', () => {
     const version = '0.9.0-beta.1'
     const meterTag = 'neurometer-v' + version

@@ -43,7 +43,7 @@ export function comparePublicReleaseVersions(left: Pick<PublicRelease, 'version'
   return comparePluginVersions(normalized(left), normalized(right))
 }
 
-export type OfficialPluginSlug = 'neurokore' | 'neurometer'
+export type OfficialPluginSlug = 'neurokore' | 'neurometer' | 'neurosub'
 function releaseTag(slug: OfficialPluginSlug, version: string): string { return `${slug}-v${version}` }
 function assetUrl(version: string, filename: string, slug: OfficialPluginSlug = 'neurokore'): string {
   return `https://github.com/Neuroklast/vst-releases/releases/download/${releaseTag(slug, version)}/${filename}`
@@ -78,7 +78,7 @@ export function parsePluginGitHubReleases(value: unknown, slug: OfficialPluginSl
     releases.push(publicReleaseSchema.parse({ source: 'github',
       id: `d7680219-83f1-4c18-a000-${item.id.toString(16).padStart(12, '0')}`, version,
       channel: version.includes('-alpha') ? 'alpha' : version.includes('-') ? 'beta' : 'stable',
-      title: `${slug.toUpperCase()} ${version}`, changelog: null, release_notes: item.body?.replace(/<!-- (?:neurokore|neurometer)-source-commit:[0-9a-f]{40} -->\s*/g, '').slice(0, 12000) || null,
+      title: `${slug.toUpperCase()} ${version}`, changelog: null, release_notes: item.body?.replace(/<!-- (?:neurokore|neurometer|neurosub)-source-commit:[0-9a-f]{40} -->\s*/g, '').slice(0, 12000) || null,
       published_at: item.published_at, artifacts: bundle ? [installer, bundle] : [installer] }))
   }
   return mergePublicReleaseDownloads([], releases)

@@ -151,7 +151,10 @@ export default async function PluginDownloadPage({ params }: { params: Promise<{
           <section className="space-y-3">
             <h2 className="text-2xl font-semibold">Demo and licence</h2>
             <p>{product.title} can be tried before buying. After that the full version is unlocked with a licence; presets and session settings are kept.</p>
-            <p><a className="underline underline-offset-4" href="/neurokore/account">Manage your licence and downloads</a></p>
+            <p><a className="underline underline-offset-4"
+              href={product.slug === 'neurokore' ? '/neurokore/account' : '/#contact'}>
+              {product.slug === 'neurokore' ? 'Manage your licence and downloads' : 'Licensing and account support'}
+            </a></p>
           </section>
         )}
       </section>
