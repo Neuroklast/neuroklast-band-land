@@ -4,11 +4,15 @@ Path: `https://neuroklast.net/api/mcp`, existing admin-only OAuth, Supabase-auth
 
 ## Tools
 
-Read: `billing_customers_list`, `billing_customer_get`, `billing_invoices_list`, `billing_invoice_get`, `billing_invoice_document`, `billing_review_requests`.
-Write (draft/data only): `billing_customer_create`, `billing_customer_update`, `billing_invoice_create_draft`, `billing_invoice_update_draft`.
+Read: `billing_customers_list`, `billing_customer_get`, `billing_invoices_list`, `billing_invoice_get`, `billing_invoice_document`, `billing_review_requests`, `billing_seller_email_get`.
+Write (draft/data only): `billing_customer_create`, `billing_customer_update`, `billing_invoice_create_draft`, `billing_invoice_update_draft`, `billing_seller_email_update` (contact email only).
 Human approval required: `billing_invoice_request_issue`, `billing_invoice_request_payment`.
 
 All money is entered as integer EUR cents in MCP requests. Invoice lines use `quantity_milli` (1000 = one unit), `unit_cents`, and `tax_rate` 0/7/19 depending on seller mode.
+
+## Seller contact email
+
+Use `billing_seller_email_get` to read the current default contact email, then `billing_seller_email_update` with `email` and `expected_email` (the value just read). The update uses a conditional write on the singleton settings record and fails with 409 on stale or missing settings. Only the email and audit fields change. Both tools retain the existing admin-only OAuth and MFA grant requirements. Newly created drafts use the new email; existing draft snapshots remain unchanged unless explicitly edited through the normal draft service. Reserved and issued invoice snapshots and archived documents are never changed. No generic settings write, tax mode, bank account or invoice-number permission is added.
 
 ## Approval flow
 
