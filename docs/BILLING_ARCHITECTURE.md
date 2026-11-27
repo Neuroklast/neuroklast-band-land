@@ -25,7 +25,7 @@ No silent fallback from a failed DB read to an empty customer/invoice list. Do n
 ## MCP finance boundaries
 
 - Read tools expose private data only after existing OAuth/MFA administrator authentication.
-- Create/update tools are limited to customer and invoice **draft** operations.
+- Create/update tools are limited to customer and invoice **draft** operations, plus a dedicated optimistic-concurrency update of the default seller contact email. The latter cannot change other seller settings or invoice snapshots.
 - `billing_invoice_request_issue` queues a separate human decision; MCP cannot allocate a number itself.
 - `billing_invoice_request_payment` queues a financial record; acceptance calls a single DB function that locks the request and invoice and atomically approves the request/creates the payment.
 - MCP approval requests are separate from editorial content approval. Do not expose generic SQL execution or direct access to the private R2 bucket.
