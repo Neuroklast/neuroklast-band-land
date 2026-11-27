@@ -16,6 +16,8 @@ const object={type:'object',additionalProperties:true}
 const readonly={readOnlyHint:true,destructiveHint:false}
 const write={readOnlyHint:false,destructiveHint:false,idempotentHint:false}
 export const BILLING_MCP_TOOLS=[
+ {name:'billing_seller_email_get',description:'Read the default seller contact email for future invoice drafts. Admin-only, MFA-protected.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:readonly},
+ {name:'billing_seller_email_update',description:'Change only the default seller contact email for future invoice drafts. Requires current email to prevent stale updates. Admin-only, MFA-protected; no existing invoice snapshots or other settings are changed.',inputSchema:{type:'object',properties:{email:{type:'string',format:'email',maxLength:254},expected_email:{type:'string',maxLength:254}},required:['email','expected_email'],additionalProperties:false},annotations:{...write,idempotentHint:true}},
  {name:'billing_customers_list',description:'Private admin-only customer address book. Personal data, do not expose to others.',inputSchema:{type:'object',properties:{q:{type:'string',maxLength:100},limit:{type:'integer',minimum:1,maximum:100},offset:{type:'integer',minimum:0,maximum:1000000}},additionalProperties:false},annotations:readonly},
  {name:'billing_customer_get',description:'Read a customer record.',inputSchema:{type:'object',properties:{id},required:['id'],additionalProperties:false},annotations:readonly},
  {name:'billing_customer_create',description:'Create customer address book entry. Admin-only.',inputSchema:{type:'object',properties:{customer:object},required:['customer'],additionalProperties:false},annotations:write},
@@ -88,6 +90,21 @@ export async function callBillingMcp(name:string,raw:Record<string,unknown>,ctx:
  try{
   const context=contextSchema.parse(ctx)
   switch(name) {
+   case 'billing_seller_email_get':{
+    z.object({}).strict().parse(raw)
+    const {data,error}=await db().from('billing_settings').select('seller_email').eq('id',1).maybeSingle()
+    if(error||!data)throw new Error('Seller settings unavailable; configure seller in admin first')
+    return {email:data.seller_email}
+   }
+   case 'billing_seller_email_update':{
+    const value=z.object({email:z.email().max(254),expected_email:z.union([z.email().max(254),z.literal('')])}).strict().parse(raw)
+    const {data,error}=await db().from('billing_settings')
+      .update({seller_email:value.email,updated_by:context.userId,updated_at:new Date().toISOString()})
+      .eq('id',1).eq('seller_email',value.expected_email).select('seller_email').maybeSingle()
+    if(error)throw new Error('Seller contact email update failed')
+    if(!data)throw new McpAccessError('Seller settings changed or not configured; reload current email',409)
+    return {email:data.seller_email,applies_to:'future_invoice_drafts'}
+   }
    case 'billing_customers_list': {
     const value=z.object({q:z.string().max(100).optional(),limit:z.number().int().min(1).max(100).optional(),offset:z.number().int().min(0).max(1000000).optional()}).strict().parse(raw)
     return listBillingCustomers(value.q??'',value.limit??50,value.offset??0)
